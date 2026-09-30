@@ -153,17 +153,14 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
    Appends a technology that the source structure can research to the technology candidate list (workspace 12,
    at most 32; the pioneer vehicle is never added) and picks its score function: walls 0, mine and pump
    improvements 1, source of runtime class 11 2, of class 13 or 22 3, radar and AR-M silo technologies 4,
-   everything else 5. The register values of the caller's loop pass through unchanged.
+   everything else 5. (The original preserved the caller's loop registers EAX/ECX/EDX; those were
+   pass-through pseudo-parameters and are dropped.)
 */
-AiTechnologyPlanningLoopRegisterContinuityResult
-AiTechnologyPlanning_AddCandidateRecord
-          (uint32_t technologyPanelIndex,uint32_t sourceArmyEntriesRemaining,uint32_t factionRecordOffset,
-          ModelRuntimeSlot *sourceModelRuntime,PckTechnologyIdCatalog technologyId)
+void AiTechnologyPlanning_AddCandidateRecord(ModelRuntimeSlot *sourceModelRuntime,PckTechnologyIdCatalog technologyId)
 
 {
   AiTechnologyPlanningCandidate *candidateBuffer;
   AiTechnologyPlanningCandidateCount candidateIndex;
-  AiTechnologyPlanningLoopRegisterContinuityResult continuityResult;
   MdlDefinitionSemanticPrefix *sourceArmyModelDefinition;
   
   candidateIndex = g_AiWorkspace12Count;
@@ -203,10 +200,6 @@ AiTechnologyPlanning_AddCandidateRecord
            AI_TECHNOLOGY_SCORE_FACTION_SCALED;
     }
   }
-  continuityResult.preservedEcxSourceArmyEntriesRemaining = sourceArmyEntriesRemaining;
-  continuityResult.preservedEaxTechnologyPanelIndex = technologyPanelIndex;
-  continuityResult.preservedEdxFactionRecordOffset = factionRecordOffset;
-  return continuityResult;
 }
 
 

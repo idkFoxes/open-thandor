@@ -794,7 +794,6 @@ void ArmyRuntimeClass_UpdateUnitFactory
   uint32_t *dwordCursor;
   bool cellMasked;
   ModelPackedPointRecord *packedPoint;
-  ArmyRuntimeCreateResult createResult;
   ModelWorldPoint localPoint;
   InGameNotificationMovieId notificationMovieId;
   ArmyRuntimeSlot *linkedArmyRuntime;
@@ -884,12 +883,11 @@ void ArmyRuntimeClass_UpdateUnitFactory
             localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
             stateValue = FixedMath_Atan2Angle16(secondaryValue - localPoint.yQ12,stateValue - localPoint.xQ12);
             linkedArmyRuntime = modelRuntime->ownerArmyRuntime;
-            createResult = ArmyRuntime_CreateInstanceFromAsset
+            createdArmyRuntime = ArmyRuntime_CreateInstanceFromAsset
                                (4,stateValue,localPoint.yQ12,localPoint.xQ12,linkedArmyRuntime->factionIndex,
                                 (modelRuntime->classLinkState).modelLinkOrState.classState,
-                                worldRuntime);
-            createdArmyRuntime = (ArmyRuntimeSlot *)createResult.armyRuntimeOrError;
-            if (!createResult.failed) {
+                                worldRuntime,NULL);
+            if (createdArmyRuntime != NULL) {
               relationCounter = &g_GameFactionRuntimeImage.records[linkedArmyRuntime->factionIndex].
                         relationCounterA;
               *relationCounter = *relationCounter + 1;
@@ -1403,9 +1401,10 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    Level start: allocates and zeroes the 0x48000-byte army runtime pool, loads the army graphics (texture set and
    palette, "<graphicsBasePath><suffix>.gfx/.pal") of slot 0 and of every existing faction, and renders the two
    panel preview textures of every army asset that has a selection panel entry. The movie schedule is ticked in between, since this
-   runs behind the level-loading movie. Any load error is returned with CF set.
+   runs behind the level-loading movie. Returns true on success (*outError = 0); on an allocation or graphics
+   load error returns false with that error in *outError. A failed preview render is skipped silently.
 */
-ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath)
+bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError)
 
 {
   uint16_t pathChar;
@@ -1426,10 +1425,9 @@ ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,u
   ArenaAllocResult allocResult;
   PackageLoadResult packageResult;
   TextureSetResult textureSetResult;
-  ArmyRuntimeInitResult initResult;
-  ArmyPreviewTextureResult previewResult;
-  ArmyRuntimeInitResult finalResult;
-  
+  PaletteAssetResult paletteResult;
+  GraphicsTextureResource *previewTexture;
+
   allocResult = g_MemoryApi.alloc(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot));
   armySlot1 = (ArmyRuntimeSlot *)allocResult.payloadOrError;
   if (!allocResult.failed) {
@@ -1483,7 +1481,8 @@ ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,u
         packageResult = Package_LoadEntry(graphicsBasePath);
         textureSourceAsset = packageResult.bufferOrError;
         if (packageResult.failed) {
-          return THANDOR_BITCAST(PackageLoadResult, ArmyRuntimeInitResult, packageResult);
+          *outError = (uint32_t)packageResult.bufferOrError;
+          return false;
         }
         ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
                   (frontendPlayerRuntimeId,(ArmyGraphicsAssetAddress32)textureSourceAsset);
@@ -1493,17 +1492,17 @@ ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,u
           LOCK();
           UNLOCK();
           Resource_Release(textureSourceAsset);
-          initResult.failed = true;
-          initResult.errorOrValue = (uint32_t)loadedTextureSet;
-          return initResult;
+          *outError = (uint32_t)loadedTextureSet;
+          return false;
         }
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].textureSet = loadedTextureSet;
         WidePath_SetExtensionCode(ASSET_MAGIC_PAL,graphicsBasePath);
-        initResult = THANDOR_BITCAST(PaletteAssetResult, ArmyRuntimeInitResult, g_GraphicsPaletteAssetLoadPackage(graphicsBasePath));
-        paletteOrResult = (GraphicsPaletteAsset *)initResult.errorOrValue;
-        if (initResult.failed) {
-          return initResult;
+        paletteResult = g_GraphicsPaletteAssetLoadPackage(graphicsBasePath);
+        paletteOrResult = paletteResult.paletteAsset;
+        if (paletteResult.failed) {
+          *outError = (uint32_t)paletteOrResult;
+          return false;
         }
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].paletteAsset = paletteOrResult;
       }
@@ -1521,36 +1520,33 @@ ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,u
       armyAsset = *registryCursor;
       if ((armyAsset != NULL) &&
          ((armyAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_PRODUCTION_MASK) != 0)) {
-        previewResult = ArmyRuntime_RenderPreviewTexture
+        previewTexture = ArmyRuntime_RenderPreviewTexture
                            (g_InGamePanelTextureSubresource34Height,
                             g_InGamePanelTextureSubresource34Width,
                             ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
                             ownerContext);
-        paletteOrResult = (GraphicsPaletteAsset *)previewResult.previewTexture;
-        if (!previewResult.failed) {
-          armyAsset[1].rootNodeOffsetOrPointer = (uint32_t)paletteOrResult;
+        if (previewTexture != NULL) {
+          armyAsset[1].rootNodeOffsetOrPointer = (uint32_t)previewTexture;
           previewHeight =
                (GraphicsPixelDimension)
                ((uint64_t)(int64_t)g_InGamePanelTextureSubresource02Width / 3);
-          previewResult = ArmyRuntime_RenderPreviewTexture
+          previewTexture = ArmyRuntime_RenderPreviewTexture
                              (previewHeight,previewHeight,
                               ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
                               ownerContext);
-          paletteOrResult = (GraphicsPaletteAsset *)previewResult.previewTexture;
-          if (!previewResult.failed) {
-            armyAsset[1].registryId = (PckArmyAssetIdCatalog)paletteOrResult;
+          if (previewTexture != NULL) {
+            armyAsset[1].registryId = (PckArmyAssetIdCatalog)previewTexture;
           }
         }
       }
       registryCursor++;
       remainingCount--;
     } while (remainingCount != 0);
-    allocResult.failed = false;
-    allocResult.payloadOrError = (uint32_t)paletteOrResult;
+    *outError = 0;
+    return true;
   }
-  finalResult.errorOrValue = allocResult.payloadOrError;
-  finalResult.failed = allocResult.failed;
-  return finalResult;
+  *outError = allocResult.payloadOrError;
+  return false;
 }
 
 
@@ -1702,12 +1698,13 @@ void ArmyRuntime_ApplyTargetPositionCommand
    command, or the target entity's model (the flying body of an aircraft) raised by its definition's aim height.
    A moving target is led along its heading by the distance it covers during the shot's flight time, unless it
    stands still within that lead range. A target entity the shooter's faction can no longer see is dropped from
-   the command. noPosition (CF) is set when there is nothing to aim at.
+   the command. Returns true with the point in *outAimPoint, or false (and *outAimPoint zeroed) when there is
+   nothing to aim at.
 */
-WorldPositionResult
+bool
 ArmyRuntime_ResolveShotAimPoint
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
-          ShotDefinition *shotDefinition,GameEntityRuntime *targetState)
+          ShotDefinition *shotDefinition,GameEntityRuntime *targetState,GraphicsFixedVec3 *outAimPoint)
 
 {
   int *targetDefinitionRecord;
@@ -1725,22 +1722,20 @@ ArmyRuntime_ResolveShotAimPoint
   ModelRuntimeNode *targetNode;
   Q12 shotLeadSpeedQ12;
   FixedDirection leadDirection;
-  WorldPositionResult position;
   GameEntityRuntime *targetEntity;
 
-  /* On failure (CF set) the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values or the
-     partial visibility mask / definition pointers). All three callers ignore the coordinates when CF is set, so
-     the failure result carries zeros. */
-  position.worldXQ12 = 0;
-  position.worldYQ12 = 0;
-  position.worldZQ12 = 0;
-  position.noPosition = true;
+  /* On failure the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values or the
+     partial visibility mask / definition pointers). All three callers ignore the coordinates on failure, so
+     the point is zeroed. */
+  outAimPoint->x = 0;
+  outAimPoint->y = 0;
+  outAimPoint->z = 0;
   if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
     if (((targetState->common).commandTarget.targetFlags & 2) != 0) {
-      position.worldXQ12 = (targetState->common).commandTarget.targetWorldXQ12;
-      position.worldYQ12 = (targetState->common).commandTarget.targetWorldYQ12;
-      position.worldZQ12 = (targetState->common).commandTarget.targetWorldZQ12;
-      position.noPosition = false;
+      outAimPoint->x = (targetState->common).commandTarget.targetWorldXQ12;
+      outAimPoint->y = (targetState->common).commandTarget.targetWorldYQ12;
+      outAimPoint->z = (targetState->common).commandTarget.targetWorldZQ12;
+      return true;
     }
   }
   else {
@@ -1791,31 +1786,29 @@ ArmyRuntime_ResolveShotAimPoint
                deltaYSquared = (int64_t)definitionOrDelta * (int64_t)definitionOrDelta,
                -1 < remainingRangeSquared - deltaYSquared)) {
               /* The target is standing still within lead range: aim at its path position directly. */
-              position.worldXQ12 = (targetEntity->common).pathCoordinate0Q12;
-              position.worldYQ12 = (targetEntity->common).pathCoordinate1Q12;
-              position.worldZQ12 =
+              outAimPoint->x = (targetEntity->common).pathCoordinate0Q12;
+              outAimPoint->y = (targetEntity->common).pathCoordinate1Q12;
+              outAimPoint->z =
                    (((targetEntity->common).ownership.modelNode)->worldTransform).translation.z +
                    ((ModelRuntimeSlot *)(targetEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
                    runtimeDefinition->aimHeightOffsetQ12;
-              position.noPosition = false;
-              return position;
+              return true;
             }
           }
           aimWorldZ = leadDirection.z + aimWorldZ;
           aimWorldY = directionY + aimWorldY;
           aimWorldX = distanceOrAngle + aimWorldX;
         }
-        position.worldXQ12 = aimWorldX;
-        position.worldYQ12 = aimWorldY;
-        position.worldZQ12 = aimWorldZ;
-        position.noPosition = false;
-        return position;
+        outAimPoint->x = aimWorldX;
+        outAimPoint->y = aimWorldY;
+        outAimPoint->z = aimWorldZ;
+        return true;
       }
       (targetState->common).commandTarget.targetEntity = NULL;
       (targetState->common).commandTarget.targetFlags = 0;
     }
   }
-  return position;
+  return false;
 }
 
 
@@ -2748,9 +2741,9 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
    Renders the picture of an army type for the in-game panels: spawns a temporary army of armyAssetId for
    factionIndex, turns it to a fixed three-quarter view, frames its bounds and renders it off screen at twice the
    requested size, then destroys the army and downsamples the image 2x2 -> 1 with alpha weighting (MMX) into a
-   previewWidth x previewHeight texture. Returns the texture, or CF set with the creation/render error.
+   previewWidth x previewHeight texture. Returns the texture, or NULL when creating the army or rendering failed.
 */
-ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
+GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
           (GraphicsPixelDimension previewHeight,GraphicsPixelDimension previewWidth,
           FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
           WorldRuntimeContext *worldRuntime)
@@ -2783,17 +2776,14 @@ ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
   uint64_t mm1PackedValue0;
   uint64_t mm2PackedValue0;
   uint64_t mm3PackedValue0;
-  ArmyRuntimeCreateResult createResult;
   OffscreenRenderResult offscreenResult;
-  ArmyPreviewTextureResult successResult;
-  ArmyPreviewTextureResult failureResult;
-  
+
   savedPreviewWidth = previewWidth;
   /* a temporary army at world position (ARMY_PREVIEW_WORLD_POSITION_Q12 on both axes) */
-  createResult = ArmyRuntime_CreateInstanceFromAsset
-                     (1,0,ARMY_PREVIEW_WORLD_POSITION_Q12,ARMY_PREVIEW_WORLD_POSITION_Q12,factionIndex,armyAssetId,worldRuntime);
-  previewArmyOrValue = (GameEntityRuntime *)createResult.armyRuntimeOrError;
-  if (!createResult.failed) {
+  previewArmyOrValue = (GameEntityRuntime *)ArmyRuntime_CreateInstanceFromAsset
+                     (1,0,ARMY_PREVIEW_WORLD_POSITION_Q12,ARMY_PREVIEW_WORLD_POSITION_Q12,factionIndex,armyAssetId,
+                      worldRuntime,NULL);
+  if (previewArmyOrValue != NULL) {
     rootNodeOrSize = (previewArmyOrValue->common).ownership.modelNode;
     /* armies of runtime class 13 lose their fourth child node */
     if (((((ModelRuntimeSlot *)(previewArmyOrValue->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
@@ -2921,16 +2911,11 @@ ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
       rootNodeOrSize = (ModelRuntimeNode *)((int)halvedWidth * (int)previewArmyOrValue * 4 + ARMY_PREVIEW_TEXTURE_HEADER_BYTES);
       (previewTexture->common).ownership.modelNode = rootNodeOrSize;
       g_MemoryApi.shrinkInPlace((uint32_t)rootNodeOrSize,previewTexture);
-      successResult.failed = false;
-      successResult.previewTexture = (GraphicsTextureResource *)previewTexture;
-      return successResult;
+      return (GraphicsTextureResource *)previewTexture;
     }
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmyOrValue);
-    previewArmyOrValue = previewTexture; /* the render error */
   }
-  failureResult.failed = true;
-  failureResult.previewTexture = (GraphicsTextureResource *)previewArmyOrValue;
-  return failureResult;
+  return NULL;
 }
 
 
@@ -3132,9 +3117,9 @@ bool ArmyRuntimeSpawner_CreateLinkedChildInstance
   int remainingSlots;
   uint32_t slotBit;
   ArmyRuntimeLinkedChildMaskSlotView *slotCursor;
-  ArmyRuntimeCreateResult createResult;
+  ArmyRuntimeSlot *createdArmy;
   ModelRuntimeNode *modelNode;
-  
+
   slotBit = 1;
   remainingSlots = ((ModelDefinition *)armyRuntime->definitionOrAsset)->classParameterC4;
   slotCursor = armyRuntime;
@@ -3149,16 +3134,16 @@ bool ArmyRuntimeSpawner_CreateLinkedChildInstance
     }
   }
   modelNode = armyRuntime->modelNodeRuntime;
-  createResult = ArmyRuntime_CreateInstanceFromAsset
+  createdArmy = ArmyRuntime_CreateInstanceFromAsset
                     (0,(modelNode->modelPayload).worldRotationAngle2,
                      (modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,
                      (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex,
-                     linkedArmyAssetId,worldRuntime);
-  if (createResult.failed) {
+                     linkedArmyAssetId,worldRuntime,NULL);
+  if (createdArmy == NULL) {
     return true;
   }
-  childModelRuntime = ((ArmyRuntimeSlot *)createResult.armyRuntimeOrError)->modelRuntimeOrSavedOffset.modelRuntime;
+  childModelRuntime = createdArmy->modelRuntimeOrSavedOffset.modelRuntime;
   slotMaskState = &(armyRuntime->articulatedContact).linkedChildSlotMaskState;
   slotMaskState->linkedChildSlotMask = slotMaskState->linkedChildSlotMask | slotBit;
   armyRuntime->fallbackWorldYQ12 = armyRuntime->fallbackWorldYQ12 - 1;
@@ -3785,13 +3770,16 @@ bool ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t w
    Creates an army (unit or building) of an army asset for a faction at a world point: takes the first free
    army slot, creates the faction's model (and its linked child models) with the faction's army graphics, links
    it into the world, places it on the terrain and initialises occupancy, tint and selection metrics. Returns
-   the army slot, or with CF set FATAL_ERROR_GENERAL_FAILURE (no free slot or model creation failed) or
-   FATAL_ERROR_ARMY_ID_NOT_FOUND (the id is left in g_PackageLastErrorPath).
+   the army slot (never NULL), or NULL on failure with the error in *outError (when outError is not NULL):
+   FATAL_ERROR_GENERAL_FAILURE (no army pool or no free slot), FATAL_ERROR_ARMY_ID_NOT_FOUND (the id is left in
+   g_PackageLastErrorPath) or the model creation error.
+   Original quirk: when creating the linked child models fails, the error is worldYQ12 (the original left that
+   parameter in the result register); kept.
 */
-ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
+ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
           (WorldObjectAllocationFlags creationFlags,AngleTurn32 orientationAngle,Q12 worldXQ12,
           Q12 worldYQ12,FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
-          WorldRuntimeContext *worldRuntime)
+          WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
   ArmyAssetRecordPrefix *armyAssetRecord;
@@ -3808,10 +3796,8 @@ ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
   ArmyAssetRecordPrefix **registryCursor;
   ArmyRuntimeSlot *armyRuntime;
   bool childCreateFailed;
-  ArmyRuntimeCreateResult failureResult;
   ModelDefinitionRecordPrefix *selectedDefinition;
   ModelNodeCreateResult modelCreateResult;
-  ArmyRuntimeCreateResult successResult;
   uint32_t slotScanContinueValue;
   ArmyAssetRecord *definitionNode;
   
@@ -3929,9 +3915,7 @@ ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
               ArmyRuntime_InitializeTerrainOccupancyFlags(worldRuntime,armyRuntime);
               ModelNodeRuntime_RefreshStateTint(modelNodeRuntime);
               ArmyRuntime_RebuildDerivedSelectionMetrics(armyRuntime);
-              successResult.failed = false;
-              successResult.armyRuntimeOrError = (uint32_t)armyRuntime;
-              return successResult;
+              return armyRuntime;
             }
           }
           /* creating the model or its children failed */
@@ -3950,9 +3934,10 @@ ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
     slotScanContinueValue = armySlotsRemaining;
   }
 ReturnFailure:
-  failureResult.failed = true;
-  failureResult.armyRuntimeOrError = (uint32_t)resultOrModelNode;
-  return failureResult;
+  if (outError != NULL) {
+    *outError = (uint32_t)resultOrModelNode;
+  }
+  return NULL;
 }
 
 

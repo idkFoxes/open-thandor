@@ -99,7 +99,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
     RichTextCommandStream_CopyExpanded
               (128,((UiRequiredTextEditControl *)FRONTEND_UI(frontendUi,hostAddressEdit))->textBuffer,
-               (uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
+               (uint16_t *)&g_FrontendNetworkEndpointTextUtf16,NULL);
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
       ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
@@ -233,7 +233,7 @@ backendOpened:
               RichTextCommandStream_CopyExpanded
                         (128,
                          ((UiRequiredTextEditControl *)FRONTEND_UI(remainingOrRootNode,hostAddressEdit))
-                         ->textBuffer,(uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
+                         ->textBuffer,(uint16_t *)&g_FrontendNetworkEndpointTextUtf16,NULL);
             }
           }
         }
@@ -439,7 +439,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   /* the speed caption */
   resolvedText = TextResource_Resolve(digitValueOrSpeed + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,resolvedText);
+            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,resolvedText,NULL);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   FrontendNetworkSettings_SetGameName((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   if (appliedOptionMask == 7) {

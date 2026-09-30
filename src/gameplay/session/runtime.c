@@ -17,30 +17,20 @@
 /* Address: 0x00564F70.
    Runs one in-game session from the frontend: starts a new level or loads a saved game (bit 0 of
    loadExistingSessionFlag), then renders frames until the session is closed, the end movie is due or the local
-   player left, tears the session down along the matching path and returns to the frontend. A failed start or an
-   emptied UI root stack returns an error code with CF set, which the caller hands to the fatal-error dispatcher.
+   player left, tears the session down along the matching path and returns true. A failed start or an emptied UI
+   root stack returns false with the error code in *outError, which the caller hands to the fatal-error dispatcher.
 */
-SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
-          FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16)
+bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+          FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError)
 
 {
-  uint32_t startupErrorOrExitCode;
-  NewSessionInitResult newSessionInit;
-  LoadedSessionInitResult loadedSessionInit;
-  SessionRunResult localPlayerLeftResult;
-  SessionRunResult sessionClosedResult;
-  SessionRunResult endMovieResult;
-  SessionRunResult failureResult;
-  
+  uint32_t startupError;
+
   if ((loadExistingSessionFlag & 1U) == 0) {
-    newSessionInit = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16);
-    startupErrorOrExitCode = newSessionInit.runtimeRootOrError;
-    if (newSessionInit.failed) goto shutdown_and_fail;
+    if (!InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError)) goto shutdown_and_fail;
   }
   else {
-    loadedSessionInit = InGameRuntime_InitializeLoadedSession(levelPathUtf16);
-    startupErrorOrExitCode = loadedSessionInit.runtimeRootOrError;
-    if (loadedSessionInit.failed) goto shutdown_and_fail;
+    if (!InGameRuntime_InitializeLoadedSession(levelPathUtf16,&startupError)) goto shutdown_and_fail;
   }
 #ifdef THANDOR_TEST_AIDS
   g_TestAidSessionCount++;
@@ -58,7 +48,7 @@ SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *leve
 #ifdef THANDOR_TEST_AIDS
     DebugCampaign_AutoWinTick();
 #endif
-    /* The success paths return 0x0C in EAX; callers ignore it because CF is clear. */
+    /* (the original success paths also left 0x0C in EAX, which no caller reads) */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED) != 0) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
@@ -68,9 +58,7 @@ SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *leve
       UiRuntime_SetSynchronizationHooks(NULL,NULL);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
-      sessionClosedResult.exitCodeOrError = 12;
-      sessionClosedResult.failed = false;
-      return sessionClosedResult;
+      return true;
     }
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0) {
       g_SoundStopAllVoices();
@@ -84,9 +72,7 @@ SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *leve
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16 = 0;
-      endMovieResult.exitCodeOrError = 12;
-      endMovieResult.failed = false;
-      return endMovieResult;
+      return true;
     }
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT) != 0) {
       g_SoundStopAllVoices();
@@ -95,17 +81,14 @@ SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *leve
       UiRuntime_SetSynchronizationHooks(NULL,NULL);
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16 = 0;
-      localPlayerLeftResult.exitCodeOrError = 12;
-      localPlayerLeftResult.failed = false;
-      return localPlayerLeftResult;
+      return true;
     }
   } while (g_UiRootNode != UI_ROOT_STACK_END);
-  startupErrorOrExitCode = FATAL_ERROR_GENERAL_FAILURE;
+  startupError = FATAL_ERROR_GENERAL_FAILURE;
 shutdown_and_fail:
   InGameRuntime_ShutdownAndReleaseResources();
-  failureResult.failed = true;
-  failureResult.exitCodeOrError = startupErrorOrExitCode;
-  return failureResult;
+  *outError = startupError;
+  return false;
 }
 
 
@@ -936,10 +919,10 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
    its template, opens the level movie that plays while loading and loads the level (world, terrain, shading,
    technologies, units). It then reports itself ready to the other players and keeps drawing the player-status
    screen while stepping until every player is ready, and finally queues the level's five intro notifications.
-   CF set (failed) returns the error of the failing step.
+   Returns true on success; on failure returns false and stores the error of the failing step in *outError.
 */
-NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,
-                                                        uint16_t *levelMoviePath)
+bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+                                        uint32_t *outError)
 
 {
   WorldRuntimeFlags *worldRuntimeFlags;
@@ -971,12 +954,11 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
   uint16_t *resolvedTitle;
   ArenaAllocResult allocation;
   StatusResult statusResult;
-  EndingMoviePathResult endingMoviePath;
+  uint32_t stepError;
+  uint16_t *loadingMoviePath;
   MovieOpenResult movieOpen;
   MovieFrameResult firstFrame;
-  LevelDefaultLoadResult levelLoad;
   GridScratchAllocResult gridScratch;
-  NewSessionInitResult failureResult;
   
   g_UiCommandRuntimeFlags = UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED;
   g_SessionNetworkTickCounter = 1;
@@ -1070,11 +1052,12 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
       (rootCursorOrError->rootUi).base.nextSibling = NULL;
       rootCursorOrError = (InGameRuntimeRoot *)&(rootCursorOrError->rootUi).base.firstChild;
     }
-    statusResult = SelectionInfoPanel_InitResources
+    if (!SelectionInfoPanel_InitResources
                        ((SelectionInfoEntitySlots *)
-                        g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]);
-    rootCursorOrError = (InGameRuntimeRoot *)statusResult.valueOrError;
-    if (!statusResult.failed) {
+                        g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId],&stepError)) {
+      rootCursorOrError = (InGameRuntimeRoot *)stepError;
+    }
+    else {
       allocation = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot));
       inGameRoot = (InGameRuntimeRoot *)allocation.payloadOrError;
       rootCursorOrError = inGameRoot;
@@ -1121,10 +1104,11 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
           inGameRoot->localPlayerMarkedCellCount = 0;
           inGameRoot->localPlayerMarkedCells = selectionBlockCursor->markedCells;
           UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
-          endingMoviePath = LevelAsset_PrepareEndingMoviePath(levelMoviePath,&levelAsset->header);
-          rootCursorOrError = (InGameRuntimeRoot *)endingMoviePath.moviePath;
-          if (!endingMoviePath.failed) {
-            movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)rootCursorOrError);
+          if (!LevelAsset_PrepareEndingMoviePath(levelMoviePath,&levelAsset->header,&loadingMoviePath,&stepError)) {
+            rootCursorOrError = (InGameRuntimeRoot *)stepError;
+          }
+          else {
+            movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath);
             rootCursorOrError = (InGameRuntimeRoot *)movieOpen.frameCountOrError;
             if (!movieOpen.failed) {
               firstFrame = Movie_AdvanceFrame();
@@ -1150,9 +1134,10 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
                 statusResult = GameData_ResetDefaults();
                 rootCursorOrError = (InGameRuntimeRoot *)statusResult.valueOrError;
                 if (!statusResult.failed) {
-                  levelLoad = InGameLevelRuntime_LoadResourcesAfterDefaultReset(levelAsset,world);
-                  rootCursorOrError = (InGameRuntimeRoot *)levelLoad.errorOrValue;
-                  if (!levelLoad.failed) {
+                  if (!InGameLevelRuntime_LoadResourcesAfterDefaultReset(levelAsset,world,&stepError)) {
+                    rootCursorOrError = (InGameRuntimeRoot *)stepError;
+                  }
+                  else {
                     queueRecord = inGameRoot->notificationQueue;
                     for (countOrPlayerId = 32; countOrPlayerId != 0; countOrPlayerId--) {
                       queueRecord->movieId = 0;
@@ -1303,9 +1288,7 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
                             InGameNotificationQueue_InsertPriorityRecord
                                       (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 4);
                           }
-                          return THANDOR_BITCAST(uint64_t, NewSessionInitResult,
-                               (THANDOR_BITCAST(ArenaAllocResult, uint64_t,
-                                                 allocation) & UINT32_MAX));
+                          return true;
                         }
                       }
                     }
@@ -1319,9 +1302,8 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
     }
   }
   Movie_Close();
-  failureResult.failed = true;
-  failureResult.runtimeRootOrError = (uint32_t)rootCursorOrError;
-  return failureResult;
+  *outError = (uint32_t)rootCursorOrError;
+  return false;
 }
 
 
@@ -1330,10 +1312,10 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
    and level entries, and then follows the same steps as InGameRuntime_InitializeNewSession, except that the local
    player is always player 0 of a single block, the world comes from the saved external tables and field grid
    (InGameLevelRuntime_LoadResourcesAfterExternalTables) instead of a fresh level, and no intro notifications are
-   queued. The package and the level entry are released again at the end. CF set (failed) returns the error of the
-   failing step.
+   queued. The package and the level entry are released again at the end. Returns true on success; on failure
+   returns false and stores the error of the failing step in *outError.
 */
-LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
+bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError)
 
 {
   WorldRuntimeFlags *worldRuntimeFlags;
@@ -1362,12 +1344,11 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
   uint32_t saveHandleOrError; /* the save package's handle, or the mount error code */
   PackageLoadResult packageEntry;
   ArenaAllocResult allocation;
-  EndingMoviePathResult endingMoviePath;
+  uint32_t stepError;
+  uint16_t *loadingMoviePath;
   MovieOpenResult movieOpen;
   MovieFrameResult firstFrame;
-  LevelLoadResult levelLoad;
   GridScratchAllocResult gridScratch;
-  LoadedSessionInitResult failureResult;
   InGameRuntimeRoot *mountedPackage;
   FrontendLoadedLevelAsset *loadedLevelAsset;
 
@@ -1470,9 +1451,10 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
           (rootCursorOrError->rootUi).base.nextSibling = NULL;
           rootCursorOrError = (InGameRuntimeRoot *)&(rootCursorOrError->rootUi).base.firstChild;
         }
-        statusResult = SelectionInfoPanel_InitResources((SelectionInfoEntitySlots *)entitySlots);
-        rootCursorOrError = (InGameRuntimeRoot *)statusResult.valueOrError;
-        if (!statusResult.failed) {
+        if (!SelectionInfoPanel_InitResources((SelectionInfoEntitySlots *)entitySlots,&stepError)) {
+          rootCursorOrError = (InGameRuntimeRoot *)stepError;
+        }
+        else {
           allocation = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot));
           inGameRoot = (InGameRuntimeRoot *)allocation.payloadOrError;
           rootCursorOrError = inGameRoot;
@@ -1522,11 +1504,12 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
                         (&g_FrontendScenarioPathScratchUtf16,
                          (levelImage->header).levelFileNameUtf16,(uint16_t *)u_level_0050daac);
               WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,&g_FrontendScenarioPathScratchUtf16);
-              endingMoviePath = LevelAsset_PrepareEndingMoviePath
-                                 (savePackagePath,(LevelAssetHeader *)levelImage);
-              rootCursorOrError = (InGameRuntimeRoot *)endingMoviePath.moviePath;
-              if (!endingMoviePath.failed) {
-                movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)rootCursorOrError);
+              if (!LevelAsset_PrepareEndingMoviePath
+                     (savePackagePath,(LevelAssetHeader *)levelImage,&loadingMoviePath,&stepError)) {
+                rootCursorOrError = (InGameRuntimeRoot *)stepError;
+              }
+              else {
+                movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath);
                 rootCursorOrError = (InGameRuntimeRoot *)movieOpen.frameCountOrError;
                 if (!movieOpen.failed) {
                   firstFrame = Movie_AdvanceFrame();
@@ -1556,10 +1539,11 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
                       if (!packageEntry.failed) {
                         (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid =
                              (uint32_t)rootCursorOrError;
-                        levelLoad = InGameLevelRuntime_LoadResourcesAfterExternalTables
-                                           (levelImage,world);
-                        rootCursorOrError = (InGameRuntimeRoot *)levelLoad.errorOrValue;
-                        if (!levelLoad.failed) {
+                        if (!InGameLevelRuntime_LoadResourcesAfterExternalTables
+                               (levelImage,world,&stepError)) {
+                          rootCursorOrError = (InGameRuntimeRoot *)stepError;
+                        }
+                        else {
                           queueRecord = inGameRoot->notificationQueue;
                           for (remainingCount = 32; remainingCount != 0; remainingCount--) {
                             queueRecord->movieId = 0;
@@ -1673,9 +1657,7 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
                                 g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
                                 g_TimerRegisterPeriodic
                                           (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
-                                return THANDOR_BITCAST(uint64_t, LoadedSessionInitResult,
-                                     (THANDOR_BITCAST(ArenaAllocResult, uint64_t,
-                                                       allocation) & UINT32_MAX));
+                                return true;
                               }
                             }
                           }
@@ -1694,9 +1676,8 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
   Movie_Close();
   Resource_Release(loadedLevelAsset);
   Package_Unmount((EngineFileHandle)mountedPackage);
-  failureResult.failed = true;
-  failureResult.runtimeRootOrError = (uint32_t)rootCursorOrError;
-  return failureResult;
+  *outError = (uint32_t)rootCursorOrError;
+  return false;
 }
 
 

@@ -1716,7 +1716,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
   PackedArgb32 vertex2Color;
   uint64_t litProduct2;
   TriangleBarycentricWeightsQ12 barycentricWeights;
-  PrimitivePacketResult queuedPacket;
+  GraphicsPrimitivePacket *queuedPacket;
   TerrainProjectedVertexWorkRecord *vertex2Projected;
   TerrainProjectedVertexWorkRecord *vertex1Projected;
   TerrainProjectedVertexWorkRecord *vertex0Projected;
@@ -1808,64 +1808,64 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       vertex1Projected = vertex1;
       vertex0Projected = vertex0;
       savedRenderContext = renderContext;
-      queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+      queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
                          ((uint32_t *)((uint8_t *)g_TerrainSoilPacketTablePayload +
                                    materialOffset0 + (vertex0->projectionFlags & TERRAIN_VERTEX_VARIANT_OFFSET_MASK)),vertex2Color,vertex1Color,vertex0Color
                           ,(GraphicsProjectedVertexSource *)vertex2,
                           (GraphicsProjectedVertexSource *)vertex1,
                           (GraphicsProjectedVertexSource *)vertex0,renderContext);
-      if (!queuedPacket.noPacket) {
+      if (queuedPacket != NULL) {
         if (materialOffset0 == materialOffset1) {
           if (materialOffset0 != yOrTableIndexC) {
-            queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+            queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
                                ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexB + TERRAIN_SURFACE_PACKET_BYTES),vertex2Color,vertex1Color,vertex0Color,
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
                                 (GraphicsProjectedVertexSource *)vertex1Projected,
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-            if (!queuedPacket.noPacket) {
-              packetRenderFlags = &(queuedPacket.packet)->renderFlags;
+            if (queuedPacket != NULL) {
+              packetRenderFlags = &queuedPacket->renderFlags;
               *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS;
             }
           }
         }
         else if (materialOffset0 == yOrTableIndexC) {
-          queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+          queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
                              ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexA + 2 * TERRAIN_SURFACE_PACKET_BYTES),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-          if (!queuedPacket.noPacket) {
-            packetRenderFlags = &(queuedPacket.packet)->renderFlags;
+          if (queuedPacket != NULL) {
+            packetRenderFlags = &queuedPacket->renderFlags;
             *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS;
           }
         }
         else if (materialOffset1 == yOrTableIndexC) {
-          queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+          queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
                              ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexA + 3 * TERRAIN_SURFACE_PACKET_BYTES),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-          if (!queuedPacket.noPacket) {
-            packetRenderFlags = &(queuedPacket.packet)->renderFlags;
+          if (queuedPacket != NULL) {
+            packetRenderFlags = &queuedPacket->renderFlags;
             *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS;
           }
         }
         else {
-          queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+          queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
                              ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexA + 4 * TERRAIN_SURFACE_PACKET_BYTES),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-          if (!queuedPacket.noPacket) {
-            packetRenderFlags = &(queuedPacket.packet)->renderFlags;
+          if (queuedPacket != NULL) {
+            packetRenderFlags = &queuedPacket->renderFlags;
             *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS;
-            queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+            queuedPacket = GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
                                ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexB + 5 * TERRAIN_SURFACE_PACKET_BYTES),vertex2Color,vertex1Color,vertex0Color,
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
                                 (GraphicsProjectedVertexSource *)vertex1Projected,
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-            if (!queuedPacket.noPacket) {
-              packetRenderFlags = &(queuedPacket.packet)->renderFlags;
+            if (queuedPacket != NULL) {
+              packetRenderFlags = &queuedPacket->renderFlags;
               *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS;
             }
           }

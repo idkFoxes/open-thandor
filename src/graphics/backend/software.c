@@ -125,17 +125,16 @@ void SoftwareRenderer_DrawQueue16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsS
 
 {
   GraphicsPrimitivePacket *packet;
-  PrimitivePacketResult queueCursor;
 
-  queueCursor = GraphicsPrimitiveQueue_Begin(queue);
-  while (packet = queueCursor.packet, !queueCursor.noPacket) {
+  packet = GraphicsPrimitiveQueue_Begin(queue);
+  while (packet != NULL) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
     /* handler index * 4 = byte offset into the handler table */
     (*(SoftwareRasterHandler **)((uint8_t *)g_SoftwareRasterHandlers16Bit +
                                   ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount++;
-    queueCursor = GraphicsPrimitiveQueue_Next(queue);
+    packet = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
 }
@@ -151,17 +150,16 @@ void SoftwareRenderer_DrawQueueNon16Bit(GraphicsScreenCoordinate clipMaxY,Graphi
 
 {
   GraphicsPrimitivePacket *packet;
-  PrimitivePacketResult queueCursor;
 
-  queueCursor = GraphicsPrimitiveQueue_Begin(queue);
-  while (packet = queueCursor.packet, !queueCursor.noPacket) {
+  packet = GraphicsPrimitiveQueue_Begin(queue);
+  while (packet != NULL) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
     /* handler index * 4 = byte offset into the handler table */
     (*(SoftwareRasterHandler **)((uint8_t *)g_SoftwareRasterHandlersNon16Bit +
                                   ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount++;
-    queueCursor = GraphicsPrimitiveQueue_Next(queue);
+    packet = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
 }
@@ -179,11 +177,10 @@ void SoftwareRenderer_DrawQueueAuxiliary
 
 {
   GraphicsPrimitivePacket *packet;
-  PrimitivePacketResult queueCursor;
-  
+
   g_SoftwareAuxiliaryTargetBase = targetBase;
-  queueCursor = GraphicsPrimitiveQueue_Begin(queue);
-  while (packet = queueCursor.packet, !queueCursor.noPacket) {
+  packet = GraphicsPrimitiveQueue_Begin(queue);
+  while (packet != NULL) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
     if (((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) == 0) ||
        ((packet->textureEntry->subresourceIndex != 99 &&
@@ -194,7 +191,7 @@ void SoftwareRenderer_DrawQueueAuxiliary
                 (clipMaxY,clipMaxX,0,0,packet);
       g_PrimitiveDrawCallCount++;
     }
-    queueCursor = GraphicsPrimitiveQueue_Next(queue);
+    packet = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
 }
@@ -2945,9 +2942,10 @@ DisplayModeResult SoftwareRenderer_SetDisplayMode
 /* Address: 0x004FE7D0.
    Hooks the software renderer into the display-mode switch: chains SoftwareRenderer_SetDisplayMode in front of
    the current g_GraphicsSetDisplayMode, picks the queue renderer for the current pixel depth and allocates the
-   depth buffer (one int32 per pixel) for the current framebuffer size. CF set when the allocation fails.
+   depth buffer (one int32 per pixel) for the current framebuffer size. Returns 0 on success, or the arena error
+   when the allocation fails.
 */
-StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
+uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
 
 {
   int32_t *allocatedDepthBuffer;
@@ -2969,9 +2967,9 @@ StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
   if (!depthAllocation.failed) {
     g_SoftwareDepthBuffer = allocatedDepthBuffer;
     g_SoftwareDepthEpoch = 0;
-    return StatusValue_Ok(0);
+    return 0;
   }
-  return StatusValue_Fail(depthAllocation.payloadOrError);
+  return depthAllocation.payloadOrError;
 }
 
 

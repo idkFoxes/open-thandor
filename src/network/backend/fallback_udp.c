@@ -347,11 +347,9 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
   NetworkEndpointAddressHeader4 bindAddressHeader;
   NetworkIpv4AddressNetworkOrder ipv4AddressNetworkOrder;
   WinSockHostEnt32 *resolvedHostEntry;
-  StatusResult copyStatus;
 
-  copyStatus = RichTextCommandStream_CopyToNarrow
-                    (255,(uint8_t *)&g_NetworkEndpointTextScratchA,(uint16_t *)endpointText);
-  if (copyStatus.failed) {
+  if (!RichTextCommandStream_CopyToNarrow
+                    (255,(uint8_t *)&g_NetworkEndpointTextScratchA,(uint16_t *)endpointText)) {
     return true;
   }
   ipv4AddressNetworkOrder = g_NetworkLocalEndpoint.ipv4AddressNetworkOrder;
@@ -616,12 +614,10 @@ bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut
   WinSockHostEnt32 *hostEntry;
   uint32_t remainingDwords;
   NetworkEndpointAddressHeader4 *sourceCursor;
-  StatusResult copyStatus;
   int addressLength; /* never initialised, in the original as well */
 
-  copyStatus = RichTextCommandStream_CopyToNarrow
-                    (255,(uint8_t *)&g_NetworkEndpointTextScratchA,addressText);
-  if (copyStatus.failed) {
+  if (!RichTextCommandStream_CopyToNarrow
+                    (255,(uint8_t *)&g_NetworkEndpointTextScratchA,addressText)) {
     return true;
   }
   if (g_NetworkEndpointTextScratchA != '\0') {

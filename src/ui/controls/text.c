@@ -4302,9 +4302,9 @@ TextCompareResult UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uin
   TextCompareResult compareFlags;
 
   RichTextCommandStream_CopyExpanded
-            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText);
+            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText,NULL);
   RichTextCommandStream_CopyExpanded
-            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText);
+            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText,NULL);
   /* CF and ZF are the comparator's: nothing after the call changes the flags (0x004BB5A5). */
   compareFlags = (*(TextCompareResult (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
             ((uint16_t *)&g_UiPointerListExpandedRightTextUtf16,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16);

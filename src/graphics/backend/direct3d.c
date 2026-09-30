@@ -242,44 +242,37 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
 /* Address: 0x0057A450.
    Sets D3DRENDERSTATE_ANTIALIAS on the live device and remembers the mode in g_Direct3DAntialiasMode, which the
    device setup (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources) applies again after a mode change.
-   Returns the mode (CF clear), or FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage number in
-   g_PackageLastErrorPath. No caller or table slot in the executable or image data references it.
+   Returns 0 on success, or FATAL_ERROR_DIRECT3D_SETUP with the stage number in g_PackageLastErrorPath (the
+   original returned the mode itself on success, with CF clear). No caller or table slot in the executable or
+   image data references it.
 */
-RenderStateApplyResult Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
+uint32_t Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
 
 {
   int32_t direct3DResult;
-  RenderStateApplyResult successResult;
-  RenderStateApplyResult failureResult;
 
   direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                     (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,antialiasMode);
   if (direct3DResult == 0) {
     g_Direct3DAntialiasMode = antialiasMode;
-    successResult.failed = false;
-    successResult.appliedValueOrError = antialiasMode;
-    return successResult;
+    return 0;
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,DIRECT3D_RENDER_STATE_STAGE_ANTIALIAS,
                           g_PackageLastErrorPath);
-  failureResult.failed = true;
-  failureResult.appliedValueOrError = FATAL_ERROR_DIRECT3D_SETUP;
-  return failureResult;
+  return FATAL_ERROR_DIRECT3D_SETUP;
 }
 
 
 /* Address: 0x0057A4C0.
    Sets the same filter mode for D3DRENDERSTATE_TEXTUREMAG and D3DRENDERSTATE_TEXTUREMIN and remembers it in
-   g_Direct3DTextureFilterMode for the device setup to reapply. Returns the mode (CF clear), or
-   FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage of the failed call in g_PackageLastErrorPath. No caller or
+   g_Direct3DTextureFilterMode for the device setup to reapply. Returns 0 on success (the original returned the
+   mode), or FATAL_ERROR_DIRECT3D_SETUP with the stage of the failed call in g_PackageLastErrorPath. No caller or
    table slot in the executable or image data references it.
 */
-RenderStateApplyResult Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
+uint32_t Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
 
 {
   int32_t direct3DResult;
-  RenderStateApplyResult successResult;
-  RenderStateApplyResult failureResult;
   int32_t failedStage;
 
   failedStage = DIRECT3D_RENDER_STATE_STAGE_TEXTURE_MAG;
@@ -291,43 +284,34 @@ RenderStateApplyResult Direct3DRenderer_SetTextureFilterMode(uint32_t textureFil
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,textureFilterMode);
     if (direct3DResult == 0) {
       g_Direct3DTextureFilterMode = textureFilterMode;
-      successResult.failed = false;
-      successResult.appliedValueOrError = textureFilterMode;
-      return successResult;
+      return 0;
     }
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-  failureResult.failed = true;
-  failureResult.appliedValueOrError = FATAL_ERROR_DIRECT3D_SETUP;
-  return failureResult;
+  return FATAL_ERROR_DIRECT3D_SETUP;
 }
 
 
 /* Address: 0x0057A550.
    Sets D3DRENDERSTATE_TEXTUREPERSPECTIVE and remembers the value in g_Direct3DTexturePerspectiveEnabled for the
-   device setup to reapply. Returns the value (CF clear), or FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage
-   number in g_PackageLastErrorPath. No caller or table slot in the executable or image data references it.
+   device setup to reapply. Returns 0 on success (the original returned the value), or FATAL_ERROR_DIRECT3D_SETUP
+   with the stage number in g_PackageLastErrorPath. No caller or table slot in the executable or image data
+   references it.
 */
-RenderStateApplyResult Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled)
+uint32_t Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled)
 
 {
   int32_t direct3DResult;
-  RenderStateApplyResult successResult;
-  RenderStateApplyResult failureResult;
 
   direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                     (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,texturePerspectiveEnabled);
   if (direct3DResult == 0) {
     g_Direct3DTexturePerspectiveEnabled = texturePerspectiveEnabled;
-    successResult.failed = false;
-    successResult.appliedValueOrError = texturePerspectiveEnabled;
-    return successResult;
+    return 0;
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,DIRECT3D_RENDER_STATE_STAGE_TEXTURE_PERSPECTIVE,
                           g_PackageLastErrorPath);
-  failureResult.failed = true;
-  failureResult.appliedValueOrError = FATAL_ERROR_DIRECT3D_SETUP;
-  return failureResult;
+  return FATAL_ERROR_DIRECT3D_SETUP;
 }
 
 

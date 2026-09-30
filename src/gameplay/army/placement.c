@@ -18,7 +18,7 @@
    armies and from the terrain limits of the definition's contact kind. Returns the common test's value with
    CF (rejected) as the result.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[13]
-   (0x0051FF38), called by ArmyPlacement_DispatchAssetAtFieldPoint.
+   (0x0051FF38), called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
 
 PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance
@@ -165,24 +165,21 @@ bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
   /* corner order as in the original: (0,0), (+0x240,0), (+0x240,+0x240), (0,+0x240) */
   static const int cornerDx[4] = {0,ARMY_PLACEMENT_CORNER_OFFSET_Q12,ARMY_PLACEMENT_CORNER_OFFSET_Q12,0};
   static const int cornerDy[4] = {0,0,ARMY_PLACEMENT_CORNER_OFFSET_Q12,ARMY_PLACEMENT_CORNER_OFFSET_Q12};
-  PlacementDispatchResult dispatched;
   int corner;
 
   g_ArmyPlacementValidatedWorldXQ12 = worldXQ12;
   g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
-  dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
+  if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                          (placementMode,0,placementHeading,worldYQ12,worldXQ12,armyAssetId,
-                          ownerFactionId,inGameRuntime);
-  if (!dispatched.failed) {
+                          ownerFactionId,inGameRuntime,NULL)) {
     return false;
   }
   for (corner = 0; corner < 4; corner++) {
     Q12 x = (Q12)(((uint32_t)worldXQ12 & 0xffffff00) + cornerDx[corner]);
     Q12 y = (Q12)(((uint32_t)worldYQ12 & 0xffffff00) + cornerDy[corner]);
-    dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
+    if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                            (placementMode,0,placementHeading,y,x,armyAssetId,ownerFactionId,
-                            inGameRuntime);
-    if (!dispatched.failed) {
+                            inGameRuntime,NULL)) {
       g_ArmyPlacementValidatedWorldXQ12 = x;
       g_ArmyPlacementValidatedWorldYQ12 = y;
       return false;
@@ -200,7 +197,7 @@ bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
    deposit bit the definition asks for (FIELD_CELL_XENITE_SUPPORT << selector at +0xC0: 0 Xenite, 1 Tritium).
    Returns the common test's value with CF (rejected) as the result.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[14]
-   (0x0051FF38), called by ArmyPlacement_DispatchAssetAtFieldPoint.
+   (0x0051FF38), called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
 PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancy
               (ArmyPlacementDispatchArg0 placementMode,
@@ -310,7 +307,6 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
 
 {
   bool blocked;
-  ArmyCollisionResult blockingRuntime;
   ModelRuntimeNode *modelNode;
   
   modelNode = modelRuntime->rootModelNode;
@@ -320,11 +316,10 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
                      (uint8_t)modelRuntime->modelDefinition->footprintRadiusClass,
                      (uint8_t)modelRuntime->modelDefinition->terrainTraversalClass);
   if (!blocked) {
-    blockingRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
+    blocked = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                       ((modelNode->worldTransform).translation.y,
                        (modelNode->worldTransform).translation.x,
-                       (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
-    blocked = blockingRuntime.blocked;
+                       (RuntimeCollisionQueryView *)modelRuntime,worldRuntime) != NULL;
     if ((!blocked) &&
        (blocked = false,
        (g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0)) {
@@ -344,7 +339,7 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
    UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set, not be blocked on the field grid for the
    owner's faction. Returns value 0 with CF (rejected) as the result.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[1..3, 17..19]
-   (0x0051FF38), called by ArmyPlacement_DispatchAssetAtFieldPoint.
+   (0x0051FF38), called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
 PlacementCandidateResult ArmyPlacement_TestMobileUnitPoint
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
@@ -679,7 +674,7 @@ void ArmyPlacement_ReleaseClassStateReservation
    Placement test of the classes that can be placed anywhere: accepts at once (CF clear, value 0; the
    original preserves EAX and pops the nine arguments).
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[0, 5..9,
-   12, 21] (0x0051FF38), called by ArmyPlacement_DispatchAssetAtFieldPoint.
+   12, 21] (0x0051FF38), called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
 PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccess
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
@@ -742,11 +737,12 @@ bool ArmyCollision_TestPointAgainstRuntimeList
    Finds the first model that a moving unit would run into at the given point: every model in the world's
    owner list whose depth bins overlap the unit's own, except the unit itself, the model it is linked to
    (+0xF0) and models linked to it, and whose collision circle reaches the point within the unit's placement
-   radius (+0xDC of its definition). Returns that model runtime in EAX with CF set, or 0 with CF clear.
+   radius (+0xDC of its definition). Returns that model runtime (never NULL), or NULL when nothing is in
+   the way.
    Called directly by the ground-movement code (gameplay/army/movement.c) and by
    ArmyPlacement_TestGridRuntimeAndFieldBlocking.
 */
-ArmyCollisionResult ArmyCollision_FindBlockingRuntimeForCurrentUnit
+ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
           (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryView *currentRuntime,
           WorldRuntimeContext *worldRuntime)
 
@@ -755,8 +751,6 @@ ArmyCollisionResult ArmyCollision_FindBlockingRuntimeForCurrentUnit
   uint32_t clearanceRadiusQ12;
   ModelRuntimeSlot *candidateModelRuntime;
   bool hit;
-  ArmyCollisionResult notFound;
-  ArmyCollisionResult found;
   ModelRuntimeNode *candidateModelNode;
   
   currentModelNode = currentRuntime->modelNodeRuntime;
@@ -780,61 +774,61 @@ ArmyCollisionResult ArmyCollision_FindBlockingRuntimeForCurrentUnit
              (candidateModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime)))))) &&
          (hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                             (clearanceRadiusQ12,worldXQ12,worldYQ12,candidateModelRuntime), hit)) {
-        found.blocked = true;
-        found.blockingModelRuntime = (uint32_t)candidateModelRuntime;
-        return found;
+        /* never NULL here: the radius test and the link test above dereference it */
+        return candidateModelRuntime;
       }
     }
   }
-  notFound.blockingModelRuntime = 0;
-  notFound.blocked = false;
-  return notFound;
+  return NULL;
 }
 
 
 /* Address: 0x0051D450.
    Looks up the army asset and its model definition, samples the terrain height at the point with the
    definition's interpolation callback (index at +0x278), and hands the placement test to the handler of the
-   definition's class (+0x4C) in the placement dispatch table. Returns that handler's result, or the lookup
-   error with CF set.
+   definition's class (+0x4C) in the placement dispatch table. Returns true when that handler accepts the
+   point and stores the handler's value (a placement count for the counting modes 3 and 7) in
+   *outPlacementValue (may be NULL); returns false (*outPlacementValue untouched) when the handler rejects
+   the point or the asset or its model definition is missing. No caller used the lookup error code the
+   original returned on failure.
 */
-PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMode placementMode,
+bool ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
           uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
-          UiRootNode *inGameRoot)
+          UiRootNode *inGameRoot,uint32_t *outPlacementValue)
 
 {
   uint32_t assetClassIndex;
   ModelDefinitionRecordPrefix *modelDefinition;
   ArmyAssetRecordPrefix *armyAsset;
-  uint32_t lookupError;
   HeightSampleResult terrainHeight;
   PlacementDispatchResult dispatchResult;
 
-  lookupError = ArmyAssetRegistry_FindById(armyAssetId,&armyAsset);
-  if (lookupError != 0) {
-    dispatchResult.value = lookupError;
-    dispatchResult.failed = true;
-    return dispatchResult;
+  if (ArmyAssetRegistry_FindById(armyAssetId,&armyAsset) != 0) {
+    return false;
   }
   /* the model definition of the army asset's root node */
   modelDefinition = ModelDefinitionRegistry_FindById
                     (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]);
   if (modelDefinition == NULL) {
-    /* the failed lookup's error code becomes this function's error value */
-    dispatchResult.value = FATAL_ERROR_MODEL_DEFINITION_MISSING;
-    dispatchResult.failed = true;
-    return dispatchResult;
+    return false;
   }
   assetClassIndex = ((ModelDefinition *)modelDefinition)->runtimeClassId;
   /* placementContactKindIndex selects the height interpolation mode; the field grid is at
      +0x54 of the in-game runtime */
   terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[((ModelDefinition *)modelDefinition)->placementContactKindIndex])
                     (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
-  return (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex])
+  dispatchResult = (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex])
             (placementMode,placementClearancePaddingQ12,placementHeading,terrainHeight.heightQ12,
              worldYQ12,worldXQ12,modelDefinition,ownerFactionIndex,(WorldRuntimeContext *)inGameRoot);
+  if (dispatchResult.failed) {
+    return false;
+  }
+  if (outPlacementValue != NULL) {
+    *outPlacementValue = dispatchResult.value;
+  }
+  return true;
 }
 
 
@@ -1065,7 +1059,7 @@ bool ArmyPlacementCollision_TestCurrentRuntime
    ARMY_PLACEMENT_MODE_MEASURE_SUPPORT_DISTANCE the first such model accepts; with it the value returned in EAX
    is the free distance to the nearest one. CF (rejected) is the result.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[4, 10, 11,
-   15, 16, 20, 22, 23] (0x0051FF38), called by ArmyPlacement_DispatchAssetAtFieldPoint; also called directly
+   15, 16, 20, 22, 23] (0x0051FF38), called by ArmyPlacement_CanPlaceAssetAtFieldPoint; also called directly
    by ArmyPlacementCandidate_TestOffsetClearance and ArmyPlacementCandidate_TestFieldOccupancy.
 */
 

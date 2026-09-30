@@ -30,6 +30,7 @@ void __cdecl ProcessEntry(void)
   int screenHeight;
   int screenWidth;
   uint32_t networkResult;
+  uint32_t graphicsError;
   uint32_t bitsPerPixel;
   uint32_t adapterIndex;
   StatusResult statusResult;
@@ -87,8 +88,8 @@ void __cdecl ProcessEntry(void)
         /* TimerSystem_Init only installs the timer procs and always clears CF */
         TimerSystem_Init();
         fatalResult = FatalError_ExitIfFailed(fatalResult.valueOrError,false);
-        statusResult = Graphics_Init();
-        FatalError_ExitIfFailed(statusResult.valueOrError,statusResult.failed);
+        graphicsError = Graphics_Init();
+        FatalError_ExitIfFailed(graphicsError,graphicsError != 0);
         statusResult = DirectInputMouse_Init();
         FatalError_ExitIfFailed(statusResult.valueOrError,statusResult.failed);
         soundResult = DirectSound_Init();
@@ -617,24 +618,29 @@ StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 
 {
   StatusResult step;
-  
-  step = SpatialSoundPool_Init();
-  if (step.failed) {
-    return step;
+  uint32_t poolError;
+  uint32_t stepError;
+
+  if (!SpatialSoundPool_Init(&poolError)) {
+    return StatusValue_Fail(poolError);
   }
   step = TerrainByteClampLookup_Initialize();
   if (step.failed) {
     return step;
   }
-  step = GraphicsIntensityClampTable_Initialize();
-  if (step.failed) {
-    return step;
+  stepError = GraphicsIntensityClampTable_Initialize();
+  if (stepError != 0) {
+    return StatusValue_Fail(stepError);
   }
-  step = SoftwareRenderer_InstallDisplayModeHook();
-  if (step.failed) {
-    return step;
+  stepError = SoftwareRenderer_InstallDisplayModeHook();
+  if (stepError != 0) {
+    return StatusValue_Fail(stepError);
   }
-  return GraphicsPrimitiveQueue_AllocateGlobalPool(GAME_PRIMITIVE_QUEUE_PACKET_COUNT);
+  stepError = GraphicsPrimitiveQueue_AllocateGlobalPool(GAME_PRIMITIVE_QUEUE_PACKET_COUNT);
+  if (stepError != 0) {
+    return StatusValue_Fail(stepError);
+  }
+  return StatusValue_Ok((uint32_t)g_PrimitiveQueueStorage);
 }
 
 
@@ -662,7 +668,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   uint8_t *scratchCursor;
   TextResourceId resourceId;
   FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
-  StatusResult status;
+  uint32_t aiInitError;
   uint32_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
   SampleVoiceSetResult voiceSetResult;
   FileSystemOpenResult openResult;
@@ -929,9 +935,8 @@ bindDebugOverlayTexts:
                    EAX from the store above (PUSH EAX at 0x00573674) */
                 g_ModelLodDepthThresholdQ8 =
                      PersistentSettings_Read(g_ReverseStereoMask,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
-                status = AiRuntime_InitWorkspace();
-                if (status.failed) {
-                  return status.valueOrError;
+                if (!AiRuntime_InitWorkspace(&aiInitError)) {
+                  return aiInitError;
                 }
                 pcxModuleEntry = Package_LoadEntry((uint16_t *)u_engine_pcx_fnc_00573028);
                 if (pcxModuleEntry.failed) {

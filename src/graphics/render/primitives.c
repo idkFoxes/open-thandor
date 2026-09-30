@@ -281,10 +281,11 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
 
 /* Address: 0x004D0A10.
    Allocates the global primitive queue pool for packetCapacity packets (header, two nodes and one packet
-   each) and remembers the capacity for GraphicsPrimitiveQueue_ResetGlobal. CF set with the arena error
-   when the allocation fails; g_PrimitiveQueueStorage is then left unchanged.
+   each) and remembers the capacity for GraphicsPrimitiveQueue_ResetGlobal. Returns 0 on success (the pool is
+   then in g_PrimitiveQueueStorage), or the arena error when the allocation fails; g_PrimitiveQueueStorage is
+   then left unchanged.
 */
-StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
+uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
 
 {
   GraphicsPrimitiveQueue *allocatedQueueStorage;
@@ -295,24 +296,23 @@ StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCap
                                   GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES);
   allocatedQueueStorage = (GraphicsPrimitiveQueue *)allocResult.payloadOrError;
   if (allocResult.failed) {
-    return StatusValue_Fail(allocResult.payloadOrError);
+    return allocResult.payloadOrError;
   }
   g_PrimitiveQueueStorage = allocatedQueueStorage;
-  return StatusValue_Ok(allocResult.payloadOrError);
+  return 0;
 }
 
 
 /* Address: 0x004D0A40.
    Empties the global primitive queue (g_PrimitiveQueueStorage) for a new frame and lays out its pool:
    primaryNodes right after the 0x20-byte header, then radixScratchPool, then the packets, each part sized for
-   the capacity given to GraphicsPrimitiveQueue_AllocateGlobalPool. Never fails (CF clear); returns the queue.
+   the capacity given to GraphicsPrimitiveQueue_AllocateGlobalPool. Never fails; returns the queue.
    Called by the frontend 3D views (ui/frontend/runtime.c) and the offscreen model renderer.
 */
-PrimitiveQueueResult GraphicsPrimitiveQueue_ResetGlobal(void)
+GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal(void)
 
 {
   GraphicsPrimitiveQueue *globalQueue;
-  PrimitiveQueueResult resetResult;
   uint32_t poolCapacity;
   
   poolCapacity = g_PrimitiveQueuePoolCapacity;
@@ -323,9 +323,7 @@ PrimitiveQueueResult GraphicsPrimitiveQueue_ResetGlobal(void)
   globalQueue->radixScratchPool = globalQueue->primaryNodes + poolCapacity;
   globalQueue->packetPool =
        (GraphicsPrimitivePacket *)(globalQueue->primaryNodes + poolCapacity + poolCapacity);
-  resetResult.failed = false;
-  resetResult.queue = globalQueue;
-  return resetResult;
+  return globalQueue;
 }
 
 
@@ -353,54 +351,40 @@ uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
 
 /* Address: 0x004D0AA0.
    Starts walking a sorted primitive queue: returns the packet of the node at traversalCursor (set by
-   GraphicsPrimitiveQueue_RadixSortForRendering) and advances the cursor to the next node. CF set when the
-   queue is empty; GraphicsPrimitiveQueue_Next continues the walk.
+   GraphicsPrimitiveQueue_RadixSortForRendering) and advances the cursor to the next node. Returns NULL when
+   the queue is empty (queued packets are never NULL); GraphicsPrimitiveQueue_Next continues the walk.
 */
-PrimitivePacketResult GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
 
 {
-  PrimitivePacketResult successResult;
-  PrimitivePacketResult failureResult;
   GraphicsPrimitivePacket *currentTraversalPacket;
-  
+
   if (queue->count != 0) {
     currentTraversalPacket = queue->traversalCursor->packet;
     queue->traversalCursor = queue->traversalCursor->next;
-    successResult.noPacket = false;
-    successResult.packet = currentTraversalPacket;
-    return successResult;
+    return currentTraversalPacket;
   }
-  failureResult.noPacket = true;
-  /* Empty queue: the original leaves EAX untouched; every caller stops on CF without reading it. */
-  failureResult.packet = NULL;
-  return failureResult;
+  return NULL;
 }
 
 
 /* Address: 0x004D0AE0.
    Continues a walk begun by GraphicsPrimitiveQueue_Begin: returns the packet of the node at traversalCursor
-   and advances the cursor. CF set once the cursor reaches GRAPHICS_PRIMITIVE_QUEUE_END_NODE.
+   and advances the cursor. Returns NULL once the cursor reaches GRAPHICS_PRIMITIVE_QUEUE_END_NODE.
 */
-PrimitivePacketResult GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
 
 {
-  PrimitivePacketResult successResult;
-  PrimitivePacketResult failureResult;
   GraphicsPrimitiveQueueNode *currentTraversalNode;
   GraphicsPrimitivePacket *currentTraversalPacket;
-  
+
   currentTraversalNode = queue->traversalCursor;
   if (currentTraversalNode != GRAPHICS_PRIMITIVE_QUEUE_END_NODE) {
     currentTraversalPacket = currentTraversalNode->packet;
     queue->traversalCursor = currentTraversalNode->next;
-    successResult.noPacket = false;
-    successResult.packet = currentTraversalPacket;
-    return successResult;
+    return currentTraversalPacket;
   }
-  failureResult.noPacket = true;
-  /* EAX still holds the end-node marker */
-  failureResult.packet = (GraphicsPrimitivePacket *)GRAPHICS_PRIMITIVE_QUEUE_END_NODE;
-  return failureResult;
+  return NULL;
 }
 
 
@@ -563,15 +547,15 @@ void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoo
 
 
 /* Address: 0x004D0DA0.
-   Terrain counterpart of GraphicsPrimitiveQueue_AppendTexturedTriangleRegs for the second projected surface:
+   Terrain counterpart of GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle for the second projected surface:
    appends a packet from the terrain vertices' second screen/depth block (+0x2C..+0x3C), the per-vertex colours
    (masked with g_UiCommandModeGColorVariantLimit for vertices whose +0x4C is negative) and the texture
    coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2, texture index, palette entry). Blend mode 6; textured
    with g_TerrainPrimaryTextureSet when the index is in range, modulated by g_TerrainPrimaryPalette. Returns the
-   packet, CF set when the queue is full. Called by TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
-   (world/terrain/projection.c).
+   packet, or NULL when the queue is full (one slot is always left unused). Called by
+   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured (world/terrain/projection.c).
 */
-PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -590,9 +574,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriang
   GraphicsTextureSet *terrainTextureSet;
   PackedArgb32 paletteModulationColor;
   GraphicsPrimitivePacket *newPacket;
-  PrimitivePacketResult successResult;
-  PrimitivePacketResult failureResult;
-  
+
   primitiveQueue = renderContext->activePrimitiveQueue;
   packetIndexOrCoordinate = primitiveQueue->count;
   if (packetIndexOrCoordinate + 1 < primitiveQueue->capacity) {
@@ -660,14 +642,10 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriang
       newPacket->renderFlags = newPacket->renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
       newPacket->textureEntry = terrainTextureSet->entries + textureEntryIndex;
     }
-    successResult.noPacket = false;
-    successResult.packet = newPacket;
-    return successResult;
+    return newPacket;
   }
-  failureResult.noPacket = true;
-  /* Queue full: the original leaves EAX untouched; callers use the packet only with CF clear. */
-  failureResult.packet = NULL;
-  return failureResult;
+  /* Queue full (the original left EAX untouched and set CF; no caller reads the result) */
+  return NULL;
 }
 
 
@@ -676,10 +654,10 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriang
    depth (+0x0C..+0x1C) and its colour, the texture coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2,
    texture-set index, palette entry), the modulation colour from g_TerrainSecondaryPalette, the first texture
    of g_TerrainMaterialTextureSets[index] and the render flags g_UiCommandModeGColorVariantFlags. Returns the
-   packet, CF set when the queue is full. Called by TerrainProjectedQuad_QueueAsTwoTrianglesRegs and
+   packet, or NULL when the queue is full (one slot is always left unused). Called by
    TerrainProjectedTriangle_ClipInterpolateAndQueueTextured (world/terrain/projection.c).
 */
-PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -694,9 +672,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
   GraphicsTextureSet *materialTextureSet;
   PackedArgb32 paletteModulationColor;
   uint32_t *packetDwords;
-  PrimitivePacketResult successResult;
-  PrimitivePacketResult failureResult;
-  
+
   primitiveQueue = renderContext->activePrimitiveQueue;
   packetIndexOrAttribute = primitiveQueue->count;
   if (packetIndexOrAttribute + 1 < primitiveQueue->capacity) {
@@ -751,14 +727,9 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
     materialTextureSet = g_TerrainMaterialTextureSets[terrainPacketRecord[6]];
     packetDwords[26] = g_UiCommandModeGColorVariantFlags;
     packetDwords[25] = (uint32_t)materialTextureSet->entries;
-    successResult.noPacket = false;
-    successResult.packet = (GraphicsPrimitivePacket *)packetDwords;
-    return successResult;
+    return (GraphicsPrimitivePacket *)packetDwords;
   }
-  failureResult.noPacket = true;
-  /* Queue full: the original leaves EAX untouched; callers use the packet only with CF clear. */
-  failureResult.packet = NULL;
-  return failureResult;
+  return NULL;
 }
 
 

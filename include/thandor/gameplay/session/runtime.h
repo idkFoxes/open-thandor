@@ -66,8 +66,8 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00564F70 */
-SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
-          FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16);
+bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+          FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError);
 
 /* 0x00566290 */
 void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot);
@@ -86,10 +86,11 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
 void InGameRuntime_ProcessQueuedSessionNotificationTimer(void);
 
 /* 0x005641D0 */
-NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath);
+bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+                                        uint32_t *outError);
 
 /* 0x00564920 */
-LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath);
+bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError);
 
 /* 0x005651D0 */
 void InGameRuntime_ShutdownAndReleaseResources(void);

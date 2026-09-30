@@ -13,7 +13,7 @@
 
 /* Submodule: gameplay/army/placement. */
 
-/* placementMode bits of the placement asset-class dispatch (ArmyPlacement_DispatchAssetAtFieldPoint passes
+/* placementMode bits of the placement asset-class dispatch (ArmyPlacement_CanPlaceAssetAtFieldPoint passes
    the mode as the first argument of every g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.
    placementAssetClassDispatch handler; the player uses 0/1, the AI 0, 3, 4 and 7). */
 #define ARMY_PLACEMENT_MODE_SKIP_CLASS18_SUPPORT 0x1   /* runtime-class-18 neighbours do not count as the
@@ -119,16 +119,16 @@ bool ArmyCollision_TestPointAgainstRuntimeList
           (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529E60 */
-ArmyCollisionResult ArmyCollision_FindBlockingRuntimeForCurrentUnit
+ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
           (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryView *currentRuntime,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0051D450 */
-PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMode placementMode,
+bool ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
           uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
-          UiRootNode *inGameRoot);
+          UiRootNode *inGameRoot,uint32_t *outPlacementValue);
 
 /* 0x00529D70 */
 bool ArmyPlacementCollision_TestPointAgainstRuntimeList

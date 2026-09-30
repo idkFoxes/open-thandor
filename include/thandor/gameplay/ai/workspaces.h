@@ -105,7 +105,7 @@ AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053C6C0 */
-StatusResult AiRuntime_InitWorkspace(void);
+bool AiRuntime_InitWorkspace(uint32_t *outErrorCode);
 
 /* 0x00537F80 */
 void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell);

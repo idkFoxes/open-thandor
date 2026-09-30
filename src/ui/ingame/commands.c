@@ -502,7 +502,6 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   ArmyRuntimeSlot **createdArmySlots;
   WorldRuntimeContext *worldRuntime;
   bool placementRejected;
-  ArmyRuntimeCreateResult createResult;
 
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];
@@ -520,13 +519,12 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                        worldRuntime);
     if (!placementRejected) {
       /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
-      createResult = ArmyRuntime_CreateInstanceFromAsset
+      createdArmySlots = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
                         (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->factionIndex,
-                         ((ArmyAssetRecordPrefix *)pendingEntry)->registryId,worldRuntime);
-      createdArmySlots = (ArmyRuntimeSlot **)createResult.armyRuntimeOrError;
-      if (!createResult.failed) {
+                         ((ArmyAssetRecordPrefix *)pendingEntry)->registryId,worldRuntime,NULL);
+      if (createdArmySlots != NULL) {
         ownerFactionIndex = playerBlock->factionIndex;
         modelNodeRuntime = createdArmySlots[1];
         armySlot = *createdArmySlots;

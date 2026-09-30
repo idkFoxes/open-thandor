@@ -96,7 +96,7 @@ void RecentTextHistory_Insert(uint16_t *text)
   if (-1 < oldestIndex) {
     g_RecentTextEntrySerials[oldestIndex] = g_RecentTextSerialCounter;
     RichTextCommandStream_CopyExpanded
-              (sizeof g_RecentTextSlotStorage[0].text,g_RecentTextSlotStorage[oldestIndex].text,text);
+              (sizeof g_RecentTextSlotStorage[0].text,g_RecentTextSlotStorage[oldestIndex].text,text,NULL);
   }
 }
 

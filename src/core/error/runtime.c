@@ -161,19 +161,18 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
 
 /* Address: 0x0041BC50.
    Byte-for-byte twin of Text_CopyNarrowToUtf16: widens a NUL-terminated 8-bit string to UTF-16 into a
-   buffer of capacityBytes bytes and returns the bytes written including the terminator; a string that does
-   not fit is cut off and terminated, and CF is set with FATAL_ERROR_GENERAL_FAILURE. Nothing in this code
-   base calls it and no callback-table slot references it.
+   buffer of capacityBytes bytes and returns the bytes written including the terminator (always at least 2);
+   a string that does not fit is cut off and terminated, and 0 is returned (the original reported
+   FATAL_ERROR_GENERAL_FAILURE with CF set). Nothing in this code base calls it and no callback-table slot
+   references it.
 */
-StatusResult FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
+uint32_t FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
   uint8_t sourceByte;
   TextOutputCapacityBytes remainingCapacityBytes;
   bool capacityExhausted;
-  StatusResult successResult;
-  StatusResult overflowResult;
-  
+
   remainingCapacityBytes = capacityBytes;
   do {
     sourceByte = *source;
@@ -182,17 +181,13 @@ StatusResult FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,
     remainingCapacityBytes = remainingCapacityBytes - 2;
     if (capacityExhausted || remainingCapacityBytes == 0) {
       destination[-1] = 0;
-      overflowResult.failed = true;
-      overflowResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
-      return overflowResult;
+      return 0;
     }
     *destination = (uint16_t)sourceByte;
     source++;
     destination++;
   } while (sourceByte != 0);
-  successResult.valueOrError = capacityBytes - remainingCapacityBytes;
-  successResult.failed = false;
-  return successResult;
+  return capacityBytes - remainingCapacityBytes;
 }
 
 

@@ -163,7 +163,7 @@ void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleT
 void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x00578560 */
-StatusResult __cdecl Graphics_Init(void);
+uint32_t __cdecl Graphics_Init(void);
 
 /* 0x005794E0 */
 void GraphicsBackend_ShutdownGlideOnDeactivate(void);

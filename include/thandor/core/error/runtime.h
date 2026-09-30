@@ -167,7 +167,7 @@ FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrVal
 void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 
 /* 0x0041BC50 */
-StatusResult FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
+uint32_t FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x005758D0 */
 FatalErrorCheckResult FatalError_Exit(uint32_t errorOrValue,bool carryIn);

@@ -25,9 +25,9 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
 void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void);
 
 /* 0x005372C0 */
-AiCombatTargetSelectionResult
-AiCombatTarget_SelectBestCandidate
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *sourceArmyRuntime);
+ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *sourceArmyRuntime,
+          AiSourceClassCount *outSourceClassCount);
 
 /* 0x00537060 */
 AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore

@@ -399,7 +399,7 @@ DisplayModeResult SoftwareRenderer_SetDisplayMode
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
 
 /* 0x004FE7D0 */
-StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void);
+uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook(void);
 
 /* 0x00518CE0 */
 void SoftwareTexture_BilinearBlendScaleSubresources

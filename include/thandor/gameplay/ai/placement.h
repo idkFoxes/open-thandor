@@ -40,21 +40,22 @@ bool AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,Fi
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B570 */
-StatusResult AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
-          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+bool AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outBucketCount);
 
 /* 0x0053ACD0 */
 bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053AD50 */
-SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+bool AiCandidatePlanning_ComputeSpecialSiteWeight
+          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outWeight);
 
 /* 0x00539330 */
-AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
+bool AiPlacement_FindNearestPlaceableBaseSite
           (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
-          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,Q12 *outWorldYQ12,
+          Q12 *outWorldXQ12);
 
 /* 0x00539EF0 */
 bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,

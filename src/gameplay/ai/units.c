@@ -375,7 +375,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
    resource site of workspace 08 that is far enough from workspaces 03/02, scored by priority, distances to
    workspaces 02/01 and to the unit, x2 for ARM_0330, then x3 / (assigned structures of that asset + 3). A site
    whose bucket query (AiPlacement_QueryReachableSiteBucketCount) fails is skipped; one with 0 buckets, or 1..4
-   buckets and a CF-clear AiPlacement_ReserveSeparatedSpecialSiteChain, ends the update without a move.
+   buckets and a successful (false) AiPlacement_ReserveSeparatedSpecialSiteChain, ends the update without a move.
    Not arrived or flag set: sets the flag and resets the movement once within 0x1B03 of its fallback position
    on both axes.
 */
@@ -395,16 +395,17 @@ void AiUnitBehavior_UpdatePioneerVehicle
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
   bool chainFailed;
   FixedSinCosEdxEax8 headingOffset;
-  StatusResult bucketCount;
-  MovementStepResult movementUpdate;
+  uint32_t bucketCount;
+  Q12 steerWorldXQ12; /* unused here */
+  Q12 steerWorldYQ12; /* unused here */
   FieldGridCell *bestCell;
   ModelRuntimeNode *modelNode;
   
   siteScoreOrY = g_AiWorkspace04Count;
   sitesRemainingOrX = g_AiWorkspace00Count;
   if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) == 0) &&
-     (movementUpdate = ArmyRuntime_UpdateMovementAndWaypoints
-                         (worldRuntime,(ArmyMovementRuntime *)armyRuntime), movementUpdate.arrived)) {
+     (ArmyRuntime_UpdateMovementAndWaypoints
+        (worldRuntime,(ArmyMovementRuntime *)armyRuntime,&steerWorldXQ12,&steerWorldYQ12))) {
     if (sitesRemainingOrX == siteScoreOrY) {
       modelNode = armyRuntime->modelNodeRuntime;
       headingOffset = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,5 * FIELD_GRID_WORLD_COLUMN_STEP_X);
@@ -429,14 +430,12 @@ void AiUnitBehavior_UpdatePioneerVehicle
            (siteScoreOrY = AiHostileWorkspace_GetNearestVisibleHostileDistance
                               (workspaceRecord->worldY,workspaceRecord->worldX),
            (int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= siteScoreOrY)) {
-          bucketCount = AiPlacement_QueryReachableSiteBucketCount
-                             (terrainFeatureEntry->armyAssetId,workspaceRecord,factionIndex,
-                              worldRuntime);
-          if (!bucketCount.failed) {
-            if (bucketCount.valueOrError == 0) {
+          if (AiPlacement_QueryReachableSiteBucketCount
+                (terrainFeatureEntry->armyAssetId,workspaceRecord,factionIndex,worldRuntime,&bucketCount)) {
+            if (bucketCount == 0) {
               return;
             }
-            if ((bucketCount.valueOrError < 5) &&
+            if ((bucketCount < 5) &&
                (chainFailed = AiPlacement_ReserveSeparatedSpecialSiteChain
                                   (terrainFeatureEntry->armyAssetId,workspaceRecord,factionIndex,
                                    worldRuntime), !chainFailed)) {

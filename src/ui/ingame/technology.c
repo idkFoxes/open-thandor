@@ -541,7 +541,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
                    (int)g_TechnologyAsset->records[definition->researchTechnologyIds[slotIndex]].xeniteCostQ4 >> 4,
                    labelTemplate + 192);
         RichTextCommandStream_PatchPayloadBySelector(1,labelTemplate + 192,labelTemplate);
-        RichTextCommandStream_CopyExpanded(384,labelText,labelTemplate);
+        RichTextCommandStream_CopyExpanded(384,labelText,labelTemplate,NULL);
         UiNodeList_UnsuppressActionId(actionId,&inGameRoot->base);
       }
       areaIndex--;

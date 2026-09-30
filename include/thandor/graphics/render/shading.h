@@ -44,7 +44,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004BCF70 */
-StatusResult GraphicsIntensityClampTable_Initialize(void);
+uint32_t GraphicsIntensityClampTable_Initialize(void);
 
 /* 0x004CCA90 */
 MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
@@ -118,7 +118,7 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void);
 bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
 
 /* 0x004D1060 */
-ProjectedBlockReserveResult GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
+GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004D1150 */

@@ -217,7 +217,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       clearCursor++;
     }
     resolvedText = TextResource_Resolve(TEXT_ID_SAVE_GAME_NEW_ROW);
-    RichTextCommandStream_CopyExpanded(256,(uint16_t *)destination,resolvedText);
+    RichTextCommandStream_CopyExpanded(256,(uint16_t *)destination,resolvedText,NULL);
     /* The action source is the game menu's Save button (in-game template +0x2550). */
     inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
     saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);

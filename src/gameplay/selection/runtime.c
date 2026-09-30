@@ -43,7 +43,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
   SelectionPanelAdvanceEaxEdx8 bottomLeftAdvance;
   SelectionPanelAdvanceEaxEdx8 bottomRightAdvance;
   ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
-  RuntimeGroupIndexResult groupIndexResult;
+  uint32_t groupNumber;
   ArmySegmentMeter armyMetrics;
   
   inGameRoot = g_InGameRuntimeRoot;
@@ -66,15 +66,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
                               (UiNumericValue32)(activeTotalMetrics >> 32),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
-          if (groupIndexResult.notFound) {
+          groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
+          if (groupNumber == 0) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
+                                groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
@@ -120,15 +120,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
                                 activeMetricMaximum,(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
-          if (groupIndexResult.notFound) {
+          groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
+          if (groupNumber == 0) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
+                                groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
@@ -187,15 +187,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                                  (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,capacityOrMetric,
                                   (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
             }
-            groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
-            if (groupIndexResult.notFound) {
+            groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
+            if (groupNumber == 0) {
               topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                  (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
             }
             else {
               topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                  (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
-                                  groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
+                                  groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
             }
             bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
@@ -227,15 +227,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
                               (UiNumericValue32)(activeTotalMetrics >> 32),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
-          if (groupIndexResult.notFound) {
+          groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
+          if (groupNumber == 0) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
+                                groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
@@ -272,15 +272,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
                                 (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
-          if (groupIndexResult.notFound) {
+          groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
+          if (groupNumber == 0) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
+                                groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
@@ -316,15 +316,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
                                 (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
-          if (groupIndexResult.notFound) {
+          groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
+          if (groupNumber == 0) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
+                                groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
@@ -364,15 +364,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
                             (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
       }
-      groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
-      if (groupIndexResult.notFound) {
+      groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
+      if (groupNumber == 0) {
         topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
       }
       else {
         topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
-                            groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
+                            groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
       }
       bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
@@ -404,15 +404,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
                             (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
       }
-      groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
-      if (groupIndexResult.notFound) {
+      groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
+      if (groupNumber == 0) {
         topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
       }
       else {
         topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
-                            groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
+                            groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
       }
       bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
@@ -777,9 +777,10 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
    Loads the selection and information panel graphics (gfx\panel\select.gfx, info.gfx) and their 0x1A4-byte .dat
    tables, empties the selection of all eight player blocks and stores the caller's entity-slot table. Then it
    patches sequence descriptors inside the loaded textures (swaps two select.gfx entries, rewrites frames of
-   info.gfx) - the exact meaning of these patches is not known. On failure returns the failing loader's error.
+   info.gfx) - the exact meaning of these patches is not known. Returns true on success; on failure returns false
+   with the failing loader's error in *outError.
 */
-StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
+bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError)
 
 {
   uint8_t *patchBytes;
@@ -790,8 +791,6 @@ StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySl
   SelectionPlayerRuntimeBlock *playerBlockCursor;
   TextureSourceLoadResult textureLoad;
   PackageLoadResult packageLoad;
-  StatusResult successStatus;
-  StatusResult failureStatus;
   AssetRelativeOffset swappedSelectionDataOffset;
   uint32_t referencePayloadValue;
   
@@ -1042,16 +1041,13 @@ StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySl
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          successStatus.valueOrError = 0xffff0000;
-          successStatus.failed = false;
-          return successStatus;
+          return true;
         }
       }
     }
   }
-  failureStatus.failed = true;
-  failureStatus.valueOrError = (uint32_t)loadedResource;
-  return failureStatus;
+  *outError = (uint32_t)loadedResource;
+  return false;
 }
 
 
@@ -1111,10 +1107,10 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
 
 
 /* Address: 0x0052FB70.
-   Returns the average world position (model node translation) of the local selection's entities; noPosition
-   (CF) when the selection is empty, with all coordinates 0.
+   Writes the average world position (model node translation) of the local selection's entities to
+   *outPosition and returns true; returns false when the selection is empty (*outPosition is then all 0).
 */
-WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs(void)
+bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition)
 
 {
   ModelRuntimeNode *slotModelNode;
@@ -1122,7 +1118,6 @@ WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPosition
   int worldYAggregateQ12;
   int worldZAggregateQ12;
   GameEntityRuntime **selectionEntitySlotCursor;
-  WorldPositionResult averagePosition;
   int selectedEntityCount;
   int selectionSlotsRemaining;
 
@@ -1148,11 +1143,10 @@ WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPosition
     worldYAggregateQ12 = worldYAggregateQ12 / selectedEntityCount;
     worldZAggregateQ12 = worldZAggregateQ12 / selectedEntityCount;
   }
-  averagePosition.worldYQ12 = worldYAggregateQ12;
-  averagePosition.worldXQ12 = worldXAggregateQ12;
-  averagePosition.noPosition = selectedEntityCount == 0;
-  averagePosition.worldZQ12 = worldZAggregateQ12;
-  return averagePosition;
+  outPosition->xQ12 = worldXAggregateQ12;
+  outPosition->yQ12 = worldYAggregateQ12;
+  outPosition->zQ12 = worldZAggregateQ12;
+  return selectedEntityCount != 0;
 }
 
 

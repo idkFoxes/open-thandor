@@ -687,7 +687,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
         ArmyRuntime_CreateInstanceFromAsset
                   (0,orientationAngle,translationY,translationX,0,
                    ((ModelDefinition *)ownerDefinition)->destroyedReplacementArmyAssetId,
-                   worldRuntime);
+                   worldRuntime,NULL);
       }
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
     }

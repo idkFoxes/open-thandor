@@ -87,7 +87,6 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   uint64_t tintLanesOrShadedC;
   GraphicsProjectedPointPair pointPair0;
   HeightSampleResult surfaceHeight;
-  ProjectedBlockReserveResult reservedBlocks;
   TerrainRaycastResult terrainRay;
   FixedDirection direction;
   
@@ -1925,10 +1924,9 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          reservedBlocks = GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
-                             (renderContext);
-          projectedBlocks = reservedBlocks.firstBlock;
-          if (!reservedBlocks.poolFull) {
+          projectedBlocks = GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
+                              (renderContext);
+          if (projectedBlocks != NULL) {
             FixedTransform_ApplyPoint
                       ((GraphicsFixedVec3 *)(projectedBlocks + GRAPHICS_PROJECTED_PAIR(6,5)),
                        &g_GeneratedTextureScratchRuntime.samples[0].worldPoint,
@@ -2436,9 +2434,9 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
    Builds the 64 KiB intensity clamp table used by the model tint fade
    (ModelNodeRuntime_UpdateStateTintRecursive): entry (previous << 8) | target holds target limited to previous
    +/- GRAPHICS_INTENSITY_CLAMP_MAX_STEP. The table is aligned to 64 KiB so the original can index it with a
-   16-bit register pair. CF set with the arena error when the allocation fails.
+   16-bit register pair. Returns 0, or the (non-zero) arena error code when the allocation fails.
 */
-StatusResult GraphicsIntensityClampTable_Initialize(void)
+uint32_t GraphicsIntensityClampTable_Initialize(void)
 
 {
   int rowsRemaining;
@@ -2480,9 +2478,9 @@ StatusResult GraphicsIntensityClampTable_Initialize(void)
       previousIntensity++;
       rowsRemaining--;
     } while (rowsRemaining != 0);
-    return StatusValue_Ok(0);
+    return 0;
   }
-  return StatusValue_Fail(allocResult.payloadOrError);
+  return allocResult.payloadOrError;
 }
 
 
@@ -3552,46 +3550,44 @@ bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode 
    Reserves the 14 consecutive 0x80-byte primitive blocks of one shadow patch from the render context's
    projected point pool (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy): records each block's
    address in the pool's block table and presets the first block's 0x20-byte header at +0x60 (0, flags
-   0x11000 = textured, translucent); the three 0x20-byte vertices of each triangle come first. Pool full:
-   poolFull (CF) set.
+   0x11000 = textured, translucent); the three 0x20-byte vertices of each triangle come first. Returns the
+   first block, or NULL when the pool is full (a reserved block is never NULL: it lies in the pool storage).
 */
-ProjectedBlockReserveResult GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
+GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext)
 
 {
   uint32_t *blockPool;
   uint32_t usedBlockCount;
-  ProjectedBlockReserveResult successResult;
-  ProjectedBlockReserveResult newCountOrFailure;
-  
+  uint32_t newBlockCount;
+  GraphicsProjectedPointPair *firstBlock;
+
   blockPool = renderContext->projectedPointBlockPool;
   usedBlockCount = blockPool[1];
-  newCountOrFailure.firstBlock = (void *)(usedBlockCount + 14);
-  if (newCountOrFailure.firstBlock < (void *)*blockPool) {
-    blockPool[1] = (uint32_t)newCountOrFailure.firstBlock;
-    successResult.firstBlock = (void *)(usedBlockCount * GRAPHICS_PROJECTED_BLOCK_BYTES + blockPool[2]);
-    blockPool[usedBlockCount * 4 + 9] = (uint32_t)successResult.firstBlock;
-    blockPool[usedBlockCount * 4 + 13] = (uint32_t)((uint8_t *)successResult.firstBlock + 1 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 17] = (uint32_t)((uint8_t *)successResult.firstBlock + 2 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 21] = (uint32_t)((uint8_t *)successResult.firstBlock + 3 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 25] = (uint32_t)((uint8_t *)successResult.firstBlock + 4 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 29] = (uint32_t)((uint8_t *)successResult.firstBlock + 5 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 33] = (uint32_t)((uint8_t *)successResult.firstBlock + 6 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 37] = (uint32_t)((uint8_t *)successResult.firstBlock + 7 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 41] = (uint32_t)((uint8_t *)successResult.firstBlock + 8 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 45] = (uint32_t)((uint8_t *)successResult.firstBlock + 9 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 49] = (uint32_t)((uint8_t *)successResult.firstBlock + 10 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 53] = (uint32_t)((uint8_t *)successResult.firstBlock + 11 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 57] = (uint32_t)((uint8_t *)successResult.firstBlock + 12 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    blockPool[usedBlockCount * 4 + 61] = (uint32_t)((uint8_t *)successResult.firstBlock + 13 * GRAPHICS_PROJECTED_BLOCK_BYTES);
-    ((GraphicsProjectedPointPair *)successResult.firstBlock)[GRAPHICS_PROJECTED_PAIR(0,12)].projectedX = 0;
-    ((GraphicsProjectedPointPair *)successResult.firstBlock)[GRAPHICS_PROJECTED_PAIR(0,13)].projectedX =
+  newBlockCount = usedBlockCount + 14;
+  if (newBlockCount < *blockPool) {
+    blockPool[1] = newBlockCount;
+    firstBlock = (GraphicsProjectedPointPair *)(usedBlockCount * GRAPHICS_PROJECTED_BLOCK_BYTES + blockPool[2]);
+    blockPool[usedBlockCount * 4 + 9] = (uint32_t)firstBlock;
+    blockPool[usedBlockCount * 4 + 13] = (uint32_t)((uint8_t *)firstBlock + 1 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 17] = (uint32_t)((uint8_t *)firstBlock + 2 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 21] = (uint32_t)((uint8_t *)firstBlock + 3 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 25] = (uint32_t)((uint8_t *)firstBlock + 4 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 29] = (uint32_t)((uint8_t *)firstBlock + 5 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 33] = (uint32_t)((uint8_t *)firstBlock + 6 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 37] = (uint32_t)((uint8_t *)firstBlock + 7 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 41] = (uint32_t)((uint8_t *)firstBlock + 8 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 45] = (uint32_t)((uint8_t *)firstBlock + 9 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 49] = (uint32_t)((uint8_t *)firstBlock + 10 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 53] = (uint32_t)((uint8_t *)firstBlock + 11 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 57] = (uint32_t)((uint8_t *)firstBlock + 12 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    blockPool[usedBlockCount * 4 + 61] = (uint32_t)((uint8_t *)firstBlock + 13 * GRAPHICS_PROJECTED_BLOCK_BYTES);
+    firstBlock[GRAPHICS_PROJECTED_PAIR(0,12)].projectedX = 0;
+    firstBlock[GRAPHICS_PROJECTED_PAIR(0,13)].projectedX =
          GRAPHICS_PRIMITIVE_FLAG_TEXTURED | GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT;
-    successResult.poolFull = false;
-    return successResult;
+    return firstBlock;
   }
-  newCountOrFailure.poolFull = true;
-  return newCountOrFailure;
+  return NULL;
 }
 
 

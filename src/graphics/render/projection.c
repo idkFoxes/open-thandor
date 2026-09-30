@@ -62,7 +62,6 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
   int32_t *depthCursor;
   ArenaAllocResult textureAllocation;
   ArenaAllocResult depthAllocation;
-  PrimitiveQueueResult queueResult;
   OffscreenRenderResult failureResult;
   
   /* 0x200-byte asset header, one 0x20-byte subresource entry, then the pixels */
@@ -133,21 +132,18 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
                  sceneExtents->verticalExtent,sceneExtents->horizontalExtent,0,0,0,0);
       Graphics_RebuildFrustumPlanes();
       g_GraphicsShadingCompactRecordCount = 0;
-      queueResult = GraphicsPrimitiveQueue_ResetGlobal();
-      queue = queueResult.queue;
-      if (!queueResult.failed) {
-        Graphics_SetActivePrimitiveQueue(queue);
-        for (; modelCount != 0; modelCount--) {
-          if (*modelNodes != NULL) {
-            ModelRuntime_CullAndRenderHierarchyRecursive(*modelNodes);
-          }
-          modelNodes++;
+      queue = GraphicsPrimitiveQueue_ResetGlobal();
+      Graphics_SetActivePrimitiveQueue(queue);
+      for (; modelCount != 0; modelCount--) {
+        if (*modelNodes != NULL) {
+          ModelRuntime_CullAndRenderHierarchyRecursive(*modelNodes);
         }
-        GraphicsPrimitiveQueue_RadixSortForRendering(GRAPHICS_STATE_DISABLED,queue);
-        /* the pixels start at +0x220 (int32 index 0x88); rows are outputWidth pixels long */
-        SoftwareRenderer_DrawQueueAuxiliary(outputHeight,outputWidth,
-                                        assetOrDepthBuffer + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET / 4,queue);
+        modelNodes++;
       }
+      GraphicsPrimitiveQueue_RadixSortForRendering(GRAPHICS_STATE_DISABLED,queue);
+      /* the pixels start at +0x220 (int32 index 0x88); rows are outputWidth pixels long */
+      SoftwareRenderer_DrawQueueAuxiliary(outputHeight,outputWidth,
+                                      assetOrDepthBuffer + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET / 4,queue);
       /* restore the caller's depth buffer and epoch, free the temporary one */
       assetOrDepthBuffer = g_SoftwareDepthBuffer;
       LOCK();

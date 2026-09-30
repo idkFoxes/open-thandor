@@ -638,10 +638,10 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
 
 /* Address: 0x00514900.
    Finds which of its faction's eight runtime groups (32 member slots each) holds runtimeEntry, for the group
-   selection commands in gameplay/selection/runtime. Returns the one-based group number with CF clear, or
-   runtimeEntry itself with CF set when it is in no group.
+   selection commands in gameplay/selection/runtime. Returns the one-based group number (1..8), or 0 when it is
+   in no group.
 */
-RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix *runtimeEntry)
+uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *runtimeEntry)
 
 {
   int slotsRemaining;
@@ -649,8 +649,6 @@ RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFac
   ArmyRuntimeSlot **slotCursor;
   ArmyRuntimeSlot **nextSlotCursor;
   bool found;
-  RuntimeGroupIndexResult notFoundResult;
-  RuntimeGroupIndexResult foundResult;
 
   groupNumber = 0;
   nextSlotCursor = g_GameFactionRuntimeImage.records[runtimeEntry->factionIndex].runtimeGroupMembers8x32;
@@ -668,14 +666,10 @@ RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFac
       slotCursor = nextSlotCursor;
     } while (!found);
     if (found) {
-      foundResult.notFound = false;
-      foundResult.runtimeGroupIndex = groupNumber;
-      return foundResult;
+      return groupNumber;
     }
   } while (groupNumber <= 7);
-  notFoundResult.notFound = true;
-  notFoundResult.runtimeGroupIndex = (uint32_t)runtimeEntry;
-  return notFoundResult;
+  return 0;
 }
 
 
@@ -762,31 +756,29 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
    Where an entity's current command should take it, for the movement code in gameplay/army/movement: target flag
    1 aims at a target entity (its model position, raised by definition dword +0x50; class 0x15 aims at its first
    child node), flag 2 at a fixed world position. A target entity that the owner's faction can no longer see is
-   dropped (entity and flags cleared). The position comes back in EAX/ECX/EDX, CF set when there is none.
+   dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or returns false
+   when there is none.
 */
-WorldPositionResult
-GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
+bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
 
 {
   GameEntityRuntime *commandTargetEntity;
   uint32_t visibilityMask;
   int *targetDefinitionRecord;
   ModelRuntimeNode *targetModelNode;
-  WorldPositionResult position;
 
-  /* On failure (CF set) the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values or the
-     partial visibility mask / owner shift / definition pointer). Both callers ignore the coordinates when CF is
-     set, so the failure result carries zeros. */
-  position.worldXQ12 = 0;
-  position.worldYQ12 = 0;
-  position.worldZQ12 = 0;
-  position.noPosition = true;
+  /* Original quirk: on failure the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values
+     or the partial visibility mask / owner shift / definition pointer), and one caller still copies the Z
+     register into a local. The port writes zeros instead, so *outPosition is always written. */
+  outPosition->xQ12 = 0;
+  outPosition->yQ12 = 0;
+  outPosition->zQ12 = 0;
   if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
     if (((targetState->common).commandTarget.targetFlags & 2) != 0) {
-      position.worldXQ12 = (targetState->common).commandTarget.targetWorldXQ12;
-      position.worldYQ12 = (targetState->common).commandTarget.targetWorldYQ12;
-      position.worldZQ12 = (targetState->common).commandTarget.targetWorldZQ12;
-      position.noPosition = false;
+      outPosition->xQ12 = (targetState->common).commandTarget.targetWorldXQ12;
+      outPosition->yQ12 = (targetState->common).commandTarget.targetWorldYQ12;
+      outPosition->zQ12 = (targetState->common).commandTarget.targetWorldZQ12;
+      return true;
     }
   }
   else {
@@ -801,19 +793,18 @@ GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
             MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
           targetModelNode = targetModelNode->childNodes[0];
         }
-        position.worldXQ12 = (targetModelNode->worldTransform).translation.x;
-        position.worldYQ12 = (targetModelNode->worldTransform).translation.y;
-        position.worldZQ12 =
+        outPosition->xQ12 = (targetModelNode->worldTransform).translation.x;
+        outPosition->yQ12 = (targetModelNode->worldTransform).translation.y;
+        outPosition->zQ12 =
              (targetModelNode->worldTransform).translation.z +
              ((ModelRuntimeSlot *)targetDefinitionRecord)->definitionOrSavedId.runtimeDefinition->aimHeightOffsetQ12;
-        position.noPosition = false;
-        return position;
+        return true;
       }
       (targetState->common).commandTarget.targetEntity = NULL;
       (targetState->common).commandTarget.targetFlags = 0;
     }
   }
-  return position;
+  return false;
 }
 
 
@@ -1258,15 +1249,15 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
 
 {
   SelectionPlayerRuntimeBlock *playerBlock;
-  ArmyRuntimeCreateResult createdRuntime;
+  ArmyRuntimeSlot *createdRuntime;
 
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   createdRuntime = ArmyRuntime_CreateInstanceFromAsset
                     (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,worldXQ12,worldYQ12,playerBlock->placementFactionIndex,
                      armyAssetId,
-                     &g_InGameRuntimeRoot->worldRuntime);
-  if (!createdRuntime.failed) {
-    playerBlock->placedArmyToken = createdRuntime.armyRuntimeOrError -
+                     &g_InGameRuntimeRoot->worldRuntime,NULL);
+  if (createdRuntime != NULL) {
+    playerBlock->placedArmyToken = (uint32_t)createdRuntime -
          (int)g_ArmyRuntimeRebaseBaseMinusOne;
     return;
   }
@@ -1358,7 +1349,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
       ArmyRuntime_CreateInstanceFromAsset
                 (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,primaryRecordCursor[4],
                  primaryRecordCursor[3],primaryRecordCursor[2],primaryRecordCursor[1],*primaryRecordCursor,
-                      worldRuntime);
+                      worldRuntime,NULL);
       primaryRecordCursor = primaryRecordCursor + 8; /* 0x20-byte records */
       recordsRemaining--;
     } while (recordsRemaining != 0);

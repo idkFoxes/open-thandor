@@ -61,7 +61,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00514900 */
-RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix *runtimeEntry);
+uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x0051B800 */
 bool FactionRuntime_IsArmyAssetNotPending
@@ -71,8 +71,7 @@ bool FactionRuntime_IsArmyAssetNotPending
 void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime);
 
 /* 0x0051C680 */
-WorldPositionResult
-GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState);
+bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition);
 
 /* 0x0052A4D0 */
 void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState

@@ -57,7 +57,7 @@ GraphicsTextureSourceAsset * Glide3_TextureSet_DestroyBackend(GraphicsTextureSet
 void Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer);
 
 /* 0x0057EE90 */
-StatusResult Glide3_InitAndEnumerate(void);
+uint32_t Glide3_InitAndEnumerate(void);
 
 /* 0x0057F0D0 */
 void GlideBackend_BeginSceneNoOp(void);

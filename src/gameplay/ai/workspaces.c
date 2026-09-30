@@ -117,7 +117,6 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
   AiTargetWorkspaceEntry *targetEntry;
   bool testResult;
-  AiTechnologyPlanningLoopRegisterContinuityResult registerContinuity;
   ModelRuntimeSlot *slotModelRuntime;
   ModelRuntimeNode *modelNode;
   AiRuntimeWorkspaceEntry *runtimeEntryCursor;
@@ -506,12 +505,9 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
                            ((PckTechnologyIdCatalog)slotDefinition->researchTechnologyIds[spacingOrPanelIndex],
                                  scratchWidthOrFactionOffset);
         if (!testResult) {
-          registerContinuity = AiTechnologyPlanning_AddCandidateRecord
-                             (spacingOrPanelIndex,countOrMask,scratchWidthOrFactionOffset,slotModelRuntime,
-                              (PckTechnologyIdCatalog)slotDefinition->researchTechnologyIds[spacingOrPanelIndex]);
-          scratchWidthOrFactionOffset = registerContinuity.preservedEdxFactionRecordOffset;
-          countOrMask = registerContinuity.preservedEcxSourceArmyEntriesRemaining;
-          spacingOrPanelIndex = registerContinuity.preservedEaxTechnologyPanelIndex;
+          AiTechnologyPlanning_AddCandidateRecord
+                    (slotModelRuntime,
+                     (PckTechnologyIdCatalog)slotDefinition->researchTechnologyIds[spacingOrPanelIndex]);
         }
         spacingOrPanelIndex--;
       } while (spacingOrPanelIndex != 0);
@@ -1022,7 +1018,6 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
   int recordsRemaining;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
   bool placementRejected;
-  ArmyRuntimeCreateResult createResult;
   
   recordsRemaining = g_AiWorkspace08Count;
   terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
@@ -1032,12 +1027,11 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
       placementRejected = AiPlacement_TestWorkspaceRecordAtPoint
                         (armyAssetId,workspaceRecord,factionIndex,(UiRootNode *)worldRuntime);
       if (!placementRejected) {
-        createResult = ArmyRuntime_CreateInstanceFromAsset
+        createdSlotPair = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
                           (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                            workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
-                           worldRuntime);
-        createdSlotPair = (ArmyRuntimeSlot **)createResult.armyRuntimeOrError;
-        if (createResult.failed) {
+                           worldRuntime,NULL);
+        if (createdSlotPair == NULL) {
           return;
         }
         /* the create result points at the pair {army slot, model node}; the node is typed as a slot here, so
@@ -1085,18 +1079,17 @@ AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
 
 /* Address: 0x0053C6C0.
    Allocates the fifteen AI workspace buffers 00-14 from the arena (sizes in their names) and loads the AI
-   parameters from engine\ki.dat into g_AiKnowledgeData. Stops at the first failure with CF set and that
-   failure's error code; buffers allocated before it are not freed.
+   parameters from engine\ki.dat into g_AiKnowledgeData. Returns true on success; stops at the first failure,
+   returning false with that failure's error code in *outErrorCode (buffers allocated before it are not freed).
 */
-StatusResult AiRuntime_InitWorkspace(void)
+bool AiRuntime_InitWorkspace(uint32_t *outErrorCode)
 
 {
   uint8_t *workspaceAllocation;
   AiTechnologyPlanningCandidate *technologyCandidateWorkspaceAllocation;
   AiKnowledgeDataImage *knowledgeDataImage;
   PackageLoadResult loadResult;
-  StatusResult initStatus;
-  
+
   loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE00_CAPACITY * sizeof(AiStructureWorkspaceEntry)));
   workspaceAllocation = loadResult.bufferOrError;
   if (!loadResult.failed) {
@@ -1148,11 +1141,8 @@ StatusResult AiRuntime_InitWorkspace(void)
                                 loadResult = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4);
                                 knowledgeDataImage = loadResult.bufferOrError;
                                 if (!loadResult.failed) {
-                                  /* success: EAX (the image pointer) stays the result value, CF clear */
-                                  loadResult = THANDOR_BITCAST(uint64_t, PackageLoadResult,
-                                       (THANDOR_BITCAST(PackageLoadResult, uint64_t,
-                                                         loadResult) & UINT32_MAX));
                                   g_AiKnowledgeData = knowledgeDataImage;
+                                  return true;
                                 }
                               }
                             }
@@ -1169,9 +1159,8 @@ StatusResult AiRuntime_InitWorkspace(void)
       }
     }
   }
-  initStatus.valueOrError = (uint32_t)loadResult.bufferOrError;
-  initStatus.failed = loadResult.failed;
-  return initStatus;
+  *outErrorCode = (uint32_t)loadResult.bufferOrError;
+  return false;
 }
 
 

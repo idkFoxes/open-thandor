@@ -562,7 +562,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
   ArmyAssetRecord *registeredRecord;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyPreviewTextureResult renderResult;
+  GraphicsTextureResource *previewTexture;
   FactionRuntimeIndex factionIndex;
 
   registryCursor = g_ArmyAssetRecordRegistry;
@@ -580,15 +580,15 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
     if (ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID - 1 < armyAssetRegistryId) {
       factionIndex = 0;
     }
-    renderResult = ArmyRuntime_RenderPreviewTexture
+    previewTexture = ArmyRuntime_RenderPreviewTexture
                       (INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
                        INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
                        factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime);
-    if (renderResult.failed) {
+    if (previewTexture == NULL) {
       return 0;
     }
-    registeredRecord->previewTexture = (uint32_t)renderResult.previewTexture;
-    return (uint32_t)renderResult.previewTexture;
+    registeredRecord->previewTexture = (uint32_t)previewTexture;
+    return (uint32_t)previewTexture;
   }
   return registeredRecord->previewTexture;
 }

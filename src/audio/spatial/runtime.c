@@ -12,30 +12,30 @@
 
 /* Address: 0x0050B5D0.
    Allocates the pool of SPATIAL_SOUND_SLOT_COUNT 0x10-byte spatial sound slots (0x1000 bytes) and zeroes it,
-   so every slot starts without a voice set. CF set with the allocator's error when the arena is exhausted.
+   so every slot starts without a voice set. Returns true on success; false with the allocator's error in
+   *outError when the arena is exhausted.
 */
-StatusResult SpatialSoundPool_Init(void)
+bool SpatialSoundPool_Init(uint32_t *outError)
 
 {
   SpatialSoundSlot *clearCursor;
   int dwordsRemaining;
-  bool allocationFailed;
   ArenaAllocResult allocResult;
 
   allocResult = g_MemoryApi.alloc(SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot));
-  allocationFailed = allocResult.failed;
-  clearCursor = (SpatialSoundSlot *)allocResult.payloadOrError;
-  if (!allocationFailed) {
-    g_SpatialSoundSlots = clearCursor;
-    /* REP STOSD over the whole pool: the cursor advances one dword (to the next field) per step */
-    for (dwordsRemaining = SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot) / 4; dwordsRemaining != 0;
-         dwordsRemaining--) {
-      clearCursor->voiceSet = NULL;
-      clearCursor = (SpatialSoundSlot *)&clearCursor->activeVoice;
-    }
-    allocationFailed = false;
+  if (allocResult.failed) {
+    *outError = allocResult.payloadOrError;
+    return false;
   }
-  return allocationFailed ? StatusValue_Fail(allocResult.payloadOrError) : StatusValue_Ok(0);
+  clearCursor = (SpatialSoundSlot *)allocResult.payloadOrError;
+  g_SpatialSoundSlots = clearCursor;
+  /* REP STOSD over the whole pool: the cursor advances one dword (to the next field) per step */
+  for (dwordsRemaining = SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot) / 4; dwordsRemaining != 0;
+       dwordsRemaining--) {
+    clearCursor->voiceSet = NULL;
+    clearCursor = (SpatialSoundSlot *)&clearCursor->activeVoice;
+  }
+  return true;
 }
 
 
@@ -223,90 +223,80 @@ void SpatialSound_UpdateDesiredPositionedGains
 /* Address: 0x0050B8C0.
    Creates a voice set for the 'sam' asset and gives it the first free spatial-sound slot, silent and not
    playing, so that SpatialSound_UpdateDesiredPositionedGains can drive it as a looping positioned sound.
-   Returns the slot with CF clear; CF set with the voice-set error, or FATAL_ERROR_GENERAL_FAILURE when the
-   pool is full (the new voice set is released again).
+   Returns the slot (never NULL, it lies in the pool); NULL when the voice set cannot be created or the pool
+   is full (the new voice set is released again). The original's error value (voice-set error or
+   FATAL_ERROR_GENERAL_FAILURE) was never read by a caller.
 */
-SpatialSoundSlotResult SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
+SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
 
 {
-  SpatialSoundSlot *voiceSetOrError;
+  DirectSoundVoiceSet *voiceSet;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
   SampleVoiceSetResult createResult;
-  SpatialSoundSlotResult failureResult;
-  SpatialSoundSlotResult successResult;
-  
+
   createResult = g_SoundCreateSampleVoiceSet(sampleAsset);
-  voiceSetOrError = (SpatialSoundSlot *)createResult.voiceSet;
-  if (!createResult.failed) {
-    slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
-    slotCursor = g_SpatialSoundSlots;
-    do {
-      if (slotCursor->voiceSet == NULL) {
-        slotCursor->voiceSet = (DirectSoundVoiceSet *)voiceSetOrError;
-        slotCursor->desiredLeftGainQ15 = 0;
-        slotCursor->desiredRightGainQ15 = 0;
-        slotCursor->activeVoice = NULL;
-        successResult.failed = false;
-        successResult.soundSlot = slotCursor;
-        return successResult;
-      }
-      slotCursor++;
-      slotsRemaining--;
-    } while (slotsRemaining != 0);
-    g_SoundReleaseSampleVoiceSet((DirectSoundVoiceSet *)voiceSetOrError);
-    voiceSetOrError = (SpatialSoundSlot *)FATAL_ERROR_GENERAL_FAILURE;
+  if (createResult.failed) {
+    return NULL;
   }
-  failureResult.failed = true;
-  failureResult.soundSlot = voiceSetOrError;
-  return failureResult;
+  voiceSet = (DirectSoundVoiceSet *)createResult.voiceSet;
+  slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
+  slotCursor = g_SpatialSoundSlots;
+  do {
+    if (slotCursor->voiceSet == NULL) {
+      slotCursor->voiceSet = voiceSet;
+      slotCursor->desiredLeftGainQ15 = 0;
+      slotCursor->desiredRightGainQ15 = 0;
+      slotCursor->activeVoice = NULL;
+      return slotCursor;
+    }
+    slotCursor++;
+    slotsRemaining--;
+  } while (slotsRemaining != 0);
+  g_SoundReleaseSampleVoiceSet(voiceSet);
+  return NULL;
 }
 
 
 /* Address: 0x0050B940.
    PCM counterpart of SpatialSoundSlot_CreateFromSampleAsset: creates a voice set for raw PCM data and gives
-   it the first free spatial-sound slot, silent and not playing. CF clear with the slot; CF set with the
-   voice-set error, or with FATAL_ERROR_GENERAL_FAILURE when all slots are taken (the voice set is released
-   again). Nothing in this code base calls it and no callback-table slot references it.
+   it the first free spatial-sound slot, silent and not playing. Returns the slot (never NULL); NULL when the
+   voice set cannot be created or all slots are taken (the voice set is released again). The original's
+   error value (voice-set error or FATAL_ERROR_GENERAL_FAILURE) is dropped like in the sample-asset variant.
+   Nothing in this code base calls it and no callback-table slot references it.
 */
-SpatialSoundSlotResult SpatialSoundSlot_CreateFromPcm
+SpatialSoundSlot *SpatialSoundSlot_CreateFromPcm
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
           void *pcmData)
 
 {
-  SpatialSoundSlot *voiceSetOrError;
+  DirectSoundVoiceSet *voiceSet;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
   PcmVoiceSetResult createResult;
-  SpatialSoundSlotResult failureResult;
-  SpatialSoundSlotResult successResult;
-  
+
   createResult = g_SoundCreatePcmVoiceSet
                     (bufferByteCount,sampleRateHz,bitsPerSample,channelCount,pcmData);
-  voiceSetOrError = (SpatialSoundSlot *)createResult.voiceSet;
-  if (!createResult.failed) {
-    slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
-    slotCursor = g_SpatialSoundSlots;
-    do {
-      if (slotCursor->voiceSet == NULL) {
-        slotCursor->voiceSet = (DirectSoundVoiceSet *)voiceSetOrError;
-        slotCursor->desiredLeftGainQ15 = 0;
-        slotCursor->desiredRightGainQ15 = 0;
-        slotCursor->activeVoice = NULL;
-        successResult.failed = false;
-        successResult.soundSlot = slotCursor;
-        return successResult;
-      }
-      slotCursor++;
-      slotsRemaining--;
-    } while (slotsRemaining != 0);
-    g_SoundReleasePcmVoiceSet((DirectSoundVoiceSet *)voiceSetOrError);
-    voiceSetOrError = (SpatialSoundSlot *)FATAL_ERROR_GENERAL_FAILURE;
+  if (createResult.failed) {
+    return NULL;
   }
-  failureResult.failed = true;
-  failureResult.soundSlot = voiceSetOrError;
-  return failureResult;
+  voiceSet = (DirectSoundVoiceSet *)createResult.voiceSet;
+  slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
+  slotCursor = g_SpatialSoundSlots;
+  do {
+    if (slotCursor->voiceSet == NULL) {
+      slotCursor->voiceSet = voiceSet;
+      slotCursor->desiredLeftGainQ15 = 0;
+      slotCursor->desiredRightGainQ15 = 0;
+      slotCursor->activeVoice = NULL;
+      return slotCursor;
+    }
+    slotCursor++;
+    slotsRemaining--;
+  } while (slotsRemaining != 0);
+  g_SoundReleasePcmVoiceSet(voiceSet);
+  return NULL;
 }
 
 

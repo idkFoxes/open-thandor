@@ -596,9 +596,10 @@ void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 g
    Allocates the texture-slot, palette, adapter and display-mode tables, enumerates the adapters (Glide
    first, which is optional unless -GLIDE is given, then DirectDraw with their Direct3D devices and display
    modes) and installs the DirectDraw backend in the g_Graphics* slots. The display-mode hook installed
-   before (the software renderer's) is kept as g_GraphicsDisplayModeFinalize and returned in EAX.
+   before (the software renderer's) is kept as g_GraphicsDisplayModeFinalize. Returns 0 on success, otherwise the
+   error code of the failing step (never 0).
 */
-StatusResult __cdecl Graphics_Init(void)
+uint32_t __cdecl Graphics_Init(void)
 
 {
   TH_LEGACY_HRESULT hresult;
@@ -609,7 +610,7 @@ StatusResult __cdecl Graphics_Init(void)
   uint32_t *zeroCursor;
   uint32_t displayAdapterIndex;
   GraphicsAdapterRecord *adapterOrModule;
-  StatusResult glideResult;
+  uint32_t glideError;
   ArenaAllocResult allocResult;
   DllLoadResult moduleLoad;
   uint32_t resolveError;
@@ -653,20 +654,20 @@ StatusResult __cdecl Graphics_Init(void)
           /* Glide is optional, unless -GLIDE asks for it. The windowed test aid (OPEN_THANDOR_WINDOWED, not in
              the original) runs only the software renderer, so it enumerates neither Glide nor Direct3D. */
           if (!Thandor_TestAidWindowed()) {
-            glideResult = Glide3_InitAndEnumerate();
-            if ((glideResult.failed) &&
+            glideError = Glide3_InitAndEnumerate();
+            if ((glideError != 0) &&
                 (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide),
                  !optionResult.notFound)) {
-              FatalError_ExitIfFailed(glideResult.valueOrError,true);
+              FatalError_ExitIfFailed(glideError,true);
             }
           }
 #else
           /* Glide is optional, unless -GLIDE asks for it */
-          glideResult = Glide3_InitAndEnumerate();
-          if ((glideResult.failed) &&
+          glideError = Glide3_InitAndEnumerate();
+          if ((glideError != 0) &&
               (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide),
                !optionResult.notFound)) {
-            FatalError_ExitIfFailed(glideResult.valueOrError,true);
+            FatalError_ExitIfFailed(glideError,true);
           }
 #endif
           moduleLoad = DynDLL_Load(sz_DDRAW);
@@ -753,7 +754,7 @@ StatusResult __cdecl Graphics_Init(void)
                     g_GraphicsRefreshTextureAlpha = GraphicsTextureSet_RefreshAlpha;
                     g_GraphicsRebuildAllStagingTextures = GraphicsTexture_RebuildAllStagingTextures;
                     g_GraphicsDisplayModeFinalize = displayModeHook;
-                    return StatusValue_Ok((uint32_t)displayModeHook);
+                    return 0;
                   }
                 }
               }
@@ -763,7 +764,7 @@ StatusResult __cdecl Graphics_Init(void)
       }
     }
   }
-  return StatusValue_Fail((uint32_t)cursorOrResult);
+  return (uint32_t)cursorOrResult;
 }
 
 
@@ -998,7 +999,7 @@ void Graphics_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY,GraphicsScree
           GraphicsPrimitiveQueue *queue)
 
 {
-  PrimitivePacketResult packetResult;
+  GraphicsPrimitivePacket *packet;
   TH_LEGACY_DWORD deviceKind;
 
   deviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
@@ -1007,16 +1008,16 @@ void Graphics_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY,GraphicsScree
     return;
   }
   if (deviceKind != GRAPHICS_DEVICE_GUID_GLIDE) {
-    packetResult = GraphicsPrimitiveQueue_Begin(queue);
-    while (!packetResult.noPacket) {
+    packet = GraphicsPrimitiveQueue_Begin(queue);
+    while (packet != NULL) {
       /* render-flag bits 12..17 select the handler that fills g_ImmediateTLVertices */
-      g_GraphicsDispatchTable.primitive[(packetResult.packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >>
-                                        12](packetResult.packet);
+      g_GraphicsDispatchTable.primitive[(packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >>
+                                        12](packet);
       g_Direct3DDevice2->lpVtbl->DrawPrimitive
                 (g_Direct3DDevice2,D3DPT_TRIANGLEFAN,D3DVT_TLVERTEX,g_ImmediateTLVertices,
                  g_ImmediateVertexCount,D3DDP_DONOTUPDATEEXTENTS);
       g_PrimitiveDrawCallCount++;
-      packetResult = GraphicsPrimitiveQueue_Next(queue);
+      packet = GraphicsPrimitiveQueue_Next(queue);
     }
     return;
   }

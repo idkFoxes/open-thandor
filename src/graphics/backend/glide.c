@@ -418,12 +418,11 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
   uint8_t coordinateShift;
   uint32_t maxDimensionLog2;
   uint32_t widthLog2OrFlags;
-  PrimitivePacketResult packetResult;
-  
+
   previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (previousAccessState == 0) {
-    packetResult = GraphicsPrimitiveQueue_Begin(queue);
-    while (currentPacket = packetResult.packet, !packetResult.noPacket) {
+    currentPacket = GraphicsPrimitiveQueue_Begin(queue);
+    while (currentPacket != NULL) {
       if (currentPacket->vertices[0].screenX < GLIDE_SCREEN_COORDINATE_LIMIT + 1) {
         if (currentPacket->vertices[0].screenX < -GLIDE_SCREEN_COORDINATE_LIMIT) {
           currentPacket->vertices[0].screenX = -GLIDE_SCREEN_COORDINATE_LIMIT;
@@ -633,7 +632,7 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
       }
       g_GrDrawTriangle(&g_GlideVertex2ScreenX,&g_GlideVertex1ScreenX,&g_GlideVertex0ScreenX);
       g_PrimitiveDrawCallCount++;
-      packetResult = GraphicsPrimitiveQueue_Next(queue);
+      currentPacket = GraphicsPrimitiveQueue_Next(queue);
     }
     g_GraphicsBackendAccessState = 0;
   }
@@ -735,10 +734,10 @@ void Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 /* Address: 0x0057EE90.
    Loads glide3x.dll, binds its entry points and adds every 3dfx board as an adapter (GUID Data1 =
    GRAPHICS_ADAPTER_GUID_GLIDE, board index in Data2/Data3) with all its 16-bit resolutions of 640x480 and up
-   as display modes, then unloads the DLL again. Fails (CF set) with the DLL's error code when the DLL or one
-   of its procedures is missing.
+   as display modes, then unloads the DLL again. Returns 0 on success, or the DLL error code (never 0) when the
+   DLL or one of its procedures is missing.
 */
-StatusResult Glide3_InitAndEnumerate(void)
+uint32_t Glide3_InitAndEnumerate(void)
 
 {
   uint8_t *boardName;
@@ -757,22 +756,17 @@ StatusResult Glide3_InitAndEnumerate(void)
   ArenaAllocResult resolutionAlloc;
   uint32_t sstIndex;
   int remainingBoards;
-  StatusResult result;
-  
+
   glideDll = DynDLL_Load(sz_GLIDE3X);
   if (glideDll.failed) {
-    result.valueOrError = (uint32_t)glideDll.moduleOrError;
-    result.failed = true;
-    return result;
+    return (uint32_t)glideDll.moduleOrError;
   }
   binding = g_GlideImportBindings;
   do {
     resolveError = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
     if (resolveError != 0) {
       DynDLL_Unload(sz_GLIDE3X);
-      result.valueOrError = resolveError;
-      result.failed = true;
-      return result;
+      return resolveError;
     }
     binding = binding + 1;
   } while (binding->importName != NULL);
@@ -856,9 +850,7 @@ StatusResult Glide3_InitAndEnumerate(void)
     } while (remainingBoards != 0);
   }
   DynDLL_Unload(sz_GLIDE3X);
-  result.valueOrError = 0;
-  result.failed = false;
-  return result;
+  return 0;
 }
 
 

@@ -145,7 +145,7 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *ownerNode);
 
 /* 0x0051D6B0 */
-ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath);
+bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
 
 /* 0x00528330 */
 void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy (WorldRuntimeContext *worldRuntime,ModelRuntimeDestroyEffectsView *modelRuntime);
@@ -166,10 +166,10 @@ void ArmyRuntime_ApplyTargetPositionCommand
           (Q12 coordinate2Q12,Q12 coordinate1Q12,Q12 coordinate0Q12,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051C720 */
-WorldPositionResult
+bool
 ArmyRuntime_ResolveShotAimPoint
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
-          ShotDefinition *shotDefinition,GameEntityRuntime *targetState);
+          ShotDefinition *shotDefinition,GameEntityRuntime *targetState,GraphicsFixedVec3 *outAimPoint);
 
 /* 0x0051D170 */
 void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
@@ -239,7 +239,7 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
           ModelRuntimeSlot *collisionPartnerModelRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x0051BC00 */
-ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
+GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
           (GraphicsPixelDimension previewHeight,GraphicsPixelDimension previewWidth,
           FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
           WorldRuntimeContext *worldRuntime);
@@ -301,10 +301,10 @@ void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime);
 bool ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12);
 
 /* 0x0051B8F0 */
-ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
+ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
           (WorldObjectAllocationFlags creationFlags,AngleTurn32 orientationAngle,Q12 worldXQ12,
           Q12 worldYQ12,FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
-          WorldRuntimeContext *worldRuntime);
+          WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
 /* 0x0051D0B0 */
 void ArmyRuntime_InitializeTerrainOccupancyFlags (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);

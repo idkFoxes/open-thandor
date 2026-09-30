@@ -50,10 +50,10 @@
 void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0A10 */
-StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
+uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
 
 /* 0x004D0A40 */
-PrimitiveQueueResult GraphicsPrimitiveQueue_ResetGlobal(void);
+GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal(void);
 
 /* 0x004D0A70 */
 void GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue);
@@ -62,10 +62,10 @@ void GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue);
 uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0AA0 */
-PrimitivePacketResult GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue);
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0AE0 */
-PrimitivePacketResult GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0B20 */
 bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
@@ -86,7 +86,7 @@ void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoo
           GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0DA0 */
-PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -95,7 +95,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriang
           FrontendModelPointerContext *renderContext);
 
 /* 0x004D0F20 */
-PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,

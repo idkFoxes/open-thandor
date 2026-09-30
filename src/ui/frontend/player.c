@@ -627,7 +627,7 @@ void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve(g_SessionNetworkTickInterval + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,labelText);
+            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,labelText,NULL);
   g_SessionNetworkTickInterval = g_SessionNetworkTickInterval << 1;
   return;
 }
@@ -931,8 +931,8 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   SelectionPlayerRuntimeBlock *nextScanCursor;
   SelectionPlayerRuntimeBlock *destCursor;
   bool foundEmpty;
-  WorldPositionResult averagePosition;
-  
+  FixedVectorQ12 averagePosition;
+
   /* &g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32[selectionGroupIndex * 32]
      (32 army pointers per group) */
   groupOrScanCursor = (SelectionPlayerRuntimeBlock *)
@@ -1017,13 +1017,12 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
     InGameSelectionDetailPanel_Rebuild();
     InGameBuildCatalog_RebuildGrid((UiNodeBase *)node);
     if ((transferModeFlags & SELECTION_TRANSFER_CENTER_VIEW) != 0) {
-      averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs();
-      if (!averagePosition.noPosition) {
+      if (SelectionInfoEntitySlots_ComputeAverageWorldPosition(&averagePosition)) {
         WorldRuntime_PointCameraAtTarget
                   (node->worldRuntime.motion.pitchAngle,
                    node->worldRuntime.motion.headingAngle,
-                   node->worldRuntime.motion.committedDistanceQ12,averagePosition.worldZQ12,
-                   averagePosition.worldYQ12,averagePosition.worldXQ12,&node->worldRuntime);
+                   node->worldRuntime.motion.committedDistanceQ12,averagePosition.zQ12,
+                   averagePosition.yQ12,averagePosition.xQ12,&node->worldRuntime);
       }
     }
   }

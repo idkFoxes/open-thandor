@@ -121,7 +121,7 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,AngleTurn32 angleDelta);
 
 /* 0x0052CEE0 */
-StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots);
+bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError);
 
 /* 0x0052D0F0 */
 void SelectionInfoPanel_ShutdownResources(void);
@@ -130,7 +130,7 @@ void SelectionInfoPanel_ShutdownResources(void);
 void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target);
 
 /* 0x0052FB70 */
-WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs(void);
+bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition);
 
 /* 0x0052FD60 */
 void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array);

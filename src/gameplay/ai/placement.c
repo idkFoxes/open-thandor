@@ -23,21 +23,17 @@ bool AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,
   uint32_t placementCount;
   uint32_t headingOrQuantum;
   bool chainFailed;
-  PlacementDispatchResult dispatchResult;
 
   knowledgeData = g_AiKnowledgeData;
   headingOrQuantum = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
-  dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+  if ((ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,headingOrQuantum,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                     (UiRootNode *)worldRuntime);
-  placementCount = dispatchResult.value;
-  if ((!dispatchResult.failed) && (placementCount != 0)) {
-    dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                      (4,0,headingOrQuantum,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                       factionIndex,(UiRootNode *)worldRuntime);
+                     (UiRootNode *)worldRuntime,&placementCount)) && (placementCount != 0)) {
     /* ceil(placementCount / quantum) < 5 */
-    if ((dispatchResult.failed) &&
+    if ((!ArmyPlacement_CanPlaceAssetAtFieldPoint
+                      (4,0,headingOrQuantum,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                       factionIndex,(UiRootNode *)worldRuntime,NULL)) &&
        (headingOrQuantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
        ((placementCount - 1) + headingOrQuantum) / headingOrQuantum < 5)) {
       chainFailed = AiPlacement_ReserveSeparatedSpecialSiteChain
@@ -59,8 +55,8 @@ void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionInde
 
 {
   bool hasEntry;
-  SiteWeightResult weightResult;
-  
+  uint32_t siteWeight;
+
   hasEntry = AiSecondaryWorkspace_HasEntryById(ARM_0050_UNIT_MDL0103);
   if (!hasEntry) {
     hasEntry = AiPrimaryWorkspace_HasEntryById(ARM_0301_BUILDING_MDL0318);
@@ -70,23 +66,20 @@ void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionInde
         /* bit 11 of the technology mask: technology 11, proposed below */
         if ((g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0] & 1 << 11) == 0
            ) {
-          weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-          if (!weightResult.noSite) {
-            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(11,weightResult.score,2);
+          if (AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime,&siteWeight)) {
+            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(11,siteWeight,2);
           }
         }
         else {
-          weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-          if (!weightResult.noSite) {
-            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(ARM_0050_UNIT_MDL0103,weightResult.score,0);
+          if (AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime,&siteWeight)) {
+            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(ARM_0050_UNIT_MDL0103,siteWeight,0);
           }
         }
       }
     }
     else {
-      weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-      if (!weightResult.noSite) {
-        AiCandidateWorkspace_AddOrAccumulateWeightedEntry(ARM_0301_BUILDING_MDL0318,weightResult.score,0);
+      if (AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime,&siteWeight)) {
+        AiCandidateWorkspace_AddOrAccumulateWeightedEntry(ARM_0301_BUILDING_MDL0318,siteWeight,0);
       }
     }
   }
@@ -393,79 +386,65 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
 
 /* Address: 0x00539200.
    Runs the mode-0 placement query for the asset at a workspace cell (its position and heading) and returns the
-   query's CF: true when the asset cannot be placed there.
+   query's result inverted: true when the asset cannot be placed there.
 */
 bool AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           ArmyPlacementContext placementContext,UiRootNode *inGameRoot)
 
 {
-  PlacementDispatchResult dispatchResult;
-  
-  dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+  return !ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (0,0,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,placementContext,
-                     inGameRoot);
-  return dispatchResult.failed;
+                     inGameRoot,NULL);
 }
 
 
 /* Address: 0x0053A1B0.
    Runs the mode-4 placement query for the asset at a workspace cell (its position and heading) and returns
-   the query's CF: true when the asset cannot be placed there in that mode.
+   the query's result inverted: true when the asset cannot be placed there in that mode.
 */
 bool AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  PlacementDispatchResult dispatchResult;
-  
-  dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+  return !ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (4,0,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                     (UiRootNode *)worldRuntime);
-  return dispatchResult.failed;
+                     (UiRootNode *)worldRuntime,NULL);
 }
 
 
 /* Address: 0x0053B570.
    Counts how many separation quanta of special sites the asset could use at a workspace cell: when the mode-3
    query reports a nonzero count and the mode-0 query fails, the count is rounded up to whole
-   specialSiteSeparationQuantumQ12 units; otherwise the result is 0. CF is set only when both the mode-3 and the
-   mode-0 query fail (EAX then holds the mode-0 error).
+   specialSiteSeparationQuantumQ12 units; otherwise the result is 0. Returns false (*outBucketCount untouched)
+   only when both the mode-3 and the mode-0 query fail; otherwise stores the count and returns true.
 */
-StatusResult AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
-          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+bool AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outBucketCount)
 
 {
   AiKnowledgeDataImage *knowledgeData;
   uint32_t placementCount;
   uint32_t headingOrBucketCount;
-  PlacementDispatchResult dispatchResult;
-  StatusResult countResult;
-  StatusResult failureResult;
-  
+
   knowledgeData = g_AiKnowledgeData;
   headingOrBucketCount = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
-  dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+  if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,headingOrBucketCount,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                     (UiRootNode *)worldRuntime);
-  placementCount = dispatchResult.value;
-  if (dispatchResult.failed) {
-    dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+                     (UiRootNode *)worldRuntime,&placementCount)) {
+    if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                       (0,0,headingOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                       factionIndex,(UiRootNode *)worldRuntime);
-    if (dispatchResult.failed) {
-      failureResult.valueOrError = dispatchResult.value;
-      failureResult.failed = dispatchResult.failed;
-      return failureResult;
+                       factionIndex,(UiRootNode *)worldRuntime,NULL)) {
+      return false;
     }
     headingOrBucketCount = 0;
   }
   else if ((placementCount != 0) &&
-          (dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+          (!ArmyPlacement_CanPlaceAssetAtFieldPoint
                              (0,0,headingOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                              factionIndex,(UiRootNode *)worldRuntime), dispatchResult.failed)) {
+                              factionIndex,(UiRootNode *)worldRuntime,NULL))) {
     /* Round the placement count up to whole separation quanta. */
     headingOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
     headingOrBucketCount = ((placementCount - 1) + headingOrBucketCount) / headingOrBucketCount;
@@ -473,9 +452,8 @@ StatusResult AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog arm
   else {
     headingOrBucketCount = 0;
   }
-  countResult.failed = false;
-  countResult.valueOrError = headingOrBucketCount;
-  return countResult;
+  *outBucketCount = headingOrBucketCount;
+  return true;
 }
 
 
@@ -491,17 +469,17 @@ bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,Field
   AiKnowledgeDataImage *knowledgeData;
   uint32_t quantumOrBucketCount;
   bool chainFailed;
-  PlacementDispatchResult dispatchResult;
+  uint32_t placementCount;
 
   knowledgeData = g_AiKnowledgeData;
-  dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+  /* ceil(placementCount / quantum) */
+  if ((!ArmyPlacement_CanPlaceAssetAtFieldPoint
                     (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
                      (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
-                     workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-  /* ceil(placementCount / quantum) */
-  if ((dispatchResult.failed) ||
+                     workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,
+                     &placementCount)) ||
      (quantumOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
-     quantumOrBucketCount = ((dispatchResult.value - 1) + quantumOrBucketCount) / quantumOrBucketCount,
+     quantumOrBucketCount = ((placementCount - 1) + quantumOrBucketCount) / quantumOrBucketCount,
           quantumOrBucketCount == 0)) {
     return true;
   }
@@ -519,10 +497,10 @@ bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,Field
    specialSiteMinimumWorkspaceDistanceQ12 from workspaces 03 and 02, and weighs it: the site's base weight
    (ARM_0330 or other) x3 / (2 * assigned structures of that asset + 6); for a non-ARM_0330 site it is further
    scaled by (2 * unpowered + supplied energy demand) / (tritiumCurrentQ4 << 8) when the faction has tritium.
-   CF (noSite) is set when no site qualifies.
+   Returns true with the weight in *outWeight; false (*outWeight untouched) when no site qualifies.
 */
-SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+bool AiCandidatePlanning_ComputeSpecialSiteWeight
+          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,uint32_t *outWeight)
 
 {
   FieldGridCell *workspaceRecord;
@@ -531,7 +509,6 @@ SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
   uint32_t weight;
   AiTerrainFeatureWorkspaceEntry *featureEntry;
   bool clusterRejected;
-  SiteWeightResult weightResult;
   AiKnowledgeDataImage *knowledgeData;
 
   knowledgeData = g_AiKnowledgeData;
@@ -563,27 +540,24 @@ SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
                                    suppliedEnergyDemandQ4)) / (int64_t)countOrTritium);
         }
       }
-      weightResult.noSite = false;
-      weightResult.score = weight;
-      return weightResult;
+      *outWeight = weight;
+      return true;
     }
   }
-  /* No site (CF set): EAX holds whatever the last check left there; callers read the score only with CF
-     clear. */
-  weightResult.noSite = true;
-  weightResult.score = 0;
-  return weightResult;
+  return false;
 }
 
 
 /* Address: 0x00539330.
    Returns the position of the workspace-09 cell nearest (Manhattan distance) to the reference point at which
-   the mode-1 placement query accepts the asset. CF (notFound) is set when no such cell exists.
-   Note the argument order: Y first, then X, like ArmyPlacement_DispatchAssetAtFieldPoint.
+   the mode-1 placement query accepts the asset: returns true and stores the cell position in *outWorldYQ12 /
+   *outWorldXQ12, or returns false (outputs untouched) when no such cell exists.
+   Note the argument order: Y first, then X, like ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
-AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
+bool AiPlacement_FindNearestPlaceableBaseSite
           (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
-          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime,Q12 *outWorldYQ12,
+          Q12 *outWorldXQ12)
 
 {
   int deltaX;
@@ -592,13 +566,9 @@ AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
   int deltaY;
   uint32_t bestDistance;
   FieldGridCell **gridCellCursor;
-  PlacementDispatchResult dispatchResult;
-  AiAnchorResult anchorResult;
   FieldGridCell *bestCell;
   FieldGridCell *candidateCell;
 
-  /* Not found (CF set): ECX is the exhausted loop counter (0) and EDX the last candidate distance (or the
-     caller's EDX for an empty workspace); no caller reads them when CF is set. */
   candidateDistance = 0;
   if (g_AiWorkspace09Count != 0) {
     bestDistance = INT32_MAX;
@@ -616,10 +586,9 @@ AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
       }
       candidateDistance = deltaY + deltaX;
       if ((int)candidateDistance < (int)bestDistance) {
-        dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+        if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
-                           candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-        if (!dispatchResult.failed) {
+                           candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,NULL)) {
           bestDistance = candidateDistance;
           bestCell = candidateCell;
         }
@@ -628,16 +597,12 @@ AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
       remainingCount--;
     } while (remainingCount != 0);
     if ((int)bestDistance < INT32_MAX) {
-      anchorResult.worldXQ12 = bestCell->worldX;
-      anchorResult.worldYQ12 = bestCell->worldY;
-      anchorResult.notFound = false;
-      return anchorResult;
+      *outWorldXQ12 = bestCell->worldX;
+      *outWorldYQ12 = bestCell->worldY;
+      return true;
     }
   }
-  anchorResult.notFound = true;
-  anchorResult.worldXQ12 = 0;
-  anchorResult.worldYQ12 = (Q12)candidateDistance;
-  return anchorResult;
+  return false;
 }
 
 
@@ -657,26 +622,24 @@ bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAsse
   int deltaX;
   Q12 firstAnchorYQ12;
   int deltaY;
-  ArmyRuntimeCreateResult firstInstance;
-  ArmyRuntimeCreateResult secondInstance;
-  ArmyRuntimeCreateResult thirdInstance;
-  ArmyRuntimeCreateResult fourthInstance;
-  AiAnchorResult anchor;
+  ArmyRuntimeSlot *firstInstance;
+  ArmyRuntimeSlot *secondInstance;
+  ArmyRuntimeSlot *thirdInstance;
+  ArmyRuntimeSlot *fourthInstance;
+  Q12 anchorXQ12;
+  Q12 anchorYQ12;
   AiKnowledgeDataImage *knowledgeData;
-  
+
   knowledgeData = g_AiKnowledgeData;
-  anchor = AiPlacement_FindNearestPlaceableBaseSite
-                    (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
-                     factionIndex,worldRuntime);
-  firstAnchorYQ12 = anchor.worldYQ12;
-  firstAnchorXQ12 = anchor.worldXQ12;
-  if (anchor.notFound) {
+  if (!AiPlacement_FindNearestPlaceableBaseSite
+         (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime,
+          &firstAnchorYQ12,&firstAnchorXQ12)) {
     return true;
   }
   /* Y before X, as at every ArmyRuntime_CreateInstanceFromAsset call site */
   firstInstance = ArmyRuntime_CreateInstanceFromAsset
-                    (1,0,firstAnchorYQ12,firstAnchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime);
-  if (firstInstance.failed) {
+                    (1,0,firstAnchorYQ12,firstAnchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime,NULL);
+  if (firstInstance == NULL) {
     return true;
   }
   deltaX = firstAnchorXQ12 - workspaceRecord->worldX;
@@ -689,82 +652,79 @@ bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAsse
   }
   if ((uint32_t)(deltaX + deltaY) <
       (knowledgeData->parameters).specialSiteSeparationQuantumQ12) goto destroy_first_and_succeed;
-  anchor = AiPlacement_FindNearestPlaceableBaseSite
-                    (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
-                     factionIndex,worldRuntime);
-  if (anchor.notFound) goto destroy_first_and_fail;
+  if (!AiPlacement_FindNearestPlaceableBaseSite
+         (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime,
+          &anchorYQ12,&anchorXQ12)) goto destroy_first_and_fail;
   secondInstance = ArmyRuntime_CreateInstanceFromAsset
-                    (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
-                     worldRuntime);
-  if (secondInstance.failed) goto destroy_first_and_fail;
-  deltaX = anchor.worldXQ12 - workspaceRecord->worldX;
+                    (1,0,anchorYQ12,anchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
+                     worldRuntime,NULL);
+  if (secondInstance == NULL) goto destroy_first_and_fail;
+  deltaX = anchorXQ12 - workspaceRecord->worldX;
   if (deltaX < 0) {
     deltaX = -deltaX;
   }
-  deltaY = anchor.worldYQ12 - workspaceRecord->worldY;
+  deltaY = anchorYQ12 - workspaceRecord->worldY;
   if (deltaY < 0) {
     deltaY = -deltaY;
   }
   if ((knowledgeData->parameters).specialSiteSeparationQuantumQ12 <= (uint32_t)(deltaX + deltaY)) {
-    anchor = AiPlacement_FindNearestPlaceableBaseSite
-                      (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
-                       factionIndex,worldRuntime);
-    if (!anchor.notFound) {
+    if (AiPlacement_FindNearestPlaceableBaseSite
+          (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime,
+           &anchorYQ12,&anchorXQ12)) {
       thirdInstance = ArmyRuntime_CreateInstanceFromAsset
-                        (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
-                         worldRuntime);
-      if (!thirdInstance.failed) {
-        deltaX = anchor.worldXQ12 - workspaceRecord->worldX;
+                        (1,0,anchorYQ12,anchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
+                         worldRuntime,NULL);
+      if (thirdInstance != NULL) {
+        deltaX = anchorXQ12 - workspaceRecord->worldX;
         if (deltaX < 0) {
           deltaX = -deltaX;
         }
-        deltaY = anchor.worldYQ12 - workspaceRecord->worldY;
+        deltaY = anchorYQ12 - workspaceRecord->worldY;
         if (deltaY < 0) {
           deltaY = -deltaY;
         }
         if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12) {
 destroy_third_second_first_and_succeed:
-          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.armyRuntimeOrError);
+          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance);
           goto destroy_second_first_and_succeed;
         }
-        anchor = AiPlacement_FindNearestPlaceableBaseSite
-                          (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307
-                           ,factionIndex,worldRuntime);
-        if (!anchor.notFound) {
+        if (AiPlacement_FindNearestPlaceableBaseSite
+              (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,factionIndex,
+               worldRuntime,&anchorYQ12,&anchorXQ12)) {
           fourthInstance = ArmyRuntime_CreateInstanceFromAsset
-                            (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,
-                             ARM_0333_BUILDING_MDL0307,worldRuntime);
-          if (!fourthInstance.failed) {
-            deltaX = anchor.worldXQ12 - workspaceRecord->worldX;
+                            (1,0,anchorYQ12,anchorXQ12,factionIndex,
+                             ARM_0333_BUILDING_MDL0307,worldRuntime,NULL);
+          if (fourthInstance != NULL) {
+            deltaX = anchorXQ12 - workspaceRecord->worldX;
             if (deltaX < 0) {
               deltaX = -deltaX;
             }
-            deltaY = anchor.worldYQ12 - workspaceRecord->worldY;
+            deltaY = anchorYQ12 - workspaceRecord->worldY;
             if (deltaY < 0) {
               deltaY = -deltaY;
             }
             if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12)
             {
               ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,
-                                                      (GameEntityRuntime *)fourthInstance.armyRuntimeOrError);
+                                                      (GameEntityRuntime *)fourthInstance);
               goto destroy_third_second_first_and_succeed;
             }
             ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,
-                                                    (GameEntityRuntime *)fourthInstance.armyRuntimeOrError);
+                                                    (GameEntityRuntime *)fourthInstance);
           }
         }
-        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.armyRuntimeOrError);
+        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance);
       }
     }
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance.armyRuntimeOrError);
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance);
 destroy_first_and_fail:
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance.armyRuntimeOrError);
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance);
     return true;
   }
 destroy_second_first_and_succeed:
-  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance.armyRuntimeOrError);
+  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance);
 destroy_first_and_succeed:
-  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance.armyRuntimeOrError);
+  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance);
   return false;
 }
 

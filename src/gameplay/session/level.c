@@ -11,20 +11,21 @@
 /* Implementation ownership: gameplay/session/level. */
 
 /* Address: 0x00531080.
-   Prepares the movies of a level before it is loaded: returns the level's loading movie (the path at LEV +0xCC
-   with its extension set to "flm") and writes the matching end movie number into "flm\ende0000.flm" from the
-   5th and 6th characters of that path ('w' 0xFC -> 2, "ei" -> 3, "la" -> 4, anything else 0). It keeps a copy of
-   the level path in g_LevelEndingMovieSourcePath, which the loaders report on errors.
+   Prepares the movies of a level before it is loaded: stores the level's loading movie (the path at LEV +0xCC
+   with its extension set to "flm") in *outMoviePath and writes the matching end movie number into
+   "flm\ende0000.flm" from the 5th and 6th characters of that path ('w' 0xFC -> 2, "ei" -> 3, "la" -> 4, anything
+   else 0). It keeps a copy of the level path in g_LevelEndingMovieSourcePath, which the loaders report on errors.
+   Returns true on success; false with FATAL_ERROR_LEVEL_ASSET_INVALID in *outError when asset is not a LEV
+   asset of converter version 0x70001.
 */
-EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPath,LevelAssetHeader *asset)
+bool LevelAsset_PrepareEndingMoviePath
+          (uint16_t *currentLevelPath,LevelAssetHeader *asset,uint16_t **outMoviePath,uint32_t *outError)
 
 {
   int movieNameChars4And5;
   int remainingDwordCount;
   int32_t movieNumber;
   uint16_t *sourcePathCursor;
-  EndingMoviePathResult successResult;
-  EndingMoviePathResult failureResult;
   uint8_t *path;
   
   if (((asset->common).magic == ASSET_MAGIC_LEV) &&
@@ -53,14 +54,12 @@ EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPa
       currentLevelPath = currentLevelPath + 2;
       sourcePathCursor = sourcePathCursor + 2;
     }
-    successResult.failed = false;
-    successResult.moviePath = (uint16_t *)path;
-    return successResult;
+    *outMoviePath = (uint16_t *)path;
+    return true;
   }
   Package_SetLastErrorPath(currentLevelPath);
-  failureResult.failed = true;
-  failureResult.moviePath = (uint16_t *)FATAL_ERROR_LEVEL_ASSET_INVALID;
-  return failureResult;
+  *outError = FATAL_ERROR_LEVEL_ASSET_INVALID;
+  return false;
 }
 
 
@@ -90,7 +89,8 @@ EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPa
    Initial army placement (0x20 bytes): +0x00 army asset id, +0x04 owner faction (spawned only while that faction
    is active), +0x08 / +0x0C position (passed as the worldYQ12 / worldXQ12 parameters of
    ArmyRuntime_CreateInstanceFromAsset), +0x10 rotation angle.
-   Both loaders report errors with CF set and a FATAL_ERROR_* code or the code of the failing step; the progress of
+   Both loaders return true on success, or false with a FATAL_ERROR_* code or the code of the failing step in
+   *outError; the progress of
    the loading movie is driven through g_MoviePlaybackBaseFrameGroup / ScheduleSpan and
    MoviePlayback_AdvanceScheduledFrameAndTick, one frame group per loading stage (0..6).
 */
@@ -102,8 +102,8 @@ EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPa
    default build list and applies the initial faction relations.
 */
 
-LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
-          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime)
+bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
+          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
   LevelPlayerSlotByteOffset32 playerSlotByteOffset;
@@ -139,14 +139,14 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
   PackageLoadResult loadEntryResult;
   StatusResult statusResult;
   uint32_t assetError;
-  ArmyRuntimeInitResult armyInitResult;
-  ArmyRuntimeCreateResult armyCreateResult;
+  bool armyRuntimeInitialized;
+  uint32_t armyInitError;
+  ArmyRuntimeSlot *createdArmy;
+  uint32_t armyCreateError;
   ArenaShrinkResult shrinkResult;
-  SpatialSoundSlotResult soundSlotResult;
+  SpatialSoundSlot *soundSlot;
   SampleVoiceSetResult voiceSetResult;
   ModelDefinitionRecordPrefix *rootModelDefinition;
-  LevelDefaultLoadResult successResult;
-  LevelDefaultLoadResult failureResult;
   ArenaLargestAllocResult largestBlockResult;
   bool soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
   DirectoryEnumerationResult enumerationResult;
@@ -419,9 +419,10 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                     effectTextureBasePath =
                          (uint16_t *)((uint8_t *)levelImage +
                                       (levelImage->header).pathOffsets.effectTextureBasePathOffset);
-                    armyInitResult = ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath);
-                    resultOrPointer = (void *)armyInitResult.errorOrValue;
-                    if (!armyInitResult.failed) {
+                    armyRuntimeInitialized =
+                         ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath,&armyInitError);
+                    resultOrPointer = (void *)armyInitError;
+                    if (armyRuntimeInitialized) {
                       g_MoviePlaybackBaseFrameGroup = 3;
                       g_MoviePlaybackScheduleCounter = 0;
                       g_MoviePlaybackScheduleSpan = 4;
@@ -491,13 +492,16 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                           for (; remainingRecordCount != 0; remainingRecordCount--) {
                             if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[placementCursor->factionIndex] ==
                                 FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-                              armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
+                              createdArmy = ArmyRuntime_CreateInstanceFromAsset
                                                  (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,
                                                   placementCursor->orientationAngle,placementCursor->worldXQ12,
                                                   placementCursor->worldYQ12,placementCursor->factionIndex,
-                                                  placementCursor->armyAssetId,worldRuntime);
-                              resultOrPointer = (void *)armyCreateResult.armyRuntimeOrError;
-                              if (armyCreateResult.failed) goto load_failed;
+                                                  placementCursor->armyAssetId,worldRuntime,&armyCreateError);
+                              if (createdArmy == NULL) {
+                                resultOrPointer = (void *)armyCreateError;
+                                goto load_failed;
+                              }
+                              resultOrPointer = createdArmy;
                             }
                             placementCursor++;
                           }
@@ -864,9 +868,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                       regionOriginOrRelationMask = regionOriginOrRelationMask >> 8;
                                       flagsOrRelationMask = regionOriginOrRelationMask;
                                     }
-                                    successResult.failed = false;
-                                    successResult.errorOrValue = countOrPackedValue;
-                                    return successResult;
+                                    return true;
                                   }
                                   soundSlotCursor = soundLoopWorldRuntime->dwordArray;
                                   soundLoopWorldRuntimeCopy = soundLoopWorldRuntime;
@@ -892,10 +894,9 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         break;
                                       }
                                     }
-                                    soundSlotResult = SpatialSoundSlot_CreateFromSampleAsset
-                                                       (shrinkResultOrError);
-                                    if (!soundSlotResult.failed) {
-                                      soundSlotCursor[modelFlagsOrSoundIndex] = (uint32_t)soundSlotResult.soundSlot;
+                                    soundSlot = SpatialSoundSlot_CreateFromSampleAsset(shrinkResultOrError);
+                                    if (soundSlot != NULL) {
+                                      soundSlotCursor[modelFlagsOrSoundIndex] = (uint32_t)soundSlot;
                                     }
                                     Resource_Release(shrinkResultOrError);
                                     MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -925,9 +926,8 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
     }
   }
 load_failed:
-  failureResult.failed = true;
-  failureResult.errorOrValue = (uint32_t)resultOrPointer;
-  return failureResult;
+  *outError = (uint32_t)resultOrPointer;
+  return false;
 }
 
 
@@ -939,8 +939,8 @@ load_failed:
    and initial relations are skipped; the saved faction image already holds them.
 */
 
-LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
-          (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime)
+bool InGameLevelRuntime_LoadResourcesAfterExternalTables
+          (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
   LevelPlayerSlotByteOffset32 playerSlotByteOffset;
@@ -970,13 +970,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
   PackageLoadResult loadEntryResult;
   StatusResult statusResult;
   uint32_t assetError;
-  ArmyRuntimeInitResult armyInitResult;
+  bool armyRuntimeInitialized;
+  uint32_t armyInitError;
   ArenaShrinkResult shrinkResult;
-  SpatialSoundSlotResult soundSlotResult;
+  SpatialSoundSlot *soundSlot;
   ArenaFreeResult freeResult;
   SampleVoiceSetResult voiceSetResult;
-  LevelLoadResult successResult;
-  LevelLoadResult failureResult;
   ArenaLargestAllocResult largestBlockResult;
   bool soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
   DirectoryEnumerationResult enumerationResult;
@@ -1143,9 +1142,10 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                     effectTextureBasePath =
                          (uint16_t *)((uint8_t *)levelImage +
                                       (levelImage->header).pathState.effectTextureBasePathOffset);
-                    armyInitResult = ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath);
-                    resultOrPointer = (void *)armyInitResult.errorOrValue;
-                    if (!armyInitResult.failed) {
+                    armyRuntimeInitialized =
+                         ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath,&armyInitError);
+                    resultOrPointer = (void *)armyInitError;
+                    if (armyRuntimeInitialized) {
                       g_MoviePlaybackBaseFrameGroup = 3;
                       g_MoviePlaybackScheduleCounter = 0;
                       g_MoviePlaybackScheduleSpan = 4;
@@ -1497,9 +1497,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     Resource_Release(loadedSampleAsset);
                                                   }
                                                 }
-                                                successResult.failed = false;
-                                                successResult.errorOrValue = (uint32_t)sampleOrVoiceSet;
-                                                return successResult;
+                                                return true;
                                               }
                                               soundSlotCursor = worldRuntime->dwordArray;
                                               soundLoopWorldRuntime = worldRuntime;
@@ -1526,10 +1524,10 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     break;
                                                   }
                                                 }
-                                                soundSlotResult = SpatialSoundSlot_CreateFromSampleAsset
+                                                soundSlot = SpatialSoundSlot_CreateFromSampleAsset
                                                                    (shrinkResultOrError);
-                                                if (!soundSlotResult.failed) {
-                                                  soundSlotCursor[soundSlotIndex] = (uint32_t)soundSlotResult.soundSlot;
+                                                if (soundSlot != NULL) {
+                                                  soundSlotCursor[soundSlotIndex] = (uint32_t)soundSlot;
                                                 }
                                                 Resource_Release(shrinkResultOrError);
                                                 MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -1567,9 +1565,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
     }
   }
 load_failed:
-  failureResult.failed = true;
-  failureResult.errorOrValue = (uint32_t)resultOrPointer;
-  return failureResult;
+  *outError = (uint32_t)resultOrPointer;
+  return false;
 }
 
 
@@ -1632,12 +1629,12 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
 /* Address: 0x00532CA0.
    Editor save of the current level: reloads the level asset (g_LevelEndingMovieSourcePath) into the package
    scratch buffer, replaces its placement table with one 0x20-byte record per live world model, stores the
-   field region and the seven camera bookmarks and writes the image back to the same path. CF reports failure
-   (load or write error in EAX). Called by InGameUiCommand_SaveFieldAndLevelAssetImages (ui/ingame/runtime.c);
-   the field grid itself is written separately.
+   field region and the seven camera bookmarks and writes the image back to the same path. Returns true on
+   success; on failure returns false with the load or write error in *outError. Called by
+   InGameUiCommand_SaveFieldAndLevelAssetImages (ui/ingame/runtime.c); the field grid itself is written separately.
 */
 
-StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView)
+bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError)
 
 {
   int placementOffsetOrModelRuntime;
@@ -1777,12 +1774,10 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
                       (levelImage->header.common.allocationSizeBytes,levelImageBytes,g_LevelEndingMovieSourcePath);
     statusOrFieldValue = statusResult.valueOrError;
     if (!statusResult.failed) {
-      return THANDOR_BITCAST(uint64_t, StatusResult,
-                             (THANDOR_BITCAST(StatusResult, uint64_t, statusResult) & UINT32_MAX));
+      return true;
     }
   }
-  statusResult.failed = true;
-  statusResult.valueOrError = statusOrFieldValue;
-  return statusResult;
+  *outError = statusOrFieldValue;
+  return false;
 }
 

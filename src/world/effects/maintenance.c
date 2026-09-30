@@ -140,7 +140,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   uint64_t modulatedLanes;
   ModelPackedPointRecord *packedPoint;
   ShadingRecordResult shadingAllocation;
-  ArmyRuntimeCreateResult armyCreateResult;
+  ArmyRuntimeSlot *createdArmy;
   HeightNormalSampleResult terrainSample;
   ModelWorldPoint localPoint;
   FixedDirection scaledDirection;
@@ -343,7 +343,7 @@ SpawnArmyFromOwner:
                    proportion, rescaled by the two definitions' maximumHealth (presumably the full armour). */
                 frameAdvancedOrScratch = *ownerClassRecord;
                 if (((ModelDefinition *)frameAdvancedOrScratch)->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
-                  armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
+                  createdArmy = ArmyRuntime_CreateInstanceFromAsset
                                      (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,
                                       ownerModelNode->modelPayload.worldRotationAngle2,
                                       ownerModelNode->worldTransform.translation.y,
@@ -351,12 +351,12 @@ SpawnArmyFromOwner:
                                       spawnArmyCompletionEntity->common.ownership.ownerIndex,
                                       (PckArmyAssetIdCatalog)
                                       ((ModelDefinition *)frameAdvancedOrScratch)->classParameterC0,
-                                      worldRuntime);
-                  if (!armyCreateResult.failed) {
+                                      worldRuntime,NULL);
+                  if (createdArmy != NULL) {
                     /* ownerClassRecord is the owner's ModelRuntimeSlot */
-                    (*(ModelRuntimeSlot **)armyCreateResult.armyRuntimeOrError)->health =
+                    (*(ModelRuntimeSlot **)createdArmy)->health =
                          (int)(((int64_t)(int)((ModelRuntimeSlot *)ownerClassRecord)->health *
-                               (int64_t)(int)(*(ModelRuntimeSlot **)armyCreateResult.armyRuntimeOrError)->
+                               (int64_t)(int)(*(ModelRuntimeSlot **)createdArmy)->
                                               definitionOrSavedId.runtimeDefinition->maximumHealth) /
                               (int64_t)(int)((ModelDefinition *)frameAdvancedOrScratch)->
                                             maximumHealth);

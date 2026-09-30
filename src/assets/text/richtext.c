@@ -28,8 +28,8 @@ RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
   uint32_t colorPaletteIndex;
   int totalHeight;
   RichTextExtentRegs blockExtent;
-  WrappedLineResult lineResult;
-  
+  UiPixelExtent lineHeight;
+
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
   colorPaletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
@@ -38,10 +38,10 @@ RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
   totalHeight = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
-  while (lineResult = RichTextCommandStream_MeasureNextWrappedLine(maximumWidth), !lineResult.endOfText) {
-    totalHeight = totalHeight + lineResult.lineAdvancePixels;
+  while (RichTextCommandStream_MeasureNextWrappedLine(maximumWidth,&lineHeight)) {
+    totalHeight = totalHeight + lineHeight;
   }
-  blockExtent.heightPixels = totalHeight + lineResult.lineAdvancePixels;
+  blockExtent.heightPixels = totalHeight + lineHeight;
   blockExtent.widthPixels = maximumWidth;
   return blockExtent;
 }
@@ -60,8 +60,8 @@ void RichTextCommandStream_DrawWrappedBlock
 
 {
   uint32_t colorPaletteIndex;
-  WrappedLineResult lineResult;
-  
+  UiPixelExtent lineHeight;
+
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
   colorPaletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
@@ -69,10 +69,9 @@ void RichTextCommandStream_DrawWrappedBlock
   g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[colorPaletteIndex];
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
-  while (lineResult = RichTextCommandStream_DrawNextWrappedLine
-                            (clipBottom,clipRight,clipTop,clipLeft,maximumWidth,drawY,drawX),
-         !lineResult.endOfText) {
-    drawY = drawY + lineResult.lineAdvancePixels;
+  while (RichTextCommandStream_DrawNextWrappedLine
+                (clipBottom,clipRight,clipTop,clipLeft,maximumWidth,drawY,drawX,&lineHeight)) {
+    drawY = drawY + lineHeight;
   }
   return;
 }
@@ -525,29 +524,27 @@ bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t fl
 
 
 /* Address: 0x0041B840.
-   Returns the variant (code & 3, i.e. 0..2 for opcodes 0x14..0x16) of the commandOrdinal-th (0-based)
-   inline-value command of one command stream with CF clear, or 0 with CF set when the stream has fewer
-   such commands. No caller and no function-pointer table entry for it was found in src/ or
-   src/generated/image_data.c.
+   Stores the variant (code & 3, i.e. 0..2 for opcodes 0x14..0x16) of the commandOrdinal-th (0-based)
+   inline-value command of one command stream in *commandVariant and returns true; when the stream has fewer
+   such commands, stores 0 and returns false. No caller and no function-pointer table entry for it was found
+   in src/ or src/generated/image_data.c.
 */
-RichTextCommandQueryResult RichTextCommandStream_QueryNthInlineValueVariant(int commandOrdinal,uint16_t *commandStream)
+bool RichTextCommandStream_QueryNthInlineValueVariant
+          (int commandOrdinal,uint16_t *commandStream,uint32_t *commandVariant)
 
 {
   uint16_t commandCodeUnit;
   int remainingCount;
   uint32_t *commandCursor;
-  RichTextCommandQueryResult foundResult;
-  RichTextCommandQueryResult endResult;
-  
+
   remainingCount = commandOrdinal + 1;
   do {
     do {
       commandCursor = (uint32_t *)commandStream;
       commandCodeUnit = (uint16_t)*commandCursor;
       if (commandCodeUnit == 0) {
-        endResult.commandVariant = 0;
-        endResult.endOfStream = true;
-        return endResult;
+        *commandVariant = 0;
+        return false;
       }
       commandStream = (uint16_t *)commandCursor + 1;
     } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
@@ -562,9 +559,8 @@ RichTextCommandQueryResult RichTextCommandStream_QueryNthInlineValueVariant(int 
       remainingCount--;
       commandStream = (uint16_t *)commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
       if (remainingCount == 0) {
-        foundResult.commandVariant = *commandCursor & 3;
-        foundResult.endOfStream = false;
-        return foundResult;
+        *commandVariant = *commandCursor & 3;
+        return true;
       }
       break;
     case RICHTEXT_OP_CALL_NESTED:
@@ -579,10 +575,11 @@ RichTextCommandQueryResult RichTextCommandStream_QueryNthInlineValueVariant(int 
 /* Address: 0x0041B950.
    Converts a rich-text command stream into a NUL-terminated 8-bit string (for Win32 text such as message boxes):
    follows nested streams, turns the fixed-space and line-break commands into ' ' and CR LF, drops all other
-   commands and every code unit above 0xFF. Returns the byte count including the terminator; on overflow the
-   output is cut and terminated and CF is set with FATAL_ERROR_GENERAL_FAILURE.
+   commands and every code unit above 0xFF. Returns true when the whole text fit; on overflow (or nesting deeper
+   than RICHTEXT_NESTING_LIMIT) the output is cut and terminated and false is returned. (The original also
+   returned the byte count including the terminator, which no caller reads.)
 */
-StatusResult RichTextCommandStream_CopyToNarrow
+bool RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
 {
@@ -591,8 +588,6 @@ StatusResult RichTextCommandStream_CopyToNarrow
   uint16_t *commandCursor;
   uint16_t *streamCursor;
   bool newlineCapacityUnderflow;
-  StatusResult successResult;
-  StatusResult errorResult;
   uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   uint16_t commandOrCodeUnit;
@@ -613,9 +608,7 @@ StatusResult RichTextCommandStream_CopyToNarrow
           remainingCapacityBytes--;
           if (remainingCapacityBytes == 0) {
             destination[-1] = 0;
-            errorResult.failed = true;
-            errorResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           *destination = ' ';
           destination++;
@@ -626,9 +619,7 @@ StatusResult RichTextCommandStream_CopyToNarrow
           remainingCapacityBytes = remainingCapacityBytes - 2;
           if (newlineCapacityUnderflow || remainingCapacityBytes == 0) {
             destination[-1] = 0;
-            errorResult.failed = true;
-            errorResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           destination[0] = '\r';
           destination[1] = '\n';
@@ -643,9 +634,7 @@ StatusResult RichTextCommandStream_CopyToNarrow
         case RICHTEXT_OP_CALL_NESTED:
           if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
             destination[-1] = 0;
-            errorResult.failed = true;
-            errorResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           nestedReturnStack[nestedDepth++] = streamCursor;
           readCursor = *(uint16_t **)streamCursor;
@@ -663,9 +652,7 @@ StatusResult RichTextCommandStream_CopyToNarrow
           remainingCapacityBytes--;
           if (remainingCapacityBytes == 0) {
             destination[-1] = 0;
-            errorResult.failed = true;
-            errorResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           *destination = (uint8_t)commandOrCodeUnit;
           destination++;
@@ -678,14 +665,10 @@ StatusResult RichTextCommandStream_CopyToNarrow
   }
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;
-    successResult.valueOrError = capacityBytes - (remainingCapacityBytes - 1);
-    successResult.failed = false;
-    return successResult;
+    return true;
   }
   destination[-1] = 0;
-  errorResult.failed = true;
-  errorResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
-  return errorResult;
+  return false;
 }
 
 
@@ -698,12 +681,13 @@ StatusResult RichTextCommandStream_CopyToNarrow
    break, and '#.' ends the input and groups the strings by key: a 0x200-byte header, then per key (in the order
    of the key's first string) a 0x10-byte group header {size, string count, key, 0}, the string offsets
    (relative to the group header) and the strings.
-   An invalid character (control byte, unknown escape, misplaced tag) returns the formatted
-   "TXT2STR: unknown character" message (with its byte offset) in EAX and CF set; running out of arena space returns FATAL_ERROR_GENERAL_FAILURE and CF set.
-   On success the original also returns the asset size in ECX and asset + 0x100 in EDX; RichTextAssetResult
-   keeps only EAX and CF (there is no caller).
+   Returns true with the new asset in *outAsset on success. On failure returns false with the error value in
+   *outError: for an invalid character (control byte, unknown escape, misplaced tag) the address of the
+   formatted "TXT2STR: unknown character" message (with its byte offset), when the arena has no free block the
+   allocator's error, when the arena space runs out FATAL_ERROR_GENERAL_FAILURE. On success the original also
+   returns the asset size in ECX and asset + 0x100 in EDX; they are dropped (there is no caller).
 */
-RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
+bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError)
 
 {
   /* Rewritten from the assembly (0x0041BCB0-0x0041C8C2). The original pushes a (string start, key) pair per
@@ -713,7 +697,6 @@ RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes
   static uint16_t *tagStarts[RICHTEXT_MARKUP_TAG_LIMIT];
   static int32_t tagKeys[RICHTEXT_MARKUP_TAG_LIMIT];
   ArenaLargestAllocResult largestBlock;
-  RichTextAssetResult result;
   uint16_t *memory;
   uint16_t *outputCursor;
   uint32_t remainingCapacityBytes;
@@ -740,9 +723,8 @@ RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes
 
   largestBlock = g_MemoryApi.allocLargestFreeBlock();
   if (largestBlock.failed) {
-    result.assetOrError = (void *)(uintptr_t)largestBlock.allocationOrError;
-    result.failed = true;
-    return result;
+    *outError = largestBlock.allocationOrError;
+    return false;
   }
   memory = (uint16_t *)(uintptr_t)largestBlock.allocationOrError;
   remainingCapacityBytes = largestBlock.blockSizeOrSentinel;
@@ -932,17 +914,15 @@ emitCodeUnit:
   timestamps->dateValue2 = timestamps->dateValue0;
   g_LocaleCopyDefaultComputerLabelUtf16(header->localeCountHeader.common.buildMetadata.names.producerName);
   g_LocaleCopyDefaultComputerLabelUtf16(header->localeCountHeader.common.buildMetadata.names.sourceName);
-  result.assetOrError = asset;
-  result.failed = false;
-  return result;
+  *outAsset = asset;
+  return true;
 
 freeAssetBufferAndFail:
   g_MemoryApi.free(asset);
 freePrimaryBufferAndFail:
   g_MemoryApi.free(memory);
-  result.assetOrError = (void *)FATAL_ERROR_GENERAL_FAILURE;
-  result.failed = true;
-  return result;
+  *outError = FATAL_ERROR_GENERAL_FAILURE;
+  return false;
 
 reportInvalidCharacter:
   g_MemoryApi.free(memory);
@@ -950,20 +930,21 @@ reportInvalidCharacter:
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(markupCursor - markupBytes),
              &u_error__TXT2STR__unknown_characte_0041afac[RICHTEXT_MARKUP_ERROR_OFFSET_UNIT]);
-  result.assetOrError = u_error__TXT2STR__unknown_characte_0041afac;
-  result.failed = true;
-  return result;
+  *outError = (uint32_t)(uintptr_t)u_error__TXT2STR__unknown_characte_0041afac;
+  return false;
 }
 
 
 /* Address: 0x0041C8D0.
    Copies a rich-text command stream into a bounded buffer with every nested stream (0x18/0x19) inlined, so the
    copy no longer depends on the streams it referenced. Commands are normalised to RICHTEXT_COMMAND_FLAG | opcode;
-   payload records are copied unchanged. Returns the byte count without the terminator; on overflow the output is
-   cut and terminated and CF is set with FATAL_ERROR_GENERAL_FAILURE.
+   payload records are copied unchanged. Returns true when the whole text fit and stores the byte count without
+   the terminator in *outBytesWritten (may be NULL); on overflow (or nesting deeper than RICHTEXT_NESTING_LIMIT)
+   the output is cut and terminated, *outBytesWritten is left untouched and false is returned.
 */
-RichTextCopyResult RichTextCommandStream_CopyExpanded
-          (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source)
+bool RichTextCommandStream_CopyExpanded
+          (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
+           uint32_t *outBytesWritten)
 
 {
   uint16_t commandCodeUnit;
@@ -971,8 +952,6 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
   uint16_t *nextSource;
   uint16_t *destinationCursor;
   bool capacityUnderflow;
-  RichTextCopyResult successResult;
-  RichTextCopyResult errorResult;
   uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
@@ -988,9 +967,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           capacityBytes = capacityBytes - 2;
           if (capacityUnderflow || capacityBytes == 0) {
             destinationCursor[-1] = 0;
-            errorResult.overflowed = true;
-            errorResult.bytesWritten = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           *destinationCursor = commandCodeUnit & RICHTEXT_OPCODE_MASK | RICHTEXT_COMMAND_FLAG;
           destinationCursor++;
@@ -1001,9 +978,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_LITERAL_COLOR * 2;
           if (capacityUnderflow || capacityBytes == 0) {
             destinationCursor[-1] = 0;
-            errorResult.overflowed = true;
-            errorResult.bytesWritten = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           for (wordsRemaining = RICHTEXT_RECORD_UNITS_LITERAL_COLOR; wordsRemaining != 0; wordsRemaining--) {
             *destinationCursor = *source;
@@ -1018,9 +993,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_INLINE_VALUE * 2;
           if (capacityUnderflow || capacityBytes == 0) {
             destinationCursor[-1] = 0;
-            errorResult.overflowed = true;
-            errorResult.bytesWritten = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           for (wordsRemaining = RICHTEXT_RECORD_UNITS_INLINE_VALUE; wordsRemaining != 0; wordsRemaining--) {
             *destinationCursor = *source;
@@ -1031,9 +1004,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
         case RICHTEXT_OP_CALL_NESTED:
           if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
             destinationCursor[-1] = 0;
-            errorResult.overflowed = true;
-            errorResult.bytesWritten = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           nestedReturnStack[nestedDepth++] = nextSource;
           source = *(uint16_t **)nextSource;
@@ -1046,9 +1017,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_INLINE_IMAGE * 2;
           if (capacityUnderflow || capacityBytes == 0) {
             destinationCursor[-1] = 0;
-            errorResult.overflowed = true;
-            errorResult.bytesWritten = FATAL_ERROR_GENERAL_FAILURE;
-            return errorResult;
+            return false;
           }
           for (wordsRemaining = RICHTEXT_RECORD_UNITS_INLINE_IMAGE; wordsRemaining != 0; wordsRemaining--) {
             *destinationCursor = *source;
@@ -1062,9 +1031,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
         capacityBytes = capacityBytes - 2;
         if (capacityUnderflow || capacityBytes == 0) {
           destinationCursor[-1] = 0;
-          errorResult.overflowed = true;
-          errorResult.bytesWritten = FATAL_ERROR_GENERAL_FAILURE;
-          return errorResult;
+          return false;
         }
         *destinationCursor = commandCodeUnit;
         destinationCursor++;
@@ -1076,14 +1043,13 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
   }
   if (1 < (int)capacityBytes) {
     *destinationCursor = 0;
-    successResult.bytesWritten = (int)destinationCursor - (int)destination;
-    successResult.overflowed = false;
-    return successResult;
+    if (outBytesWritten != NULL) {
+      *outBytesWritten = (int)destinationCursor - (int)destination;
+    }
+    return true;
   }
   destinationCursor[-1] = 0;
-  errorResult.overflowed = true;
-  errorResult.bytesWritten = FATAL_ERROR_GENERAL_FAILURE;
-  return errorResult;
+  return false;
 }
 
 
@@ -1184,10 +1150,11 @@ RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedSty
 /* Address: 0x0041D0F0.
    Measures the next line of the flattened rich-text runtime buffer that fits into maximumWidth, wrapping after
    the last space or soft hyphen that still fits (or at a line break), and advances
-   g_RichTextRuntimeBufferUsedWords past it. Font commands are applied on the way. Returns the tallest glyph or
-   image height of the line in EAX; CF is set when the line ends the text.
+   g_RichTextRuntimeBufferUsedWords past it. Font commands are applied on the way. Stores the tallest glyph or
+   image height of the line in *lineHeight (also for the last line) and returns true while more lines follow,
+   false when this line ends the text.
 */
-WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth)
+bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight)
 
 {
   GraphicsSubresourceIndex glyphSubresource;
@@ -1195,7 +1162,6 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
   uint32_t maxLineHeight;
   uint8_t *commandCursor;
   uint8_t *readCursor;
-  WrappedLineResult lineResult;
   uint32_t glyphWidth;
   uint32_t glyphLineHeight;
   TextureSizeResult imageSize;
@@ -1283,9 +1249,8 @@ commitWrapBoundary:
     wrapPoint = readCursor;
   }
   g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)wrapPoint - (int)g_FontRuntimeBuffer) >> 1;
-  lineResult.endOfText = *(short *)(wrapPoint - 2) == 0; /* the line ended at the stream terminator */
-  lineResult.lineAdvancePixels = maxLineHeight;
-  return lineResult;
+  *lineHeight = maxLineHeight;
+  return *(short *)(wrapPoint - 2) != 0; /* false: the line ended at the stream terminator */
 }
 
 
@@ -1293,13 +1258,14 @@ commitWrapBoundary:
    Draws the next line of the flattened rich-text runtime buffer at (drawX, drawY), wrapped to maximumWidth:
    a measure pass with the rules of RichTextCommandStream_MeasureNextWrappedLine finds the wrap point and the
    line height, then the draw pass renders glyphs, images and colour/font commands up to it (drawing the hyphen
-   when the line wraps at a soft hyphen) and advances g_RichTextRuntimeBufferUsedWords. Returns the line height;
-   CF is set when the line ends the text. Called directly by RichTextCommandStream_DrawWrappedBlock.
+   when the line wraps at a soft hyphen) and advances g_RichTextRuntimeBufferUsedWords. Stores the line height in
+   *lineAdvance (also for the last line) and returns true while more lines follow, false when this line ends
+   the text. Called directly by RichTextCommandStream_DrawWrappedBlock.
 */
-WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
+bool RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
-          UiPixelCoordinate drawX)
+          UiPixelCoordinate drawX,UiPixelExtent *lineAdvance)
 
 {
   int lineBottom;
@@ -1311,8 +1277,6 @@ WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
   uint8_t *measureCommand;
   uint8_t *scanCursor;
   uint8_t *drawCursor;
-  WrappedLineResult moreLinesResult;
-  WrappedLineResult endResult;
   uint32_t glyphWidth;
   uint32_t glyphLineHeight;
   TextureSizeResult imageSize;
@@ -1409,9 +1373,8 @@ commitWrapBoundary:
     drawCursor = scanCursor + 2;
     if (glyphSubresource == 0) {
       g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
-      endResult.endOfText = true;
-      endResult.lineAdvancePixels = lineHeight;
-      return endResult;
+      *lineAdvance = lineHeight;
+      return false;
     }
     if (glyphSubresource == ' ') {
       if (wrapPoint <= drawCursor) break;
@@ -1486,16 +1449,14 @@ commitWrapBoundary:
         FontGlyph_DrawVerticallyCentered
                   (clipBottom,clipRight,clipTop,clipLeft,'-',lineHeight,lineBottom,drawX);
         g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
-        moreLinesResult.endOfText = false;
-        moreLinesResult.lineAdvancePixels = lineHeight;
-        return moreLinesResult;
+        *lineAdvance = lineHeight;
+        return true;
       }
       break;
     case RICHTEXT_OP_LINE_BREAK:
       g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
-      moreLinesResult.endOfText = false;
-      moreLinesResult.lineAdvancePixels = lineHeight;
-      return moreLinesResult;
+      *lineAdvance = lineHeight;
+      return true;
     case RICHTEXT_OP_INLINE_IMAGE:
       /* the image sits on the line's bottom edge */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
@@ -1509,9 +1470,8 @@ commitWrapBoundary:
     }
   }
   g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
-  moreLinesResult.endOfText = false;
-  moreLinesResult.lineAdvancePixels = lineHeight;
-  return moreLinesResult;
+  *lineAdvance = lineHeight;
+  return true;
 }
 
 

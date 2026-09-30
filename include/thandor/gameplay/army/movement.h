@@ -203,7 +203,8 @@ void ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *mov
 void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementRuntime);
 
 /* 0x0051CEE0 */
-MovementStepResult ArmyRuntime_UpdateMovementAndWaypoints
-          (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime);
+bool ArmyRuntime_UpdateMovementAndWaypoints
+          (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime,Q12 *outWorldXQ12,
+          Q12 *outWorldYQ12);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_MOVEMENT_H */

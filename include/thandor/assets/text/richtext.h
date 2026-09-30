@@ -120,30 +120,32 @@ void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inli
 bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream);
 
 /* 0x0041B840 */
-RichTextCommandQueryResult RichTextCommandStream_QueryNthInlineValueVariant(int commandOrdinal,uint16_t *commandStream);
+bool RichTextCommandStream_QueryNthInlineValueVariant
+          (int commandOrdinal,uint16_t *commandStream,uint32_t *commandVariant);
 
 /* 0x0041B950 */
-StatusResult RichTextCommandStream_CopyToNarrow
+bool RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
 /* 0x0041BCB0 */
-RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes);
+bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError);
 
 /* 0x0041C8D0 */
-RichTextCopyResult RichTextCommandStream_CopyExpanded
-          (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source);
+bool RichTextCommandStream_CopyExpanded
+          (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
+           uint32_t *outBytesWritten);
 
 /* 0x0041CF30 */
 RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *commandStream);
 
 /* 0x0041D0F0 */
-WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth);
+bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight);
 
 /* 0x0041D9F0 */
-WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
+bool RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
-          UiPixelCoordinate drawX);
+          UiPixelCoordinate drawX,UiPixelExtent *lineAdvance);
 
 /* 0x0041D840 */
 void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream);

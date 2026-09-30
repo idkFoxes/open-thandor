@@ -29,10 +29,7 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
           );
 
 /* 0x00538140 */
-AiTechnologyPlanningLoopRegisterContinuityResult
-AiTechnologyPlanning_AddCandidateRecord
-          (uint32_t technologyPanelIndex,uint32_t sourceArmyEntriesRemaining,uint32_t factionRecordOffset,
-          ModelRuntimeSlot *sourceModelRuntime,PckTechnologyIdCatalog technologyId);
+void AiTechnologyPlanning_AddCandidateRecord(ModelRuntimeSlot *sourceModelRuntime,PckTechnologyIdCatalog technologyId);
 
 /* 0x0053BCC0 */
 AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue

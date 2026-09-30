@@ -21,7 +21,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
 
 {
   ArmyRuntimeSlot *selectedTargetArmyRuntime;
-  AiCombatTargetSelectionResult selectionResult;
+  AiSourceClassCount sourceClassCount;
   ArmyCommandGeneration candidateCommandGenerationBase;
   AiCommandGenerationRightShiftBits selectedCommandGenerationRightShiftBits;
 
@@ -29,18 +29,16 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
      (((int)armyRuntime->commandGeneration < 1 ||
       ((armyRuntime->commandModeFlags &
        (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) == 0)))) {
-    selectionResult = AiCombatTarget_SelectBestCandidate(worldRuntime,armyRuntime);
+    selectedTargetArmyRuntime =
+         AiCombatTarget_SelectBestCandidate(worldRuntime,armyRuntime,&sourceClassCount);
     selectedCommandGenerationRightShiftBits =
          g_AiCombatTargetSelectedCommandGenerationRightShiftBits;
     candidateCommandGenerationBase = g_AiCommandGenerationCandidateBase;
-    selectedTargetArmyRuntime = selectionResult.targetArmyRuntime;
     if (selectedTargetArmyRuntime == armyRuntime->commandTargetArmyRuntime) {
       armyRuntime->commandGeneration = g_AiCommandGenerationRetainedTarget;
     }
-    /* the qword test is the sign of sourceClassCount (TEST EDX,EDX / JLE): count > 0 */
-    else if ((selectedTargetArmyRuntime == NULL) &&
-            (selectionResult.sourceClassCount != 0 &&
-             -1 < THANDOR_BITCAST(AiCombatTargetSelectionResult, int64_t, selectionResult))) {
+    /* TEST EDX,EDX / JLE on the returned sum: count > 0 */
+    else if ((selectedTargetArmyRuntime == NULL) && (0 < sourceClassCount)) {
       ArmyRuntime_ResolveCommandTarget((ArmyRuntimeSlot *)armyRuntime->assignedTargetArmyRuntime,armyRuntime);
       if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
@@ -153,14 +151,15 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
    eight class counters (+0x100); a positive sum searches armies of other factions, a negative one other armies
    of the own faction (skipping entities flagged 0x400), zero searches nothing. Candidates must carry the
    source faction's bit (2 << 2 * faction) in +0x50 and are scored by AiCombatTarget_EvaluateCandidateScore
-   within depth-bin masks around the source (radius +0x4C plus 4.0). Returns the best army (or NULL) and the sum.
+   within depth-bin masks around the source (radius +0x4C plus 4.0). Returns the best army (or NULL) and stores
+   the sum in *outSourceClassCount (the original returned the pair in EAX:EDX).
    Only called by AiCombatDecision_UpdateTargetAssignment.
-   Original quirk: a zero sum returns a stack leftover instead of the sum (see the body); the C returns the
+   Original quirk: a zero sum stores a stack leftover instead of the sum (see the body); the C stores the
    world runtime pointer, the positive value the traced original paths leave there.
 */
-AiCombatTargetSelectionResult
-AiCombatTarget_SelectBestCandidate
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
+ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *sourceArmyRuntime,
+          AiSourceClassCount *outSourceClassCount)
 
 {
   ArmyRuntimeSlot *candidateArmyRuntime;
@@ -171,7 +170,6 @@ AiCombatTarget_SelectBestCandidate
   Q12 searchRadiusQ12;
   AiCandidateScore32 currentBestScore;
   AiSourceClassCount sourceClassCount;
-  AiCombatTargetSelectionResult targetSelectionResult;
   AiSourceClassCount returnedSourceClassCount;
   ArmyRuntimeSlot *bestCandidateArmyRuntime;
   WorldOwnerListNode *ownerNodeCursor;
@@ -243,9 +241,8 @@ AiCombatTarget_SelectBestCandidate
       }
     }
   }
-  targetSelectionResult.sourceClassCount = returnedSourceClassCount;
-  targetSelectionResult.targetArmyRuntime = bestCandidateArmyRuntime;
-  return targetSelectionResult;
+  *outSourceClassCount = returnedSourceClassCount;
+  return bestCandidateArmyRuntime;
 }
 
 

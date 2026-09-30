@@ -2708,7 +2708,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   int rosterCount;
   uint16_t *rosterCursor;
   uint16_t *destination;
-  RichTextCopyResult copiedText;
+  uint32_t copiedByteCount;
   uint16_t *resolvedText;
   uint16_t *statusTemplate;
   WorldCameraPosition cameraPosition;
@@ -2836,10 +2836,9 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
               rosterCursor += 2;
             }
             rosterCount++;
-            copiedText = RichTextCommandStream_CopyExpanded
-                               (40,rosterCursor,(playerBlock->playerName).textUtf16);
-            if (!copiedText.overflowed) {
-              rosterCursor = (uint16_t *)((int)rosterCursor + copiedText.bytesWritten);
+            if (RichTextCommandStream_CopyExpanded
+                  (40,rosterCursor,(playerBlock->playerName).textUtf16,&copiedByteCount)) {
+              rosterCursor = (uint16_t *)((int)rosterCursor + copiedByteCount);
               selectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId];
               stepTicks = selectionBlock->simulationStepTicks;
               if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
@@ -2892,9 +2891,8 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
       RichTextCommandStream_PatchPayloadBySelector(0,resolvedText,stream);
       RichTextCommandStream_PatchPayloadBySelector(1,rosterCursor,stream);
       RichTextCommandStream_PatchPayloadBySelector(2,(void *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0),stream);
-      copiedText = RichTextCommandStream_CopyExpanded(1024,destination,stream);
-      if (!copiedText.overflowed) {
-        destination = (uint16_t *)((int)destination + copiedText.bytesWritten);
+      if (RichTextCommandStream_CopyExpanded(1024,destination,stream,&copiedByteCount)) {
+        destination = (uint16_t *)((int)destination + copiedByteCount);
       }
     }
     frameOrFactionIndex++;
@@ -2951,7 +2949,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
       }
       resolvedText = TextResource_Resolve(resourceId);
       RichTextCommandStream_PatchPayloadBySelector(0,playerName,resolvedText);
-      RichTextCommandStream_CopyExpanded(128,destination->text,resolvedText);
+      RichTextCommandStream_CopyExpanded(128,destination->text,resolvedText,NULL);
       destination++;
       playerName = (FrontendPlayerNameUtf16 *)((uint8_t *)playerName + sizeof(FrontendPlayerRuntimeRecord));
       remainingPlayers--;
@@ -3108,13 +3106,13 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
     break;
   }
   case INGAME_KEY_CAMERA_TO_SELECTION: {
-    WorldPositionResult center = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs();
-    if (center.noPosition) {
+    FixedVectorQ12 center;
+    if (!SelectionInfoEntitySlots_ComputeAverageWorldPosition(&center)) {
       break;
     }
     WorldRuntime_PointCameraAtTarget
               ((world->motion).pitchAngle,(world->motion).headingAngle,(world->motion).committedDistanceQ12,
-               center.worldZQ12,center.worldYQ12,center.worldXQ12,world);
+               center.zQ12,center.yQ12,center.xQ12,world);
     break;
   }
   case INGAME_KEY_CAMERA_TO_CLASS11_MODEL: {
@@ -3986,7 +3984,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
   SelectionPlayerRuntimeBlock *localSelectionBlock;
   uint32_t cursorCodeOrSubMode;
   bool callbackAccepted;
-  ArmyRuntimeCreateResult previewArmyRuntime;
+  ArmyRuntimeSlot *previewArmyRuntime;
 
   /* the world owner-list node under the pointer; only model nodes count */
   if ((ownerNodeUnderPointer != NULL) &&
@@ -4045,13 +4043,13 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
       if (localSelectionBlock->placedArmyToken == 0) {
         previewArmyRuntime = ArmyRuntime_CreateInstanceFromAsset
                           (1,0,pointerWorldXQ12,pointerWorldYQ12,g_UiCommandModeGOwnerFactionIndex,
-                           g_UiCommandModeGArmyAssetId,worldRuntime);
-        if (!previewArmyRuntime.failed) {
-          callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)previewArmyRuntime.armyRuntimeOrError,worldRuntime);
+                           g_UiCommandModeGArmyAssetId,worldRuntime,NULL);
+        if (previewArmyRuntime != NULL) {
+          callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)previewArmyRuntime,worldRuntime);
           if (callbackAccepted) {
             cursorCodeOrSubMode = WORLD_CURSOR_NO_TARGET;
           }
-          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)previewArmyRuntime.armyRuntimeOrError);
+          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)previewArmyRuntime);
           return cursorCodeOrSubMode;
         }
         return WORLD_CURSOR_MOVE;
@@ -5188,17 +5186,17 @@ void InGameUiCommand_SaveFieldAndLevelAssetImages
 {
   InGameRuntimeRoot *runtimeRoot;
   StatusResult saveStatus;
-  
+  uint32_t levelSaveError;
+
   runtimeRoot = g_InGameRuntimeRoot;
   saveStatus = FieldGrid_SaveAssetImageFromRuntimeState
                     ((uint32_t *)(g_InGameRuntimeRoot->worldRuntime).fieldGrid);
   if (saveStatus.failed) {
     FatalError_ReportIfFailed(saveStatus.valueOrError,true);
   }
-  saveStatus = InGameLevelRuntime_SaveLevelAssetImageFromWorldState
-                    ((InGameLevelSaveWorldView *)&runtimeRoot->worldRuntime);
-  if (saveStatus.failed) {
-    FatalError_ReportIfFailed(saveStatus.valueOrError,true);
+  if (!InGameLevelRuntime_SaveLevelAssetImageFromWorldState
+                    ((InGameLevelSaveWorldView *)&runtimeRoot->worldRuntime,&levelSaveError)) {
+    FatalError_ReportIfFailed(levelSaveError,true);
   }
   return;
 }
@@ -5502,11 +5500,11 @@ void InGameSelectionDetailPanel_Rebuild(void)
         resolvedText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
         sourceText = resolvedText;
         RichTextCommandStream_CopyExpanded
-                  (128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText);
+                  (128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText,NULL);
         RichTextCommandStream_CopyExpanded
-                  (128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText);
+                  (128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText,NULL);
         RichTextCommandStream_CopyExpanded
-                  (128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText);
+                  (128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText,NULL);
         g_InGameSelectionDetailTextSlot05Utf16[0] = L'-';
         g_InGameSelectionDetailTextSlot05Utf16[1] = 0;
         g_InGameSelectionDetailTextSlot09Utf16[0] = L'-';
@@ -5522,7 +5520,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
                               TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE);
           resolvedText = TextResource_Resolve(workValue * 2 + TECHNOLOGY_TEXT_ID_BASE);
           RichTextCommandStream_CopyExpanded
-                    (128,g_InGameSelectionDetailTextSlot09Utf16,resolvedText);
+                    (128,g_InGameSelectionDetailTextSlot09Utf16,resolvedText,NULL);
         }
         if (selectedModelRuntime->attachmentCount != 0) {
           attachedModelRuntime = selectedModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
@@ -5693,9 +5691,9 @@ copyDefinitionNames:
     }
     resolvedText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
     sourceText = resolvedText;
-    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText);
-    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText);
-    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText);
+    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText,NULL);
+    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText,NULL);
+    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText,NULL);
     if (linkedDefinitionListView->childListCount != 0) {
       unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                          ((rootCursor->worldRuntime).activeFactionRuntimeIndex,

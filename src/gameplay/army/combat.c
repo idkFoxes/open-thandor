@@ -42,8 +42,11 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   AimSmoothResult smoothResult;
-  MovementStepResult movementResult;
-  WorldPositionResult aimPoint;
+  bool movementArrived;
+  Q12 steerWorldXQ12; /* unused here */
+  Q12 steerWorldYQ12; /* unused here */
+  GraphicsFixedVec3 aimPoint;
+  bool aimPointFound;
   GameEntityRuntime *ownerEntity;
   ModelRuntimeNode *currentNode;
   
@@ -115,18 +118,18 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     weaponDefinitionView = modelRuntime->modelDefinition;
     ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
     currentNode = modelRuntime->rootModelNode;
-    aimPoint = ArmyRuntime_ResolveShotAimPoint
+    aimPointFound = ArmyRuntime_ResolveShotAimPoint
                        ((currentNode->worldTransform).translation.z,
                         (currentNode->worldTransform).translation.y,
                         (currentNode->worldTransform).translation.x,weaponDefinitionView->shotDefinition,
-                        ownerEntity);
-    aimZQ12 = aimPoint.worldZQ12;
-    aimYQ12 = aimPoint.worldYQ12;
-    aimXQ12 = aimPoint.worldXQ12;
-    if (aimPoint.noPosition) {
-      movementResult = ArmyRuntime_UpdateMovementAndWaypoints
-                         (worldRuntime,(ArmyMovementRuntime *)ownerEntity);
-      if (((!movementResult.arrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
+                        ownerEntity,&aimPoint);
+    aimZQ12 = aimPoint.z;
+    aimYQ12 = aimPoint.y;
+    aimXQ12 = aimPoint.x;
+    if (!aimPointFound) {
+      movementArrived = ArmyRuntime_UpdateMovementAndWaypoints
+                         (worldRuntime,(ArmyMovementRuntime *)ownerEntity,&steerWorldXQ12,&steerWorldYQ12);
+      if (((!movementArrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         currentNode = modelRuntime->rootModelNode;
         ModelNodeRuntime_SmoothYawTowardTarget(currentNode,modelRuntime,0);

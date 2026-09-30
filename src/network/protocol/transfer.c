@@ -697,18 +697,18 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     resolvedText = TextResource_Resolve(TEXT_ID_SESSION_TITLE_TEMPLATE);
     RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),resolvedText);
     RichTextCommandStream_CopyExpanded
-              (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,resolvedText);
+              (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,resolvedText,NULL);
     resolvedText = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
     /* the game name typed into gameNameEdit */
     RichTextCommandStream_PatchPayloadBySelector
               (0,((UiTextEditControl *)FRONTEND_UI(rootNodeOrCount,gameNameEdit))->textBuffer,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
     RichTextCommandStream_CopyExpanded
-              (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText);
+              (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText,NULL);
     resolvedText = TextResource_Resolve(TEXT_ID_SESSION_PLAYER_COUNT_TEMPLATE);
     RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkRuntimeCountTextUtf16,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendNetworkPlayerCountTextUtf16,resolvedText);
-    RichTextCommandStream_CopyExpanded(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText);
+    RichTextCommandStream_CopyExpanded(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText,NULL);
     g_FrontendPacket50001Buffer.header.packedTypeAndUnitCount =
          FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT;
     g_FrontendPacket50001Buffer.payloadByteCount = 32;

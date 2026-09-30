@@ -21,7 +21,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0050B5D0 */
-StatusResult SpatialSoundPool_Init(void);
+bool SpatialSoundPool_Init(uint32_t *outError);
 
 /* 0x0050B600 */
 void SpatialSound_RebuildListenerTransformFromPose
@@ -38,10 +38,10 @@ void SpatialSound_UpdateDesiredPositionedGains
           GraphicsFixedVec3 *worldPosition,SpatialSoundSlot *slot);
 
 /* 0x0050B8C0 */
-SpatialSoundSlotResult SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset);
+SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset);
 
 /* 0x0050B940 */
-SpatialSoundSlotResult SpatialSoundSlot_CreateFromPcm (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz, AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount, void *pcmData);
+SpatialSoundSlot *SpatialSoundSlot_CreateFromPcm (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz, AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount, void *pcmData);
 
 /* 0x0050B9D0 */
 void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot);

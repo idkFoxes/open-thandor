@@ -38,8 +38,8 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
   EffectRuntimeSlot **ownedEffectCursor;
   EffectRuntimeSlot **commandTargetEffectCursor;
   bool checkResult;
-  ArmyRuntimeCreateResult createdArmy;
-  PlacementDispatchResult dispatchResult;
+  ArmyRuntimeSlot *createdArmy;
+  bool placeable;
   EffectDefinition *markerDefinition;
   HeightSampleResult surfaceHeight;
   EffectCreateResult createdEffect;
@@ -73,10 +73,10 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
                              (1,g_InGameCommandPreviewHeading16,g_InGameCommandPreviewWorldXQ12,
                               g_InGameCommandPreviewWorldYQ12,
                               worldRuntime->activeFactionRuntimeIndex,
-                              g_InGameCommandPreviewArmyAssetId,worldRuntime);
-          if (!createdArmy.failed) {
-            currentModelNode = (((GameEntityRuntime *)createdArmy.armyRuntimeOrError)->common).ownership.modelNode;
-            g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)createdArmy.armyRuntimeOrError;
+                              g_InGameCommandPreviewArmyAssetId,worldRuntime,NULL);
+          if (createdArmy != NULL) {
+            currentModelNode = (((GameEntityRuntime *)createdArmy)->common).ownership.modelNode;
+            g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)createdArmy;
             currentModelNode->tintArgb = OVERLAY_PREVIEW_TINT_ARGB;
             ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
           }
@@ -112,19 +112,18 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
       validatedWorldYQ12 = g_ArmyPlacementValidatedWorldYQ12;
       g_ArmyPlacementLateRejectionCount = 1;
       worldRuntimeCopy = worldRuntime;
-      dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+      placeable = ArmyPlacement_CanPlaceAssetAtFieldPoint
                          (1,0,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
                           *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8),
-                          worldRuntime->activeFactionRuntimeIndex,(UiRootNode *)worldRuntime);
-      if ((dispatchResult.failed) && (g_ArmyPlacementLateRejectionCount < 2)) {
+                          worldRuntime->activeFactionRuntimeIndex,(UiRootNode *)worldRuntime,NULL);
+      if ((!placeable) && (g_ArmyPlacementLateRejectionCount < 2)) {
         previewTint = previewTint & OVERLAY_PREVIEW_TINT_BLOCKED_MASK;
       }
       g_ArmyPlacementLateRejectionCount = 0;
-      createdArmy = ArmyRuntime_CreateInstanceFromAsset
+      entityRuntime = (GameEntityRuntime *)ArmyRuntime_CreateInstanceFromAsset
                          (1,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
-                          worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntimeCopy);
-      entityRuntime = (GameEntityRuntime *)createdArmy.armyRuntimeOrError;
-      if (!createdArmy.failed) {
+                          worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntimeCopy,NULL);
+      if (entityRuntime != NULL) {
         currentModelNode = (entityRuntime->common).ownership.modelNode;
         classRecord = (entityRuntime->common).ownership.definitionOrClassRecord;
         g_InGamePlacementPreviewArmyRuntime = entityRuntime;

@@ -50,7 +50,7 @@ FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId)
   FrontendInitResult initResult;
   FrontendMainLoopResult exitResult;
   FrontendMainLoopResult failureResult;
-  SessionRunResult sessionRunResult;
+  uint32_t sessionError;
   PackageLoadResult packageLoadResult;
   FatalErrorCheckResult checkedResult;
   PckCodecResult encodeResult;
@@ -255,10 +255,11 @@ nextFrame:
           FrontendRuntime_ShutdownAndReleaseResourcesRegs();
           if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_START_SESSION) {
             PersistentSettings_Flush();
-            sessionRunResult = InGameRuntime_RunSessionUntilExit
-                               ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,0,
-                                (uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-            FatalError_ExitIfFailed(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
+            if (!InGameRuntime_RunSessionUntilExit
+                   ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,0,
+                    (uint16_t *)&g_FrontendScenarioPathScratchUtf16,&sessionError)) {
+              FatalError_ExitIfFailed(sessionError,true);
+            }
             PersistentSettings_Flush();
             UiFrame_FlushInputAndResetPendingTicks();
             g_FrontendScenarioInitializationCount = 0;
@@ -311,10 +312,11 @@ advanceCampaign:
           }
           if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_RESUME_SAVED_SESSION) {
             /* unlike FRONTEND_PAGE_ACTION_START_SESSION the settings are not flushed before the session */
-            sessionRunResult = InGameRuntime_RunSessionUntilExit
-                               ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,1,
-                                (uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-            FatalError_ExitIfFailed(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
+            if (!InGameRuntime_RunSessionUntilExit
+                   ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,1,
+                    (uint16_t *)&g_FrontendScenarioPathScratchUtf16,&sessionError)) {
+              FatalError_ExitIfFailed(sessionError,true);
+            }
             PersistentSettings_Flush();
             UiFrame_FlushInputAndResetPendingTicks();
             g_FrontendScenarioInitializationCount = 0;
@@ -818,15 +820,15 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   void (*renderHierarchyProc)(ModelRuntimeNode *);
   ModelRuntimeNode *modelNode;
   /* The selection overlays after the scene take their rectangle from EDX/ECX/EDI/ESI (bottom/right/top/left).
-     On the complete path these are reloaded with the clipped rectangle; when a primitive-queue reset fails the
-     original jumps straight to the end and the overlays receive whatever those registers held at that point
-     (cursor Y in Q12, the listener Y and Z, the render procedure address, a model-list pointer, ...). The overlay*
-     variables below model exactly those register contents. */
+     The original would jump straight to the end when a primitive-queue reset failed, handing the overlays
+     whatever those registers held; GraphicsPrimitiveQueue_ResetGlobal never fails, so the overlays always get
+     the clipped rectangle reloaded after the last pass. The overlay* variables still mirror the register
+     contents along the way (and carry the listener position on the sound path). */
   UiPixelCoordinate overlayClipBottom;
   UiPixelCoordinate overlayClipTop;
   UiPixelCoordinate overlayClipLeft;
   bool entryFound;
-  PrimitiveQueueResult queueResult;
+  GraphicsPrimitiveQueue *frameQueue;
 
   if ((control->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
     return;
@@ -882,30 +884,71 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   GraphicsShadingRuntime_RebuildCompactLightingRecords();
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
-  queueResult = GraphicsPrimitiveQueue_ResetGlobal();
+  frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
   overlayClipLeft = clipBottom;
   overlayClipTop = clipTop;
-  if (!queueResult.failed) {
-    Graphics_SetActivePrimitiveQueue(queueResult.queue);
-    control->activePrimitiveQueue = queueResult.queue;
-    if (control->renderPhaseCallback != NULL) {
-      control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
+  Graphics_SetActivePrimitiveQueue(frameQueue);
+  control->activePrimitiveQueue = frameQueue;
+  if (control->renderPhaseCallback != NULL) {
+    control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
+  }
+  renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
+  if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
+    renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
+  }
+  overlayClipBottom = (UiPixelCoordinate)(uintptr_t)renderHierarchyProc;
+  for (modelNode = control->candidateModelListHead; modelNode != NULL;
+      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+    if ((((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) && ((modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN) != 0)) &&
+       (modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED,
+       (modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
+      renderHierarchyProc(modelNode);
     }
-    renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
-    if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
-      renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
-    }
-    overlayClipBottom = (UiPixelCoordinate)(uintptr_t)renderHierarchyProc;
-    for (modelNode = control->candidateModelListHead; modelNode != NULL;
-        modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-      if ((((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) && ((modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN) != 0)) &&
-         (modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED,
-         (modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
-        renderHierarchyProc(modelNode);
-      }
-    }
-    if (control->renderPhaseCallback != NULL) {
-      control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
+  }
+  if (control->renderPhaseCallback != NULL) {
+    control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
+  }
+  PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
+            (control->base.nodeFlags & 8,control->activePrimitiveQueue);
+  g_GraphicsDrawPrimitiveQueue
+            (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
+  queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
+  control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
+  g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
+  g_SpinLockAcquire(control->renderSpinLock);
+  overlayClipTop = 0; /* EDI: the model loop ran to its NULL terminator */
+  if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL)) {
+    frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
+    Graphics_SetActivePrimitiveQueue(frameQueue);
+    control->activePrimitiveQueue = frameQueue;
+    TerrainProjectedGrid_TransformShadeAndQueue(control->fieldGrid,control);
+    PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
+              (control->base.nodeFlags & 8,control->activePrimitiveQueue);
+    g_GraphicsDrawPrimitiveQueue
+              (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
+    queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
+    control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
+  }
+  g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
+  g_SpinLockAcquire(control->renderSpinLock);
+  if ((control->contextFlags & WORLD_RUNTIME_FLAG_SHADING_ENABLED) != 0) {
+    modelNode = control->candidateModelListHead;
+    overlayClipTop = (UiPixelCoordinate)(uintptr_t)modelNode; /* EDI */
+    frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
+    Graphics_SetActivePrimitiveQueue(frameQueue);
+    control->activePrimitiveQueue = frameQueue;
+    if (modelNode != NULL) {
+      GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
+      do {
+        if ((((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) && ((modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS) != 0)) &&
+           ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
+          GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
+                    (modelNode,(GeneratedTextureRenderContextView *)control);
+        }
+        modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
+      } while (modelNode != NULL);
+      GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources();
+      overlayClipTop = 0;
     }
     PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
               (control->base.nodeFlags & 8,control->activePrimitiveQueue);
@@ -913,96 +956,47 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
               (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
     queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
     control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
-    g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
-    g_SpinLockAcquire(control->renderSpinLock);
-    overlayClipTop = 0; /* EDI: the model loop ran to its NULL terminator */
-    if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL)) {
-      queueResult = GraphicsPrimitiveQueue_ResetGlobal();
-      if (queueResult.failed) goto endScene;
-      Graphics_SetActivePrimitiveQueue(queueResult.queue);
-      control->activePrimitiveQueue = queueResult.queue;
-      TerrainProjectedGrid_TransformShadeAndQueue(control->fieldGrid,control);
-      PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
-                (control->base.nodeFlags & 8,control->activePrimitiveQueue);
-      g_GraphicsDrawPrimitiveQueue
-                (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
-      queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
-      control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
-    }
-    g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
-    g_SpinLockAcquire(control->renderSpinLock);
-    if ((control->contextFlags & WORLD_RUNTIME_FLAG_SHADING_ENABLED) != 0) {
-      modelNode = control->candidateModelListHead;
-      overlayClipTop = (UiPixelCoordinate)(uintptr_t)modelNode; /* EDI */
-      queueResult = GraphicsPrimitiveQueue_ResetGlobal();
-      if (queueResult.failed) goto endScene;
-      Graphics_SetActivePrimitiveQueue(queueResult.queue);
-      control->activePrimitiveQueue = queueResult.queue;
-      if (modelNode != NULL) {
-        GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
-        do {
-          if ((((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) && ((modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS) != 0)) &&
-             ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
-            GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
-                      (modelNode,(GeneratedTextureRenderContextView *)control);
-          }
-          modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
-        } while (modelNode != NULL);
-        GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources();
-        overlayClipTop = 0;
-      }
-      PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
-                (control->base.nodeFlags & 8,control->activePrimitiveQueue);
-      g_GraphicsDrawPrimitiveQueue
-                (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
-      queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
-      control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
-    }
-    g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
-    g_SpinLockAcquire(control->renderSpinLock);
-    queueResult = GraphicsPrimitiveQueue_ResetGlobal();
-    if (!queueResult.failed) {
-      Graphics_SetActivePrimitiveQueue(queueResult.queue);
-      control->activePrimitiveQueue = queueResult.queue;
-      if (control->renderPhaseCallback != NULL) {
-        control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
-      }
-      renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
-      if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0)
-      {
-        renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
-      }
-      for (modelNode = control->candidateModelListHead; modelNode != NULL;
-          modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-        if (((modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN)) == 0) &&
-           (modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED,
-           (modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
-          renderHierarchyProc(modelNode);
-        }
-      }
-      if (control->renderPhaseCallback != NULL) {
-        control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
-      }
-      PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
-                (control->base.nodeFlags & 8,control->activePrimitiveQueue);
-      g_GraphicsDrawPrimitiveQueue
-                (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
-      queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
-      control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
-      g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
-      g_SpinLockAcquire(control->renderSpinLock);
-      overlayClipRight = clipRight;
-      overlayClipBottom = clipBottom;
-      overlayClipLeft = clipLeft;
-      overlayClipTop = clipTop;
-      if ((((clipLeft == control->base.left) && (clipRight == control->base.right)) &&
-          (clipTop == control->base.top)) && (clipBottom == control->base.bottom)) {
-        /* the whole view was drawn: the next terrain pass may reuse this projection */
-        control->contextFlags = control->contextFlags | TERRAIN_RENDER_REUSE_PROJECTION;
-      }
+  }
+  g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
+  g_SpinLockAcquire(control->renderSpinLock);
+  frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
+  Graphics_SetActivePrimitiveQueue(frameQueue);
+  control->activePrimitiveQueue = frameQueue;
+  if (control->renderPhaseCallback != NULL) {
+    control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
+  }
+  renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
+  if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
+    renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
+  }
+  for (modelNode = control->candidateModelListHead; modelNode != NULL;
+      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+    if (((modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN)) == 0) &&
+       (modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED,
+       (modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
+      renderHierarchyProc(modelNode);
     }
   }
-endScene:
+  if (control->renderPhaseCallback != NULL) {
+    control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
+  }
+  PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
+            (control->base.nodeFlags & 8,control->activePrimitiveQueue);
+  g_GraphicsDrawPrimitiveQueue
+            (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
+  queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
+  control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
+  g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
+  g_SpinLockAcquire(control->renderSpinLock);
+  overlayClipRight = clipRight;
+  overlayClipBottom = clipBottom;
+  overlayClipLeft = clipLeft;
+  overlayClipTop = clipTop;
+  if ((((clipLeft == control->base.left) && (clipRight == control->base.right)) &&
+      (clipTop == control->base.top)) && (clipBottom == control->base.bottom)) {
+    /* the whole view was drawn: the next terrain pass may reuse this projection */
+    control->contextFlags = control->contextFlags | TERRAIN_RENDER_REUSE_PROJECTION;
+  }
   g_GraphicsEndScene();
   g_RenderedFrameCountSinceDebugRefresh++;
   if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {

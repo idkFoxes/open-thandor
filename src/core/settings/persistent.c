@@ -43,7 +43,7 @@ void PersistentSettings_Load(void)
   PersistentSettingsImage *image;
   ArenaAllocResult allocResult;
   FileSystemOpenResult openResult;
-  RichTextCopyResult pathCopyResult;
+  uint32_t pathByteCount;
   FileSystemSizeResult sizeResult;
   FileSystemReadResult readResult;
 
@@ -70,12 +70,15 @@ void PersistentSettings_Load(void)
       g_MemoryApi.free(image);
       return;
     }
-    /* The original also continues with EAX = the byte count returned by the path copy below as the
-       file handle (MOV EBX,EAX at 0x00402B90), not the handle from this open. Kept as is. */
-    pathCopyResult = RichTextCommandStream_CopyExpanded
-                      (sizeof g_PersistentSettings.path,g_PersistentSettings.path,
-                       g_FileSystemCombinedPathScratchUtf16);
-    fileHandle = (void *)pathCopyResult.bytesWritten;
+    /* Original quirk: the original continues with EAX of the path copy below (the byte count, or
+       FATAL_ERROR_GENERAL_FAILURE on overflow) as the file handle (MOV EBX,EAX at 0x00402B90), not the
+       handle from this open. Kept as is. */
+    if (!RichTextCommandStream_CopyExpanded
+           (sizeof g_PersistentSettings.path,g_PersistentSettings.path,
+            g_FileSystemCombinedPathScratchUtf16,&pathByteCount)) {
+      pathByteCount = FATAL_ERROR_GENERAL_FAILURE;
+    }
+    fileHandle = (void *)pathByteCount;
   }
   sizeResult = g_FileSystemGetSize(fileHandle);
   if (!sizeResult.failed) {

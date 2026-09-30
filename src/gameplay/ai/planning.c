@@ -525,9 +525,9 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
   int remainingArm0330Entries;
   int remainingArm0332Entries;
   bool siteRejected;
-  ArmyRuntimeCreateResult createdInstance;
-  AiAnchorResult anchorResult;
-  
+  Q12 anchorXQ12;
+  Q12 anchorYQ12;
+
   arm0330SiteEntry = g_AiWorkspace08TerrainFeatureSites;
   remainingArm0330Entries = g_AiWorkspace08Count;
   if (g_AiWorkspace08Count != 0) {
@@ -537,15 +537,14 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
         siteRejected = AiPlacement_ReserveAdditionalSpecialSite
                           (arm0330SiteEntry->armyAssetId,sourceCell,factionIndex,worldRuntime);
         if (!siteRejected) {
-          anchorResult = AiPlacement_FindNearestPlaceableBaseSite
-                            (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
-          if (!anchorResult.notFound) {
-            createdInstance = ArmyRuntime_CreateInstanceFromAsset
-                              (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorResult.worldYQ12,anchorResult.worldXQ12,
+          if (AiPlacement_FindNearestPlaceableBaseSite
+                (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime,&anchorYQ12,
+                 &anchorXQ12)) {
+            armyRuntime = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
+                              (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorYQ12,anchorXQ12,
                                factionIndex,armyAssetId,
-                               worldRuntime);
-            armyRuntime = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
-            if (createdInstance.failed) {
+                               worldRuntime,NULL);
+            if (armyRuntime == NULL) {
               return;
             }
             createdModelNode = armyRuntime[1];
@@ -580,15 +579,14 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
         siteRejected = AiPlacement_ReserveAdditionalSpecialSite
                           (arm0332SiteEntry->armyAssetId,sourceCell,factionIndex,worldRuntime);
         if (!siteRejected) {
-          anchorResult = AiPlacement_FindNearestPlaceableBaseSite
-                            (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
-          if (!anchorResult.notFound) {
-            createdInstance = ArmyRuntime_CreateInstanceFromAsset
-                              (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorResult.worldYQ12,anchorResult.worldXQ12,
+          if (AiPlacement_FindNearestPlaceableBaseSite
+                (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime,&anchorYQ12,
+                 &anchorXQ12)) {
+            armyRuntime = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
+                              (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorYQ12,anchorXQ12,
                                factionIndex,armyAssetId,
-                               worldRuntime);
-            armyRuntime = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
-            if (createdInstance.failed) {
+                               worldRuntime,NULL);
+            if (armyRuntime == NULL) {
               return;
             }
             createdModelNode = armyRuntime[1];
@@ -794,8 +792,6 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
   int remainingCells;
   int anchorDistanceX;
   FieldGridCell **gridCellCursor;
-  PlacementDispatchResult placementResult;
-  ArmyRuntimeCreateResult createdInstance;
   FieldGridCell *bestCell;
   int bestScore;
   FieldGridCell *candidateCell;
@@ -840,10 +836,10 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
         if (siteDistanceInRange) {
           workspaceDistanceOrScore = anchorDistanceX + anchorDistanceY + workspaceDistanceOrScore;
           if ((workspaceDistanceOrScore < bestScore) &&
-             (placementResult = ArmyPlacement_DispatchAssetAtFieldPoint
+             (ArmyPlacement_CanPlaceAssetAtFieldPoint
                                 (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,
                                  candidateCell->worldY,candidateCell->worldX,armyAssetId,factionIndex,
-                                 (UiRootNode *)worldRuntime), !placementResult.failed)) {
+                                 (UiRootNode *)worldRuntime,NULL))) {
             bestCell = candidateCell;
             bestScore = workspaceDistanceOrScore;
           }
@@ -853,12 +849,11 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
       remainingCells--;
     } while (remainingCells != 0);
     if (bestScore < INT32_MAX) {
-      createdInstance = ArmyRuntime_CreateInstanceFromAsset
+      createdSlots = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
                         (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,
                          bestCell->worldY,
-                         bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
-      createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
-      if (!createdInstance.failed) {
+                         bestCell->worldX,factionIndex,armyAssetId,worldRuntime,NULL);
+      if (createdSlots != NULL) {
         modelNodeRuntime = createdSlots[1];
         createdArmySlot = *createdSlots;
         modelNodeRuntime->movementPosition0Q12 = 0;
@@ -1594,8 +1589,6 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   bool regionUnreachable;
   ArmyAssetRecordPrefix *armyAsset;
   ModelDefinitionRecordPrefix *modelDefinition;
-  PlacementDispatchResult placementResult;
-  ArmyRuntimeCreateResult createdInstance;
   FieldGridCell *bestCell;
   int bestScore;
   
@@ -1630,10 +1623,10 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
           randomBits = g_RandomGeneratorState.next();
           distanceXOrScore = distanceY + distanceXOrScore + (randomBits & 0xffff);
           if (distanceXOrScore < bestScore) {
-            placementResult = ArmyPlacement_DispatchAssetAtFieldPoint
+            if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                                (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
-                                candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-            if (!placementResult.failed) {
+                                candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,
+                                NULL)) {
               regionUnreachable = GridReachability_RebuildConnectedRegionAroundWorldPoint
                                 (radiusMetric,candidateCell->worldY,candidateCell->worldX);
               if (!regionUnreachable) {
@@ -1646,12 +1639,11 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
           remainingCells--;
         } while (remainingCells != 0);
         if (bestScore < INT32_MAX) {
-          createdInstance = ArmyRuntime_CreateInstanceFromAsset
+          createdSlots = (ArmyRuntimeSlot **)ArmyRuntime_CreateInstanceFromAsset
                              (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,
                               bestCell->worldY,
-                              bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
-          createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
-          if (!createdInstance.failed) {
+                              bestCell->worldX,factionIndex,armyAssetId,worldRuntime,NULL);
+          if (createdSlots != NULL) {
             modelNodeRuntime = createdSlots[1];
             createdArmySlot = *createdSlots;
             modelNodeRuntime->movementPosition0Q12 = 0;

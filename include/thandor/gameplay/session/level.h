@@ -28,20 +28,21 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00531080 */
-EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPath,LevelAssetHeader *asset);
+bool LevelAsset_PrepareEndingMoviePath
+          (uint16_t *currentLevelPath,LevelAssetHeader *asset,uint16_t **outMoviePath,uint32_t *outError);
 
 /* 0x005311D0 */
-LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
-          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime);
+bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
+          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
 /* 0x00532020 */
-LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
-          (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime);
+bool InGameLevelRuntime_LoadResourcesAfterExternalTables
+          (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
 /* 0x005329C0 */
 void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime);
 
 /* 0x00532CA0 */
-StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView);
+bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_LEVEL_H */

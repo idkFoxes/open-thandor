@@ -35,13 +35,13 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context);
 
 /* 0x0057A450 */
-RenderStateApplyResult Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode);
+uint32_t Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode);
 
 /* 0x0057A4C0 */
-RenderStateApplyResult Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode);
+uint32_t Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode);
 
 /* 0x0057A550 */
-RenderStateApplyResult Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled);
+uint32_t Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled);
 
 /* 0x0057CCB0 */
 void Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet);
