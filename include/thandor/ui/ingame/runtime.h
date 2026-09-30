@@ -141,7 +141,7 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath); /* CF: true = 
 void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl);
 
 /* 0x0055C990 */
-StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot);
+bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError);
 
 /* 0x00563BD0 */
 void InGameHud_UpdateStatusCountersAndSessionPrompts(void);

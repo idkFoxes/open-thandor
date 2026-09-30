@@ -29,7 +29,7 @@
 bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase);
 
 /* 0x004AD800 */
-StatusResult GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset);
+bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount);
 
 /* 0x004AD820 */
 PaletteAssetResult GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16);
@@ -50,7 +50,7 @@ PaletteAssetResult GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAs
 GraphicsPaletteAsset * GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AE7E0 */
-PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
+GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           (GraphicsPaletteTextureSourceAsset *appendedAsset,
           GraphicsPaletteTextureSourceAsset *baseAsset);
 

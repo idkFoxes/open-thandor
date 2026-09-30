@@ -51,7 +51,7 @@
 #define GRID_PATH_STEP_COST_HIGH 12
 #define GRID_PATH_PROPAGATION_PASSES 6             /* passes of GridPathCost_PropagateWeightedHexNeighbors */
 #define GRID_PATH_COST_QUEUE_PASS_ENTRIES 0x10000  /* queue entries per propagation pass */
-#define GRID_PATH_NEAREST_SEARCH_RADIUS 16         /* GridPathCost_FindNearestUnblockedCell scans +-16 cells */
+#define GRID_PATH_NEAREST_SEARCH_RADIUS 16         /* GridPathCost_RelocateFromBlockedCell scans +-16 cells */
 /* bytes of the cost queue buffer (g_GridPathCostQueueBegin..End): one pass worth of cell pointers per
    propagation pass (0x180000) */
 #define GRID_PATH_COST_QUEUE_BYTES \
@@ -61,7 +61,7 @@
 #define GRID_REACHABILITY_OPEN_STOP_MASK 0xf0007f01
 
 /* 0x005349D0 */
-PathingDestinationResult
+PathingDestination
 EntityPathing_ResolveDestinationAndRebuildRoutes
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime);
@@ -78,7 +78,7 @@ bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
           (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair *targetRuntimePair);
 
 /* 0x005332C0 */
-GridScratchAllocResult GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid);
+bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
 
 /* 0x00533360 */
 void GridScratch_ReleaseBuffers(void);
@@ -110,12 +110,16 @@ bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorld
           GraphicsWorldCoordinateQ12 targetWorldXQ12);
 
 /* 0x00534660 */
-PathBacktrackResult GridPathCost_BacktrackBestHexRoute
+bool GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
-          FieldGridCellCoordinate startColumn,GridScratchCell *startCell);
+          FieldGridCellCoordinate startColumn,GridScratchCell *startCell,FieldGridCellCoordinate *outRow,
+          FieldGridCellCoordinate *outColumn,FieldGridRegionMask *outRouteStateMask);
 
 /* 0x00534960 */
-GridPathMarkedRegionCellRegisterResult GridPathRegion_MarkUnreachableFromCell (GridPathUnreachableReferenceRow32 referenceRow, GridPathUnreachableReferenceColumn32 referenceColumn,FieldGridCellCoordinate row, FieldGridCellCoordinate column);
+void GridPathRegion_MarkUnreachableFromCell
+          (GridPathUnreachableReferenceRow32 referenceRow,
+          GridPathUnreachableReferenceColumn32 referenceColumn,FieldGridCellCoordinate row,
+          FieldGridCellCoordinate column,FieldGridCellCoordinate *outRow,FieldGridCellCoordinate *outColumn);
 
 /* 0x005333B0 */
 void __cdecl GridScratch_CopyPrimaryToSecondary(void);
@@ -160,7 +164,9 @@ void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratc
 void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
 /* 0x005342F0 */
-NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn);
+bool GridPathCost_RelocateFromBlockedCell
+          (FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn,FieldGridCellCoordinate *outRow,
+          FieldGridCellCoordinate *outColumn);
 
 /* 0x005344B0 */
 bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,

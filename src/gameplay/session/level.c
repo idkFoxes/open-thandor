@@ -141,6 +141,8 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
   uint32_t assetError;
   bool armyRuntimeInitialized;
   uint32_t armyInitError;
+  bool effectsInitialized;
+  uint32_t effectInitError;
   ArmyRuntimeSlot *createdArmy;
   uint32_t armyCreateError;
   ArenaShrinkResult shrinkResult;
@@ -408,9 +410,9 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
                   g_MoviePlaybackBaseFrameGroup = 2;
                   g_MoviePlaybackScheduleCounter = 0;
                   g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
-                  statusResult = ModelRuntimePool_Init();
-                  resultOrPointer = (void *)statusResult.valueOrError;
-                  if (!statusResult.failed) {
+                  assetError = ModelRuntimePool_Init();
+                  resultOrPointer = (void *)assetError;
+                  if (assetError == 0) {
                     /* The decompiler lost these two locals; the original reads them from the level header
                        (+0xC0 army and +0xC8 effect texture base paths). */
                     armyTextureBasePath =
@@ -434,9 +436,10 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
                         g_MoviePlaybackBaseFrameGroup = 4;
                         g_MoviePlaybackScheduleCounter = 0;
                         g_MoviePlaybackScheduleSpan = 4;
-                        statusResult = EffectRuntime_InitGraphicsResources(effectTextureBasePath);
-                        resultOrPointer = (void *)statusResult.valueOrError;
-                        if (!statusResult.failed) {
+                        effectsInitialized =
+                             EffectRuntime_InitGraphicsResources(effectTextureBasePath,&effectInitError);
+                        resultOrPointer = (void *)effectInitError;
+                        if (effectsInitialized) {
                           g_MoviePlaybackBaseFrameGroup = 5;
                           g_MoviePlaybackScheduleCounter = 0;
                           g_MoviePlaybackScheduleSpan = 6;
@@ -972,6 +975,8 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
   uint32_t assetError;
   bool armyRuntimeInitialized;
   uint32_t armyInitError;
+  bool effectsInitialized;
+  uint32_t effectInitError;
   ArenaShrinkResult shrinkResult;
   SpatialSoundSlot *soundSlot;
   ArenaFreeResult freeResult;
@@ -1132,9 +1137,9 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
                   g_MoviePlaybackBaseFrameGroup = 2;
                   g_MoviePlaybackScheduleCounter = 0;
                   g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
-                  statusResult = ModelRuntimePool_Init();
-                  resultOrPointer = (void *)statusResult.valueOrError;
-                  if (!statusResult.failed) {
+                  assetError = ModelRuntimePool_Init();
+                  resultOrPointer = (void *)assetError;
+                  if (assetError == 0) {
                     /* The decompiler lost these two locals; the original reads them from the level header
                        (+0xC0 army and +0xC8 effect texture base paths). */
                     armyTextureBasePath =
@@ -1157,9 +1162,10 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
                         g_MoviePlaybackBaseFrameGroup = 4;
                         g_MoviePlaybackScheduleCounter = 0;
                         g_MoviePlaybackScheduleSpan = 4;
-                        statusResult = EffectRuntime_InitGraphicsResources(effectTextureBasePath);
-                        resultOrPointer = (void *)statusResult.valueOrError;
-                        if (!statusResult.failed) {
+                        effectsInitialized =
+                             EffectRuntime_InitGraphicsResources(effectTextureBasePath,&effectInitError);
+                        resultOrPointer = (void *)effectInitError;
+                        if (effectsInitialized) {
                           g_MoviePlaybackBaseFrameGroup = 5;
                           g_MoviePlaybackScheduleCounter = 0;
                           g_MoviePlaybackScheduleSpan = 6;
@@ -1648,7 +1654,6 @@ bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldVi
   uint32_t bookmarkPackedHeadingPitch;
   uint32_t statusOrFieldValue;
   LevelInitialArmyPlacementRecord20 *placementRecordCursor;
-  StatusResult statusResult;
   bool imageLoaded;
 
   imageLoaded = Package_LoadEntryIntoBuffer(PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
@@ -1770,10 +1775,9 @@ bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldVi
     levelImage->playerSlots[6].startCameraZQ12 = bookmarkZ;
     levelImage->playerSlots[6].startCameraMagnitudeQ12 = bookmarkMagnitude;
     levelImage->playerSlots[6].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
-    statusResult = FileSystem_WriteBufferToPath
+    statusOrFieldValue = FileSystem_WriteBufferToPath
                       (levelImage->header.common.allocationSizeBytes,levelImageBytes,g_LevelEndingMovieSourcePath);
-    statusOrFieldValue = statusResult.valueOrError;
-    if (!statusResult.failed) {
+    if (statusOrFieldValue == 0) {
       return true;
     }
   }

@@ -1012,9 +1012,8 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
 
 {
   UiSelectableControl *root;
-  UiNodeVtable *selectedIndexValue;
-  SelectableGroupNodeResult selectionResult;
-  
+  uint32_t selectedIndexValue;
+
   root = source;
   while ((root->base).parent != UI_NODE_NONE) {
     root = (UiSelectableControl *)(root->base).parent;
@@ -1022,10 +1021,10 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
   UiSelectableGroup_SelectExclusive(2,&source->base,
       INGAME_UI(root,resultsChartModeButtonB),
       INGAME_UI(root,resultsChartModeButtonA));
-  selectionResult = UiSelectableGroup_NoneVisibleSelected(2,
+  /* Original quirk: the result is not tested; with no visible button selected the index is 2 */
+  UiSelectableGroup_FindVisibleSelected(NULL,&selectedIndexValue,2,
       INGAME_UI(root,resultsChartModeButtonA),
       INGAME_UI(root,resultsChartModeButtonB));
-  selectedIndexValue = (UiNodeVtable *)selectionResult.controlIndexOrCount;
   /* Mode 0/1 picks each chart's drawing path (modeFlags bit 0) and the results background image. */
   ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart1))->modeFlags =
        (uint32_t)selectedIndexValue;
@@ -1833,7 +1832,7 @@ InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeInd
   while ((root->rootUi).base.parent != UI_NODE_NONE) {
     root = (InGameRuntimeRoot *)(root->rootUi).base.parent;
   }
-  UiSelectableGroup_NoneVisibleSelected(6,
+  UiSelectableGroup_FindVisibleSelected(NULL,NULL,6,
       INGAME_UI(root,editorModeTabRegion),
       INGAME_UI(root,editorModeTabObjectPlacement),
       INGAME_UI(root,editorModeTabUnitPlacement),

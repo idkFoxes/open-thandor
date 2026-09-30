@@ -18,10 +18,10 @@
    (FRONTEND_PAGE_ACTION_*): open a menu page, wait for the network peers (scenario catalogue, task assignment,
    level transfer), or tear the frontend down to run a session. After a session a campaign continues with the
    successor level chosen by the end movie (menu rebuilt at FRONTEND_ROM_RECORD_MISSION_BRIEFING), otherwise
-   the menu is rebuilt at the scenario selection or the entry record. Returns CF clear when the UI root stack
-   empties (quit), CF set with the error when Frontend_Init fails.
+   the menu is rebuilt at the scenario selection or the entry record. Returns true when the UI root stack
+   empties (quit); false with Frontend_Init's error in *outError when building the menu fails.
 */
-FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId)
+bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
 
 {
   FrontendRoleStateFlags *roleStateFlagsPtr;
@@ -47,22 +47,20 @@ FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId)
   FrontendPlayerRuntimeRecord *roleScanBlock;
   FrontendSnapshotTransferFlags *receivedFlagsCursor;
   uint32_t *transferDwordCursor;
-  FrontendInitResult initResult;
-  FrontendMainLoopResult exitResult;
-  FrontendMainLoopResult failureResult;
+  bool menuBuilt;
   uint32_t sessionError;
   PackageLoadResult packageLoadResult;
   FatalErrorCheckResult checkedResult;
   PckCodecResult encodeResult;
   ArenaAllocResult allocResult;
-  MailboxReceiveResult receivedBuffer;
+  PckDecodedByteCount *receivedBuffer; /* unpacked size, then the packed snapshot flags */
+  uint32_t receivedByteCount;
   CommandLineOptionResult commandLineOption;
   FieldGridAsset *savedFieldGrid;
   
   g_FrontendNetworkState = 0;
-  initResult = Frontend_Init(frontendEntryRecordId);
-  errorOrByteCount = initResult.frontendRootOrError;
-  if (!initResult.failed) {
+  menuBuilt = Frontend_Init(frontendEntryRecordId,&errorOrByteCount);
+  if (menuBuilt) {
     /* -HOST and -CLIENT= activate entry 3 of the entry menu's action table, -KARTE= (map) entry 0, without the
        click sound, and let the started camera transition end at once. */
     commandLineOption = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26); /* "HOST" */
@@ -98,12 +96,9 @@ nextFrame:
           if ((g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE) && (g_UiRootNode == UI_ROOT_STACK_END)) {
             /* the last UI root was popped: the player quit the game */
             FrontendRuntime_ShutdownAndReleaseResourcesRegs();
-            exitResult.failed = false;
             /* The asm returns with CLC and EAX left over from UiFrame_ProcessAndPresent (the shutdown helper
-               preserves EAX); the only caller hands it to the fatal-error dispatcher, which ignores it with CF
-               clear. */
-            exitResult.errorOrValue = 0;
-            return exitResult;
+               preserves EAX), which the only caller ignores. */
+            return true;
           }
         } while (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE);
         UiFrame_FlushInputAndResetPendingTicks();
@@ -130,11 +125,10 @@ nextFrame:
           if ((playerBlock->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) !=
                 SESSION_NETWORK_ROLE_LOCAL) {
-              receivedBuffer = UiTransferMailbox_GetReceivedBuffer();
-              if (!receivedBuffer.unavailable) {
+              receivedBuffer = (PckDecodedByteCount *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
+              if (receivedBuffer != NULL) {
                 PckCodec_DecodeHuffmanRle
-                          (*(PckDecodedByteCount *)receivedBuffer.buffer,g_PackageScratchBuffer,receivedBuffer.byteCount - 4,
-                           (uint8_t *)((PckDecodedByteCount *)receivedBuffer.buffer + 1));
+                          (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1));
                 remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
                 receivedFlagsCursor = (FrontendSnapshotTransferFlags *)g_PackageScratchBuffer;
                 playerBlock = g_FrontendPlayerRuntimeBlocks;
@@ -342,9 +336,8 @@ advanceCampaign:
   }
 initFailed:
   FrontendRuntime_ShutdownAndReleaseResourcesRegs();
-  failureResult.failed = true;
-  failureResult.errorOrValue = errorOrByteCount;
-  return failureResult;
+  *outError = errorOrByteCount;
+  return false;
 noNextLevel:
   /* No level to continue with (no campaign, or it ended): back to the scenario selection. */
   if (g_FrontendScenarioPathScratchUtf16 == 0) {
@@ -356,9 +349,7 @@ loadSelectedLevel:
   {
     /* Rebuild the menu in the briefing room and load the level (host and local game) or wait for it from
        the host (client); FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE opens once every player has it. */
-    initResult = Frontend_Init(FRONTEND_ROM_RECORD_MISSION_BRIEFING);
-    errorOrByteCount = initResult.frontendRootOrError;
-    if (initResult.failed) goto initFailed;
+    if (!Frontend_Init(FRONTEND_ROM_RECORD_MISSION_BRIEFING,&errorOrByteCount)) goto initFailed;
     g_FrontendScenarioInitializationCount++;
     g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE;
     roleStateFlagsPtr = &g_FrontendPlayerRuntimeBlocks->factionAssignment.roleStateFlags;
@@ -435,10 +426,9 @@ loadSelectedLevel:
     goto nextFrame;
   }
 rebuildMenu:
-  initResult = Frontend_Init(nextRomRecordId);
-  errorOrByteCount = initResult.frontendRootOrError;
+  menuBuilt = Frontend_Init(nextRomRecordId,&errorOrByteCount);
   g_FrontendPendingPageAction = countOrLevelIdOrNextAction;
-  if (!initResult.failed) goto nextFrame;
+  if (menuBuilt) goto nextFrame;
   goto initFailed;
 }
 
@@ -1484,7 +1474,7 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
   }
   switch (target) {
   case 0x548140:
-    if (UiPageStack_ActivePageNotInList((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)).pageIndex ==
+    if (UiPageStack_ActivePageIndex((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)) ==
         FRONTEND_PAGE_FACTION_SETUP) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
         FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_XOR_PLAYER_STATE,0,0,1);
@@ -1597,15 +1587,15 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   int keyframeChannel5;
   int channel4OrHalfHeight;
   RichTextExtentRegs textExtent;
-  PageStackSearchResult pageStackStatus;
+  uint32_t activePageIndex;
   uint16_t *hintTextResult;
   TextureSizeResult windowTextureSize;
 
   resultCode = 0;
   channel3OrHintValue = 0;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
-     (pageStackStatus = UiPageStack_ActivePageNotInList(&frontendRuntime->activePageStack),
-     pageStackStatus.pageIndex == 0)) {
+     (activePageIndex = UiPageStack_ActivePageIndex(&frontendRuntime->activePageStack),
+     activePageIndex == 0)) {
     pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedModelNode);
     recordId = FRONTEND_ROM_RECORD_ID_NONE;
     if (pointedRomRecord != NULL) {
@@ -2495,7 +2485,6 @@ void Frontend_PlaySelectedEndMovie(void)
   uint8_t *copyDestination;
   bool framebufferAccessFailed;
   MovieOpenResult movieOpenResult;
-  MovieFrameResult frameAdvanceResult;
   uint16_t *resultsTextResult;
   uint16_t *levelTitleResult;
   
@@ -2559,17 +2548,14 @@ void Frontend_PlaySelectedEndMovie(void)
       /* EDX = g_InGameRuntimeRoot + 0x17C in the original; the decompiler lost it. */
       stack = (UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack);
       UiPageStack_SetActiveIndex(1,stack);
-      frameAdvanceResult = Movie_AdvanceFrame();
-      if (!frameAdvanceResult.ended) {
-        runtimeRoot->activeEndMovieRuntime = (MovieRuntime *)frameAdvanceResult.movieOrError;
+      if (Movie_AdvanceFrame(&runtimeRoot->activeEndMovieRuntime,NULL)) {
         runtimeRoot->endMoviePlaybackState = 0;
         g_EndMoviePendingTicks = 0;
         /* one movie frame per timer tick until the movie ends (or the end-movie flag is cleared elsewhere) */
         do {
           if (g_EndMoviePendingTicks != 0) {
             g_EndMoviePendingTicks--;
-            frameAdvanceResult = Movie_AdvanceFrame();
-            if (frameAdvanceResult.ended) {
+            if (!Movie_AdvanceFrame(NULL,NULL)) {
               g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
             }
           }
@@ -2687,10 +2673,10 @@ void Frontend_PlaySelectedEndMovie(void)
    the menu music, creates the 0x5954-byte frontend root from its template and pushes it on the UI root stack,
    installs the 3D menu-room callbacks and activates the record's camera transition. It then reports this
    player ready and draws frames until every player is ready (network sessions wait here for the peers).
-   Returns the frontend root, or CF set with the failing call's error; FrontendRuntime_ShutdownAndReleaseResourcesRegs
-   undoes it.
+   Returns true on success (the root is g_FrontendRootNode); false with the failing call's error in *outError.
+   FrontendRuntime_ShutdownAndReleaseResourcesRegs undoes it.
 */
-FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId)
+bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
 
 {
   SessionNetworkRoleFlags pendingBlockCountOrRoleMask;
@@ -2722,8 +2708,6 @@ FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId)
   uint32_t romError;
   ArenaAllocResult allocResult;
   SoundPlayResult playResult;
-  FrontendInitResult successResult;
-  FrontendInitResult failureResult;
   bool sampleLoaded;
   WorldRuntimeContext *worldRuntime;
   FrontendModelPointerContext *pointerContext;
@@ -2966,9 +2950,7 @@ loadCentralRom:
                   } while ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
                   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
                   UiFrame_FlushInputAndResetPendingTicks();
-                  successResult.failed = false;
-                  successResult.frontendRootOrError = (uint32_t)frontendUiState;
-                  return successResult;
+                  return true;
                 }
               }
             }
@@ -2978,9 +2960,8 @@ loadCentralRom:
     }
   }
 fail:
-  failureResult.failed = true;
-  failureResult.frontendRootOrError = (uint32_t)fillCursorOrResult;
-  return failureResult;
+  *outError = (uint32_t)fillCursorOrResult;
+  return false;
 }
 
 
@@ -2996,7 +2977,8 @@ void Frontend_StateTick(void)
   uint32_t frontendRoot; /* passed to the packet handlers */
   uint32_t previousTickCounter;
   bool callResult;
-  RecordRingDiscardResult discardedRecord;
+  void *packet;
+  void *packetEndpoint;
 
   callResult = g_SpinLockTryAcquire(&g_FrontendStateTickSpinLock);
   previousTickCounter = g_FrontendNetworkTickCounter;
@@ -3021,10 +3003,10 @@ void Frontend_StateTick(void)
       if ((previousTickCounter & 15) != 0) {
         UiTransfer_SendDiscoveryProbe();
       }
-      while (discardedRecord = UiRuntimeRecordRing_DiscardOldest(), !discardedRecord.empty) {
+      while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
         FrontendTransfer_HandleSessionListAndJoinAckPackets
-                  ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
+                  ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                   frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
@@ -3035,10 +3017,10 @@ void Frontend_StateTick(void)
       g_FrontendNetworkTickCounter++;
       g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
       FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(g_FrontendRootNode);
-      while (discardedRecord = UiRuntimeRecordRing_DiscardOldest(), !discardedRecord.empty) {
+      while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
         FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
-                  ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
+                  ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                   frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
@@ -3051,10 +3033,10 @@ void Frontend_StateTick(void)
       if ((previousTickCounter & 15) != 0) {
         FrontendTransfer_SendCapabilityHeartbeat();
       }
-      while (discardedRecord = UiRuntimeRecordRing_DiscardOldest(), !discardedRecord.empty) {
+      while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
         FrontendTransfer_HandleHostSessionAndCommandBatchPackets
-                  ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
+                  ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                   frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
@@ -3067,10 +3049,10 @@ void Frontend_StateTick(void)
     }
     g_FrontendNetworkTickCounter++;
     g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
-    while (discardedRecord = UiRuntimeRecordRing_DiscardOldest(), !discardedRecord.empty) {
+    while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
       FrontendNetwork_HandleHandshakeAndPlayerStatePackets
-                ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                 (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
+                ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
+                 frontendRoot);
     }
     callResult = FrontendNetwork_HostTickCommandAndSnapshotTransfer(frontendRoot);
     if (callResult) {
@@ -3089,11 +3071,9 @@ void Frontend_StateTick(void)
     }
     g_FrontendNetworkTickCounter++;
     do {
-      discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-      if (discardedRecord.empty) break;
+      if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) break;
       callResult = FrontendTransfer_HandleGameplayCommandAndRosterPackets
-                        ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                         (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,
+                        ((UiTransferEndpointDescriptor *)packetEndpoint,(FrontendTransferPacketUnion *)packet,
                          frontendRoot);
     } while (!callResult);
     callResult = FrontendTransfer_ConsumeProcessedFlagForMenuTick();
@@ -3545,7 +3525,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   ModelRuntimeNode *modelNode;
   uint32_t bestHitMetric;
   ModelRuntimeNode *bestModelNode;
-  ModelHitTestResult hitTestResult;
+  uint32_t hitDistanceQ12;
   int candidatePriority;
   int bestPriority;
 
@@ -3556,11 +3536,10 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
     if ((modelNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) != 0 && modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
         ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS) != 0 ||
          (modelNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) != 0)) {
-      hitTestResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildren
-                        (pointerY,pointerX,modelNode,context);
-      if (hitTestResult.missed) continue;
+      if (!ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+                        (pointerY,pointerX,modelNode,context,&hitDistanceQ12)) continue;
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
-        if ((int)bestHitMetric <= (int)hitTestResult.distanceQ12) continue;
+        if ((int)bestHitMetric <= (int)hitDistanceQ12) continue;
       }
       else if (bestModelNode != NULL) {
         /* Higher model-class priority wins; equal priority falls back to the smaller hit metric. */
@@ -3571,10 +3550,10 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
              (int)(&g_RuntimeModelClassPriorityByModelClassId.modelClass00Priority)
                   [bestModelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId];
         if (candidatePriority < bestPriority) continue;
-        if ((candidatePriority == bestPriority) && ((int)bestHitMetric <= (int)hitTestResult.distanceQ12))
+        if ((candidatePriority == bestPriority) && ((int)bestHitMetric <= (int)hitDistanceQ12))
         continue;
       }
-      bestHitMetric = hitTestResult.distanceQ12;
+      bestHitMetric = hitDistanceQ12;
       bestModelNode = modelNode;
     }
   }

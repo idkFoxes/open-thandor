@@ -32,10 +32,9 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   uint32_t levelMaskBit;
   ScenarioCatalogRecordCount levelsRemaining;
   uint32_t maskWordIndex;
-  MovieFrameResult movieFrame;
-  PageStackSearchResult activePageStatus;
+  uint32_t activePageIndex;
   uint16_t *markerText;
-  SelectableGroupIndexResult selectedGroup;
+  uint32_t selectedTabIndex;
   uint16_t availabilityMarker;
   
   networkState = g_FrontendNetworkState;
@@ -61,7 +60,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
     if ((((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource != NULL) &&
-       (movieFrame = Movie_AdvanceFrame(), movieFrame.ended)) {
+       !Movie_AdvanceFrame(NULL,NULL)) {
       Movie_Rewind();
     }
     if (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(frontendRoot,moviePlaybackView))->textureSource != NULL) {
@@ -92,16 +91,15 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     g_FrontendPlayerRuntimeBlocks->capabilityFlags = FRONTEND_CAPABILITY_CD;
   }
-  activePageStatus = UiPageStack_ActivePageNotInList
+  activePageIndex = UiPageStack_ActivePageIndex
                      ((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
-  if (activePageStatus.pageIndex == FRONTEND_PAGE_STACK_CHOOSE_GAME) {
-    selectedGroup = UiSelectableGroup_NoneSelected(3,
+  if (activePageIndex == FRONTEND_PAGE_STACK_CHOOSE_GAME) {
+    selectedTabIndex = UiSelectableGroup_SelectedIndex(3,
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
-    if (((!selectedGroup.noneSelected) &&
-        (selectedGroup.selectedIndexOrCount == SCENARIO_SELECTION_TAB_SINGLE_GAMES)) &&
-       (g_ScenarioCatalog != NULL)) {
+    /* none selected gives 3, never the single-games tab */
+    if ((selectedTabIndex == SCENARIO_SELECTION_TAB_SINGLE_GAMES) && (g_ScenarioCatalog != NULL)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
       levelRecord = (ScenarioCatalogDisplayRecord *)
                     ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
@@ -168,7 +166,8 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   uint16_t *briefingText;
   uint16_t *templateText;
   MovieOpenResult movieOpen;
-  MovieFrameResult firstFrame;
+  MovieRuntime *firstFrameMovie;
+  uint32_t movieEndCode;
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     savedGameSpeedPercent = PersistentSettings_Read(100,PERSISTENT_SETTING_GAME_SPEED_PERCENT);
@@ -209,9 +208,15 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = NULL;
   }
   else {
-    firstFrame = Movie_AdvanceFrame();
-    ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource =
-         (GraphicsTextureSourceAsset *)firstFrame.movieOrError;
+    /* Original quirk: the result is not checked; when no frame comes the end code becomes the texture source */
+    if (Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode)) {
+      ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource =
+           (GraphicsTextureSourceAsset *)firstFrameMovie;
+    }
+    else {
+      ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource =
+           (GraphicsTextureSourceAsset *)movieEndCode;
+    }
     ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->subresource = 0;
   }
   if ((((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&

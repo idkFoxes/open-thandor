@@ -126,7 +126,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
   InGameConditionSchedule *scheduledCondition;
   bool voicePlaying;
   FieldGridCoordinates targetGridPosition;
-  PageStackSearchResult pageStackStatus;
+  uint32_t activePageIndex;
   SoundPlayResult playVoiceResult;
   uint32_t cursorFrameOrScratch;
   
@@ -174,9 +174,9 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
     worldRuntime = &inGameRoot->worldRuntime;
     InGameHud_UpdateStatusCountersAndSessionPrompts();
-    pageStackStatus = UiPageStack_ActivePageNotInList(&inGameRoot->worldViewAreaPageStack);
+    activePageIndex = UiPageStack_ActivePageIndex(&inGameRoot->worldViewAreaPageStack);
     if ((((((inGameRoot->worldRuntime).runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) == 0) &&
-         (pageStackStatus.pageIndex == 0)) &&
+         (activePageIndex == 0)) &&
         (((inGameRoot->worldRuntime).interaction.nodeFlags & 8) == 0)) &&
        (((g_CursorButtonState & 4) == 0 &&
         (candidateFrameOrScore = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime),
@@ -319,8 +319,8 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
         InGameRuntime_UpdateCursorGridAndViewScaleCache();
         return;
       }
-      pageStackStatus = UiPageStack_ActivePageNotInList(&inGameRoot->gameWindowPageStack);
-      if (pageStackStatus.pageIndex == 2) {
+      activePageIndex = UiPageStack_ActivePageIndex(&inGameRoot->gameWindowPageStack);
+      if (activePageIndex == 2) {
         InGameTechnologyPanel_Rebuild(&inGameRoot->rootUi);
       }
       InterpolationStateTable_Advance256ByTicks(g_InGameSimulationStepTicks);
@@ -660,17 +660,18 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->selectionStart = 0;
     ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->selectionEnd = 0;
     if (!localSession) {
-      SelectableGroupNodeResult visible;
+      UiNodeBase *recipientTab;
       int i;
       for (i = 0; i < 24; i++) {
         ((uint32_t *)((InGameCommandTextEditControlCC *)INGAME_UI(rt,chatInputTextEdit))->textBuffer)[i] = 0;
       }
-      visible = UiSelectableGroup_NoneVisibleSelected(3,INGAME_UI(rt,messageRecipientAllTab),
-                                                      INGAME_UI(rt,messageRecipientGroupsTab),
-                                                    INGAME_UI(rt,messageRecipientPlayersTab));
+      /* Original quirk: the result is not tested; with no tab selected this is the last tab */
+      UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,INGAME_UI(rt,messageRecipientAllTab),
+                                            INGAME_UI(rt,messageRecipientGroupsTab),
+                                            INGAME_UI(rt,messageRecipientPlayersTab));
       (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) +
-                                       (((UiSelectableControl *)visible.node)->actionId & 0xff) * 4))
-                (visible.node);
+                                       (((UiSelectableControl *)recipientTab)->actionId & 0xff) * 4))
+                (recipientTab);
     }
     UiKeyboardFocus_Set(INGAME_UI(rt,chatInputTextEdit));
     break;
@@ -707,13 +708,13 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
   case 0x5674b0: { /* C: toggle the message window (network games only) */
     UiPageStackControl *stack;
     uint32_t index;
-    SelectableGroupNodeResult visible;
+    UiNodeBase *recipientTab;
     int i;
     if (localSession) {
       break;
     }
     stack = (UiPageStackControl *)INGAME_UI(rt,gameWindowPageStack);
-    index = (UiPageStack_ActivePageNotInList(stack).pageIndex == 1) ? 0 : 1;
+    index = (UiPageStack_ActivePageIndex(stack) == 1) ? 0 : 1;
     UiPageStack_SetActiveIndex(index,stack);
     INGAME_UI(rt,worldView)->nodeFlags =
          INGAME_UI(rt,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
@@ -729,12 +730,13 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     for (i = 0; i < 24; i++) {
       ((uint32_t *)((InGameCommandTextEditControlCC *)INGAME_UI(rt,messageTextEdit))->textBuffer)[i] = 0;
     }
-    visible = UiSelectableGroup_NoneVisibleSelected(3,INGAME_UI(rt,messageRecipientAllTab),
-                                                    INGAME_UI(rt,messageRecipientGroupsTab),
-                                                    INGAME_UI(rt,messageRecipientPlayersTab));
+    /* Original quirk: the result is not tested; with no tab selected this is the last tab */
+    UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,INGAME_UI(rt,messageRecipientAllTab),
+                                          INGAME_UI(rt,messageRecipientGroupsTab),
+                                          INGAME_UI(rt,messageRecipientPlayersTab));
     (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) +
-                                     (((UiSelectableControl *)visible.node)->actionId & 0xff) * 4))
-              (visible.node);
+                                     (((UiSelectableControl *)recipientTab)->actionId & 0xff) * 4))
+              (recipientTab);
     g_KeyboardFlushEvents();
     break;
   }
@@ -760,7 +762,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
   case 0x5676a0: { /* Tab: hide or show the side panel; bit 2 of the map/mouse settings remembers it */
     uint32_t settings = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
     UiPageStackControl *stack = (UiPageStackControl *)INGAME_UI(rt,sidePanelStack);
-    if (UiPageStack_ActivePageNotInList(stack).pageIndex != 0) {
+    if (UiPageStack_ActivePageIndex(stack) != 0) {
       UiPageStack_SetActiveIndex(0,stack);
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,resourceBarModeStack));
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,gamePanelsModeStack));
@@ -840,7 +842,7 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
   int remainingWords;
   uint32_t *sourceWord;
   uint32_t *destinationWord;
-  MovieFrameResult frameResult;
+  MovieRuntime *notificationMovie;
   MovieOpenResult openResult;
   InGameRuntimeRoot *inGameRoot;
   
@@ -865,9 +867,8 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
             ((notificationMovieNumber < 300 || ((699 < notificationMovieNumber && (notificationMovieNumber < 900)))))) {
           Movie_SetAudioGainQ15(g_MovieAlternateAudioGainQ15);
         }
-        frameResult = Movie_AdvanceFrame();
-        if (!frameResult.ended) {
-          inGameRoot->notificationButtonTextureSource = frameResult.movieOrError;
+        if (Movie_AdvanceFrame(&notificationMovie,NULL)) {
+          inGameRoot->notificationButtonTextureSource = (uint32_t)notificationMovie;
           inGameRoot->notificationButtonSubresource = 0;
           /* copy the 0x18-byte payload of the queue head into the active notification */
           sourceWord = (uint32_t *)&inGameRoot->notificationQueue[0].payload;
@@ -901,8 +902,7 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
     }
   }
   else {
-    frameResult = Movie_AdvanceFrame();
-    if (frameResult.ended) {
+    if (!Movie_AdvanceFrame(NULL,NULL)) {
       Movie_Close();
       g_InGameSessionNotificationTimeoutTicks = 640;
       inGameRoot->notificationButtonTextureSource = (uint32_t)panelTextureSource;
@@ -954,12 +954,16 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
   uint16_t *resolvedTitle;
   ArenaAllocResult allocation;
   StatusResult statusResult;
+  uint32_t resetDefaultsError;
   uint32_t stepError;
   uint16_t *loadingMoviePath;
   MovieOpenResult movieOpen;
-  MovieFrameResult firstFrame;
-  GridScratchAllocResult gridScratch;
-  
+  bool firstFrameDecoded;
+  MovieRuntime *firstFrameMovie;
+  uint32_t movieEndCode;
+  bool gridScratchAllocated;
+  uint32_t gridScratchError;
+
   g_UiCommandRuntimeFlags = UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED;
   g_SessionNetworkTickCounter = 1;
   g_HostCommandBatchSyncSentThisInterval = 0;
@@ -1071,9 +1075,10 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
           rootCursorOrError = (InGameRuntimeRoot *)&(rootCursorOrError->rootUi).base.firstChild;
         }
         world = &inGameRoot->worldRuntime;
-        statusResult = InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot);
-        rootCursorOrError = (InGameRuntimeRoot *)statusResult.valueOrError;
-        if (!statusResult.failed) {
+        if (!InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot,&stepError)) {
+          rootCursorOrError = (InGameRuntimeRoot *)stepError;
+        }
+        else {
           /* world input and command callbacks, camera limits, and the step hook for the world runtime */
           inGameRoot->worldOverlayCallback =
                InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
@@ -1111,9 +1116,10 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
             movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath);
             rootCursorOrError = (InGameRuntimeRoot *)movieOpen.frameCountOrError;
             if (!movieOpen.failed) {
-              firstFrame = Movie_AdvanceFrame();
-              rootCursorOrError = (InGameRuntimeRoot *)firstFrame.movieOrError;
-              if (!firstFrame.ended) {
+              firstFrameDecoded = Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode);
+              rootCursorOrError = firstFrameDecoded ? (InGameRuntimeRoot *)firstFrameMovie :
+                                                      (InGameRuntimeRoot *)movieEndCode;
+              if (firstFrameDecoded) {
                 inGameRoot->levelMovieRuntime = (MovieRuntime *)rootCursorOrError;
                 g_MoviePlaybackBaseFrameGroup = 0;
                 g_MoviePlaybackScheduleCounter = 0;
@@ -1131,9 +1137,9 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
                 (inGameRoot->worldRuntime).selection.activePlayerRuntimeId = localPlayerId;
                 WorldRuntime_AttachAndClearDwordArray
                           (INGAME_WORLD_DWORD_ARRAY_COUNT,(uint32_t *)&g_InGameWorldRuntimeDwordArray256,world);
-                statusResult = GameData_ResetDefaults();
-                rootCursorOrError = (InGameRuntimeRoot *)statusResult.valueOrError;
-                if (!statusResult.failed) {
+                resetDefaultsError = GameData_ResetDefaults();
+                rootCursorOrError = (InGameRuntimeRoot *)resetDefaultsError;
+                if (resetDefaultsError == 0) {
                   if (!InGameLevelRuntime_LoadResourcesAfterDefaultReset(levelAsset,world,&stepError)) {
                     rootCursorOrError = (InGameRuntimeRoot *)stepError;
                   }
@@ -1219,10 +1225,12 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
                           DebugCampaign_LogCarryOver(1);
 #endif
                         }
-                        gridScratch = GridScratch_AllocateForFieldGrid
-                                           ((inGameRoot->worldRuntime).fieldGrid);
-                        rootCursorOrError = (InGameRuntimeRoot *)gridScratch.valueOrError;
-                        if (!gridScratch.failed) {
+                        gridScratchAllocated = GridScratch_AllocateForFieldGrid
+                                           ((inGameRoot->worldRuntime).fieldGrid,&gridScratchError);
+                        if (!gridScratchAllocated) {
+                          rootCursorOrError = (InGameRuntimeRoot *)gridScratchError;
+                        }
+                        if (gridScratchAllocated) {
                           GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
                           GridInfluence_ClearDistanceBandsAndRefreshEntities
                                     ((inGameRoot->worldRuntime).ownerListHead);
@@ -1347,8 +1355,11 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
   uint32_t stepError;
   uint16_t *loadingMoviePath;
   MovieOpenResult movieOpen;
-  MovieFrameResult firstFrame;
-  GridScratchAllocResult gridScratch;
+  bool firstFrameDecoded;
+  MovieRuntime *firstFrameMovie;
+  uint32_t movieEndCode;
+  bool gridScratchAllocated;
+  uint32_t gridScratchError;
   InGameRuntimeRoot *mountedPackage;
   FrontendLoadedLevelAsset *loadedLevelAsset;
 
@@ -1468,9 +1479,10 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
               rootCursorOrError = (InGameRuntimeRoot *)&(rootCursorOrError->rootUi).base.firstChild;
             }
             world = &inGameRoot->worldRuntime;
-            statusResult = InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot);
-            rootCursorOrError = (InGameRuntimeRoot *)statusResult.valueOrError;
-            if (!statusResult.failed) {
+            if (!InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot,&stepError)) {
+              rootCursorOrError = (InGameRuntimeRoot *)stepError;
+            }
+            else {
               inGameRoot->worldOverlayCallback =
                    InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
               (inGameRoot->worldRuntime).selection.dispatchCommandCallback =
@@ -1512,9 +1524,10 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
                 movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath);
                 rootCursorOrError = (InGameRuntimeRoot *)movieOpen.frameCountOrError;
                 if (!movieOpen.failed) {
-                  firstFrame = Movie_AdvanceFrame();
-                  rootCursorOrError = (InGameRuntimeRoot *)firstFrame.movieOrError;
-                  if (!firstFrame.ended) {
+                  firstFrameDecoded = Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode);
+                  rootCursorOrError = firstFrameDecoded ? (InGameRuntimeRoot *)firstFrameMovie :
+                                                          (InGameRuntimeRoot *)movieEndCode;
+                  if (firstFrameDecoded) {
                     inGameRoot->levelMovieRuntime = (MovieRuntime *)rootCursorOrError;
                     g_MoviePlaybackBaseFrameGroup = 0;
                     g_MoviePlaybackScheduleCounter = 0;
@@ -1607,10 +1620,12 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
                                                      ((uint32_t)(inGameRoot->worldRuntime).
                                                              fieldGrid);
                             if (!terminatorOrFailure) {
-                              gridScratch = GridScratch_AllocateForFieldGrid
-                                                 ((inGameRoot->worldRuntime).fieldGrid);
-                              rootCursorOrError = (InGameRuntimeRoot *)gridScratch.valueOrError;
-                              if (!gridScratch.failed) {
+                              gridScratchAllocated = GridScratch_AllocateForFieldGrid
+                                                 ((inGameRoot->worldRuntime).fieldGrid,&gridScratchError);
+                              if (!gridScratchAllocated) {
+                                rootCursorOrError = (InGameRuntimeRoot *)gridScratchError;
+                              }
+                              if (gridScratchAllocated) {
                                 GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
                                 GridInfluence_ClearDistanceBandsAndRefreshEntities
                                           ((inGameRoot->worldRuntime).ownerListHead);
@@ -2630,7 +2645,8 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
   WorldOwnerListNode *worldNode;
   ModelRuntimeNode *modelNode;
   bool callResult;
-  RecordRingDiscardResult ringRecord;
+  void *packet;
+  void *packetEndpoint;
   InGameRuntimeRoot *inGameRoot;
 
   callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
@@ -2657,8 +2673,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
       if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
         /* interval boundary: the batch must be out before it is executed, else wait for the peers */
         while (g_HostCommandBatchSyncSentThisInterval == 0) {
-          ringRecord = UiRuntimeRecordRing_DiscardOldest();
-          if (ringRecord.empty) {
+          if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
             callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
             if (callResult) {
               g_SpinLockRelease(&g_InGameStateTickSpinLock);
@@ -2667,18 +2682,16 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
             break;
           }
           FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                    ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
-                     (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
+                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
         }
         FrontendTransfer_DispatchStagedCommandRecords();
         g_HostCommandBatchSyncSentThisInterval = 0;
       }
       else {
         /* within the interval: handle sync requests and broadcast the batch as soon as every peer is ready */
-        while (ringRecord = UiRuntimeRecordRing_DiscardOldest(), !ringRecord.empty) {
+        while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
           FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                    ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
-                     (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
+                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
         }
         if ((g_HostCommandBatchSyncSentThisInterval == 0) &&
            (callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0), !callResult)) {
@@ -2696,11 +2709,9 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
         return;
       }
       do {
-        ringRecord = UiRuntimeRecordRing_DiscardOldest();
-        if (ringRecord.empty) break;
+        if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) break;
         callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                          ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
-                           (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
+                          ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
       if (callResult) {

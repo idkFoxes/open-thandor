@@ -71,12 +71,13 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
    the provider returns as a keyframe and every further frame as a delta against it (the delta encoder keeps
    the first frame's pixels up to date as its reference), then fills in the frame count and sizes. The
    provider is called with NULL for the next frame and with a frame to release it; it ends the sequence with CF
-   set and 0xFFFFFFFF. Returns the total byte count with CF clear, or CF set with the provider's error. A
-   leftover of the movie tools: no caller found in src/ or src/generated/image_data.c.
+   set and 0xFFFFFFFF. Returns true and stores the total byte count in *outByteCount, or returns false (output
+   untouched) when the provider ends with any other error. A leftover of the movie tools: no caller found in
+   src/ or src/generated/image_data.c.
 */
-StatusResult Movie_EncodeFlmBufferFromFrameProvider
+bool Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider)
+          uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount)
 
 {
   uint32_t packedTimeOrDate;
@@ -87,8 +88,6 @@ StatusResult Movie_EncodeFlmBufferFromFrameProvider
   uint32_t *firstFramePixels;
   uint32_t *outputCursor;
   FrameProviderResult providerResult;
-  StatusResult successResult;
-  StatusResult failureResult;
   void *firstFrame;
 
   outputCursor = outputBuffer;
@@ -146,14 +145,11 @@ StatusResult Movie_EncodeFlmBufferFromFrameProvider
     if (frameOrStatus == (void *)0xffffffff) {
       ((MovieFileHeader *)outputBuffer)->videoStreamBytes =
            ((MovieFileHeader *)outputBuffer)->videoStreamBytes - MOVIE_FILE_HEADER_BYTES;
-      successResult.failed = false;
-      successResult.valueOrError = byteCount;
-      return successResult;
+      *outByteCount = byteCount;
+      return true;
     }
   }
-  failureResult.failed = true;
-  failureResult.valueOrError = (uint32_t)frameOrStatus;
-  return failureResult;
+  return false;
 }
 
 
@@ -1738,15 +1734,17 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
 
 
 /* Address: 0x004A8A60.
-   Decodes the next frame of g_ActiveMovie into its ARGB image and returns the movie. Asks the worker for more
-   data when the buffer has room, starts the soundtrack with the first frame, and waits (returns without
-   decoding) while a streamed movie has less than one refill chunk buffered. A streamed movie drops played
-   bytes from the buffer front in MOVIE_COMPACT_SHIFT_BYTES steps. Ends (CF set) after the last frame, on a
-   read failure of the worker or when no movie is open.
+   Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
+   Asks the worker for more data when the buffer has room, starts the soundtrack with the first frame, and
+   waits (returns true without decoding) while a streamed movie has less than one refill chunk buffered. A
+   streamed movie drops played bytes from the buffer front in MOVIE_COMPACT_SHIFT_BYTES steps. Returns false
+   after the last frame, on a read failure of the worker or when no movie is open; *outEndCode then gets
+   FATAL_ERROR_MOVIE_INVALID (no movie / read failure) or the unplayed bytes left in the buffer (after the
+   last frame). Either output may be NULL; only the one for the returned case is written.
    Original quirk: after a worker read failure it closes the caller's leftover EBX instead of the stream
    handle (0x004A8BDD); the C closes NULL, which has the same effect on the movie (see the body).
 */
-MovieFrameResult Movie_AdvanceFrame(void)
+bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
 
 {
   MovieFileHeader *flmHeader;
@@ -1759,9 +1757,6 @@ MovieFrameResult Movie_AdvanceFrame(void)
   uint32_t *copyDestination;
   uint8_t *streamCursor;
   SoundPlayResult playResult;
-  MovieFrameResult successResult;
-  MovieFrameResult bufferingResult;
-  MovieFrameResult failureResult;
 
   movie = g_ActiveMovie;
   byteCountOrStatus = FATAL_ERROR_MOVIE_INVALID;
@@ -1798,13 +1793,14 @@ MovieFrameResult Movie_AdvanceFrame(void)
       byteCountOrStatus = movie->loadedVideoEnd - streamCursor;
       if (nextFrameOrLoadedSize <= flmHeader->frameCount) {
         if ((movie->remainingVideoBytes != 0) && (byteCountOrStatus < MOVIE_REFILL_CHUNK_BYTES)) {
-          /* Not enough bytes buffered yet: CF clear without decoding. The original returns ESI - 0x220
-             here (0x004A8BD0 LEA EAX,[ESI-0x220]) because ESI is only advanced to the pixels at
-             0x004A8B48. Callers keep EAX as the movie only after the first-frame call, which cannot
+          /* Not enough bytes buffered yet: success without decoding. Original quirk: the original returns
+             ESI - 0x220 here (0x004A8BD0 LEA EAX,[ESI-0x220]) because ESI is only advanced to the pixels at
+             0x004A8B48. Callers keep the value as the movie only after the first-frame call, which cannot
              get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
-          bufferingResult.ended = false;
-          bufferingResult.movieOrError = (uint32_t)((uint8_t *)movie - MOVIE_RUNTIME_PIXELS_OFFSET);
-          return bufferingResult;
+          if (outMovie != NULL) {
+            *outMovie = (MovieRuntime *)((uint8_t *)movie - MOVIE_RUNTIME_PIXELS_OFFSET);
+          }
+          return true;
         }
         DebugMovieDecoder_CompareBefore(movie,flmHeader->heightPixels,flmHeader->widthPixels,streamCursor);
         consumedBytes = Movie_DecodeFrame4x4Delta
@@ -1833,15 +1829,17 @@ MovieFrameResult Movie_AdvanceFrame(void)
             }
           }
         }
-        successResult.ended = false;
-        successResult.movieOrError = (uint32_t)movie;
-        return successResult;
+        if (outMovie != NULL) {
+          *outMovie = movie;
+        }
+        return true;
       }
     }
   }
-  failureResult.ended = true;
-  failureResult.movieOrError = byteCountOrStatus;
-  return failureResult;
+  if (outEndCode != NULL) {
+    *outEndCode = byteCountOrStatus;
+  }
+  return false;
 }
 
 
@@ -1854,14 +1852,12 @@ void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 
 {
   uint32_t frameIndex;
-  MovieFrameResult advanceResult;
 
   frameIndex = g_MoviePlaybackCurrentFrame;
   if (g_MoviePlaybackCurrentFrame < targetFrame) {
     do {
       frameIndex++;
-      advanceResult = Movie_AdvanceFrame();
-      if (advanceResult.ended) {
+      if (!Movie_AdvanceFrame(NULL,NULL)) {
         return;
       }
     } while (frameIndex < targetFrame);

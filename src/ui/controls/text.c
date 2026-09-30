@@ -1589,9 +1589,9 @@ void UiPointerList_SortByExpandedTextFieldAscending
   UiListRowCount remainingRows;
   void **passAnchorSlot;
   void **rowSlotCursor;
-  TextCompareResult compareFlags;
+  int textOrder;
   void *selectedRecord;
-  
+
   rowSlotCursor = control->rowSlots;
   if (rowSlotCursor != NULL) {
     comparisonsOrRowTop = control->rowCount - 1;
@@ -1602,10 +1602,10 @@ void UiPointerList_SortByExpandedTextFieldAscending
       do {
         do {
           rowSlotCursor++;
-          compareFlags = UiPointerList_CompareExpandedTextFlags
+          textOrder = UiPointerList_CompareExpandedText
                             ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
                              (uint16_t *)((uint8_t *)*passAnchorSlot + fieldOffset));
-          if (!compareFlags.less) {
+          if (textOrder >= 0) {
             LOCK();
             swappedRecord = *rowSlotCursor;
             *rowSlotCursor = *passAnchorSlot;
@@ -1657,9 +1657,9 @@ void UiPointerList_SortByExpandedTextFieldDescending
   UiListRowCount remainingRows;
   void **passAnchorSlot;
   void **rowSlotCursor;
-  TextCompareResult compareFlags;
+  int textOrder;
   void *selectedRecord;
-  
+
   rowSlotCursor = control->rowSlots;
   if (rowSlotCursor != NULL) {
     comparisonsOrRowTop = control->rowCount - 1;
@@ -1670,10 +1670,10 @@ void UiPointerList_SortByExpandedTextFieldDescending
       do {
         do {
           rowSlotCursor++;
-          compareFlags = UiPointerList_CompareExpandedTextFlags
+          textOrder = UiPointerList_CompareExpandedText
                             ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
                              (uint16_t *)((uint8_t *)*passAnchorSlot + fieldOffset));
-          if (compareFlags.less || compareFlags.equal) {
+          if (textOrder <= 0) {
             LOCK();
             swappedRecord = *rowSlotCursor;
             *rowSlotCursor = *passAnchorSlot;
@@ -4293,10 +4293,12 @@ void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
 
 /* Address: 0x004BB570.
    Compares two rich-text streams for the pointer-list sorts: both are expanded (nested streams inlined) into
-   1 KiB scratch buffers and compared with Utf16String_CompareAsciiCaseInsensitiveFlags; the result is its
-   flags (CF: leftText < rightText, ZF: equal). Called by the UiPointerList_SortByExpandedTextField* sorts.
+   1 KiB scratch buffers and compared with Utf16String_CompareAsciiCaseInsensitiveFlags. Returns the
+   comparator's order of leftText relative to rightText: -1 when less, 0 when equal, 1 when greater (a string
+   that ends first compares as equal-or-greater, see the comparator). Called by the
+   UiPointerList_SortByExpandedTextField* sorts.
 */
-TextCompareResult UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText)
+int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText)
 
 {
   TextCompareResult compareFlags;
@@ -4305,10 +4307,13 @@ TextCompareResult UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uin
             (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText,NULL);
   RichTextCommandStream_CopyExpanded
             (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText,NULL);
-  /* CF and ZF are the comparator's: nothing after the call changes the flags (0x004BB5A5). */
+  /* The order is the comparator's: nothing after the call changes its flags (0x004BB5A5). */
   compareFlags = (*(TextCompareResult (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
             ((uint16_t *)&g_UiPointerListExpandedRightTextUtf16,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16);
-  return compareFlags;
+  if (compareFlags.less) {
+    return -1;
+  }
+  return compareFlags.equal ? 0 : 1;
 }
 
 

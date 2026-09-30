@@ -130,7 +130,7 @@ WorldCameraPosition WorldRuntime_GetCameraPositionRegs(WorldRuntimeContext *worl
 WorldCameraOrientation WorldRuntime_GetCameraOrientationRegs(WorldRuntimeContext *world);
 
 /* 0x0050D650 */
-WorldFlagsResult WorldRuntime_GetFlags(WorldRuntimeContext *world);
+uint32_t WorldRuntime_GetFlags(WorldRuntimeContext *world);
 
 /* 0x0050D6A0 */
 FieldGridAsset * WorldRuntime_GetFieldGridAsset(WorldRuntimeContext *world);
@@ -148,7 +148,7 @@ void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint
 uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world);
 
 /* 0x0050D7D0 */
-WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime);
+WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D830 */
 void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node);

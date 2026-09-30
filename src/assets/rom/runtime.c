@@ -626,11 +626,9 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   uint32_t childSlotsRemaining;
   uint32_t childIndex;
   uint8_t *lookupEntry;
-  WorldObjectAllocResult allocResult;
 
-  allocResult = WorldObjectArray_AllocateFreeRecord(worldObjectArray);
-  newNode = (ModelRuntimeNode *)allocResult.recordOrError;
-  if (allocResult.failed) {
+  newNode = (ModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldObjectArray);
+  if (newNode == NULL) {
     return NULL;
   }
   newNode->modelPayload.localTranslationXQ12 = 0;
@@ -774,7 +772,7 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
           (*descriptorCursor >> 4 == (entryIndex & 0xfffffff)))
       {
         /* descriptor dwords 1..3: world x, y, z (Q12) */
-        GraphicsShadingRuntime_AllocateRecordRegs
+        GraphicsShadingRuntime_AllocateRecord
                   (0,light->radiusQ12,light->packedColorRgb,descriptorCursor[3],
                    descriptorCursor[2],descriptorCursor[1]);
         return;

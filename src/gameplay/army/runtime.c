@@ -3797,7 +3797,8 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   ArmyRuntimeSlot *armyRuntime;
   bool childCreateFailed;
   ModelDefinitionRecordPrefix *selectedDefinition;
-  ModelNodeCreateResult modelCreateResult;
+  uint32_t modelCreateError;
+  ModelRuntimeSlot *createdModelRuntime;
   uint32_t slotScanContinueValue;
   ArmyAssetRecord *definitionNode;
   
@@ -3849,13 +3850,13 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
           (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = NULL;
           armyRuntime->aiUnitState = 0;
           modelDefinitionId = ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,rootNodeOrClassValue);
-          modelCreateResult = ModelRuntimePool_CreateInstanceByDefinitionId
-                             (paletteAsset,textureSet,armyRuntime,modelDefinitionId,worldRuntime);
-          resultOrModelNode = modelCreateResult.modelNode;
-          if (!modelCreateResult.failed) {
-            /* the create result is the model runtime; +4 is its root model node */
-            modelNodeRuntime = (ModelRuntimeNode *)(resultOrModelNode->common).nextNode;
-            (armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset = (uint32_t)resultOrModelNode;
+          modelCreateError = ModelRuntimePool_CreateInstanceByDefinitionId
+                             (paletteAsset,textureSet,armyRuntime,modelDefinitionId,worldRuntime,
+                              &createdModelRuntime);
+          resultOrModelNode = (ModelRuntimeNode *)(uintptr_t)modelCreateError;
+          if (modelCreateError == 0) {
+            modelNodeRuntime = createdModelRuntime->rootModelNodeOrSavedOffset.modelNode;
+            (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = createdModelRuntime;
             armyRuntime->modelNodeRuntime = modelNodeRuntime;
             /* worldYQ12 goes to translation.x and worldXQ12 to translation.y throughout, as in the original; the
                parameter names are swapped relative to the node fields */

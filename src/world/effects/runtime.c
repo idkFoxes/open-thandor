@@ -12,18 +12,17 @@
 
 /* Address: 0x0051E120.
    Looks up an effect definition by its id in the 256-slot effect-definition registry (used by the effect
-   catalog to reject duplicate ids). On a miss it writes a number into the package error text and returns
-   FATAL_ERROR_EFFECT_ID_NOT_FOUND with CF set.
+   catalog to reject duplicate ids). Returns the registered definition (never NULL), or NULL on a miss; a miss
+   also writes a number into the package error text (the original returned FATAL_ERROR_EFFECT_ID_NOT_FOUND as
+   its failure value).
 */
-EffectDefinitionResult EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId)
+EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId)
 
 {
   EffectDefinition *registryDefinition;
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
-  EffectDefinitionResult failureResult;
-  EffectDefinitionResult foundResult;
-  
+
   registryCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
   while (registryDefinition = *registryCursor, registryDefinition == NULL || registryDefinition->definitionId != definitionId) {
@@ -33,30 +32,26 @@ EffectDefinitionResult EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCat
       /* the original formats EAX, i.e. the last slot's pointer, not the requested id */
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
-      failureResult.notFound = true;
-      failureResult.definitionOrError = (EffectDefinition *)FATAL_ERROR_EFFECT_ID_NOT_FOUND;
-      return failureResult;
+      return NULL;
     }
   }
-  foundResult.notFound = false;
-  foundResult.definitionOrError = registryDefinition;
-  return foundResult;
+  return registryDefinition;
 }
 
 
 /* Address: 0x0051E190.
    Level start: loads the shared effect texture set and palette ("<mutableBasePath>.gfx/.pal"; the extension is
    changed in place) and allocates and zeroes the 0x40000-byte effect runtime pool. The movie schedule is ticked
-   between the steps. Returns 0, or the load/allocation error with CF set.
+   between the steps. Returns true with *outError = 0 on success, or false with the load/allocation error in
+   *outError (always written).
 */
-StatusResult EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
+bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
 
 {
   EffectRuntimeSlot *runtimeSlotCursor;
   int runtimeSlotsRemaining;
   ArenaAllocResult loadOrAllocResult;
-  StatusResult statusResult;
-  
+
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
   loadOrAllocResult =
@@ -87,9 +82,8 @@ StatusResult EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
       }
     }
   }
-  statusResult.valueOrError = loadOrAllocResult.payloadOrError;
-  statusResult.failed = loadOrAllocResult.failed;
-  return statusResult;
+  *outError = loadOrAllocResult.payloadOrError;
+  return !loadOrAllocResult.failed;
 }
 
 
@@ -192,10 +186,11 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
    effect node showing the definition's sprite model (effect or army graphics per the definition's creation
    flags) at the given position and orientation, sets up animation, scale, the optional light (shading record
    at the model's lookup point (0,4)) and terrain class flags, and plays its positioned sound unless the spot
-   is masked. Returns the effect slot; FATAL_ERROR_GENERAL_FAILURE (no pool or no free slot) or the record
-   allocation error with CF set. A NULL definition returns the pool base with CF clear.
+   is masked. Returns the effect slot, or NULL when there is no pool, no free slot or no free world object
+   record (the original returned FATAL_ERROR_GENERAL_FAILURE as its failure value in all three cases). A NULL
+   definition returns the pool base (g_EffectRuntimeSlots) and creates nothing.
 */
-EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
+EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
           (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference ownerRuntime,
           AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,
           Q12 worldZQ12,Q12 worldXQ12,Q12 worldYQ12,EffectDefinition *effectDefinition,
@@ -220,35 +215,25 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
   GraphicsPaletteAsset *chosenPalette;
   EffectRuntimeSlot *effectRuntimeCursor;
   bool projectedCellMasked;
-  WorldObjectAllocResult recordAlloc;
   ModelPackedPointRecord *lightPoint;
-  ShadingRecordResult shadingAlloc;
-  EffectCreateResult successResult;
-  EffectCreateResult failureResult;
   ModelWorldPoint localPoint;
   TerrainOccupancyResolvedMasks occupancyMasks;
   char runtimeClassIndex;
   uint32_t soundTableIndex;
   
-  effectModelNode = (EffectModelRuntimeNode *)FATAL_ERROR_GENERAL_FAILURE; /* error code: no free slot */
   effectRuntimeCursor = g_EffectRuntimeSlots;
   if (effectDefinition == NULL) {
-    /* the original returns CF clear with EAX = the pool base */
-    successResult.failed = false;
-    successResult.effectRuntime = effectRuntimeCursor;
-    return successResult;
+    /* the original reports success with the pool base */
+    return effectRuntimeCursor;
   }
-  failureResult.failed = true;
   if (effectRuntimeCursor == NULL) {
-    failureResult.effectRuntime = (EffectRuntimeSlot *)effectModelNode;
-    return failureResult;
+    return NULL;
   }
   slotsRemaining = EFFECT_RUNTIME_SLOT_COUNT;
   do {
     if (effectRuntimeCursor->modelNodeOrSavedOffset.modelNode == NULL) {
-      recordAlloc = WorldObjectArray_AllocateFreeRecord(worldRuntime);
-      effectModelNode = (EffectModelRuntimeNode *)recordAlloc.recordOrError;
-      if (!recordAlloc.failed) {
+      effectModelNode = (EffectModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
+      if (effectModelNode != NULL) {
         WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)effectModelNode);
         effectRuntimeCursor->modelNodeOrSavedOffset.modelNode =
              (ModelRuntimeNode *)effectModelNode;
@@ -312,11 +297,10 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lightPoint,(ModelRuntimeNode *)effectModelNode);
             /* the alpha byte of the shading colour is the radius in 1/16 world units */
-            shadingAlloc = GraphicsShadingRuntime_AllocateRecordRegs
+            effectModelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
                                (effectDefinition->shadingTransitionDurationTicks,
                                 (effectDefinition->shadingColorArgb >> 24) << 8,
                                 effectDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
-            effectModelNode->shadingRecord = shadingAlloc.record;
           }
           else {
             effectModelNode->shadingRecord = NULL;
@@ -359,16 +343,13 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
           }
         }
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)effectModelNode);
-        successResult.failed = false;
-        successResult.effectRuntime = effectRuntimeCursor;
-        return successResult;
+        return effectRuntimeCursor;
       }
-      break; /* record allocation failed: its error code */
+      break; /* record allocation failed */
     }
     effectRuntimeCursor++;
     slotsRemaining--;
   } while (slotsRemaining != 0);
-  failureResult.effectRuntime = (EffectRuntimeSlot *)effectModelNode;
-  return failureResult;
+  return NULL;
 }
 

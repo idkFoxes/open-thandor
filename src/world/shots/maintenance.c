@@ -193,7 +193,8 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   ShotRuntimeSlot *shotRuntime;
   ModelRuntimeNode *modelNodeRuntime;
   ModelPackedPointRecord *emitterRecord;
-  ModelRaycastResult armyRaycast;
+  bool armyHit;
+  Q12 armyHitDistanceQ12;
   TerrainRaycastResult surfaceRaycast;
   FixedVectorAngles targetAngles;
   ModelWorldPoint emitterWorldPoint;
@@ -259,17 +260,17 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       if (shotOwnerArmy != NULL) {
         ownerModelNode = shotOwnerArmy->modelNodeRuntime;
       }
-      armyRaycast = ModelRuntime_RaycastCandidateListNearest
+      armyHit = ModelRuntime_RaycastCandidateListNearest
                          (rotationAngle - shotRuntime->elevationOffsetAngle16,
                           modelNode->modelPayload.worldRotationAngle0,frameCountDistanceOrAge,
                           modelNode->worldTransform.translation.z,
                           modelNode->worldTransform.translation.y,
                           modelNode->worldTransform.translation.x,WORLD_OWNER_RUNTIME_MODEL,
-                          ownerModelNode,worldRuntime);
-      nearestArmyHit = armyRaycast.nearestNodeOrScratch;
-      frameAccumulatorOrDistance = armyRaycast.nearestDistanceQ12;
+                          ownerModelNode,worldRuntime,&armyHitDistanceQ12,
+                          &nearestArmyHit.nearestModelNode);
+      frameAccumulatorOrDistance = armyHitDistanceQ12;
       /* hits on target classes and materials without an impact effect do not stop the shot */
-      if ((armyRaycast.hit) &&
+      if ((armyHit) &&
          (targetClassIndex = (nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime->
                                definitionOrSavedId).runtimeDefinition->targetClassIndex,
          shotRuntime->definitionOrSavedId.definition->targetClassImpactEffectDefinitions8
@@ -395,18 +396,18 @@ HandleNearestArmyHitAndContinueMotion:
       if (shotOwnerArmy != NULL) {
         ownerModelNode = shotOwnerArmy->modelNodeRuntime;
       }
-      armyRaycast = ModelRuntime_RaycastCandidateListNearest
+      armyHit = ModelRuntime_RaycastCandidateListNearest
                          (modelNode->modelPayload.worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           modelNode->modelPayload.worldRotationAngle0,shotRuntime->launchSpeedQ12,
                           modelNode->worldTransform.translation.z,
                           modelNode->worldTransform.translation.y,
                           modelNode->worldTransform.translation.x,WORLD_OWNER_RUNTIME_MODEL,
-                          ownerModelNode,worldRuntime);
-      nearestArmyHit = armyRaycast.nearestNodeOrScratch;
-      frameCountDistanceOrAge = armyRaycast.nearestDistanceQ12;
+                          ownerModelNode,worldRuntime,&armyHitDistanceQ12,
+                          &nearestArmyHit.nearestModelNode);
+      frameCountDistanceOrAge = armyHitDistanceQ12;
       /* hits on target classes and materials without an impact effect do not stop the shot */
-      if ((armyRaycast.hit) &&
+      if ((armyHit) &&
          (targetClassIndex = (nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime->
                                definitionOrSavedId).runtimeDefinition->targetClassIndex,
          shotRuntime->definitionOrSavedId.definition->targetClassImpactEffectDefinitions8

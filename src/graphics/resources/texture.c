@@ -1436,32 +1436,28 @@ GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(Graphic
 
 
 /* Address: 0x004AD7C0.
-   Returns the logical width (EAX) and height (EDX) of the first subresource of a 'gfx' texture source whose
-   subresource count is 1..4095; CF is set otherwise. No caller or table slot referencing it is known.
+   Stores the logical width and height of the first subresource of a 'gfx' texture source whose subresource
+   count is 1..4095 and returns true; returns false (outputs untouched) otherwise. No caller or table slot
+   referencing it is known.
 */
-TextureSizeResult
-GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *sourceAsset)
+bool GraphicsTextureSource_GetFirstLogicalSize
+          (GraphicsTextureSourceAsset *sourceAsset,uint32_t *outWidthPixels,uint32_t *outHeightPixels)
 
 {
   uint32_t entryCount;
   uint8_t *firstSubresourceRecord;
-  TextureSizeResult logicalSize;
 
-  /* Failure (CF set): the original leaves EAX untouched and EDX = sourceAsset; no caller reads them then. */
-  logicalSize.logicalWidthPixels = 0;
-  logicalSize.logicalHeightPixels = (uint32_t)sourceAsset;
-  logicalSize.failed = true;
   if ((sourceAsset->common).magic == ASSET_MAGIC_GFX) {
     entryCount = (sourceAsset->tableDescriptor).subresourceCount;
     if ((entryCount != 0) && (entryCount <= 4095)) {
       firstSubresourceRecord =
            (uint8_t *)sourceAsset + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      logicalSize.logicalWidthPixels = ((GraphicsTextureSourceEntry *)firstSubresourceRecord)->logicalWidth;
-      logicalSize.logicalHeightPixels = ((GraphicsTextureSourceEntry *)firstSubresourceRecord)->logicalHeight;
-      logicalSize.failed = false;
+      *outWidthPixels = ((GraphicsTextureSourceEntry *)firstSubresourceRecord)->logicalWidth;
+      *outHeightPixels = ((GraphicsTextureSourceEntry *)firstSubresourceRecord)->logicalHeight;
+      return true;
     }
   }
-  return logicalSize;
+  return false;
 }
 
 

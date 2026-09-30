@@ -42,7 +42,7 @@ void __cdecl Win32FileSystem_RestoreInitialDirectory(void);
 bool Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter);
 
 /* 0x0040F1F0 */
-StatusResult FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
+uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
 
 /* 0x00576070 */
 Win32FileWriteResult Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle);
@@ -106,13 +106,14 @@ void Win32File_Close(void *handle);
 
 
 /* 0x0040EF50 */
-FileLoadResult FileSystem_LoadWholeFile(uint16_t *pathUtf16);
+bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
 
 /* 0x0040F120 */
-FileLoadResult FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16);
+bool FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
 
-/* 0x0040F430 */
-EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
-          (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText);
+/* 0x0040F430: true with the string table (NULL when empty) and its entry count */
+bool FileSystem_BuildEnumerationStringTable
+          (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText,
+          uint16_t ***outTable,uint32_t *outEntryCount);
 
 #endif /* THANDOR_PLATFORM_FILESYSTEM_WIN32_H */

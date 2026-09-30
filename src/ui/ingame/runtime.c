@@ -31,7 +31,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
   UiCommandModeIndex materialIndex;
   int remainingSteps;
   uint32_t *dispatchRecord;
-  PageStackSearchResult pageNotInListResult;
+  uint32_t activePageIndex;
   uint32_t armyLookupError;
   ArmyAssetRecordPrefix *foundArmyAsset;
   FatalErrorCheckResult hoverRecordResult;
@@ -54,8 +54,8 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
   switch(dispatchRecord[2]) {
   case 0x56e5e0: /* Alt+I: show or hide the side panel */
     stack = (struct UiNodeVtable * *)INGAME_UI(uiRoot,sidePanelStack);
-    pageNotInListResult = UiPageStack_ActivePageNotInList((UiPageStackControl *)stack);
-    if (pageNotInListResult.pageIndex == 0) {
+    activePageIndex = UiPageStack_ActivePageIndex((UiPageStackControl *)stack);
+    if (activePageIndex == 0) {
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)stack);
       UiPageStack_SetActiveIndex(2,(UiPageStackControl *)INGAME_UI(uiRoot,resourceBarModeStack));
       UiPageStack_SetActiveIndex(2,(UiPageStackControl *)INGAME_UI(uiRoot,gamePanelsModeStack));
@@ -541,7 +541,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
   int *dwordCursor;
   uint16_t *textCursor;
   bool isMatch;
-  SelectableGroupNodeResult visibleSelection;
+  UiNodeBase *recipientTab;
 
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)commandTextEdit);
   if ((commandTextEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
@@ -569,14 +569,15 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
       RichTextCommandStream_CopyToNarrow
                 (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,
                  commandTextEdit->textBuffer);
-      visibleSelection = UiSelectableGroup_NoneVisibleSelected(3,
+      /* Original quirk: the result is not tested; with no tab selected this is the last tab */
+      UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientAllTab),
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientGroupsTab),
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientPlayersTab));
       /* Recipient mask: bit 9+n when box n of the faction tab is ticked (messageRecipientPlayersTab), bit 16+n
          for box n of the session player tab (messageRecipientGroupsTab), 0xFFFFFF00 for everyone. The seven
          check boxes sit at g_UiSevenSlotSelectionControlOffsets from the root. */
-      countOrTabOffset = (int)visibleSelection.node - (int)commandTextEdit;
+      countOrTabOffset = (int)recipientTab - (int)commandTextEdit;
       if (countOrTabOffset ==
           (int)offsetof(InGameUiImage,messageRecipientPlayersTab) - (int)offsetof(InGameUiImage,chatInputTextEdit)) {
         slotIndex = 0;
@@ -936,12 +937,13 @@ void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress
    edges, menu bar, selection group buttons, the build catalog / special catalog / army stock grids, diplomacy
    rows, editor tool options, selection detail page), patches the selection detail text templates
    0x18002C..0x18004E, then loads diagram0.gfx, window.gfx and tech.gfx (sizing the technology window) and assigns
-   the UI click sounds. Fails (CF set) with the loader's error when a graphics package cannot be loaded.
+   the UI click sounds. Returns true on success; false with the loader's error in *outError when a graphics
+   package cannot be loaded.
    The remaining INGAME_UI_FIELD(..., offsetof(...), T) accesses (Ghidra-typed, mostly leftOffset..bottomOffset)
    are kept in that form on purpose: rewriting them as plain member accesses changes the compiler's register and
    operand choices elsewhere in this function (verified by object-code comparison).
 */
-StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot)
+bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError)
 
 {
   int32_t *sdwordField;
@@ -974,7 +976,6 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
   uint32_t detailIndex;
   TextureSourceLoadResult loadedTexture;
   uint16_t *resolvedText;
-  StatusResult initStatus;
   TextureSizeResult logicalSize;
   GraphicsTextureSourceAsset *loadedTextureSource;
   
@@ -2674,15 +2675,13 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
           ((UiListControl *)INGAME_UI(inGameRoot,saveGameList))->activationSound = buttonVoiceSet;
           ((UiRequiredTextEditControl *)INGAME_UI(inGameRoot,messageTextEdit))->activationSound = buttonVoiceSet;
           ((UiRequiredTextEditControl *)INGAME_UI(inGameRoot,chatInputTextEdit))->activationSound = buttonVoiceSet;
-          loadedTexture.failed = false;
-          loadedTexture.textureSource = (GraphicsTextureSourceAsset *)buttonVoiceSet;
+          return true;
         }
       }
     }
   }
-  initStatus.valueOrError = (uint32_t)loadedTexture.textureSource;
-  initStatus.failed = loadedTexture.failed;
-  return initStatus;
+  *outError = (uint32_t)loadedTexture.textureSource;
+  return false;
 }
 
 
@@ -3172,9 +3171,9 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
       break;
     }
     /* only while the single-selection page is shown */
-    if (UiPageStack_ActivePageNotInList
+    if (UiPageStack_ActivePageIndex
               ((UiPageStackControl *)THANDOR_UI_SIBLING(world,InGameUiImage,worldView,selectionDetailPageStack))
-        .pageIndex != 1) {
+        != 1) {
       break;
     }
         if ((((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (upgradeButton->activationSound != NULL)) {
@@ -3676,7 +3675,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
 void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
 
 {
-  SelectableGroupNodeResult visibleSelection;
+  uint32_t selectedTabIndex;
   int parentNodeAddress;
   void *rootNodeCursor;
   
@@ -3691,12 +3690,13 @@ void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
       INGAME_UI(rootNodeCursor,resultsTabThird),
       INGAME_UI(rootNodeCursor,resultsTabEconomy),
       INGAME_UI(rootNodeCursor,resultsTabMilitary));
-  visibleSelection = UiSelectableGroup_NoneVisibleSelected(3,
+  /* Original quirk: the result is not tested; with no visible tab selected the index is 3 (no page) */
+  UiSelectableGroup_FindVisibleSelected(NULL,&selectedTabIndex,3,
       INGAME_UI(rootNodeCursor,resultsTabThird),
       INGAME_UI(rootNodeCursor,resultsTabEconomy),
       INGAME_UI(rootNodeCursor,resultsTabMilitary));
   UiPageStack_SetActiveIndex
-            (visibleSelection.controlIndexOrCount,
+            (selectedTabIndex,
              (UiPageStackControl *)INGAME_UI(rootNodeCursor,resultsChartPageStack));
   return;
 }
@@ -3775,7 +3775,7 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
   UiPageIndex pageIndex;
   GameEntityRuntime *firstSelectedEntity;
   CommandPayload modelOffset;
-  PageStackSearchResult pageNotInListResult;
+  uint32_t activePageIndex;
 
   while ((((UiRootNode *)source)->base).parent != UI_NODE_NONE) {
     source = (((UiRootNode *)source)->base).parent;
@@ -3784,8 +3784,8 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
        (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
     INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
     gameWindowStack = (UiPageStackControl *)INGAME_UI(source,gameWindowPageStack);
-    pageNotInListResult = UiPageStack_ActivePageNotInList(gameWindowStack);
-    if (pageNotInListResult.pageIndex == 2) {
+    activePageIndex = UiPageStack_ActivePageIndex(gameWindowStack);
+    if (activePageIndex == 2) {
       pageIndex = 0;
     }
     else {
@@ -4991,7 +4991,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
   TerrainDirectionRecord *directionRecord;
   FieldGridCell *fieldCellCursor;
   ArmyAssetRecordPrefix **registrySlot;
-  PageStackSearchResult pageNotInListResult;
+  uint32_t activePageIndex;
   FieldGridAsset *worldFieldGrid;
   
   modeOrValue = g_UiCommandModeG;
@@ -5012,8 +5012,8 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       UiPageStack_SetActiveIndex
                 (g_UiCommandModeGTertiaryPageIndices[modeOrValue],
                  (UiPageStackControl *)INGAME_UI(root,modeCommandPageStack));
-      pageNotInListResult = UiPageStack_ActivePageNotInList(&root->sidePanelPageStack);
-      if (pageNotInListResult.pageIndex == 0) {
+      activePageIndex = UiPageStack_ActivePageIndex(&root->sidePanelPageStack);
+      if (activePageIndex == 0) {
         UiPageStack_SetActiveIndex(1,&root->resourceBarModePageStack);
         UiPageStack_SetActiveIndex(1,&root->gamePanelsModePageStack);
       }
@@ -5107,8 +5107,8 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
               (0,(UiPageStackControl *)INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack));
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,modeDetailPageStack));
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,modeCommandPageStack));
-    pageNotInListResult = UiPageStack_ActivePageNotInList(&root->sidePanelPageStack);
-    if (pageNotInListResult.pageIndex == 0) {
+    activePageIndex = UiPageStack_ActivePageIndex(&root->sidePanelPageStack);
+    if (activePageIndex == 0) {
       UiPageStack_SetActiveIndex(0,&root->resourceBarModePageStack);
       UiPageStack_SetActiveIndex(0,&root->gamePanelsModePageStack);
     }
@@ -5254,8 +5254,8 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   uint32_t slotBit;
   UiAnchorFractionQ31 *textCursor;
   bool isSelected;
-  SelectableGroupNodeResult visibleSelection;
-  
+  UiNodeBase *recipientTab;
+
   while (source->parent != UI_NODE_NONE) {
     source = source->parent;
   }
@@ -5264,11 +5264,12 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   formBase = (int32_t *)INGAME_UI(source,messageTextEdit);
   RichTextCommandStream_CopyToNarrow
             (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->textBuffer);
-  visibleSelection = UiSelectableGroup_NoneVisibleSelected(3,
+  /* Original quirk: the result is not tested; with no tab selected this is the last tab */
+  UiSelectableGroup_FindVisibleSelected(&recipientTab,NULL,3,
       INGAME_UI(source,messageRecipientAllTab),
       INGAME_UI(source,messageRecipientGroupsTab),
       INGAME_UI(source,messageRecipientPlayersTab));
-  offsetOrCount = (int)visibleSelection.node - (int)formBase;
+  offsetOrCount = (int)recipientTab - (int)formBase;
   if (offsetOrCount ==
       (int)offsetof(InGameUiImage,messageRecipientPlayersTab) - (int)offsetof(InGameUiImage,messageTextEdit)) {
     slotIndex = 0;

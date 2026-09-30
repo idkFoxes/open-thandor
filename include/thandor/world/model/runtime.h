@@ -53,10 +53,11 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00529360 */
-ModelNodeCreateResult ModelRuntimePool_RepairDeferredChild
+bool ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
-          ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime);
+          ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,
+          ModelRuntimeSlot **outChildModelRuntime);
 
 /* 0x004BDDB0 */
 void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime);
@@ -65,10 +66,11 @@ void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRun
 void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode);
 
 /* 0x0050B440 */
-ModelRaycastResult ModelRuntime_RaycastCandidateListNearest
+bool ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
-          ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime);
+          ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,
+          ModelRuntimeNode **outNearestModelNode);
 
 /* 0x0051C240 */
 Q12 ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix *runtimeEntry);
@@ -84,7 +86,7 @@ ModelRuntimeActiveTotalMetricRegisterPair
 ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x00528A40 */
-StatusResult __cdecl ModelRuntimePool_Init(void);
+uint32_t __cdecl ModelRuntimePool_Init(void);
 
 /* 0x00528A70 */
 void ModelRuntimePool_ShutdownAndReleaseDefinitions(void);
@@ -105,9 +107,9 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
           MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529140 */
-ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
+uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
-          WorldRuntimeContext *worldRuntime);
+          WorldRuntimeContext *worldRuntime,ModelRuntimeSlot **outModelRuntime);
 
 #endif /* THANDOR_WORLD_MODEL_RUNTIME_H */

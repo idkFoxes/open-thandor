@@ -106,15 +106,14 @@ bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_
   int registrySlotsRemaining;
   EffectDefinition **registrySlotCursor;
   bool extensionFailed;
-  EffectDefinitionResult duplicateLookup;
   PackageLoadResult packageLoad;
   uint32_t spriteRegisterError;
 
   registrySlotCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
-  duplicateLookup = EffectRuntime_FindDefinitionById(definition->definitionId);
-  assetOrError = (SpriteAssetHeader *)duplicateLookup.definitionOrError;
-  if (duplicateLookup.notFound) {
+  if (EffectRuntime_FindDefinitionById(definition->definitionId) == NULL) {
+    /* Original quirk: the lookup's failure value is the error reported when the .spr extension cannot be set */
+    assetOrError = (SpriteAssetHeader *)FATAL_ERROR_EFFECT_ID_NOT_FOUND;
     for (; registrySlotsRemaining != 0; registrySlotsRemaining--) {
       if (*registrySlotCursor == NULL) {
         *registrySlotCursor = definition;

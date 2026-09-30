@@ -41,7 +41,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   int nameIndex;
   unsigned start;
   MovieOpenResult opened;
-  MovieFrameResult frame;
+  MovieRuntime *movie;
   /* UTF-16 path "flm\<name>.flm"; the name is cut so ".flm" and the terminator still fit */
   path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm'; path[pathLength++] = '\\';
   for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 56; nameIndex++) {
@@ -63,8 +63,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
     Thandor_SleepMs(1500);
     return;
   }
-  frame = Movie_AdvanceFrame();
-  if (frame.ended) {
+  if (!Movie_AdvanceFrame(&movie,NULL)) {
     Thandor_Log("debug movie %d/%d %s: first frame failed", index, count, name);
     Movie_Close();
     return;
@@ -86,11 +85,9 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
     if (Thandor_TickCount() - start > 10000) break;
     if (g_IntroMoviePendingTicks != 0) {
       int burst = 3;
-      MovieFrameResult next;
       int ended = 0;
       do {
-        next = Movie_AdvanceFrame();
-        if (next.ended) { ended = 1; break; }
+        if (!Movie_AdvanceFrame(NULL,NULL)) { ended = 1; break; }
         g_IntroMoviePendingTicks--;
       } while ((g_IntroMoviePendingTicks != 0) && (--burst != 0));
       if (ended) break;
@@ -98,7 +95,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
       if (stretch) {
         g_GraphicsTextureSourceStretchDirectColorBilinear
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,0,
-                   (GraphicsTextureSourceAsset *)frame.movieOrError,g_FramebufferAccess);
+                   (GraphicsTextureSourceAsset *)movie,g_FramebufferAccess);
       }
       else {
         MovieFrameDimensionsEdxEax8 size = Movie_GetFrameDimensions();
@@ -107,7 +104,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,
                    ((int)((height - (height >> 2)) - (int)(size >> 32)) >> 1) + (height >> 3),
                    (int)(g_FramebufferWidth - (int)size) >> 1,0,
-                   (GraphicsTextureSourceAsset *)frame.movieOrError,g_FramebufferAccess);
+                   (GraphicsTextureSourceAsset *)movie,g_FramebufferAccess);
       }
       sprintf(label, "Video %d/%d: %s.flm  Frame %u/%u", index, count, name,
               g_ActiveMovie->currentFrameIndex, g_ActiveMovie->fileHeader->frameCount);
@@ -137,7 +134,7 @@ void DebugMovie_ExportOne(const char *name)
   uint32_t width;
   uint32_t height;
   MovieOpenResult opened;
-  MovieFrameResult frame;
+  bool frameDecoded;
   FILE *video;
   FILE *info;
   /* L"flm\<name>.flm", the name cut so that the extension and terminator still fit */
@@ -191,12 +188,12 @@ void DebugMovie_ExportOne(const char *name)
   for (;;) {
     int attempts = 0;
     do {
-      frame = Movie_AdvanceFrame();
-      if (!frame.ended) break;
+      frameDecoded = Movie_AdvanceFrame(NULL,NULL);
+      if (frameDecoded) break;
       Thandor_SleepMs(5); /* the refill worker may not have loaded the next frame yet */
     } while (++attempts < 200 && g_ActiveMovie != NULL &&
              g_ActiveMovie->currentFrameIndex < g_ActiveMovie->fileHeader->frameCount);
-    if (frame.ended) break;
+    if (!frameDecoded) break;
     if (video != NULL) fwrite(g_ActiveMovie->argbPixels, 4, width * height, video);
     frames++;
   }

@@ -41,7 +41,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   bool callCarry;
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
-  AimSmoothResult smoothResult;
+  uint32_t pitchAimValue;
   bool movementArrived;
   Q12 steerWorldXQ12; /* unused here */
   Q12 steerWorldYQ12; /* unused here */
@@ -146,15 +146,14 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
       relativeAngles = ModelNodeRuntime_ComputeRelativeDirectionAngle
                          (currentNode,launchAngles.elevationAngle,launchAngles.headingAngle);
       targetPitchAngle16 = relativeAngles.relativePitchAngle;
-      smoothResult = ModelNodeRuntime_SmoothYawTowardTarget
-                         (currentNode,modelRuntime,relativeAngles.relativeYawAngle);
-      if (smoothResult.outsideTolerance) {
+      if (ModelNodeRuntime_SmoothYawTowardTarget
+                         (currentNode,modelRuntime,relativeAngles.relativeYawAngle)) {
         ModelNodeRuntime_SmoothPitchTowardTarget(pitchNode,modelRuntime,targetPitchAngle16);
       }
       else {
-        smoothResult = ModelNodeRuntime_SmoothPitchTowardTarget
+        pitchAimValue = ModelNodeRuntime_SmoothPitchTowardTarget
                            (pitchNode,modelRuntime,targetPitchAngle16);
-        if (((smoothResult.value == targetPitchAngle16) &&
+        if (((pitchAimValue == targetPitchAngle16) &&
             (weaponDefinitionView = modelRuntime->modelDefinition, modelRuntime->sharedInterShotTicks == 0)) &&
            (callCarry = ArmyRuntimeCommand_UpdateTargetFollowingState
                               (aimZQ12,aimYQ12,aimXQ12,worldRuntime,(ModelRuntimeSlot *)modelRuntime)
@@ -449,7 +448,9 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   uint32_t distanceDifference;
   FixedLengthAngle horizontalVector;
   TerrainRaycastResult terrainHit;
-  ModelRaycastResult modelHit;
+  bool modelHit;
+  Q12 modelHitDistanceQ12;
+  ModelRuntimeNode *hitModelNode;
   FixedLengthAzimuthElevation targetVector;
   GraphicsWorldCoordinateQ12 originZQ12;
   GraphicsWorldCoordinateQ12 originYQ12;
@@ -498,9 +499,9 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
                         (originNode->worldTransform).translation.y,
                         (originNode->worldTransform).translation.x,WORLD_OWNER_RUNTIME_MODEL,
                         (modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).ownership.modelNode,
-                        worldRuntime)
+                        worldRuntime,&modelHitDistanceQ12,&hitModelNode)
     ;
-    if (!modelHit.hit) {
+    if (!modelHit) {
       return false;
     }
     /* As in the original (MOV EAX,[EDI+0x48] at 0x0052BC55, EDI = own model node): this tests the shooter's
@@ -549,9 +550,9 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   minAngleOwnerOrDistance = terrainHit.distanceQ12;
   modelHit = ModelRuntime_RaycastCandidateListNearest
                      (elevationAngle,azimuthAngle,maxAngleOrRange,originZQ12,originYQ12,originXQ12,
-                      requiredOwnerId,excludedNode,worldRuntime);
-  if ((!modelHit.hit) ? (minAngleOwnerOrDistance <= INT32_MAX - 1) :
-      (minAngleOwnerOrDistance < modelHit.nearestDistanceQ12)) {
+                      requiredOwnerId,excludedNode,worldRuntime,&modelHitDistanceQ12,&hitModelNode);
+  if ((!modelHit) ? (minAngleOwnerOrDistance <= INT32_MAX - 1) :
+      (minAngleOwnerOrDistance < modelHitDistanceQ12)) {
     /* The terrain is hit first: only a ground shot without an entity target landing within 0x400 of the
        aim distance is clear. */
     distanceDifference = minAngleOwnerOrDistance - angleOrDistance;
@@ -564,11 +565,11 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
     }
     return true;
   }
-  if (modelHit.hit) {
+  if (modelHit) {
     /* A model is hit first: blocked (CF set) when its owner fails the commandState owner test and it is not
        the command target; otherwise fall through to the range check. */
     ownOrTargetEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
-    hitEntity = (((modelHit.nearestNodeOrScratch.nearestModelNode)->runtimePayload).modelRuntime)->
+    hitEntity = ((hitModelNode->runtimePayload).modelRuntime)->
                 ownerArmyRuntimeOrSavedOffset.entityRuntime;
     minAngleOwnerOrDistance = (ownOrTargetEntity->common).ownership.ownerIndex;
     if (((ownOrTargetEntity->common).commandState < 1) ?

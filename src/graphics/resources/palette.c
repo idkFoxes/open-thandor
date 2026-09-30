@@ -210,22 +210,17 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
 
 
 /* Address: 0x004AD800.
-   Checks the 'pal' signature and returns paletteBankCount (+0xB0, ECX in the original) with CF clear, or CF
-   set for a wrong signature (ECX then still holds the asset pointer). No caller or table reference is known.
+   Checks the 'pal' signature: returns true and stores paletteBankCount (+0xB0) in *outBankCount, or returns
+   false (leaving *outBankCount untouched) for a wrong signature. No caller or table reference is known.
 */
-StatusResult GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset)
+bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount)
 
 {
-  StatusResult result;
-
   if (paletteAsset->magic != ASSET_MAGIC_PAL) {
-    result.valueOrError = (uint32_t)(uintptr_t)paletteAsset;
-    result.failed = true;
-    return result;
+    return false;
   }
-  result.valueOrError = paletteAsset->paletteBankCount;
-  result.failed = false;
-  return result;
+  *outBankCount = paletteAsset->paletteBankCount;
+  return true;
 }
 
 /* Address: 0x004AD820.
@@ -362,10 +357,10 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPalett
    Builds a new palette texture source from baseAsset followed by appendedAsset: one header (base's, with the
    size and the bank and subresource counts summed), base banks, appended banks, base subresource entries,
    appended entries, base pixel data, appended pixel data. Pixel offsets of both entry sets and the bank index
-   of appended entries are rebased. CF set with the arena error when the allocation fails.
+   of appended entries are rebased. Returns the new asset, or NULL when the allocation fails.
    No caller or table reference is known (converter/editor code left in the game).
 */
-PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
+GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           (GraphicsPaletteTextureSourceAsset *appendedAsset,
           GraphicsPaletteTextureSourceAsset *baseAsset)
 
@@ -384,17 +379,16 @@ PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOf
   uint8_t *byteSourceCursor;
   GraphicsPaletteTextureSourceAsset *destinationCursor;
   ArenaAllocResult allocResult;
-  PaletteTextureSourceResult result;
-  
+  GraphicsPaletteTextureSourceAsset *combinedAsset;
+
   bytes = (baseAsset->allocationSizeBytes + appendedAsset->allocationSizeBytes) - GRAPHICS_PALETTE_BANKS_OFFSET;
   allocResult = g_MemoryApi.alloc(bytes);
-  result.paletteSource = (GraphicsPaletteTextureSourceAsset *)allocResult.payloadOrError;
   if (allocResult.failed) {
-    result.failed = true;
-    return result;
+    return NULL;
   }
+  combinedAsset = (GraphicsPaletteTextureSourceAsset *)allocResult.payloadOrError;
   sourceCursor = baseAsset;
-  destinationCursor = result.paletteSource;
+  destinationCursor = combinedAsset;
   /* the header */
   for (headerCountOrBaseBanks = GRAPHICS_PALETTE_BANKS_OFFSET / 4; headerCountOrBaseBanks != 0;
        headerCountOrBaseBanks--) {
@@ -493,8 +487,7 @@ PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOf
     byteSourceCursor = byteSourceCursor + 4;
     destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
-  return THANDOR_BITCAST(uint64_t, PaletteTextureSourceResult,
-                         THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX);
+  return combinedAsset;
 }
 
 

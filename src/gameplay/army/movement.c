@@ -453,7 +453,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
   bool lineOfFireBlocked;
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
-  AimSmoothResult smoothResult;
+  uint32_t pitchAimValue;
   bool waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
@@ -529,15 +529,14 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
       relativeAngles = ModelNodeRuntime_ComputeRelativeDirectionAngle
                          (partNode,launchAngles.elevationAngle,launchAngles.headingAngle);
       targetPitchAngle16 = relativeAngles.relativePitchAngle;
-      smoothResult = ModelNodeRuntime_SmoothYawTowardTarget
-                         (partNode,modelRuntime,relativeAngles.relativeYawAngle);
-      if (smoothResult.outsideTolerance) {
+      if (ModelNodeRuntime_SmoothYawTowardTarget
+                         (partNode,modelRuntime,relativeAngles.relativeYawAngle)) {
         ModelNodeRuntime_SmoothPitchTowardTarget(pitchNode,modelRuntime,targetPitchAngle16);
       }
       else {
-        smoothResult = ModelNodeRuntime_SmoothPitchTowardTarget
+        pitchAimValue = ModelNodeRuntime_SmoothPitchTowardTarget
                            (pitchNode,modelRuntime,targetPitchAngle16);
-        if ((smoothResult.value == targetPitchAngle16) &&
+        if ((pitchAimValue == targetPitchAngle16) &&
            (weaponDefinition = modelRuntime->modelDefinition,
            modelRuntime->attachmentReloadCountdownTicks == 0)) {
           lineOfFireBlocked = ArmyRuntimeCommand_UpdateTargetFollowingState
@@ -610,7 +609,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   bool lineOfFireBlocked;
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
-  AimSmoothResult smoothResult;
+  uint32_t pitchAimValue;
   bool waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
@@ -702,15 +701,14 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
       relativeAngles = ModelNodeRuntime_ComputeRelativeDirectionAngle
                          (partNode,launchAngles.elevationAngle,launchAngles.headingAngle);
       targetPitchAngle16 = relativeAngles.relativePitchAngle;
-      smoothResult = ModelNodeRuntime_SmoothYawTowardTarget
-                         (partNode,modelRuntime,relativeAngles.relativeYawAngle);
-      if (smoothResult.outsideTolerance) {
+      if (ModelNodeRuntime_SmoothYawTowardTarget
+                         (partNode,modelRuntime,relativeAngles.relativeYawAngle)) {
         ModelNodeRuntime_SmoothPitchTowardTarget(pitchNode,modelRuntime,targetPitchAngle16);
       }
       else {
-        smoothResult = ModelNodeRuntime_SmoothPitchTowardTarget
+        pitchAimValue = ModelNodeRuntime_SmoothPitchTowardTarget
                            (pitchNode,modelRuntime,targetPitchAngle16);
-        if ((smoothResult.value == targetPitchAngle16) &&
+        if ((pitchAimValue == targetPitchAngle16) &&
            (weaponDefinition = modelRuntime->modelDefinition,
            modelRuntime->attachmentReloadCountdownTicks == 0)) {
           lineOfFireBlocked = ArmyRuntimeCommand_UpdateTargetFollowingState
@@ -1479,7 +1477,7 @@ void ArmyRuntime_StartMoveCommandWithAuxiliaryValues
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
-  PathingDestinationResult resolvedDestination;
+  PathingDestination resolvedDestination;
   
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   movementRuntime->movementStateFlags =
@@ -1651,7 +1649,7 @@ void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
-  PathingDestinationResult resolvedDestination;
+  PathingDestination resolvedDestination;
 
   if (*(int *)((int)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
               24) != 0) {
@@ -1697,7 +1695,7 @@ void ArmyRuntime_StartNextQueuedWaypointMove(Q12 targetWorldY,Q12 targetWorldX,A
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
-  PathingDestinationResult resolvedDestination;
+  PathingDestination resolvedDestination;
 
   if (*(int *)((int)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
               24) != 0) {
@@ -2478,7 +2476,7 @@ void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyM
   InGameRuntimeRoot *inGameRoot;
   FixedLengthAngle offsetAngleLength;
   FixedSinCosEdxEax8 clampedOffset;
-  PathingDestinationResult resolvedDestination;
+  PathingDestination resolvedDestination;
 
   inGameRoot = g_InGameRuntimeRoot;
   if (((movementRuntime->movementStateFlags & (ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_LOCKED)) == 0) &&
@@ -2525,7 +2523,7 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
-  PathingDestinationResult resolvedDestination;
+  PathingDestination resolvedDestination;
 
   if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
@@ -3331,7 +3329,7 @@ void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
   WorldRuntimeContext *worldRuntime;
   Q12 *fallbackCoordinateRead;
   Q12 *waypointCoordinateWrite;
-  PathingDestinationResult resolvedDestination;
+  PathingDestination resolvedDestination;
 
   if (((movementRuntime->movementStateFlags & (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_LOCKED)) == 0) &&
       (movementRuntime->retryCountdown == 0)) {
@@ -3461,7 +3459,7 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
   Q12 *queuedCoordinateRead;
   Q12 *queuedCoordinateWrite;
   bool belowThreshold;
-  PathingDestinationResult resolvedDestination;
+  PathingDestination resolvedDestination;
   Q12 queuedWorldYQ12;
   Q12 queuedWorldXQ12;
   ModelRuntimeNode *modelNode;
@@ -3526,15 +3524,13 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
                          ((movementRuntime->fallbackPosition).worldYQ12,
                           (movementRuntime->fallbackPosition).worldXQ12,
                           movementRuntime->entityRuntime,worldRuntime);
-      if (!resolvedDestination.failed) {
-        movementRuntime->movementWorldXQ12 = resolvedDestination.primaryWorldXQ12;
-        movementRuntime->movementWorldYQ12 = resolvedDestination.primaryWorldYQ12;
-        (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
-        (movementRuntime->fallbackPosition).worldYQ12 = resolvedDestination.fallbackWorldYQ12;
-        *outWorldXQ12 = resolvedDestination.primaryWorldXQ12;
-        *outWorldYQ12 = resolvedDestination.primaryWorldYQ12;
-        return false;
-      }
+      movementRuntime->movementWorldXQ12 = resolvedDestination.primaryWorldXQ12;
+      movementRuntime->movementWorldYQ12 = resolvedDestination.primaryWorldYQ12;
+      (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
+      (movementRuntime->fallbackPosition).worldYQ12 = resolvedDestination.fallbackWorldYQ12;
+      *outWorldXQ12 = resolvedDestination.primaryWorldXQ12;
+      *outWorldYQ12 = resolvedDestination.primaryWorldYQ12;
+      return false;
     }
   }
   distanceX = (modelNode->worldTransform).translation.x - movementRuntime->movementTargetWorldXQ12;

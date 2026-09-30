@@ -136,8 +136,8 @@ void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *source
 GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004AD7C0 */
-TextureSizeResult
-GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *sourceAsset);
+bool GraphicsTextureSource_GetFirstLogicalSize
+          (GraphicsTextureSourceAsset *sourceAsset,uint32_t *outWidthPixels,uint32_t *outHeightPixels);
 
 /* 0x0057ADA0 */
 void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture);

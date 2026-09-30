@@ -30,10 +30,11 @@ void __cdecl ProcessEntry(void)
   int screenHeight;
   int screenWidth;
   uint32_t networkResult;
+  uint32_t bootstrapError;
   uint32_t graphicsError;
   uint32_t bitsPerPixel;
   uint32_t adapterIndex;
-  StatusResult statusResult;
+  uint32_t mouseInitError;
   StatusResult soundResult;
   FatalErrorCheckResult fatalResult;
   DisplayModeResult displayModeResult;
@@ -83,15 +84,16 @@ void __cdecl ProcessEntry(void)
         if (g_CpuFeatureFlags == 0) {
           FatalError_ExitIfFailed(FATAL_ERROR_CPU_WITHOUT_MMX,true);
         }
-        statusResult = DynAPI_Bootstrap();
-        fatalResult = FatalError_ExitIfFailed(statusResult.valueOrError,statusResult.failed);
+        bootstrapError = DynAPI_Bootstrap();
+        fatalResult = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
         /* TimerSystem_Init only installs the timer procs and always clears CF */
         TimerSystem_Init();
         fatalResult = FatalError_ExitIfFailed(fatalResult.valueOrError,false);
         graphicsError = Graphics_Init();
         FatalError_ExitIfFailed(graphicsError,graphicsError != 0);
-        statusResult = DirectInputMouse_Init();
-        FatalError_ExitIfFailed(statusResult.valueOrError,statusResult.failed);
+        if (!DirectInputMouse_Init(&mouseInitError)) {
+          FatalError_ExitIfFailed(mouseInitError,true);
+        }
         soundResult = DirectSound_Init();
         Thandor_Log("DirectSound_Init: %s", soundResult.failed ? "failed (continuing without sound)" : "ok");
         if (soundResult.failed) {
@@ -131,9 +133,10 @@ void __cdecl ProcessEntry(void)
    Resets the game data to the defaults of a new game: clears the auxiliary state and the eight faction
    records, gives every faction its own capability bit, the base technology, a rotated relation pattern
    (0xF for itself, 1 for everyone else) and the starting economy limits, and replaces the stat table with a
-   fresh zeroed one. CF is set when the stat table cannot be allocated (the old one then stays).
+   fresh zeroed one. Returns 0, or the allocator's (non-zero) error code when the stat table cannot be
+   allocated (the old one then stays).
 */
-StatusResult GameData_ResetDefaults(void)
+uint32_t GameData_ResetDefaults(void)
 
 {
   FactionCapabilityFlags *capabilityFlagsSlot;
@@ -145,7 +148,6 @@ StatusResult GameData_ResetDefaults(void)
   uint32_t *dwordCursor;
   uint32_t *statTableCursor;
   ArenaAllocResult allocResult;
-  StatusResult status;
 
   remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4;
   dwordCursor = g_GameDataAuxState.pairPressureMatrix8x8;
@@ -189,24 +191,21 @@ StatusResult GameData_ResetDefaults(void)
   } while (remainingCount != 0);
   allocResult = g_MemoryApi.alloc(GAME_STAT_TABLE_BYTES);
   previousStatTable = g_GameStatTableImage;
-  if (!allocResult.failed) {
-    LOCK();
-    UNLOCK();
-    g_GameStatTableImage = (void *)allocResult.payloadOrError;
-    g_MemoryApi.free(previousStatTable);
-    statTableCursor = (uint32_t *)allocResult.payloadOrError;
-    for (remainingCount = GAME_STAT_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-      *statTableCursor = 0;
-      statTableCursor++;
-    }
-    statTableCursor[-1] = UINT32_MAX; /* end marker */
-    g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
-    allocResult.payloadOrError = 0;
-    allocResult.failed = false;
+  if (allocResult.failed) {
+    return allocResult.payloadOrError;
   }
-  status.valueOrError = allocResult.payloadOrError;
-  status.failed = allocResult.failed;
-  return status;
+  LOCK();
+  UNLOCK();
+  g_GameStatTableImage = (void *)allocResult.payloadOrError;
+  g_MemoryApi.free(previousStatTable);
+  statTableCursor = (uint32_t *)allocResult.payloadOrError;
+  for (remainingCount = GAME_STAT_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
+    *statTableCursor = 0;
+    statTableCursor++;
+  }
+  statTableCursor[-1] = UINT32_MAX; /* end marker */
+  g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
+  return 0;
 }
 
 
@@ -318,16 +317,14 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 
 /* Address: 0x00573C50.
    Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that
-   DynDLL_UnloadAll frees it; returns the module with CF clear. Fails with CF set and FATAL_ERROR_DLL_LOAD_FAILED
-   (the name left in g_PackageLastErrorPath) when LoadLibraryA is not bound yet, the table is full or the load
-   fails.
+   DynDLL_UnloadAll frees it; returns the (non-NULL) module. Returns NULL (the name left in
+   g_PackageLastErrorPath) when LoadLibraryA is not bound yet, the table is full or the load fails; the
+   original reported FATAL_ERROR_DLL_LOAD_FAILED then, which the callers now supply themselves.
 */
-DllLoadResult DynDLL_Load(char *moduleName)
+HINSTANCE DynDLL_Load(char *moduleName)
 
 {
   HINSTANCE loadedModule;
-  DllLoadResult successResult;
-  DllLoadResult failureResult;
   uint32_t moduleSlotIndex;
 
   Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)moduleName);
@@ -341,14 +338,10 @@ DllLoadResult DynDLL_Load(char *moduleName)
       g_DynamicModules[g_DynamicModuleCount].module = loadedModule;
       g_DynamicModules[moduleSlotIndex].name = moduleName;
       g_DynamicModuleCount++;
-      successResult.failed = false;
-      successResult.moduleOrError = loadedModule;
-      return successResult;
+      return loadedModule;
     }
   }
-  failureResult.failed = true;
-  failureResult.moduleOrError = (HINSTANCE)FATAL_ERROR_DLL_LOAD_FAILED;
-  return failureResult;
+  return NULL;
 }
 
 
@@ -387,19 +380,17 @@ uint32_t DynDLL_Unload(char *moduleName)
 
 /* Address: 0x00573D40.
    Looks up the g_BootstrapApiBindings entry whose destination slot equals destination (a slot that still
-   holds its name string), passes that name to the bound LoadLibraryA and stores the result in the slot; CF
-   set when no entry matches or the call fails (the name is left in g_PackageLastErrorPath). EAX is
-   FATAL_ERROR_LOADER_MODULE_MISSING on both paths. No caller found in src/ or src/generated/image_data.c
-   (only the function map lists it).
+   holds its name string), passes that name to the bound LoadLibraryA and stores the result in the slot.
+   Returns true on success; false when no entry matches or the call fails (the name is left in
+   g_PackageLastErrorPath). The original's EAX was FATAL_ERROR_LOADER_MODULE_MISSING on both paths, so it
+   carried no information. No caller found in src/ or src/generated/image_data.c (only the function map lists it).
 */
-StatusResult BootstrapApi_ResolveBindingByDestination(void **destination)
+bool BootstrapApi_ResolveBindingByDestination(void **destination)
 
 {
   void *resolvedProcedure;
   uint32_t remainingCount;
   DynamicApiBinding *bindingCursor;
-  StatusResult failureResult;
-  StatusResult successResult;
 
   bindingCursor = g_BootstrapApiBindings;
   /* the original bounds the walk with the loaded-module count, not with the size of the binding table */
@@ -414,17 +405,13 @@ StatusResult BootstrapApi_ResolveBindingByDestination(void **destination)
            (void *)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)((char *)destination);
       if (resolvedProcedure != NULL) {
         bindingCursor->destination = (void **)resolvedProcedure;
-        successResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING; /* EAX keeps the code on success too */
-        successResult.failed = false;
-        return successResult;
+        return true;
       }
       break;
     }
     bindingCursor++;
   }
-  failureResult.failed = true;
-  failureResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING;
-  return failureResult;
+  return false;
 }
 
 
@@ -564,7 +551,7 @@ uint32_t __cdecl CPU_DetectFeatures(void)
 void __cdecl Game_Run(void)
 
 {
-  StatusResult renderingInitResult;
+  uint32_t renderingInitError;
   uint32_t loadResultOrWidth; /* Game_LoadCoreAssets result, later the saved display width */
   uint32_t displayHeight;
   uint32_t bitsPerPixel;
@@ -573,12 +560,12 @@ void __cdecl Game_Run(void)
   CursorFrameResult cursorFrameResult;
   FatalErrorCheckResult fatalResult;
   DisplayModeResult displayModeResult;
-  FrontendMainLoopResult mainLoopResult;
+  uint32_t mainLoopError;
 
   cursorFrameResult = g_GraphicsCursorSetFrame(0);
   FatalError_ExitIfFailed(cursorFrameResult.errorCode,cursorFrameResult.failed);
-  renderingInitResult = GameRuntime_InitializeSpatialAudioAndRendering();
-  FatalError_ExitIfFailed(renderingInitResult.valueOrError,renderingInitResult.failed);
+  renderingInitError = GameRuntime_InitializeSpatialAudioAndRendering();
+  FatalError_ExitIfFailed(renderingInitError,renderingInitError != 0);
   loadResultOrWidth = Game_LoadCoreAssets();
   Thandor_Log("Game_LoadCoreAssets -> 0x%08X", loadResultOrWidth);
   /* 0 with CF clear on success, an error code with CF set otherwise */
@@ -601,8 +588,9 @@ void __cdecl Game_Run(void)
     FatalError_ExitIfFailed(displayModeResult.valueOrError,displayModeResult.failed);
     PersistentSettings_Write(g_ActiveGraphicsAdapterIndex,PERSISTENT_SETTING_ADAPTER_INDEX);
   }
-  mainLoopResult = Frontend_MainLoop(1);
-  FatalError_ExitIfFailed(mainLoopResult.errorOrValue,mainLoopResult.failed);
+  if (!Frontend_MainLoop(1,&mainLoopError)) {
+    FatalError_ExitIfFailed(mainLoopError,true);
+  }
   g_NetworkBackendSlot3(); /* close */
   g_NetworkBackendSlot1(); /* cleanup */
   return;
@@ -612,9 +600,10 @@ void __cdecl Game_Run(void)
 /* Address: 0x0050BB10.
    Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables,
    the software renderer's display-mode hook and the global primitive queue (0xA000 packets), in that order.
-   Stops at the first step that fails and returns its result.
+   Stops at the first step that fails and returns its (non-zero) error code; returns 0 when all succeed.
+   The original returned g_PrimitiveQueueStorage in EAX on success; its only caller (Game_Run) discards it.
 */
-StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
+uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 
 {
   StatusResult step;
@@ -622,25 +611,21 @@ StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
   uint32_t stepError;
 
   if (!SpatialSoundPool_Init(&poolError)) {
-    return StatusValue_Fail(poolError);
+    return poolError;
   }
   step = TerrainByteClampLookup_Initialize();
   if (step.failed) {
-    return step;
+    return step.valueOrError;
   }
   stepError = GraphicsIntensityClampTable_Initialize();
   if (stepError != 0) {
-    return StatusValue_Fail(stepError);
+    return stepError;
   }
   stepError = SoftwareRenderer_InstallDisplayModeHook();
   if (stepError != 0) {
-    return StatusValue_Fail(stepError);
+    return stepError;
   }
-  stepError = GraphicsPrimitiveQueue_AllocateGlobalPool(GAME_PRIMITIVE_QUEUE_PACKET_COUNT);
-  if (stepError != 0) {
-    return StatusValue_Fail(stepError);
-  }
-  return StatusValue_Ok((uint32_t)g_PrimitiveQueueStorage);
+  return GraphicsPrimitiveQueue_AllocateGlobalPool(GAME_PRIMITIVE_QUEUE_PACKET_COUNT);
 }
 
 
@@ -1153,8 +1138,8 @@ bool Game_PlayIntroMovies(void)
   bool accessFailed;
   MovieFrameDimensionsEdxEax8 frameDimensions;
   MovieOpenResult openResult;
-  MovieFrameResult firstFrameResult;
-  MovieFrameResult advanceResult;
+  MovieRuntime *introMovie;
+  bool frameDecoded;
   KeyboardEventResult keyEvent;
   CommandLineOptionResult noIntroOption;
   CursorEventResult cursorEvent;
@@ -1195,8 +1180,7 @@ bool Game_PlayIntroMovies(void)
   noIntroOption = g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro);
   if (noIntroOption.notFound) {
     while (!(openResult = Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046)).failed) {
-      firstFrameResult = Movie_AdvanceFrame();
-      if (firstFrameResult.ended) {
+      if (!Movie_AdvanceFrame(&introMovie,NULL)) {
         Movie_Close();
         return true;
       }
@@ -1222,12 +1206,12 @@ bool Game_PlayIntroMovies(void)
           /* catch up at most three frames per pass */
           frameAdvanceBudget = 3;
           do {
-            advanceResult = Movie_AdvanceFrame();
+            frameDecoded = Movie_AdvanceFrame(NULL,NULL);
             frameHeightSnapshot = g_FramebufferHeight;
-            if (advanceResult.ended) break;
+            if (!frameDecoded) break;
             g_IntroMoviePendingTicks--;
           } while ((g_IntroMoviePendingTicks != 0) && (--frameAdvanceBudget != 0));
-          if (advanceResult.ended) break;
+          if (!frameDecoded) break;
           quarterFrameHeight = g_FramebufferHeight >> 2;
           accessFailed = g_GraphicsFramebufferBeginAccess();
           if (accessFailed) break;
@@ -1239,7 +1223,7 @@ bool Game_PlayIntroMovies(void)
                      ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)(frameDimensions >> 32)) >> 1) +
                      (frameHeightSnapshot >> 3),
                      (int)(g_FramebufferWidth - (int)frameDimensions) >> 1,0,
-                     (GraphicsTextureSourceAsset *)firstFrameResult.movieOrError,g_FramebufferAccess);
+                     (GraphicsTextureSourceAsset *)introMovie,g_FramebufferAccess);
           g_GraphicsFramebufferEndAccess();
           g_GraphicsFramebufferPresent(g_FramebufferAccess);
         }
@@ -1258,19 +1242,16 @@ bool Game_PlayIntroMovies(void)
    Binds the bootstrap API table: every entry starts out holding a procedure name and its DLL name and
    has the name replaced by the resolved procedure address. DLLs that are not mapped yet are loaded with
    the table's first entry (LoadLibraryA, resolved first) and recorded in g_DynamicModules. On failure the
-   DLL/procedure name is stored for the fatal-error message and a FATAL_ERROR_* code is returned with CF set.
+   DLL/procedure name is stored for the fatal-error message and a FATAL_ERROR_* code is returned; 0 when
+   every entry is bound. (The original left the last resolved procedure in EAX on success; ProcessEntry only
+   passes it through the fatal-error handler, which ignores it.)
 */
-StatusResult DynAPI_Bootstrap(void)
+uint32_t DynAPI_Bootstrap(void)
 
 {
-  /* EAX at the table end: the last resolved procedure (the table is never empty; incoming EAX otherwise) */
-  void **resolvedProcedure = NULL;
+  void **resolvedProcedure;
   HINSTANCE module;
   DynamicApiBinding *bindingCursor;
-  StatusResult successResult;
-  StatusResult loadFailedResult;
-  StatusResult moduleUnavailableResult;
-  StatusResult procedureMissingResult;
   void **procedureName; /* the unresolved destination slot still holds the procedure name */
   char *moduleName;
   uint32_t moduleSlotIndex;
@@ -1282,17 +1263,13 @@ StatusResult DynAPI_Bootstrap(void)
       /* dynapi_9 is the string "LoadLibraryA": without its module nothing can be loaded */
       if (bindingCursor->destination == (void **)dynapi_9) {
         Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
-        moduleUnavailableResult.failed = true;
-        moduleUnavailableResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING;
-        return moduleUnavailableResult;
+        return FATAL_ERROR_LOADER_MODULE_MISSING;
       }
       module = ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (module == NULL) {
         Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
-        loadFailedResult.failed = true;
-        loadFailedResult.valueOrError = FATAL_ERROR_DLL_LOAD_FAILED;
-        return loadFailedResult;
+        return FATAL_ERROR_DLL_LOAD_FAILED;
       }
       g_DynamicModuleCount++;
       moduleName = bindingCursor->moduleName;
@@ -1304,15 +1281,11 @@ StatusResult DynAPI_Bootstrap(void)
     if (resolvedProcedure == NULL) {
       Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
       Text_CopyNarrowToUtf16(256,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
-      procedureMissingResult.failed = true;
-      procedureMissingResult.valueOrError = FATAL_ERROR_DLL_PROCEDURE_MISSING;
-      return procedureMissingResult;
+      return FATAL_ERROR_DLL_PROCEDURE_MISSING;
     }
     bindingCursor->destination = resolvedProcedure;
   }
-  successResult.failed = false;
-  successResult.valueOrError = (uint32_t)resolvedProcedure;
-  return successResult;
+  return 0;
 }
 
 

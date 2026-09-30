@@ -345,26 +345,24 @@ ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
    eight corners of the node's local bounding box and tests the pointer against the twelve triangles of its faces
    (faces with a corner behind the near plane are skipped). On a hit returns the distance from the context's
    reference point to the node (to the box centre with HIT_DISTANCE_TO_BOUNDS_CENTER); otherwise the children are tested
-   in order. missed is set (CF) when nothing was hit.
+   in order. Returns true on a hit and stores the distance in *outDistanceQ12; returns false (and leaves
+   *outDistanceQ12 unchanged) when neither the node nor a child was hit.
 */
-ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
-          FrontendModelPointerHitContext *context)
+          FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12)
 
 {
   ModelResource *resourceView;
   GraphicsWorldCoordinateQ12 boundsX1;
   ModelRuntimeNode *childNode;
-  ModelHitTestResult missResult;
   uint8_t clippedCornerMask;
   GraphicsFixedMatrix3x4 *transformA;
   uint32_t childrenRemaining;
   int childByteOffset;
   bool cornerVisibleOrHit;
   GraphicsProjectedPointPair projectedCorner;
-  ModelHitTestResult boundsCenterHit;
-  ModelHitTestResult hitOrChildResult;
-  
+
   resourceView = modelNode->modelPayload.modelResource;
   transformA = &modelNode->worldTransform;
   if ((resourceView->boundingRadiusQ12 != 0) &&
@@ -539,7 +537,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                               g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 7), cornerVisibleOrHit)))))))) {
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER) != 0) {
-        boundsCenterHit.distanceQ12 =
+        *outDistanceQ12 =
              FixedMath_Length3(((resourceView->localBoundsZ0Q12 + resourceView->localBoundsZ1Q12 >> 1) +
                                modelNode->worldTransform.translation.z) -
                                context->hitReferenceWorldZQ12,
@@ -549,18 +547,16 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                                ((resourceView->localBoundsX0Q12 + resourceView->localBoundsX1Q12 >> 1) +
                                modelNode->worldTransform.translation.x) -
                                context->hitReferenceWorldXQ12);
-        boundsCenterHit.missed = false;
-        return boundsCenterHit;
+        return true;
       }
-      hitOrChildResult.distanceQ12 =
+      *outDistanceQ12 =
            FixedMath_Length3(modelNode->worldTransform.translation.z -
                              context->hitReferenceWorldZQ12,
                              modelNode->worldTransform.translation.y -
                              context->hitReferenceWorldYQ12,
                              modelNode->worldTransform.translation.x -
                              context->hitReferenceWorldXQ12);
-      hitOrChildResult.missed = false;
-      return hitOrChildResult;
+      return true;
     }
   }
   childByteOffset = 0;
@@ -568,18 +564,14 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
        childrenRemaining = childrenRemaining - 1) {
     childNode = *(ModelRuntimeNode **)((int)modelNode->childNodes + childByteOffset);
     if (childNode != NULL) {
-      hitOrChildResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildren
-                         (pointerY,pointerX,childNode,context);
-      transformA = (GraphicsFixedMatrix3x4 *)hitOrChildResult.distanceQ12;
-      if (!hitOrChildResult.missed) {
-        return hitOrChildResult;
+      if (ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+                         (pointerY,pointerX,childNode,context,outDistanceQ12)) {
+        return true;
       }
     }
     childByteOffset = childByteOffset + 4;
   }
-  missResult.missed = true;
-  missResult.distanceQ12 = (uint32_t)transformA;
-  return missResult;
+  return false;
 }
 
 
@@ -588,10 +580,15 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
    g_ModelRaycastWorldDirectionX/Y/ZQ28 (ModelRuntime_RaycastCandidateListNearest): when the ray passes the node's
    bounding sphere within
    g_ModelRaycastMaximumDistance, it is moved into the node's frame and tested against every triangle of the
-   node's mesh group, then the children are tested. Returns the nearest distance and node (hit, CF set), or
-   MODEL_RAYCAST_NO_HIT_DISTANCE.
+   node's mesh group, then the children are tested. Returns the nearest hit distance and stores the nearest
+   node in *outNearestModelNode; returns MODEL_RAYCAST_NO_HIT_DISTANCE when nothing was hit (a hit never has
+   that distance).
+   Original quirk: on a miss *outNearestModelNode still receives the EDX scratch value of the original (a
+   product high word, NULL, or what the last child test left there); ModelRuntime_RaycastCandidateListNearest
+   can pick it up.
 */
-ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
+Q12 ModelNodeRuntime_RaycastHierarchyNearest
+          (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeNode **outNearestModelNode)
 
 {
   int *triangleCountField;
@@ -612,9 +609,8 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
   ModelRaycastTriangleDescriptor *triangle;
   ModelRuntimeNode *nearestModelNode;
   Q12 triangleDistanceQ12;
-  ModelRaycastResult childOrNearestHit;
-  ModelRaycastResult missResult;
-  
+  Q12 childDistanceQ12;
+
   deltaXOrNodeY = modelNodeRuntime->worldTransform.translation.x - g_ModelRaycastOriginX;
   deltaYOrNodeZ = modelNodeRuntime->worldTransform.translation.y - g_ModelRaycastOriginY;
   deltaZ = modelNodeRuntime->worldTransform.translation.z - g_ModelRaycastOriginZ;
@@ -696,28 +692,25 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
         nearestModelNode = modelNodeRuntime;
         for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining--) {
           if (modelNodeRuntime->childNodes[childrenRemaining - 1] != NULL) {
-            childOrNearestHit = ModelNodeRuntime_RaycastHierarchyNearest
-                               (modelNodeRuntime->childNodes[childrenRemaining - 1]);
-            edxCarrier = childOrNearestHit.nearestNodeOrScratch;
-            if ((childOrNearestHit.hit) && (childOrNearestHit.nearestDistanceQ12 < radiusNodeXOrNearest)) {
-              radiusNodeXOrNearest = childOrNearestHit.nearestDistanceQ12;
+            childDistanceQ12 = ModelNodeRuntime_RaycastHierarchyNearest
+                               (modelNodeRuntime->childNodes[childrenRemaining - 1],
+                                &edxCarrier.nearestModelNode);
+            if ((childDistanceQ12 != MODEL_RAYCAST_NO_HIT_DISTANCE) &&
+                (childDistanceQ12 < radiusNodeXOrNearest)) {
+              radiusNodeXOrNearest = childDistanceQ12;
               nearestModelNode = edxCarrier.nearestModelNode;
             }
           }
         }
         if (radiusNodeXOrNearest != MODEL_RAYCAST_NO_HIT_DISTANCE) {
-          childOrNearestHit.nearestNodeOrScratch.nearestModelNode = nearestModelNode;
-          childOrNearestHit.nearestDistanceQ12 = radiusNodeXOrNearest;
-          childOrNearestHit.hit = true;
-          return childOrNearestHit;
+          *outNearestModelNode = nearestModelNode;
+          return radiusNodeXOrNearest;
         }
       }
     }
   }
-  missResult.nearestNodeOrScratch.nearestModelNode = edxCarrier.nearestModelNode;
-  missResult.nearestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
-  missResult.hit = false;
-  return missResult;
+  *outNearestModelNode = edxCarrier.nearestModelNode;
+  return MODEL_RAYCAST_NO_HIT_DISTANCE;
 }
 
 
@@ -737,7 +730,7 @@ bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
   int linksRemaining;
   ModelRuntimeAttachmentIndex childSlotIndex;
   bool childFailed;
-  ModelNodeCreateResult childCreateResult;
+  ModelRuntimeSlot *childModelRuntime;
 
   /* definition node: +8 link count, +0xC the linked definition lists */
   linksRemaining = *(int *)(definitionNode + 8);
@@ -748,14 +741,13 @@ bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
            *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 12 + childSlotIndex * 4);
       childDefinitionId =
            ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,linkedDefinitionList);
-      childCreateResult = ModelRuntimePool_RepairDeferredChild
+      if (!ModelRuntimePool_RepairDeferredChild
                         (paletteAsset,textureSet,childSlotIndex,childDefinitionId,
-                         modelRuntimeSlot,worldRuntime);
-      if (childCreateResult.failed) {
+                         modelRuntimeSlot,worldRuntime,&childModelRuntime)) {
         return true;
       }
       childFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursive
-                        (factionIndex,paletteAsset,textureSet,(ModelRuntimeSlot *)childCreateResult.modelNode,
+                        (factionIndex,paletteAsset,textureSet,childModelRuntime,
                          linkedDefinitionList,worldRuntime);
       if (childFailed) {
         return true;
@@ -953,12 +945,14 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
    definition node, copies the local rotation and the mesh resource, and places each child at the translation
    of the attachment transform record (kind 0 or 1) that names its slot. Definition nodes whose low nibble of
    nodeFlags is set are not instantiated (NULL); for such a child an attachment point is recorded in the model
-   runtime so that another model can be attached there later. CF set when a world node could not be allocated.
+   runtime so that another model can be attached there later. Returns true with the new node (NULL for a
+   non-instantiated definition node) in *outNode, or false when a world node could not be allocated (the
+   original returned FATAL_ERROR_GENERAL_FAILURE as its failure value; *outNode is then left unchanged).
 */
-ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
+bool ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
-          WorldRuntimeContext *worldRuntime)
+          WorldRuntimeContext *worldRuntime,ModelRuntimeNode **outNode)
 
 {
   AngleTurn32 rotationAngleA;
@@ -970,27 +964,19 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
   SerializedRelativeByteOffset childDefinitionOffset;
   ModelRuntimeNode *newNode;
   uint32_t attachmentKindOrSlot;
-  ModelRuntimeNode *childOrFailedNode;
   ModelPackedLookupTableEntryCount transformRecordsRemaining;
   uint32_t definitionOrChildrenRemaining;
   uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransform;
-  WorldObjectAllocResult allocationResult;
-  ModelNodeCreateResult childResult;
-  ModelNodeCreateResult failureResult;
-  
+  ModelRuntimeNode *childNode;
+
   if ((definitionNode->nodeFlags & 0xf) != 0) {
-    childResult.modelNode = NULL;
-    childResult.failed = false;
-    return childResult;
+    *outNode = NULL;
+    return true;
   }
-  allocationResult = WorldObjectArray_AllocateFreeRecord(worldRuntime);
-  newNode = (ModelRuntimeNode *)allocationResult.recordOrError;
-  childOrFailedNode = newNode;
-  if (allocationResult.failed) {
-    failureResult.failed = true;
-    failureResult.modelNode = childOrFailedNode;
-    return failureResult;
+  newNode = (ModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
+  if (newNode == NULL) {
+    return false; /* world object pool exhausted */
   }
   newNode->ownerClassId = WORLD_OWNER_RUNTIME_MODEL;
   newNode->modelPayload.localTranslationXQ12 = 0;
@@ -1049,18 +1035,14 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
       attachmentKindOrSlot = attachmentTransform->packedKindAndSelector & 0xf;
       if ((attachmentKindOrSlot == 0 || attachmentKindOrSlot == 1) &&
           childIndex == attachmentTransform->packedKindAndSelector >> 4) {
-        childResult = ModelNodeRuntime_CreateHierarchyRecursive
-                           (paletteAsset,textureSet,modelRuntime,
-                            (MdlSerializedNodeHeader *)
-                            definitionNode->childSerializedOffsets[childIndex],worldRuntime);
-        childOrFailedNode = childResult.modelNode;
-        if (childResult.failed) {
-          failureResult.failed = true;
-          failureResult.modelNode = childOrFailedNode;
-          return failureResult;
+        if (!ModelNodeRuntime_CreateHierarchyRecursive
+                (paletteAsset,textureSet,modelRuntime,
+                 (MdlSerializedNodeHeader *)definitionNode->childSerializedOffsets[childIndex],worldRuntime,
+                 &childNode)) {
+          return false;
         }
-        newNode->childNodes[childIndex] = childOrFailedNode;
-        if (childOrFailedNode == NULL) {
+        newNode->childNodes[childIndex] = childNode;
+        if (childNode == NULL) {
           /* an attachment point: record where the child model will hang */
           attachmentKindOrSlot = modelRuntime->attachmentCount;
           if (attachmentKindOrSlot < MODEL_RUNTIME_ATTACHMENT_CAPACITY) {
@@ -1079,12 +1061,12 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
           }
         }
         else {
-          childOrFailedNode->parentNode = newNode;
+          childNode->parentNode = newNode;
           radiusOrTranslationY = attachmentTransform->localTranslationYQ12;
           translationZ = attachmentTransform->localTranslationZQ12;
-          childOrFailedNode->modelPayload.localTranslationXQ12 = attachmentTransform->localTranslationXQ12;
-          childOrFailedNode->modelPayload.localTranslationYQ12 = radiusOrTranslationY;
-          childOrFailedNode->modelPayload.localTranslationZQ12 = translationZ;
+          childNode->modelPayload.localTranslationXQ12 = attachmentTransform->localTranslationXQ12;
+          childNode->modelPayload.localTranslationYQ12 = radiusOrTranslationY;
+          childNode->modelPayload.localTranslationZQ12 = translationZ;
         }
         break;
       }
@@ -1096,9 +1078,8 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
     }
     childIndex++;
   }
-  childResult.failed = false;
-  childResult.modelNode = newNode;
-  return childResult;
+  *outNode = newNode;
+  return true;
 }
 
 
@@ -1288,10 +1269,11 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
    the army aim updates (ArmyRuntimeClass_UpdateSingleBarrelTurret/B,
    ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments): the turn velocity grows by the weapon definition's
    acceleration up to its rate limit and is reset when it points away; the target is taken exactly once it is
-   within one step. outsideTolerance (CF) is set while the remaining difference exceeds +-0x3FF.
+   within one step. Returns true while the remaining difference exceeds +-MODEL_AIM_TOLERANCE_ANGLE16 (still
+   outside the aim tolerance), false once the yaw is within it or on the target.
 */
 
-AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
+bool ModelNodeRuntime_SmoothYawTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState,
           AngleTurn32 targetYawAngle16)
 
@@ -1304,9 +1286,8 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
   int acceleratedVelocity;
   uint32_t yawDelta;
   bool snapToTarget;
-  AimSmoothResult smoothResult;
-  AimSmoothResult settledResult;
-  
+  uint32_t remainingYawDelta;
+
   yawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
   aimDefinition = smoothingState->modelDefinition;
   yawDelta = targetYawAngle16 - yawAngle & FIXED_ANGLE16_MASK;
@@ -1351,7 +1332,6 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
     /* the target is reached within this step */
     currentYawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
     smoothingState->yawTurnVelocityAngle16 = 0;
-    smoothResult.value = targetYawAngle16;
     if (targetYawAngle16 != currentYawAngle) {
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
       modelNodeRuntime->modelPayload.localRotationAngle2 = targetYawAngle16;
@@ -1360,26 +1340,27 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
   else {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
     modelNodeRuntime->modelPayload.localRotationAngle2 = yawAngle & FIXED_ANGLE16_MASK;
-    smoothResult.value = (yawAngle & 0xffff) - targetYawAngle16 & FIXED_ANGLE16_MASK;
-    if (MODEL_AIM_TOLERANCE_ANGLE16 < smoothResult.value &&
-        smoothResult.value < FIXED_ANGLE16_FULL_TURN - MODEL_AIM_TOLERANCE_ANGLE16) {
-      smoothResult.outsideTolerance = true; /* still outside the aim tolerance */
-      return smoothResult;
+    remainingYawDelta = (yawAngle & 0xffff) - targetYawAngle16 & FIXED_ANGLE16_MASK;
+    if (MODEL_AIM_TOLERANCE_ANGLE16 < remainingYawDelta &&
+        remainingYawDelta < FIXED_ANGLE16_FULL_TURN - MODEL_AIM_TOLERANCE_ANGLE16) {
+      return true; /* still outside the aim tolerance */
     }
   }
-  settledResult.outsideTolerance = false;
-  settledResult.value = smoothResult.value;
-  return settledResult;
+  return false;
 }
 
 
 /* Address: 0x0052AC00.
    Pitch counterpart of ModelNodeRuntime_SmoothYawTowardTarget (same callers): clamps the target to the weapon
    definition's pitch range, then moves localRotationAngle1 toward it with the same accelerate/limit/stop rules,
-   without wrap-around. outsideTolerance (CF) is set while the remaining difference exceeds +-0x3FF.
+   without wrap-around. Returns the clamped target pitch when the node is on it (reached within this step or
+   already there), otherwise the remaining difference (pitch - clamped target) & FIXED_ANGLE16_MASK.
+   Original quirk: the callers compare this value with the unclamped target pitch to decide "aimed", so a
+   remaining difference that happens to equal the target also counts (the original also returned the in/out of
+   aim tolerance flag, which nobody reads).
 */
 
-AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
+uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState,
           AngleTurn32 targetPitchAngle16)
 
@@ -1389,28 +1370,27 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
   int pitchStepOrRateLimit;
   int acceleratedVelocity;
   bool snapToTarget;
-  AimSmoothResult clampedTargetResult;
-  AimSmoothResult settledResult;
-  
+  uint32_t clampedTargetOrRemaining;
+
   pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
   aimDefinition = smoothingState->modelDefinition;
-  clampedTargetResult.value = targetPitchAngle16;
+  clampedTargetOrRemaining = targetPitchAngle16;
   if ((int)aimDefinition->maximumPitchAngle < (int)targetPitchAngle16) {
-    clampedTargetResult.value = aimDefinition->maximumPitchAngle;
+    clampedTargetOrRemaining = aimDefinition->maximumPitchAngle;
   }
-  if ((int)clampedTargetResult.value < (int)aimDefinition->minimumPitchAngle) {
-    clampedTargetResult.value = aimDefinition->minimumPitchAngle;
+  if ((int)clampedTargetOrRemaining < (int)aimDefinition->minimumPitchAngle) {
+    clampedTargetOrRemaining = aimDefinition->minimumPitchAngle;
   }
   pitchStepOrRateLimit = smoothingState->pitchTurnVelocityAngle16 * g_InGameSimulationStepTicks;
   snapToTarget = true; /* already there, or reached within this step */
-  if (clampedTargetResult.value != pitchAngle) {
-    if ((int)pitchAngle <= (int)clampedTargetResult.value) {
+  if (clampedTargetOrRemaining != pitchAngle) {
+    if ((int)pitchAngle <= (int)clampedTargetOrRemaining) {
       /* target above */
       if (pitchStepOrRateLimit < 0) {
         smoothingState->pitchTurnVelocityAngle16 = 0; /* moving away: stop */
         snapToTarget = false;
       }
-      else if (pitchStepOrRateLimit < (int)(clampedTargetResult.value - pitchAngle)) {
+      else if (pitchStepOrRateLimit < (int)(clampedTargetOrRemaining - pitchAngle)) {
         pitchAngle = pitchAngle + pitchStepOrRateLimit;
         pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick;
         acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 +
@@ -1426,7 +1406,7 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
       smoothingState->pitchTurnVelocityAngle16 = 0; /* moving away: stop */
       snapToTarget = false;
     }
-    else if ((int)(clampedTargetResult.value - pitchAngle) < pitchStepOrRateLimit) {
+    else if ((int)(clampedTargetOrRemaining - pitchAngle) < pitchStepOrRateLimit) {
       pitchAngle = pitchAngle + pitchStepOrRateLimit;
       pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick;
       acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 -
@@ -1441,24 +1421,17 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
   if (!snapToTarget) {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
     modelNodeRuntime->modelPayload.localRotationAngle1 = pitchAngle;
-    clampedTargetResult.value = pitchAngle - clampedTargetResult.value & FIXED_ANGLE16_MASK;
-    if (MODEL_AIM_TOLERANCE_ANGLE16 < clampedTargetResult.value &&
-        clampedTargetResult.value < FIXED_ANGLE16_FULL_TURN - MODEL_AIM_TOLERANCE_ANGLE16) {
-      clampedTargetResult.outsideTolerance = true; /* still outside the aim tolerance */
-      return clampedTargetResult;
-    }
+    clampedTargetOrRemaining = pitchAngle - clampedTargetOrRemaining & FIXED_ANGLE16_MASK;
   }
   else {
     pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
     smoothingState->pitchTurnVelocityAngle16 = 0;
-    if (clampedTargetResult.value != pitchAngle) {
+    if (clampedTargetOrRemaining != pitchAngle) {
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-      modelNodeRuntime->modelPayload.localRotationAngle1 = clampedTargetResult.value;
+      modelNodeRuntime->modelPayload.localRotationAngle1 = clampedTargetOrRemaining;
     }
   }
-  settledResult.outsideTolerance = false;
-  settledResult.value = clampedTargetResult.value;
-  return settledResult;
+  return clampedTargetOrRemaining;
 }
 
 

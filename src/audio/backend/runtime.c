@@ -185,17 +185,15 @@ StatusResult DirectSound_Init(void)
   TH_LEGACY_HRESULT directSoundResult;
   int remainingCount;
   DirectSoundVoiceSet **registryCursor;
-  DllLoadResult dllLoadResult;
   uint32_t resolveError;
   ArenaAllocResult registryAlloc;
   int32_t failedStage; /* number of setup steps passed, shown in the error message */
 
   failedStage = 0;
-  dllLoadResult = DynDLL_Load(dynapi_4); /* "DSOUND" */
-  module = dllLoadResult.moduleOrError;
+  module = DynDLL_Load(dynapi_4); /* "DSOUND" */
   /* dynapi_20..23: "DirectSoundCreate", "DirectSoundEnumerateA", "DirectSoundCaptureCreate",
      "DirectSoundCaptureEnumerateA" */
-  if (!dllLoadResult.failed &&
+  if (module != NULL &&
       (resolveError = DynAPI_Resolve(&pDirectSoundCreate,module,dynapi_20)) == 0 &&
       (resolveError = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21)) == 0 &&
       (resolveError = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22)) == 0 &&
@@ -282,8 +280,7 @@ StatusResult DirectSound_Init(void)
     return StatusValue_Fail(FATAL_ERROR_DIRECTSOUND_SETUP);
   }
   Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
-  return StatusValue_Fail(dllLoadResult.failed ? (uint32_t)dllLoadResult.moduleOrError
-                                              : resolveError);
+  return StatusValue_Fail(module == NULL ? FATAL_ERROR_DLL_LOAD_FAILED : resolveError);
 }
 
 

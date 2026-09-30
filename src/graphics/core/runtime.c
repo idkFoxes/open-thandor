@@ -612,7 +612,6 @@ uint32_t __cdecl Graphics_Init(void)
   GraphicsAdapterRecord *adapterOrModule;
   uint32_t glideError;
   ArenaAllocResult allocResult;
-  DllLoadResult moduleLoad;
   uint32_t resolveError;
   CommandLineOptionResult optionResult;
   IDirect3D2 *direct3D2;
@@ -670,10 +669,9 @@ uint32_t __cdecl Graphics_Init(void)
             FatalError_ExitIfFailed(glideError,true);
           }
 #endif
-          moduleLoad = DynDLL_Load(sz_DDRAW);
-          adapterOrModule = (GraphicsAdapterRecord *)moduleLoad.moduleOrError;
-          cursorOrResult = adapterOrModule;
-          if (!moduleLoad.failed) {
+          adapterOrModule = (GraphicsAdapterRecord *)DynDLL_Load(sz_DDRAW);
+          cursorOrResult = (GraphicsAdapterRecord *)FATAL_ERROR_DLL_LOAD_FAILED;
+          if (adapterOrModule != NULL) {
             resolveError = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)adapterOrModule,sz_DirectDrawCreate);
             cursorOrResult = (GraphicsAdapterRecord *)resolveError;
             if (resolveError == 0) {

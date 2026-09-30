@@ -157,7 +157,7 @@
 #define FRONTEND_CAMERA_MOTION_MASK 15
 
 /* 0x00546BD0 */
-FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId);
+bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError);
 
 /* 0x0050C380 */
 GraphicsCursorFrameIndex FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
@@ -308,7 +308,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
 void Frontend_PlaySelectedEndMovie(void);
 
 /* 0x00546700 */
-FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId);
+bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
 
 /* 0x00547630 */
 void Frontend_StateTick(void);

@@ -57,12 +57,13 @@ ModelNodeRuntime_TransformLocalPointRegs
 ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x0050A7A0 */
-ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
-          FrontendModelPointerHitContext *context);
+          FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12);
 
 /* 0x0050B1D0 */
-ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime);
+Q12 ModelNodeRuntime_RaycastHierarchyNearest
+          (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeNode **outNearestModelNode);
 
 /* 0x0051B650 */
 bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
@@ -90,10 +91,10 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           MdlSerializedNodeHeader *definitionNode);
 
 /* 0x00528E90 */
-ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
+bool ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
-          WorldRuntimeContext *worldRuntime);
+          WorldRuntimeContext *worldRuntime,ModelRuntimeNode **outNode);
 
 /* 0x005294E0 */
 void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node);
@@ -108,10 +109,10 @@ ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12
 ModelRuntimeActiveTotalMetricRegisterPair ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRuntime);
 
 /* 0x0052AAC0 */
-AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetYawAngle16);
+bool ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetYawAngle16);
 
 /* 0x0052AC00 */
-AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetPitchAngle16);
+uint32_t ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetPitchAngle16);
 
 /* 0x004BD1A0 */
 void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *modelNode);

@@ -99,7 +99,7 @@ KeyboardEventResult Keyboard_ReadNextEventRegs(void);
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
 /* 0x00576CF0 */
-StatusResult DirectInputMouse_Init(void);
+bool DirectInputMouse_Init(uint32_t *outError);
 
 /* 0x00576F20 */
 void DirectInputMouse_RefreshDeviceIfIdle(void);

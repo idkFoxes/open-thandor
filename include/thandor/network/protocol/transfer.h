@@ -130,7 +130,7 @@ void FrontendTransfer_SendCommandSubmit(void);
 void UiTransferMailbox_ClearReceivedState(void);
 
 /* 0x004AF170 */
-MailboxReceiveResult UiTransferMailbox_GetReceivedBuffer(void);
+void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount); /* NULL while nothing complete */
 
 /* 0x004AF1C0 */
 void UiTransferMailbox_RandomizeSequenceToken(void);

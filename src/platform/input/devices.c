@@ -107,10 +107,10 @@ uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
    foreground buffered DirectInput mouse, hooks display-mode changes, starts the cursor-animation (20 Hz)
    and mouse-poll (64 Hz) timers, loads the cursor images (engine\mouse.gfx) and frame table
    (engine\mouse.dat), and seeds the lock-key bits of g_KeyboardStateMask.
-   CF clear on success; on failure EAX is FATAL_ERROR_DIRECTINPUT_SETUP (failed stage in
-   g_PackageLastErrorPath) or the cursor asset load error.
+   Returns true on success; on failure false with *outError set to FATAL_ERROR_DIRECTINPUT_SETUP (failed
+   stage in g_PackageLastErrorPath) or the cursor asset load error. *outError is only written on failure.
 */
-StatusResult DirectInputMouse_Init(void)
+bool DirectInputMouse_Init(uint32_t *outError)
 
 {
   GraphicsSubresourceIndex copiedFrameField;
@@ -122,12 +122,9 @@ StatusResult DirectInputMouse_Init(void)
   uint32_t subresourceIndex;
   uint32_t maxHeight;
   uint32_t maxWidth;
-  DllLoadResult dllLoadResult;
-  FatalErrorCheckResult fatalCheckResult;
+  HINSTANCE directInputModule;
   uint32_t resolveError;
   PackageLoadResult packageLoadResult;
-  StatusResult successResult;
-  StatusResult failureResult;
   void *cursorFrameData;
   uint32_t cursorFrameBytes;
   uint32_t cursorLoadErrorCode;
@@ -135,9 +132,11 @@ StatusResult DirectInputMouse_Init(void)
   int32_t initStage;
   
   initStage = 0;
-  dllLoadResult = DynDLL_Load(dynapi_3);
-  fatalCheckResult = FatalError_ExitIfFailed((uint32_t)dllLoadResult.moduleOrError,dllLoadResult.failed);
-  resolveError = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.valueOrError,dynapi_19);
+  directInputModule = DynDLL_Load(dynapi_3);
+  if (directInputModule == NULL) {
+    FatalError_ExitIfFailed(FATAL_ERROR_DLL_LOAD_FAILED,true); /* does not return */
+  }
+  resolveError = DynAPI_Resolve(&pDirectInputCreateA,directInputModule,dynapi_19);
   FatalError_ExitIfFailed(resolveError,resolveError != 0);
   SetCursor(NULL);
   directInputResult = pDirectInputCreateA(g_hInstance,DIRECTINPUT_VERSION,&g_DirectInput,NULL);
@@ -216,29 +215,24 @@ StatusResult DirectInputMouse_Init(void)
                 if ((keyState & 1) != 0) {
                   g_KeyboardStateMask |= KEYBOARD_STATE_SCROLL_LOCK;
                 }
-                /* EAX on success is the Caps Lock GetKeyState result */
-                successResult.valueOrError = (uint32_t)(int)GetKeyState(VK_CAPITAL);
-                if ((successResult.valueOrError & 1) != 0) {
+                keyState = GetKeyState(VK_CAPITAL);
+                if ((keyState & 1) != 0) {
                   g_KeyboardStateMask |= KEYBOARD_STATE_CAPS_LOCK;
                 }
-                successResult.failed = false;
-                return successResult;
+                return true;
               }
             }
             /* cursor asset load failed: its error code */
-            failureResult.failed = true;
-            failureResult.valueOrError = (uint32_t)cursorDataOrError;
-            return failureResult;
+            *outError = (uint32_t)cursorDataOrError;
+            return false;
           }
         }
       }
     }
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
-  cursorDataOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_DIRECTINPUT_SETUP;
-  failureResult.failed = true;
-  failureResult.valueOrError = (uint32_t)cursorDataOrError;
-  return failureResult;
+  *outError = FATAL_ERROR_DIRECTINPUT_SETUP;
+  return false;
 }
 
 

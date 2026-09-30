@@ -402,7 +402,7 @@ void InGameTechnologyResearch_StartSelected(void *source)
   GameEntityRuntime *firstSelectedEntity;
   uint32_t doubledTechnologyId;
   CommandPayload modelOffset;
-  SelectableGroupNodeResult selectedArea;
+  UiNodeBase *selectedAreaTab;
 
   /* climb to the in-game root */
   while (((UiNodeBase *)source)->parent != UI_NODE_NONE) {
@@ -415,18 +415,17 @@ void InGameTechnologyResearch_StartSelected(void *source)
     modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                   g_ModelRuntimeRebaseDelta;
     doubledTechnologyId = 0;
-    selectedArea = UiSelectableGroup_NoneVisibleSelected(TECHNOLOGY_AREA_TAB_COUNT,
+    if (UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,NULL,TECHNOLOGY_AREA_TAB_COUNT,
       INGAME_UI(source,technologyAreaTab7),
       INGAME_UI(source,technologyAreaTab6),
       INGAME_UI(source,technologyAreaTab5),
       INGAME_UI(source,technologyAreaTab4),
       INGAME_UI(source,technologyAreaTab3),
       INGAME_UI(source,technologyAreaTab2),
-      INGAME_UI(source,technologyAreaTab1));
-    if (!selectedArea.noneSelected) {
+      INGAME_UI(source,technologyAreaTab1))) {
       /* the selected area tab's technologyAreaTabN_prefix holds its name text id, TECHNOLOGY_TEXT_ID_BASE +
          2 * technology id (see InGameTechnologyPanel_Rebuild) */
-      doubledTechnologyId = TECHNOLOGY_AREA_TAB_PREFIX(selectedArea.node).nameTextResourceId - TECHNOLOGY_TEXT_ID_BASE;
+      doubledTechnologyId = TECHNOLOGY_AREA_TAB_PREFIX(selectedAreaTab).nameTextResourceId - TECHNOLOGY_TEXT_ID_BASE;
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -477,7 +476,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   uint16_t *resolvedText;
   uint16_t *resolvedName;
   ArmyAssetRecordPrefix *armyRecord;
-  SelectableGroupNodeResult selectedArea;
+  UiNodeBase *selectedAreaTab;
   uint16_t *labelTemplate;
   UiActionId actionId;
   
@@ -550,15 +549,14 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       }
       slotIndex--;
     } while (slotIndex != 0);
-    selectedArea = UiSelectableGroup_NoneVisibleSelected(TECHNOLOGY_AREA_TAB_COUNT,
+    if (!UiSelectableGroup_FindVisibleSelected(&selectedAreaTab,NULL,TECHNOLOGY_AREA_TAB_COUNT,
       INGAME_UI(inGameRoot,technologyAreaTab7),
       INGAME_UI(inGameRoot,technologyAreaTab6),
       INGAME_UI(inGameRoot,technologyAreaTab5),
       INGAME_UI(inGameRoot,technologyAreaTab4),
       INGAME_UI(inGameRoot,technologyAreaTab3),
       INGAME_UI(inGameRoot,technologyAreaTab2),
-      INGAME_UI(inGameRoot,technologyAreaTab1));
-    if (selectedArea.noneSelected) {
+      INGAME_UI(inGameRoot,technologyAreaTab1))) {
       playerBlock = g_SelectionPlayerRuntimeBlockPointers
                     [((WorldRuntimeContext *)INGAME_UI(inGameRoot,worldView))->selection.activePlayerRuntimeId];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
@@ -580,7 +578,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
            TEXT_ID_TECHNOLOGY_BUTTON_AREA_SELECTED;
       technologyAsset = g_TechnologyAsset;
       /* the selected tab's name text id; the description is the next text */
-      nameTextId = TECHNOLOGY_AREA_TAB_PREFIX(selectedArea.node).nameTextResourceId;
+      nameTextId = TECHNOLOGY_AREA_TAB_PREFIX(selectedAreaTab).nameTextResourceId;
       descriptionTextId = nameTextId + 1;
       selectedTechnologyId = (nameTextId - (uint32_t)TECHNOLOGY_TEXT_ID_BASE) >> 1;
       xeniteCost = g_TechnologyAsset->records[selectedTechnologyId].xeniteCostQ4;

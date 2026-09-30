@@ -320,8 +320,9 @@ void FrontendSession_PeriodicTick(void)
 {
   InGameRuntimeRoot *inGameRoot;
   bool callResult;
-  RecordRingDiscardResult ringRecord;
-  
+  void *packet;
+  void *packetEndpoint;
+
   callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (callResult) {
@@ -339,10 +340,9 @@ void FrontendSession_PeriodicTick(void)
       }
       else if ((g_SessionNetworkTickCounter % g_SessionNetworkTickInterval) * 2 ==
                g_SessionNetworkTickInterval) {
-        while (ringRecord = UiRuntimeRecordRing_DiscardOldest(), !ringRecord.empty) {
+        while (UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) {
           FrontendTransfer_HostHandleCommandSubmitOrWaitAck
-                    ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
-                     (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
+                    ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
         }
         callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
         if (callResult) {
@@ -363,11 +363,9 @@ void FrontendSession_PeriodicTick(void)
         return;
       }
       do {
-        ringRecord = UiRuntimeRecordRing_DiscardOldest();
-        if (ringRecord.empty) break;
+        if (!UiRuntimeRecordRing_TakeOldest(&packet,&packetEndpoint)) break;
         callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                          ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
-                           (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
+                          ((NetworkSessionContext *)packetEndpoint,(FrontendTransferPacketUnion *)packet);
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
       if (callResult) {

@@ -294,15 +294,15 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
 
 {
   UiNodeBase *parentNode;
-  ListSelectionResult selectedIndex;
+  UiListRowIndex selectedIndex;
   UiNodeVtable *parentVtable;
-  
+
   parentNode = control->base.parent;
   parentVtable = parentNode->vtable;
   control->base.bottomOffset = control->rowHeight * control->rowCount + 1;
   parentVtable->layout(parentNode);
-  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(control);
-  UiPointerList_SelectColumnListIndex(selectedIndex.rowIndex,control);
+  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(control,NULL);
+  UiPointerList_SelectColumnListIndex(selectedIndex,control);
   UiActionQueue_Enqueue(control->actionId,control);
   return;
 }
@@ -1110,9 +1110,10 @@ UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,U
    single "computer" row; for a drive root ("X:" or "X:\") the list of drives, labelled "X:[volume label]"
    with their drive type as icon; otherwise the subdirectories of pathUtf16. The block (header record, rows,
    then the 0x200-byte labels) is allocated from the arena; a row gets flag bit 0 when it has
-   subdirectories, i.e. can be expanded. CF set on failure (allocation or enumeration).
+   subdirectories, i.e. can be expanded. Returns true with the block in *outRecordBlock, or false on failure
+   (allocation or enumeration; *outRecordBlock is then left unchanged).
 */
-DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
+bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTreeRecord **outRecordBlock)
 
 {
   UiTimedListTreeRecord *recordCursor;
@@ -1137,8 +1138,7 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
   bool mediaCheckResult;
   bool closeLabelEmpty;
   ArenaShrinkResult shrinkResult;
-  DirectoryRecordBlockResult result;
-  DirectoryRecordBlockResult failureResult;
+  void *recordBlock;
   ArenaAllocResult allocResult;
   ArenaLargestAllocResult largestBlock;
   DirectoryEnumerationResult enumResult;
@@ -1158,9 +1158,8 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
       outputRecords[6] = 0;
       outputRecords[7] = UI_TIMED_LIST_RECORD_EXPANDABLE;
       g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputRecords + 8));
-      return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult,
-                             ((THANDOR_BITCAST(ArenaAllocResult, uint64_t,
-                                               allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+      *outRecordBlock = (UiTimedListTreeRecord *)outputRecords;
+      return true;
     }
   }
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
@@ -1240,9 +1239,8 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
         driveLetterCursor++;
         directoryEntryCount--;
       } while (directoryEntryCount != 0);
-      return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult,
-                             ((THANDOR_BITCAST(ArenaAllocResult, uint64_t,
-                                               allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+      *outRecordBlock = (UiTimedListTreeRecord *)outputRecords;
+      return true;
     }
   }
   else {
@@ -1260,27 +1258,24 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
                           (uint8_t *)outputRecords,(uint8_t *)g_UiTimedListRecordPathScratch.codeUnits);
       directoryEntryCount = enumResult.entryCount;
       entryStride = enumResult.recordSizeBytes;
-      result.recordBlockOrError = (void *)entryStride;
       if (!enumResult.failed) {
         shrinkResult = g_MemoryApi.shrinkInPlace(entryStride * directoryEntryCount,outputRecords);
-        result.recordBlockOrError = (uint32_t *)shrinkResult.scratchOrError;
         if (!shrinkResult.failed) {
           largestBlock = g_MemoryApi.allocLargestFreeBlock();
-          result.recordBlockOrError = (uint32_t *)largestBlock.allocationOrError;
+          recordBlock = (void *)largestBlock.allocationOrError;
           if (!largestBlock.failed) {
             scanRemaining = directoryEntryCount + 1;
-            scanCursor = (uint32_t *)FATAL_ERROR_GENERAL_FAILURE; /* returned when the records do not fit */
             remainingBytes =
                  (uint32_t *)(largestBlock.blockSizeOrSentinel + scanRemaining * -(int)sizeof(UiTimedListTreeRecord));
             if ((uint32_t)(scanRemaining * sizeof(UiTimedListTreeRecord)) <= largestBlock.blockSizeOrSentinel &&
                 remainingBytes != NULL) {
-              *(uint32_t *)result.recordBlockOrError = directoryEntryCount;
-              ((uint32_t *)result.recordBlockOrError)[1] = 0;
-              ((uint32_t *)result.recordBlockOrError)[2] = 0;
-              ((uint32_t *)result.recordBlockOrError)[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
-              labelWriteCursor = ((uint32_t *)result.recordBlockOrError) + scanRemaining * 4;
+              *(uint32_t *)recordBlock = directoryEntryCount;
+              ((uint32_t *)recordBlock)[1] = 0;
+              ((uint32_t *)recordBlock)[2] = 0;
+              ((uint32_t *)recordBlock)[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
+              labelWriteCursor = ((uint32_t *)recordBlock) + scanRemaining * 4;
               leaf = outputRecords;
-              recordCursor = result.recordBlockOrError;
+              recordCursor = recordBlock;
               for (; directoryEntryCount != 0; directoryEntryCount--) {
                 recordCursor[1].countOrLabelText = (uint32_t)labelWriteCursor;
                 recordCursor[1].parentBlockOrIcon = UI_TIMED_LIST_ICON_DIRECTORY;
@@ -1325,38 +1320,36 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
               /* The loop only ends early (entries left) when the labels no longer fit. */
               if (directoryEntryCount == 0) {
                 shrinkResult = g_MemoryApi.shrinkInPlace
-                                   ((int)labelWriteCursor + (UI_TIMED_LIST_LABEL_BYTES - (int)result.recordBlockOrError),
-                                    result.recordBlockOrError);
-                scanCursor = (uint32_t *)shrinkResult.scratchOrError;
+                                   ((int)labelWriteCursor + (UI_TIMED_LIST_LABEL_BYTES - (int)recordBlock),
+                                    recordBlock);
                 if (!shrinkResult.failed) {
                   g_MemoryApi.free(outputRecords);
-                  result.failed = false;
-                  return result;
+                  *outRecordBlock = (UiTimedListTreeRecord *)recordBlock;
+                  return true;
                 }
               }
             }
-            g_MemoryApi.free(result.recordBlockOrError);
-            result.recordBlockOrError = scanCursor;
+            g_MemoryApi.free(recordBlock);
           }
         }
       }
       g_MemoryApi.free(outputRecords);
-      outputRecords = result.recordBlockOrError;
     }
   }
-  failureResult.failed = true;
-  failureResult.recordBlockOrError = outputRecords;
-  return failureResult;
+  return false;
 }
 
 /* Address: 0x00410380.
    Builds the directory tree from the root ("computer") down to selectedPathUtf16: one record block per path
    level (UiTimedListTree_BuildDirectoryRecordBlock), each linked to its parent block and opened (expanded)
-   from the parent row that names it. Returns the root block and the row of the selected directory, or CF
-   set on failure (then the blocks built so far are freed, see the note at fail). No caller found in src/
-   or image_data.c (only the function map).
+   from the parent row that names it. Returns true with the root block in *outRootBlock and the row of the
+   selected directory in *outSelectedRecord, or false on failure (then the blocks built so far are freed,
+   see the note at fail; *outSelectedRecord is set to NULL, *outRootBlock left unchanged). No caller found
+   in src/ or image_data.c (only the function map).
 */
-DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
+bool UiTimedListTree_BuildDirectoryHierarchy
+          (uint16_t *selectedPathUtf16,UiTimedListTreeRecord **outRootBlock,
+          UiTimedListTreeRecord **outSelectedRecord)
 
 {
   /* The original keeps one (record, block) pair per level on the machine stack (PUSH record,
@@ -1372,8 +1365,7 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
   UiTimedListTreeRecord *levelBlock;
   UiTimedListTreeRecord *parentBlock;
   UiTimedListTreeRecord *recordCursor;
-  DirectoryRecordBlockResult builtBlock;
-  DirectoryHierarchyResult result;
+  UiTimedListTreeRecord *builtBlock;
 
   levelCount = 0;
   levelStackTop = 0;
@@ -1389,27 +1381,26 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
     if (levelStackTop >= 512) {
       /* Only reachable when splitting stops shortening the path; the original then pushes until
          its stack overflows. */
-      builtBlock.recordBlockOrError = NULL;
       goto fail;
     }
-    builtBlock = UiTimedListTree_BuildDirectoryRecordBlock
-                       (g_UiTimedListHierarchyPathScratch.codeUnits);
-    if (builtBlock.failed) goto fail;
+    if (!UiTimedListTree_BuildDirectoryRecordBlock
+                       (g_UiTimedListHierarchyPathScratch.codeUnits,&builtBlock)) goto fail;
     WidePath_SplitParentAndLeaf
               (g_UiTimedListRecordPathScratch.codeUnits,
                g_UiTimedListHierarchyParentPathScratch.codeUnits,
                g_UiTimedListHierarchyPathScratch.codeUnits);
     levelStack[levelStackTop++] =
          UiTimedListTree_FindRecordByLabel
-                   (g_UiTimedListRecordPathScratch.codeUnits,builtBlock.recordBlockOrError);
-    levelStack[levelStackTop++] = builtBlock.recordBlockOrError;
+                   (g_UiTimedListRecordPathScratch.codeUnits,builtBlock);
+    levelStack[levelStackTop++] = builtBlock;
     levelCount++;
     selectedPathUtf16 = (uint16_t *)&g_UiTimedListHierarchyParentPathScratch;
   }
   /* Root level: find the record whose label starts with the drive letter (case-insensitive). */
-  builtBlock = UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits);
-  if (builtBlock.failed) goto fail;
-  levelBlock = builtBlock.recordBlockOrError;
+  if (!UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits,&builtBlock)) {
+    goto fail;
+  }
+  levelBlock = builtBlock;
   recordsRemaining = levelBlock->countOrLabelText;
   firstCodeUnit = g_UiTimedListHierarchyPathScratch.codeUnits[0];
   recordCursor = levelBlock + 1;
@@ -1417,7 +1408,6 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
     recordCursor++;
     recordsRemaining--;
     if (recordsRemaining == 0) {
-      builtBlock.recordBlockOrError = NULL;
       goto fail;
     }
   }
@@ -1425,11 +1415,12 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
   levelStack[levelStackTop++] = levelBlock;
   levelCount++;
   g_UiTimedListHierarchyPathScratch.codeUnits[0] = 0;
-  builtBlock = UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits);
-  if (builtBlock.failed) goto fail;
+  if (!UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits,&builtBlock)) {
+    goto fail;
+  }
   /* Link each level block to its parent block and to the parent record that opens it,
      from the drive list down to the selected path. */
-  parentBlock = builtBlock.recordBlockOrError;
+  parentBlock = builtBlock;
   recordCursor = parentBlock + 1;
   do {
     levelBlock = levelStack[--levelStackTop];
@@ -1445,20 +1436,17 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
     recordCursor = levelStack[--levelStackTop];
     levelCount--;
   } while (levelCount != 0);
-  result.rootRecordBlockOrError = builtBlock.recordBlockOrError;
-  result.selectedRecordOrNull = recordCursor;
-  result.failed = false;
-  return result;
+  *outRootBlock = builtBlock;
+  *outSelectedRecord = recordCursor;
+  return true;
 fail:
   /* As in the original: one pop per level (not per pair), so this frees the top blocks and
      interleaved found-record pointers, not every pushed block. */
   for (; levelCount != 0; levelCount--) {
     g_MemoryApi.free(levelStack[--levelStackTop]);
   }
-  result.selectedRecordOrNull = NULL;
-  result.rootRecordBlockOrError = builtBlock.recordBlockOrError;
-  result.failed = true;
-  return result;
+  *outSelectedRecord = NULL;
+  return false;
 }
 
 /* Address: 0x004104B0.
@@ -1513,8 +1501,7 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
   uint32_t *combinedPathSourceDwords;
   uint32_t *recordPathScratchDestDwords;
   uint32_t *combinedPathScratchDestDwords;
-  DirectoryRecordBlockResult builtBlock;
-  
+
   recordPathSourceDwords = (uint32_t *)record->countOrLabelText;
   recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
   for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
@@ -1568,10 +1555,8 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
     g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = L':' << 16 | L'a'; /* "a:": list the drives */
     THANDOR_PART(uint32_t, g_UiTimedListHierarchyParentPathScratch, 4) = 0;
   }
-  builtBlock = UiTimedListTree_BuildDirectoryRecordBlock
-                    (g_UiTimedListHierarchyParentPathScratch.codeUnits);
-  linkedRecord = builtBlock.recordBlockOrError;
-  if (builtBlock.failed) {
+  if (!UiTimedListTree_BuildDirectoryRecordBlock
+                    (g_UiTimedListHierarchyParentPathScratch.codeUnits,&linkedRecord)) {
     return true;
   }
   record->childBlockOrParentRecord = linkedRecord;
@@ -1835,66 +1820,66 @@ void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableCo
 
 
 /* Address: 0x004B2D30.
-   Asks a group of selectable controls (controlCount control pointers follow on the stack) whether none of
-   the enabled ones is selected: CF set when none is. Otherwise CF clear with the index (ECX) and node (EAX)
-   of the first enabled, selected control.
+   Finds the first enabled (not suppressed), selected control of a group (controlCount control pointers
+   follow controlCount on the stack). Returns true when there is one, with its node in *outNode and its
+   index in *outIndex; false when none is. Both out-parameters are optional (NULL) and written in either case.
+   Original quirk: when none is selected, *outNode is the last control of the group and *outIndex is
+   controlCount (the original's EAX/ECX after the loop); some callers use them without testing the result.
 */
-SelectableGroupNodeResult UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...)
+bool UiSelectableGroup_FindVisibleSelected
+          (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...)
 
 {
   int controlAddress;
   uint32_t controlIndex;
   int controlPointerByteOffset;
-  SelectableGroupNodeResult noneSelectedResult;
-  SelectableGroupNodeResult selectedResult;
-  
+  bool found;
+
   controlPointerByteOffset = 0;
   controlIndex = 0;
+  found = true;
   while ((controlAddress = *(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset),
          (((UiSelectableControl *)controlAddress)->base.nodeFlags & UI_NODE_SUPPRESSED) != 0 ||
          ((((UiSelectableControl *)controlAddress)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0))) {
     controlIndex++;
     controlPointerByteOffset = controlPointerByteOffset + 4;
     if (controlCount <= controlIndex) {
-      noneSelectedResult.node = (UiNodeBase *)controlAddress;
-      noneSelectedResult.noneSelected = true;
-      return noneSelectedResult;
+      found = false;
+      break;
     }
   }
-  selectedResult.controlIndexOrCount = controlIndex;
-  selectedResult.node = (UiNodeBase *)controlAddress;
-  selectedResult.noneSelected = false;
-  return selectedResult;
+  if (outNode != NULL) {
+    *outNode = (UiNodeBase *)controlAddress;
+  }
+  if (outIndex != NULL) {
+    *outIndex = controlIndex;
+  }
+  return found;
 }
 
 
 /* Address: 0x004B2D70.
-   Asks a group of selectable controls (controlCount control pointers follow on the stack) whether none is
-   selected, suppressed ones included: CF set when none is, otherwise CF clear with the index (ECX) of the
-   first selected control. Called by the frontend scenario page (src/ui/frontend/scenario.c).
+   Returns the index of the first selected control of a group (controlCount control pointers follow on the
+   stack), suppressed ones included, or controlCount when none is selected. Called by the frontend scenario
+   page (src/ui/frontend/scenario.c).
 */
-SelectableGroupIndexResult UiSelectableGroup_NoneSelected(UiControlCount controlCount,...)
+uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...)
 
 {
   uint32_t controlIndex;
   int controlPointerByteOffset;
-  SelectableGroupIndexResult noneSelectedResult;
-  SelectableGroupIndexResult selectedResult;
-  
+
   controlPointerByteOffset = 0;
   controlIndex = 0;
   do {
     if (((*(UiSelectableControl **)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset))->stateFlags &
          UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-      selectedResult.noneSelected = false;
-      selectedResult.selectedIndexOrCount = controlIndex;
-      return selectedResult;
+      return controlIndex;
     }
     controlIndex++;
     controlPointerByteOffset = controlPointerByteOffset + 4;
   } while (controlIndex < controlCount);
-  noneSelectedResult.noneSelected = true;
-  return noneSelectedResult;
+  return controlIndex;
 }
 
 
@@ -1959,26 +1944,21 @@ void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableContr
 
 
 /* Address: 0x004B4920.
-   Looks up the page stack's shown page (its first child) in its page array: returns the page's index with
-   CF clear, or CF set (index past the last page) when the shown page is none of the stack's pages.
+   Looks up the page stack's shown page (its first child) in its page array and returns the page's index;
+   when the shown page is none of the stack's pages it returns pageCount (1 for an empty stack).
 */
-PageStackSearchResult UiPageStack_ActivePageNotInList(UiPageStackControl *stack)
+uint32_t UiPageStack_ActivePageIndex(UiPageStackControl *stack)
 
 {
   uint32_t pageIndex;
-  bool notFound;
-  PageStackSearchResult result;
-  
+
   /* Page 0 is always compared, even when pageCount is 0 (do/while as in the original). */
   pageIndex = 0;
   do {
-    notFound = (stack->base).firstChild != (&stack->pages)[pageIndex];
-    if (!notFound) break;
+    if ((stack->base).firstChild == (&stack->pages)[pageIndex]) break;
     pageIndex++;
   } while (pageIndex < stack->pageCount);
-  result.notFound = notFound;
-  result.pageIndex = pageIndex;
-  return result;
+  return pageIndex;
 }
 
 
@@ -3573,25 +3553,16 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
 
 
 /* Address: 0x004BB540.
-   Returns the index of the selected row of a pointer list; CF (confirmed) is set when the selection was
-   confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
+   Returns the index of the selected row of a pointer list. *outConfirmed (optional, may be NULL) tells
+   whether the selection was confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
 */
-ListSelectionResult UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control)
+UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed)
 
 {
-  UiListRowIndex selectedRowIndex;
-  ListSelectionResult unconfirmedResult;
-  ListSelectionResult confirmedResult;
-  
-  selectedRowIndex = control->selectedRowSlot - control->rowSlots;
-  if ((control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) == 0) {
-    unconfirmedResult.confirmed = false;
-    unconfirmedResult.rowIndex = selectedRowIndex;
-    return unconfirmedResult;
+  if (outConfirmed != NULL) {
+    *outConfirmed = (control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) != 0;
   }
-  confirmedResult.confirmed = true;
-  confirmedResult.rowIndex = selectedRowIndex;
-  return confirmedResult;
+  return control->selectedRowSlot - control->rowSlots;
 }
 
 

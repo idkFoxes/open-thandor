@@ -89,7 +89,7 @@
 /* Code units of the fixed text buffers (the terminator included). */
 #define UI_NUMERIC_TEXT_BUFFER_UNITS 16
 #define UI_PATH_TEXT_BUFFER_UNITS 256
-/* Byte capacity of each expanded-text scratch buffer of UiPointerList_CompareExpandedTextFlags. */
+/* Byte capacity of each expanded-text scratch buffer of UiPointerList_CompareExpandedText. */
 #define UI_POINTER_LIST_COMPARE_SCRATCH_BYTES 0x400
 
 /* The top byte of editStateFlags (text edits) and listStateFlags (text lists) counts frames down. */
@@ -367,7 +367,7 @@ void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control);
 void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control);
 
 /* 0x004BB570 */
-TextCompareResult UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText);
+int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText);
 
 /* 0x004B5D00 */
 void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control);

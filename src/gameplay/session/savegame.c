@@ -29,7 +29,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   UiListRowIndex selectedIndex;
   UiNodeBase *firstNode;
   UiListRowIndex lastRowIndex;
-  ListSelectionResult selectionResult;
+  bool selectionConfirmed;
   uint16_t *descriptionText;
   uint16_t *fieldText;
 
@@ -39,10 +39,9 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
        (UiWrappedTextControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameDescriptionText);
   rowSlotArray = catalogList->rowSlots;
   lastRowIndex = catalogList->rowCount - 1;
-  selectionResult = UiPointerList_GetSelectedIndexAndConfirmed(catalogList);
-  selectedIndex = selectionResult.rowIndex;
+  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(catalogList,&selectionConfirmed);
   selectedRowRecord = rowSlotArray[selectedIndex];
-  if (selectionResult.confirmed) {
+  if (selectionConfirmed) {
     UiPageStack_SetActiveIndex((uint32_t)(selectedIndex == lastRowIndex),saveNameEntryStack);
     if (selectedIndex != lastRowIndex) {
       InGameSaveGame_SaveSelectedOrTypedName
@@ -98,13 +97,13 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
   uint16_t *leaf;
   int rowOrdinal;
   StatusResult deleteResult;
-  ListSelectionResult selectionResult;
+  UiListRowIndex selectedIndex;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-  selectionResult = UiPointerList_GetSelectedIndexAndConfirmed
+  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed
                     ((UiPointerListControl *)
-                     THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList));
-  rowOrdinal = selectionResult.rowIndex + 1;
+                     THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList),NULL);
+  rowOrdinal = selectedIndex + 1;
   if (rowOrdinal != (int)((UiPointerListControl *)
                           THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList))->rowCount) {
     leaf = (uint16_t *)((UiPointerListControl *)
@@ -156,7 +155,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   ArenaAllocResult allocResult;
   FileSystemOpenResult openResult;
   uint16_t *resolvedText;
-  ListSelectionResult selectionResult;
+  UiListRowIndex selectedIndex;
   uint16_t *fieldText;
   DirectoryEnumerationResult enumResult;
   void *closeHandle;
@@ -241,11 +240,11 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     InGameSaveName_UpdateSaveActionValidity(INGAME_UI(firstNode, saveNameEdit));
     listRowCount = saveList->rowCount;
     rowSlots = saveList->rowSlots;
-    selectionResult = UiPointerList_GetSelectedIndexAndConfirmed(saveList);
-    selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectionResult.rowIndex];
+    selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(saveList,NULL);
+    selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectedIndex];
     /* The description text holds a TextResourceId (labelFlags & 0x10 clear); the last row is the new save. */
     descriptionText->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
-    if (listRowCount - 1 != selectionResult.rowIndex) {
+    if (listRowCount - 1 != selectedIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = selectedRecord->levelTitleTextId;
         resolvedText = TextResource_Resolve(resourceId);
@@ -281,13 +280,11 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
   uint32_t errorOrValue;
   uint16_t *leaf;
   uint8_t saveStatus;
-  ListSelectionResult selectionResult;
   uint32_t saveCarry;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
-  selectionResult = UiPointerList_GetSelectedIndexAndConfirmed(saveList);
-  errorOrValue = selectionResult.rowIndex + 1;
+  errorOrValue = UiPointerList_GetSelectedIndexAndConfirmed(saveList,NULL) + 1;
   /* the typed name of the trailing new-save row, else the selected row's file name */
   leaf = ((UiTextEditControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveNameEdit))->
          textBuffer;

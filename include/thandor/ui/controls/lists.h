@@ -171,10 +171,11 @@ void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableCont
 void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
 /* 0x004B2D30 */
-SelectableGroupNodeResult UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...);
+bool UiSelectableGroup_FindVisibleSelected
+          (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...);
 
 /* 0x004B2D70 */
-SelectableGroupIndexResult UiSelectableGroup_NoneSelected(UiControlCount controlCount,...);
+uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...);
 
 /* 0x004B2DA0 */
 void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...);
@@ -186,7 +187,7 @@ uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control);
 void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control);
 
 /* 0x004B4920 */
-PageStackSearchResult UiPageStack_ActivePageNotInList(UiPageStackControl *stack);
+uint32_t UiPageStack_ActivePageIndex(UiPageStackControl *stack);
 
 /* 0x004B7970 */
 void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiScrollableControl *control);
@@ -276,7 +277,7 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
 void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListControl *control);
 
 /* 0x004BB540 */
-ListSelectionResult UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control);
+UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed);
 
 /* 0x004B9460 */
 UiScrollableContentDimensionsEdxEax8 UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control);
@@ -297,10 +298,12 @@ void UiScrollableControl_ClampOffsetsToViewport
 UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord *recordBlock);
 
 /* 0x0040FFE0 */
-DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16);
+bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTreeRecord **outRecordBlock);
 
 /* 0x00410380 */
-DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16);
+bool UiTimedListTree_BuildDirectoryHierarchy
+          (uint16_t *selectedPathUtf16,UiTimedListTreeRecord **outRootBlock,
+          UiTimedListTreeRecord **outSelectedRecord);
 
 /* 0x004104B0 */
 bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains

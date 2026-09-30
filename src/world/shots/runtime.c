@@ -347,9 +347,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   ShotRuntimeSlot *shotRuntimeCursor;
   uint64_t tintProduct;
   ShotLaunchAngles launchAngles;
-  WorldObjectAllocResult allocatedRecord;
   ModelPackedPointRecord *packedPoint;
-  ShadingRecordResult shadingAllocation;
   FixedDirection launchDirection;
   ModelWorldPoint localPoint;
   TerrainOccupancyResolvedMasks resolvedMasks;
@@ -367,9 +365,8 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   if (slotsRemainingOrPool == NULL) {
     return; /* no free slot */
   }
-  allocatedRecord = WorldObjectArray_AllocateFreeRecord(worldRuntime);
-  shotModelNode = (ShotModelRuntimeNode *)allocatedRecord.recordOrError;
-  if (allocatedRecord.failed) {
+  shotModelNode = (ShotModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
+  if (shotModelNode == NULL) {
     return;
   }
   WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)shotModelNode);
@@ -432,11 +429,10 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   else {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
                        (packedPoint,(ModelRuntimeNode *)shotModelNode);
-    shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
+    shotModelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
                        (shotDefinition->shadingTransitionDurationTicks,
                         (shotDefinition->shadingColorArgb >> 24) << 8, /* alpha byte = radius / 16 */
                         shotDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
-    shotModelNode->shadingRecord = shadingAllocation.record;
   }
   shotModelNode->parentNode = NULL;
   shotModelNode->childCount = 0;

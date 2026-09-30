@@ -139,7 +139,6 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   void *completionOwnerCarrier;
   uint64_t modulatedLanes;
   ModelPackedPointRecord *packedPoint;
-  ShadingRecordResult shadingAllocation;
   ArmyRuntimeSlot *createdArmy;
   HeightNormalSampleResult terrainSample;
   ModelWorldPoint localPoint;
@@ -184,11 +183,10 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
           localPoint = ModelNodeRuntime_TransformLocalPointRegs
                              (packedPoint,(ModelRuntimeNode *)modelNode);
           /* the alpha byte of the shading colour is the radius in 1/16 world units */
-          shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
+          modelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
                              (effectDefinition->shadingTransitionDurationTicks,
                               (effectDefinition->shadingColorArgb >> 24) << 8,
                               effectDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
-          modelNode->shadingRecord = shadingAllocation.record;
         }
       }
       effectSlot->shadingStopCountdownTicksRemaining--;

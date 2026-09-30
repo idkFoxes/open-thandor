@@ -17,12 +17,14 @@
    Attaches a new model to one of the attachment points of modelRuntime (recorded by
    ModelNodeRuntime_CreateHierarchyRecursive): creates the model childDefinitionId for the same army, stores it in
    the attachment entry, hangs its root node into the parent node's child slot and gives it the saved local
-   rotation and the attachment translation. CF set when the model could not be created.
+   rotation and the attachment translation. Returns true and stores the child's model runtime in
+   *outChildModelRuntime, or false (leaving it unchanged) when the model could not be created.
 */
-ModelNodeCreateResult ModelRuntimePool_RepairDeferredChild
+bool ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
-          ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime)
+          ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,
+          ModelRuntimeSlot **outChildModelRuntime)
 
 {
   ModelAttachmentTransformRecord *sourceTransform;
@@ -31,26 +33,21 @@ ModelNodeCreateResult ModelRuntimePool_RepairDeferredChild
   AngleTurn32 rotationAngle2;
   Q12 translationX;
   Q12 translationY;
-  ModelNodeCreateResult createResult;
-  ModelNodeCreateResult repairResult;
+  ModelRuntimeSlot *childModelRuntime;
   ModelRuntimeNode *parentModelNode;
   ModelRuntimeNode *childRootNode;
-  
+
   if (attachmentIndex < modelRuntime->attachmentCount) {
-    createResult = ModelRuntimePool_CreateInstanceByDefinitionId
+    if (ModelRuntimePool_CreateInstanceByDefinitionId
                       (paletteAsset,textureSet,
                        modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime,childDefinitionId,
-                       worldRuntime);
-    if (createResult.failed) {
-      createResult.failed = true;
-      return createResult;
+                       worldRuntime,&childModelRuntime) != 0) {
+      return false;
     }
-    /* the created "node" is the child's ModelRuntimeSlot */
-    modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset =
-         (ModelRuntimeSlot *)createResult.modelNode;
+    modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset = childModelRuntime;
     parentModelNode = modelRuntime->attachments[attachmentIndex].parentModelNodeOrSavedOffset;
     sourceTransform = modelRuntime->attachments[attachmentIndex].sourceTransform;
-    childRootNode = (((ModelRuntimeSlot *)createResult.modelNode)->rootModelNodeOrSavedOffset).modelNode;
+    childRootNode = (childModelRuntime->rootModelNodeOrSavedOffset).modelNode;
     rotationAngle0 = modelRuntime->attachments[attachmentIndex].childLocalRotationAngle0;
     rotationAngle1 = modelRuntime->attachments[attachmentIndex].childLocalRotationAngle1;
     rotationAngle2 = modelRuntime->attachments[attachmentIndex].childLocalRotationAngle2;
@@ -66,15 +63,13 @@ ModelNodeCreateResult ModelRuntimePool_RepairDeferredChild
          sourceTransform->localTranslationZQ12;
     childRootNode->modelPayload.localTranslationYQ12 = translationY;
     childRootNode->modelPayload.localTranslationXQ12 = translationX;
-    repairResult.failed = false;
-    repairResult.modelNode = createResult.modelNode;
-    return repairResult;
+    *outChildModelRuntime = childModelRuntime;
+    return true;
   }
-  /* Index past the attachment count: the original leaves EAX untouched, and in its only caller
+  /* Original quirk: index past the attachment count still succeeds with EAX untouched, and in its only caller
      (ModelNodeRuntime_InstantiateLinkedChildrenRecursive) EAX holds childDefinitionId at the call. */
-  repairResult.failed = false;
-  repairResult.modelNode = (ModelRuntimeNode *)(uintptr_t)childDefinitionId;
-  return repairResult;
+  *outChildModelRuntime = (ModelRuntimeSlot *)(uintptr_t)childDefinitionId;
+  return true;
 }
 
 
@@ -245,14 +240,17 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
    Casts a ray from the origin in the direction (elevationAngle, azimuthAngle), at most maximumDistanceQ12 long,
    against the models in worldRuntime's owner list whose owner class is requiredOwnerId, skipping excludedNode and
    ray-transparent models (MODEL_NODE_FLAG_RAY_TRANSPARENT) and pre-filtering by the depth bin masks of the X and Y
-   ranges the ray can reach. Returns the nearest hit node and its distance; hit (CF) is false when nothing was
-   hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot updates
-   (src/world/shots/maintenance.c).
+   ranges the ray can reach. Returns true when a model was hit. *outNearestDistanceQ12 always receives the
+   nearest distance (MODEL_RAYCAST_NO_HIT_DISTANCE on a miss) and *outNearestModelNode the nearest hit node.
+   Original quirk: on a miss *outNearestModelNode is NULL or the scratch EDX value of the last missing hierarchy
+   test; callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot
+   updates (src/world/shots/maintenance.c).
 */
-ModelRaycastResult ModelRuntime_RaycastCandidateListNearest
+bool ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
-          ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime)
+          ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,
+          ModelRuntimeNode **outNearestModelNode)
 
 {
   ModelRuntimeNode *modelNodeRuntime;
@@ -261,7 +259,8 @@ ModelRaycastResult ModelRuntime_RaycastCandidateListNearest
   int bestDistanceQ12;
   ModelRuntimeNode *nearestModelNode;
   bool masksOverlap;
-  ModelRaycastResult raycastHit;
+  Q12 hierarchyDistanceQ12;
+  ModelRuntimeNode *hierarchyNearestNode;
 
   g_ModelRaycastOriginX = originXQ12;
   g_ModelRaycastOriginY = originYQ12;
@@ -281,17 +280,16 @@ ModelRaycastResult ModelRuntime_RaycastCandidateListNearest
         (masksOverlap = DepthBinMasks_Overlap
                            (modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
                             rayYBinMask,rayXBinMask), masksOverlap)) {
-      raycastHit = ModelNodeRuntime_RaycastHierarchyNearest(modelNodeRuntime);
-      if (raycastHit.nearestDistanceQ12 <= bestDistanceQ12) {
-        bestDistanceQ12 = raycastHit.nearestDistanceQ12;
-        nearestModelNode = raycastHit.nearestNodeOrScratch.nearestModelNode;
+      hierarchyDistanceQ12 = ModelNodeRuntime_RaycastHierarchyNearest(modelNodeRuntime,&hierarchyNearestNode);
+      if (hierarchyDistanceQ12 <= bestDistanceQ12) {
+        bestDistanceQ12 = hierarchyDistanceQ12;
+        nearestModelNode = hierarchyNearestNode;
       }
     }
   }
-  raycastHit.nearestNodeOrScratch.nearestModelNode = nearestModelNode;
-  raycastHit.nearestDistanceQ12 = bestDistanceQ12;
-  raycastHit.hit = bestDistanceQ12 != MODEL_RAYCAST_NO_HIT_DISTANCE;
-  return raycastHit;
+  *outNearestModelNode = nearestModelNode;
+  *outNearestDistanceQ12 = bestDistanceQ12;
+  return bestDistanceQ12 != MODEL_RAYCAST_NO_HIT_DISTANCE;
 }
 
 
@@ -357,34 +355,31 @@ ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix *
 
 /* Address: 0x00528A40.
    Allocates and zeroes the model runtime pool (MODEL_RUNTIME_SLOT_COUNT 0x200-byte slots, 4 MiB) and records
-   its rebase delta (pool base - 1) for savegames. Returns 0, or the allocation error with CF set.
+   its rebase delta (pool base - 1) for savegames. Returns 0, or the allocation error
+   (FATAL_ERROR_ARENA_EXHAUSTED / ARENA_HEAP_CORRUPT, never 0 from the arena).
 */
-StatusResult __cdecl ModelRuntimePool_Init(void)
+uint32_t __cdecl ModelRuntimePool_Init(void)
 
 {
   ModelRuntimeSlot *modelRuntimeStorageCursor;
   int allocationDwordsRemaining;
   ArenaAllocResult allocResult;
-  StatusResult statusResult;
-  
+
   allocResult = g_MemoryApi.alloc(MODEL_RUNTIME_POOL_BYTES);
-  modelRuntimeStorageCursor = (ModelRuntimeSlot *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
-    /* pool base - 1 */
-    g_ModelRuntimeRebaseDelta = (int)modelRuntimeStorageCursor - 1;
-    g_ModelRuntimeSlots = modelRuntimeStorageCursor;
-    /* zero the pool dword by dword */
-    for (allocationDwordsRemaining = MODEL_RUNTIME_POOL_BYTES / 4; allocationDwordsRemaining != 0;
-         allocationDwordsRemaining--) {
-      modelRuntimeStorageCursor->definitionOrSavedId.definition = NULL;
-      modelRuntimeStorageCursor = (ModelRuntimeSlot *)((uint32_t *)modelRuntimeStorageCursor + 1);
-    }
-    allocResult.payloadOrError = 0;
-    allocResult.failed = false;
+  if (allocResult.failed) {
+    return allocResult.payloadOrError;
   }
-  statusResult.valueOrError = allocResult.payloadOrError;
-  statusResult.failed = allocResult.failed;
-  return statusResult;
+  modelRuntimeStorageCursor = (ModelRuntimeSlot *)allocResult.payloadOrError;
+  /* pool base - 1 */
+  g_ModelRuntimeRebaseDelta = (int)modelRuntimeStorageCursor - 1;
+  g_ModelRuntimeSlots = modelRuntimeStorageCursor;
+  /* zero the pool dword by dword */
+  for (allocationDwordsRemaining = MODEL_RUNTIME_POOL_BYTES / 4; allocationDwordsRemaining != 0;
+       allocationDwordsRemaining--) {
+    modelRuntimeStorageCursor->definitionOrSavedId.definition = NULL;
+    modelRuntimeStorageCursor = (ModelRuntimeSlot *)((uint32_t *)modelRuntimeStorageCursor + 1);
+  }
+  return 0;
 }
 
 
@@ -755,13 +750,14 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
    Creates a model runtime for an army from a model definition id: takes the first free pool slot, copies the
    definition's starting values (armour points at +0x3C and the values at +0x40..+0x5C), raises two of the
    army's values to the definition's, builds the model node tree, its bounding radius and transforms, and runs
-   the definition class's initialize handler. Returns the slot, or with CF set FATAL_ERROR_GENERAL_FAILURE
-   (no pool or no free slot), the node tree's error, or FATAL_ERROR_MODEL_DEFINITION_MISSING.
+   the definition class's initialize handler. Returns 0 and stores the slot in *outModelRuntime, or returns
+   FATAL_ERROR_GENERAL_FAILURE (no pool or no free slot), the node tree's error, or
+   FATAL_ERROR_MODEL_DEFINITION_MISSING (never 0) and leaves *outModelRuntime unchanged.
 */
-ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
+uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
-          WorldRuntimeContext *worldRuntime)
+          WorldRuntimeContext *worldRuntime,ModelRuntimeSlot **outModelRuntime)
 
 {
   uint32_t copiedValueA;
@@ -774,23 +770,19 @@ ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
   int registryRemaining;
   ModelDefinitionRecordPrefix **registryEntry;
   ModelRuntimeSlot *modelRuntime;
-  ModelNodeCreateResult failureResult;
-  ModelNodeCreateResult createResult;
   ModelDefinition *definitionView;
 
   /* first free slot (no root node) */
-  failureResult.failed = true;
-  failureResult.modelNode = (ModelRuntimeNode *)FATAL_ERROR_GENERAL_FAILURE;
   modelRuntime = g_ModelRuntimeSlots;
   if (modelRuntime == NULL) {
-    return failureResult;
+    return FATAL_ERROR_GENERAL_FAILURE;
   }
   slotsRemaining = MODEL_RUNTIME_SLOT_COUNT;
   while (modelRuntime->rootModelNodeOrSavedOffset.modelNode != NULL) {
     modelRuntime++;
     slotsRemaining--;
     if (slotsRemaining == 0) {
-      return failureResult;
+      return FATAL_ERROR_GENERAL_FAILURE;
     }
   }
   for (registryEntry = g_ModelDefinitionRegistry, registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
@@ -869,14 +861,12 @@ ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
       modelRuntime->damageEffectPointIndex = 0;
       state44CandidateOrFlags = definitionView->modelFlags;
       if ((MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer != NULL) {
-        createResult = ModelNodeRuntime_CreateHierarchyRecursive
-                          (paletteAsset,textureSet,modelRuntime,
-                           (MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer,
-                           worldRuntime);
-        modelNodeRuntime = createResult.modelNode;
-        if (createResult.failed) {
-          failureResult.modelNode = modelNodeRuntime; /* the hierarchy's error code */
-          return failureResult;
+        if (!ModelNodeRuntime_CreateHierarchyRecursive
+                (paletteAsset,textureSet,modelRuntime,
+                 (MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer,worldRuntime,
+                 &modelNodeRuntime)) {
+          /* the hierarchy's error code: no free world object record */
+          return FATAL_ERROR_GENERAL_FAILURE;
         }
         modelRuntime->rootModelNodeOrSavedOffset.modelNode = modelNodeRuntime;
         ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
@@ -888,14 +878,12 @@ ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize
         [modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId])
                 (modelRuntime->definitionOrSavedId.definition,modelRuntime);
-      createResult.failed = false;
-      createResult.modelNode = (ModelRuntimeNode *)modelRuntime;
-      return createResult;
+      *outModelRuntime = modelRuntime;
+      return 0;
     }
   }
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
-  failureResult.modelNode = (ModelRuntimeNode *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
-  return failureResult;
+  return FATAL_ERROR_MODEL_DEFINITION_MISSING;
 }
 

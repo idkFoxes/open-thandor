@@ -17,10 +17,11 @@
    line to the target is blocked, path costs are propagated from the target and the route is backtracked to the
    farthest directly reachable cell; if the start is cut off, the target moves to the nearest cell of the start's
    region first. The chosen point goes to EntityPathing_RebuildOverlappingGroupRoutes; the influence is restored
-   before returning.
+   before returning. Returns the primary (next route) point and the fallback (possibly retargeted) point; it
+   cannot fail.
 */
 
-PathingDestinationResult
+PathingDestination
 EntityPathing_ResolveDestinationAndRebuildRoutes
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime)
@@ -46,10 +47,16 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   GridScratchCell *routeScratchCell;
   bool segmentBlocked;
   WorldPositionXY primaryWorldPosition;
-  NearestCellResult nearestCell;
-  GridPathMarkedRegionCellRegisterResult reachableRegionCell;
-  PathingDestinationResult resolvedDestination;
-  PathBacktrackResult backtrackResult;
+  bool startRelocated;
+  FieldGridCellCoordinate nearestRow;
+  FieldGridCellCoordinate nearestColumn;
+  FieldGridCellCoordinate reachableRow;
+  FieldGridCellCoordinate reachableColumn;
+  PathingDestination resolvedDestination;
+  bool backtrackReachedTarget;
+  FieldGridCellCoordinate backtrackRow;
+  FieldGridCellCoordinate backtrackColumn;
+  FieldGridRegionMask backtrackRouteStateMask;
   ModelDefinition *modelDefinition;
   ArmyRuntimeSlot *armyRuntime;
   GameEntityRuntime *overlappedEntity;
@@ -122,10 +129,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   g_GridPathBlockingMask =
        GRID_SCRATCH_LOW_BAND0 << (gridClassShift & 31) |
        GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)modelDefinition->terrainTraversalClass & 31);
-  nearestCell = GridPathCost_FindNearestUnblockedCell(startRow,startColumnOrScratch);
+  startRelocated = GridPathCost_RelocateFromBlockedCell(startRow,startColumnOrScratch,&nearestRow,&nearestColumn);
   columnLimitOrWidth = g_GridScratchWidth;
-  if (nearestCell.relocated) {
-    if ((nearestCell.selectedColumn == startColumnOrScratch) && (nearestCell.selectedRow == startRow)) {
+  if (startRelocated) {
+    if ((nearestColumn == startColumnOrScratch) && (nearestRow == startRow)) {
       /* no open cell nearby: stay where the entity is */
       entityTranslation = &(((routeEntityRuntime->common).ownership.modelNode)->worldTransform).translation;
       fallbackWorldPosition.worldXQ12 = entityTranslation->x;
@@ -135,8 +142,8 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
     }
     else {
       /* move out of the blocked start: to the centre of the nearest open cell */
-      startColumnOrScratch = nearestCell.selectedRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
-      wideProductXOrY = (int64_t)(startColumnOrScratch + (nearestCell.selectedColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
+      startColumnOrScratch = nearestRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
+      wideProductXOrY = (int64_t)(startColumnOrScratch + (nearestColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
       wideProductY = (int64_t)startColumnOrScratch * FIELD_GRID_WORLD_ROW_STEP_Y;
       primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
                          ((int)((uint64_t)wideProductY >> 32) << 20 | (uint32_t)wideProductY >> 12,
@@ -164,16 +171,16 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
           ((GRID_PATH_COST_MAX_REACHED < routeScratchCell[columnLimitOrWidth * 2 - 1].pathCost &&
            (GRID_PATH_COST_MAX_REACHED < routeScratchCell[columnLimitOrWidth * 2].pathCost)))))) {
         /* retarget to the cell of the start's region nearest to the target and propagate again */
-        reachableRegionCell = GridPathRegion_MarkUnreachableFromCell(targetRow,targetColumn,startRow,startColumnOrScratch);
-        cellCoordOrStrideBytes = reachableRegionCell.selectedRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
-        wideProductXOrY = (int64_t)(cellCoordOrStrideBytes + (reachableRegionCell.selectedColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
+        GridPathRegion_MarkUnreachableFromCell
+                  (targetRow,targetColumn,startRow,startColumnOrScratch,&reachableRow,&reachableColumn);
+        cellCoordOrStrideBytes = reachableRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
+        wideProductXOrY = (int64_t)(cellCoordOrStrideBytes + (reachableColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
         targetWorldXQ12 = (int)((uint64_t)wideProductXOrY >> 32) << 19 | (uint32_t)wideProductXOrY >> 13;
         wideProductXOrY = (int64_t)cellCoordOrStrideBytes * FIELD_GRID_WORLD_ROW_STEP_Y;
         targetWorldYQ12 = (int)((uint64_t)wideProductXOrY >> 32) << 20 | (uint32_t)wideProductXOrY >> 12;
         GridScratch_ResetTraversalFlagsAndCosts();
         GridPathCost_PropagateWeightedHexNeighbors
-                  (GRID_PATH_PROPAGATION_PASSES,routeScratchCell,reachableRegionCell.selectedRow,
-                   reachableRegionCell.selectedColumn);
+                  (GRID_PATH_PROPAGATION_PASSES,routeScratchCell,reachableRow,reachableColumn);
         cellCoordOrStrideBytes = g_GridScratchWidth * 8;
         routeScratchCell = g_GridScratchPrimary +
                        ((startRow * g_GridScratchWidth + startColumnOrScratch) - g_GridScratchWidth);
@@ -188,15 +195,16 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       if ((((ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink)->movementStateFlags & 2) != 0) {
         callerBlockingMask = 0;
       }
-      backtrackResult = GridPathCost_BacktrackBestHexRoute
+      backtrackReachedTarget = GridPathCost_BacktrackBestHexRoute
                          (callerBlockingMask,startRow,startColumnOrScratch,
-                          (GridScratchCell *)((uint8_t *)routeScratchCell + cellCoordOrStrideBytes));
+                          (GridScratchCell *)((uint8_t *)routeScratchCell + cellCoordOrStrideBytes),
+                          &backtrackRow,&backtrackColumn,&backtrackRouteStateMask);
     }
-    if (segmentBlocked && !backtrackResult.reachedTarget) {
+    if (segmentBlocked && !backtrackReachedTarget) {
       /* both branches head for the centre of the selected cell (the original has two identical copies) */
-      if (backtrackResult.routeStateMask == 0) {
-        startColumnOrScratch = backtrackResult.selectedRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
-        wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
+      if (backtrackRouteStateMask == 0) {
+        startColumnOrScratch = backtrackRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
+        wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
         wideProductY = (int64_t)startColumnOrScratch * FIELD_GRID_WORLD_ROW_STEP_Y;
         primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
                            ((int)((uint64_t)wideProductY >> 32) << 20 | (uint32_t)wideProductY >> 12,
@@ -205,8 +213,8 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
         fallbackWorldPosition = targetWorldPosition;
       }
       else {
-        startColumnOrScratch = backtrackResult.selectedRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
-        wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
+        startColumnOrScratch = backtrackRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
+        wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
         wideProductY = (int64_t)startColumnOrScratch * FIELD_GRID_WORLD_ROW_STEP_Y;
         primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
                            ((int)((uint64_t)wideProductY >> 32) << 20 | (uint32_t)wideProductY >> 12,
@@ -236,7 +244,6 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   resolvedDestination.primaryWorldXQ12 = primaryWorldPosition.worldXQ12;
   resolvedDestination.primaryWorldYQ12 = primaryWorldPosition.worldYQ12;
   resolvedDestination.fallbackWorldYQ12 = targetWorldYQ12;
-  resolvedDestination.failed = false;
   return resolvedDestination;
 }
 
@@ -688,10 +695,10 @@ bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
 /* Address: 0x005332C0.
    Sizes the pathing scratch grids for a field grid (4x4 scratch cells per field cell, 8-byte GridScratchCell
    records): allocates the primary and secondary scratch grids and the 0x180000-byte path-cost pointer queue
-   (g_GridPathCostQueueBegin..End), each replacing and freeing the previous buffer. Returns the allocator
-   error with CF set on failure.
+   (g_GridPathCostQueueBegin..End), each replacing and freeing the previous buffer. Returns true on success;
+   on failure returns false and writes the allocator error to *outError (untouched on success).
 */
-GridScratchAllocResult GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid)
+bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError)
 
 {
   GridScratchCell *previousSecondaryScratchBuffer;
@@ -701,8 +708,6 @@ GridScratchAllocResult GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGri
   void *newAuxiliaryBuffer;
   uint32_t bytes;
   ArenaAllocResult allocResult;
-  ArenaFreeResult freeResult;
-  GridScratchAllocResult failureResult;
   GridScratchCell *previousScratchBuffer;
 
   g_GridScratchWidth = fieldGrid->gridWidth * 4;
@@ -733,14 +738,13 @@ GridScratchAllocResult GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGri
       if (!allocResult.failed) {
         g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + GRID_PATH_COST_QUEUE_BYTES);
         g_GridPathCostQueueBegin = newAuxiliaryBuffer;
-        freeResult = g_MemoryApi.free(previousCostQueueBuffer);
-        return THANDOR_BITCAST(uint64_t, GridScratchAllocResult, ((THANDOR_BITCAST(ArenaFreeResult, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        g_MemoryApi.free(previousCostQueueBuffer);
+        return true;
       }
     }
   }
-  failureResult.failed = true;
-  failureResult.valueOrError = (uint32_t)newScratchBuffer;
-  return failureResult;
+  *outError = (uint32_t)newScratchBuffer;
+  return false;
 }
 
 
@@ -1228,7 +1232,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   uint32_t rowLimit;
   bool segmentBlocked;
   WorldPositionXY resolvedTarget;
-  NearestCellResult nearestCell;
+  bool startRelocated;
   ModelRuntimeNode *entityModelNode;
 
   entityModelNode = routeEntityRuntime->modelNode;
@@ -1290,10 +1294,8 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   g_GridPathBlockingMask =
        GRID_SCRATCH_LOW_BAND0 << (gridClassShift & 31) |
        GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)routeEntityRuntime->modelDefinition->terrainTraversalClass & 31);
-  nearestCell = GridPathCost_FindNearestUnblockedCell(startRowOrDeltaY,startColumnOrDeltaX);
-  targetColumn = nearestCell.selectedColumn;
-  targetRow = nearestCell.selectedRow;
-  if ((nearestCell.relocated) ||
+  startRelocated = GridPathCost_RelocateFromBlockedCell(startRowOrDeltaY,startColumnOrDeltaX,&targetRow,&targetColumn);
+  if ((startRelocated) ||
      (segmentBlocked = GridPathLine_TestHexSegmentBlocked
                          (0,startRowOrDeltaY,startColumnOrDeltaX,g_GridScratchPrimary + startRowOrDeltaY * g_GridScratchWidth + startColumnOrDeltaX,
                           g_GridScratchPrimary + (rowLimit - 2) * g_GridScratchWidth + (columnLimitOrRadius - 2)),
@@ -1430,12 +1432,15 @@ bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorld
    Follows the propagated path costs downhill from startCell (the mover's cell, at startRow/startColumn) to the
    cheapest of the six neighbours, as long as that neighbour can still be seen from startCell in a straight line
    (GridPathLine_TestHexSegmentBlocked with callerBlockingMask, dropped once a high-cost cell is entered); at least
-   one step is taken. Returns the row/column of the farthest such cell with CF clear, or CF set when that cell is
-   the cost origin itself (cost 0, the target was reached).
+   one step is taken. Returns true when that cell is the cost origin itself (cost 0, the target was reached);
+   otherwise returns false and writes the row/column of the farthest such cell to *outRow/*outColumn.
+   *outRouteStateMask always receives the final blocking mask (callerBlockingMask, or 0 once a high-cost cell
+   was entered).
 */
-PathBacktrackResult GridPathCost_BacktrackBestHexRoute
+bool GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
-          FieldGridCellCoordinate startColumn,GridScratchCell *startCell)
+          FieldGridCellCoordinate startColumn,GridScratchCell *startCell,FieldGridCellCoordinate *outRow,
+          FieldGridCellCoordinate *outColumn,FieldGridRegionMask *outRouteStateMask)
 
 {
   uint32_t scratchWidth;
@@ -1445,11 +1450,8 @@ PathBacktrackResult GridPathCost_BacktrackBestHexRoute
   GridScratchCell *rowAboveCell;
   GridScratchCell *bestNeighborCell;
   bool segmentBlocked;
-  PathBacktrackResult selectedCell;
-  PathBacktrackResult terminalResult;
 
   scratchWidth = g_GridScratchWidth;
-  terminalResult.selectedRow = g_GridScratchWidth * 8; /* EBX keeps the row stride on the CF-set return */
   bestNeighborCell = startCell;
   for (;;) {
     currentCell = bestNeighborCell;
@@ -1495,36 +1497,31 @@ PathBacktrackResult GridPathCost_BacktrackBestHexRoute
       break;
     }
   }
+  *outRouteStateMask = callerBlockingMask;
   if (currentCell->pathCost != 0) {
     selectedCellIndex = (uint32_t)((int)currentCell - (int)g_GridScratchPrimary) >> 3;
-    selectedCell.selectedRow = selectedCellIndex / g_GridScratchWidth;
-    selectedCell.selectedColumn = selectedCellIndex % g_GridScratchWidth;
-    selectedCell.routeStateMask = callerBlockingMask;
-    selectedCell.reachedTarget = false;
-    return selectedCell;
+    *outRow = selectedCellIndex / g_GridScratchWidth;
+    *outColumn = selectedCellIndex % g_GridScratchWidth;
+    return false;
   }
-  terminalResult.selectedColumn = (FieldGridCellCoordinate)currentCell;
-  terminalResult.reachedTarget = true;
-  terminalResult.routeStateMask = callerBlockingMask;
-  return terminalResult;
+  return true;
 }
 
 
 /* Address: 0x00534960.
    Used when the start cell (row, column) was not reached by the cost propagation from the reference (target)
    cell: flood-marks the unreached region around the start and returns the cell of that region with the smallest
-   hex distance to the reference cell, the closest the mover can get to the target.
+   hex distance to the reference cell (written to *outRow/*outColumn), the closest the mover can get to the
+   target.
 */
-GridPathMarkedRegionCellRegisterResult
-GridPathRegion_MarkUnreachableFromCell
+void GridPathRegion_MarkUnreachableFromCell
           (GridPathUnreachableReferenceRow32 referenceRow,
           GridPathUnreachableReferenceColumn32 referenceColumn,FieldGridCellCoordinate row,
-          FieldGridCellCoordinate column)
+          FieldGridCellCoordinate column,FieldGridCellCoordinate *outRow,FieldGridCellCoordinate *outColumn)
 
 {
   uint64_t markedCellIndex;
   int rowBaseIndex;
-  GridPathMarkedRegionCellRegisterResult markedCell;
   GridPathBestUnreachableCell recursionResult;
 
   g_GridPathUnreachableRegionReferenceColumn = referenceColumn;
@@ -1535,9 +1532,8 @@ GridPathRegion_MarkUnreachableFromCell
                     (g_GridScratchWidth << 3,g_GridScratchPrimary + rowBaseIndex + column,INT32_MAX
                      ,(rowBaseIndex + column) * 8);
   markedCellIndex = THANDOR_BITCAST(GridPathBestUnreachableCell, uint64_t, recursionResult) >> 3 & (UINT32_MAX >> 3);
-  markedCell.selectedRow = (FieldGridCellCoordinate)(markedCellIndex / g_GridScratchWidth);
-  markedCell.selectedColumn = (FieldGridCellCoordinate)(markedCellIndex % (uint64_t)g_GridScratchWidth);
-  return markedCell;
+  *outRow = (FieldGridCellCoordinate)(markedCellIndex / g_GridScratchWidth);
+  *outColumn = (FieldGridCellCoordinate)(markedCellIndex % (uint64_t)g_GridScratchWidth);
 }
 
 
@@ -2221,10 +2217,13 @@ void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScr
 
 /* Address: 0x005342F0.
    Checks whether a mover can leave the scratch cell (cellRow, cellColumn): when the cell or one of its six hex
-   neighbours is free of g_GridPathBlockingMask and GRID_SCRATCH_BLOCKED, CF is clear. Otherwise CF is set and the
-   nearest (hex distance) free cell within +-16 rows/columns is returned, or the cell itself when there is none.
+   neighbours is free of g_GridPathBlockingMask and GRID_SCRATCH_BLOCKED, returns false and leaves *outRow and
+   *outColumn untouched. Otherwise returns true and writes the nearest (hex distance) free cell within +-16
+   rows/columns, or the cell itself when there is none.
 */
-NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn)
+bool GridPathCost_RelocateFromBlockedCell
+          (FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn,FieldGridCellCoordinate *outRow,
+          FieldGridCellCoordinate *outColumn)
 
 {
   int cellIndexOrMinColumn;
@@ -2239,16 +2238,12 @@ NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate 
   int searchRow;
   int rowDelta;
   GridScratchCell *scanCell;
-  NearestCellResult openCellResult;
-  NearestCellResult nearestResult;
-  NearestCellResult fallbackResult;
   GridScratchCell *rowStartCell;
   int rowsRemaining;
   int bestRow;
   int bestColumn;
   
   cellIndexOrMinColumn = cellRow * g_GridScratchWidth + cellColumn;
-  openCellResult.selectedColumn = cellIndexOrMinColumn * 8;
   blockedMask = g_GridPathBlockingMask | GRID_SCRATCH_BLOCKED;
   if (((((g_GridScratchPrimary[cellIndexOrMinColumn].stateMask & blockedMask) == 0) ||
        (scanCell = g_GridScratchPrimary + cellIndexOrMinColumn + -g_GridScratchWidth,
@@ -2257,11 +2252,9 @@ NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate 
        ((scanCell[g_GridScratchWidth + 1].stateMask & blockedMask) == 0)) ||
       (((scanCell[g_GridScratchWidth * 2 - 1].stateMask & blockedMask) == 0 ||
        ((scanCell[g_GridScratchWidth * 2].stateMask & blockedMask) == 0)))))) {
-    /* open cell: the original leaves EBX unchanged; both callers (EntityPathing_ResolveDestinationAndRebuildRoutes,
-       EntityPathing_UpdateRouteSegment) read EAX/EBX only when CF is set */
-    openCellResult.selectedRow = 0;
-    openCellResult.relocated = false;
-    return openCellResult;
+    /* open cell: both callers (EntityPathing_ResolveDestinationAndRebuildRoutes,
+       EntityPathing_UpdateRouteSegment) read the cell only after a relocation */
+    return false;
   }
   /* search window: +-GRID_PATH_NEAREST_SEARCH_RADIUS, clipped to the grid */
   cellIndexOrMinColumn = cellColumn - GRID_PATH_NEAREST_SEARCH_RADIUS;
@@ -2333,17 +2326,15 @@ NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate 
         rowStartCell = scanCell;
       } while (rowsRemaining != 0);
       if (bestHexDistance < INT32_MAX) {
-        nearestResult.selectedRow = bestRow;
-        nearestResult.selectedColumn = bestColumn;
-        nearestResult.relocated = true;
-        return nearestResult;
+        *outRow = bestRow;
+        *outColumn = bestColumn;
+        return true;
       }
     }
   }
-  fallbackResult.selectedRow = cellRow;
-  fallbackResult.selectedColumn = cellColumn;
-  fallbackResult.relocated = true;
-  return fallbackResult;
+  *outRow = cellRow;
+  *outColumn = cellColumn;
+  return true;
 }
 
 

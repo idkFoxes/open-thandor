@@ -15,11 +15,9 @@
 
 typedef struct MovieOpenResult MovieOpenResult, *PMovieOpenResult;
 typedef struct Win32FileSeekResult Win32FileSeekResult, *PWin32FileSeekResult;
-typedef struct GridScratchAllocResult GridScratchAllocResult, *PGridScratchAllocResult;
 typedef struct CommandLineOptionResult CommandLineOptionResult, *PCommandLineOptionResult;
 typedef struct Win32FileReadResult Win32FileReadResult, *PWin32FileReadResult;
 typedef struct FileSystemSeekResult FileSystemSeekResult, *PFileSystemSeekResult;
-typedef struct MovieFrameResult MovieFrameResult, *PMovieFrameResult;
 typedef struct NetworkReceiveResult NetworkReceiveResult, *PNetworkReceiveResult;
 typedef struct FixedVectorAngles FixedVectorAngles, *PFixedVectorAngles;
 typedef struct NetworkOpenBindResult NetworkOpenBindResult, *PNetworkOpenBindResult;
@@ -39,7 +37,6 @@ typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
 typedef struct ArenaAllocResult ArenaAllocResult, *PArenaAllocResult;
 typedef struct Win32FileWriteResult Win32FileWriteResult, *PWin32FileWriteResult;
 typedef struct FixedDirection FixedDirection, *PFixedDirection;
-typedef struct MailboxReceiveResult MailboxReceiveResult, *PMailboxReceiveResult;
 typedef struct NetworkSetSessionResult NetworkSetSessionResult, *PNetworkSetSessionResult;
 /* Graphics/display result records. */
 typedef struct DisplayModeResult DisplayModeResult, *PDisplayModeResult;
@@ -51,8 +48,6 @@ typedef struct TextureSourceLoadResult TextureSourceLoadResult, *PTextureSourceL
 typedef struct SampleVoiceSetResult SampleVoiceSetResult, *PSampleVoiceSetResult;
 typedef struct PcmVoiceSetResult PcmVoiceSetResult, *PPcmVoiceSetResult;
 typedef struct SoundPlayResult SoundPlayResult, *PSoundPlayResult;
-typedef struct FrontendInitResult FrontendInitResult, *PFrontendInitResult;
-typedef struct FrontendMainLoopResult FrontendMainLoopResult, *PFrontendMainLoopResult;
 typedef struct PlacementCandidateResult PlacementCandidateResult, *PPlacementCandidateResult;
 typedef union IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion;
 typedef struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct;
@@ -211,7 +206,6 @@ typedef struct AiWorkspace09AnchorRegisterResult AiWorkspace09AnchorRegisterResu
 typedef struct AiPlanningGridScanLoopContinuityResult AiPlanningGridScanLoopContinuityResult, *PAiPlanningGridScanLoopContinuityResult;
 typedef struct AiFactionPlanningCallerLoopRegisterContinuityResult AiFactionPlanningCallerLoopRegisterContinuityResult, *PAiFactionPlanningCallerLoopRegisterContinuityResult;
 typedef struct AiPlanningDispatchRegisterContinuityResult AiPlanningDispatchRegisterContinuityResult, *PAiPlanningDispatchRegisterContinuityResult;
-typedef struct GridPathMarkedRegionCellRegisterResult GridPathMarkedRegionCellRegisterResult, *PGridPathMarkedRegionCellRegisterResult;
 typedef struct AiPlanningGridScratchEdxContinuityResult AiPlanningGridScratchEdxContinuityResult, *PAiPlanningGridScratchEdxContinuityResult;
 typedef struct GridInfluenceDiagonalScanRegisterResult GridInfluenceDiagonalScanRegisterResult, *PGridInfluenceDiagonalScanRegisterResult;
 typedef struct InGamePersistentSettingsPage3508 InGamePersistentSettingsPage3508, *PInGamePersistentSettingsPage3508;
@@ -618,31 +612,21 @@ typedef union Misc Misc, *PMisc;
 typedef struct IMAGE_RESOURCE_DATA_ENTRY IMAGE_RESOURCE_DATA_ENTRY, *PIMAGE_RESOURCE_DATA_ENTRY;
 typedef struct IMAGE_RESOURCE_DIRECTORY IMAGE_RESOURCE_DIRECTORY, *PIMAGE_RESOURCE_DIRECTORY;
 typedef struct HeightSampleResult HeightSampleResult, *PHeightSampleResult;
-typedef struct ListSelectionResult ListSelectionResult, *PListSelectionResult;
 typedef struct FixedVectorQ12 FixedVectorQ12, *PFixedVectorQ12;
 typedef struct PaletteTextureSourceResult PaletteTextureSourceResult, *PPaletteTextureSourceResult;
-typedef struct EffectCreateResult EffectCreateResult, *PEffectCreateResult;
 typedef struct PaletteAssetResult PaletteAssetResult, *PPaletteAssetResult;
-typedef struct PathingDestinationResult PathingDestinationResult, *PPathingDestinationResult;
-typedef struct WorldFlagsResult WorldFlagsResult, *PWorldFlagsResult;
+typedef struct PathingDestination PathingDestination, *PPathingDestination;
 typedef struct FieldGridCoordinates FieldGridCoordinates, *PFieldGridCoordinates;
 typedef struct TerrainRaycastResult TerrainRaycastResult, *PTerrainRaycastResult;
-typedef struct WorldObjectAllocResult WorldObjectAllocResult, *PWorldObjectAllocResult;
-typedef struct NearestCellResult NearestCellResult, *PNearestCellResult;
-typedef struct DirectoryRecordBlockResult DirectoryRecordBlockResult, *PDirectoryRecordBlockResult;
 typedef struct SoftwareFramebufferResult SoftwareFramebufferResult, *PSoftwareFramebufferResult;
 typedef struct OffscreenRenderResult OffscreenRenderResult, *POffscreenRenderResult;
 typedef struct StatusResult StatusResult, *PStatusResult;
-typedef struct EffectDefinitionResult EffectDefinitionResult, *PEffectDefinitionResult;
 typedef struct TextCompareResult TextCompareResult, *PTextCompareResult;
 typedef struct WorldCameraOrientation WorldCameraOrientation, *PWorldCameraOrientation;
 typedef struct ShotLaunchAngles ShotLaunchAngles, *PShotLaunchAngles;
 typedef struct TextureSetResult TextureSetResult, *PTextureSetResult;
 typedef struct KeyboardEventResult KeyboardEventResult, *PKeyboardEventResult;
 typedef struct WorldPositionResult WorldPositionResult, *PWorldPositionResult;
-typedef struct PathBacktrackResult PathBacktrackResult, *PPathBacktrackResult;
-typedef struct ModelRaycastResult ModelRaycastResult, *PModelRaycastResult;
-typedef struct AimSmoothResult AimSmoothResult, *PAimSmoothResult;
 typedef struct FixedRollAzimuthElevation FixedRollAzimuthElevation, *PFixedRollAzimuthElevation;
 typedef struct HeightNormalSampleResult HeightNormalSampleResult, *PHeightNormalSampleResult;
 typedef struct SelectableNodeResult SelectableNodeResult, *PSelectableNodeResult;
@@ -653,12 +637,9 @@ typedef struct FixedLengthAzimuthElevation FixedLengthAzimuthElevation, *PFixedL
 typedef struct SurfacePointResult SurfacePointResult, *PSurfacePointResult;
 typedef struct PlacementDispatchResult PlacementDispatchResult, *PPlacementDispatchResult;
 typedef struct PackageLoadResult PackageLoadResult, *PPackageLoadResult;
-typedef struct ModelNodeCreateResult ModelNodeCreateResult, *PModelNodeCreateResult;
 typedef struct FixedAzimuthElevationRoll FixedAzimuthElevationRoll, *PFixedAzimuthElevationRoll;
 typedef struct TerrainRayTriangleResult TerrainRayTriangleResult, *PTerrainRayTriangleResult;
-typedef struct DllLoadResult DllLoadResult, *PDllLoadResult;
 typedef struct DirectoryEnumerationResult DirectoryEnumerationResult, *PDirectoryEnumerationResult;
-typedef struct RecordRingDiscardResult RecordRingDiscardResult, *PRecordRingDiscardResult;
 typedef struct AiSecondaryWorkspaceDistanceSelection AiSecondaryWorkspaceDistanceSelection, *PAiSecondaryWorkspaceDistanceSelection;
 typedef struct TerrainOccupancyFlagsAndCombinedMask TerrainOccupancyFlagsAndCombinedMask, *PTerrainOccupancyFlagsAndCombinedMask;
 typedef struct TerrainOccupancyResolvedMasks TerrainOccupancyResolvedMasks, *PTerrainOccupancyResolvedMasks;
@@ -668,13 +649,10 @@ typedef struct GridPathBestUnreachableCell GridPathBestUnreachableCell, *PGridPa
 typedef struct AiStrategicClassSelection AiStrategicClassSelection, *PAiStrategicClassSelection;
 typedef struct ArenaShrinkResult ArenaShrinkResult, *PArenaShrinkResult;
 typedef struct DriveLetterEnumeration DriveLetterEnumeration, *PDriveLetterEnumeration;
-typedef struct FileLoadResult FileLoadResult, *PFileLoadResult;
-typedef struct EnumerationStringTableResult EnumerationStringTableResult, *PEnumerationStringTableResult;
 typedef struct FrontendCreditsUiStateView FrontendCreditsUiStateView, *PFrontendCreditsUiStateView;
 typedef struct GeneratedTextureRenderContextView GeneratedTextureRenderContextView, *PGeneratedTextureRenderContextView;
 typedef struct CursorEventResult CursorEventResult, *PCursorEventResult;
 typedef struct GraphicsProjectedPointPair GraphicsProjectedPointPair, *PGraphicsProjectedPointPair;
-typedef struct ShadingRecordResult ShadingRecordResult, *PShadingRecordResult;
 typedef struct GraphicsTextureSourceHeaderView GraphicsTextureSourceHeaderView, *PGraphicsTextureSourceHeaderView;
 typedef struct InGameLevelSaveWorldView InGameLevelSaveWorldView, *PInGameLevelSaveWorldView;
 typedef struct ModelProjectedBoundsPixels ModelProjectedBoundsPixels, *PModelProjectedBoundsPixels;
@@ -685,10 +663,7 @@ typedef struct RomSerializedNodeHeader RomSerializedNodeHeader, *PRomSerializedN
 typedef struct RuntimeModelFactionPrefix RuntimeModelFactionPrefix, *PRuntimeModelFactionPrefix;
 typedef struct TerrainProjectedVertexWorkRecord TerrainProjectedVertexWorkRecord, *PTerrainProjectedVertexWorkRecord;
 typedef struct TriangleBarycentricWeightsQ12 TriangleBarycentricWeightsQ12, *PTriangleBarycentricWeightsQ12;
-typedef struct SelectableGroupIndexResult SelectableGroupIndexResult, *PSelectableGroupIndexResult;
-typedef struct SelectableGroupNodeResult SelectableGroupNodeResult, *PSelectableGroupNodeResult;
 typedef struct UiSelectionGeometryControl UiSelectionGeometryControl, *PUiSelectionGeometryControl;
-typedef struct DirectoryHierarchyResult DirectoryHierarchyResult, *PDirectoryHierarchyResult;
 typedef union RomSerializedNodeReferenceOrSavedOffset4 RomSerializedNodeReferenceOrSavedOffset4, *PRomSerializedNodeReferenceOrSavedOffset4;
 typedef struct InGameRuntimeRootUiGridView InGameRuntimeRootUiGridView, *PInGameRuntimeRootUiGridView;
 typedef struct InGameRuntimeRootFrameView InGameRuntimeRootFrameView, *PInGameRuntimeRootFrameView;
@@ -874,11 +849,6 @@ struct Win32FileSeekResult {
     bool failed; // Physical ABI component CF
 };
 
-struct GridScratchAllocResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
 struct CommandLineOptionResult {
     uint8_t *option; // Physical ABI component EBX
     bool notFound; // Physical ABI component CF
@@ -935,10 +905,6 @@ struct FileSystemSeekResult {
     bool failed; // Physical ABI component CF
 };
 
-struct MovieFrameResult {
-    uint32_t movieOrError; // Physical ABI component EAX
-    bool ended; // Physical ABI component CF
-};
 
 struct NetworkReceiveResult {
     uint32_t byteCountOrError; // Physical ABI component EAX
@@ -1047,12 +1013,6 @@ struct FixedDirection {
     uint32_t z; // Physical ABI component EDX
 };
 
-struct MailboxReceiveResult {
-    uint32_t buffer; // Physical ABI component EAX
-    uint32_t byteCount; // Physical ABI component ECX
-    bool unavailable; // Physical ABI component CF
-};
-
 struct NetworkSetSessionResult {
     uint32_t valueOrError; // Physical ABI component EAX
     bool failed; // Physical ABI component CF
@@ -1091,14 +1051,6 @@ typedef void SoundStopVoiceProc(IDirectSoundBuffer * voice);
 typedef bool SoundIsVoicePlayingProc(IDirectSoundBuffer * voice);
 typedef void SoundStopAllVoicesProc(void);
 typedef void SoundSetVoiceGainsProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, IDirectSoundBuffer * voice);
-struct FrontendInitResult {
-    uint32_t frontendRootOrError; /* EAX result/error value. */
-    bool failed;               /* Carry-flag status. */
-};
-struct FrontendMainLoopResult {
-    uint32_t errorOrValue; /* EAX result/error value. */
-    bool failed;         /* Carry-flag status. */
-};
 struct PlacementCandidateResult {
     int value;   /* Placement candidate/result value carried in EAX. */
     bool rejected; /* Carry-flag status. */
@@ -4177,11 +4129,6 @@ typedef uint32_t AiPlanningPhaseIndex;
 struct AiPlanningDispatchRegisterContinuityResult {
     FactionRuntimeIndex preservedEdxFactionIndex; 
     AiPlanningPhaseIndex preservedEcxPlanningPhase; 
-};
-
-struct GridPathMarkedRegionCellRegisterResult {
-    FieldGridCellCoordinate selectedColumn; 
-    FieldGridCellCoordinate selectedRow; 
 };
 
 typedef uint64_t AiCandidateScoreEaxPreservedEdxCarrier64;
@@ -10686,11 +10633,6 @@ struct FieldGridInterpolationCallbackTable5 {
     HeightSampleResult (*callbacks[5])(Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
 };
 
-struct ListSelectionResult {
-    UiListRowIndex rowIndex; // EAX selected row index
-    bool confirmed; // CF selection/status
-};
-
 /* Q12 vector returned by the fixed-point rotation helpers (the original returns it in EAX/ECX/EDX, the
    rotation core in EAX/EBX/EDX). */
 struct FixedVectorQ12 {
@@ -10704,27 +10646,16 @@ struct PaletteTextureSourceResult {
     bool failed; // CF status
 };
 
-struct EffectCreateResult {
-    struct EffectRuntimeSlot *effectRuntime; // EAX live effect slot
-    bool failed; // CF status
-};
-
 struct PaletteAssetResult {
     struct GraphicsPaletteAsset *paletteAsset; // EAX palette asset pointer / error-coded value
     bool failed; // CF status
 };
 
-struct PathingDestinationResult {
+struct PathingDestination {
     Q12 primaryWorldXQ12; // EAX primary X
     Q12 primaryWorldYQ12; // EDX primary Y
     Q12 fallbackWorldXQ12; // EBX fallback X
     Q12 fallbackWorldYQ12; // ECX fallback Y
-    bool failed; // CF status
-};
-
-struct WorldFlagsResult {
-    uint32_t flags; // EAX world runtime flags
-    bool failed; // CF status (implementation clears on return)
 };
 
 struct FieldGridCoordinates {
@@ -10739,22 +10670,6 @@ struct TerrainRaycastResult {
 };
 
 
-struct WorldObjectAllocResult {
-    struct WorldObjectRecord *recordOrError; // EAX allocated WorldObjectRecord on CF-clear; error-coded value when CF-set
-    bool failed; // CF allocation status
-};
-
-struct NearestCellResult {
-    FieldGridCellCoordinate selectedColumn; // EAX selected column
-    FieldGridCellCoordinate selectedRow; // EBX selected row
-    bool relocated; // CF status
-};
-
-struct DirectoryRecordBlockResult {
-    void *recordBlockOrError; // EAX: allocated timed-list record/text block on CF-clear success; error-coded value on CF-set failure. Opaque because the allocation contains both 16-byte records and variable UTF-16 tails.
-    bool failed; // CF status
-};
-
 struct SoftwareFramebufferResult {
     struct SoftwareFramebufferAccess *framebuffer; // EAX framebuffer pointer / allocator error value
     bool failed; // CF status
@@ -10768,11 +10683,6 @@ struct OffscreenRenderResult {
 struct StatusResult {
     uint32_t valueOrError; // EAX value/error code
     bool failed; // CF status
-};
-
-struct EffectDefinitionResult {
-    struct EffectDefinition *definitionOrError; // EAX definition pointer or error-coded value
-    bool notFound; // CF status
 };
 
 struct TextCompareResult {
@@ -10810,17 +10720,6 @@ struct WorldPositionResult {
     bool noPosition; // CF set when there is no position (no/lost command target, empty selection)
 };
 
-struct PathBacktrackResult {
-    FieldGridCellCoordinate selectedColumn; // EAX selected column
-    FieldGridCellCoordinate selectedRow; // EBX selected row
-    FieldGridRegionMask routeStateMask; // ECX route-state mask
-    bool reachedTarget; // CF status
-};
-
-struct AimSmoothResult {
-    uint32_t value; // EAX smoothing state/value
-    bool outsideTolerance; // CF threshold/status
-};
 
 /* Angles of a rotation basis as FixedTransform_ExtractEulerAnglesRegs returns them (EAX, ECX, EDX). */
 struct FixedRollAzimuthElevation {
@@ -10900,11 +10799,6 @@ struct PackageLoadResult {
     bool failed; // CF status
 };
 
-struct ModelNodeCreateResult {
-    struct ModelRuntimeNode *modelNode; // EAX created model runtime node
-    bool failed; // CF status
-};
-
 /* Angles of a composed rotation as FixedTransform_ComposeEulerAnglesRegs returns them (EAX, EBX, EDX); the
    order of the model nodes' worldRotationAngle0..2. */
 struct FixedAzimuthElevationRoll {
@@ -10918,37 +10812,11 @@ struct TerrainRayTriangleResult {
     bool missed; // CF status
 };
 
-/* Result of UiPageStack_ActivePageNotInList: the active page's index in the stack (or the page
-   count), notFound when the active child is not one of the stack's pages. */
-typedef struct PageStackSearchResult PageStackSearchResult;
-struct PageStackSearchResult {
-    uint32_t pageIndex; 
-    bool notFound; 
-};
-
-/* Result of ModelRuntimeNode_HitTestProjectedBoundsAndChildren: distance to the hit, missed when
-   neither the node nor a child was hit (the distance is then meaningless). */
-typedef struct ModelHitTestResult ModelHitTestResult;
-struct ModelHitTestResult {
-    uint32_t distanceQ12; 
-    bool missed; 
-};
-
-
-struct DllLoadResult {
-    HINSTANCE moduleOrError; // EAX module handle or error-coded value
-    bool failed; // CF status
-};
 
 struct DirectoryEnumerationResult {
     uint32_t recordSizeBytes; /* EAX physical enumeration record size; current backend returns 0x200. */
     uint32_t entryCount;      /* ECX number of output records produced. */
     bool failed;            /* CF enumeration status; current Win32 backend clears CF on every return. */
-};
-struct RecordRingDiscardResult {
-    uint32_t payloadOrReadIndex; /* EAX: packet-buffer pointer on CF=0; ring read index on CF=1. */
-    uint32_t endpointOrReadIndex; /* EDX: endpoint pointer on CF=0; same ring read index on CF=1. */
-    bool empty;             /* CF=1 when empty; CF=0 when one record was removed. */
 };
 struct AiSecondaryWorkspaceDistanceSelection {
     AiCandidateScore32 score;
@@ -11001,16 +10869,6 @@ struct DriveLetterEnumeration {
     uint32_t driveCountMirror; // ECX mirrored drive count
 };
 
-struct FileLoadResult {
-    void *bufferOrError; // EAX: allocated whole-file buffer on success, live error-coded value on failure.
-    bool failed; // CF: clear on success, set on failure.
-};
-
-struct EnumerationStringTableResult {
-    uint32_t tableOrError; // EAX: packed pointer/string-table allocation on success; engine error/scratch value on failure.
-    uint32_t entryCountOrScratch; // ECX: entry count on success; live backend/cleanup scratch on failure.
-    bool failed; // CF: clear on success, set on failure.
-};
 
 struct FrontendCreditsUiStateView {
     uint8_t opaqueGap0000_0057[88]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
@@ -11038,10 +10896,6 @@ struct CursorEventResult {
     bool queueEmpty; // CF set when input queue empty
 };
 
-struct ShadingRecordResult {
-    struct GraphicsShadingRuntimeRecord *record; // EAX success value; null on failure
-    bool failed; // CF status: clear success, set failure
-};
 
 struct GraphicsTextureSourceHeaderView {
     struct GeneratedAssetCommonPrefix common;
@@ -11111,17 +10965,6 @@ struct TriangleBarycentricWeightsQ12 {
     Q12 weightVertexA_Q12; // EDX: interpolation weight applied to vertex A relative to vertex C.
 };
 
-struct SelectableGroupIndexResult {
-    uint32_t selectedIndexOrCount;
-    bool noneSelected;
-};
-
-struct SelectableGroupNodeResult {
-    struct UiNodeBase *node;
-    UiControlCount controlIndexOrCount;
-    bool noneSelected;
-};
-
 struct UiSelectionGeometryControl {
     struct UiNodeBase base; // Common UI-node prefix.
     uint32_t reserved4C; // Serialized/runtime slot not required by the two recovered methods; intentionally unresolved.
@@ -11133,12 +10976,6 @@ struct UiSelectionGeometryControl {
     UiActionId actionId; // Action enqueued by ConvertPointerAndEnqueueAction after writing the transformed source coordinates.
     Q12 selectedSourceXQ12; // Pointer position transformed into source-space X (texture column; the minimap's grid column) before action dispatch.
     Q12 selectedSourceYQ12; // Pointer position transformed into source-space Y (texture row; the minimap's grid row) before action dispatch.
-};
-
-struct DirectoryHierarchyResult {
-    struct UiTimedListTreeRecord *rootRecordBlockOrError; // EAX: root timed-list record block on success; live error-coded value on failure.
-    struct UiTimedListTreeRecord *selectedRecordOrNull; // EDX: record matching the requested path on success; null on failure.
-    bool failed; // CF: clear on success, set on failure.
 };
 
 union RomSerializedNodeReferenceOrSavedOffset4 {
@@ -12405,12 +12242,6 @@ struct ModelRuntimeWeaponUpdateView {
 union ModelRaycastNearestNodeOrScratch4 {
     struct ModelRuntimeNode *nearestModelNode; // EDX success side channel when CF is set
     int scratchSigned; // EDX arithmetic/scratch carrier when CF is clear or before success assignment
-};
-
-struct ModelRaycastResult {
-    Q12 nearestDistanceQ12; // EAX nearest hit distance
-    union ModelRaycastNearestNodeOrScratch4 nearestNodeOrScratch; // EDX: nearestModelNode only when CF is set; otherwise arithmetic/scratch carrier
-    bool hit; // CF hit/status
 };
 
 struct WorldPositionXY {

@@ -19,16 +19,17 @@
 void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *listControl)
 
 {
-  ListSelectionResult selectedRow;
-  
-  selectedRow = UiPointerList_GetSelectedIndexAndConfirmed(listControl);
-  if (!selectedRow.confirmed) {
+  UiListRowIndex selectedRowIndex;
+  bool selectionConfirmed;
+
+  selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
+  if (!selectionConfirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_SelectSavedGameAndShowDescription(g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
+      ScenarioCatalog_SelectSavedGameAndShowDescription(g_LocalPlayerRuntimeId,0,0,selectedRowIndex);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SAVED_GAME,0,0,selectedRow.rowIndex);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SAVED_GAME,0,0,selectedRowIndex);
     }
     return;
   }
@@ -48,17 +49,18 @@ void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *list
 void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listControl)
 
 {
-  ListSelectionResult selectedRow;
-  
-  selectedRow = UiPointerList_GetSelectedIndexAndConfirmed(listControl);
-  if (!selectedRow.confirmed) {
+  UiListRowIndex selectedRowIndex;
+  bool selectionConfirmed;
+
+  selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
+  if (!selectionConfirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       ScenarioCatalog_SelectLevelAndShowDescription
-                (g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
+                (g_LocalPlayerRuntimeId,0,0,selectedRowIndex);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SINGLE_GAME,0,0,selectedRow.rowIndex);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SINGLE_GAME,0,0,selectedRowIndex);
     }
     return;
   }
@@ -78,17 +80,18 @@ void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listCont
 void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listControl)
 
 {
-  ListSelectionResult selectedRow;
-  
-  selectedRow = UiPointerList_GetSelectedIndexAndConfirmed(listControl);
-  if (!selectedRow.confirmed) {
+  UiListRowIndex selectedRowIndex;
+  bool selectionConfirmed;
+
+  selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
+  if (!selectionConfirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       ScenarioCatalog_SelectCampaignAndShowDescription
-                (g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
+                (g_LocalPlayerRuntimeId,0,0,selectedRowIndex);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_CAMPAIGN,0,0,selectedRow.rowIndex);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_CAMPAIGN,0,0,selectedRowIndex);
     }
     return;
   }
@@ -120,7 +123,6 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   uint8_t *textCursor;
   short *levelNameCursor;
   bool namesMatch;
-  SelectableGroupNodeResult selectedTab;
   CommandLineOptionResult mapOption;
 
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_STACK_CHOOSE_GAME,&scenarioSelectionPage->primaryPageStack);
@@ -129,12 +131,10 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     controlFlags = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
     *controlFlags = *controlFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  selectedTab = UiSelectableGroup_NoneVisibleSelected(3,
+  if (!UiSelectableGroup_FindVisibleSelected(NULL,&activeTabIndex,3,
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
-      FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
-  activeTabIndex = selectedTab.controlIndexOrCount;
-  if (selectedTab.noneSelected) {
+      FRONTEND_UI(scenarioSelectionPage,campaignsTabButton))) {
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -608,16 +608,15 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
   bool recordAlreadyKnown;
   ArenaAllocResult allocation;
   FatalErrorCheckResult checkedResult;
-  MailboxReceiveResult received;
+  uint32_t receivedByteCount;
   ScenarioCatalogHeader *previousCatalog;
 
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) &&
      (g_FrontendScenarioTransferState != SCENARIO_TRANSFER_NONE)) {
     if (g_FrontendScenarioTransferState == SCENARIO_TRANSFER_CATALOG) {
       /* packet: unpacked size, packed catalog */
-      received = UiTransferMailbox_GetReceivedBuffer();
-      receivedDwords = (uint32_t *)received.buffer;
-      if (!received.unavailable) {
+      receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
+      if (receivedDwords != NULL) {
         payloadSizeBytes = *receivedDwords;
         allocation = g_MemoryApi.alloc(payloadSizeBytes);
         checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
@@ -627,7 +626,7 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
         previousCatalog = g_ScenarioCatalog;
         g_ScenarioCatalog = (ScenarioCatalogHeader *)checkedResult.valueOrError;
         g_ScenarioCatalogUsedBytes = payloadSizeBytes;
-        PckCodec_DecodeHuffmanRle(payloadSizeBytes,(uint8_t *)checkedResult.valueOrError,received.byteCount - 4,(uint8_t *)(receivedDwords + 1));
+        PckCodec_DecodeHuffmanRle(payloadSizeBytes,(uint8_t *)checkedResult.valueOrError,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1));
         g_MemoryApi.free(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
         g_FrontendScenarioTransferState = SCENARIO_TRANSFER_NONE;
@@ -666,9 +665,8 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
     }
     else if (g_FrontendScenarioTransferState < SCENARIO_TRANSFER_FIELD_GRID) {
       /* SCENARIO_TRANSFER_LEVEL, packet: unpacked size, packed level asset */
-      received = UiTransferMailbox_GetReceivedBuffer();
-      receivedDwords = (uint32_t *)received.buffer;
-      if (!received.unavailable) {
+      receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
+      if (receivedDwords != NULL) {
         payloadSizeBytes = *receivedDwords;
         /* The level's path offset field holds the loaded field grid once one was attached (values above
            0xFFFF are pointers). */
@@ -684,7 +682,7 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
         checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedResult.valueOrError;
         PckCodec_DecodeHuffmanRle
-                  (payloadSizeBytes,(uint8_t *)g_FrontendLoadedLevelAsset,received.byteCount - 4,(uint8_t *)(receivedDwords + 1));
+                  (payloadSizeBytes,(uint8_t *)g_FrontendLoadedLevelAsset,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1));
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           FrontendPlayerRuntime_MarkTaskAssignmentReadyById(g_LocalPlayerRuntimeId,0,0,0);
@@ -699,16 +697,15 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
     }
     else if (g_FrontendScenarioTransferState == SCENARIO_TRANSFER_FIELD_GRID) {
       /* packet: unpacked size, packed field grid; it is attached to the already loaded level */
-      received = UiTransferMailbox_GetReceivedBuffer();
-      receivedDwords = (uint32_t *)received.buffer;
-      if (!received.unavailable) {
+      receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
+      if (receivedDwords != NULL) {
         payloadSizeBytes = *receivedDwords;
         allocation = g_MemoryApi.alloc(payloadSizeBytes);
         checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.valueOrError
         ;
         PckCodec_DecodeFieldGrid
-                  (payloadSizeBytes,(FieldGridAsset *)checkedResult.valueOrError,received.byteCount - 4,(uint8_t *)(receivedDwords + 1));
+                  (payloadSizeBytes,(FieldGridAsset *)checkedResult.valueOrError,receivedByteCount - 4,(uint8_t *)(receivedDwords + 1));
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           FrontendPlayerRuntime_MarkLevelReceivedById(g_LocalPlayerRuntimeId,0,0,0);
@@ -724,9 +721,8 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
     else if (g_FrontendScenarioTransferState < SCENARIO_TRANSFER_LEVEL_BUNDLE) {
       /* SCENARIO_TRANSFER_CAMPAIGN_BUNDLE, packet: unpacked sizes of level, campaign and field grid, packed
          sizes of the three, then the three packed streams */
-      received = UiTransferMailbox_GetReceivedBuffer();
-      receivedDwords = (uint32_t *)received.buffer;
-      if (!received.unavailable) {
+      receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
+      if (receivedDwords != NULL) {
         if ((g_FrontendLoadedLevelAsset != NULL) &&
            (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid
            )) {
@@ -794,9 +790,8 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
     else {
       /* SCENARIO_TRANSFER_LEVEL_BUNDLE, packet: unpacked sizes of level and field grid, their packed sizes,
          then the two packed streams */
-      received = UiTransferMailbox_GetReceivedBuffer();
-      receivedDwords = (uint32_t *)received.buffer;
-      if (!received.unavailable) {
+      receivedDwords = (uint32_t *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
+      if (receivedDwords != NULL) {
         if ((g_FrontendLoadedLevelAsset != NULL) &&
            (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid
            )) {
@@ -1604,25 +1599,23 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
 
 {
   UiListRowIndex selectedRowIndex;
-  ListSelectionResult selectedRow;
-  SelectableGroupNodeResult selectedGroup;
+  uint32_t selectedTabIndex;
   int scenarioPathPointerTableAddress;
 
   /* selectionControl is the frontend template's gameSelectStartButton; the other nodes are its siblings. */
-  selectedGroup = UiSelectableGroup_NoneVisibleSelected(3,
+  if (!UiSelectableGroup_FindVisibleSelected(NULL,&selectedTabIndex,3,
       THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,loadGameTabButton),
       THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,singleGameTabButton),
-      THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsTabButton));
-  if (selectedGroup.noneSelected) {
+      THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsTabButton))) {
     return;
   }
-  if (selectedGroup.controlIndexOrCount != 0) {
-    if (selectedGroup.controlIndexOrCount < 2) {
+  if (selectedTabIndex != 0) {
+    if (selectedTabIndex < 2) {
       Resource_Release(g_FrontendLoadedCampaignAsset);
       g_FrontendLoadedCampaignAsset = NULL;
-      selectedRow = UiPointerList_GetSelectedIndexAndConfirmed
-                        ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,missionsList));
-      selectedRowIndex = selectedRow.rowIndex;
+      selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
+                        ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,missionsList),
+                         NULL);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendScenarioSession_LoadOrRequestLevelAsset(g_LocalPlayerRuntimeId,0,0,selectedRowIndex)
@@ -1635,15 +1628,16 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
     }
     Resource_Release(g_FrontendLoadedCampaignAsset);
     g_FrontendLoadedCampaignAsset = NULL;
-    selectedRow = UiPointerList_GetSelectedIndexAndConfirmed
-                      ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsList));
+    selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
+                      ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsList),
+                       NULL);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex)
+      FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,selectedRowIndex)
       ;
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_LOAD_CAMPAIGN,0,0,selectedRow.rowIndex);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_LOAD_CAMPAIGN,0,0,selectedRowIndex);
     }
     return;
   }
@@ -1651,11 +1645,12 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
        (int)((UiListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList))->rowSlots;
   Resource_Release(g_FrontendLoadedCampaignAsset);
   g_FrontendLoadedCampaignAsset = NULL;
-  selectedRow = UiPointerList_GetSelectedIndexAndConfirmed
-                    ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList));
+  selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
+                    ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList),
+                     NULL);
   WidePath_CombineDirectoryAndLeaf
             (&g_FrontendScenarioPathScratchUtf16,
-             *(uint16_t **)(scenarioPathPointerTableAddress + selectedRow.rowIndex * 4),
+             *(uint16_t **)(scenarioPathPointerTableAddress + selectedRowIndex * 4),
              (uint16_t *)u_save_0050daa2);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,&g_FrontendScenarioPathScratchUtf16);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==

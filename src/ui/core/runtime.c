@@ -125,37 +125,30 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
 /* Address: 0x004AEF00.
    Takes the oldest received network packet out of the receive ring (under the ring lock) and returns
    pointers to it and to its sender endpoint. The slot is released, not copied, so the data stays valid only
-   until the receiver wraps around to it again. empty (CF set) when nothing was pending; then both values
-   are the read index.
+   until the receiver wraps around to it again. Returns true with *outPacket (the packet slot) and
+   *outEndpoint (its sender-endpoint slot) set; returns false and leaves both untouched when nothing was
+   pending (the original left the read index in both registers, which no caller reads).
 */
-RecordRingDiscardResult UiRuntimeRecordRing_DiscardOldest(void)
+bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
 
 {
   uint32_t nextReadIndex;
-  uint32_t readIndex;
-  RecordRingDiscardResult discardedResult;
-  RecordRingDiscardResult emptyResult;
 
   g_SpinLockAcquire(&g_UiRuntimeRecordRingLock);
-  readIndex = g_UiRuntimeRecordReadIndex;
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
     nextReadIndex = g_UiRuntimeRecordReadIndex + 1;
-    discardedResult.payloadOrReadIndex = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
-    discardedResult.endpointOrReadIndex =
-         g_UiRuntimeRecordReadIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots;
+    *outPacket = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
+    *outEndpoint = (void *)(uintptr_t)
+         (g_UiRuntimeRecordReadIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots);
     g_UiRuntimeRecordReadIndex = nextReadIndex;
     if (UI_RUNTIME_RECORD_RING_LAST_INDEX < nextReadIndex) {
       g_UiRuntimeRecordReadIndex = 0;
     }
     g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
-    discardedResult.empty = false;
-    return discardedResult;
+    return true;
   }
   g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
-  emptyResult.endpointOrReadIndex = readIndex;
-  emptyResult.payloadOrReadIndex = readIndex;
-  emptyResult.empty = true;
-  return emptyResult;
+  return false;
 }
 
 

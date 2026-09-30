@@ -2555,10 +2555,10 @@ MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
 /* Address: 0x004CCB40.
    Claims the first free runtime light record (colour 0) for a point light at the given world position and
    returns it. With transitionDurationTicks 0 the light starts at full radius, otherwise its squared radius
-   starts at 0 and grows over that many ticks. CF set with NULL when packedColorRgb is 0 or all
+   starts at 0 and grows over that many ticks. Returns NULL when packedColorRgb is 0 or all
    GRAPHICS_SHADING_RUNTIME_RECORD_COUNT records are taken.
 */
-ShadingRecordResult GraphicsShadingRuntime_AllocateRecordRegs
+GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
           (GraphicsTransitionTickCount transitionDurationTicks,GraphicsRadiusQ12 radiusQ12,
           PackedRgb24 packedColorRgb,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12)
@@ -2566,9 +2566,7 @@ ShadingRecordResult GraphicsShadingRuntime_AllocateRecordRegs
 {
   int recordsRemaining;
   GraphicsShadingRuntimeRecord *recordCursor;
-  ShadingRecordResult failureResult;
-  ShadingRecordResult successResult;
-  
+
   if (packedColorRgb != 0) {
     recordCursor = g_GraphicsShadingRuntimeRecords;
     recordsRemaining = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT;
@@ -2589,17 +2587,13 @@ ShadingRecordResult GraphicsShadingRuntime_AllocateRecordRegs
         recordCursor->worldXQ12 = worldXQ12;
         recordCursor->worldYQ12 = worldYQ12;
         recordCursor->worldZQ12 = worldZQ12;
-        successResult.failed = false;
-        successResult.record = recordCursor;
-        return successResult;
+        return recordCursor;
       }
       recordCursor = recordCursor + 1;
       recordsRemaining--;
     } while (recordsRemaining != 0);
   }
-  failureResult.record = NULL;
-  failureResult.failed = true;
-  return failureResult;
+  return NULL;
 }
 
 
@@ -2718,9 +2712,10 @@ void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ1
    Sets up the generated shading textures: a zeroed square scratch grid of (2 * gridHalfSize)^2 bytes and
    an in-memory gfx asset with one palette (white with an alpha ramp) and subresourceCount 8-bit images of
    textureDimension^2 pixels, from which a texture set is created. Also derives the grid step and origin used to
-   map world positions into the textures. Returns the allocator/texture error with CF set on failure.
+   map world positions into the textures. Returns 0 on success, otherwise the (non-zero) allocator or
+   texture-set error code.
 */
-StatusResult GraphicsShadingRuntime_InitializeGeneratedTexture
+uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension)
 
@@ -2734,8 +2729,7 @@ StatusResult GraphicsShadingRuntime_InitializeGeneratedTexture
   GraphicsGeneratedTextureAssetOrEntry *entryCursor;
   ArenaAllocResult allocResult;
   TextureSetResult textureSetResult;
-  StatusResult failureStatus;
-  
+
   allocationSize = gridHalfSize * 2 * gridHalfSize * 2;
   allocResult = g_MemoryApi.alloc(allocationSize);
   allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)allocResult.payloadOrError;
@@ -2807,15 +2801,12 @@ StatusResult GraphicsShadingRuntime_InitializeGeneratedTexture
       allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)textureSetResult.textureSet;
       if (!textureSetResult.failed) {
         g_GraphicsShadingTextureSet = (GraphicsTextureSet *)&allocationCursor->asset;
-        return THANDOR_BITCAST(uint64_t, StatusResult,
-                               THANDOR_BITCAST(TextureSetResult, uint64_t, textureSetResult) & UINT32_MAX);
+        return 0;
       }
       g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
     }
   }
-  failureStatus.failed = true;
-  failureStatus.valueOrError = (uint32_t)allocationCursor;
-  return failureStatus;
+  return (uint32_t)allocationCursor;
 }
 
 

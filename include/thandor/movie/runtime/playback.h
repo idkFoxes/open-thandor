@@ -59,9 +59,9 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004A8040 */
-StatusResult Movie_EncodeFlmBufferFromFrameProvider
+bool Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider);
+          uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount);
 
 /* 0x00563FF0 */
 void MoviePlayback_AdvanceScheduledFrameAndTick(void);
@@ -103,7 +103,7 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
           uint32_t *encodedOutput,uint32_t *previousFramePixels,uint32_t *currentFramePixels);
 
 /* 0x004A8A60 */
-MovieFrameResult Movie_AdvanceFrame(void);
+bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode);
 
 /* 0x00564080 */
 void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);

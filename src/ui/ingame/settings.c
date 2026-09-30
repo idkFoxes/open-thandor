@@ -615,7 +615,7 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   PersistentSettingsValue newGridHalfSize;
   PersistentSettingsValue newTextureDimension;
   UiNodeBase *selectedControl;
-  StatusResult initStatus;
+  uint32_t initError;
   FatalErrorCheckResult fatalResult;
   uint32_t newSubresourceCount;
 
@@ -627,9 +627,9 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   newGridHalfSize = (PersistentSettingsValue)((UiNumericPairTextButton *)control)->firstValue;
   newTextureDimension = newGridHalfSize * 2;
   GraphicsShadingRuntime_Shutdown();
-  initStatus = GraphicsShadingRuntime_InitializeGeneratedTexture
+  initError = GraphicsShadingRuntime_InitializeGeneratedTexture
                     (subresourceCount,newGridHalfSize,newTextureDimension);
-  fatalResult = FatalError_ReportIfFailed(initStatus.valueOrError,initStatus.failed);
+  fatalResult = FatalError_ReportIfFailed(initError,initError != 0);
   if (!fatalResult.failed) {
     PersistentSettings_Write(newTextureDimension,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
     PersistentSettings_Write(newGridHalfSize,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);

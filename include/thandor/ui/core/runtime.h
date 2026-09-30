@@ -61,7 +61,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
           UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth);
 
 /* 0x004AEF00 */
-RecordRingDiscardResult UiRuntimeRecordRing_DiscardOldest(void);
+bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
 
 /* 0x004AF020 */
 void UiRuntimeRecordRing_Clear(void);

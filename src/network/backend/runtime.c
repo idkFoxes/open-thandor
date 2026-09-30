@@ -569,12 +569,10 @@ uint32_t __cdecl Network_Init(void)
 {
   HINSTANCE module;
   uint32_t startupError;
-  DllLoadResult loadResult;
   uint32_t resolveError;
-  
-  loadResult = DynDLL_Load(s_Wsock32ModuleName);
-  module = loadResult.moduleOrError;
-  if (loadResult.failed) return (uint32_t)module;
+
+  module = DynDLL_Load(s_Wsock32ModuleName);
+  if (module == NULL) return FATAL_ERROR_DLL_LOAD_FAILED;
   resolveError = DynAPI_Resolve(&g_WinSock_accept,module,s_Wsock32Export_accept);
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_bind,module,s_Wsock32Export_bind);

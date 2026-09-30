@@ -645,17 +645,13 @@ WorldCameraOrientation WorldRuntime_GetCameraOrientationRegs(WorldRuntimeContext
 
 
 /* Address: 0x0050D650.
-   Returns the world's secondary control flags (runtimeControlFlags, +0xCC) in EAX with CF clear. No caller
-   found in src/ or the image tables.
+   Returns the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found in src/ or the
+   image tables.
 */
-WorldFlagsResult WorldRuntime_GetFlags(WorldRuntimeContext *world)
+uint32_t WorldRuntime_GetFlags(WorldRuntimeContext *world)
 
 {
-  WorldFlagsResult flagsResult;
-  
-  flagsResult.failed = false;
-  flagsResult.flags = world->runtimeControlFlags;
-  return flagsResult;
+  return world->runtimeControlFlags;
 }
 
 
@@ -724,16 +720,15 @@ uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
 
 /* Address: 0x0050D7D0.
    Takes the first free record of the world's object pool (WorldRuntime_AttachObjectArray): marks it allocated
-   (which also resets its other flag bits) and stores the owning world. Returns FATAL_ERROR_GENERAL_FAILURE with
-   CF set when the pool is exhausted.
+   (which also resets its other flag bits) and stores the owning world. Returns the record, or NULL when the
+   pool is exhausted (the original returned FATAL_ERROR_GENERAL_FAILURE with CF set; callers that pass an error
+   code on use that constant).
 */
-WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
+WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
 
 {
   WorldObjectRecordCount recordsRemaining;
   WorldObjectRecord *recordCursor;
-  WorldObjectAllocResult exhaustedResult;
-  WorldObjectAllocResult allocatedResult;
 
   recordsRemaining = worldRuntime->objectCount;
   recordCursor = worldRuntime->objectArray;
@@ -743,15 +738,11 @@ WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *
     recordsRemaining--;
   }
   if (recordsRemaining == 0) {
-    exhaustedResult.failed = true;
-    exhaustedResult.recordOrError = (WorldObjectRecord *)FATAL_ERROR_GENERAL_FAILURE;
-    return exhaustedResult;
+    return NULL;
   }
   recordCursor->common.allocationFlags = WORLD_OBJECT_RECORD_ALLOCATED;
   recordCursor->common.ownerWorld = worldRuntime;
-  allocatedResult.failed = false;
-  allocatedResult.recordOrError = recordCursor;
-  return allocatedResult;
+  return recordCursor;
 }
 
 

@@ -1168,29 +1168,21 @@ void UiTransferMailbox_ClearReceivedState(void)
 
 
 /* Address: 0x004AF170.
-   Hands out a completely received transfer: returns its buffer (EAX) and byte count (ECX) with CF clear once an
-   allocation exists and no bytes are outstanding. An empty, unavailable or still incomplete mailbox sets CF.
+   Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in
+   *outByteCount once an allocation exists and no bytes are outstanding. An empty, unavailable or still
+   incomplete mailbox returns NULL and leaves *outByteCount untouched (the original left the caller's EAX/ECX
+   as they were; every caller reads them only on success).
 */
-MailboxReceiveResult UiTransferMailbox_GetReceivedBuffer(void)
+void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount)
 
 {
-  MailboxReceiveResult receivedResult;
-  MailboxReceiveResult unavailableResult;
-
   if (g_UiTransferMailbox.receivedAllocation != UI_TRANSFER_MAILBOX_UNAVAILABLE &&
       g_UiTransferMailbox.receivedAllocation != NULL &&
       g_UiTransferMailbox.receivedRemainingBytes == 0) {
-    receivedResult.byteCount = g_UiTransferMailbox.receivedByteCount;
-    receivedResult.buffer = (uint32_t)g_UiTransferMailbox.receivedAllocation;
-    receivedResult.unavailable = false;
-    return receivedResult;
+    *outByteCount = g_UiTransferMailbox.receivedByteCount;
+    return g_UiTransferMailbox.receivedAllocation;
   }
-  /* Unavailable (CF set): the asm leaves the caller's EAX/ECX untouched; every caller reads them only with
-     CF clear. */
-  unavailableResult.byteCount = 0;
-  unavailableResult.buffer = 0;
-  unavailableResult.unavailable = true;
-  return unavailableResult;
+  return NULL;
 }
 
 

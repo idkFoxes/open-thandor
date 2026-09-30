@@ -42,7 +42,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
   bool placeable;
   EffectDefinition *markerDefinition;
   HeightSampleResult surfaceHeight;
-  EffectCreateResult createdEffect;
+  EffectRuntimeSlot *createdEffect;
   EffectDefinition *targetDefinition;
   PckArmyAssetIdCatalog armyAssetId;
   WorldRuntimeContext *worldRuntimeCopy;
@@ -168,10 +168,10 @@ RefreshMarkers:
                               FIXED_ANGLE16_QUARTER_TURN,0,surfaceHeight.heightQ12,(factoryModelRuntime->classLinkState).classState7C,
                               (factoryModelRuntime->classLinkState).classState78,markerDefinition,
                               worldRuntime);
-          if (!createdEffect.failed) {
-            g_InGameOwnedEntityTransientEffectMarkers[indexOrCount] = createdEffect.effectRuntime;
+          if (createdEffect != NULL) {
+            g_InGameOwnedEntityTransientEffectMarkers[indexOrCount] = createdEffect;
             indexOrCount = indexOrCount + 1;
-            (((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode)->tintArgb = 0xffffffff;
+            createdEffect->modelNodeOrSavedOffset.modelNode->tintArgb = 0xffffffff;
             g_InGameOwnedEntityTransientEffectMarkerCount =
                  g_InGameOwnedEntityTransientEffectMarkerCount + 1;
             if (OVERLAY_OWNED_MARKER_CAPACITY - 1 < indexOrCount) break;
@@ -977,7 +977,7 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
   int remainingMarkers;
   int *markerCursor;
   HeightSampleResult surfaceHeight;
-  EffectCreateResult createdEffect;
+  EffectRuntimeSlot *createdEffect;
   
   markerSlotIndex = g_InGameCommandTargetTransientEffectMarkerCount;
   if ((worldXQ12 != ((ModelRuntimeNode *)sourceWorldNode)->worldTransform.translation.x) ||
@@ -998,8 +998,12 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
     createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,FIXED_ANGLE16_QUARTER_TURN,0,
                        surfaceHeight.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
-    g_InGameCommandTargetTransientEffectMarkers[markerSlotIndex] = createdEffect.effectRuntime;
-    markerModelNode = ((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode;
+    if (createdEffect == NULL) {
+      /* Original quirk: no failure check; the original stores and dereferences its failure value */
+      createdEffect = (EffectRuntimeSlot *)FATAL_ERROR_GENERAL_FAILURE;
+    }
+    g_InGameCommandTargetTransientEffectMarkers[markerSlotIndex] = createdEffect;
+    markerModelNode = createdEffect->modelNodeOrSavedOffset.modelNode;
     g_InGameCommandTargetTransientEffectMarkerCount++;
     boundingRadius = markerModelNode->subtreeBoundingRadiusQ12;
     markerModelNode->tintArgb = 0xffffffff;

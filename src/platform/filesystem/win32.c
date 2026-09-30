@@ -15,11 +15,14 @@
    Lists a directory (or a drive's volume label) as a compact string table: the fixed-size name records of
    g_FileSystemEnumerateDirectoryOrVolumeEntries are collected in the largest free arena block, then copied
    into a second largest block as an array of entryCount UTF-16 string pointers followed by the strings, which
-   is shrunk to its used size. Returns table (EAX) and entry count (ECX) with CF clear; an empty listing
-   returns NULL and 0. No caller in the recovered code (reached only through the function map).
+   is shrunk to its used size. Returns true with the table in *outTable and the entry count in *outEntryCount;
+   an empty listing stores NULL and 0. Returns false (outputs untouched) when an arena block cannot be had, the
+   enumeration fails or the strings do not fit; the original left only scratch values in EAX/ECX then. No caller
+   in the recovered code (reached only through the function map).
 */
-EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
-          (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText)
+bool FileSystem_BuildEnumerationStringTable
+          (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText,
+          uint16_t ***outTable,uint32_t *outEntryCount)
 
 {
   short codeUnit;
@@ -35,11 +38,8 @@ EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
   uint8_t *stringCursor;
   bool capacityFlag;
   ArenaShrinkResult shrinkResult;
-  ArenaFreeResult freeResult;
   ArenaLargestAllocResult largestBlock;
   DirectoryEnumerationResult enumerationResult;
-  EnumerationStringTableResult successResult;
-  EnumerationStringTableResult failureResult;
 
   largestBlock = g_MemoryApi.allocLargestFreeBlock();
   capacityBytesOrError = largestBlock.blockSizeOrSentinel;
@@ -54,10 +54,9 @@ EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
     if (!enumerationResult.failed) {
       if (foundEntryCount == 0) {
         g_MemoryApi.free(recordBuffer);
-        successResult.tableOrError = 0;
-        successResult.entryCountOrScratch = 0;
-        successResult.failed = false;
-        return successResult;
+        *outTable = NULL;
+        *outEntryCount = 0;
+        return true;
       }
       /* give the unused tail of the record buffer back before taking the next largest block */
       capacityBytesOrError = foundEntryCount * recordSizeBytes;
@@ -94,25 +93,18 @@ EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
             } while (remainingEntries != 0);
             g_MemoryApi.shrinkInPlace(stringCursor - tableOrError,tableOrError);
             g_MemoryApi.free(recordBuffer);
-            successResult.entryCountOrScratch = foundEntryCount;
-            successResult.tableOrError = (uint32_t)tableOrError;
-            successResult.failed = false;
-            return successResult;
+            *outEntryCount = foundEntryCount;
+            *outTable = (uint16_t **)tableOrError;
+            return true;
           }
 freeTable:
-          /* the original returns free's EAX here, not an error code */
-          freeResult = g_MemoryApi.free(tableOrError);
-          tableOrError = (uint8_t *)freeResult.valueOrError;
+          g_MemoryApi.free(tableOrError);
         }
       }
     }
     g_MemoryApi.free(recordBuffer);
-    recordBuffer = tableOrError;
   }
-  failureResult.entryCountOrScratch = capacityBytesOrError;
-  failureResult.tableOrError = (uint32_t)recordBuffer;
-  failureResult.failed = true;
-  return failureResult;
+  return false;
 }
 
 /* Address: 0x00575CB0.
@@ -386,155 +378,143 @@ bool Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
 
 /* Address: 0x0040EF50.
    Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as
-   given. Returns the buffer with CF clear, or CF set with the open/size/read error, or
-   FATAL_ERROR_OUT_OF_MEMORY with the file size left in g_FatalErrorDetail1Utf16. No caller in the recovered
-   code (reached only through the function map).
+   given. Returns true with the buffer in *outBuffer, or false with the open/size/read error in *outError
+   (0 when the size query failed), or FATAL_ERROR_OUT_OF_MEMORY with the file size left in
+   g_FatalErrorDetail1Utf16. *outBuffer is only written on success, *outError only on failure. No caller in
+   the recovered code (reached only through the function map).
 */
-FileLoadResult FileSystem_LoadWholeFile(uint16_t *pathUtf16)
+bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
   void *handle;
-  void *byteCountOrError;
+  uint32_t byteCountOrError;
   FileSystemOpenResult openResult;
   FileSystemSizeResult sizeResult;
   ArenaAllocResult allocResult;
   FileSystemReadResult readResult;
-  FileLoadResult failureResult;
-  
+
   /* first try the path relative to the executable directory */
   WidePath_CombineDirectoryAndLeaf
             (g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              g_ExecutableDirectoryUtf16);
   openResult = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16);
-  handle = (void *)openResult.handleOrError;
   if (openResult.failed) {
     openResult = g_FileSystemOpen(0,pathUtf16);
-    handle = (void *)openResult.handleOrError;
     if (openResult.failed) {
-      failureResult.failed = true;
-      failureResult.bufferOrError = handle; /* the open error code */
-      return failureResult;
+      *outError = openResult.handleOrError; /* the open error code */
+      return false;
     }
   }
+  handle = (void *)openResult.handleOrError;
   sizeResult = g_FileSystemGetSize(handle);
-  byteCountOrError = (void *)sizeResult.sizeOrError;
+  byteCountOrError = sizeResult.sizeOrError;
   if (!sizeResult.failed) {
-    allocResult = g_MemoryApi.alloc((uint32_t)byteCountOrError);
+    allocResult = g_MemoryApi.alloc(byteCountOrError);
     if (allocResult.failed) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)byteCountOrError,g_FatalErrorDetail1Utf16);
-      byteCountOrError = (void *)FATAL_ERROR_OUT_OF_MEMORY;
+      byteCountOrError = FATAL_ERROR_OUT_OF_MEMORY;
     }
     else {
       readResult = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,(void *)allocResult.payloadOrError,
                                          handle);
-      byteCountOrError = (void *)readResult.valueOrError;
+      byteCountOrError = readResult.valueOrError;
       if (!readResult.failed) {
         g_FileSystemClose(handle);
-        /* success: the buffer with CF clear */
-        return THANDOR_BITCAST(uint64_t, FileLoadResult, (THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX));
+        *outBuffer = (void *)allocResult.payloadOrError;
+        return true;
       }
       g_MemoryApi.free((void *)allocResult.payloadOrError);
     }
   }
   g_FileSystemClose(handle);
-  failureResult.failed = true;
-  failureResult.bufferOrError = byteCountOrError;
-  return failureResult;
+  *outError = byteCountOrError;
+  return false;
 }
 
 /* Address: 0x0040F120.
    Same whole-file load as FileSystem_LoadWholeFile (same search order and errors); the only difference in
-   the original is that ECX is not preserved: it returns the file size there. No caller in the recovered
-   code (reached only through the function map).
+   the original is that ECX is not preserved: it returns the file size there. Same C interface too: true
+   with the buffer in *outBuffer, or false with the error in *outError. No caller in the recovered code
+   (reached only through the function map).
 */
-FileLoadResult FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16)
+bool FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
   void *handle;
-  void *byteCountOrError;
+  uint32_t byteCountOrError;
   FileSystemOpenResult openResult;
   FileSystemSizeResult sizeResult;
   ArenaAllocResult allocResult;
   FileSystemReadResult readResult;
-  FileLoadResult failureResult;
-  
+
   /* first try the path relative to the executable directory */
   WidePath_CombineDirectoryAndLeaf
             (g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              g_ExecutableDirectoryUtf16);
   openResult = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16);
-  handle = (void *)openResult.handleOrError;
   if (openResult.failed) {
     openResult = g_FileSystemOpen(0,pathUtf16);
-    handle = (void *)openResult.handleOrError;
     if (openResult.failed) {
-      failureResult.failed = true;
-      failureResult.bufferOrError = handle; /* the open error code */
-      return failureResult;
+      *outError = openResult.handleOrError; /* the open error code */
+      return false;
     }
   }
+  handle = (void *)openResult.handleOrError;
   sizeResult = g_FileSystemGetSize(handle);
-  byteCountOrError = (void *)sizeResult.sizeOrError;
+  byteCountOrError = sizeResult.sizeOrError;
   if (!sizeResult.failed) {
-    allocResult = g_MemoryApi.alloc((uint32_t)byteCountOrError);
+    allocResult = g_MemoryApi.alloc(byteCountOrError);
     if (allocResult.failed) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)byteCountOrError,g_FatalErrorDetail1Utf16);
-      byteCountOrError = (void *)FATAL_ERROR_OUT_OF_MEMORY;
+      byteCountOrError = FATAL_ERROR_OUT_OF_MEMORY;
     }
     else {
       readResult = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,(void *)allocResult.payloadOrError,
                                          handle);
-      byteCountOrError = (void *)readResult.valueOrError;
+      byteCountOrError = readResult.valueOrError;
       if (!readResult.failed) {
         g_FileSystemClose(handle);
-        /* success: the buffer with CF clear */
-        return THANDOR_BITCAST(uint64_t, FileLoadResult, (THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX));
+        *outBuffer = (void *)allocResult.payloadOrError;
+        return true;
       }
       g_MemoryApi.free((void *)allocResult.payloadOrError);
     }
   }
   g_FileSystemClose(handle);
-  failureResult.failed = true;
-  failureResult.bufferOrError = byteCountOrError;
-  return failureResult;
+  *outError = byteCountOrError;
+  return false;
 }
 
 /* Address: 0x0040F1F0.
    Writes a whole buffer to a file, creating or truncating it with exclusive access. A failed write
-   leaves no partial file behind: it is closed and deleted, and the write error is returned (CF set);
-   success returns 0 with CF clear.
+   leaves no partial file behind: it is closed and deleted. Returns 0 on success, otherwise the open or
+   write error (FATAL_ERROR_FILE_ACCESS_FAILED, FATAL_ERROR_FILE_WRITE_FAILED or
+   FATAL_ERROR_FILE_WRITE_INCOMPLETE, never 0).
 */
-StatusResult FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path)
+uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path)
 
 {
-  void *handleOrError;
-  void *writeError;
+  void *handle;
+  uint32_t writeError;
   FileSystemOpenResult openResult;
   FileSystemWriteResult writeResult;
-  StatusResult successResult;
-  StatusResult failureResult;
 
   openResult = g_FileSystemOpen
                     (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path);
-  handleOrError = (void *)openResult.handleOrError;
-  if (!openResult.failed) {
-    writeResult = g_FileSystemWriteExactOrFlush(byteCount,source,handleOrError);
-    writeError = (void *)writeResult.valueOrError;
-    if (!writeResult.failed) {
-      g_FileSystemClose(handleOrError);
-      successResult.valueOrError = 0;
-      successResult.failed = false;
-      return successResult;
-    }
-    g_FileSystemClose(handleOrError);
-    handleOrError = writeError;
-    g_FileSystemDelete(1,path); /* the first argument is unused by Win32File_Delete */
+  if (openResult.failed) {
+    return openResult.handleOrError; /* the open error code */
   }
-  failureResult.failed = true;
-  failureResult.valueOrError = (uint32_t)handleOrError;
-  return failureResult;
+  handle = (void *)openResult.handleOrError;
+  writeResult = g_FileSystemWriteExactOrFlush(byteCount,source,handle);
+  writeError = writeResult.valueOrError;
+  g_FileSystemClose(handle);
+  if (!writeResult.failed) {
+    return 0;
+  }
+  g_FileSystemDelete(1,path); /* the first argument is unused by Win32File_Delete */
+  return writeError;
 }
 
 

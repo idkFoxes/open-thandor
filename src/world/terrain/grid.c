@@ -2594,8 +2594,9 @@ StatusResult FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDword
   uint8_t *occupancyBytes;
   ArenaAllocResult allocResult;
   StatusResult writeStatus;
+  uint32_t writeError;
   ArenaFreeResult freeResult;
-  
+
   imageSizeOrDwordsLeft = sourceImageDwords[1];
   allocResult = g_MemoryApi.alloc(imageSizeOrDwordsLeft);
   fieldGridImageCopy = (FieldGridAsset *)allocResult.payloadOrError;
@@ -2645,14 +2646,14 @@ StatusResult FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDword
       fieldGridCellSaveView++;
       cellsRemaining--;
     } while (cellsRemaining != 0);
-    writeStatus = FileSystem_WriteBufferToPath
+    writeError = FileSystem_WriteBufferToPath
                       ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                        (uint16_t *)&g_LevelResourcePathScratchUtf16);
-    if (!writeStatus.failed) {
+    if (writeError == 0) {
       freeResult = g_MemoryApi.free(fieldGridImageCopy);
       return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(ArenaFreeResult, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
-    writeErrorValue = (FieldGridAsset *)writeStatus.valueOrError;
+    writeErrorValue = (FieldGridAsset *)writeError;
     g_MemoryApi.free(fieldGridImageCopy);
     fieldGridImageCopy = writeErrorValue;
   }
