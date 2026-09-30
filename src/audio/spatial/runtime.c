@@ -121,10 +121,11 @@ void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDi
         azimuthOrRightGainQ15 = volumeOrLeftGainQ15;
       }
       else {
-        /* k_SpatialSoundStereoCosineSecondHalfBaseBias lies 0x8000 * 8 bytes before g_FixedCosQ28, so this
-           reads g_FixedCosQ28[(azimuth - FIXED_ANGLE16_HALF_TURN) * 2] */
+        /* the original reads [azimuth * 8 + 0x4046A0] (k_SpatialSoundStereoCosineSecondHalfBaseBias, the folded
+           address g_FixedCosQ28 - 0x8000 * 8); written against g_FixedCosQ28 itself, because with generated
+           image data 0x4046A0 lies in another object and would not reach the cosine table */
         scaledProduct = (int64_t)
-                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrRightGainQ15 * 8) + Q28_ONE) *
+                (g_FixedCosQ28[(azimuthOrRightGainQ15 - FIXED_ANGLE16_HALF_TURN) * 2] + Q28_ONE) *
                 (int64_t)(int)volumeOrLeftGainQ15;
         azimuthOrRightGainQ15 = FIXED_PRODUCT_SHR(scaledProduct,29);
         distanceOrPannedGainQ15 = volumeOrLeftGainQ15;
@@ -191,10 +192,11 @@ void SpatialSound_UpdateDesiredPositionedGains
         azimuthOrLeftGainQ15 = volumeOrRightGainQ15;
       }
       else {
-        /* k_SpatialSoundStereoCosineSecondHalfBaseBias lies 0x8000 * 8 bytes before g_FixedCosQ28, so this
-           reads g_FixedCosQ28[(azimuth - FIXED_ANGLE16_HALF_TURN) * 2] */
+        /* the original reads [azimuth * 8 + 0x4046A0] (k_SpatialSoundStereoCosineSecondHalfBaseBias, the folded
+           address g_FixedCosQ28 - 0x8000 * 8); written against g_FixedCosQ28 itself, because with generated
+           image data 0x4046A0 lies in another object and would not reach the cosine table */
         scaledProduct = (int64_t)
-                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + Q28_ONE) *
+                (g_FixedCosQ28[(azimuthOrLeftGainQ15 - FIXED_ANGLE16_HALF_TURN) * 2] + Q28_ONE) *
                 (int64_t)(int)volumeOrRightGainQ15;
         azimuthOrLeftGainQ15 = FIXED_PRODUCT_SHR(scaledProduct,29);
         distanceOrPannedGainQ15 = volumeOrRightGainQ15;
