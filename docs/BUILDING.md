@@ -63,6 +63,15 @@ game (ten at a time, each in its own linked copy of the game directory), sets th
 "stark" and the game speed to its maximum, lets each run a minute and reports per mission whether it loaded,
 ended early, hung or crashed; screenshots and a contact sheet per mission go to `<game dir>/soak/`.
 
+Determinism test (the safety net for changes that alter the machine code): `python tools/test/run_determinism.py
+<game dir> --reference tools/test/determinism_reference` generates three test levels (tools/test/make_arena.py:
+flat map, two players), plays each for 1200 simulation steps with a fixed random seed and compares a hash of the
+game state after every step (test aid `OPEN_THANDOR_STATEHASH`, platform/debug/statehash.c) with the stored
+reference. Scenarios: `battle` (every unit and building type on both sides, move orders at steps 100 and 500),
+`turrets` (every armed static defence with power plants), `production` (factories, labs, storage; units queued
+and research started at step 20). Without `--reference` each scenario runs twice in parallel and the runs must
+match each other; `--detail <tick>` writes every army's values at the first differing tick. After an intended
+behaviour change, save new references with `--save-reference tools/test/determinism_reference`.
 `python tools/test/run_campaign_chain.py <game dir> pairs` plays into each level that needs the previous
 level's units (tutorial 2 and 3, Hansolo 9, 13, 23) through the real level change and checks that units
 arrive; `... campaigns [--only tutorial,luke]` wins every level of each campaign in turn up to the campaign
