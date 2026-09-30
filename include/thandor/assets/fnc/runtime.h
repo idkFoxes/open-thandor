@@ -18,9 +18,9 @@
 uint32_t FncModule_GetBindingMode(FncModuleHeader *module);
 
 /* 0x0041A640 */
-FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule);
+bool FncModule_LoadAndRelocate(FncModuleHeader *serializedModule,FncModuleHeader **outModule,uint32_t *outError);
 
 /* 0x0041A710 */
-StatusResult FncModule_GetExportByIndex(FncExportIndex exportIndex,FncModuleHeader *module);
+uint32_t FncModule_GetExportByIndex(FncExportIndex exportIndex,FncModuleHeader *module,void **outExport);
 
 #endif /* THANDOR_ASSETS_FNC_RUNTIME_H */

@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0040E2E0 */
-StatusResult InGameSaveGame_CreatePackage(void *packagePath);
+bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
 
 /* 0x0040F000 */
 ResourceLoadResult Resource_Load(uint16_t *path);

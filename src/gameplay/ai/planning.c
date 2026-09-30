@@ -411,7 +411,6 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
   AiRuntimeWorkspaceEntry *requestEntry;
   bool hasUnassignedEntry;
   ArmyAssetLookupResult armyAssetLookup;
-  ModelDefinitionResult linkedDefinitionLookup;
   
   g_AiConstructionPendingAssetConsumedCount = 0;
   remainingRequests = g_AiWorkspace04Count;
@@ -442,7 +441,7 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
       if (!armyAssetLookup.notFound) {
         /* The original then compares the selected definition's +0x278 word with 1 (ignoring the selector's
            CF), but both outcomes call the same placement handler. */
-        linkedDefinitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+        (void)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                           (factionIndex,armyAssetLookup.recordOrError->rootNodeOffsetOrPointer);
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
@@ -1595,7 +1594,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   FieldGridCell **gridCellCursor;
   bool regionUnreachable;
   ArmyAssetLookupResult armyAssetLookup;
-  ModelDefinitionResult modelDefinitionLookup;
+  ModelDefinitionRecordPrefix *modelDefinition;
   PlacementDispatchResult placementResult;
   ArmyRuntimeCreateResult createdInstance;
   FieldGridCell *bestCell;
@@ -1604,12 +1603,12 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   armyAssetLookup = ArmyAssetRegistry_FindById(armyAssetId);
   if ((!armyAssetLookup.notFound) && (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0)
      ) {
-    modelDefinitionLookup = ModelDefinitionRegistry_FindByIdWithError
+    modelDefinition = ModelDefinitionRegistry_FindById
                        (((AiLinkedDefinitionListView *)(armyAssetLookup.recordOrError)->rootNodeOffsetOrPointer)->
                         definitionIds[0]);
-    if (!modelDefinitionLookup.notFound) {
+    if (modelDefinition != NULL) {
       radiusMetric =
-           ((ModelDefinition *)modelDefinitionLookup.modelDefinition)->footprintRadius;
+           ((ModelDefinition *)modelDefinition)->footprintRadius;
       if (g_AiWorkspace10Count != 0) {
         bestScore = INT32_MAX;
         remainingCells = g_AiWorkspace10Count;
@@ -1771,7 +1770,6 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
   ModelDefinitionResolveView *selectedChildModelDefinition1;
   uint32_t childCountOrWeightedDamage;
   int weightedDefinitionScore;
-  ModelDefinitionResult definitionLookup;
   AiLinkedDefinitionListView *linkedDefinitionList;
   int secondChildScaleDivisor30;
   ShotDefinition *selectedShotDefinition;
@@ -1779,12 +1777,9 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
   int definitionScaleDivisor30;
   
   linkedDefinitionList = (AiLinkedDefinitionListView *)armyAssetRecord->rootNodeOffsetOrPointer;
-  definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+  /* the original tests the selector's CF after each of the three selections below, but it is always clear */
+  selectedModelDefinition = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                     (factionIndex,(ModelLinkedDefinitionListAddress32)linkedDefinitionList);
-  selectedModelDefinition = (ModelDefinitionResolveView *)definitionLookup.modelDefinition;
-  if (definitionLookup.notFound) {
-    return 0;
-  }
   weightedDefinitionScore = scoreWeights->baseScore;
   if (selectedModelDefinition->accelerationPerTick != 0) {
     weightedDefinitionScore = weightedDefinitionScore + scoreWeights->nonzeroDefinition18Bonus;
@@ -1800,12 +1795,8 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
             (int64_t)
             (&g_TechnologyCategoryMaximum0)[selectedModelDefinition->targetClassIndex])) * 8;
   if (childCountOrWeightedDamage != 0) {
-    definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+    selectedChildModelDefinition0 = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                       (factionIndex,linkedDefinitionList->childList0Address);
-    selectedChildModelDefinition0 = (ModelDefinitionResolveView *)definitionLookup.modelDefinition;
-    if (definitionLookup.notFound) {
-      return 0;
-    }
     if (selectedChildModelDefinition0->reloadTicks != 0) {
       selectedShotDefinition = selectedChildModelDefinition0->shotDefinitionReference;
       definitionScaleDivisor30 = selectedChildModelDefinition0->reloadTicks;
@@ -1887,12 +1878,8 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
       }
     }
     if (1 < childCountOrWeightedDamage) {
-      definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+      selectedChildModelDefinition1 = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                         (factionIndex,linkedDefinitionList->childList1Address);
-      selectedChildModelDefinition1 = (ModelDefinitionResolveView *)definitionLookup.modelDefinition;
-      if (definitionLookup.notFound) {
-        return 0;
-      }
       if (selectedChildModelDefinition1->reloadTicks != 0) {
         secondChildShotDefinition = selectedChildModelDefinition1->shotDefinitionReference;
         secondChildScaleDivisor30 = selectedChildModelDefinition1->reloadTicks;

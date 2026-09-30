@@ -287,7 +287,8 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
   StatusResult failureResult;
   PackageLoadResult loadResult;
   SpriteRegisterResult spriteRegisterResult;
-  EffectDefinitionResult effectLookup;
+  uint32_t effectLookupError;
+  EffectDefinition *resolvedEffect;
   StatusResult successResult;
 
   registrySlotCursor = g_ShotDefinitionRegistry;
@@ -318,45 +319,40 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
           Resource_Release(valueOrError);
         }
         /* the effect pointer fields hold effect definition ids until they are resolved here */
-        effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                          ((PckEffectDefinitionIdCatalog)definition->launchEffectDefinition);
-        valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-        if (effectLookup.notFound) goto ReturnFailure;
-        definition->launchEffectDefinition = (EffectDefinition *)valueOrError;
-        effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                          ((PckEffectDefinitionIdCatalog)definition->secondaryEffectDefinition);
-        valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-        if (effectLookup.notFound) goto ReturnFailure;
-        definition->secondaryEffectDefinition = (EffectDefinition *)valueOrError;
-        effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                          ((PckEffectDefinitionIdCatalog)definition->primaryEffectDefinition);
-        valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-        if (effectLookup.notFound) goto ReturnFailure;
-        definition->primaryEffectDefinition = (EffectDefinition *)valueOrError;
+        effectLookupError = EffectDefinitionRegistry_FindById
+                          ((PckEffectDefinitionIdCatalog)definition->launchEffectDefinition,&resolvedEffect);
+        if (effectLookupError != 0) goto ReturnEffectLookupFailure;
+        definition->launchEffectDefinition = resolvedEffect;
+        effectLookupError = EffectDefinitionRegistry_FindById
+                          ((PckEffectDefinitionIdCatalog)definition->secondaryEffectDefinition,&resolvedEffect);
+        if (effectLookupError != 0) goto ReturnEffectLookupFailure;
+        definition->secondaryEffectDefinition = resolvedEffect;
+        effectLookupError = EffectDefinitionRegistry_FindById
+                          ((PckEffectDefinitionIdCatalog)definition->primaryEffectDefinition,&resolvedEffect);
+        if (effectLookupError != 0) goto ReturnEffectLookupFailure;
+        definition->primaryEffectDefinition = resolvedEffect;
         slotsRemainingOrIndex = 0;
         for (referencesRemaining = SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT; referencesRemaining != 0;
              referencesRemaining--) {
-          effectLookup = EffectDefinitionRegistry_FindByIdWithError
+          effectLookupError = EffectDefinitionRegistry_FindById
                             ((PckEffectDefinitionIdCatalog)
-                             definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex]);
-          valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-          if (effectLookup.notFound) goto ReturnFailure;
-          definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex] =
-               (EffectDefinition *)valueOrError;
+                             definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex],&resolvedEffect);
+          if (effectLookupError != 0) goto ReturnEffectLookupFailure;
+          definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex] = resolvedEffect;
           slotsRemainingOrIndex++;
         }
         slotsRemainingOrIndex = 0;
         for (referencesRemaining = SHOT_TARGET_CLASS_IMPACT_COUNT; referencesRemaining != 0;
              referencesRemaining--) {
-          effectLookup = EffectDefinitionRegistry_FindByIdWithError
+          effectLookupError = EffectDefinitionRegistry_FindById
                             ((PckEffectDefinitionIdCatalog)
-                             definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex]);
-          valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-          if (effectLookup.notFound) goto ReturnFailure;
-          definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex] =
-               (EffectDefinition *)valueOrError;
+                             definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex],&resolvedEffect);
+          if (effectLookupError != 0) goto ReturnEffectLookupFailure;
+          definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex] = resolvedEffect;
           slotsRemainingOrIndex++;
         }
+        /* success hands back the last resolved effect definition, as the original's EAX did */
+        valueOrError = (ShotDefinition *)resolvedEffect;
         successResult.failed = false;
         successResult.valueOrError = (uint32_t)valueOrError;
         return successResult;
@@ -373,6 +369,9 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     valueOrError = (ShotDefinition *)FATAL_ERROR_SHOT_ID_DUPLICATE;
   }
+  goto ReturnFailure;
+ReturnEffectLookupFailure:
+  valueOrError = (ShotDefinition *)effectLookupError;
 ReturnFailure:
   failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)valueOrError;

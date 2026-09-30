@@ -192,7 +192,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   FactionRuntimeIndex ownerFactionIndex;
   ShotRuntimeSlot *shotRuntime;
   ModelRuntimeNode *modelNodeRuntime;
-  ModelLookupEntryResult emitterLookup;
+  ModelPackedPointRecord *emitterRecord;
   ModelRaycastResult armyRaycast;
   TerrainRaycastResult surfaceRaycast;
   FixedVectorAngles targetAngles;
@@ -236,13 +236,12 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
     if (shotRuntime->ownerAndTrajectory.secondaryEffectCountdownTicks == 0) {
       shotRuntime->ownerAndTrajectory.secondaryEffectCountdownTicks =
            shotDefinition->secondaryEffectIntervalTicks;
-      emitterLookup = ModelLookupTable_ContainsPackedKey
-                         (1,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource);
-      if (!emitterLookup.notFound) {
+      if (ModelLookupTable_FindPackedPoint
+            (1,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource,&emitterRecord)) {
         effectDefinition = shotDefinition->secondaryEffectDefinition;
         effectWorldRuntime = worldRuntime;
         emitterWorldPoint = ModelNodeRuntime_TransformLocalPointRegs
-                           (emitterLookup.entry,(ModelRuntimeNode *)modelNode);
+                           (emitterRecord,(ModelRuntimeNode *)modelNode);
         emitterWorldYQ12 = emitterWorldPoint.yQ12;
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,

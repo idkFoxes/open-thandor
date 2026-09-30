@@ -442,8 +442,8 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   uint32_t *dwordCursor;
   bool testResult;
   ArmyAssetLookupResult assetLookup;
-  ModelDefinitionResult definitionLookup;
-  ModelLookupPayloadResult lookupPayload;
+  ModelDefinitionRecordPrefix *selectedDefinition;
+  GraphicsFixedVec3 loweredChildPosition;
   Q12 translationStep;
   InGameNotificationMovieId notificationMovieId;
   ModelDefinitionLinkedChildStateView *linkedChildDefinition;
@@ -561,9 +561,9 @@ StoreCompletedAssetId:
           *dwordCursor = *dwordCursor + 1;
           if (factionIndexOrLimit == worldRuntime->activeFactionRuntimeIndex) {
             assetLookup = ArmyAssetRegistry_FindById(secondaryAssetId);
-            definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+            selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                                (ownerArmyRuntime->factionIndex,(assetLookup.recordOrError)->rootNodeOffsetOrPointer);
-            linkedModelDefinition = (ModelDefinition *)definitionLookup.modelDefinition;
+            linkedModelDefinition = (ModelDefinition *)selectedDefinition;
             linkedModelDefinition->builtCount = linkedModelDefinition->builtCount + 1;
             notificationMovieId = linkedModelDefinition->firstBuiltNotificationMovieId;
             if (linkedModelDefinition->builtCount != 1) {
@@ -620,14 +620,15 @@ StoreCompletedAssetId:
     break;
   case ARMY_PAD_HANGAR_LOWERING:
     translationStep = linkedChildDefinition->linkedChildTranslationStepQ12PerTick;
-    lookupPayload = ModelLookupTable_FindPackedKeyEntryRegs
-                       (0,1,(modelNodeRuntime->modelPayload).modelResource);
+    /* (0, 0, 0) when the model has no such point; the result is not checked */
+    ModelLookupTable_GetPackedPointPosition
+              (0,1,(modelNodeRuntime->modelPayload).modelResource,&loweredChildPosition);
     childNode = modelNodeRuntime->childNodes[0];
     childTranslationZ = &(childNode->modelPayload).localTranslationZQ12;
     *childTranslationZ = *childTranslationZ - translationStep * g_InGameSimulationStepTicks;
-    if ((childNode->modelPayload).localTranslationZQ12 < (int)lookupPayload.payload12) {
+    if ((childNode->modelPayload).localTranslationZQ12 < (int)loweredChildPosition.z) {
       modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_CLOSING;
-      (childNode->modelPayload).localTranslationZQ12 = lookupPayload.payload12;
+      (childNode->modelPayload).localTranslationZQ12 = loweredChildPosition.z;
     }
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
     if (modelRuntime->linkedChildTransitionState == ARMY_PAD_HANGAR_CLOSING) {
@@ -790,7 +791,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
   uint32_t tickOrSoundIndex;
   uint32_t *dwordCursor;
   bool cellMasked;
-  ModelLookupEntryResult lookupEntry;
+  ModelPackedPointRecord *packedPoint;
   ArmyRuntimeCreateResult createResult;
   ModelWorldPoint localPoint;
   InGameNotificationMovieId notificationMovieId;
@@ -798,9 +799,8 @@ void ArmyRuntimeClass_UpdateUnitFactory
   
   rootNode = modelRuntime->rootModelNode;
   if (((modelRuntime->classState).classStateBC & 1) != 0) {
-    lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(rootNode->modelPayload).modelResource);
-    if (!lookupEntry.notFound) {
-      localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
+    if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
+      localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
       (modelRuntime->classLinkState).classState78 = localPoint.xQ12;
       (modelRuntime->classLinkState).classState7C = localPoint.yQ12;
       exitPointPendingFlags = &(modelRuntime->classState).classStateBC;
@@ -873,14 +873,12 @@ void ArmyRuntimeClass_UpdateUnitFactory
       tickOrSoundIndex = (modelRuntime->classLinkState).classState64;
       ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,modelRuntime);
       if ((modelRuntime->classLinkState).classState68 <= tickOrSoundIndex) {
-        lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(rootNode->modelPayload).modelResource);
-        if (!lookupEntry.notFound) {
-          localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
+        if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
+          localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
           secondaryValue = localPoint.yQ12;
           stateValue = localPoint.xQ12;
-          lookupEntry = ModelLookupTable_ContainsPackedKey(0,5,(rootNode->modelPayload).modelResource);
-          if (!lookupEntry.notFound) {
-            localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
+          if (ModelLookupTable_FindPackedPoint(0,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
+            localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
             stateValue = FixedMath_Atan2Angle16(secondaryValue - localPoint.yQ12,stateValue - localPoint.xQ12);
             linkedArmyRuntime = modelRuntime->ownerArmyRuntime;
             createResult = ArmyRuntime_CreateInstanceFromAsset
@@ -953,10 +951,9 @@ void ArmyRuntimeClass_UpdateUnitFactory
     if (ARMY_DOOR_TEXTURE_OPEN_V - 1 < rootNode->primaryTextureOffsetV) {
       rootNode->primaryTextureOffsetV = ARMY_DOOR_TEXTURE_OPEN_V;
       (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_WAITING_EXIT;
-      lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(rootNode->modelPayload).modelResource);
-      if (!lookupEntry.notFound) {
+      if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
         linkedArmyRuntime = (modelRuntime->classLinkState).armyLinkOrState.armyRuntime;
-        localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
+        localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
         targetWorldXQ12 = localPoint.yQ12;
         linkedModelRuntime = (linkedArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
         ArmyRuntime_StartMoveCommandWithAuxiliaryValues
@@ -1036,7 +1033,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
   uint32_t tickOrCount;
   uint32_t *dwordCursor;
   ArmyAssetLookupResult assetLookup;
-  ModelDefinitionResult definitionLookup;
+  ModelDefinitionRecordPrefix *selectedDefinition;
   InGameNotificationMovieId notificationMovieId;
   ArmyRuntimeSlot *ownerArmyRuntime;
   ModelRuntimeNode *rootNode;
@@ -1122,9 +1119,9 @@ void ArmyRuntimeClass_UpdateStructureFactory
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {
               candidateValue = (assetLookup.recordOrError)->rootNodeOffsetOrPointer;
               InGameArmyStock_RebuildGrid((UiNodeBase *)worldRuntime);
-              definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+              selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                                  (ownerArmyRuntime->factionIndex,candidateValue);
-              linkedModelDefinition = (ModelDefinition *)definitionLookup.modelDefinition;
+              linkedModelDefinition = (ModelDefinition *)selectedDefinition;
               rootNode = modelRuntime->rootModelNode;
               candidateValue = (worldRuntime->motion).pitchAngle;
               headingAngle = (rootNode->modelPayload).worldRotationAngle2;
@@ -1219,7 +1216,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
   int axisDelta;
   ModelRuntimeNode *scanNode;
   bool proximityHit;
-  EffectDefinitionResult effectLookup;
+  EffectDefinition *completionEffect;
   DamageAmount32 damageAmount;
   int blockingCount;
   int nextBlockingCount;
@@ -1306,10 +1303,10 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
       scanNode = scanModelRuntime->rootModelNodeOrSavedOffset.modelNode;
       (scanModelRuntime->classState).stateFlags =
            (scanModelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
-      effectLookup = EffectDefinitionRegistry_FindByIdWithError
+      if (EffectDefinitionRegistry_FindById
                         ((PckEffectDefinitionIdCatalog)
-                         scanModelRuntime->definitionOrSavedId.runtimeDefinition->classParameterC4);
-      if (!effectLookup.notFound) {
+                         scanModelRuntime->definitionOrSavedId.runtimeDefinition->classParameterC4,
+                         &completionEffect) == 0) {
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL,
                    THANDOR_BITCAST(ArmyRuntimeSlot *, EffectRuntimeOwnerReference,
@@ -1319,7 +1316,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
                    (scanNode->modelPayload).worldRotationAngle0,
                    (scanNode->worldTransform).translation.z,
                    (scanNode->worldTransform).translation.y,
-                   (scanNode->worldTransform).translation.x,effectLookup.definitionOrError,worldRuntime);
+                   (scanNode->worldTransform).translation.x,completionEffect,worldRuntime);
       }
     }
   }
@@ -3283,7 +3280,7 @@ bool ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime
   uint32_t candidateRadius;
   ModelRuntimeNode *modelNodeRuntime;
   uint32_t anchorDistance;
-  ModelLookupEntryResult lookupEntry;
+  ModelPackedPointRecord *anchorRecord;
   ModelWorldPoint anchorPoint;
   ModelRuntimeNode *candidateNode;
 
@@ -3292,9 +3289,8 @@ bool ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime
     candidateRadius = candidateModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadiusCopy;
     modelNodeRuntime = sourceModelRuntime->rootModelNodeOrSavedOffset.modelNode;
     candidateNode = candidateModelRuntime->rootModelNodeOrSavedOffset.modelNode;
-    lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource);
-    if (!lookupEntry.notFound) {
-      anchorPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
+    if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
+      anchorPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorRecord,modelNodeRuntime);
       anchorDistance = FixedMath_Length2(anchorPoint.yQ12 - (candidateNode->worldTransform).translation.y,
                                 anchorPoint.xQ12 - (candidateNode->worldTransform).translation.x);
       if ((int)anchorDistance <= (int)(candidateRadius + 3 * Q12_ONE / 4)) {
@@ -3369,7 +3365,7 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   uint32_t slotBit;
   ArmyRuntimeLinkedChildMaskSlotView *slotCursor;
   ArmyAssetLookupResult assetLookup;
-  ModelDefinitionResult definitionLookup;
+  ModelDefinitionRecordPrefix *selectedDefinition;
   
   metricSum = 0;
   factionIndex = (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
@@ -3381,9 +3377,9 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
         0) {
       assetLookup = ArmyAssetRegistry_FindById(slotCursor->movementTarget0Q12);
       if (!assetLookup.notFound) {
-        definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+        selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                           (factionIndex,(assetLookup.recordOrError)->rootNodeOffsetOrPointer);
-        metricSum = metricSum + ((ModelDefinition *)definitionLookup.modelDefinition)->xeniteValueQ4;
+        metricSum = metricSum + ((ModelDefinition *)selectedDefinition)->xeniteValueQ4;
       }
     }
     slotCursor = (ArmyRuntimeLinkedChildMaskSlotView *)&slotCursor->modelNodeRuntime;
@@ -3809,7 +3805,7 @@ ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
   ArmyRuntimeSlot *armyRuntime;
   bool childCreateFailed;
   ArmyRuntimeCreateResult failureResult;
-  ModelDefinitionResult definitionLookup;
+  ModelDefinitionRecordPrefix *selectedDefinition;
   ModelNodeCreateResult modelCreateResult;
   ArmyRuntimeCreateResult successResult;
   uint32_t slotScanContinueValue;
@@ -3831,9 +3827,9 @@ ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
           armyRuntime->armyAssetId = armyAssetId;
           if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
               (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
-            definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+            selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                               (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer);
-            ((ModelDefinition *)definitionLookup.modelDefinition)->builtCount++;
+            ((ModelDefinition *)selectedDefinition)->builtCount++;
           }
           /* the graphics bindings exist for faction slots 0-7 only */
           if (7 < (uint32_t)factionIndex) {
@@ -4110,7 +4106,7 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
   ModelRuntimeNode *modelNode;
   EffectDefinition *selectedEffectDefinition;
   bool timerOverflow;
-  ModelLookupEntryResult lookupEntry;
+  ModelPackedPointRecord *emitterPoint;
   FixedDirection launchDirection;
   ModelWorldPoint localPoint;
   AngleTurn32 orientationAngle2;
@@ -4200,16 +4196,15 @@ UseRootPosition:
       if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
         nodeOrWorldX = ((MdlSerializedNodeHeader *)nodeOrWorldX)->childSerializedOffsets[0];
       }
-      lookupEntry = ModelLookupTable_ContainsPackedKey
-                         (pointSelector % randomOrPointCount,6,
-                          ((MdlSerializedNodeHeader *)nodeOrWorldX)->spriteAssetReference.modelResource);
-      if (lookupEntry.notFound)
+      if (!ModelLookupTable_FindPackedPoint
+                (pointSelector % randomOrPointCount,6,
+                 ((MdlSerializedNodeHeader *)nodeOrWorldX)->spriteAssetReference.modelResource,&emitterPoint))
       goto UseRootPosition;
       modelNode = modelRuntime->rootModelNode;
       if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
         modelNode = modelNode->childNodes[0];
       }
-      localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNode);
+      localPoint = ModelNodeRuntime_TransformLocalPointRegs(emitterPoint,modelNode);
       worldZQ12 = localPoint.zQ12;
       worldY = localPoint.yQ12;
       nodeOrWorldX = localPoint.xQ12;

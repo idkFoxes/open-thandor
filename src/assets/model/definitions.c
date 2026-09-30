@@ -13,9 +13,12 @@
 /* Address: 0x0051B3C0.
    Picks the upgrade stage a faction can build: of the eight linked model-definition ids at +0x20 the last
    non-zero one whose technology the faction has unlocked wins (the first id is the fallback), and it is
-   looked up in the registry. CF is always clear, even when the lookup fails.
+   looked up in the registry. Returns that definition.
+   Original quirk: an unregistered id is not reported; the result is then the error code
+   FATAL_ERROR_MODEL_DEFINITION_MISSING cast to a pointer (what the original left in EAX), and the registry
+   miss still writes g_PackageLastErrorPath.
 */
-ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
+ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
 
 {
@@ -23,7 +26,7 @@ ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
   int linkedSlotsRemaining;
   PckModelDefinitionIdCatalog selectedDefinitionId;
   bool technologyLocked;
-  ModelDefinitionResult lookupResult;
+  ModelDefinitionRecordPrefix *selectedDefinition;
 
   selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
   for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
@@ -40,9 +43,12 @@ ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
     }
     linkedDefinitionList = linkedDefinitionList + 4;
   }
-  lookupResult = ModelDefinitionRegistry_FindByIdWithError(selectedDefinitionId);
-  lookupResult.notFound = false; /* the original ends with CLC after the lookup */
-  return lookupResult;
+  selectedDefinition = ModelDefinitionRegistry_FindById(selectedDefinitionId);
+  if (selectedDefinition == NULL) {
+    /* Original quirk: the error code of the failed lookup is returned as the definition */
+    selectedDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
+  }
+  return selectedDefinition;
 }
 
 
@@ -117,108 +123,97 @@ bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
 /* Address: 0x00528950.
    Checks that the asset is an 'mdl' of converter version 0x8000A, then registers each of its variable-size
    model-definition records (starting at +0x200, each prefixed with its byte size) and resolves their
-   references against the asset base. Stops with CF set at the first record that fails.
+   references against the asset base. Returns true on success; returns false with the error code in *outError
+   (untouched on success) for an invalid header or at the first record that fails. (The original's success
+   EAX, the last registration's value, was read by no caller.)
 */
-StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset)
+bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
 
 {
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   ModelDefinitionResolveView *definition;
-  StatusResult registrationResult;
-  StatusResult failureResult;
 
   registrationStatusCode = FATAL_ERROR_MODEL_ASSET_INVALID;
   if (asset->recordCountHeader.common.magic == ASSET_MAGIC_MDL &&
       asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_MDL_0008000A) {
     definition = (ModelDefinitionResolveView *)(asset + 1);
     for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
-      registrationResult = ModelDefinition_RegisterAndResolveReferences(definition,asset);
-      registrationStatusCode = registrationResult.valueOrError;
-      if (registrationResult.failed) break;
+      if (!ModelDefinition_RegisterAndResolveReferences(definition,asset,&registrationStatusCode)) break;
       /* advance by the record's leading byte size */
       definition = (ModelDefinitionResolveView *)((uint8_t *)definition + definition->byteSize);
     }
     if (recordsRemaining == 0) {
-      registrationResult.failed = false;
-      registrationResult.valueOrError = registrationStatusCode;
-      return registrationResult;
+      return true;
     }
   }
-  failureResult.failed = true;
-  failureResult.valueOrError = registrationStatusCode;
-  return failureResult;
+  *outError = registrationStatusCode;
+  return false;
 }
 
 
 /* Address: 0x004BE670.
    Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte ModelPackedPointRecord
-   entries) for the key (keyIndex << 4) | keyClass and returns the entry's local position (the dwords at +4, +8,
-   +0xC) in EAX/ECX/EDX with CF clear; all three zero with CF set when no entry matches. Called directly by
+   entries) for the key (keyIndex << 4) | keyClass. Returns true when an entry matches and stores its local
+   position (the dwords at +4, +8, +0xC) in *outLocalPosition; returns false and stores (0, 0, 0) when no entry
+   matches. outLocalPosition may be NULL when only presence matters. Called directly by
    ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters (a model class-init callback table slot) and by the
    army platform-lowering step in gameplay/army/runtime.c.
 */
-ModelLookupPayloadResult
-ModelLookupTable_FindPackedKeyEntryRegs
+bool ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
-          ModelResource *modelDefinition)
+          ModelResource *modelDefinition,GraphicsFixedVec3 *outLocalPosition)
 
 {
   int entriesRemaining;
-  uint32_t *packedKeyEntryCursor;
-  ModelLookupPayloadResult payloadResult;
-
-  entriesRemaining = modelDefinition->packedLookupTableEntryCount;
-  packedKeyEntryCursor =
-       (uint32_t *)((uint8_t *)modelDefinition + modelDefinition->packedLookupTableRelativeOffset);
-  for (; entriesRemaining != 0; entriesRemaining--) {
-    if ((keyClass | keyIndex << 4) == *packedKeyEntryCursor) {
-      payloadResult.notFound = false;
-      payloadResult.payload4 = packedKeyEntryCursor[1];
-      payloadResult.payload8 = packedKeyEntryCursor[2];
-      payloadResult.payload12 = packedKeyEntryCursor[3];
-      return payloadResult;
-    }
-    packedKeyEntryCursor = packedKeyEntryCursor + 4; /* next 0x10-byte entry */
-  }
-  /* not found: EAX, ECX and EDX zero, CF set (the decompiled 13-byte constant was cut to
-     64 bits and lost the CF byte) */
-  payloadResult.payload4 = 0;
-  payloadResult.payload8 = 0;
-  payloadResult.payload12 = 0;
-  payloadResult.notFound = true;
-  return payloadResult;
-}
-
-
-/* Address: 0x004BE6F0.
-   Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte entries) for the key
-   (keyIndex << 4) | keyClass and returns the matching entry with CF clear. When no entry matches, CF is set
-   and EAX points just past the table.
-*/
-ModelLookupEntryResult ModelLookupTable_ContainsPackedKey(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
-          ModelResource *modelDefinition)
-
-{
   ModelPackedPointRecord *entryCursor;
-  int entriesRemaining;
-  ModelLookupEntryResult foundResult;
-  ModelLookupEntryResult notFoundResult;
 
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   entryCursor =
        (ModelPackedPointRecord *)((uint8_t *)modelDefinition + modelDefinition->packedLookupTableRelativeOffset);
   for (; entriesRemaining != 0; entriesRemaining--) {
     if ((keyClass | keyIndex << 4) == entryCursor->packedLookupKey) {
-      foundResult.notFound = false;
-      foundResult.entry = entryCursor;
-      return foundResult;
+      if (outLocalPosition != NULL) {
+        *outLocalPosition = entryCursor->localPosition;
+      }
+      return true;
+    }
+    entryCursor++; /* next 0x10-byte entry */
+  }
+  if (outLocalPosition != NULL) {
+    outLocalPosition->x = 0;
+    outLocalPosition->y = 0;
+    outLocalPosition->z = 0;
+  }
+  return false;
+}
+
+
+/* Address: 0x004BE6F0.
+   Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte entries) for the key
+   (keyIndex << 4) | keyClass. Returns true and stores the matching entry in *outEntry when one matches;
+   otherwise returns false and stores the address just past the table's last entry in *outEntry (one caller,
+   ArmyPlacementCandidate_TestOffsetClearance, reads it anyway).
+*/
+bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+          ModelResource *modelDefinition,ModelPackedPointRecord **outEntry)
+
+{
+  ModelPackedPointRecord *entryCursor;
+  int entriesRemaining;
+
+  entriesRemaining = modelDefinition->packedLookupTableEntryCount;
+  entryCursor =
+       (ModelPackedPointRecord *)((uint8_t *)modelDefinition + modelDefinition->packedLookupTableRelativeOffset);
+  for (; entriesRemaining != 0; entriesRemaining--) {
+    if ((keyClass | keyIndex << 4) == entryCursor->packedLookupKey) {
+      *outEntry = entryCursor;
+      return true;
     }
     entryCursor++;
   }
-  notFoundResult.notFound = true;
-  notFoundResult.entry = entryCursor;
-  return notFoundResult;
+  *outEntry = entryCursor;
+  return false;
 }
 
 
@@ -226,10 +221,10 @@ ModelLookupEntryResult ModelLookupTable_ContainsPackedKey(ModelLookupKeyIndex ke
    Intersects the current model-space pick ray (g_ModelRaycastLocalOrigin*, g_ModelRaycastLocalDirection*Q28,
    limited to g_ModelRaycastMaximumDistance) with one triangle: first the plane distance along the ray (plane
    through the weighted centre (2*v0 + v1 + v2) / 4), then an inside test of the hit point against the edges.
-   On a hit returns the Q12 distance with CF set; on a miss CF is clear and EAX holds scratch. Called for each
-   triangle by ModelNodeRuntime_RaycastHierarchyNearest.
+   Returns true on a hit and stores the Q12 distance along the ray in *outDistanceQ12; returns false on a miss
+   and leaves *outDistanceQ12 unchanged. Called for each triangle by ModelNodeRuntime_RaycastHierarchyNearest.
 */
-MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle)
+bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12)
 
 {
   int edge1Z;
@@ -256,8 +251,7 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
   int hitRelativeZ;
   uint32_t offsetHighOrCrossZ;
   int halfOffsetOrEdge1Y;
-  MeshRayTriangleResult missResult;
-  MeshRayTriangleResult hitResult;
+  Q12 hitDistanceQ12;
   bool hitFound;
   bool planeOutOfRange;
 
@@ -278,38 +272,31 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
           (int64_t)(int)g_ModelRaycastLocalDirectionXQ28 * (int64_t)normalX +
           (int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)normalZ;
   directionDotOrCrossY = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
-  distanceOrCrossX = g_ModelRaycastMaximumDistance;
   if (directionDotOrCrossY != 0) {
     scaledHighOrEdge1X =
          FIXED_MUL_HIGH((int)g_ModelRaycastMaximumDistance,(int)directionDotOrCrossY);
-    distanceOrCrossX =
-         (uint32_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY);
     halfOffsetOrEdge1Y = (int)offsetHighOrCrossZ >> 1;
     /* Range test: the plane distance must lie within the maximum distance on the ray's side. */
     if ((int64_t)planeOffsetDot < 0) {
       planeOutOfRange = (int)offsetHighOrCrossZ < scaledHighOrEdge1X ||
-          (halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY &&
-           (distanceOrCrossX = (uint32_t)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY));
+          (halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY && halfOffsetOrEdge1Y <= (int)directionDotOrCrossY);
     }
     else {
       planeOutOfRange = scaledHighOrEdge1X < (int)offsetHighOrCrossZ ||
-             ((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y &&
-              (distanceOrCrossX = (uint32_t)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y));
+             ((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y && (int)directionDotOrCrossY <= halfOffsetOrEdge1Y);
     }
     if (planeOutOfRange) {
-      missResult.hit = false;
-      missResult.distanceQ12 = distanceOrCrossX;
-      return missResult;
+      return false;
     }
-    hitResult.distanceQ12 =
+    hitDistanceQ12 =
          (int)((int64_t)planeOffsetDot / (int64_t)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
     vertexA = triangle->vertex0;
     negVertex0XOrEdge2X = -vertexA->x;
-    hitRelativeX = FIXED_MUL_SHR(hitResult.distanceQ12,(int)g_ModelRaycastLocalDirectionXQ28,Q28_SHIFT) + g_ModelRaycastLocalOriginX + negVertex0XOrEdge2X;
+    hitRelativeX = FIXED_MUL_SHR(hitDistanceQ12,(int)g_ModelRaycastLocalDirectionXQ28,Q28_SHIFT) + g_ModelRaycastLocalOriginX + negVertex0XOrEdge2X;
     negVertex0YOrEdge2Y = -vertexA->y;
-    hitRelativeY = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionYQ28,hitResult.distanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginY + negVertex0YOrEdge2Y;
+    hitRelativeY = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionYQ28,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginY + negVertex0YOrEdge2Y;
     negVertex0ZOrEdge2Z = -vertexA->z;
-    hitRelativeZ = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionZQ28,hitResult.distanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginZ + negVertex0ZOrEdge2Z;
+    hitRelativeZ = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionZQ28,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginZ + negVertex0ZOrEdge2Z;
     vertexA = triangle->vertex1;
     vertexB = triangle->vertex2;
     scaledHighOrEdge1X = negVertex0XOrEdge2X + vertexA->x;
@@ -356,31 +343,29 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
                       (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)));
     }
     if (hitFound) {
-      hitResult.hit = true;
-      return hitResult;
+      *outDistanceQ12 = hitDistanceQ12;
+      return true;
     }
   }
-  missResult.hit = false;
-  missResult.distanceQ12 = distanceOrCrossX;
-  return missResult;
+  return false;
 }
 
 
 /* Address: 0x005289C0.
-   Looks a model definition up by id in the 768-slot registry and returns the three dwords at record
-   +0x188 (EAX), +0x180 (ECX) and +0x184 (EDX), which ArmyAssetRecord_RelocateModelTree adds to an army
-   record. On a miss the id is formatted into g_PackageLastErrorPath and FATAL_ERROR_MODEL_DEFINITION_MISSING
-   is returned with CF set.
+   Looks a model definition up by id in the 768-slot registry and returns 0 with its build costs, the three
+   dwords at record +0x188 (*outEnergyLoadQ4), +0x180 (*outBuildTicks) and +0x184 (*outXeniteCostQ4), which
+   ArmyAssetRecord_RelocateModelTree adds to an army record. On a miss the id is formatted into
+   g_PackageLastErrorPath, the out-parameters are left unchanged and FATAL_ERROR_MODEL_DEFINITION_MISSING is
+   returned.
 */
-BuildCostsResult
-ModelDefinitionRegistry_FindBuildCostsById(PckModelDefinitionIdCatalog definitionId)
+uint32_t ModelDefinitionRegistry_FindBuildCostsById
+          (PckModelDefinitionIdCatalog definitionId,uint32_t *outEnergyLoadQ4,uint32_t *outBuildTicks,
+           uint32_t *outXeniteCostQ4)
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;
   int registrySlotsRemaining;
   ModelDefinitionRecordPrefix **registryCursor;
-  BuildCostsResult missResult;
-  BuildCostsResult foundResult;
 
   registryCursor = g_ModelDefinitionRegistry;
   registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
@@ -390,18 +375,13 @@ ModelDefinitionRegistry_FindBuildCostsById(PckModelDefinitionIdCatalog definitio
     if (registrySlotsRemaining == 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
-      missResult.buildTicks = definitionId;
-      missResult.energyLoadQ4OrError = FATAL_ERROR_MODEL_DEFINITION_MISSING;
-      missResult.xeniteCostQ4 = 0;
-      missResult.notFound = true;
-      return missResult;
+      return FATAL_ERROR_MODEL_DEFINITION_MISSING;
     }
   }
-  foundResult.buildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks;
-  foundResult.energyLoadQ4OrError = ((ModelDefinition *)registeredDefinition)->buildEnergyLoadQ4;
-  foundResult.xeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4;
-  foundResult.notFound = false;
-  return foundResult;
+  *outBuildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks;
+  *outEnergyLoadQ4 = ((ModelDefinition *)registeredDefinition)->buildEnergyLoadQ4;
+  *outXeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4;
+  return 0;
 }
 
 
@@ -517,33 +497,27 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uin
    Registers one MDL model definition in the first free slot of the 768-slot registry and turns its
    serialized references into runtime pointers: the node tree is relocated by the asset base and its
    sprites are loaded or reused, the shot and effect ids are resolved through their registries, and the
-   terrain-class dependent placement values are copied from the grid tables. A duplicate id, a full
-   registry or any failed load/lookup returns its error code with CF set.
+   terrain-class dependent placement values are copied from the grid tables. Returns true on success; a
+   duplicate id, a full registry or any failed load/lookup returns false with its error code in *outError
+   (untouched on success; the original's success EAX was read by no caller).
 */
-StatusResult ModelDefinition_RegisterAndResolveReferences
-          (ModelDefinitionResolveView *definition,ModelAssetHeader *asset)
+bool ModelDefinition_RegisterAndResolveReferences
+          (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError)
 
 {
   uint32_t nodeOffsetOrGridClass;
   uint32_t secondaryThreshold;
   uint32_t resolverStatusOrSentinel;
   ShotDefinition *resolvedShot;
-  EffectDefinition *resolvedEffect;
   ShotDefinition *resolvedEmitterShot;
-  EffectDefinition *resolvedEmitterEffect;
   int slotsRemainingOrClassIndex;
   ModelDefinitionRecordPrefix **registrySlotCursor;
   MdlSerializedNodeHeader *serializedNodeCursor;
-  ModelDefinitionResult existingLookup;
-  StatusResult failureResult;
   ShotDefinitionResult shotLookup;
-  EffectDefinitionResult effectLookup;
-  StatusResult successResult;
 
   registrySlotCursor = g_ModelDefinitionRegistry;
   slotsRemainingOrClassIndex = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
-  existingLookup = ModelDefinitionRegistry_FindByIdWithError(definition->definitionId);
-  if (!existingLookup.notFound) {
+  if (ModelDefinitionRegistry_FindById(definition->definitionId) != NULL) {
     /* duplicate id: the id is left in g_PackageLastErrorPath */
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
@@ -580,47 +554,31 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
   resolverStatusOrSentinel = (uint32_t)resolvedShot;
   if (shotLookup.notFound) goto ReturnFailure;
   definition->shotDefinitionReference = resolvedShot;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect0);
-  resolvedEffect = effectLookup.definitionOrError;
-  resolverStatusOrSentinel = (uint32_t)resolvedEffect;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->destructionEffect0 = resolvedEffect;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect1);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->destructionEffect1 = (EffectDefinition *)resolverStatusOrSentinel;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect2);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->destructionEffect2 = (EffectDefinition *)resolverStatusOrSentinel;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect3);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->destructionEffect3 = (EffectDefinition *)resolverStatusOrSentinel;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect4);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->destructionEffect4 = (EffectDefinition *)resolverStatusOrSentinel;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect5);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->destructionEffect5 = (EffectDefinition *)resolverStatusOrSentinel;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect6);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->destructionEffect6 = (EffectDefinition *)resolverStatusOrSentinel;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect7);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->destructionEffect7 = (EffectDefinition *)resolverStatusOrSentinel;
+  /* each effect field holds its serialized id until the lookup replaces it by the definition */
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect0,&definition->destructionEffect0);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect1,&definition->destructionEffect1);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect2,&definition->destructionEffect2);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect3,&definition->destructionEffect3);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect4,&definition->destructionEffect4);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect5,&definition->destructionEffect5);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect6,&definition->destructionEffect6);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect7,&definition->destructionEffect7);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
   /* -1: the definition has no shot at +0x168 */
   if (definition->emitterShotDefinitionReference != (ShotDefinition *)0xffffffff) {
     shotLookup = ShotDefinitionRegistry_FindByIdWithError
@@ -630,27 +588,22 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
     if (shotLookup.notFound) goto ReturnFailure;
     definition->emitterShotDefinitionReference = resolvedEmitterShot;
   }
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->emitterEffectDefinitionReference);
-  resolvedEmitterEffect = effectLookup.definitionOrError;
-  resolverStatusOrSentinel = (uint32_t)resolvedEmitterEffect;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->emitterEffectDefinitionReference = resolvedEmitterEffect;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->waterEmitterEffectDefinitionReference);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->waterEmitterEffectDefinitionReference = (EffectDefinition *)resolverStatusOrSentinel;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->removalEffectDefinitionReference);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->removalEffectDefinitionReference = (EffectDefinition *)resolverStatusOrSentinel;
-  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->damageEffectDefinitionReference);
-  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-  if (effectLookup.notFound) goto ReturnFailure;
-  definition->damageEffectDefinitionReference = (EffectDefinition *)resolverStatusOrSentinel;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->emitterEffectDefinitionReference,
+                      &definition->emitterEffectDefinitionReference);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->waterEmitterEffectDefinitionReference,
+                      &definition->waterEmitterEffectDefinitionReference);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->removalEffectDefinitionReference,
+                      &definition->removalEffectDefinitionReference);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
+  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
+                     ((PckEffectDefinitionIdCatalog)definition->damageEffectDefinitionReference,
+                      &definition->damageEffectDefinitionReference);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
   /* negative grid classes keep the serialized values; the contact kind at +0x278 selects which grid tables
      the class at +0x264 indexes (kind 4 from class 1, the fallback tables from class 4) */
   nodeOffsetOrGridClass = definition->terrainTraversalClass;
@@ -684,13 +637,10 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
       definition->traversalSecondaryThreshold = secondaryThreshold;
     }
   }
-  successResult.failed = false;
-  successResult.valueOrError = resolverStatusOrSentinel;
-  return successResult;
+  return true;
 ReturnFailure:
-  failureResult.failed = true;
-  failureResult.valueOrError = resolverStatusOrSentinel;
-  return failureResult;
+  *outError = resolverStatusOrSentinel;
+  return false;
 }
 
 
@@ -702,12 +652,12 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {
-  ModelDefinitionResult lookupResult;
+  ModelDefinitionRecordPrefix *modelDefinition;
 
-  lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
-  if (!lookupResult.notFound) {
+  modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
+  if (modelDefinition != NULL) {
     Technology_UnlockForFaction
-              (0,0,((ModelDefinition *)lookupResult.modelDefinition)->researchTechnologyIds[0],factionIndex);
+              (0,0,((ModelDefinition *)modelDefinition)->researchTechnologyIds[0],factionIndex);
   }
 }
 
@@ -722,11 +672,11 @@ bool ModelDefinition_IsFactionTechnologyLocked
 
 {
   uint32_t technologyBitIndex;
-  ModelDefinitionResult lookupResult;
+  ModelDefinitionRecordPrefix *modelDefinition;
 
-  lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
-  if ((!lookupResult.notFound) &&
-     (technologyBitIndex = ((ModelDefinition *)lookupResult.modelDefinition)->requiredTechnologyBit,
+  modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
+  if ((modelDefinition != NULL) &&
+     (technologyBitIndex = ((ModelDefinition *)modelDefinition)->requiredTechnologyBit,
      (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 31)) != 0)) {
     return false;
   }
@@ -736,16 +686,16 @@ bool ModelDefinition_IsFactionTechnologyLocked
 
 /* Address: 0x00528E20.
    Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
-   g_PackageLastErrorPath for the error message and returns FATAL_ERROR_MODEL_DEFINITION_MISSING with CF set.
+   g_PackageLastErrorPath for the error message and returns NULL (the original returned
+   FATAL_ERROR_MODEL_DEFINITION_MISSING with CF set; callers that passed that code on now supply it
+   themselves). A found definition is never NULL.
 */
-ModelDefinitionResult ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definitionId)
+ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId)
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;
   int registrySlotsRemaining;
   ModelDefinitionRecordPrefix **registryCursor;
-  ModelDefinitionResult missResult;
-  ModelDefinitionResult foundResult;
 
   registryCursor = g_ModelDefinitionRegistry;
   registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
@@ -756,13 +706,9 @@ ModelDefinitionResult ModelDefinitionRegistry_FindByIdWithError(PckModelDefiniti
       /* the original formats EAX, i.e. the last registry slot, not the missing id (PUSH EAX at 0x00528E59) */
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
-      missResult.notFound = true;
-      missResult.modelDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
-      return missResult;
+      return NULL;
     }
   }
-  foundResult.notFound = false;
-  foundResult.modelDefinition = registeredDefinition;
-  return foundResult;
+  return registeredDefinition;
 }
 

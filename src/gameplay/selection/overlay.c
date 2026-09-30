@@ -40,10 +40,10 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
   bool checkResult;
   ArmyRuntimeCreateResult createdArmy;
   PlacementDispatchResult dispatchResult;
-  EffectDefinitionResult markerDefinition;
+  EffectDefinition *markerDefinition;
   HeightSampleResult surfaceHeight;
   EffectCreateResult createdEffect;
-  EffectDefinitionResult targetDefinition;
+  EffectDefinition *targetDefinition;
   PckArmyAssetIdCatalog armyAssetId;
   WorldRuntimeContext *worldRuntimeCopy;
   GameEntityRuntime *commandTargetEntity;
@@ -147,8 +147,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
   }
 RefreshMarkers:
   if (releaseMode == GRAPHICS_STATE_DISABLED) {
-    markerDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0143_EGATH0);
-    if (!markerDefinition.notFound) {
+    if (EffectDefinitionRegistry_FindById(EFF_0143_EGATH0,&markerDefinition) == 0) {
       modelNodeCursor = (ModelRuntimeNode *)worldRuntime->ownerListHead;
       indexOrCount = 0;
       if (modelNodeCursor == NULL) {
@@ -168,7 +167,7 @@ RefreshMarkers:
           createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
                              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
                               FIXED_ANGLE16_QUARTER_TURN,0,surfaceHeight.heightQ12,(factoryModelRuntime->classLinkState).classState7C,
-                              (factoryModelRuntime->classLinkState).classState78,markerDefinition.definitionOrError,
+                              (factoryModelRuntime->classLinkState).classState78,markerDefinition,
                               worldRuntime);
           if (!createdEffect.failed) {
             g_InGameOwnedEntityTransientEffectMarkers[indexOrCount] = createdEffect.effectRuntime;
@@ -182,10 +181,8 @@ RefreshMarkers:
         modelNodeCursor = (ModelRuntimeNode *)(modelNodeCursor->common).nextNode;
       } while (modelNodeCursor != NULL);
     }
-    markerDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0148_EWAYP0);
-    if (!markerDefinition.notFound) {
-      targetDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0149_ETARG0);
-      if (!targetDefinition.notFound) {
+    if (EffectDefinitionRegistry_FindById(EFF_0148_EWAYP0,&markerDefinition) == 0) {
+      if (EffectDefinitionRegistry_FindById(EFF_0149_ETARG0,&targetDefinition) == 0) {
         /* the markers use scale 0x1000 (1.0 in Q12) except at an army target, which uses the target's own
            marker scale (its definition's footprintRadius); at most OVERLAY_COMMAND_TARGET_MARKER_CAPACITY markers */
         recordOrCount = SELECTION_ENTRY_CAPACITY;
@@ -200,7 +197,7 @@ RefreshMarkers:
               InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                         (Q12_ONE,(entityRuntime->common).ownership.modelNode,
                          (entityRuntime->common).pathCoordinate1Q12,(entityRuntime->common).pathCoordinate0Q12,
-                         markerDefinition.definitionOrError,worldRuntime);
+                         markerDefinition,worldRuntime);
               if (OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount) {
                 return;
               }
@@ -212,7 +209,7 @@ RefreshMarkers:
                             (Q12_ONE,(entityRuntime->common).ownership.modelNode,
                              ((ArmyMovementRuntime *)entityRuntime)->queuedWaypoints[indexOrCount].worldYQ12,
                              ((ArmyMovementRuntime *)entityRuntime)->queuedWaypoints[indexOrCount].worldXQ12,
-                             markerDefinition.definitionOrError,worldRuntime);
+                             markerDefinition,worldRuntime);
                   indexOrCount++;
                   if (OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount) {
                     return;
@@ -224,7 +221,7 @@ RefreshMarkers:
                (InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                           (Q12_ONE,(entityRuntime->common).ownership.modelNode,
                            (entityRuntime->common).commandTarget.targetWorldYQ12,
-                           (entityRuntime->common).commandTarget.targetWorldXQ12,targetDefinition.definitionOrError,
+                           (entityRuntime->common).commandTarget.targetWorldXQ12,targetDefinition,
                            worldRuntime),
                 OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount)) {
               return;
@@ -238,7 +235,7 @@ RefreshMarkers:
                           definitionOrSavedId.runtimeDefinition->footprintRadius,
                           (entityRuntime->common).ownership.modelNode,
                           (currentModelNode->worldTransform).translation.y,
-                          (currentModelNode->worldTransform).translation.x,targetDefinition.definitionOrError,
+                          (currentModelNode->worldTransform).translation.x,targetDefinition,
                           worldRuntime),
                OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount)) {
               return;

@@ -35,7 +35,7 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance
   FixedLengthAngle offsetLengthAngle;
   FixedSinCosEdxEax8 rotatedOffset;
   PlacementCandidateResult clearanceResult;
-  ModelLookupEntryResult anchorLookup;
+  ModelPackedPointRecord *anchorRecord;
   TerrainPlacementResult terrainTest;
   
   PlacementCandidateResult result;
@@ -46,12 +46,14 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance
                      worldXQ12,worldYQ12,modelDefinition,ownerFactionIndex,worldRuntime);
   eaxOrOffsetYQ12 = clearanceResult.value;
   if (!clearanceResult.rejected) {
-    /* the model resource of the definition's root node */
-    anchorLookup = ModelLookupTable_ContainsPackedKey
-                      (1,5,((MdlSerializedNodeHeader *)modelDefinition->rootNodeOffsetOrPointer)->
-                           spriteAssetReference.modelResource);
+    /* the model resource of the definition's root node.
+       Original quirk: the found flag is not checked; without a (1,5) point the record just past the
+       point table is read. */
+    ModelLookupTable_FindPackedPoint
+              (1,5,((MdlSerializedNodeHeader *)modelDefinition->rootNodeOffsetOrPointer)->
+                   spriteAssetReference.modelResource,&anchorRecord);
     offsetLengthAngle = FixedMath_Vector2AngleAndLengthRegs
-                      (((anchorLookup.entry)->localPosition).y,((anchorLookup.entry)->localPosition).x);
+                      ((anchorRecord->localPosition).y,(anchorRecord->localPosition).x);
     rotatedOffset = FixedMath_SinCosScaled(offsetLengthAngle.angle + placementHeading & FIXED_ANGLE16_MASK,offsetLengthAngle.length);
     eaxOrOffsetYQ12 = (int)rotatedOffset;
     offsetWorldXQ12 = worldXQ12 + (int)(rotatedOffset >> 32);
@@ -99,17 +101,15 @@ bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
   Q12 worldXQ12;
   int referenceHeightQ12;
   bool blocked;
-  ModelLookupEntryResult anchorLookup;
+  ModelPackedPointRecord *anchorRecord;
   ModelWorldPoint anchorWorldPoint;
-  
+
   modelNodeRuntime = modelRuntime->rootModelNode;
   blocked = ArmyPlacementCollision_TestCurrentRuntime(worldRuntime,modelRuntime);
   if (!blocked) {
     placementDefinition = modelRuntime->modelDefinition;
-    anchorLookup = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource)
-    ;
-    if (!anchorLookup.notFound) {
-      anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
+    if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
+      anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorRecord,modelNodeRuntime);
       worldXQ12 = anchorWorldPoint.yQ12;
       worldYQ12 = anchorWorldPoint.xQ12;
       /* the anchor's height with the definition's and the resource's height offsets taken off */
@@ -806,7 +806,7 @@ PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMod
 
 {
   uint32_t assetClassIndex;
-  ArmyAssetRecordPrefix *modelDefinition;
+  ModelDefinitionRecordPrefix *modelDefinition;
   ArmyAssetLookupResult lookupResult;
   HeightSampleResult terrainHeight;
   PlacementDispatchResult dispatchResult;
@@ -814,12 +814,15 @@ PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMod
   lookupResult = ArmyAssetRegistry_FindById(armyAssetId);
   if (!lookupResult.notFound) {
     /* the model definition of the army asset's root node */
-    lookupResult = THANDOR_BITCAST(ModelDefinitionResult, ArmyAssetLookupResult, ModelDefinitionRegistry_FindByIdWithError
+    modelDefinition = ModelDefinitionRegistry_FindById
                       (((AiLinkedDefinitionListView *)(lookupResult.recordOrError)->rootNodeOffsetOrPointer)->
-                       definitionIds[0]));
-    modelDefinition = lookupResult.recordOrError;
-    if (!lookupResult.notFound) {
-      /* modelDefinition is the model definition (typed as the army record by the shared lookup result) */
+                       definitionIds[0]);
+    if (modelDefinition == NULL) {
+      /* the failed lookup's error code becomes this function's error value */
+      lookupResult.recordOrError = (ArmyAssetRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
+      lookupResult.notFound = true;
+    }
+    else {
       assetClassIndex = ((ModelDefinition *)modelDefinition)->runtimeClassId;
       /* placementContactKindIndex selects the height interpolation mode; the field grid is at
          +0x54 of the in-game runtime */
@@ -827,7 +830,7 @@ PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMod
                         (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
       lookupResult = THANDOR_BITCAST(PlacementDispatchResult, ArmyAssetLookupResult, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
               )(placementMode,placementClearancePaddingQ12,placementHeading,terrainHeight.heightQ12,
-                worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,ownerFactionIndex,
+                worldYQ12,worldXQ12,modelDefinition,ownerFactionIndex,
                 (WorldRuntimeContext *)inGameRoot));
     }
   }
@@ -1199,13 +1202,12 @@ bool ArmyPlacementCandidate_TestModelAnchorDistance
 {
   ModelRuntimeNode *modelNodeRuntime;
   uint32_t anchorDistanceQ12;
-  ModelLookupEntryResult anchorLookup;
+  ModelPackedPointRecord *anchorRecord;
   ModelWorldPoint anchorWorldPoint;
-  
+
   modelNodeRuntime = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
-  anchorLookup = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource);
-  if (!anchorLookup.notFound) {
-    anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
+  if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
+    anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorRecord,modelNodeRuntime);
     anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.yQ12 - targetWorldXQ12,
                                           anchorWorldPoint.xQ12 - targetWorldYQ12);
     if ((int)anchorDistanceQ12 <= queryRadiusQ12 + ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12) {

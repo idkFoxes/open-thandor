@@ -198,7 +198,6 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   uint32_t *categoryReciprocalCursor;
   uint32_t *categoryMaskClearCursor;
   TechnologyRecord *technologyRecordCursor;
-  ModelDefinitionResult modelLookup;
   ArmyAssetRecordPrefix *armyAssetRecord;
 
   g_TechnologyCategoryMaximum0 = 1;
@@ -217,11 +216,10 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
     if ((armyAssetRecord != NULL) &&
        ((((ArmyAssetRecord *)armyAssetRecord)->flags & 1) != 0)) {
       /* the root node's model definition id (+0x20) */
-      modelLookup = ModelDefinitionRegistry_FindByIdWithError
+      definitionRecord = (ModelDefinition *)ModelDefinitionRegistry_FindById
                         (*(PckModelDefinitionIdCatalog *)
                           (armyAssetRecord->rootNodeOffsetOrPointer + 32));
-      definitionRecord = (ModelDefinition *)modelLookup.modelDefinition;
-      if (!modelLookup.notFound) {
+      if (definitionRecord != NULL) {
         /* per target class (+0x5C) the largest armour (+0x60); for mobile models (+0x18) the top speed (+0x0C) */
         if ((int)(&g_TechnologyCategoryMaximum0)[definitionRecord->targetClassIndex] <
             (int)definitionRecord->maximumHealth) {

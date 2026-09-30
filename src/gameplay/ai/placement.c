@@ -259,7 +259,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
   int entityOrDeltaY;
   PckArmyAssetIdCatalog featureAssetId;
   AiStructureWorkspaceEntry *workspace00Entry;
-  ModelLookupEntryResult markerLookup;
+  ModelPackedPointRecord *markerRecord;
   ModelWorldPoint markerPoint;
   int nearestDistanceOrPriority;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
@@ -280,10 +280,9 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
        (modelNodeRuntime = (ModelRuntimeNode *)runtimeSlot[1],
        ((ModelRuntimeSlot *)runtimeSlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
        MODEL_RUNTIME_CLASS_13)) {
-      markerLookup = ModelLookupTable_ContainsPackedKey
-                         (1,5,(modelNodeRuntime->modelPayload).modelResource);
-      if (!markerLookup.notFound) {
-        markerPoint = ModelNodeRuntime_TransformLocalPointRegs(markerLookup.entry,modelNodeRuntime);
+      if (ModelLookupTable_FindPackedPoint
+                (1,5,(modelNodeRuntime->modelPayload).modelResource,&markerRecord)) {
+        markerPoint = ModelNodeRuntime_TransformLocalPointRegs(markerRecord,modelNodeRuntime);
         markerDistance = FixedMath_Length2(markerPoint.yQ12 - terrainFeatureCell->worldY,
                                   markerPoint.xQ12 - terrainFeatureCell->worldX);
         if ((int)markerDistance < 2 * Q12_ONE + 1) { /* within 2.0 */

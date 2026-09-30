@@ -348,7 +348,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   uint64_t tintProduct;
   ShotLaunchAngles launchAngles;
   WorldObjectAllocResult allocatedRecord;
-  ModelLookupEntryResult lookupEntry;
+  ModelPackedPointRecord *packedPoint;
   ShadingRecordResult shadingAllocation;
   FixedDirection launchDirection;
   ModelWorldPoint localPoint;
@@ -425,13 +425,13 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->textureSubresourceBaseIndex = 0;
   shotModelNode->modelRuntimeLinkOrSavedOffset = NULL;
   /* optional light point of the model: allocates a shading record there */
-  lookupEntry = ModelLookupTable_ContainsPackedKey(0,MODEL_POINT_CLASS_LIGHT,shotDefinition->ownedNestedResource);
-  if (lookupEntry.notFound) {
+  if (!ModelLookupTable_FindPackedPoint
+         (0,MODEL_POINT_CLASS_LIGHT,shotDefinition->ownedNestedResource,&packedPoint)) {
     shotModelNode->shadingRecord = NULL;
   }
   else {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                       (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
+                       (packedPoint,(ModelRuntimeNode *)shotModelNode);
     shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
                        (shotDefinition->shadingTransitionDurationTicks,
                         (shotDefinition->shadingColorArgb >> 24) << 8, /* alpha byte = radius / 16 */
@@ -456,10 +456,10 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->tintArgb = ShotTint_PackWordsUnsignedSaturate(tintProduct);
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
-  lookupEntry = ModelLookupTable_ContainsPackedKey(0,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource);
-  if (!lookupEntry.notFound) {
+  if (ModelLookupTable_FindPackedPoint
+        (0,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource,&packedPoint)) {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                       (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
+                       (packedPoint,(ModelRuntimeNode *)shotModelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
                shotModelNode->modelPayload.worldRotationAngle2,

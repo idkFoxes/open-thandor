@@ -1681,7 +1681,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
   int selectedEntryCount;
   GameEntityRuntime *currentEntity;
   GameEntityRuntime **selectionEntryCursor;
-  ModelLookupEntryResult lookupEntry;
+  ModelPackedPointRecord *anchorRecord;
   ModelWorldPoint localPoint;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -1730,9 +1730,8 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
     modelNodeRuntime = (currentEntity->common).ownership.modelNode;
     ((ModelRuntimeSlot *)class13Record)->classState.stateFlags =
          ((ModelRuntimeSlot *)class13Record)->classState.stateFlags & ~ARMY_MODEL_STATE_RALLY_POINT_SET;
-    lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource);
-    if (!lookupEntry.notFound) {
-      localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
+    if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
+      localPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorRecord,modelNodeRuntime);
       ((ModelRuntimeSlot *)class13Record)->classLinkState.classState78 = localPoint.xQ12;
       ((ModelRuntimeSlot *)class13Record)->classLinkState.classState7C = localPoint.yQ12;
       SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);

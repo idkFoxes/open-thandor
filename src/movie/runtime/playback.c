@@ -285,7 +285,8 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
   StatusResult audioResult;
   MovieOpenResult successResult;
   MovieOpenResult failureResult;
-  PackageEntryLookupResult packageEntry;
+  PckEntryHeader *packageEntry;
+  EngineFileHandle packageFileHandle;
   MovieStreamByteCount remainingByteCount;
   uint8_t *loadedEnd;
   MovieStreamFileOffset streamPosition;
@@ -302,13 +303,13 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
   }
   if (!looseFileOpened) {
     movieOpenFlags = movieOpenFlags & ~MOVIE_OPEN_PACKAGE_ONLY;
-    packageEntry = Package_FindEntryAcrossMounts(path);
-    if ((!packageEntry.notFound) &&
+    packageEntry = Package_FindEntryAcrossMounts(path,&packageFileHandle);
+    if ((packageEntry != NULL) &&
        (seekResult = g_FileSystemSeek
-                           (FILESYSTEM_SEEK_BEGIN,((PckEntryHeader *)packageEntry.entry)->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,
-                            (void *)packageEntry.fileHandle), !seekResult.failed)) {
+                           (FILESYSTEM_SEEK_BEGIN,packageEntry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,
+                            (void *)packageFileHandle), !seekResult.failed)) {
       isSharedPackageHandle++;
-      handle = (void *)packageEntry.fileHandle;
+      handle = (void *)packageFileHandle;
     }
     else {
       WidePath_CombineDirectoryAndLeaf

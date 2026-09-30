@@ -19,7 +19,6 @@ typedef struct GridScratchAllocResult GridScratchAllocResult, *PGridScratchAlloc
 typedef struct ArmyAssetLookupResult ArmyAssetLookupResult, *PArmyAssetLookupResult;
 typedef struct CommandLineOptionResult CommandLineOptionResult, *PCommandLineOptionResult;
 typedef struct ResourceLoadResult ResourceLoadResult, *PResourceLoadResult;
-typedef struct ArmyAssetIdSearchResult ArmyAssetIdSearchResult, *PArmyAssetIdSearchResult;
 typedef struct Win32FileReadResult Win32FileReadResult, *PWin32FileReadResult;
 typedef struct FileSystemSeekResult FileSystemSeekResult, *PFileSystemSeekResult;
 typedef struct MovieFrameResult MovieFrameResult, *PMovieFrameResult;
@@ -42,13 +41,11 @@ typedef struct PckCodecResult PckCodecResult, *PPckCodecResult;
 typedef struct TerrainPointResult TerrainPointResult, *PTerrainPointResult;
 typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
 typedef struct TextResolveResult TextResolveResult, *PTextResolveResult;
-typedef struct PackageDecodeResult PackageDecodeResult, *PPackageDecodeResult;
 typedef struct ArenaAllocResult ArenaAllocResult, *PArenaAllocResult;
 typedef struct Win32FileWriteResult Win32FileWriteResult, *PWin32FileWriteResult;
 typedef struct FixedDirection FixedDirection, *PFixedDirection;
 typedef struct MailboxReceiveResult MailboxReceiveResult, *PMailboxReceiveResult;
 typedef struct ArmyRuntimeCreateResult ArmyRuntimeCreateResult, *PArmyRuntimeCreateResult;
-typedef struct PackageEntryLookupResult PackageEntryLookupResult, *PPackageEntryLookupResult;
 typedef struct NetworkSetSessionResult NetworkSetSessionResult, *PNetworkSetSessionResult;
 /* Graphics/display result records. */
 typedef struct DisplayModeResult DisplayModeResult, *PDisplayModeResult;
@@ -635,12 +632,10 @@ typedef union Misc Misc, *PMisc;
 typedef struct IMAGE_RESOURCE_DATA_ENTRY IMAGE_RESOURCE_DATA_ENTRY, *PIMAGE_RESOURCE_DATA_ENTRY;
 typedef struct IMAGE_RESOURCE_DIRECTORY IMAGE_RESOURCE_DIRECTORY, *PIMAGE_RESOURCE_DIRECTORY;
 typedef struct SiteWeightResult SiteWeightResult, *PSiteWeightResult;
-typedef struct BuildCostsResult BuildCostsResult, *PBuildCostsResult;
 typedef struct HeightSampleResult HeightSampleResult, *PHeightSampleResult;
 typedef struct ListSelectionResult ListSelectionResult, *PListSelectionResult;
 typedef struct FixedVectorQ12 FixedVectorQ12, *PFixedVectorQ12;
 typedef struct PaletteTextureSourceResult PaletteTextureSourceResult, *PPaletteTextureSourceResult;
-typedef struct ModelLookupEntryResult ModelLookupEntryResult, *PModelLookupEntryResult;
 typedef struct EffectCreateResult EffectCreateResult, *PEffectCreateResult;
 typedef struct PaletteAssetResult PaletteAssetResult, *PPaletteAssetResult;
 typedef struct ArmyPreviewTextureResult ArmyPreviewTextureResult, *PArmyPreviewTextureResult;
@@ -649,7 +644,6 @@ typedef struct WorldFlagsResult WorldFlagsResult, *PWorldFlagsResult;
 typedef struct FieldGridCoordinates FieldGridCoordinates, *PFieldGridCoordinates;
 typedef struct TerrainRaycastResult TerrainRaycastResult, *PTerrainRaycastResult;
 typedef struct GlyphSizeResult GlyphSizeResult, *PGlyphSizeResult;
-typedef struct PackageFindResult PackageFindResult, *PPackageFindResult;
 typedef struct WorldObjectAllocResult WorldObjectAllocResult, *PWorldObjectAllocResult;
 typedef struct NearestCellResult NearestCellResult, *PNearestCellResult;
 typedef struct DirectoryRecordBlockResult DirectoryRecordBlockResult, *PDirectoryRecordBlockResult;
@@ -677,7 +671,6 @@ typedef struct RomRecordResult RomRecordResult, *PRomRecordResult;
 typedef struct WrappedLineResult WrappedLineResult, *PWrappedLineResult;
 typedef struct InputEventResult InputEventResult, *PInputEventResult;
 typedef struct MovementStepResult MovementStepResult, *PMovementStepResult;
-typedef struct FncModuleLoadResult FncModuleLoadResult, *PFncModuleLoadResult;
 typedef struct ShotDefinitionResult ShotDefinitionResult, *PShotDefinitionResult;
 typedef struct WorldCameraPosition WorldCameraPosition, *PWorldCameraPosition;
 typedef struct DynApiResolveResult DynApiResolveResult, *PDynApiResolveResult;
@@ -685,12 +678,9 @@ typedef struct RuntimeGroupIndexResult RuntimeGroupIndexResult, *PRuntimeGroupIn
 typedef struct FixedLengthAzimuthElevation FixedLengthAzimuthElevation, *PFixedLengthAzimuthElevation;
 typedef struct AiAnchorResult AiAnchorResult, *PAiAnchorResult;
 typedef struct SurfacePointResult SurfacePointResult, *PSurfacePointResult;
-typedef struct ModelLookupPayloadResult ModelLookupPayloadResult, *PModelLookupPayloadResult;
-typedef struct PackageMountEntryResult PackageMountEntryResult, *PPackageMountEntryResult;
 typedef struct SpriteRegisterResult SpriteRegisterResult, *PSpriteRegisterResult;
 typedef struct PlacementDispatchResult PlacementDispatchResult, *PPlacementDispatchResult;
 typedef struct PackageLoadResult PackageLoadResult, *PPackageLoadResult;
-typedef struct ModelDefinitionResult ModelDefinitionResult, *PModelDefinitionResult;
 typedef struct ModelNodeCreateResult ModelNodeCreateResult, *PModelNodeCreateResult;
 typedef struct FixedAzimuthElevationRoll FixedAzimuthElevationRoll, *PFixedAzimuthElevationRoll;
 typedef struct TerrainRayTriangleResult TerrainRayTriangleResult, *PTerrainRayTriangleResult;
@@ -979,11 +969,6 @@ struct TextureSourceLoadResult {
     bool failed; // Physical ABI component CF
 };
 
-struct ArmyAssetIdSearchResult {
-    uint32_t armyAssetId; // Physical ABI component EAX
-    bool notFound; // Physical ABI component CF
-};
-
 struct Win32FileReadResult {
     uint32_t valueOrError; // Physical ABI component EAX
     bool failed; // Physical ABI component CF
@@ -1100,11 +1085,6 @@ struct ModelWorldPoint {
     uint32_t zQ12; // Physical ABI component EDX
 };
 
-struct PackageDecodeResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
 struct ArenaAllocResult {
     uint32_t payloadOrError; // Physical ABI component EAX
     bool failed; // Physical ABI component CF
@@ -1130,12 +1110,6 @@ struct MailboxReceiveResult {
 struct ArmyRuntimeCreateResult {
     uint32_t armyRuntimeOrError; // Physical ABI component EAX
     bool failed; // Physical ABI component CF
-};
-
-struct PackageEntryLookupResult {
-    uint32_t entry; // Physical ABI component EAX
-    uint32_t fileHandle; // Physical ABI component EBX
-    bool notFound; // Physical ABI component CF
 };
 
 struct NetworkSetSessionResult {
@@ -10806,13 +10780,6 @@ struct SiteWeightResult {
     bool noSite; // CF status
 };
 
-struct BuildCostsResult {
-    uint32_t energyLoadQ4OrError; // EAX build metric component
-    uint32_t buildTicks; // ECX build metric component
-    uint32_t xeniteCostQ4; // EDX build metric component
-    bool notFound; // CF lookup status
-};
-
 struct HeightSampleResult {
     Q12 heightQ12; // EAX interpolated height
     bool failed; // CF status
@@ -10838,11 +10805,6 @@ struct FixedVectorQ12 {
 struct PaletteTextureSourceResult {
     struct GraphicsPaletteTextureSourceAsset *paletteSource; // EAX palette-source pointer / error-coded value
     bool failed; // CF status
-};
-
-struct ModelLookupEntryResult {
-    struct ModelPackedPointRecord *entry; // EAX matching lookup entry
-    bool notFound; // CF status
 };
 
 struct EffectCreateResult {
@@ -10890,11 +10852,6 @@ struct GlyphSizeResult {
     bool failed; // CF state (implementation clears on return)
 };
 
-struct PackageFindResult {
-    uint32_t recordSizeOrError; // EAX 0x200 record size or error code
-    uint32_t matchCount; // ECX matching entry count
-    bool failed; // CF status
-};
 
 struct WorldObjectAllocResult {
     struct WorldObjectRecord *recordOrError; // EAX allocated WorldObjectRecord on CF-clear; error-coded value when CF-set
@@ -11037,11 +10994,6 @@ struct MovementStepResult {
     bool arrived; // CF movement/status
 };
 
-struct FncModuleLoadResult {
-    int *moduleBase; // EAX relocated module base / error-coded value
-    bool failed; // CF status
-};
-
 struct ShotDefinitionResult {
     struct ShotDefinition *definitionOrError; // EAX shot definition pointer or error-coded value
     bool notFound; // CF status
@@ -11082,18 +11034,6 @@ struct SurfacePointResult {
     bool outOfBounds; // CF status
 };
 
-struct ModelLookupPayloadResult {
-    uint32_t payload4; // EAX entry payload +4
-    uint32_t payload8; // ECX entry payload +8
-    uint32_t payload12; // EDX entry payload +12
-    bool notFound; // CF status
-};
-
-struct PackageMountEntryResult {
-    struct PckEntryHeader *entry; // EAX package entry header
-    bool notFound; // CF found/status
-};
-
 struct SpriteRegisterResult {
     struct SpriteAssetHeader *assetOrError; // EAX relocated asset pointer or error-coded value
     bool failed; // CF validation status
@@ -11128,11 +11068,6 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
 struct PackageLoadResult {
     void *bufferOrError; // EAX loaded buffer or error-coded value
     bool failed; // CF status
-};
-
-struct ModelDefinitionResult {
-    struct ModelDefinitionRecordPrefix *modelDefinition; // EAX model definition or error-coded value
-    bool notFound; // CF status
 };
 
 struct ModelNodeCreateResult {
@@ -11175,14 +11110,6 @@ typedef struct RichTextCommandQueryResult RichTextCommandQueryResult;
 struct RichTextCommandQueryResult {
     uint32_t commandVariant; 
     bool endOfStream; 
-};
-
-/* Result of ModelMesh_IntersectTriangleRayDistance: hit is set when the ray hits the triangle
-   (the opposite sense to TerrainRayTriangleResult). */
-typedef struct MeshRayTriangleResult MeshRayTriangleResult;
-struct MeshRayTriangleResult {
-    Q12 distanceQ12; 
-    bool hit; 
 };
 
 

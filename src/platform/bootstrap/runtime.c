@@ -223,7 +223,6 @@ bool GameData_LoadExternalTables(void)
   int remainingCount;
   uint32_t *sourceCursor;
   uint32_t *destinationCursor;
-  StatusResult loadStatus;
   PackageLoadResult packageEntry;
 
   remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4;
@@ -232,10 +231,9 @@ bool GameData_LoadExternalTables(void)
     *oldUnitBufferOrCursor = 0;
     oldUnitBufferOrCursor++;
   }
-  loadStatus = Package_LoadEntryIntoBuffer
+  if (Package_LoadEntryIntoBuffer
                     (GAME_FACTION_IMAGE_BYTES,(uint8_t *)&g_GameFactionRuntimeImage,
-                     (uint16_t *)u_daten_hex_0050e054);
-  if (!loadStatus.failed) {
+                     (uint16_t *)u_daten_hex_0050e054,NULL)) {
     packageEntry = Package_LoadEntry((uint16_t *)u_stat_hex_0050e082);
     previousStatTable = g_GameStatTableImage;
     if (!packageEntry.failed) {
@@ -659,7 +657,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   wchar_t screenshotTensDigit;
   int statusOrCount;
   SoundSampleAsset *loadedResource; /* a button sample, later the engine\pcx.fnc package buffer */
-  FncModuleHeader *module; /* a voice set or a PCX export; the error code on the failure paths */
+  FncModuleHeader *module; /* a voice set or the PCX module; the error code on the failure paths */
   uint16_t *textBuffer;
   uint32_t soundOptionsOrBufferBase;
   AudioMixerGainQ15 uiSoundGain;
@@ -671,12 +669,15 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   TextResourceId resourceId;
   FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
   StatusResult status;
+  uint32_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
   SampleVoiceSetResult voiceSetResult;
   FileSystemOpenResult openResult;
   TextResolveResult textResolveResult;
   TextPageLoadResult textPageLoadResult;
   PackageLoadResult pcxModuleEntry;
-  FncModuleLoadResult moduleLoadResult;
+  bool pcxModuleLoaded;
+  uint32_t fncError;
+  void *pcxExport;
   TextureSourceLoadResult panelTextureResult;
   ArenaAllocResult allocResult;
   ResourceLoadResult resourceLoadResult;
@@ -729,7 +730,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits = UTF16_DIGIT_PAIR('0','0');
   do {
     do {
-      Package_Mount(g_PatchArchivePathTemplateUtf16.prefixCodeUnits);
+      Package_Mount(g_PatchArchivePathTemplateUtf16.prefixCodeUnits,NULL);
       g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1] =
            g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1] - 1;
     } while ('0' - 1 < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
@@ -746,29 +747,23 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
     g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP;
   } while ('0' - 1 < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
-  status = Package_Mount((uint16_t *)u_daten_pck_00572e56);
-  if (!status.failed) {
-    g_DataPackageHandle = status.valueOrError;
+  if (Package_Mount((uint16_t *)u_daten_pck_00572e56,&packageHandle)) {
+    g_DataPackageHandle = packageHandle;
   }
-  status = Package_Mount((uint16_t *)u_modelle_pck_00572e6a);
-  if (!status.failed) {
-    g_ModelPackageHandle = status.valueOrError;
+  if (Package_Mount((uint16_t *)u_modelle_pck_00572e6a,&packageHandle)) {
+    g_ModelPackageHandle = packageHandle;
   }
-  status = Package_Mount((uint16_t *)u_graphik_pck_00572e82);
-  if (!status.failed) {
-    g_GraphicsPackageHandle = status.valueOrError;
+  if (Package_Mount((uint16_t *)u_graphik_pck_00572e82,&packageHandle)) {
+    g_GraphicsPackageHandle = packageHandle;
   }
-  status = Package_Mount((uint16_t *)u_sound_pck_00572e9a);
-  if (!status.failed) {
-    g_SoundPackageHandle = status.valueOrError;
+  if (Package_Mount((uint16_t *)u_sound_pck_00572e9a,&packageHandle)) {
+    g_SoundPackageHandle = packageHandle;
   }
-  status = Package_Mount((uint16_t *)u_filme_pck_00572eae);
-  if (!status.failed) {
-    g_MoviePackageHandle = status.valueOrError;
+  if (Package_Mount((uint16_t *)u_filme_pck_00572eae,&packageHandle)) {
+    g_MoviePackageHandle = packageHandle;
   }
-  status = Package_Mount((uint16_t *)u_level_pck_00572ec2);
-  if (!status.failed) {
-    g_LevelPackageHandle = status.valueOrError;
+  if (Package_Mount((uint16_t *)u_level_pck_00572ec2,&packageHandle)) {
+    g_LevelPackageHandle = packageHandle;
   }
   resourceLoadResult = Resource_Load((uint16_t *)u_sound_button0_sam_00572f06);
   loadedResource = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
@@ -970,19 +965,21 @@ bindDebugOverlayTexts:
                 if (pcxModuleEntry.failed) {
                   return (uint32_t)pcxModuleEntry.bufferOrError;
                 }
-                moduleLoadResult = FncModule_LoadAndRelocate(pcxModuleEntry.bufferOrError);
-                module = (FncModuleHeader *)moduleLoadResult.moduleBase;
+                pcxModuleLoaded = FncModule_LoadAndRelocate(pcxModuleEntry.bufferOrError,&module,&fncError);
+                if (!pcxModuleLoaded) {
+                  module = (FncModuleHeader *)fncError; /* the error code for the failure exit below */
+                }
                 loadedResource = (SoundSampleAsset *)pcxModuleEntry.bufferOrError;
-                if (!moduleLoadResult.failed) {
+                if (pcxModuleLoaded) {
                   g_PcxFunctionModule = module;
-                  status = FncModule_GetExportByIndex(3,module);
-                  module = (FncModuleHeader *)status.valueOrError;
-                  if (!status.failed) {
-                    g_PcxFunctionExport3 = (PcxEncodeProc *)module;
-                    status = FncModule_GetExportByIndex(2,g_PcxFunctionModule);
-                    module = (FncModuleHeader *)status.valueOrError;
-                    if (!status.failed) {
-                      g_PcxFunctionExport2 = (PcxDecodeProc *)module;
+                  fncError = FncModule_GetExportByIndex(3,module,&pcxExport);
+                  module = (FncModuleHeader *)fncError;
+                  if (fncError == 0) {
+                    g_PcxFunctionExport3 = (PcxEncodeProc *)pcxExport;
+                    fncError = FncModule_GetExportByIndex(2,g_PcxFunctionModule,&pcxExport);
+                    module = (FncModuleHeader *)fncError;
+                    if (fncError == 0) {
+                      g_PcxFunctionExport2 = (PcxDecodeProc *)pcxExport;
                       /* EDX still holds the engine\pcx.fnc package buffer. */
                       Resource_Release((SoundSampleAsset *)pcxModuleEntry.bufferOrError);
                       panelTextureResult = g_GraphicsTextureSourceLoadPackageAsset

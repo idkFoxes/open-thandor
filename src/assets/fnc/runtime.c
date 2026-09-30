@@ -29,9 +29,11 @@ uint32_t FncModule_GetBindingMode(FncModuleHeader *module)
    Loads an 'fnc' code module: checks the signature, copies the whole image into freshly reserved linear
    memory, adds the load address to every export-table entry (stored as image offsets) and fills the
    module's host API table with seven engine services (arena heap, packed date/time, computer label).
-   Only bindingMode 0 is supported. CF clear returns the module base, CF set an error code.
+   Only bindingMode 0 is supported. Returns true with the loaded module in *outModule, or false with the error
+   code in *outError (FATAL_ERROR_FNC_MODULE_INVALID, FATAL_ERROR_FNC_MODULE_BINDING or the reserve failure);
+   only one of the two out-parameters is written.
 */
-FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
+bool FncModule_LoadAndRelocate(FncModuleHeader *serializedModule,FncModuleHeader **outModule,uint32_t *outError)
 
 {
   ArenaFreeProc *arenaFreeProc;
@@ -44,7 +46,6 @@ FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
   int *relocationCursor;
   void **hostApiTable;
   ArenaReserveResult reserveResult;
-  FncModuleLoadResult failureResult;
 
   moduleBaseOrError = (AssetMagic *)FATAL_ERROR_FNC_MODULE_INVALID;
   if (serializedModule->magic == ASSET_MAGIC_FNC) {
@@ -84,38 +85,30 @@ FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
           hostApiTable[5] = packedDateProc;
           hostApiTable[6] = g_LocaleCopyDefaultComputerLabelUtf16;
         }
-        /* success: the module base with CF clear */
-        return THANDOR_BITCAST(uint64_t, FncModuleLoadResult,
-                               THANDOR_BITCAST(ArenaReserveResult, uint64_t, reserveResult) & UINT32_MAX);
+        *outModule = (FncModuleHeader *)moduleBaseOrError;
+        return true;
       }
     }
   }
-  failureResult.failed = true;
-  failureResult.moduleBase = (int *)moduleBaseOrError;
-  return failureResult;
+  *outError = (uint32_t)moduleBaseOrError;
+  return false;
 }
 
 
 /* Address: 0x0041A710.
    Returns export number exportIndex of a module loaded by FncModule_LoadAndRelocate, i.e. the already
-   relocated entry of its export table. CF set with FATAL_ERROR_FNC_MODULE_BINDING for an index outside
-   exportCount.
+   relocated entry of its export table. Returns 0 with the export address in *outExport, or
+   FATAL_ERROR_FNC_MODULE_BINDING (and *outExport unchanged) for an index outside exportCount.
 */
-StatusResult FncModule_GetExportByIndex(FncExportIndex exportIndex,FncModuleHeader *module)
+uint32_t FncModule_GetExportByIndex(FncExportIndex exportIndex,FncModuleHeader *module,void **outExport)
 
 {
-  StatusResult successResult;
-  StatusResult failureResult;
-
   if (exportIndex < module->exportBinding.exportCount) {
-    successResult.failed = false;
     /* the relocated entry at module + exportTableOffset + exportIndex * 4 */
-    successResult.valueOrError =
+    *outExport = (void *)(uintptr_t)
          *(uint32_t *)((uint8_t *)module + exportIndex * 4 + module->exportBinding.exportTableOffset);
-    return successResult;
+    return 0;
   }
-  failureResult.failed = true;
-  failureResult.valueOrError = FATAL_ERROR_FNC_MODULE_BINDING;
-  return failureResult;
+  return FATAL_ERROR_FNC_MODULE_BINDING;
 }
 

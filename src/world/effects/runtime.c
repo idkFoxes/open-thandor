@@ -221,7 +221,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
   EffectRuntimeSlot *effectRuntimeCursor;
   bool projectedCellMasked;
   WorldObjectAllocResult recordAlloc;
-  ModelLookupEntryResult lookupEntry;
+  ModelPackedPointRecord *lightPoint;
   ShadingRecordResult shadingAlloc;
   EffectCreateResult successResult;
   EffectCreateResult failureResult;
@@ -307,11 +307,10 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
         effectRuntimeCursor->stateTintArgb = 0xffffff; /* white */
         effectRuntimeCursor->effectAgeTicks = 0;
         if (shadingStartTicks == 0) {
-          lookupEntry = ModelLookupTable_ContainsPackedKey
-                           (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource);
-          if (!lookupEntry.notFound) {
+          if (ModelLookupTable_FindPackedPoint
+                (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource,&lightPoint)) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                               (lookupEntry.entry,(ModelRuntimeNode *)effectModelNode);
+                               (lightPoint,(ModelRuntimeNode *)effectModelNode);
             /* the alpha byte of the shading colour is the radius in 1/16 world units */
             shadingAlloc = GraphicsShadingRuntime_AllocateRecordRegs
                                (effectDefinition->shadingTransitionDurationTicks,

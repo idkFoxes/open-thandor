@@ -32,14 +32,6 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
   int remainingSteps;
   uint32_t *dispatchRecord;
   PageStackSearchResult pageNotInListResult;
-  ArmyAssetIdSearchResult previousModeGArmy;
-  ArmyAssetIdSearchResult previousMode4Army;
-  ArmyAssetIdSearchResult nextModeGArmy;
-  ArmyAssetIdSearchResult nextMode4Army;
-  ArmyAssetIdSearchResult steppedForwardModeGArmy;
-  ArmyAssetIdSearchResult steppedForwardMode4Army;
-  ArmyAssetIdSearchResult steppedBackwardModeGArmy;
-  ArmyAssetIdSearchResult steppedBackwardMode4Army;
   ArmyAssetLookupResult foundArmyAsset;
   FatalErrorCheckResult hoverRecordResult;
   FramebufferCaptureResult capturedFramebuffer;
@@ -143,9 +135,8 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
       else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
-        previousModeGArmy = ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped
+        g_UiCommandModeGArmyAssetId = ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped
                            (g_UiCommandModeGArmyAssetId);
-        g_UiCommandModeGArmyAssetId = previousModeGArmy.armyAssetId;
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
@@ -155,9 +146,8 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-        previousMode4Army = ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped
+        g_UiCommandMode4ArmyAssetId = ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped
                            (g_UiCommandMode4ArmyAssetId);
-        g_UiCommandMode4ArmyAssetId = previousMode4Army.armyAssetId;
         mode4PreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,objectPlacementPreviewImage))->textureSource = mode4PreviewTexture;
@@ -200,8 +190,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
       else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
-        nextModeGArmy = ArmyAssetRegistry_FindNextPlaceableUnitWrapped(g_UiCommandModeGArmyAssetId);
-        g_UiCommandModeGArmyAssetId = nextModeGArmy.armyAssetId;
+        g_UiCommandModeGArmyAssetId = ArmyAssetRegistry_FindNextPlaceableUnitWrapped(g_UiCommandModeGArmyAssetId);
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
@@ -211,8 +200,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-        nextMode4Army = ArmyAssetRegistry_FindNextPlaceableObjectWrapped(g_UiCommandMode4ArmyAssetId);
-        g_UiCommandMode4ArmyAssetId = nextMode4Army.armyAssetId;
+        g_UiCommandMode4ArmyAssetId = ArmyAssetRegistry_FindNextPlaceableObjectWrapped(g_UiCommandMode4ArmyAssetId);
         mode4PreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,objectPlacementPreviewImage))->textureSource = mode4PreviewTexture;
@@ -257,8 +245,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
       else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
-        steppedForwardModeGArmy = ArmyAssetRegistry_StepForwardPlaceableUnit(g_UiCommandModeGArmyAssetId);
-        g_UiCommandModeGArmyAssetId = steppedForwardModeGArmy.armyAssetId;
+        g_UiCommandModeGArmyAssetId = ArmyAssetRegistry_StepForwardPlaceableUnit(g_UiCommandModeGArmyAssetId);
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
@@ -268,8 +255,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-        steppedForwardMode4Army = ArmyAssetRegistry_StepForwardPlaceableObject(g_UiCommandMode4ArmyAssetId);
-        g_UiCommandMode4ArmyAssetId = steppedForwardMode4Army.armyAssetId;
+        g_UiCommandMode4ArmyAssetId = ArmyAssetRegistry_StepForwardPlaceableObject(g_UiCommandMode4ArmyAssetId);
         mode4PreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,objectPlacementPreviewImage))->textureSource = mode4PreviewTexture;
@@ -314,8 +300,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
       else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
-        steppedBackwardModeGArmy = ArmyAssetRegistry_StepBackwardPlaceableUnit(g_UiCommandModeGArmyAssetId);
-        g_UiCommandModeGArmyAssetId = steppedBackwardModeGArmy.armyAssetId;
+        g_UiCommandModeGArmyAssetId = ArmyAssetRegistry_StepBackwardPlaceableUnit(g_UiCommandModeGArmyAssetId);
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
@@ -325,8 +310,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-        steppedBackwardMode4Army = ArmyAssetRegistry_StepBackwardPlaceableObject(g_UiCommandMode4ArmyAssetId);
-        g_UiCommandMode4ArmyAssetId = steppedBackwardMode4Army.armyAssetId;
+        g_UiCommandMode4ArmyAssetId = ArmyAssetRegistry_StepBackwardPlaceableObject(g_UiCommandMode4ArmyAssetId);
         mode4PreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,objectPlacementPreviewImage))->textureSource = mode4PreviewTexture;
@@ -729,14 +713,15 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   uint32_t *destinationCursor;
   bool allZero;
   RuntimeImagePointerByteSizeEdxEax8 pointerImage;
-  StatusResult upsertStatus;
+  EngineFileHandle packageHandle;
+  StatusResult createDirectoryStatus;
   ArenaAllocResult oldUnitAllocation;
   FileSystemSeekResult seekResult;
   FileSystemReadResult readResult;
   FileSystemWriteResult writeResult;
   ResourceRegistrationImagePair domainImagePair;
-  uint32_t upsertFailed;
-  
+  bool upsertOk;
+
   g_InGameResourceRegistrationBusyCount++;
   /* first hand every player's pending army asset back to its faction */
   playerBlock = g_FrontendPlayerRuntimeBlocks;
@@ -746,89 +731,78 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
               (playerBlock->playerRuntimeId,0,0,(playerBlock->factionAssignment).factionAssignmentIndex);
     playerBlock++;
   }
-  upsertStatus = InGameSaveGame_CreatePackage(savePath);
-  handle = (void *)upsertStatus.valueOrError;
-  if (upsertStatus.failed) {
+  if (!InGameSaveGame_CreatePackage(savePath,&packageHandle)) {
     WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),savePath);
-    upsertStatus = g_FileSystemCreateDirectoryRecursive
+    createDirectoryStatus = g_FileSystemCreateDirectoryRecursive
                       (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0));
-    if (upsertStatus.failed) goto failed;
-    upsertStatus = InGameSaveGame_CreatePackage(savePath);
-    handle = (void *)upsertStatus.valueOrError;
-    if (upsertStatus.failed) goto failed;
+    if (createDirectoryStatus.failed) goto failed;
+    if (!InGameSaveGame_CreatePackage(savePath,&packageHandle)) goto failed;
   }
+  handle = (void *)(uintptr_t)packageHandle;
   pointerImage = ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs();
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 32),
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 32),
                               (uint32_t *)pointerImage,(uint16_t *)u_army_hex_0050dfb4,(EngineFileHandle)handle);
-  upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ArmyRuntimePool_RebaseAfterLoad();
-  if ((upsertFailed & 1) != 0) goto failed;
+  if (!upsertOk) goto failed;
   ModelRuntimePool_UnrebaseBeforeSave();
   /* The unrebase returns the model runtime slot image in EAX and its size (0x400000) in EDX;
      the decompiler lost both. */
   modelSlotImage = (uint32_t *)g_ModelRuntimeSlots;
   unpackedSize = MODEL_RUNTIME_SLOT_COUNT * sizeof(ModelRuntimeSlot);
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,unpackedSize,modelSlotImage,
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,unpackedSize,modelSlotImage,
                               (uint16_t *)u_modul_hex_0050dfee,(EngineFileHandle)handle);
-  upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ModelRuntimePool_RebaseAfterLoad();
-  if ((upsertFailed & 1) != 0) goto failed;
+  if (!upsertOk) goto failed;
   domainImagePair = InGameSaveGame_PrepareShotSlots();
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_shot_hex_0050dfdc,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ShotRuntime_RebaseSlotsAfterLoad();
-  if ((upsertFailed & 1) != 0) goto failed;
+  if (!upsertOk) goto failed;
   domainImagePair = InGameSaveGame_PrepareEffectSlots();
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_effect_hex_0050dfc6,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   EffectRuntime_RebaseSlotsAfterLoad();
-  if ((upsertFailed & 1) != 0) goto failed;
+  if (!upsertOk) goto failed;
   domainImagePair = InGameSaveGame_PrepareRegistrationRecords(worldView);
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_widget_hex_0050e02a,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ResourceRegistrationRuntime_RebaseLoadedRecords(worldView);
-  if ((upsertFailed & 1) != 0) goto failed;
+  if (!upsertOk) goto failed;
   pointerImage = RuntimeHexSegment_GetLightImageAndToggleFlagRegs();
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 32),
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 32),
                               (uint32_t *)pointerImage,(uint16_t *)u_light_hex_0050e016,(EngineFileHandle)handle);
-  upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   RuntimeHexSegment_ToggleLightImageFlag();
-  if ((upsertFailed & 1) != 0) goto failed;
+  if (!upsertOk) goto failed;
   domainImagePair = RuntimeHexSegment_GetFieldImageRegs(worldView);
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_field_hex_0050e002,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   RuntimeHexSegment_AfterFieldImageNoOp(worldView);
   sourceData = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  if ((upsertFailed & 1) != 0) goto failed;
+  if (!upsertOk) goto failed;
   InGameSaveGame_StoreCameraAsPlayerStart(worldView);
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (sourceData->levelImage).header.resourceTables.
                               runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)sourceData
                               ,(uint16_t *)u_level_hex_0050e040,(EngineFileHandle)handle);
-  if (upsertStatus.failed) goto failed;
+  if (!upsertOk) goto failed;
   domainImagePair = InGameSaveGame_PrepareFactionImage();
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_daten_hex_0050e054,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   GameFactionRuntime_RebaseLoadedArmyReferences();
-  if ((upsertFailed & 1) != 0) goto failed;
+  if (!upsertOk) goto failed;
   if (g_FrontendLoadedCampaignAsset == 0) {
-    Package_DeleteEntry((uint16_t *)u_campagne_hex_0050e068,(EngineFileHandle)handle);
+    Package_DeleteEntry((uint16_t *)u_campagne_hex_0050e068,(EngineFileHandle)handle,NULL);
   }
   else {
-    upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
+    upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
                                 g_FrontendLoadedCampaignAsset,(uint16_t *)u_campagne_hex_0050e068,
                                 (EngineFileHandle)handle);
-    if (upsertStatus.failed) goto failed;
+    if (!upsertOk) goto failed;
   }
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,g_GameStatTableImage,
                       (uint16_t *)u_stat_hex_0050e082,(EngineFileHandle)handle);
@@ -846,7 +820,7 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
     } while (allZero);
   }
   if (allZero) {
-    Package_DeleteEntry((uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
+    Package_DeleteEntry((uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle,NULL);
   }
   else {
     oldUnitAllocation = g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES);
@@ -5013,8 +4987,6 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
   FieldGridCell *fieldCellCursor;
   ArmyAssetRecordPrefix **registrySlot;
   PageStackSearchResult pageNotInListResult;
-  ArmyAssetIdSearchResult normalizedModeGArmy;
-  ArmyAssetIdSearchResult normalizedMode4Army;
   FieldGridAsset *worldFieldGrid;
   
   modeOrValue = g_UiCommandModeG;
@@ -5086,12 +5058,10 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       root->notificationButtonSubresource = INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE;
       ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource = textureSourceValue;
       UiCommandMatrix_SelectIndex(g_UiCommandAbsoluteSelectionIndex,(UiNodeBase *)root);
-      normalizedModeGArmy = ArmyAssetRegistry_NormalizeIdToPlaceableUnit(g_UiCommandModeGArmyAssetId);
-      g_UiCommandModeGArmyAssetId = normalizedModeGArmy.armyAssetId;
+      g_UiCommandModeGArmyAssetId = ArmyAssetRegistry_NormalizeIdToPlaceableUnit(g_UiCommandModeGArmyAssetId);
       modeOrValue = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
       ((UiImagePanelControl *)INGAME_UI(root,unitPlacementPreviewImage))->textureSource = (GraphicsTextureSourceAsset *)modeOrValue;
-      normalizedMode4Army = ArmyAssetRegistry_NormalizeIdToPlaceableObject(g_UiCommandMode4ArmyAssetId);
-      g_UiCommandMode4ArmyAssetId = normalizedMode4Army.armyAssetId;
+      g_UiCommandMode4ArmyAssetId = ArmyAssetRegistry_NormalizeIdToPlaceableObject(g_UiCommandMode4ArmyAssetId);
       modeOrValue = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
       ((UiImagePanelControl *)INGAME_UI(root,objectPlacementPreviewImage))->textureSource = (GraphicsTextureSourceAsset *)modeOrValue;
       FieldGrid_SetOccupancyMaskByteBit0AllCells
@@ -5441,7 +5411,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
   ArmyAssetLookupResult foundArmyAsset;
   FatalErrorCheckResult armyAssetResult;
   TextResolveResult resolvedText;
-  ModelDefinitionResult unlockedDefinition;
+  ModelDefinitionRecordPrefix *unlockedDefinition;
   ModelRuntimeSlot *selectedModelRuntime;
   ModelRuntimeSlot *selectedModelRuntimeTail;
   ModelRuntimeSlot *selectedModelRuntimeTail2;
@@ -5629,7 +5599,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
         unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                            ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                             (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
-        resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
+        resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
         sourceText = resolvedText.text;
         destinationText = g_InGameSelectionDetailTextSlot05Utf16;
         goto copyDefinitionNames;
@@ -5702,7 +5672,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
     unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                         (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
-    resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
+    resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
     sourceText = resolvedText.text;
     destinationText = g_InGameSelectionDetailNameTextUtf16;
 copyDefinitionNames:
@@ -5720,7 +5690,7 @@ copyDefinitionNames:
       unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                          ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                           linkedDefinitionListView->childList0Address);
-      resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
+      resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
       sourceText = resolvedText.text;
       destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
       for (workValue = 64; workValue != 0; workValue--) {
@@ -5732,7 +5702,7 @@ copyDefinitionNames:
         unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                            ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                             linkedDefinitionListView->childList1Address);
-        resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
+        resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
         sourceText = resolvedText.text;
         destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
         for (workValue = 64; workValue != 0; workValue--) {
@@ -5744,7 +5714,7 @@ copyDefinitionNames:
           unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                              ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                               linkedDefinitionListView->childList2Address);
-          resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
+          resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
           sourceText = resolvedText.text;
           destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
           for (workValue = 64; workValue != 0; workValue--) {

@@ -18,15 +18,15 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0051E0B0 */
-StatusResult EffectAsset_PrepareEntries(EffectAssetHeader *asset);
+bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
 
 /* 0x0051E3E0 */
-StatusResult EffectDefinitions_ResolveCrossReferences(void);
+uint32_t EffectDefinitions_ResolveCrossReferences(void);
 
 /* 0x0051DFD0 */
-StatusResult EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition);
+bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError);
 
 /* 0x0051E440 */
-EffectDefinitionResult EffectDefinitionRegistry_FindByIdWithError(PckEffectDefinitionIdCatalog definitionId);
+uint32_t EffectDefinitionRegistry_FindById(PckEffectDefinitionIdCatalog definitionId,EffectDefinition **outDefinition);
 
 #endif /* THANDOR_ASSETS_EFFECT_CATALOG_H */

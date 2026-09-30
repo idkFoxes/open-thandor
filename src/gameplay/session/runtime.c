@@ -1358,6 +1358,8 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
   InGameNotificationQueueRecord *queueRecord;
   bool terminatorOrFailure;
   StatusResult statusResult;
+  bool saveMounted;
+  uint32_t saveHandleOrError; /* the save package's handle, or the mount error code */
   PackageLoadResult packageEntry;
   ArenaAllocResult allocation;
   EndingMoviePathResult endingMoviePath;
@@ -1368,15 +1370,15 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
   LoadedSessionInitResult failureResult;
   InGameRuntimeRoot *mountedPackage;
   FrontendLoadedLevelAsset *loadedLevelAsset;
-  
+
   g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   mountedPackage = NULL;
   loadedLevelAsset = NULL;
-  statusResult = Package_Mount(savePackagePath);
+  saveMounted = Package_Mount(savePackagePath,&saveHandleOrError);
   saveNameSource = g_PackageScratchBuffer;
-  mountResult = (InGameRuntimeRoot *)statusResult.valueOrError;
+  mountResult = (InGameRuntimeRoot *)saveHandleOrError;
   rootCursorOrError = mountResult;
-  if (!statusResult.failed) {
+  if (saveMounted) {
     sessionNameClearCursor = &g_InGameSessionNameScratchUtf16;
     for (remainingCount = 32; remainingCount != 0; remainingCount--) {
       *sessionNameClearCursor = 0;

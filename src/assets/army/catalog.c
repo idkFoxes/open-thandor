@@ -14,23 +14,15 @@
    Keeps the editor's unit-placement army id when it names a placeable unit (flag 0x0100 set, 0x0200 clear),
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
+   Returns the placeable unit id.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId)
+ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId)
 
 {
-  bool idAbsent;
-  ArmyAssetIdSearchResult searchResult;
-  ArmyAssetIdSearchResult normalizedResult;
-  
-  idAbsent = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId);
-  searchResult.notFound = idAbsent;
-  searchResult.armyAssetId = recordId;
-  if (idAbsent) {
-    searchResult = ArmyAssetRegistry_FindNextPlaceableUnitWrapped(recordId);
+  if (ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) {
+    return ArmyAssetRegistry_FindNextPlaceableUnitWrapped(recordId);
   }
-  normalizedResult.armyAssetId = searchResult.armyAssetId;
-  normalizedResult.notFound = searchResult.notFound;
-  return normalizedResult;
+  return recordId;
 }
 
 
@@ -39,19 +31,20 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAsse
    other units (0x0200 clear) are skipped; at the end of the run of unit ids it goes back to the first id of that
    run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in unit-placement mode.
+   Returns the new id.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId)
+ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
   bool broaderAbsent;
-  ArmyAssetIdSearchResult stepResult;
-  
+  ArmyAssetId candidateId;
+
   baseId = recordId;
-  stepResult.armyAssetId = baseId + 1;
-  while ((stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(stepResult.armyAssetId)) != false) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(stepResult.armyAssetId);
-    recordId = stepResult.armyAssetId;
+  candidateId = baseId + 1;
+  while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(candidateId)) {
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
+    recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
@@ -61,9 +54,9 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId r
       } while (!broaderAbsent);
     }
     baseId = recordId;
-    stepResult.armyAssetId = baseId + 1;
+    candidateId = baseId + 1;
   }
-  return stepResult;
+  return candidateId;
 }
 
 
@@ -72,19 +65,20 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId r
    Ids of other units are skipped; at the start of the run of unit ids it goes forward to the last id of that
    run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in unit-placement mode.
+   Returns the new id.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId)
+ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
   bool broaderAbsent;
-  ArmyAssetIdSearchResult stepResult;
-  
+  ArmyAssetId candidateId;
+
   baseId = recordId;
-  stepResult.armyAssetId = baseId - 1;
-  while ((stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(stepResult.armyAssetId)) != false) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(stepResult.armyAssetId);
-    recordId = stepResult.armyAssetId;
+  candidateId = baseId - 1;
+  while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(candidateId)) {
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
+    recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
@@ -94,9 +88,9 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId 
       } while (!broaderAbsent);
     }
     baseId = recordId;
-    stepResult.armyAssetId = baseId - 1;
+    candidateId = baseId - 1;
   }
-  return stepResult;
+  return candidateId;
 }
 
 
@@ -106,11 +100,9 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId 
    the step functions this jumps between id blocks. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014) in unit-placement mode.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyAssetId recordId)
+ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyAssetId recordId)
 
 {
-  ArmyAssetIdSearchResult searchResult;
-  
   /* Leave the current run of unit ids first. */
   while (!ArmyAssetRegistry_HasNoUnitWithId(recordId)) {
     recordId--;
@@ -120,14 +112,13 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyA
     }
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
-  while ((searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) != false) {
+  while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) {
     recordId--;
     if ((int)recordId < 0) {
       recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
     }
   }
-  searchResult.armyAssetId = recordId;
-  return searchResult;
+  return recordId;
 }
 
 
@@ -135,23 +126,15 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyA
    Keeps the editor's object-placement army id when it names a placeable object (flags 0x0100 and 0x0200 set),
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
+   Returns the placeable object id.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdToPlaceableObject(PckArmyAssetIdCatalog recordId)
+ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableObject(PckArmyAssetIdCatalog recordId)
 
 {
-  bool idAbsent;
-  ArmyAssetIdSearchResult searchResult;
-  ArmyAssetIdSearchResult normalizedResult;
-  
-  idAbsent = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId);
-  searchResult.notFound = idAbsent;
-  searchResult.armyAssetId = recordId;
-  if (idAbsent) {
-    searchResult = ArmyAssetRegistry_FindNextPlaceableObjectWrapped(recordId);
+  if (ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) {
+    return ArmyAssetRegistry_FindNextPlaceableObjectWrapped(recordId);
   }
-  normalizedResult.armyAssetId = searchResult.armyAssetId;
-  normalizedResult.notFound = searchResult.notFound;
-  return normalizedResult;
+  return recordId;
 }
 
 
@@ -160,19 +143,20 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdToPlaceableObject(PckArmyAs
    objects (0x0200 set) are skipped; at the end of the run of object ids it goes back to the first id of that run,
    so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in object-placement mode.
+   Returns the new id.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId)
+ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
   bool broaderAbsent;
-  ArmyAssetIdSearchResult stepResult;
-  
+  ArmyAssetId candidateId;
+
   baseId = recordId;
-  stepResult.armyAssetId = baseId + 1;
-  while ((stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(stepResult.armyAssetId)) != false) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(stepResult.armyAssetId);
-    recordId = stepResult.armyAssetId;
+  candidateId = baseId + 1;
+  while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(candidateId)) {
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
+    recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
@@ -182,9 +166,9 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId
       } while (!broaderAbsent);
     }
     baseId = recordId;
-    stepResult.armyAssetId = baseId + 1;
+    candidateId = baseId + 1;
   }
-  return stepResult;
+  return candidateId;
 }
 
 
@@ -193,19 +177,20 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId
    Other objects are skipped; at the start of the run of object ids it goes forward to the last id of that run,
    so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in object-placement mode.
+   Returns the new id.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId)
+ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
   bool broaderAbsent;
-  ArmyAssetIdSearchResult stepResult;
-  
+  ArmyAssetId candidateId;
+
   baseId = recordId;
-  stepResult.armyAssetId = baseId - 1;
-  while ((stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(stepResult.armyAssetId)) != false) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(stepResult.armyAssetId);
-    recordId = stepResult.armyAssetId;
+  candidateId = baseId - 1;
+  while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(candidateId)) {
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
+    recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
@@ -215,9 +200,9 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetI
       } while (!broaderAbsent);
     }
     baseId = recordId;
-    stepResult.armyAssetId = baseId - 1;
+    candidateId = baseId - 1;
   }
-  return stepResult;
+  return candidateId;
 }
 
 
@@ -227,11 +212,9 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetI
    from the in-game keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014)
    in object-placement mode.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId recordId)
+ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId recordId)
 
 {
-  ArmyAssetIdSearchResult searchResult;
-  
   /* Leave the current run of object ids first. */
   while (!ArmyAssetRegistry_HasNoObjectWithId(recordId)) {
     recordId--;
@@ -241,14 +224,13 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(Arm
     }
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
-  while ((searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) != false) {
+  while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) {
     recordId--;
     if ((int)recordId < 0) {
       recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
     }
   }
-  searchResult.armyAssetId = recordId;
-  return searchResult;
+  return recordId;
 }
 
 
@@ -256,38 +238,28 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(Arm
    Checks that a loaded asset is an 'arm' file of converter version 0x20008 and registers every army record
    in it (the variable-size records follow the 0x200-byte header, each starting with its byte size). A wrong
    header stores the asset path as the error detail and fails with FATAL_ERROR_ARMY_ASSET_INVALID; a failed
-   registration fails with that step's error code.
+   registration fails with that step's error code. Returns 0 on success, otherwise that (non-zero) error code.
+   (The original's success EAX, the preset error code or the last registration result, was read by no caller.)
 */
-StatusResult ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
+uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   ArmyAssetRecord *record;
-  StatusResult registrationStatus;
-  StatusResult failureStatus;
 
-  registrationStatusCode = FATAL_ERROR_ARMY_ASSET_INVALID;
   if (asset->recordCountHeader.common.magic == ASSET_MAGIC_ARM &&
       asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_ARM_00020008) {
     record = (ArmyAssetRecord *)(asset + 1);
     for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
-      registrationStatus = ArmyAssetRecord_RegisterAndRelocate(record,asset);
-      registrationStatusCode = registrationStatus.valueOrError;
-      if (registrationStatus.failed) goto ReturnFailure;
+      registrationStatusCode = ArmyAssetRecord_RegisterAndRelocate(record,asset);
+      if (registrationStatusCode != 0) return registrationStatusCode;
       record = (ArmyAssetRecord *)((uint8_t *)record + record->byteSize);
     }
-    registrationStatus.failed = false;
-    registrationStatus.valueOrError = registrationStatusCode;
-    return registrationStatus;
+    return 0;
   }
-  else {
-    Package_SetLastErrorPath((uint16_t *)asset);
-  }
-ReturnFailure:
-  failureStatus.failed = true;
-  failureStatus.valueOrError = registrationStatusCode;
-  return failureStatus;
+  Package_SetLastErrorPath((uint16_t *)asset);
+  return FATAL_ERROR_ARMY_ASSET_INVALID;
 }
 
 
@@ -384,12 +356,12 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
    all its children (count at +0x08, pointers from +0x0C). */
 static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
 {
-  ModelDefinitionResult selected;
+  ModelDefinitionRecordPrefix *selected;
   uint32_t armourSum;
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  armourSum = ((ModelDefinition *)selected.modelDefinition)->maximumHealth;
+  armourSum = ((ModelDefinition *)selected)->maximumHealth;
   for (childIndex = 0; childIndex < node->childCount; childIndex++) {
     ArmyModelTreeNode *child = node->children[childIndex];
     if (child != NULL) {
@@ -419,15 +391,15 @@ uint32_t ArmyAssetHierarchy_SumFactionUnlockedArmour
    that of its children when the definition's flags (+0x68) have bit 0x80 set. */
 static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
 {
-  ModelDefinitionResult selected;
+  ModelDefinitionRecordPrefix *selected;
   EnergyDemandQ4 energySum;
   uint32_t childCount;
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  energySum = ((ModelDefinition *)selected.modelDefinition)->energyLoadQ4;
+  energySum = ((ModelDefinition *)selected)->energyLoadQ4;
   childCount = node->childCount;
-  if ((((ModelDefinition *)selected.modelDefinition)->modelFlags &
+  if ((((ModelDefinition *)selected)->modelFlags &
        MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) == 0) {
     childCount = 0; /* only definitions with this flag contribute their children */
   }
@@ -458,25 +430,23 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
    returns the next placeable unit (0x0100 set, 0x0200 clear), wrapping from 0x1000 to 0. Unlike the step
    functions this jumps between id blocks. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in unit-placement mode, and by
-   ArmyAssetRegistry_NormalizeIdToPlaceableUnit.
+   ArmyAssetRegistry_NormalizeIdToPlaceableUnit. Returns the found id; the scan only ends on a match (it loops
+   forever when no placeable unit is registered).
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAssetId recordId)
+ArmyAssetId ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAssetId recordId)
 
 {
-  ArmyAssetIdSearchResult searchResult;
-  
   /* Leave the current run of unit ids first. */
   while (!ArmyAssetRegistry_HasNoUnitWithId(recordId)) {
     recordId++;
   }
-  while ((searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) != false) {
+  while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) {
     recordId++;
     if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
       recordId = 0;
     }
   }
-  searchResult.armyAssetId = recordId;
-  return searchResult;
+  return recordId;
 }
 
 
@@ -484,25 +454,23 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAsset
    Moves the editor's object-placement army id forward out of its current run of object ids (flag 0x0200 set) and
    returns the next placeable object (0x0100 and 0x0200 set), wrapping from 0x1000 to 0. Called from the in-game
    keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in
-   object-placement mode, and by ArmyAssetRegistry_NormalizeIdToPlaceableObject.
+   object-placement mode, and by ArmyAssetRegistry_NormalizeIdToPlaceableObject. Returns the found id; the scan
+   only ends on a match (it loops forever when no placeable object is registered).
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableObjectWrapped(ArmyAssetId recordId)
+ArmyAssetId ArmyAssetRegistry_FindNextPlaceableObjectWrapped(ArmyAssetId recordId)
 
 {
-  ArmyAssetIdSearchResult searchResult;
-  
   /* Leave the current run of object ids first. */
   while (!ArmyAssetRegistry_HasNoObjectWithId(recordId)) {
     recordId++;
   }
-  while ((searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) != false) {
+  while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) {
     recordId++;
     if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
       recordId = 0;
     }
   }
-  searchResult.armyAssetId = recordId;
-  return searchResult;
+  return recordId;
 }
 
 
@@ -512,20 +480,20 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableObjectWrapped(ArmyAss
 static uint32_t ArmyAssetRecord_RelocateModelTree
           (ArmyAssetRecord *record,uint8_t *assetBase,ArmyModelTreeNode *node)
 {
-  BuildCostsResult costs;
+  uint32_t energyLoadQ4;
+  uint32_t buildTicks;
+  uint32_t xeniteCostQ4;
   uint32_t childCount;
   uint32_t childIndex;
-  uint32_t error = 0;
+  uint32_t error;
   uint32_t childError;
 
-  costs = ModelDefinitionRegistry_FindBuildCostsById(node->linkedDefinitionIds[0]);
-  if (costs.notFound) {
-    error = costs.energyLoadQ4OrError;
-  }
-  else {
-    record->energyLoadQ4 = record->energyLoadQ4 + costs.energyLoadQ4OrError;
-    record->buildTicks = record->buildTicks + costs.buildTicks;
-    record->xeniteCostQ4 = record->xeniteCostQ4 + costs.xeniteCostQ4;
+  error = ModelDefinitionRegistry_FindBuildCostsById
+                    (node->linkedDefinitionIds[0],&energyLoadQ4,&buildTicks,&xeniteCostQ4);
+  if (error == 0) {
+    record->energyLoadQ4 = record->energyLoadQ4 + energyLoadQ4;
+    record->buildTicks = record->buildTicks + buildTicks;
+    record->xeniteCostQ4 = record->xeniteCostQ4 + xeniteCostQ4;
   }
   childCount = node->childCount;
   for (childIndex = 0; childIndex < childCount; childIndex++) {
@@ -543,9 +511,10 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
    Registers a loaded army record: rejects an id that is already registered (FATAL_ERROR_ARMY_ID_DUPLICATE), puts
    the record into the first free slot of the 768-slot army registry (FATAL_ERROR_ARMY_REGISTRY_FULL when none is
    left), turns its model-tree offsets into pointers against assetBase and adds the build costs of every node's
-   model definition to the record. CF set on failure with the error code in EAX.
+   model definition to the record. Returns 0 on success, otherwise the FATAL_ERROR_* code (a failed
+   model-definition lookup returns that lookup's error, after the record was already put into its slot).
 */
-StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHeader *assetBase)
+uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHeader *assetBase)
 
 {
   /* Rewritten from the assembly (0x0051B4A0-0x0051B5D8): the model tree walk kept its recursion on
@@ -553,15 +522,12 @@ StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAss
   ArmyAssetRecordPrefix **slot;
   int slotsRemaining;
   ArmyAssetLookupResult existing;
-  StatusResult status;
 
   existing = ArmyAssetRegistry_FindById(record->registryId);
   if (!existing.notFound) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
-    status.failed = true;
-    status.valueOrError = FATAL_ERROR_ARMY_ID_DUPLICATE;
-    return status;
+    return FATAL_ERROR_ARMY_ID_DUPLICATE;
   }
   slot = g_ArmyAssetRecordRegistry;
   for (slotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
@@ -573,16 +539,12 @@ StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAss
         error = ArmyAssetRecord_RelocateModelTree
                           (record,(uint8_t *)assetBase,(ArmyModelTreeNode *)(uintptr_t)record->rootNodeOffsetOrPointer);
       }
-      status.failed = error != 0;
-      status.valueOrError = error;
-      return status;
+      return error;
     }
     slot = slot + 1;
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,ARMY_ASSET_REGISTRY_SLOT_COUNT,g_PackageLastErrorPath);
-  status.failed = true;
-  status.valueOrError = FATAL_ERROR_ARMY_REGISTRY_FULL;
-  return status;
+  return FATAL_ERROR_ARMY_REGISTRY_FULL;
 }
 
 

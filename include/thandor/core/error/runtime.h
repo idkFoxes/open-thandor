@@ -80,7 +80,7 @@
 /* Model definitions (assets/model/definitions.c) */
 #define FATAL_ERROR_MODEL_ASSET_INVALID 0x3D /* ModelAsset_PrepareRecords: not an 'mdl' asset of converter version
                                                 0x8000A */
-#define FATAL_ERROR_MODEL_DEFINITION_MISSING 0x3E /* ModelDefinitionRegistry_FindByIdWithError: the id is not in the
+#define FATAL_ERROR_MODEL_DEFINITION_MISSING 0x3E /* ModelDefinitionRegistry_FindById: the id is not in the
                                                      768-slot registry */
 #define FATAL_ERROR_MODEL_REGISTRY_FULL 0x3F /* ModelDefinition_RegisterAndResolveReferences: all 768 slots are
                                                 taken (768 is left in g_PackageLastErrorPath) */
@@ -101,7 +101,7 @@
 #define FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID 0x46 /* a shot names a terrain material that is out of
                                                           range or not loaded */
 #define FATAL_ERROR_EFFECT_ASSET_INVALID 0x47 /* not an 'eff' asset of converter version 0x40007 */
-#define FATAL_ERROR_EFFECT_ID_NOT_FOUND 0x48 /* EffectDefinitionRegistry_FindByIdWithError: id not registered */
+#define FATAL_ERROR_EFFECT_ID_NOT_FOUND 0x48 /* EffectDefinitionRegistry_FindById: id not registered */
 #define FATAL_ERROR_EFFECT_REGISTRY_FULL 0x49 /* all 256 effect-definition registry slots are taken */
 #define FATAL_ERROR_SHOT_ID_DUPLICATE 0x4D /* a shot definition id is registered twice */
 #define FATAL_ERROR_EFFECT_ID_DUPLICATE 0x4E /* an effect definition id is registered twice */

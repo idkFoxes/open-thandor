@@ -611,7 +611,7 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
   ModelMeshGroupRelativeOffset *meshGroupCursor;
   ModelRaycastTriangleDescriptor *triangle;
   ModelRuntimeNode *nearestModelNode;
-  MeshRayTriangleResult triangleHit;
+  Q12 triangleDistanceQ12;
   ModelRaycastResult childOrNearestHit;
   ModelRaycastResult missResult;
   
@@ -685,9 +685,9 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
                      ((uint8_t *)((ModelMeshHeader *)triangle + 1) +
                       ((ModelMeshHeader *)triangle)->vertexCount * MODEL_MESH_RECORD_SIZE);
           for (trianglesRemaining = *triangleCountField; trianglesRemaining != 0; trianglesRemaining--) {
-            triangleHit = ModelMesh_IntersectTriangleRayDistance(triangle);
-            if ((triangleHit.hit) && (triangleHit.distanceQ12 <= radiusNodeXOrNearest)) {
-              radiusNodeXOrNearest = triangleHit.distanceQ12;
+            if (ModelMesh_IntersectTriangleRayDistance(triangle,&triangleDistanceQ12) &&
+                (triangleDistanceQ12 <= radiusNodeXOrNearest)) {
+              radiusNodeXOrNearest = triangleDistanceQ12;
             }
             triangle = triangle + 1;
           }
@@ -1553,7 +1553,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   int variantsRemaining;
   int variantCursorOrRemaining;
   bool variantLocked;
-  ModelDefinitionResult lookupResult;
+  ModelDefinitionRecordPrefix *variantDefinition;
 
   /* modelRuntime is a ModelRuntimeSlot; [0] its definition */
   variantCursorOrRemaining = *modelRuntime;
@@ -1568,12 +1568,13 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
                           (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                            modelDefinitionId), !variantLocked)) {
       /* swap to this variant; armour points scale with the new maximum */
-      lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
+      /* always found: an unknown id counts as locked */
+      variantDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
       variantCursorOrRemaining = *modelRuntime;
-      *modelRuntime = (int)lookupResult.modelDefinition;
+      *modelRuntime = (int)variantDefinition;
       ((ModelRuntimeSlot *)modelRuntime)->health =
            (int)(((int64_t)(int)((ModelRuntimeSlot *)modelRuntime)->health *
-                 (int64_t)(int)((ModelDefinition *)lookupResult.modelDefinition)->maximumHealth) /
+                 (int64_t)(int)((ModelDefinition *)variantDefinition)->maximumHealth) /
                 (int64_t)(int)((ModelDefinition *)variantCursorOrRemaining)->maximumHealth);
       ArmyRuntime_RebuildDerivedSelectionMetrics
                 (((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime);

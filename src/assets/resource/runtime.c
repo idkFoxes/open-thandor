@@ -13,18 +13,19 @@
 /* Address: 0x0040E2E0.
    Creates a new, empty PCK package at packagePath and mounts it: builds a fresh 0x200-byte archive header
    (magic "pck", timestamps of now, the computer label as producer and source name, no entries) in the
-   package scratch buffer, writes it as the whole file and returns Package_Mount's result (CF set on failure).
+   package scratch buffer, writes it as the whole file and mounts it. Returns true and the mounted package's
+   file handle in *outHandle, or false (outHandle untouched) when Package_Mount fails.
    Called directly by the save-game writer InGameSaveGame_WritePackage, which creates the
    save directory and retries when it fails.
 */
-StatusResult InGameSaveGame_CreatePackage(void *packagePath)
+bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
 
 {
   uint8_t *header;
   uint32_t packedTimeOrDate;
   int clearDwordsRemaining;
   uint8_t *clearCursor;
-  StatusResult mountResult;
+  EngineFileHandle mountedHandle;
 
   header = g_PackageScratchBuffer;
   clearCursor = g_PackageScratchBuffer;
@@ -71,8 +72,11 @@ StatusResult InGameSaveGame_CreatePackage(void *packagePath)
   header[178] = 0;
   header[179] = 0;
   FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,packagePath);
-  mountResult = Package_Mount(packagePath);
-  return mountResult;
+  if (!Package_Mount(packagePath,&mountedHandle)) {
+    return false;
+  }
+  *outHandle = mountedHandle;
+  return true;
 }
 
 
@@ -91,18 +95,17 @@ ResourceLoadResult Resource_Load(uint16_t *path)
      meaningful on success (byte count); callers test CF. */
   uint32_t failureByteCount = 0;
   ArenaAllocResult allocResult;
-  PackageDecodeResult decodeResult;
+  uint32_t decodeErrorCode;
   FileSystemOpenResult openResult;
   FileSystemSizeResult sizeResult;
   FileSystemReadResult readResult;
-  PackageEntryLookupResult findResult;
+  EngineFileHandle entryFileHandle;
   ResourceLoadResult fileOrPackageResult;
   ResourceLoadResult fileLoadResult;
   ResourceLoadResult failureResult;
-  
-  findResult = Package_FindEntryAcrossMounts(path);
-  entry = (PckEntryHeader *)findResult.entry;
-  if (findResult.notFound) {
+
+  entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
+  if (entry == NULL) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
@@ -149,13 +152,13 @@ ResourceLoadResult Resource_Load(uint16_t *path)
       allocResult = g_MemoryApi.alloc(entry->unpackedSize);
       fileOrPackageResult.bufferOrError = (uint8_t *)allocResult.payloadOrError;
       if (!allocResult.failed) {
-        decodeResult = Package_DecodeEntryInto(fileOrPackageResult.bufferOrError,entry,findResult.fileHandle);
-        if (!decodeResult.failed) {
+        if (Package_DecodeEntryInto((uint8_t *)fileOrPackageResult.bufferOrError,entry,entryFileHandle,NULL,
+                                    &decodeErrorCode)) {
           fileOrPackageResult.byteCount = entry->unpackedSize;
           fileOrPackageResult.failed = false;
           return fileOrPackageResult;
         }
-        sizeOrErrorCode = (uint8_t *)decodeResult.valueOrError;
+        sizeOrErrorCode = (uint8_t *)decodeErrorCode;
         g_MemoryApi.free(fileOrPackageResult.bufferOrError);
         fileOrPackageResult.bufferOrError = sizeOrErrorCode;
       }

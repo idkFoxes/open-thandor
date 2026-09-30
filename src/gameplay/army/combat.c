@@ -663,7 +663,7 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
   uint32_t pointYQ12;
   uint32_t randomOffset;
   uint32_t pointZQ12;
-  ModelLookupEntryResult lookupResult;
+  bool emitterPointFound;
   ModelWorldPoint transformedPoint;
   EffectDefinition *effectDefinition;
 
@@ -691,18 +691,17 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
   }
   modelNodeRuntime = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   modelRuntime->damageEffectCooldownTicks = randomOffset + definition->damageEffectIntervalTicks;
-  lookupResult = ModelLookupTable_ContainsPackedKey
+  emitterPointFound = ModelLookupTable_FindPackedPoint
                     (modelRuntime->damageEffectPointIndex,ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER,
-                     (modelNodeRuntime->modelPayload).modelResource);
-  localPointRecord = lookupResult.entry;
-  if (lookupResult.notFound) {
+                     (modelNodeRuntime->modelPayload).modelResource,&localPointRecord);
+  if (!emitterPointFound) {
     /* Wrap around to the first emitter point. */
     modelRuntime->damageEffectPointIndex = -1;
-    lookupResult = ModelLookupTable_ContainsPackedKey
-                      (0,ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER,(modelNodeRuntime->modelPayload).modelResource);
-    localPointRecord = lookupResult.entry;
+    emitterPointFound = ModelLookupTable_FindPackedPoint
+                      (0,ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER,(modelNodeRuntime->modelPayload).modelResource,
+                       &localPointRecord);
   }
-  if (lookupResult.notFound) {
+  if (!emitterPointFound) {
     /* No emitter point at all: use the model origin. */
     randomOrPointX = (modelNodeRuntime->worldTransform).translation.x;
     pointYQ12 = (modelNodeRuntime->worldTransform).translation.y;

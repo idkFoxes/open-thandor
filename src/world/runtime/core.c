@@ -935,16 +935,14 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   int modelOverlayBase;
   ModelDefinitionRecordPrefix *definitionRecord;
   WorldOwnerListNode *ownerNode;
-  ModelDefinitionResult definitionLookup;
   uint32_t overlayExtent;
   
   if (sourceRuntime != NULL) {
-    definitionLookup = ModelDefinitionRegistry_FindByIdWithError
+    definitionRecord = ModelDefinitionRegistry_FindById
                       (((AiLinkedDefinitionListView *)
                         ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->
                        definitionIds[0]);
-    definitionRecord = definitionLookup.modelDefinition;
-    if (!definitionLookup.notFound) {
+    if (definitionRecord != NULL) {
       overlayExtent = UINT32_MAX;
       ownerNode = worldRuntime->ownerListHead;
       overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags;

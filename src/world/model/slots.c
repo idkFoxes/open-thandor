@@ -132,7 +132,6 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
 
 {
   ModelRuntimeArmyLinkOrState *armyLinkCounterField;
-  ModelLookupPayloadResult keyLookupResult;
   ModelRuntimeNode *rootModelNode;
   ModelRuntimeNode *rootGrandchildNode;
 
@@ -148,46 +147,38 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
   modelRuntimeSlot->classLinkState.classState74 = 0;
   modelRuntimeSlot->classLinkState.classState78 = 0;
   modelRuntimeSlot->classLinkState.classState7C = 0;
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
-                      (0,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
-  if (keyLookupResult.notFound) {
+  if (!ModelLookupTable_GetPackedPointPosition
+         (0,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
     modelRuntimeSlot->classLinkState.modelLinkOrState.modelRuntime =
          (ModelRuntimeSlot *)(modelRuntimeSlot->classLinkState.modelLinkOrState.classState - 1);
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
-                      (1,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
-  if (keyLookupResult.notFound) {
+  if (!ModelLookupTable_GetPackedPointPosition
+         (1,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
     modelRuntimeSlot->classLinkState.classState64 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
-                      (2,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
-  if (keyLookupResult.notFound) {
+  if (!ModelLookupTable_GetPackedPointPosition
+         (2,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
     modelRuntimeSlot->classLinkState.classState68 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
-                      (3,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
-  if (keyLookupResult.notFound) {
+  if (!ModelLookupTable_GetPackedPointPosition
+         (3,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
     armyLinkCounterField = &modelRuntimeSlot->classLinkState.armyLinkOrState;
     armyLinkCounterField->armyRuntime = (ArmyRuntimeSlot *)(armyLinkCounterField->classState - 1);
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
-                      (4,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
-  if (keyLookupResult.notFound) {
+  if (!ModelLookupTable_GetPackedPointPosition
+         (4,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
     modelRuntimeSlot->classLinkState.classState70 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
-                      (5,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
-  if (keyLookupResult.notFound) {
+  if (!ModelLookupTable_GetPackedPointPosition
+         (5,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
     modelRuntimeSlot->classLinkState.classState74 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
-                      (6,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
-  if (keyLookupResult.notFound) {
+  if (!ModelLookupTable_GetPackedPointPosition
+         (6,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
     modelRuntimeSlot->classLinkState.classState78 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
-                      (7,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
-  if (keyLookupResult.notFound) {
+  if (!ModelLookupTable_GetPackedPointPosition
+         (7,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource,NULL)) {
     modelRuntimeSlot->classLinkState.classState7C -= 1;
   }
   return;

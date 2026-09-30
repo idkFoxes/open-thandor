@@ -136,7 +136,7 @@ uint32_t __cdecl FileSystem_Init(void)
   Win32FileOpenResult openResult;
   Win32FileSizeResult sizeResult;
   Win32FileReadResult readResult;
-  StatusResult mountResult;
+  uint32_t engineHandleOrError; /* engine.pck's handle, or the mount error code */
 
   /* open-thandor: the original took the executable path from the first command-line token, which
      is only a bare "thandor.exe" when started from a shell or batch file; the executable
@@ -241,11 +241,10 @@ uint32_t __cdecl FileSystem_Init(void)
     Win32File_Close(configFile);
   }
   Win32File_GetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
-  mountResult = Package_MountLowPriority(u_engine_pck_0040e255);
-  if (!mountResult.failed) {
-    g_EnginePackageLowPriorityMountHandle = mountResult.valueOrError;
+  if (Package_MountLowPriority(u_engine_pck_0040e255,&engineHandleOrError)) {
+    g_EnginePackageLowPriorityMountHandle = engineHandleOrError;
   }
-  return mountResult.valueOrError;
+  return engineHandleOrError;
 }
 
 

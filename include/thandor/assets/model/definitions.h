@@ -17,7 +17,7 @@
    [0] is the default, the others are upgrade stages that need a technology. */
 #define MODEL_LINKED_DEFINITION_COUNT 8
 /* Key classes of a model resource's packed points (ModelPackedPointRecord.packedLookupKey = keyIndex << 4 |
-   keyClass; ModelLookupTable_ContainsPackedKey / FindPackedKeyEntryRegs). */
+   keyClass; ModelLookupTable_FindPackedPoint / GetPackedPointPosition). */
 #define MODEL_POINT_CLASS_ATTACHMENT 0 /* child node attachment point, keyIndex = child index */
 #define MODEL_POINT_CLASS_SHOT 2 /* shot launch point, keyIndex = weapon / emitter index */
 #define MODEL_POINT_CLASS_EFFECT 3 /* effect spawn point (0 linked effect, 1 periodic effect) */
@@ -25,7 +25,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0051B3C0 */
-ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
+ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
 /* 0x0051DB00 */
@@ -37,24 +37,24 @@ bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
 /* 0x00528950 */
-StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset);
+bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError);
 
 /* 0x004BE670 */
-ModelLookupPayloadResult
-ModelLookupTable_FindPackedKeyEntryRegs
+bool ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
-          ModelResource *modelDefinition);
+          ModelResource *modelDefinition,GraphicsFixedVec3 *outLocalPosition);
 
 /* 0x004BE6F0 */
-ModelLookupEntryResult ModelLookupTable_ContainsPackedKey(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
-          ModelResource *modelDefinition);
+bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+          ModelResource *modelDefinition,ModelPackedPointRecord **outEntry);
 
 /* 0x0050AEA0 */
-MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle);
+bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12);
 
 /* 0x005289C0 */
-BuildCostsResult
-ModelDefinitionRegistry_FindBuildCostsById(PckModelDefinitionIdCatalog definitionId);
+uint32_t ModelDefinitionRegistry_FindBuildCostsById
+          (PckModelDefinitionIdCatalog definitionId,uint32_t *outEnergyLoadQ4,uint32_t *outBuildTicks,
+           uint32_t *outXeniteCostQ4);
 
 /* 0x0053BA00 */
 ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId);
@@ -64,8 +64,8 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
 /* 0x00528600 */
-StatusResult ModelDefinition_RegisterAndResolveReferences
-          (ModelDefinitionResolveView *definition,ModelAssetHeader *asset);
+bool ModelDefinition_RegisterAndResolveReferences
+          (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError);
 
 /* 0x0052ADE0 */
 void ModelDefinition_UnlockLinkedTechnologyForFaction
@@ -76,6 +76,6 @@ bool ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
 
 /* 0x00528E20 */
-ModelDefinitionResult ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definitionId);
+ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId);
 
 #endif /* THANDOR_ASSETS_MODEL_DEFINITIONS_H */

@@ -138,7 +138,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   ShotTerrainImpactDeformationColumns *linkedHandlerCompletionOwner;
   void *completionOwnerCarrier;
   uint64_t modulatedLanes;
-  ModelLookupEntryResult lookupResult;
+  ModelPackedPointRecord *packedPoint;
   ShadingRecordResult shadingAllocation;
   ArmyRuntimeCreateResult armyCreateResult;
   HeightNormalSampleResult terrainSample;
@@ -179,11 +179,10 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       modelNode->textureSubresourceBaseIndex++;
       effectSlot->shadingStartCountdownTicksRemaining--;
       if ((effectSlot->shadingStartCountdownTicksRemaining == 0) && (modelNode->shadingRecord == NULL)) {
-        lookupResult = ModelLookupTable_ContainsPackedKey
-                           (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource);
-        if (!lookupResult.notFound) {
+        if (ModelLookupTable_FindPackedPoint
+              (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource,&packedPoint)) {
           localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                             (lookupResult.entry,(ModelRuntimeNode *)modelNode);
+                             (packedPoint,(ModelRuntimeNode *)modelNode);
           /* the alpha byte of the shading colour is the radius in 1/16 world units */
           shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
                              (effectDefinition->shadingTransitionDurationTicks,
@@ -253,12 +252,11 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
     effectSlot->periodicEffectCountdownTicks--;
     if (effectSlot->periodicEffectCountdownTicks == 0) {
       effectSlot->periodicEffectCountdownTicks = effectDefinition->periodicEffectIntervalTicks;
-      lookupResult = ModelLookupTable_ContainsPackedKey
-                         (1,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource);
-      if (!lookupResult.notFound) {
+      if (ModelLookupTable_FindPackedPoint
+            (1,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource,&packedPoint)) {
         periodicDefinition = effectDefinition->periodicEffectDefinition;
         localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                           (lookupResult.entry,(ModelRuntimeNode *)modelNode);
+                           (packedPoint,(ModelRuntimeNode *)modelNode);
         /* the periodic child effect always starts with rotation angle 1 at a quarter turn */
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
@@ -271,11 +269,10 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       if (frameAdvancedOrScratch != 0) {
         effectSlot->linkedEffectPresent--;
         if (effectSlot->linkedEffectPresent == 0) {
-          lookupResult = ModelLookupTable_ContainsPackedKey
-                             (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource);
-          if (!lookupResult.notFound) {
+          if (ModelLookupTable_FindPackedPoint
+                (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource,&packedPoint)) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                               (lookupResult.entry,(ModelRuntimeNode *)modelNode);
+                               (packedPoint,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
                        modelNode->modelPayload.worldRotationAngle2,
@@ -294,11 +291,10 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
           effectSlot->linkedShotPresent = effectDefinition->linkedShotPresent;
           effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex =
                effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex + 1;
-          lookupResult = ModelLookupTable_ContainsPackedKey
-                             (keyIndex,MODEL_POINT_CLASS_SHOT,effectDefinition->ownedNestedResource);
-          if (!lookupResult.notFound) {
+          if (ModelLookupTable_FindPackedPoint
+                (keyIndex,MODEL_POINT_CLASS_SHOT,effectDefinition->ownedNestedResource,&packedPoint)) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                               (lookupResult.entry,(ModelRuntimeNode *)modelNode);
+                               (packedPoint,(ModelRuntimeNode *)modelNode);
             ShotRuntimePool_CreateProjectileFromDefinition
                       (0,NULL,
                        (localPoint.zQ12 - modelNode->worldTransform.translation.z) * 2 +
@@ -312,11 +308,10 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         }
         effectSlot->linkedEffectPresent--;
         if (effectSlot->linkedEffectPresent == 0) {
-          lookupResult = ModelLookupTable_ContainsPackedKey
-                             (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource);
-          if (!lookupResult.notFound) {
+          if (ModelLookupTable_FindPackedPoint
+                (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource,&packedPoint)) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                               (lookupResult.entry,(ModelRuntimeNode *)modelNode);
+                               (packedPoint,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
                        modelNode->modelPayload.worldRotationAngle2,

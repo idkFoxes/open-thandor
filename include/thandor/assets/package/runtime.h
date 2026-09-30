@@ -40,28 +40,29 @@
 bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
 
 /* 0x0040E840 */
-StatusResult Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
+bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle);
 
 /* 0x0040ED00 */
-StatusResult Package_LoadEntryIntoBuffer
-          (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path);
+bool Package_LoadEntryIntoBuffer
+          (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
+           uint32_t *outByteCountOrError);
 
 /* 0x0040E450 */
-StatusResult Package_MountLowPriority(uint16_t *path);
+bool Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError);
 
 /* 0x0040E6F0 */
-StatusResult Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle);
+bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 /* 0x0040EE30 */
 PackageLoadResult Package_LoadEntry(uint16_t *path);
 
 /* 0x0040E3A0 */
-StatusResult Package_Mount(uint16_t *path);
+bool Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError);
 
 /* 0x0040EB70 */
-PackageFindResult Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
-                 uint16_t *pattern,EngineFileHandle fileHandle);
+bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
+                       uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount);
 
 /* 0x0040E500 */
 void Package_Unmount(EngineFileHandle fileHandle);
@@ -70,18 +71,19 @@ void Package_Unmount(EngineFileHandle fileHandle);
 bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate);
 
 /* 0x0040EAF0 */
-PackageDecodeResult Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle);
+bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
+                             uint32_t *outByteCount,uint32_t *outErrorCode);
 
 /* 0x0040E2B0 */
 void Package_SetLastErrorPath(uint16_t *path);
 
 /* 0x0040E640 */
-PackageMountEntryResult Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle);
+PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle);
 
 /* 0x0040EA20 */
-PackageEntryLookupResult Package_FindEntryAcrossMounts(uint16_t *path);
+PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *outFileHandle);
 
 /* 0x0040E570 */
-StatusResult Package_ReadDirectory(EngineFileHandle fileHandle);
+bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 #endif /* THANDOR_ASSETS_PACKAGE_RUNTIME_H */
