@@ -24,7 +24,7 @@ void SpriteAssetRegistry_Reset(void);
 SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId);
 
 /* 0x004BE4D0 */
-SpriteRegisterResult SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset);
+uint32_t SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset);
 
 
 /* 0x004BE5A0 */

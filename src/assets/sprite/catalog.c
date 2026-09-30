@@ -59,10 +59,10 @@ SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
 /* Address: 0x004BE4D0.
    Checks that the asset is an 'spr' of converter version 0x20007, prepends it to the sprite registry and
    turns the three serialized offsets of every 0x40-byte pointer record (in every block of every group) into
-   absolute pointers. Must run exactly once per loaded image. Returns the asset with CF clear, or
-   FATAL_ERROR_SPRITE_ASSET_INVALID with CF set.
+   absolute pointers. Must run exactly once per loaded image. Returns 0 on success or
+   FATAL_ERROR_SPRITE_ASSET_INVALID (the original's success EAX, the asset itself, was read by no caller).
 */
-SpriteRegisterResult SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
+uint32_t SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
 
 {
   AssetAllocationSizeBytes relocationBlocksRemaining;
@@ -70,8 +70,6 @@ SpriteRegisterResult SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *
   SprGroupRelocationHeader *groupRelocationCursor;
   SprRelocationBlockHeader *relocationBlockCursor;
   SprPointerRelocationRecord *pointerRelocationCursor;
-  SpriteRegisterResult successResult;
-  SpriteRegisterResult errorResult;
   AssetRecordCount groupsRemaining;
   SpriteAssetHeader *previousRegistryHead;
 
@@ -111,13 +109,9 @@ SpriteRegisterResult SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *
       groupRelocationCursor = (SprGroupRelocationHeader *)
            ((uint8_t *)groupRelocationCursor + groupRelocationCursor->nextGroupByteOffset);
     }
-    successResult.failed = false;
-    successResult.assetOrError = asset;
-    return successResult;
+    return 0;
   }
-  errorResult.failed = true;
-  errorResult.assetOrError = (SpriteAssetHeader *)FATAL_ERROR_SPRITE_ASSET_INVALID;
-  return errorResult;
+  return FATAL_ERROR_SPRITE_ASSET_INVALID;
 }
 
 /* Address: 0x004BE5A0.

@@ -271,12 +271,11 @@ bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 
 {
   bool missingOrDisabled;
-  ArmyAssetLookupResult registryLookup;
+  ArmyAssetRecordPrefix *registeredRecord;
 
-  registryLookup = ArmyAssetRegistry_FindById(recordId);
-  missingOrDisabled = registryLookup.notFound;
+  missingOrDisabled = ArmyAssetRegistry_FindById(recordId,&registeredRecord) != 0;
   if (!missingOrDisabled) {
-    missingOrDisabled = (((ArmyAssetRecord *)registryLookup.recordOrError)->flags & ARMY_ASSET_FLAG_ENABLED) == 0;
+    missingOrDisabled = (((ArmyAssetRecord *)registeredRecord)->flags & ARMY_ASSET_FLAG_ENABLED) == 0;
   }
   return missingOrDisabled;
 }
@@ -295,14 +294,16 @@ bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
   ArmyAssetRecord *linkedAsset;
   int linksRemaining;
   bool technologyLocked;
-  ArmyAssetLookupResult registryLookup;
+  uint32_t lookupError;
+  ArmyAssetRecordPrefix *linkedRecord;
 
   /* armyAssetRecord walks the link list in 4-byte steps, so its linkedArmyAssetIds[0] is the current link */
   for (linksRemaining = ARMY_ASSET_LINKED_ID_COUNT; linksRemaining != 0; linksRemaining--) {
     if (((ArmyAssetRecord *)armyAssetRecord)->linkedArmyAssetIds[0] != 0) {
-      registryLookup = ArmyAssetRegistry_FindById(((ArmyAssetRecord *)armyAssetRecord)->linkedArmyAssetIds[0]);
-      linkedAsset = (ArmyAssetRecord *)registryLookup.recordOrError;
-      if (!registryLookup.notFound && (linkedAsset->flags & ARMY_ASSET_FLAG_ENABLED) != 0) {
+      lookupError = ArmyAssetRegistry_FindById(((ArmyAssetRecord *)armyAssetRecord)->linkedArmyAssetIds[0],
+                                               &linkedRecord);
+      linkedAsset = (ArmyAssetRecord *)linkedRecord;
+      if (lookupError == 0 && (linkedAsset->flags & ARMY_ASSET_FLAG_ENABLED) != 0) {
         technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                           (factionIndex,(ModelDefinitionHierarchyNodeAddress32)linkedAsset);
         if (!technologyLocked && linkedAsset->selectionDetailValue != 0 &&
@@ -521,10 +522,9 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
      the machine stack, which the decompiler could not express. */
   ArmyAssetRecordPrefix **slot;
   int slotsRemaining;
-  ArmyAssetLookupResult existing;
+  ArmyAssetRecordPrefix *existing;
 
-  existing = ArmyAssetRegistry_FindById(record->registryId);
-  if (!existing.notFound) {
+  if (ArmyAssetRegistry_FindById(record->registryId,&existing) == 0) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
     return FATAL_ERROR_ARMY_ID_DUPLICATE;
@@ -595,17 +595,19 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
 
 
 /* Address: 0x0051B6D0.
-   Looks an army asset up by its registry id in the 768-slot army registry and returns the record (CF clear).
-   An unknown id is written as decimal text to g_PackageLastErrorPath and fails with FATAL_ERROR_ARMY_ID_NOT_FOUND.
+   Looks an army asset up by its registry id in the 768-slot army registry. Returns 0 and stores the record in
+   *outRecord; an unknown id is written as decimal text to g_PackageLastErrorPath and returns
+   FATAL_ERROR_ARMY_ID_NOT_FOUND.
+   Original quirk: on failure *outRecord is set to FATAL_ERROR_ARMY_ID_NOT_FOUND cast to a pointer (the original
+   returned the error code in the record register). Several callers read the record without checking the status,
+   so this value is kept.
 */
-ArmyAssetLookupResult ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId)
+uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRecordPrefix **outRecord)
 
 {
   ArmyAssetRecordPrefix *matchedRecord;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyAssetLookupResult failureResult;
-  ArmyAssetLookupResult successResult;
 
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
@@ -615,14 +617,12 @@ ArmyAssetLookupResult ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryI
     if (registrySlotsRemaining == 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
-      failureResult.notFound = true;
-      failureResult.recordOrError = (ArmyAssetRecordPrefix *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
-      return failureResult;
+      *outRecord = (ArmyAssetRecordPrefix *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
+      return FATAL_ERROR_ARMY_ID_NOT_FOUND;
     }
   }
-  successResult.notFound = false;
-  successResult.recordOrError = matchedRecord;
-  return successResult;
+  *outRecord = matchedRecord;
+  return 0;
 }
 
 

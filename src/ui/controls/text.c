@@ -1190,12 +1190,12 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
   GraphicsAdapterRecord *adapterRecords;
   uint16_t *stream;
   uint16_t *replacementPayload;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     resolvedText = TextResource_Resolve(control->textResourceId);
     adapterRecords = g_GraphicsAdapters;
-    stream = resolvedText.text;
+    stream = resolvedText;
     if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER) != 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
@@ -1221,7 +1221,7 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
               (0,g_GraphicsAdapters[adapterIndex].driverDescriptionUtf16,stream);
     if (adapterRecords[adapterIndex].deviceGuid.Data1 == 0) {
       resolvedText = TextResource_Resolve(TEXT_ID_PRIMARY_DISPLAY_ADAPTER);
-      replacementPayload = resolvedText.text;
+      replacementPayload = resolvedText;
     }
     else {
       replacementPayload = adapterRecords[adapterIndex].deviceNameUtf16;
@@ -1291,7 +1291,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   int rightOrCaretX;
   bool framebufferUnavailable;
   TextureSizeResult cornerTileSize;
-  GlyphSizeResult fontSize;
+  uint32_t fontLineHeight;
   uint32_t borderWidthOrCaretFrame;
   GraphicsTextureSourceAsset *caretTextureSource;
   SoftwareFramebufferAccess *caretFramebuffer;
@@ -1360,7 +1360,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
     if (clipTop < topOrTextOffsetY) {
       clipTop = topOrTextOffsetY;
     }
-    fontSize = FontGlyph_GetLogicalSizeActiveRegs(0);
+    FontGlyph_GetLogicalSizeActiveFont(0,&fontLineHeight);
     if (rightOrCaretX < clipRight) {
       clipRight = rightOrCaretX;
     }
@@ -1368,7 +1368,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
     if (bottomOrCaretY < clipBottom) {
       clipBottom = bottomOrCaretY;
     }
-    topOrTextOffsetY = (int)((control->base).layoutHeight - fontSize.lineHeight) >> 1;
+    topOrTextOffsetY = (int)((control->base).layoutHeight - fontLineHeight) >> 1;
     prefixLength = control->selectionEnd;
     if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) == 0) &&
        (control->selectionStart != prefixLength)) {
@@ -1720,7 +1720,7 @@ void UiNumericPairTextButton_DrawFormattedValues
           UiPixelCoordinate clipLeft,UiNumericPairTextButton *control)
 
 {
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
 
   if (((control->base).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     resolvedText = TextResource_Resolve((control->base).textResourceId);
@@ -1730,8 +1730,8 @@ void UiNumericPairTextButton_DrawFormattedValues
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->secondValue,
                (uint16_t *)&g_UiNumericPairSecondValueScratchUtf16);
-    RichTextCommandStream_PatchPayloadBySelector(0,&g_UiNumericPairFirstValueScratchUtf16,resolvedText.text);
-    RichTextCommandStream_PatchPayloadBySelector(1,&g_UiNumericPairSecondValueScratchUtf16,resolvedText.text);
+    RichTextCommandStream_PatchPayloadBySelector(0,&g_UiNumericPairFirstValueScratchUtf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(1,&g_UiNumericPairSecondValueScratchUtf16,resolvedText);
     UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,&control->base);
   }
   return;
@@ -1748,12 +1748,12 @@ void UiPayloadPairTextButton_DrawFormattedPayloads
           UiPixelCoordinate clipLeft,UiPayloadPairTextButton *control)
 
 {
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
 
   if (((control->base).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     resolvedText = TextResource_Resolve((control->base).textResourceId);
-    RichTextCommandStream_PatchPayloadBySelector(0,control->firstPayload,resolvedText.text);
-    RichTextCommandStream_PatchPayloadBySelector(1,control->secondPayload,resolvedText.text);
+    RichTextCommandStream_PatchPayloadBySelector(0,control->firstPayload,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(1,control->secondPayload,resolvedText);
     UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,&control->base);
   }
   return;
@@ -1782,7 +1782,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
   int frameTop;
   bool framebufferUnavailable;
   RichTextExtentRegs textExtent;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   TextureSizeResult tileSize;
   
   tooltipTarget = g_UiTooltipState.targetNode;
@@ -1793,7 +1793,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
     commandStream = (uint16_t *)tooltipTarget[-1].nodeFlags;
     if ((tooltipTarget->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
       resolvedText = TextResource_Resolve((TextResourceId)commandStream);
-      commandStream = resolvedText.text;
+      commandStream = resolvedText;
     }
     textExtent = RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
     tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,g_UiWindowTextureSource);
@@ -1933,7 +1933,7 @@ void UiFramedTextButtonControl_DrawClipped
   bool framebufferUnavailable;
   bool drawFrame;
   RichTextExtentRegs textExtent;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   TextureSizeResult tileSizeOrEndCapSize;
   TextureSizeResult focusTileSize;
   int textX;
@@ -2005,7 +2005,7 @@ void UiFramedTextButtonControl_DrawClipped
                  rightCornerXOrTextY,bottomCornerYOrTextX,cornerWidth,control);
     }
     resolvedText = TextResource_Resolve(control->textResourceId);
-    commandStream = resolvedText.text;
+    commandStream = resolvedText;
     textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
     framePieceOrTextWidth = textExtent.widthPixels;
     bottomCornerYOrTextX = (int)((control->selectable).base.layoutWidth - framePieceOrTextWidth) >> 1;
@@ -2294,7 +2294,7 @@ void UiWindowControl_DrawFramedTextAndChrome
   int rightCornerXOrTextY;
   bool framebufferUnavailable;
   RichTextExtentRegs textExtent;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   TextureSizeResult tileSizeOrEndCapSize;
   TextureSizeResult focusTileSize;
   
@@ -2359,7 +2359,7 @@ void UiWindowControl_DrawFramedTextAndChrome
             (clipBottom,clipRight,clipTop,clipLeft,framePieceOrTextWidth + UI_WINDOW_FRAME_BOTTOM,rightCornerXOrTextY,
              bottomCornerYOrTextX,cornerWidth,control);
   resolvedText = TextResource_Resolve(control->textResourceId);
-  commandStream = resolvedText.text;
+  commandStream = resolvedText;
   bottomCornerYOrTextX = (control->selectable).base.layoutWidth;
   textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
   framePieceOrTextWidth = textExtent.widthPixels;
@@ -2953,7 +2953,7 @@ void UiSingleLineTextControl_DrawClipped
   int tileX;
   bool framebufferUnavailable;
   RichTextExtentRegs textExtent;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   TextureSizeResult tileSize;
   UiPixelCoordinate originalClipRight;
   UiPixelCoordinate restoredClipRight;
@@ -2980,7 +2980,7 @@ void UiSingleLineTextControl_DrawClipped
     streamOrCapWidthOrChild = (UiNodeBase *)control->text;
     if ((control->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
       resolvedText = TextResource_Resolve((TextResourceId)streamOrCapWidthOrChild);
-      streamOrCapWidthOrChild = (UiNodeBase *)resolvedText.text;
+      streamOrCapWidthOrChild = (UiNodeBase *)resolvedText;
     }
     textExtent = RichTextCommandStream_MeasureRegs((textStyle | packedStyleOverride) & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE),
                                                    (uint16_t *)streamOrCapWidthOrChild);
@@ -3073,7 +3073,7 @@ void UiSingleLineTextControl_DrawClipped
       capWidthOrStream = (UiNodeBase *)control->text;
       if ((control->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
         resolvedText = TextResource_Resolve((TextResourceId)capWidthOrStream);
-        capWidthOrStream = (UiNodeBase *)resolvedText.text;
+        capWidthOrStream = (UiNodeBase *)resolvedText;
       }
       streamOrCapWidthOrChild = control->focusChild;
       textStyle = g_UiTextStyleNormal;
@@ -3414,11 +3414,11 @@ void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **row
   UiPixelExtent rowHeightPixels;
   uint32_t maximumTextWidthPixels;
   RichTextExtentRegs measuredTextExtent;
-  GlyphSizeResult fontSize;
+  uint32_t lineHeight;
   UiNodeVtable *parentVtable;
-  
-  fontSize = FontGlyph_GetLogicalSizeForStyleRegs(g_UiListTextStyle,0);
-  rowHeightPixels = fontSize.lineHeight + 1;
+
+  FontGlyph_GetLogicalSizeForStyle(g_UiListTextStyle,0,&lineHeight);
+  rowHeightPixels = lineHeight + 1;
   control->rowHeight = rowHeightPixels;
   control->rowCount = rowCount;
   control->rowSlots = rowPointers;
@@ -3456,7 +3456,7 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
   uint16_t *commandStream;
   uint32_t textStyle;
   bool framebufferUnavailable;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   
   framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
   if (!framebufferUnavailable) {
@@ -3480,7 +3480,7 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
     commandStream = control->text;
     if ((control->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
       resolvedText = TextResource_Resolve((TextResourceId)commandStream);
-      commandStream = resolvedText.text;
+      commandStream = resolvedText;
     }
     RichTextCommandStream_DrawWrappedBlock
               (clipBottom,clipRight,clipTop,clipLeft,(textStyle | packedStyleOverride) & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE),
@@ -3617,11 +3617,11 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
 
 {
   uint16_t *stream;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   
   if (((control->base).nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) != 0) {
     resolvedText = TextResource_Resolve(((TextResourceId *)control)[-1]);
-    stream = resolvedText.text;
+    stream = resolvedText;
     RichTextCommandStream_PatchPayloadBySelector(0,control->currentValueTextUtf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,control->limitValueTextUtf16,stream);
     if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
@@ -4140,14 +4140,14 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
 
 {
   uint16_t *commandStream;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
 
   if (node != NULL) {
     /* the last field of the (virtual) node before this one = the dword at node - 4 */
     commandStream = (uint16_t *)node[-1].nodeFlags;
     if ((node->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
       resolvedText = TextResource_Resolve((TextResourceId)commandStream);
-      commandStream = resolvedText.text;
+      commandStream = resolvedText;
     }
     RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
     /* the size of window piece 0xBC is queried but not used */
@@ -4197,8 +4197,8 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
 {
   int accumulatedWidth;
   uint32_t glyphIndex;
-  GlyphSizeResult glyphSize;
-  
+  uint32_t glyphWidth;
+
   glyphIndex = 0;
   accumulatedWidth = 0;
   if (prefixLength != 0) {
@@ -4206,10 +4206,10 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
       if (control->textBuffer[glyphIndex] == 0) {
         return accumulatedWidth;
       }
-      glyphSize = FontGlyph_GetLogicalSizeForStyleRegs
-                        (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[glyphIndex]);
+      glyphWidth = FontGlyph_GetLogicalSizeForStyle
+                        (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[glyphIndex],NULL);
       glyphIndex++;
-      accumulatedWidth = accumulatedWidth + glyphSize.width;
+      accumulatedWidth = accumulatedWidth + glyphWidth;
     } while (glyphIndex < prefixLength);
   }
   return accumulatedWidth;
@@ -4229,8 +4229,8 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
   int currentTextIndex;
   int measuredPrefixWidthPixels;
   TextureSizeResult decorationSize;
-  GlyphSizeResult glyphSize;
-  
+  uint32_t glyphWidth;
+
   targetOffsetX = (pointerX - (control->base).left) + control->horizontalScrollPixels;
   if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
     decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
@@ -4244,9 +4244,9 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
     if (control->textBuffer[currentTextIndex] == 0) {
       return currentTextIndex;
     }
-    glyphSize = FontGlyph_GetLogicalSizeForStyleRegs
-                      (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[currentTextIndex]);
-    measuredPrefixWidthPixels = measuredPrefixWidthPixels + glyphSize.width;
+    glyphWidth = FontGlyph_GetLogicalSizeForStyle
+                      (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[currentTextIndex],NULL);
+    measuredPrefixWidthPixels = measuredPrefixWidthPixels + glyphWidth;
     nextTextIndex = currentTextIndex + 1;
   } while (measuredPrefixWidthPixels < targetOffsetX);
   return currentTextIndex;
@@ -4325,22 +4325,22 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
   UiPixelCoordinate fullTextWidth;
   int overflowOrContentWidth;
   UiPixelOffset maxScrollOffset;
-  GlyphSizeResult glyphSize;
+  uint32_t glyphWidth;
   TextureSizeResult decorationSize;
-  
+
   (control->base).layoutWidth = (control->base).right - (control->base).left;
   (control->base).layoutHeight = (control->base).bottom - (control->base).top;
   prefixLength = control->cursorIndex;
   cursorWidthOrMinScroll = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
   maxScrollOffset = cursorWidthOrMinScroll;
   if (prefixLength != 0) {
-    glyphSize = FontGlyph_GetLogicalSizeActiveRegs((uint32_t)control->textBuffer[prefixLength - 1]);
-    maxScrollOffset = cursorWidthOrMinScroll - glyphSize.width;
+    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength - 1],NULL);
+    maxScrollOffset = cursorWidthOrMinScroll - glyphWidth;
   }
   overflowOrContentWidth = cursorWidthOrMinScroll - (control->base).layoutWidth;
   if (control->textBuffer[prefixLength] != 0) {
-    glyphSize = FontGlyph_GetLogicalSizeActiveRegs((uint32_t)control->textBuffer[prefixLength]);
-    overflowOrContentWidth = overflowOrContentWidth + glyphSize.width;
+    glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength],NULL);
+    overflowOrContentWidth = overflowOrContentWidth + glyphWidth;
   }
   /* NOTE: as in the original (PUSH 0x10), only the first 16 code units (the numeric text buffer) count, also
      for the longer path and required text edits. */
@@ -4387,7 +4387,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   uint32_t textStyle;
   bool framebufferUnavailable;
   RichTextExtentRegs textExtent;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   TextureSizeResult skinSizeOrEndCapSize;
   TextureSizeResult focusTileSize;
   int textX;
@@ -4419,7 +4419,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   skinSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(buttonFrame,g_UiWindowTextureSource);
   textXOrFocusEnd = skinSizeOrEndCapSize.logicalWidthPixels + 6;
   resolvedText = TextResource_Resolve(control->textResourceId);
-  commandStream = resolvedText.text;
+  commandStream = resolvedText;
   textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
   textYOrTileX = (int)(skinSizeOrEndCapSize.logicalHeightPixels - textExtent.heightPixels) >> 1;
   textStyle = g_UiTextStyleDisabled;

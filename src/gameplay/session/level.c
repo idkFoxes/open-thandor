@@ -150,7 +150,8 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
   ArenaLargestAllocResult largestBlockResult;
   bool soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
   DirectoryEnumerationResult enumerationResult;
-  ResourceLoadResult resourceLoadResult;
+  void *loadedSampleBuffer;
+  uint32_t loadErrorCode;
   WorldRuntimeContext *soundLoopWorldRuntimeCopy;
   ArmyAssetRecordPrefix *class10ArmyDefinition;
   ArmyAssetRecordPrefix *class0EArmyDefinition;
@@ -336,9 +337,9 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount++;
             loadedResourcePointerArray++;
-            statusResult = ShotAsset_PrepareEntries(resultOrPointer);
-            resultOrPointer = (void *)statusResult.valueOrError;
-            if (statusResult.failed) goto load_failed;
+            assetError = ShotAsset_PrepareEntries(resultOrPointer);
+            resultOrPointer = (void *)assetError;
+            if (assetError != 0) goto load_failed;
             MoviePlayback_AdvanceScheduledFrameAndTick();
             assetPathCursor = assetPathCursor + LEVEL_ASSET_PATH_RECORD_UNITS; /* next path record */
           }
@@ -401,9 +402,9 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                  );
               resultOrPointer = (void *)statusResult.valueOrError;
               if (!statusResult.failed) {
-                statusResult = ShotDefinitions_ValidateTerrainMaterialReferences();
-                resultOrPointer = (void *)statusResult.valueOrError;
-                if (!statusResult.failed) {
+                assetError = ShotDefinitions_ValidateTerrainMaterialReferences();
+                resultOrPointer = (void *)assetError;
+                if (assetError == 0) {
                   g_MoviePlaybackBaseFrameGroup = 2;
                   g_MoviePlaybackScheduleCounter = 0;
                   g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
@@ -582,14 +583,13 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  (levelConditionStorage->levelImage).worldSettings.
                                                  effectSampleNumbers[0],
                                                  (uint16_t *)(u_sound_level00_sam_0050df6c + 11));
-                                      resourceLoadResult = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c);
-                                      if (!resourceLoadResult.failed) {
+                                      if (Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,&loadedSampleBuffer,NULL,NULL)) {
                                         voiceSetResult = g_SoundCreateSampleVoiceSet
-                                                           ((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                                           ((SoundSampleAsset *)loadedSampleBuffer);
                                         if (!voiceSetResult.failed) {
                                           g_InGameLevelEffectVoiceSet0 = voiceSetResult.voiceSet;
                                         }
-                                        Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                        Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
                                       }
                                     }
                                     if ((levelConditionStorage->levelImage).worldSettings.effectSampleNumbers[1]
@@ -599,14 +599,13 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  (levelConditionStorage->levelImage).worldSettings.
                                                  effectSampleNumbers[1],
                                                  (uint16_t *)(u_sound_level00_sam_0050df6c + 11));
-                                      resourceLoadResult = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c);
-                                      if (!resourceLoadResult.failed) {
+                                      if (Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,&loadedSampleBuffer,NULL,NULL)) {
                                         voiceSetResult = g_SoundCreateSampleVoiceSet
-                                                           ((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                                           ((SoundSampleAsset *)loadedSampleBuffer);
                                         if (!voiceSetResult.failed) {
                                           g_InGameLevelEffectVoiceSet1 = voiceSetResult.voiceSet;
                                         }
-                                        Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                        Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
                                       }
                                     }
                                     if ((levelConditionStorage->levelImage).worldSettings.effectSampleNumbers[2]
@@ -616,14 +615,13 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  (levelConditionStorage->levelImage).worldSettings.
                                                  effectSampleNumbers[2],
                                                  (uint16_t *)(u_sound_level00_sam_0050df6c + 11));
-                                      resourceLoadResult = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c);
-                                      if (!resourceLoadResult.failed) {
+                                      if (Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,&loadedSampleBuffer,NULL,NULL)) {
                                         voiceSetResult = g_SoundCreateSampleVoiceSet
-                                                           ((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                                           ((SoundSampleAsset *)loadedSampleBuffer);
                                         if (!voiceSetResult.failed) {
                                           g_InGameLevelEffectVoiceSet2 = voiceSetResult.voiceSet;
                                         }
-                                        Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                        Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
                                       }
                                     }
                                     if ((levelConditionStorage->levelImage).worldSettings.effectSampleNumbers[3]
@@ -633,14 +631,13 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  (levelConditionStorage->levelImage).worldSettings.
                                                  effectSampleNumbers[3],
                                                  (uint16_t *)(u_sound_level00_sam_0050df6c + 11));
-                                      resourceLoadResult = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c);
-                                      if (!resourceLoadResult.failed) {
+                                      if (Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,&loadedSampleBuffer,NULL,NULL)) {
                                         voiceSetResult = g_SoundCreateSampleVoiceSet
-                                                           ((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                                           ((SoundSampleAsset *)loadedSampleBuffer);
                                         if (!voiceSetResult.failed) {
                                           g_InGameLevelEffectVoiceSet3 = voiceSetResult.voiceSet;
                                         }
-                                        Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                        Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
                                       }
                                     }
                                     if ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[0] !=
@@ -650,14 +647,13 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  (levelConditionStorage->levelImage).worldSettings.
                                                  musicSampleNumbers[0],
                                                  (uint16_t *)(u_sound_music00_sam_0050df90 + 11));
-                                      resourceLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90);
-                                      if (!resourceLoadResult.failed) {
+                                      if (Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,&loadedSampleBuffer,NULL,NULL)) {
                                         voiceSetResult = g_SoundCreateSampleVoiceSet
-                                                           ((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                                           ((SoundSampleAsset *)loadedSampleBuffer);
                                         if (!voiceSetResult.failed) {
                                           g_InGameLevelMusicVoiceSet0 = voiceSetResult.voiceSet;
                                         }
-                                        Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                        Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
                                       }
                                     }
                                     if ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[1] !=
@@ -667,14 +663,13 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  (levelConditionStorage->levelImage).worldSettings.
                                                  musicSampleNumbers[1],
                                                  (uint16_t *)(u_sound_music00_sam_0050df90 + 11));
-                                      resourceLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90);
-                                      if (!resourceLoadResult.failed) {
+                                      if (Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,&loadedSampleBuffer,NULL,NULL)) {
                                         voiceSetResult = g_SoundCreateSampleVoiceSet
-                                                           ((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                                           ((SoundSampleAsset *)loadedSampleBuffer);
                                         if (!voiceSetResult.failed) {
                                           g_InGameLevelMusicVoiceSet1 = voiceSetResult.voiceSet;
                                         }
-                                        Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                        Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
                                       }
                                     }
                                     if ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[2] !=
@@ -684,14 +679,13 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  (levelConditionStorage->levelImage).worldSettings.
                                                  musicSampleNumbers[2],
                                                  (uint16_t *)(u_sound_music00_sam_0050df90 + 11));
-                                      resourceLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90);
-                                      if (!resourceLoadResult.failed) {
+                                      if (Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,&loadedSampleBuffer,NULL,NULL)) {
                                         voiceSetResult = g_SoundCreateSampleVoiceSet
-                                                           ((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                                           ((SoundSampleAsset *)loadedSampleBuffer);
                                         if (!voiceSetResult.failed) {
                                           g_InGameLevelMusicVoiceSet2 = voiceSetResult.voiceSet;
                                         }
-                                        Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                        Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
                                       }
                                     }
                                     if ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[3] !=
@@ -701,14 +695,13 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  (levelConditionStorage->levelImage).worldSettings.
                                                  musicSampleNumbers[3],
                                                  (uint16_t *)(u_sound_music00_sam_0050df90 + 11));
-                                      resourceLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90);
-                                      if (!resourceLoadResult.failed) {
+                                      if (Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,&loadedSampleBuffer,NULL,NULL)) {
                                         voiceSetResult = g_SoundCreateSampleVoiceSet
-                                                           ((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                                           ((SoundSampleAsset *)loadedSampleBuffer);
                                         if (!voiceSetResult.failed) {
                                           g_InGameLevelMusicVoiceSet3 = voiceSetResult.voiceSet;
                                         }
-                                        Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
+                                        Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
                                       }
                                     }
                                     /* default build list for factions that start with class-18 models but no
@@ -881,9 +874,10 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                     (soundDirectoryPathCursor);
                                   if (modelFlagsOrSoundIndex < soundLoopWorldRuntime->dwordArrayCount) {
                                     if (soundsInPackage) {
-                                      resourceLoadResult = Resource_Load(soundDirectoryPathCursor);
-                                      shrinkResultOrError = (void *)resourceLoadResult.bufferOrError;
-                                      if (resourceLoadResult.failed) break;
+                                      if (!Resource_Load(soundDirectoryPathCursor,&shrinkResultOrError,NULL,&loadErrorCode)) {
+                                        shrinkResultOrError = (void *)loadErrorCode; /* passed on as this function's error */
+                                        break;
+                                      }
                                     }
                                     else {
                                       WidePath_CombineDirectoryAndLeaf
@@ -892,10 +886,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                  soundDirectoryPathCursor,
                                                  (uint16_t *)&
                                                   g_InGameLevelSoundParentDirectoryScratchUtf16);
-                                      resourceLoadResult = Resource_Load((uint16_t *)&
-                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16);
-                                      shrinkResultOrError = (void *)resourceLoadResult.bufferOrError;
-                                      if (resourceLoadResult.failed) break;
+                                      if (!Resource_Load((uint16_t *)&
+                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,&shrinkResultOrError,NULL,&loadErrorCode)) {
+                                        shrinkResultOrError = (void *)loadErrorCode; /* passed on as this function's error */
+                                        break;
+                                      }
                                     }
                                     soundSlotResult = SpatialSoundSlot_CreateFromSampleAsset
                                                        (shrinkResultOrError);
@@ -985,7 +980,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
   ArenaLargestAllocResult largestBlockResult;
   bool soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
   DirectoryEnumerationResult enumerationResult;
-  ResourceLoadResult resourceLoadResult;
+  bool sampleLoaded;
+  uint32_t loadErrorCode;
   uint16_t *soundDirectoryPathCursor;
   WorldRuntimeContext *soundLoopWorldRuntime;
   bool poolLoaded;
@@ -1068,9 +1064,9 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount++;
             loadedResourcePointerArray++;
-            statusResult = ShotAsset_PrepareEntries(resultOrPointer);
-            resultOrPointer = (void *)statusResult.valueOrError;
-            if (statusResult.failed) goto load_failed;
+            assetError = ShotAsset_PrepareEntries(resultOrPointer);
+            resultOrPointer = (void *)assetError;
+            if (assetError != 0) goto load_failed;
             MoviePlayback_AdvanceScheduledFrameAndTick();
             pathTableCursor = pathTableCursor + LEVEL_ASSET_PATH_RECORD_UNITS; /* next path record */
           }
@@ -1131,9 +1127,9 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                   (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid);
               resultOrPointer = (void *)statusResult.valueOrError;
               if (!statusResult.failed) {
-                statusResult = ShotDefinitions_ValidateTerrainMaterialReferences();
-                resultOrPointer = (void *)statusResult.valueOrError;
-                if (!statusResult.failed) {
+                assetError = ShotDefinitions_ValidateTerrainMaterialReferences();
+                resultOrPointer = (void *)assetError;
+                if (assetError == 0) {
                   g_MoviePlaybackBaseFrameGroup = 2;
                   g_MoviePlaybackScheduleCounter = 0;
                   g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
@@ -1333,12 +1329,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                              effectSampleNumbers[0],
                                                              (uint16_t *)(u_sound_level00_sam_0050df6c +
                                                                      11));
-                                                  resourceLoadResult = Resource_Load((uint16_t *)
-                                                  u_sound_level00_sam_0050df6c);
-                                                  loadedSampleAsset =
-                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-                                                  sampleOrVoiceSet = loadedSampleAsset;
-                                                  if (!resourceLoadResult.failed) {
+                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,(void **)&loadedSampleAsset,NULL,
+                                                                                &loadErrorCode);
+                                                  /* Original quirk: a failed load leaves its error code as this function's success value
+                                                     (unless a later sample overwrites it) */
+                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
+                                                  if (sampleLoaded) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
                                                     sampleOrVoiceSet = (SoundSampleAsset *)voiceSetResult.voiceSet;
                                                     if (!voiceSetResult.failed) {
@@ -1355,12 +1351,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                              effectSampleNumbers[1],
                                                              (uint16_t *)(u_sound_level00_sam_0050df6c +
                                                                      11));
-                                                  resourceLoadResult = Resource_Load((uint16_t *)
-                                                  u_sound_level00_sam_0050df6c);
-                                                  loadedSampleAsset =
-                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-                                                  sampleOrVoiceSet = loadedSampleAsset;
-                                                  if (!resourceLoadResult.failed) {
+                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,(void **)&loadedSampleAsset,NULL,
+                                                                                &loadErrorCode);
+                                                  /* Original quirk: a failed load leaves its error code as this function's success value
+                                                     (unless a later sample overwrites it) */
+                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
+                                                  if (sampleLoaded) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
                                                     sampleOrVoiceSet = (SoundSampleAsset *)voiceSetResult.voiceSet;
                                                     if (!voiceSetResult.failed) {
@@ -1377,12 +1373,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                              effectSampleNumbers[2],
                                                              (uint16_t *)(u_sound_level00_sam_0050df6c +
                                                                      11));
-                                                  resourceLoadResult = Resource_Load((uint16_t *)
-                                                  u_sound_level00_sam_0050df6c);
-                                                  loadedSampleAsset =
-                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-                                                  sampleOrVoiceSet = loadedSampleAsset;
-                                                  if (!resourceLoadResult.failed) {
+                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,(void **)&loadedSampleAsset,NULL,
+                                                                                &loadErrorCode);
+                                                  /* Original quirk: a failed load leaves its error code as this function's success value
+                                                     (unless a later sample overwrites it) */
+                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
+                                                  if (sampleLoaded) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
                                                     sampleOrVoiceSet = (SoundSampleAsset *)voiceSetResult.voiceSet;
                                                     if (!voiceSetResult.failed) {
@@ -1399,12 +1395,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                              effectSampleNumbers[3],
                                                              (uint16_t *)(u_sound_level00_sam_0050df6c +
                                                                      11));
-                                                  resourceLoadResult = Resource_Load((uint16_t *)
-                                                  u_sound_level00_sam_0050df6c);
-                                                  loadedSampleAsset =
-                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-                                                  sampleOrVoiceSet = loadedSampleAsset;
-                                                  if (!resourceLoadResult.failed) {
+                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,(void **)&loadedSampleAsset,NULL,
+                                                                                &loadErrorCode);
+                                                  /* Original quirk: a failed load leaves its error code as this function's success value
+                                                     (unless a later sample overwrites it) */
+                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
+                                                  if (sampleLoaded) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
                                                     sampleOrVoiceSet = (SoundSampleAsset *)voiceSetResult.voiceSet;
                                                     if (!voiceSetResult.failed) {
@@ -1421,12 +1417,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                              musicSampleNumbers[0],
                                                              (uint16_t *)(u_sound_music00_sam_0050df90 +
                                                                      11));
-                                                  resourceLoadResult = Resource_Load((uint16_t *)
-                                                  u_sound_music00_sam_0050df90);
-                                                  loadedSampleAsset =
-                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-                                                  sampleOrVoiceSet = loadedSampleAsset;
-                                                  if (!resourceLoadResult.failed) {
+                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,(void **)&loadedSampleAsset,NULL,
+                                                                                &loadErrorCode);
+                                                  /* Original quirk: a failed load leaves its error code as this function's success value
+                                                     (unless a later sample overwrites it) */
+                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
+                                                  if (sampleLoaded) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
                                                     sampleOrVoiceSet = (SoundSampleAsset *)voiceSetResult.voiceSet;
                                                     if (!voiceSetResult.failed) {
@@ -1443,12 +1439,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                              musicSampleNumbers[1],
                                                              (uint16_t *)(u_sound_music00_sam_0050df90 +
                                                                      11));
-                                                  resourceLoadResult = Resource_Load((uint16_t *)
-                                                  u_sound_music00_sam_0050df90);
-                                                  loadedSampleAsset =
-                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-                                                  sampleOrVoiceSet = loadedSampleAsset;
-                                                  if (!resourceLoadResult.failed) {
+                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,(void **)&loadedSampleAsset,NULL,
+                                                                                &loadErrorCode);
+                                                  /* Original quirk: a failed load leaves its error code as this function's success value
+                                                     (unless a later sample overwrites it) */
+                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
+                                                  if (sampleLoaded) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
                                                     sampleOrVoiceSet = (SoundSampleAsset *)voiceSetResult.voiceSet;
                                                     if (!voiceSetResult.failed) {
@@ -1465,12 +1461,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                              musicSampleNumbers[2],
                                                              (uint16_t *)(u_sound_music00_sam_0050df90 +
                                                                      11));
-                                                  resourceLoadResult = Resource_Load((uint16_t *)
-                                                  u_sound_music00_sam_0050df90);
-                                                  loadedSampleAsset =
-                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-                                                  sampleOrVoiceSet = loadedSampleAsset;
-                                                  if (!resourceLoadResult.failed) {
+                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,(void **)&loadedSampleAsset,NULL,
+                                                                                &loadErrorCode);
+                                                  /* Original quirk: a failed load leaves its error code as this function's success value
+                                                     (unless a later sample overwrites it) */
+                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
+                                                  if (sampleLoaded) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
                                                     sampleOrVoiceSet = (SoundSampleAsset *)voiceSetResult.voiceSet;
                                                     if (!voiceSetResult.failed) {
@@ -1487,12 +1483,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                              musicSampleNumbers[3],
                                                              (uint16_t *)(u_sound_music00_sam_0050df90 +
                                                                      11));
-                                                  resourceLoadResult = Resource_Load((uint16_t *)
-                                                  u_sound_music00_sam_0050df90);
-                                                  loadedSampleAsset =
-                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-                                                  sampleOrVoiceSet = loadedSampleAsset;
-                                                  if (!resourceLoadResult.failed) {
+                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,(void **)&loadedSampleAsset,NULL,
+                                                                                &loadErrorCode);
+                                                  /* Original quirk: a failed load leaves its error code as this function's success value
+                                                     (unless a later sample overwrites it) */
+                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
+                                                  if (sampleLoaded) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
                                                     sampleOrVoiceSet = (SoundSampleAsset *)voiceSetResult.voiceSet;
                                                     if (!voiceSetResult.failed) {
@@ -1512,9 +1508,10 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                             (soundDirectoryPathCursor);
                                               if (soundSlotIndex < worldRuntime->dwordArrayCount) {
                                                 if (soundsInPackage) {
-                                                  resourceLoadResult = Resource_Load(soundDirectoryPathCursor);
-                                                  shrinkResultOrError = (void *)resourceLoadResult.bufferOrError;
-                                                  if (resourceLoadResult.failed) break;
+                                                  if (!Resource_Load(soundDirectoryPathCursor,&shrinkResultOrError,NULL,&loadErrorCode)) {
+                                                    shrinkResultOrError = (void *)loadErrorCode; /* passed on as this function's error */
+                                                    break;
+                                                  }
                                                 }
                                                 else {
                                                   WidePath_CombineDirectoryAndLeaf
@@ -1523,10 +1520,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                   soundDirectoryPathCursor,
                                                   (uint16_t *)&
                                                   g_InGameLevelSoundParentDirectoryScratchUtf16);
-                                                  resourceLoadResult = Resource_Load((uint16_t *)&
-                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16);
-                                                  shrinkResultOrError = (void *)resourceLoadResult.bufferOrError;
-                                                  if (resourceLoadResult.failed) break;
+                                                  if (!Resource_Load((uint16_t *)&
+                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,&shrinkResultOrError,NULL,&loadErrorCode)) {
+                                                    shrinkResultOrError = (void *)loadErrorCode; /* passed on as this function's error */
+                                                    break;
+                                                  }
                                                 }
                                                 soundSlotResult = SpatialSoundSlot_CreateFromSampleAsset
                                                                    (shrinkResultOrError);

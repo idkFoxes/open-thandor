@@ -2969,10 +2969,10 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPoin
   UiPixelExtent computedRowHeight;
   int totalWidth;
   UiListColumn *column;
-  GlyphSizeResult glyphSize;
+  uint32_t lineHeight;
 
-  glyphSize = FontGlyph_GetLogicalSizeForStyleRegs(g_UiListTextStyle,0);
-  computedRowHeight = glyphSize.lineHeight + 1;
+  FontGlyph_GetLogicalSizeForStyle(g_UiListTextStyle,0,&lineHeight);
+  computedRowHeight = lineHeight + 1;
   control->rowHeight = computedRowHeight;
   control->rowCount = rowCount;
   control->rowSlots = rowPointers;
@@ -3633,15 +3633,15 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
   uint32_t savedRemaining[TREE_DEPTH_LIMIT];
   UiTimedListTreeRecord *record;
   UiNodeBase *parent;
-  GlyphSizeResult glyph;
+  uint32_t fontLineHeight;
   uint32_t remaining;
   uint32_t widest;
   uint32_t width;
   int depth;
 
-  glyph = FontGlyph_GetLogicalSizeActiveRegs(0);
+  FontGlyph_GetLogicalSizeActiveFont(0,&fontLineHeight);
   remaining = (recordTree == NULL) ? 0 : recordTree->countOrLabelText;
-  (control->base).rowHeight = glyph.lineHeight + 1;
+  (control->base).rowHeight = fontLineHeight + 1;
   (control->base).rowCount = remaining;
   (control->base).recordTree = recordTree;
   record = recordTree + 1;

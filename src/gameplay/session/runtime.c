@@ -968,7 +968,7 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
   InGameRuntimeRoot *rootCursorOrError;
   InGameNotificationQueueRecord *queueRecord;
   bool subsystemFailed;
-  TextResolveResult resolvedTitle;
+  uint16_t *resolvedTitle;
   ArenaAllocResult allocation;
   StatusResult statusResult;
   EndingMoviePathResult endingMoviePath;
@@ -1044,7 +1044,7 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
     sessionNameClearCursor++;
   }
   resolvedTitle = TextResource_Resolve(titleTextIndex + TEXT_ID_LEVEL_TITLE_BASE);
-  titleSource = resolvedTitle.text;
+  titleSource = resolvedTitle;
   sessionNameCursor = &g_InGameSessionNameScratchUtf16;
   countOrPlayerId = 31;
   do {

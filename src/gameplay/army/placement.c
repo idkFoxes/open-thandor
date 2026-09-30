@@ -807,36 +807,34 @@ PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMod
 {
   uint32_t assetClassIndex;
   ModelDefinitionRecordPrefix *modelDefinition;
-  ArmyAssetLookupResult lookupResult;
+  ArmyAssetRecordPrefix *armyAsset;
+  uint32_t lookupError;
   HeightSampleResult terrainHeight;
   PlacementDispatchResult dispatchResult;
-  
-  lookupResult = ArmyAssetRegistry_FindById(armyAssetId);
-  if (!lookupResult.notFound) {
-    /* the model definition of the army asset's root node */
-    modelDefinition = ModelDefinitionRegistry_FindById
-                      (((AiLinkedDefinitionListView *)(lookupResult.recordOrError)->rootNodeOffsetOrPointer)->
-                       definitionIds[0]);
-    if (modelDefinition == NULL) {
-      /* the failed lookup's error code becomes this function's error value */
-      lookupResult.recordOrError = (ArmyAssetRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
-      lookupResult.notFound = true;
-    }
-    else {
-      assetClassIndex = ((ModelDefinition *)modelDefinition)->runtimeClassId;
-      /* placementContactKindIndex selects the height interpolation mode; the field grid is at
-         +0x54 of the in-game runtime */
-      terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[((ModelDefinition *)modelDefinition)->placementContactKindIndex])
-                        (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
-      lookupResult = THANDOR_BITCAST(PlacementDispatchResult, ArmyAssetLookupResult, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
-              )(placementMode,placementClearancePaddingQ12,placementHeading,terrainHeight.heightQ12,
-                worldYQ12,worldXQ12,modelDefinition,ownerFactionIndex,
-                (WorldRuntimeContext *)inGameRoot));
-    }
+
+  lookupError = ArmyAssetRegistry_FindById(armyAssetId,&armyAsset);
+  if (lookupError != 0) {
+    dispatchResult.value = lookupError;
+    dispatchResult.failed = true;
+    return dispatchResult;
   }
-  dispatchResult.value = (uint32_t)lookupResult.recordOrError;
-  dispatchResult.failed = lookupResult.notFound;
-  return dispatchResult;
+  /* the model definition of the army asset's root node */
+  modelDefinition = ModelDefinitionRegistry_FindById
+                    (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]);
+  if (modelDefinition == NULL) {
+    /* the failed lookup's error code becomes this function's error value */
+    dispatchResult.value = FATAL_ERROR_MODEL_DEFINITION_MISSING;
+    dispatchResult.failed = true;
+    return dispatchResult;
+  }
+  assetClassIndex = ((ModelDefinition *)modelDefinition)->runtimeClassId;
+  /* placementContactKindIndex selects the height interpolation mode; the field grid is at
+     +0x54 of the in-game runtime */
+  terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[((ModelDefinition *)modelDefinition)->placementContactKindIndex])
+                    (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
+  return (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex])
+            (placementMode,placementClearancePaddingQ12,placementHeading,terrainHeight.heightQ12,
+             worldYQ12,worldXQ12,modelDefinition,ownerFactionIndex,(WorldRuntimeContext *)inGameRoot);
 }
 
 

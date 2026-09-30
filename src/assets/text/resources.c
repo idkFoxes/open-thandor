@@ -24,32 +24,25 @@ bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t
   uint16_t *resolvedText;
   int lineIndex;
   bool failed;
-  TextPageLoadResult pageLoadResult;
-  TextResolveResult resolveResult;
 
-  pageLoadResult = TextResourcePage_Load(TEXT_RESOURCE_PAGE_LEVEL,path);
-  failed = pageLoadResult.failed;
+  failed = !TextResourcePage_Load(TEXT_RESOURCE_PAGE_LEVEL,path,NULL);
   if (!failed) {
-    resolveResult = TextResource_Resolve(TEXT_ID_LEVEL_PAGE_TITLE);
-    failed = resolveResult.notFound;
-    resolvedText = resolveResult.text;
+    failed = !TextResource_TryResolve(TEXT_ID_LEVEL_PAGE_TITLE,&resolvedText);
     if (!failed) {
       TextResourceOverride_Register(levelTitleIndex + TEXT_ID_LEVEL_TITLE_BASE,resolvedText);
-      resolveResult = TextResource_Resolve(TEXT_ID_LEVEL_PAGE_DESCRIPTION);
-      failed = resolveResult.notFound;
+      failed = !TextResource_TryResolve(TEXT_ID_LEVEL_PAGE_DESCRIPTION,&resolvedText);
       if (!failed) {
         lineIndex = TEXT_LEVEL_EXTRA_LINE_COUNT - 1;
         TextResourceOverride_Register(levelTitleIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE + TEXT_ID_LEVEL_DESCRIPTION_BASE,
-                                      resolveResult.text);
+                                      resolvedText);
         /* the extra lines are registered from the last one down */
         do {
-          resolveResult = TextResource_Resolve(lineIndex + TEXT_ID_LEVEL_PAGE_EXTRA_LINES);
-          if (resolveResult.notFound) {
+          if (!TextResource_TryResolve(lineIndex + TEXT_ID_LEVEL_PAGE_EXTRA_LINES,&resolvedText)) {
             return true;
           }
           TextResourceOverride_Register
                     (levelTitleIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE + (TEXT_ID_LEVEL_DESCRIPTION_BASE + 1) + lineIndex,
-                     resolveResult.text);
+                     resolvedText);
           lineIndex--;
         } while (-1 < lineIndex);
         failed = false;
@@ -149,17 +142,17 @@ AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *
 
 
 /* Address: 0x0041CEB0.
-   Returns the width of one glyph (EAX, 0 when the font has no such glyph) and the line height (EDX, the height
-   of glyph 0) in the active font; used to measure text before it is laid out.
+   Returns the width of one glyph (0 when the font has no such glyph) in the active font and stores the line
+   height (the height of glyph 0) in *outLineHeight unless it is NULL; used to measure text before it is laid
+   out. Both sizes are always queried.
 */
-GlyphSizeResult FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
+uint32_t FontGlyph_GetLogicalSizeActiveFont(GraphicsSubresourceIndex glyphSubresource,uint32_t *outLineHeight)
 
 {
   uint32_t glyphWidth;
   TextureSizeResult textureSize;
-  GlyphSizeResult glyphSize;
   uint32_t fontIndex;
-  
+
   fontIndex = g_ActiveFontIndex;
   textureSize = g_GraphicsTextureSourceGetLogicalSize
                     (glyphSubresource,g_FontTextureSources[g_ActiveFontIndex]);
@@ -168,26 +161,26 @@ GlyphSizeResult FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyp
     glyphWidth = 0;
   }
   textureSize = g_GraphicsTextureSourceGetLogicalSize(0,g_FontTextureSources[fontIndex]);
-  glyphSize.lineHeight = textureSize.logicalHeightPixels;
-  glyphSize.width = glyphWidth;
-  glyphSize.failed = false;
-  return glyphSize;
+  if (outLineHeight != NULL) {
+    *outLineHeight = textureSize.logicalHeightPixels;
+  }
+  return glyphWidth;
 }
 
 
 /* Address: 0x0041CEF0.
-   Returns the width of one glyph (EAX, 0 when the font has no such glyph) and the line height (EDX, the height
-   of glyph 0) in the font selected by packedStyle, without changing the active font.
+   Returns the width of one glyph (0 when the font has no such glyph) in the font selected by packedStyle,
+   without changing the active font, and stores the line height (the height of glyph 0) in *outLineHeight
+   unless it is NULL. Both sizes are always queried.
 */
-GlyphSizeResult FontGlyph_GetLogicalSizeForStyleRegs
-          (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource)
+uint32_t FontGlyph_GetLogicalSizeForStyle
+          (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource,uint32_t *outLineHeight)
 
 {
   uint32_t glyphWidth;
   uint32_t fontIndex;
   TextureSizeResult textureSize;
-  GlyphSizeResult glyphSize;
-  
+
   fontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
   textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,g_FontTextureSources[fontIndex]);
   glyphWidth = textureSize.logicalWidthPixels;
@@ -195,10 +188,10 @@ GlyphSizeResult FontGlyph_GetLogicalSizeForStyleRegs
     glyphWidth = 0;
   }
   textureSize = g_GraphicsTextureSourceGetLogicalSize(0,g_FontTextureSources[fontIndex]);
-  glyphSize.lineHeight = textureSize.logicalHeightPixels;
-  glyphSize.width = glyphWidth;
-  glyphSize.failed = false;
-  return glyphSize;
+  if (outLineHeight != NULL) {
+    *outLineHeight = textureSize.logicalHeightPixels;
+  }
+  return glyphWidth;
 }
 
 
@@ -284,10 +277,12 @@ uint32_t FontGlyph_DrawVerticallyCentered
 /* Address: 0x0041CA50.
    Loads a 'str' text asset as page pageIndex: picks the locale block of the configured (or system) country,
    else the Great Britain block, else the first one, binds it, and prepares every string's command records for
-   run time (see the switch). Returns the selected block with CF clear; a package error, or
-   TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' asset (which is released), with CF set.
+   run time (see the switch). Returns true on success and stores the selected block's address in
+   *outLocaleBlockOrError; returns false and stores the package error there, or
+   TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' asset (which is released). outLocaleBlockOrError may be
+   NULL.
 */
-TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
+bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32_t *outLocaleBlockOrError)
 
 {
   uint16_t codeUnit;
@@ -301,9 +296,7 @@ TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_
   uint16_t *textCursor;
   int stringIndex;
   PackageLoadResult loadResult;
-  TextPageLoadResult failureResult;
-  TextPageLoadResult successResult;
-  
+
   loadResult = Package_LoadEntry(path);
   if (loadResult.failed) {
     Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
@@ -392,15 +385,17 @@ TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_
         }
         stringIndex++;
       }
-      successResult.failed = false;
-      successResult.errorOrValue = (uint32_t)localeBlockOrError;
-      return successResult;
+      if (outLocaleBlockOrError != NULL) {
+        *outLocaleBlockOrError = (uint32_t)localeBlockOrError;
+      }
+      return true;
     }
     Resource_Release(allocation);
   }
-  failureResult.failed = true;
-  failureResult.errorOrValue = (uint32_t)localeBlockOrError;
-  return failureResult;
+  if (outLocaleBlockOrError != NULL) {
+    *outLocaleBlockOrError = (uint32_t)localeBlockOrError;
+  }
+  return false;
 }
 
 
@@ -441,11 +436,12 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
 
 
 /* Address: 0x0041CDE0.
-   Returns the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime
+   Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime
    override table is searched, then the bound locale block of the id's page (compact or extended id, see
-   resources.h). A missing text sets CF and returns the value TEXT_RESOURCE_MISSING_SENTINEL_0x33.
+   resources.h). Stores the text in *outText and returns true when found; a missing text stores
+   TEXT_RESOURCE_MISSING_SENTINEL_0x33 (&k_LowAddressLiteral00000033) there and returns false.
 */
-TextResolveResult TextResource_Resolve(TextResourceId resourceId)
+bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
 
 {
   TextResourceLocaleBlockPrefix *localeBlock;
@@ -453,16 +449,10 @@ TextResolveResult TextResource_Resolve(TextResourceId resourceId)
   uint32_t *scanCursor;
   uint32_t *cursorAfterScan;
   bool overrideFound;
-  TextResolveResult overrideResult;
-  TextResolveResult compactResult;
-  TextResolveResult extendedResult;
-  TextResolveResult emptyResult;
-  TextResolveResult missingResult;
-  
+
   if (resourceId == TEXT_RESOURCE_ID_NONE) {
-    emptyResult.text = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
-    emptyResult.notFound = false;
-    return emptyResult;
+    *outText = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
+    return true;
   }
   remainingSlots = TEXT_RESOURCE_OVERRIDE_CAPACITY;
   overrideFound = g_TextResourceOverrides == NULL;
@@ -477,11 +467,10 @@ TextResolveResult TextResource_Resolve(TextResourceId resourceId)
       scanCursor = cursorAfterScan;
     } while (!overrideFound);
     if (overrideFound) {
-      overrideResult.notFound = false;
       /* cursorAfterScan is one past the matching id; its text pointer is TEXT_RESOURCE_OVERRIDE_CAPACITY
          dwords further, in textPointers */
-      overrideResult.text = (uint16_t *)cursorAfterScan[TEXT_RESOURCE_OVERRIDE_CAPACITY - 1];
-      return overrideResult;
+      *outText = (uint16_t *)cursorAfterScan[TEXT_RESOURCE_OVERRIDE_CAPACITY - 1];
+      return true;
     }
   }
   if ((resourceId & 0xff0000) == 0) {
@@ -490,10 +479,8 @@ TextResolveResult TextResource_Resolve(TextResourceId resourceId)
     if ((localeBlock != NULL) &&
        ((resourceId & 0xff) < localeBlock->stringCount)) {
       /* the string offsets are relative to the block */
-      compactResult.text =
-           (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xff]);
-      compactResult.notFound = false;
-      return compactResult;
+      *outText = (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xff]);
+      return true;
     }
   }
   else {
@@ -501,16 +488,25 @@ TextResolveResult TextResource_Resolve(TextResourceId resourceId)
     localeBlock = g_TextResourcePageBindings[resourceId >> 16].selectedLocaleBlock;
     if ((localeBlock != NULL) &&
        ((resourceId & 0xffff) < localeBlock->stringCount)) {
-      extendedResult.text =
-           (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xffff]);
-      extendedResult.notFound = false;
-      return extendedResult;
+      *outText = (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xffff]);
+      return true;
     }
   }
   Thandor_Log("text resource 0x%08X missing (page binding %p)", resourceId,
               g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 16].selectedLocaleBlock);
-  missingResult.notFound = true;
-  missingResult.text = (uint16_t *)&k_LowAddressLiteral00000033;
-  return missingResult;
+  *outText = (uint16_t *)&k_LowAddressLiteral00000033;
+  return false;
+}
+
+
+/* Returns the text of a resource id (see TextResource_TryResolve); a missing text gives
+   TEXT_RESOURCE_MISSING_SENTINEL_0x33, which callers use like any other text pointer. */
+uint16_t *TextResource_Resolve(TextResourceId resourceId)
+
+{
+  uint16_t *text;
+
+  TextResource_TryResolve(resourceId,&text);
+  return text;
 }
 

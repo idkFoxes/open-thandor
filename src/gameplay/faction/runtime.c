@@ -256,7 +256,7 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
   GameFactionRuntimeImage *factionRecordCursor; /* steps one faction record at a time (records[0] = current) */
   uint32_t *assetIdCursor;
   ArmyRuntimeSlot **groupSlotCursor;
-  ArmyAssetLookupResult resolvedAsset;
+  ArmyAssetRecordPrefix *resolvedAsset;
 
   factionRecordCursor = &g_GameFactionRuntimeImage;
   factionsRemaining = 8;
@@ -264,23 +264,21 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
     assetIdCursor = factionRecordCursor->records[0].secondaryArmyAssetPointersOrIds;
     for (assetsRemaining = factionRecordCursor->records[0].secondaryArmyAssetCount; assetsRemaining !=
          0; assetsRemaining--) {
-      resolvedAsset = ArmyAssetRegistry_FindById(*assetIdCursor);
-      if (resolvedAsset.notFound) {
+      if (ArmyAssetRegistry_FindById(*assetIdCursor,&resolvedAsset) != 0) {
         factionRecordCursor->records[0].secondaryArmyAssetCount = 0;
         break;
       }
-      *assetIdCursor = (uint32_t)resolvedAsset.recordOrError;
+      *assetIdCursor = (uint32_t)resolvedAsset;
       assetIdCursor++;
     }
     assetIdCursor = factionRecordCursor->records[0].primaryArmyAssetPointersOrIds;
     for (assetsRemaining = factionRecordCursor->records[0].primaryArmyAssetCount; assetsRemaining !=
          0; assetsRemaining--) {
-      resolvedAsset = ArmyAssetRegistry_FindById(*assetIdCursor);
-      if (resolvedAsset.notFound) {
+      if (ArmyAssetRegistry_FindById(*assetIdCursor,&resolvedAsset) != 0) {
         factionRecordCursor->records[0].primaryArmyAssetCount = 0;
         break;
       }
-      *assetIdCursor = (uint32_t)resolvedAsset.recordOrError;
+      *assetIdCursor = (uint32_t)resolvedAsset;
       assetIdCursor++;
     }
     groupSlotCursor = factionRecordCursor->records[0].runtimeGroupMembers8x32;
@@ -561,7 +559,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
   int tritiumComponentOrModelRecord;
   uint8_t *cellVisibilityCursor;
   uint32_t maskWordIndex;
-  ArmyAssetLookupResult resolvedAsset;
+  ArmyAssetRecordPrefix *resolvedAsset;
   FieldGridAsset *terrainGrid;
   WorldOwnerListNode *ownerNode;
   
@@ -622,9 +620,8 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
        (tritiumComponentOrModelRecord =
         (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
        factionIndex == ((ArmyRuntimeSlot *)tritiumComponentOrModelRecord)->factionIndex)) {
-      resolvedAsset = ArmyAssetRegistry_FindById(((ArmyRuntimeSlot *)tritiumComponentOrModelRecord)->armyAssetId);
-      if (!resolvedAsset.notFound) {
-        tallyOrComponent = tallyOrComponent + resolvedAsset.recordOrError[2].registryId;
+      if (ArmyAssetRegistry_FindById(((ArmyRuntimeSlot *)tritiumComponentOrModelRecord)->armyAssetId,&resolvedAsset) == 0) {
+        tallyOrComponent = tallyOrComponent + resolvedAsset[2].registryId;
       }
     }
   }
@@ -947,17 +944,16 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
 {
   FactionArmyAssetCount *secondaryCount;
   FactionArmyAssetCount slotIndex;
-  ArmyAssetLookupResult resolvedAsset;
+  ArmyAssetRecordPrefix *resolvedAsset;
 
-  resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
-  if (!resolvedAsset.notFound) {
+  if (ArmyAssetRegistry_FindById(armyAssetId,&resolvedAsset) == 0) {
     slotIndex = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
     do {
       if (FACTION_ARMY_ASSET_LIST_CAPACITY - 1 < slotIndex) {
         return;
       }
       g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds[slotIndex] =
-           (uint32_t)resolvedAsset.recordOrError;
+           (uint32_t)resolvedAsset;
       secondaryCount = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
       *secondaryCount = *secondaryCount + 1;
       slotIndex++;
@@ -988,11 +984,8 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
   int writeIndex;
   int readIndexOrClassId;
   WorldOwnerListNode *ownerNode;
-  ArmyAssetLookupResult resolvedAsset;
 
-  resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
-  armyDefinition = resolvedAsset.recordOrError;
-  if (!resolvedAsset.notFound) {
+  if (ArmyAssetRegistry_FindById(armyAssetId,&armyDefinition) == 0) {
     recordOffset = factionIndex * (int)sizeof(GameFactionRuntimeRecord);
     readIndexOrClassId = 0;
     writeIndex = 0;
@@ -1116,11 +1109,8 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
   ArmyAssetRecordPrefix *armyDefinition;
   int byteOffsetOrActiveFaction;
   FactionArmyAssetCount assetsRemaining;
-  ArmyAssetLookupResult resolvedAsset;
 
-  resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
-  armyDefinition = resolvedAsset.recordOrError;
-  if (!resolvedAsset.notFound) {
+  if (ArmyAssetRegistry_FindById(armyAssetId,&armyDefinition) == 0) {
     playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
     byteOffsetOrActiveFaction = factionIndex * (int)sizeof(GameFactionRuntimeRecord);
     assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
@@ -1218,14 +1208,13 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
   InGameRuntimeRoot *runtimeRoot;
   int byteOffsetOrActiveFaction;
   FactionArmyAssetCount assetsRemaining;
-  ArmyAssetLookupResult resolvedAsset;
+  ArmyAssetRecordPrefix *resolvedAsset;
 
-  resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
-  if (!resolvedAsset.notFound) {
+  if (ArmyAssetRegistry_FindById(armyAssetId,&resolvedAsset) == 0) {
     byteOffsetOrActiveFaction = factionIndex * (int)sizeof(GameFactionRuntimeRecord);
     for (assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount; assetsRemaining != 0;
         assetsRemaining--) {
-      if (resolvedAsset.recordOrError ==
+      if (resolvedAsset ==
           *(ArmyAssetRecordPrefix **)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
         /* close the gap */
@@ -1239,7 +1228,7 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           byteOffsetOrActiveFaction += 4;
           assetsRemaining--;
         } while (assetsRemaining != 0);
-        price = resolvedAsset.recordOrError[2].registryId;
+        price = resolvedAsset[2].registryId;
         byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
         primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
         *primaryCount = *primaryCount - 1;

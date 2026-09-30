@@ -91,7 +91,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
   uint32_t *templateCursor;
   uint32_t *copyCursor;
   ArenaAllocResult allocResult;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   UiFourValueDialogCountdownText *countdownText;
 
   allocResult = g_MemoryApi.alloc(sizeof(g_UiFourValueDialogTemplateImage));
@@ -108,7 +108,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
     }
     countdownNumberBuffer = countdownText->countdownTextUtf16;
     resolvedText = TextResource_Resolve(TEXT_ID_DISPLAY_MODE_KEEP_COUNTDOWN);
-    RichTextCommandStream_PatchPayloadBySelector(0,countdownNumberBuffer,resolvedText.text);
+    RichTextCommandStream_PatchPayloadBySelector(0,countdownNumberBuffer,resolvedText);
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,countdownText->countdown,countdownNumberBuffer);
     countdownText->previousWidth = previousWidth;
     countdownText->previousHeight = previousHeight;

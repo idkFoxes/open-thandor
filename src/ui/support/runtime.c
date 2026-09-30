@@ -205,7 +205,7 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
   uint16_t *sanitizedPathCursor;
   uint8_t *outputCursor;
   PcxDecodeResult pcxDecodeResult;
-  ResourceLoadResult resourceLoadResult;
+  uint32_t sourceByteCount;
 
   /* copy the leaf, dropping every character that is not allowed in a file name, and '.' */
   sanitizedPathCursor = g_LevelEndingMovieSourcePath;
@@ -219,10 +219,8 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
             ((uint16_t *)&g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_PCX,(uint16_t *)&g_LevelResourcePathScratchUtf16);
-  resourceLoadResult = Resource_Load((uint16_t *)&g_LevelResourcePathScratchUtf16);
-  sourceBytes = (void *)resourceLoadResult.bufferOrError;
-  if (!resourceLoadResult.failed) {
-    pcxDecodeResult = g_PcxFunctionExport2(g_PcxFunctionModule,resourceLoadResult.byteCount,sourceBytes);
+  if (Resource_Load((uint16_t *)&g_LevelResourcePathScratchUtf16,&sourceBytes,&sourceByteCount,NULL)) {
+    pcxDecodeResult = g_PcxFunctionExport2(g_PcxFunctionModule,sourceByteCount,sourceBytes);
     decodedImage = pcxDecodeResult.decodedImageOrError;
     if (!pcxDecodeResult.failed) {
       /* the decoder's image record: +0xB8 offset of the image header, which holds +0x08 (must be 0),

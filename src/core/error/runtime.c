@@ -19,13 +19,13 @@
 void __cdecl ErrorSystem_Init(void)
 
 {
-  TextPageLoadResult loadResult;
+  bool errorTextsLoaded;
 
   g_FatalErrorExitHandler = FatalError_Exit;
   g_FatalErrorReportHandler = FatalError_Exit;
   g_FatalErrorFallbackHandler = FatalError_Exit;
-  loadResult = TextResourcePage_Load(0,u_texte_error_str_00407d20);
-  FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),loadResult.failed);
+  errorTextsLoaded = TextResourcePage_Load(0,u_texte_error_str_00407d20,NULL);
+  FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),!errorTextsLoaded);
 }
 
 
@@ -86,7 +86,7 @@ FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrVal
   RichTextExtentRegs wrappedExtent;
   FatalErrorCheckResult passThroughResult;
   FatalErrorCheckResult dispatchResult;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
 
   if (!carryIn) {
     passThroughResult.failed = false;
@@ -101,7 +101,7 @@ FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrVal
   stream = (uint16_t *)errorOrValue;
   if (FATAL_ERROR_IS_CODE(errorOrValue)) {
     resolvedText = TextResource_Resolve(errorOrValue);
-    stream = resolvedText.text;
+    stream = resolvedText;
     RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,stream);
@@ -207,7 +207,7 @@ FatalErrorCheckResult FatalError_Exit(uint32_t errorOrValue,bool carryIn)
 
 {
   FatalErrorCheckResult passThroughResult;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   
   if (!carryIn) {
     passThroughResult.failed = false;
@@ -219,7 +219,7 @@ FatalErrorCheckResult FatalError_Exit(uint32_t errorOrValue,bool carryIn)
   Thandor_LogStack("fatal error stack", errorOrValue);
   if (FATAL_ERROR_IS_CODE(errorOrValue)) {
     resolvedText = TextResource_Resolve(errorOrValue);
-    errorOrValue = (uint32_t)resolvedText.text;
+    errorOrValue = (uint32_t)resolvedText;
   }
   /* payload selectors 0..3 of the message text */
   RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,(uint16_t *)errorOrValue);

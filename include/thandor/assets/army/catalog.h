@@ -98,8 +98,9 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
 /* 0x00571D90 */
 uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId);
 
-/* 0x0051B6D0 */
-ArmyAssetLookupResult ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId);
+/* 0x0051B6D0: 0 and the record in *outRecord, or FATAL_ERROR_ARMY_ID_NOT_FOUND (then *outRecord holds that code
+   cast to a pointer, see the definition) */
+uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRecordPrefix **outRecord);
 
 /* 0x00571910 */
 uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId);

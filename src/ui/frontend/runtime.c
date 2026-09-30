@@ -1502,7 +1502,7 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
     break;
   case 0x548190: {
     FrontendPlayerRuntimeRecord *player;
-    TextResolveResult text;
+    uint16_t *text;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0) {
       /* local game with no campaign or scenario loaded: only queue UI action 0 */
       if ((g_FrontendLoadedCampaignAsset == 0) && (g_FrontendScenarioInitializationCount == 0)) {
@@ -1541,8 +1541,8 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
                 (FRONTEND_ROM_RECORD_MAIN_MENU,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
       /* chat history notice with the first player's name */
       text = TextResource_Resolve(wasClient ? TEXT_ID_NETWORK_SESSION_LEFT : TEXT_ID_NETWORK_SESSION_CLOSED);
-      RichTextCommandStream_PatchPayloadBySelector(0,&player->playerName,text.text);
-      FrontendRecentTextHistory_InsertAndRebuild5(text.text);
+      RichTextCommandStream_PatchPayloadBySelector(0,&player->playerName,text);
+      FrontendRecentTextHistory_InsertAndRebuild5(text);
       if (!wasClient) {
         /* the player record becomes a fresh local one (same fields as the client path of
            FrontendNetworkSetupPage_InitializeBackendMode) */
@@ -1604,7 +1604,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   int channel4OrHalfHeight;
   RichTextExtentRegs textExtent;
   PageStackSearchResult pageStackStatus;
-  TextResolveResult hintTextResult;
+  uint16_t *hintTextResult;
   TextureSizeResult windowTextureSize;
 
   resultCode = 0;
@@ -1676,7 +1676,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   /* only when the text changed: size the hint box around it plus the window frame (texture frame UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT) */
   previousCommandStream = frontendRuntime->hintBox.commandStream;
   hintTextResult = TextResource_Resolve(channel3OrHintValue + TEXT_ID_MENU_HINT_BASE);
-  commandStream = hintTextResult.text;
+  commandStream = hintTextResult;
   if (commandStream != previousCommandStream) {
     frontendRuntime->hintBox.commandStream = commandStream;
     textExtent = RichTextCommandStream_MeasureRegs(g_UiTextStyleNormal,commandStream);
@@ -1972,7 +1972,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   uint32_t displacedValueB;
   GraphicsDisplayModeCount remainingModes;
   GraphicsDisplayMode *displayMode;
-  TextResolveResult fallbackNameResult;
+  uint16_t *fallbackNameResult;
   
   /* source is the frontend template's graphicsSettingsButton */
   UiPageStack_SetActiveIndex
@@ -2061,7 +2061,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   ;
   if (adapters->deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
     fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-    deviceNameText = fallbackNameResult.text;
+    deviceNameText = fallbackNameResult;
   }
   else {
     deviceNameText = adapters->deviceNameUtf16;
@@ -2073,7 +2073,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
          g_GraphicsAdapters[1].driverDescriptionUtf16;
     if (adapters[1].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
       fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-      deviceNameText = fallbackNameResult.text;
+      deviceNameText = fallbackNameResult;
     }
     else {
       deviceNameText = adapters[1].deviceNameUtf16;
@@ -2086,7 +2086,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
          g_GraphicsAdapters[2].driverDescriptionUtf16;
     if (adapters[2].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
       fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-      deviceNameText = fallbackNameResult.text;
+      deviceNameText = fallbackNameResult;
     }
     else {
       deviceNameText = adapters[2].deviceNameUtf16;
@@ -2099,7 +2099,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
          g_GraphicsAdapters[3].driverDescriptionUtf16;
     if (adapters[3].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
       fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-      deviceNameText = fallbackNameResult.text;
+      deviceNameText = fallbackNameResult;
     }
     else {
       deviceNameText = adapters[3].deviceNameUtf16;
@@ -2112,7 +2112,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
          g_GraphicsAdapters[4].driverDescriptionUtf16;
     if (adapters[4].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
       fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-      deviceNameText = fallbackNameResult.text;
+      deviceNameText = fallbackNameResult;
     }
     else {
       deviceNameText = adapters[4].deviceNameUtf16;
@@ -2502,8 +2502,8 @@ void Frontend_PlaySelectedEndMovie(void)
   bool framebufferAccessFailed;
   MovieOpenResult movieOpenResult;
   MovieFrameResult frameAdvanceResult;
-  TextResolveResult resultsTextResult;
-  TextResolveResult levelTitleResult;
+  uint16_t *resultsTextResult;
+  uint16_t *levelTitleResult;
   
   runtimeRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(0);
@@ -2615,10 +2615,10 @@ void Frontend_PlaySelectedEndMovie(void)
                    (uint16_t *)&g_EndGameElapsedTimeScratchUtf16);
         resultsTextResult = TextResource_Resolve(TEXT_ID_RESULTS_TITLE_TEMPLATE);
         resourceId = g_InGameLevelTitleTextResourceIndex + TEXT_ID_LEVEL_TITLE_BASE;
-        RichTextCommandStream_PatchPayloadBySelector(1,&g_EndGameElapsedTimeScratchUtf16,resultsTextResult.text)
+        RichTextCommandStream_PatchPayloadBySelector(1,&g_EndGameElapsedTimeScratchUtf16,resultsTextResult)
         ;
         levelTitleResult = TextResource_Resolve(resourceId);
-        RichTextCommandStream_PatchPayloadBySelector(0,levelTitleResult.text,resultsTextResult.text);
+        RichTextCommandStream_PatchPayloadBySelector(0,levelTitleResult,resultsTextResult);
         /* the continue button; 0x1025 is the second results button, local games hide it */
         UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)runtimeRoot);
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -2722,15 +2722,15 @@ FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId)
   bool callFailed;
   TextureSetResult textureSetResult;
   PaletteAssetResult paletteResult;
-  TextResolveResult endpointTextResult;
+  uint16_t *endpointTextResult;
   SampleVoiceSetResult voiceSetResult;
   PackageLoadResult romLoadResult;
-  StatusResult statusResult;
+  uint32_t romError;
   ArenaAllocResult allocResult;
   SoundPlayResult playResult;
   FrontendInitResult successResult;
   FrontendInitResult failureResult;
-  ResourceLoadResult sampleLoadResult;
+  bool sampleLoaded;
   WorldRuntimeContext *worldRuntime;
   FrontendModelPointerContext *pointerContext;
   typedef uint32_t FrontendModelPointerResolvedActionProc
@@ -2775,7 +2775,7 @@ FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId)
     if (!paletteResult.failed) {
       g_FrontendCentralPaletteAsset = (FrontendRootResourceSlots *)paletteResult.paletteAsset;
       endpointTextResult = TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkEndpointTextUtf16,endpointTextResult.text)
+      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkEndpointTextUtf16,endpointTextResult)
       ;
       /* Menu sounds: count the two digits of "sound\menue01.sam" from 01 up to 99 into the voice-set table
          slots 1..99 and stop at the first file that does not exist. */
@@ -2784,9 +2784,8 @@ FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId)
       menuSoundVoiceSetSlotDwords = &g_FrontendMenuSoundVoiceSetLoadBaseEntry1;
       do {
         do {
-          sampleLoadResult = Resource_Load((uint16_t *)u_sound_menue01_sam_00545b54);
-          loadedSample = (SoundSampleAsset *)sampleLoadResult.bufferOrError;
-          if (sampleLoadResult.failed) goto loadCentralRom;
+          if (!Resource_Load((uint16_t *)u_sound_menue01_sam_00545b54,(void **)&loadedSample,NULL,NULL))
+            goto loadCentralRom;
           voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSample);
           fillCursorOrResult = (FrontendRootResourceSlots *)voiceSetResult.voiceSet;
           if (voiceSetResult.failed) {
@@ -2807,9 +2806,9 @@ loadCentralRom:
       fillCursorOrResult = romLoadResult.bufferOrError;
       if (!romLoadResult.failed) {
         g_FrontendCentralRomAsset = fillCursorOrResult;
-        statusResult = RomAsset_PrepareRecords((RomAssetHeader *)fillCursorOrResult);
-        fillCursorOrResult = (FrontendRootResourceSlots *)statusResult.valueOrError;
-        if (!statusResult.failed) {
+        romError = RomAsset_PrepareRecords((RomAssetHeader *)fillCursorOrResult);
+        fillCursorOrResult = (FrontendRootResourceSlots *)romError;
+        if (romError == 0) {
           allocResult = g_MemoryApi.alloc(FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord));
           fillCursorOrResult = (FrontendRootResourceSlots *)allocResult.payloadOrError;
           if (!allocResult.failed) {
@@ -2839,10 +2838,10 @@ loadCentralRom:
               settingValue = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
               musicBuffer = g_FrontendMusicActiveBuffer;
               if ((settingValue & PERSISTENT_SOUND_OPTION_MUSIC) != 0) {
-                sampleLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e);
-                loadedSample = (SoundSampleAsset *)sampleLoadResult.bufferOrError;
+                sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e,(void **)&loadedSample,
+                                             NULL,NULL);
                 musicBuffer = g_FrontendMusicActiveBuffer;
-                if (!sampleLoadResult.failed) {
+                if (sampleLoaded) {
                   voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSample);
                   musicVoiceSet = voiceSetResult.voiceSet;
                   if (voiceSetResult.failed) {
@@ -2914,10 +2913,9 @@ loadCentralRom:
                  RomRuntime_BuildNodeTreeRecursive. */
               fillCursorOrResult = (FrontendRootResourceSlots *)FATAL_ERROR_GENERAL_FAILURE;
               if (!callFailed) {
-                statusResult = FrontendRomTransition_ActivateRecordById(initialRomRecordId,worldRuntime)
-                ;
-                fillCursorOrResult = (FrontendRootResourceSlots *)statusResult.valueOrError;
-                if (!statusResult.failed) {
+                romError = FrontendRomTransition_ActivateRecordById(initialRomRecordId,worldRuntime);
+                fillCursorOrResult = (FrontendRootResourceSlots *)romError;
+                if (romError == 0) {
                   /* Saved player name into the name field and g_FrontendLocalPlayerNameUtf16 (which is also
                      the fallback), saved game name into the game-name field (10 dwords = 0x28 bytes each). */
                   nameSlotOrSourceDwords = PersistentSettings_GetRegionOrFallback

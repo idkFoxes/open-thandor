@@ -15,38 +15,29 @@
    0x60006, then hands each 0x2E0-byte record after the 0x200-byte header to
    ShotDefinition_RegisterAndResolveReferences, stopping at the first failure. An invalid header leaves the
    asset path in g_PackageLastErrorPath and fails with FATAL_ERROR_SHOT_ASSET_INVALID.
+   Returns 0 on success, otherwise the error code (the original's success EAX was never used by its callers).
 */
-StatusResult ShotAsset_PrepareEntries(ShotAssetHeader *asset)
+uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset)
 
 {
-  uint32_t registrationStatusCode;
+  uint32_t registrationError;
   AssetRecordCount entriesRemaining;
   ShotDefinition *definition;
-  StatusResult registrationResult;
-  StatusResult failureResult;
 
-  registrationStatusCode = FATAL_ERROR_SHOT_ASSET_INVALID;
   if ((asset->entryCountHeader.common.magic == ASSET_MAGIC_SHT) &&
      (asset->entryCountHeader.common.converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
     definition = (ShotDefinition *)(asset + 1);
     for (entriesRemaining = asset->entryCountHeader.entryCount; entriesRemaining != 0; entriesRemaining--) {
-      registrationResult = ShotDefinition_RegisterAndResolveReferences(definition);
-      registrationStatusCode = registrationResult.valueOrError;
-      if (registrationResult.failed) goto ReturnFailure;
+      registrationError = ShotDefinition_RegisterAndResolveReferences(definition);
+      if (registrationError != 0) {
+        return registrationError;
+      }
       definition++;
     }
-    /* success hands back EAX as it was: the error code preset or the last registration result */
-    registrationResult.failed = false;
-    registrationResult.valueOrError = registrationStatusCode;
-    return registrationResult;
+    return 0;
   }
-  else {
-    Package_SetLastErrorPath((uint16_t *)asset);
-  }
-ReturnFailure:
-  failureResult.failed = true;
-  failureResult.valueOrError = registrationStatusCode;
-  return failureResult;
+  Package_SetLastErrorPath((uint16_t *)asset);
+  return FATAL_ERROR_SHOT_ASSET_INVALID;
 }
 
 
@@ -54,21 +45,18 @@ ReturnFailure:
    Runs after the level's terrain materials are loaded: checks that each of the 31 terrain-material indices
    of every registered shot definition is negative (no material) or names a loaded material. Otherwise the
    registry index of the offending shot is written to g_PackageLastErrorPath and the check fails with
-   FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID.
+   FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID. Returns 0 on success, otherwise that error code (the original's
+   success EAX, the last index checked, was read by no caller).
 */
-StatusResult ShotDefinitions_ValidateTerrainMaterialReferences(void)
+uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void)
 
 {
-  /* EAX: success returns the last index checked (the caller's EAX when the registry is empty); callers
-     test CF only. */
-  TerrainMaterialIndex materialIndex = 0;
+  TerrainMaterialIndex materialIndex;
   int registrySlotsRemaining;
   int materialIndicesRemaining;
   ShotDefinition *definition;
   TerrainMaterialIndex *materialIndexCursor;
   ShotDefinition **registryCursor;
-  StatusResult successResult;
-  StatusResult failureResult;
 
   registryCursor = g_ShotDefinitionRegistry;
   for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
@@ -85,33 +73,29 @@ StatusResult ShotDefinitions_ValidateTerrainMaterialReferences(void)
           g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                      SHOT_DEFINITION_REGISTRY_SLOT_COUNT - registrySlotsRemaining,g_PackageLastErrorPath);
-          failureResult.failed = true;
-          failureResult.valueOrError = FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID;
-          return failureResult;
+          return FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID;
         }
       }
     }
     registryCursor++;
   }
-  successResult.failed = false;
-  successResult.valueOrError = (uint32_t)materialIndex;
-  return successResult;
+  return 0;
 }
 
 
 /* Address: 0x0052B860.
-   Looks up a registered shot definition by id. On a miss the id is written as decimal text to
-   g_PackageLastErrorPath for the fatal-error message and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned with CF set.
+   Looks up a registered shot definition by id: returns 0 and stores it in *outDefinition. On a miss the id is
+   written as decimal text to g_PackageLastErrorPath for the fatal-error message, *outDefinition is left untouched
+   and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned.
 */
-ShotDefinitionResult ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId)
+uint32_t ShotDefinitionRegistry_FindByIdWithError
+          (PckShotDefinitionIdCatalog definitionId,ShotDefinition **outDefinition)
 
 {
   ShotDefinition *registeredDefinition;
   int registrySlotsRemaining;
   ShotDefinition **registryCursor;
-  ShotDefinitionResult notFoundResult;
-  ShotDefinitionResult foundResult;
-  
+
   registryCursor = g_ShotDefinitionRegistry;
   registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
   while (registeredDefinition = *registryCursor, registeredDefinition == NULL || registeredDefinition->definitionId != definitionId) {
@@ -120,14 +104,11 @@ ShotDefinitionResult ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionI
     if (registrySlotsRemaining == 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
-      notFoundResult.notFound = true;
-      notFoundResult.definitionOrError = (ShotDefinition *)FATAL_ERROR_SHOT_ID_NOT_FOUND;
-      return notFoundResult;
+      return FATAL_ERROR_SHOT_ID_NOT_FOUND;
     }
   }
-  foundResult.notFound = false;
-  foundResult.definitionOrError = registeredDefinition;
-  return foundResult;
+  *outDefinition = registeredDefinition;
+  return 0;
 }
 
 
@@ -226,25 +207,22 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
 }
 
 /* Address: 0x0052BD50.
-   Returns in EBX the shot speed used to lead a moving target: the launch speed (+0x0C) for unguided shots that
+   Returns the shot speed used to lead a moving target: the launch speed (+0x0C) for unguided shots that
    do not fly a direct line, INT32_MAX (no lead) for direct-line or guided (+0x290 non-zero) shots. Called
-   directly by the target aim-point computation in gameplay/army/runtime.c.
-   Original register convention: result in EBX, CF set on failure; EAX, ECX and EDX preserved.
+   directly by the target aim-point computation in gameplay/army/runtime.c (the original returns it in EBX
+   and preserves EAX, ECX and EDX).
 */
-ShotRangeLimitResult ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
+Q12 ShotDefinition_GetLeadSpeed(ShotDefinition *definition)
 
 {
-  uint32_t rangeLimit;
-  ShotRangeLimitResult limitResult;
+  uint32_t leadSpeedQ12;
 
-  rangeLimit = INT32_MAX;
+  leadSpeedQ12 = INT32_MAX;
   if ((definition->trajectoryMode != SHOT_TRAJECTORY_DIRECT_LINE) &&
      (definition->guidanceTurnLimitAngle16 == 0)) {
-    rangeLimit = definition->launchSpeedQ12;
+    leadSpeedQ12 = definition->launchSpeedQ12;
   }
-  limitResult.failed = false;
-  limitResult.rangeLimitQ12 = rangeLimit;
-  return limitResult;
+  return (Q12)leadSpeedQ12;
 }
 
 
@@ -271,10 +249,11 @@ uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition)
    Registers one 0x2E0-byte shot definition in the first free registry slot, loads its sprite (switching the
    resource path to .spr; an already registered sprite with the same id is reused and the fresh load released)
    and replaces the effect ids of the launch, secondary and primary effects and of the 31 terrain-impact and 8
-   target-class-impact effects by their registered definitions. CF/EAX report a duplicate id, a full registry
-   or the first failing load or lookup.
+   target-class-impact effects by their registered definitions. Returns 0 on success, otherwise the error code
+   of a duplicate id, a full registry or the first failing load or lookup. (The original's success EAX, the
+   last resolved effect definition, is still in targetClassImpactEffectDefinitions8[7].)
 */
-StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
+uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
 
 {
   ShotDefinition *valueOrError;
@@ -284,12 +263,10 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
   ShotDefinition **registrySlotCursor;
   bool extensionFailed;
   ShotDefinitionResult existingLookup;
-  StatusResult failureResult;
   PackageLoadResult loadResult;
-  SpriteRegisterResult spriteRegisterResult;
+  uint32_t spriteRegisterError;
   uint32_t effectLookupError;
   EffectDefinition *resolvedEffect;
-  StatusResult successResult;
 
   registrySlotCursor = g_ShotDefinitionRegistry;
   slotsRemainingOrIndex = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
@@ -310,9 +287,11 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
         if (existingSprite == NULL) {
           definition->ownedNestedResourcePresent++;
           definition->ownedNestedResource = valueOrError;
-          spriteRegisterResult = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)valueOrError);
-          valueOrError = (ShotDefinition *)spriteRegisterResult.assetOrError;
-          if (spriteRegisterResult.failed) goto ReturnFailure;
+          spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)valueOrError);
+          if (spriteRegisterError != 0) {
+            valueOrError = (ShotDefinition *)spriteRegisterError;
+            goto ReturnFailure;
+          }
         }
         else {
           definition->ownedNestedResource = existingSprite;
@@ -351,11 +330,7 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
           definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex] = resolvedEffect;
           slotsRemainingOrIndex++;
         }
-        /* success hands back the last resolved effect definition, as the original's EAX did */
-        valueOrError = (ShotDefinition *)resolvedEffect;
-        successResult.failed = false;
-        successResult.valueOrError = (uint32_t)valueOrError;
-        return successResult;
+        return 0;
       }
       registrySlotCursor++;
     }
@@ -373,8 +348,6 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
 ReturnEffectLookupFailure:
   valueOrError = (ShotDefinition *)effectLookupError;
 ReturnFailure:
-  failureResult.failed = true;
-  failureResult.valueOrError = (uint32_t)valueOrError;
-  return failureResult;
+  return (uint32_t)valueOrError;
 }
 

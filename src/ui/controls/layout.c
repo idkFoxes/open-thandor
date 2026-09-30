@@ -141,7 +141,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
   int edgeOffset;
   int rightEdgeX;
   bool beginAccessFailed;
-  TextResolveResult titleText;
+  uint16_t *titleText;
   TextureSizeResult textureSize;
   TextureSizeResult rightCapSize;
 
@@ -211,7 +211,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
                  edgeOffset,0,textureSize.logicalWidthPixels,control);
       titleText = TextResource_Resolve(control->titleTextResourceId);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,g_UiResizableWindowTitleTextStyle,titleText.text,
+                (clipBottom,clipRight,clipTop,clipLeft,g_UiResizableWindowTitleTextStyle,titleText,
                  g_UiResizableWindowTitleTextTopOffset + control->root.base.top,
                  (control->root.base.layoutWidth >> 1) + control->root.base.left);
     }
@@ -271,7 +271,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
   int rightEdgeOrCursorX;
   bool beginAccessFailed;
   RichTextExtentRegs titleExtent;
-  TextResolveResult titleText;
+  uint16_t *titleText;
   TextureSizeResult textureSize;
   int savedRightEdgeX;
 
@@ -316,7 +316,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
               (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_BOTTOM,
                rightEdgeOrCursorX,bottomEdgeY,cornerWidth,control);
     titleText = TextResource_Resolve(control->titleTextResourceId);
-    commandStream = titleText.text;
+    commandStream = titleText;
     titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
     titleCapX = cornerWidth;
     if ((control->titleFlags & UI_TITLED_WINDOW_CENTERED_TITLE) != 0) {
@@ -676,11 +676,11 @@ void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *co
   uint32_t topInset;
   uint32_t bottomInset;
   RichTextExtentRegs titleExtent;
-  TextResolveResult titleText;
+  uint16_t *titleText;
   TextureSizeResult cornerSize;
 
   titleText = TextResource_Resolve(control->titleTextResourceId);
-  titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,titleText.text);
+  titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,titleText);
   titleHeightOrRightInset = titleExtent.heightPixels;
   cornerSize = g_GraphicsTextureSourceGetLogicalSize
                          (UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_TOP_LEFT,g_UiWindowTextureSource);
@@ -1280,16 +1280,17 @@ void UiWindowResources_Init(void)
 {
   TextureSourceLoadResult loadResult;
   FatalErrorCheckResult checkedResult;
-  TextPageLoadResult pageLoadResult;
-  
+  uint32_t localeBlockOrError;
+  bool pageLoaded;
+
   loadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_UiWindowTexturePathUtf16);
   checkedResult = FatalError_ExitIfFailed((uint32_t)loadResult.textureSource,loadResult.failed);
   g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
   loadResult = g_GraphicsTextureSourceLoadPackageAsset(g_UiWindowClassTexturePathUtf16);
   checkedResult = FatalError_ExitIfFailed((uint32_t)loadResult.textureSource,loadResult.failed);
   g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
-  pageLoadResult = TextResourcePage_Load(1,(uint16_t *)g_UiWindowClassTextPathUtf16);
-  FatalError_ExitIfFailed(pageLoadResult.errorOrValue,pageLoadResult.failed);
+  pageLoaded = TextResourcePage_Load(1,(uint16_t *)g_UiWindowClassTextPathUtf16,&localeBlockOrError);
+  FatalError_ExitIfFailed(localeBlockOrError,!pageLoaded);
   UiActionHandlers_SetPage(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
   g_UiRootNode = UI_ROOT_STACK_END;
   return;

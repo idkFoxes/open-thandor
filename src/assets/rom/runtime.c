@@ -31,7 +31,6 @@ void FrontendRomActionTable_ExecuteRecord
   int lastKeyframeIndex;
   void *menuRoomView;
   bool visibilityLookupFailed;
-  RomRecordResult targetLookup;
   RomRecordId pageActionOrCopiedDword;
   RomRecordId targetRecordId;
 
@@ -87,9 +86,8 @@ void FrontendRomActionTable_ExecuteRecord
              ((WorldRuntimeContext *)FRONTEND_UI(frontendRootNode,menuRoomModelView))->motion.headingAngle;
         entry->keyframes[0].channel5Q12 = copiedByteSize;
         entry->keyframes[0].timeQ12 = 0;
-        targetLookup = RomRegistry_FindRecordById(targetRecordId);
-        targetRecord = (RomRecord *)targetLookup.recordOrError;
-        if (!targetLookup.notFound) {
+        targetRecord = (RomRecord *)RomRegistry_FindRecordById(targetRecordId);
+        if (targetRecord != NULL) {
           pageActionOrCopiedDword = entry->pageAction;
           /* The six channels of the last keyframe become the target record's camera pose; its timeQ12 comes
              from the action entry. */
@@ -121,40 +119,33 @@ void FrontendRomActionTable_ExecuteRecord
 /* Address: 0x00546450.
    Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size
    records (from +0x200, each advanced by its leading byteSize) with RomAssetRecord_RegisterAndRelocate. An
-   invalid header leaves "engine\zentrale.rom" in g_PackageLastErrorPath. CF set on failure, EAX the status.
+   invalid header leaves "engine\zentrale.rom" in g_PackageLastErrorPath and fails with
+   FATAL_ERROR_ROM_REGISTRY_FULL. Returns 0 on success, otherwise the error code (the original's success EAX was
+   never used by its caller).
 */
-StatusResult RomAsset_PrepareRecords(RomAssetHeader *asset)
+uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
 
 {
-  uint32_t registrationStatusCode;
+  uint32_t registrationError;
   AssetRecordCount recordsRemaining;
   RomAssetRecordPrefix *record;
-  StatusResult registerResult;
-  StatusResult failureResult;
 
-  /* an invalid header also fails with the registry-full code */
-  registrationStatusCode = FATAL_ERROR_ROM_REGISTRY_FULL;
   if (asset->recordCountHeader.common.magic == ASSET_MAGIC_ROM &&
       asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_ROM_00010005) {
     record = (RomAssetRecordPrefix *)(asset + 1);
     for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
-      registerResult = RomAssetRecord_RegisterAndRelocate(record,asset);
-      registrationStatusCode = registerResult.valueOrError;
-      if (registerResult.failed) goto ReturnFailure;
+      registrationError = RomAssetRecord_RegisterAndRelocate(record,asset);
+      if (registrationError != 0) {
+        return registrationError;
+      }
       /* advance by the record's leading byte size */
       record = (RomAssetRecordPrefix *)((uint8_t *)record + record->byteSize);
     }
-    registerResult.failed = false;
-    registerResult.valueOrError = registrationStatusCode;
-    return registerResult;
+    return 0;
   }
-  else {
-    Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
-  }
-ReturnFailure:
-  failureResult.failed = true;
-  failureResult.valueOrError = registrationStatusCode;
-  return failureResult;
+  Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
+  /* an invalid header also fails with the registry-full code */
+  return FATAL_ERROR_ROM_REGISTRY_FULL;
 }
 
 
@@ -170,17 +161,15 @@ bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
   ModelRuntimeNode *modelNodeRuntime;
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  ModelNodeCreateResult buildResult;
-  
+
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     slotRecord = slotCursor->record;
     if (slotRecord != NULL) {
-      buildResult = RomRuntime_BuildNodeTreeRecursive
+      modelNodeRuntime = RomRuntime_BuildNodeTreeRecursive
                         (((RomRecord *)slotRecord)->nodeTintArgb,
                          (RomSerializedNodeHeader *)slotRecord->rootNodeOffsetOrPointer,worldRuntime);
-      modelNodeRuntime = buildResult.modelNode;
-      if (buildResult.failed) {
+      if (modelNodeRuntime == NULL) {
         return true;
       }
       slotCursor->runtimeRootNode = (WorldRuntimeNode *)modelNodeRuntime;
@@ -205,7 +194,7 @@ void FrontendRomTransition_ProcessPendingRecord(void)
   RomRecordId pendingRecordId;
   WorldRuntimeContext *menuRoomView;
   bool splineStillRunning;
-  StatusResult activateResult;
+  uint32_t activateError;
 
   g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
   /* g_FrontendRomTransitionTargetRecordId holds the target record id of the running flight (-1 = none to
@@ -218,8 +207,8 @@ void FrontendRomTransition_ProcessPendingRecord(void)
                        g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
                        menuRoomView);
     if ((!splineStillRunning) && (g_FrontendRomTransitionTargetRecordId = 0, -1 < (int)pendingRecordId)) {
-      activateResult = FrontendRomTransition_ActivateRecordById(pendingRecordId,menuRoomView);
-      FatalError_ExitIfFailed(activateResult.valueOrError,activateResult.failed);
+      activateError = FrontendRomTransition_ActivateRecordById(pendingRecordId,menuRoomView);
+      FatalError_ExitIfFailed(activateError,activateError != 0);
     }
   }
   g_SpinLockRelease(&g_FrontendStateTickSpinLock);
@@ -379,9 +368,10 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
    records linked from its entries (ROM_NODE_FLAG_ACTION_TARGET), hides every record node except the active
    record and those in its visibleRecordMask (whose lights are created), then moves the camera to the record's
    pose. Afterwards the pending transition value (g_FrontendRomTransitionPageAction) is applied: negative
-   closes the view, positive becomes the pending page action. CF set when the record is not registered.
+   closes the view, positive becomes the pending page action. Returns 0, or FATAL_ERROR_ROM_RECORD_NOT_REGISTERED
+   (after only clearing the shading lights) when the record is not registered.
 */
-StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
+uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
 
 {
   uint32_t *slotNodeFlags;
@@ -394,24 +384,21 @@ StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,World
   RomRecordId descriptorsRemaining;
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  RomRecordResult recordLookup;
-  StatusResult statusResult;
-  StatusResult activeRecordResult;
-  
+  RomAssetRecordPrefix *activeRecord;
+  WorldRuntimeNode *linkedRootNode;
+
   GraphicsShadingRuntime_ClearRecordTable();
-  recordLookup = RomRegistry_FindRecordById(recordId);
-  activeRecordResult.valueOrError = recordLookup.recordOrError;
-  if (!recordLookup.notFound) {
-    recordCursor = activeRecordResult.valueOrError;
-    g_FrontendActiveRomRecord = activeRecordResult.valueOrError;
+  activeRecord = RomRegistry_FindRecordById(recordId);
+  if (activeRecord != NULL) {
+    recordCursor = activeRecord;
+    g_FrontendActiveRomRecord = (uint32_t)activeRecord;
     slotCursor = g_RomRegistrySlots;
     /* mark the records linked from the entries (recordCursor walks the entries: header + 0x200 * i) */
-    for (companionsRemaining = ((RomRecord *)activeRecordResult.valueOrError)->entryCount;
+    for (companionsRemaining = ((RomRecord *)activeRecord)->entryCount;
          g_RomRegistrySlots = slotCursor, companionsRemaining != 0; companionsRemaining--) {
-      statusResult = RomRegistry_FindSlotValueByRecordId
-                               (((FrontendRomActionEntry *)((RomRecord *)recordCursor + 1))->linkedRecordId);
-      if (!statusResult.failed) {
-        slotNodeFlags = (uint32_t *)&((WorldRuntimeNode *)statusResult.valueOrError)->runtimeFlags;
+      if (RomRegistry_FindSlotValueByRecordId
+            (((FrontendRomActionEntry *)((RomRecord *)recordCursor + 1))->linkedRecordId,&linkedRootNode)) {
+        slotNodeFlags = (uint32_t *)&linkedRootNode->runtimeFlags;
         *slotNodeFlags = *slotNodeFlags | ROM_NODE_FLAG_ACTION_TARGET;
       }
       recordCursor = (RomAssetRecordPrefix *)((uint8_t *)recordCursor + FRONTEND_ROM_ACTION_ENTRY_SIZE);
@@ -424,8 +411,8 @@ StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,World
       rootNode = slotCursor->runtimeRootNode;
       if (recordCursor != NULL &&
           (nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | ROM_NODE_FLAG_HIDDEN,
-           activeRecordResult.valueOrError == recordCursor ||
-           (((RomRecord *)activeRecordResult.valueOrError)->visibleRecordMask[recordCursor->recordId >> 5] &
+           activeRecord == recordCursor ||
+           (((RomRecord *)activeRecord)->visibleRecordMask[recordCursor->recordId >> 5] &
             1 << ((uint8_t)recordCursor->recordId & 31)) != 0)) {
         nodeFlags = &rootNode->runtimeFlags;
         *nodeFlags = *nodeFlags & ~ROM_NODE_FLAG_HIDDEN;
@@ -441,13 +428,13 @@ StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,World
       slotsRemaining--;
     } while (slotsRemaining != 0);
     WorldRuntime_SetCameraPositionKeepingTarget
-              (((RomRecord *)activeRecordResult.valueOrError)->cameraZQ12,
-               ((RomRecord *)activeRecordResult.valueOrError)->cameraYQ12,
-               ((RomRecord *)activeRecordResult.valueOrError)->cameraXQ12,worldRuntime);
+              (((RomRecord *)activeRecord)->cameraZQ12,
+               ((RomRecord *)activeRecord)->cameraYQ12,
+               ((RomRecord *)activeRecord)->cameraXQ12,worldRuntime);
     WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,((RomRecord *)activeRecordResult.valueOrError)->cameraPitchAngle,
-               ((RomRecord *)activeRecordResult.valueOrError)->cameraHeadingAngle,
-               ((RomRecord *)activeRecordResult.valueOrError)->cameraMagnitudeQ12,worldRuntime);
+              (2,((RomRecord *)activeRecord)->cameraPitchAngle,
+               ((RomRecord *)activeRecord)->cameraHeadingAngle,
+               ((RomRecord *)activeRecord)->cameraMagnitudeQ12,worldRuntime);
     if (transitionContextValue != 0) {
       if ((int)transitionContextValue < 0) {
         UiActionQueue_Enqueue(0,worldRuntime);
@@ -456,12 +443,9 @@ StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,World
         g_FrontendPendingPageAction = transitionContextValue;
       }
     }
-    statusResult.failed = false;
-    statusResult.valueOrError = transitionContextValue;
-    return statusResult;
+    return 0;
   }
-  activeRecordResult.failed = true;
-  return activeRecordResult;
+  return FATAL_ERROR_ROM_RECORD_NOT_REGISTERED;
 }
 
 
@@ -481,8 +465,8 @@ bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue 
   uint32_t maskWordIndex;
   RomRecordId descriptorsRemaining;
   RomRegistrySlot *slotCursor;
-  RomRecordResult recordLookup;
-  
+  RomAssetRecordPrefix *targetRecord;
+
   slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   g_FrontendRomTransitionPageAction = frontendValue;
   slotCursor = g_RomRegistrySlots;
@@ -494,8 +478,8 @@ bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue 
     slotCursor = slotCursor + 1;
     slotsRemaining--;
   } while (slotsRemaining != 0);
-  recordLookup = RomRegistry_FindRecordById(recordId);
-  if (!recordLookup.notFound) {
+  targetRecord = RomRegistry_FindRecordById(recordId);
+  if (targetRecord != NULL) {
     GraphicsShadingRuntime_ClearRecordTable();
     /* hide every record node, then show the target and active records and those in either visibleRecordMask */
     slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
@@ -505,10 +489,10 @@ bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue 
       rootNode = slotCursor->runtimeRootNode;
       if (record != NULL &&
           (nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | ROM_NODE_FLAG_HIDDEN,
-           record == recordLookup.recordOrError || record == g_FrontendActiveRomRecord ||
+           record == targetRecord || record == g_FrontendActiveRomRecord ||
            (maskWordIndex = record->recordId >> 5,
             (1 << ((uint8_t)record->recordId & 31) &
-             (((RomRecord *)recordLookup.recordOrError)->visibleRecordMask[maskWordIndex] |
+             (((RomRecord *)targetRecord)->visibleRecordMask[maskWordIndex] |
               ((RomRecord *)g_FrontendActiveRomRecord)->visibleRecordMask[maskWordIndex])) != 0))) {
         nodeFlags = &rootNode->runtimeFlags;
         *nodeFlags = *nodeFlags & ~ROM_NODE_FLAG_HIDDEN;
@@ -531,9 +515,10 @@ bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue 
 /* Address: 0x00546330.
    Registers a ROM record in the first free slot of g_RomRegistrySlots and relocates its serialized node tree:
    child offsets become pointers, and every node's ".spr" sprite is loaded, or an already registered sprite with
-   the same registry id is reused. Fails with FATAL_ERROR_ROM_REGISTRY_FULL or the loader's error.
+   the same registry id is reused. Returns 0 on success, otherwise FATAL_ERROR_ROM_REGISTRY_FULL or the
+   loader's error (the original's success EAX, assetBase, was never used by its caller).
 */
-StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase)
+uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase)
 
 {
   uint32_t rootNodeOffset;
@@ -542,20 +527,16 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
   uint8_t *rootSerializedNode;
-  StatusResult failureResult;
   PackageLoadResult loadResult;
-  SpriteRegisterResult registerResult;
-  StatusResult successResult;
-  
+  uint32_t spriteRegisterError;
+
   slotCursor = g_RomRegistrySlots;
   for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->record == NULL) {
       rootNodeOffset = record->rootNodeOffsetOrPointer;
       slotCursor->record = record;
       if (rootNodeOffset == 0) {
-        successResult.failed = false;
-        successResult.valueOrError = (uint32_t)assetBase;
-        return successResult;
+        return 0;
       }
       /* asset start + serialized offset */
       record->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)assetBase + record->rootNodeOffsetOrPointer);
@@ -574,9 +555,7 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
           WidePath_SetExtensionCode(ASSET_MAGIC_SPR,(uint16_t *)((RomSerializedNodeHeader *)node + 1));
           loadResult = Package_LoadEntry((uint16_t *)((RomSerializedNodeHeader *)node + 1));
           if (loadResult.failed) {
-            failureResult.failed = true;
-            failureResult.valueOrError = (uint32_t)loadResult.bufferOrError;
-            return failureResult;
+            return (uint32_t)loadResult.bufferOrError;
           }
           asset = loadResult.bufferOrError;
           existingSprite = SpriteAssetRegistry_FindById(((SpriteAssetHeader *)asset)->registryHeader.registryId);
@@ -588,11 +567,9 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
             /* set only for sprites this node loaded itself */
             ((RomSerializedNodeHeader *)node)->ownedNestedResourcePresent++;
             ((RomSerializedNodeHeader *)node)->spriteAssetReference.spriteAsset = (SpriteAssetHeader *)asset;
-            registerResult = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
-            if (registerResult.failed) {
-              failureResult.failed = true;
-              failureResult.valueOrError = (uint32_t)registerResult.assetOrError;
-              return failureResult;
+            spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
+            if (spriteRegisterError != 0) {
+              return spriteRegisterError;
             }
           }
           frames[depth].node = node;
@@ -602,9 +579,7 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
           while (frames[depth - 1].remaining == 0) {
             depth--;
             if (depth == 0) {
-              successResult.failed = false;
-              successResult.valueOrError = (uint32_t)assetBase;
-              return successResult;
+              return 0;
             }
           }
           {
@@ -621,9 +596,7 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
     slotCursor++;
   }
   Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
-  failureResult.failed = true;
-  failureResult.valueOrError = FATAL_ERROR_ROM_REGISTRY_FULL;
-  return failureResult;
+  return FATAL_ERROR_ROM_REGISTRY_FULL;
 }
 
 
@@ -631,10 +604,10 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
    Allocates the runtime node for one serialized ROM sprite node and its children: the node takes the local
    rotation of the serialized node, the central frontend palette and texture set, the given tint and the
    sprite's model resource; each child is placed at the matching attachment point (packed point key class 0,
-   key index = child index) of the sprite, children without one are dropped. Returns the node in EAX, CF set
-   when no world object record is free.
+   key index = child index) of the sprite, children without one are dropped. Returns the node, or NULL when no
+   world object record is free (the only error, FATAL_ERROR_GENERAL_FAILURE).
 */
-ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
+ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
           (PackedArgb32 stateTintArgb,RomSerializedNodeHeader *romNodeRecord,
           WorldRuntimeContext *worldObjectArray)
 
@@ -654,14 +627,11 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
   uint32_t childIndex;
   uint8_t *lookupEntry;
   WorldObjectAllocResult allocResult;
-  ModelNodeCreateResult createResult;
-  
+
   allocResult = WorldObjectArray_AllocateFreeRecord(worldObjectArray);
   newNode = (ModelRuntimeNode *)allocResult.recordOrError;
   if (allocResult.failed) {
-    createResult.failed = true;
-    createResult.modelNode = newNode;
-    return createResult;
+    return NULL;
   }
   newNode->modelPayload.localTranslationXQ12 = 0;
   newNode->modelPayload.localTranslationYQ12 = 0;
@@ -715,13 +685,12 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
       newNode->childCount = newNode->childCount - 1;
       continue;
     }
-    createResult = RomRuntime_BuildNodeTreeRecursive
+    resultOrChildNode = RomRuntime_BuildNodeTreeRecursive
                        (stateTintArgb,romNodeRecord->childReferences[childIndex].node,
                         worldObjectArray);
-    if (createResult.failed) {
-      return createResult;
+    if (resultOrChildNode == NULL) {
+      return NULL;
     }
-    resultOrChildNode = createResult.modelNode;
     newNode->childNodes[childIndex] = resultOrChildNode;
     resultOrChildNode->parentNode = newNode;
     translationY = ((ModelPackedPointRecord *)lookupEntry)->localPosition.y;
@@ -731,9 +700,7 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
     resultOrChildNode->modelPayload.localTranslationZQ12 = translationZ;
     childIndex = childIndex + 1;
   }
-  createResult.failed = false;
-  createResult.modelNode = newNode;
-  return createResult;
+  return newNode;
 }
 
 
@@ -757,16 +724,15 @@ void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitio
 
 
 /* Address: 0x005487A0.
-   Returns the runtime root node registered for the ROM record with the given id; fails with
-   FATAL_ERROR_ROM_RECORD_NOT_REGISTERED when no registry slot holds such a record.
+   Looks up the runtime root node registered for the ROM record with the given id: returns true and stores it
+   (NULL while the record's tree is not built) in *outRootNode, or returns false when no registry slot holds
+   such a record (the original's error code FATAL_ERROR_ROM_RECORD_NOT_REGISTERED was read by no caller).
 */
-StatusResult RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
+bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode)
 
 {
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  StatusResult foundResult;
-  StatusResult missResult;
 
   slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
@@ -774,14 +740,11 @@ StatusResult RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
     slotCursor++;
     slotsRemaining--;
     if (slotsRemaining == 0) {
-      missResult.failed = true;
-      missResult.valueOrError = FATAL_ERROR_ROM_RECORD_NOT_REGISTERED;
-      return missResult;
+      return false;
     }
   }
-  foundResult.failed = false;
-  foundResult.valueOrError = (uint32_t)slotCursor->runtimeRootNode;
-  return foundResult;
+  *outRootNode = slotCursor->runtimeRootNode;
+  return true;
 }
 
 
@@ -824,32 +787,26 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
 
 
 /* Address: 0x00548740.
-   Returns the registered ROM record with this record id; FATAL_ERROR_ROM_RECORD_NOT_REGISTERED with CF set
-   when no registry slot holds one.
+   Returns the registered ROM record with this record id, or NULL when no registry slot holds one (the
+   original's error code FATAL_ERROR_ROM_RECORD_NOT_REGISTERED; FrontendRomTransition_ActivateRecordById
+   reports it).
 */
-RomRecordResult RomRegistry_FindRecordById(RomRecordId recordId)
+RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId)
 
 {
   RomAssetRecordPrefix *slotRecord;
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  RomRecordResult foundResult;
-  RomRecordResult missResult;
-  RomAssetRecordPrefix *candidateRecord;
-  
+
   slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
   while (slotRecord = slotCursor->record, slotRecord == NULL || recordId != slotRecord->recordId) {
     slotCursor = slotCursor + 1;
     slotsRemaining--;
     if (slotsRemaining == 0) {
-      missResult.notFound = true;
-      missResult.recordOrError = (RomAssetRecordPrefix *)FATAL_ERROR_ROM_RECORD_NOT_REGISTERED;
-      return missResult;
+      return NULL;
     }
   }
-  foundResult.notFound = false;
-  foundResult.recordOrError = slotRecord;
-  return foundResult;
+  return slotRecord;
 }
 

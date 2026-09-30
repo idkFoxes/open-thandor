@@ -1101,7 +1101,8 @@ RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedSty
   uint16_t *returnStack[RICHTEXT_NESTING_LIMIT];
   int nesting = 0;
   RichTextExtentRegs extent;
-  GlyphSizeResult glyphSize;
+  uint32_t glyphWidth;
+  uint32_t glyphLineHeight;
   TextureSizeResult textureSize;
   uint16_t *command;
   int value;
@@ -1121,10 +1122,10 @@ RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedSty
       continue;
     }
     if (value > 0) {
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs((GraphicsSubresourceIndex)value);
-      extent.widthPixels = extent.widthPixels + glyphSize.width;
-      if (extent.heightPixels < glyphSize.lineHeight) {
-        extent.heightPixels = glyphSize.lineHeight;
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont((GraphicsSubresourceIndex)value,&glyphLineHeight);
+      extent.widthPixels = extent.widthPixels + glyphWidth;
+      if (extent.heightPixels < glyphLineHeight) {
+        extent.heightPixels = glyphLineHeight;
       }
       continue;
     }
@@ -1143,10 +1144,10 @@ RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedSty
       g_ActiveFontIndex = value & 0xf;
       break;
     case RICHTEXT_OP_FIXED_SPACE:
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
-      extent.widthPixels = extent.widthPixels + glyphSize.width;
-      if (extent.heightPixels < glyphSize.lineHeight) {
-        extent.heightPixels = glyphSize.lineHeight;
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont(' ',&glyphLineHeight);
+      extent.widthPixels = extent.widthPixels + glyphWidth;
+      if (extent.heightPixels < glyphLineHeight) {
+        extent.heightPixels = glyphLineHeight;
       }
       break;
     case RICHTEXT_OP_LINE_BREAK:
@@ -1195,14 +1196,15 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
   uint8_t *commandCursor;
   uint8_t *readCursor;
   WrappedLineResult lineResult;
-  GlyphSizeResult glyphSize;
+  uint32_t glyphWidth;
+  uint32_t glyphLineHeight;
   TextureSizeResult imageSize;
   uint8_t *wrapPoint;
 
-  glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
+  FontGlyph_GetLogicalSizeActiveFont(0,&glyphLineHeight);
   lineWidth = 0;
   wrapPoint = NULL;
-  maxLineHeight = glyphSize.lineHeight;
+  maxLineHeight = glyphLineHeight;
   readCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * sizeof(uint16_t);
   for (;;) {
     commandCursor = readCursor;
@@ -1210,9 +1212,9 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
     readCursor = commandCursor + 2;
     if (glyphSubresource == ' ') {
       /* A space is a wrap opportunity while the line up to it still fits. */
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont(' ',&glyphLineHeight);
       if (maximumWidth < lineWidth) break;
-      lineWidth = lineWidth + glyphSize.width;
+      lineWidth = lineWidth + glyphWidth;
       wrapPoint = readCursor;
       continue;
     }
@@ -1224,10 +1226,10 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
       break;
     }
     if (-1 < (int)glyphSubresource) { /* no RICHTEXT_COMMAND_FLAG: a glyph */
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
-      lineWidth = lineWidth + glyphSize.width;
-      if (maxLineHeight < glyphSize.lineHeight) {
-        maxLineHeight = glyphSize.lineHeight;
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont(glyphSubresource,&glyphLineHeight);
+      lineWidth = lineWidth + glyphWidth;
+      if (maxLineHeight < glyphLineHeight) {
+        maxLineHeight = glyphLineHeight;
       }
       continue;
     }
@@ -1247,16 +1249,16 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
     case RICHTEXT_OP_FIXED_SPACE:
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
-      lineWidth = lineWidth + glyphSize.width;
-      if (maxLineHeight < glyphSize.lineHeight) {
-        maxLineHeight = glyphSize.lineHeight;
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont(' ',&glyphLineHeight);
+      lineWidth = lineWidth + glyphWidth;
+      if (maxLineHeight < glyphLineHeight) {
+        maxLineHeight = glyphLineHeight;
       }
       break;
     case RICHTEXT_OP_SOFT_HYPHEN:
       /* Soft hyphen: a wrap opportunity when the hyphen still fits. */
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs('-');
-      if (maximumWidth < glyphSize.width + lineWidth)
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont('-',&glyphLineHeight);
+      if (maximumWidth < glyphWidth + lineWidth)
         goto commitWrapBoundary;
       wrapPoint = readCursor;
       break;
@@ -1311,15 +1313,16 @@ WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
   uint8_t *drawCursor;
   WrappedLineResult moreLinesResult;
   WrappedLineResult endResult;
-  GlyphSizeResult glyphSize;
+  uint32_t glyphWidth;
+  uint32_t glyphLineHeight;
   TextureSizeResult imageSize;
   uint8_t *wrapPoint;
   
-  glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
+  FontGlyph_GetLogicalSizeActiveFont(0,&glyphLineHeight);
   lineWidth = 0;
   drawCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * sizeof(uint16_t);
   wrapPoint = NULL;
-  lineHeight = glyphSize.lineHeight;
+  lineHeight = glyphLineHeight;
   scanCursor = drawCursor;
   savedFontIndexOrImageWidth = g_ActiveFontIndex; /* font commands of the measure pass are undone below */
   /* Measure pass (same rules as RichTextCommandStream_MeasureNextWrappedLine): find the wrap point and
@@ -1329,9 +1332,9 @@ WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
     glyphSubresource = (GraphicsSubresourceIndex)*(short *)measureCommand;
     scanCursor = measureCommand + 2;
     if (glyphSubresource == ' ') {
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont(' ',&glyphLineHeight);
       if (maximumWidth < lineWidth) break;
-      lineWidth = lineWidth + glyphSize.width;
+      lineWidth = lineWidth + glyphWidth;
       wrapPoint = scanCursor;
       continue;
     }
@@ -1342,10 +1345,10 @@ WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
       break;
     }
     if (-1 < (int)glyphSubresource) { /* no RICHTEXT_COMMAND_FLAG: a glyph */
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
-      lineWidth = lineWidth + glyphSize.width;
-      if (lineHeight < glyphSize.lineHeight) {
-        lineHeight = glyphSize.lineHeight;
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont(glyphSubresource,&glyphLineHeight);
+      lineWidth = lineWidth + glyphWidth;
+      if (lineHeight < glyphLineHeight) {
+        lineHeight = glyphLineHeight;
       }
       continue;
     }
@@ -1364,15 +1367,15 @@ WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
     case RICHTEXT_OP_FIXED_SPACE:
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
-      lineWidth = lineWidth + glyphSize.width;
-      if (lineHeight < glyphSize.lineHeight) {
-        lineHeight = glyphSize.lineHeight;
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont(' ',&glyphLineHeight);
+      lineWidth = lineWidth + glyphWidth;
+      if (lineHeight < glyphLineHeight) {
+        lineHeight = glyphLineHeight;
       }
       break;
     case RICHTEXT_OP_SOFT_HYPHEN:
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs('-');
-      if (maximumWidth < glyphSize.width + lineWidth)
+      glyphWidth = FontGlyph_GetLogicalSizeActiveFont('-',&glyphLineHeight);
+      if (maximumWidth < glyphWidth + lineWidth)
         goto commitWrapBoundary;
       wrapPoint = scanCursor;
       break;

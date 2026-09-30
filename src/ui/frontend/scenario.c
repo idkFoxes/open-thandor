@@ -34,7 +34,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   uint32_t maskWordIndex;
   MovieFrameResult movieFrame;
   PageStackSearchResult activePageStatus;
-  TextResolveResult markerText;
+  uint16_t *markerText;
   SelectableGroupIndexResult selectedGroup;
   uint16_t availabilityMarker;
   
@@ -124,7 +124,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
             playerCursor = playerCursor + 1;
           } while (((&nextPlayer->scenarioAvailabilityMask0)[maskWordIndex] & levelMaskBit) != 0);
           markerText = TextResource_Resolve(levelRecord->scenarioTextResourceId + TEXT_ID_LEVEL_TITLE_BASE);
-          *markerText.text = availabilityMarker;
+          *markerText = availabilityMarker;
           levelRecord++;
           levelMaskBit = levelMaskBit * 2;
           if (levelMaskBit == 0) {
@@ -165,8 +165,8 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   int unclaimedActiveFactions;
   FactionRuntimeLifecycleObservedState *factionStateCursor;
   RichTextExtentRegs textExtent;
-  TextResolveResult briefingText;
-  TextResolveResult templateText;
+  uint16_t *briefingText;
+  uint16_t *templateText;
   MovieOpenResult movieOpen;
   MovieFrameResult firstFrame;
 
@@ -197,9 +197,9 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
        (uint16_t *)(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
        g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
   briefingText = TextResource_Resolve(titleTextId + TEXT_ID_LEVEL_TITLE_BASE);
-  *briefingText.text = FRONTEND_TEXT_STYLE_NORMAL;
+  *briefingText = FRONTEND_TEXT_STYLE_NORMAL;
   templateText = TextResource_Resolve(TEXT_ID_MISSION_BRIEFING_TEMPLATE);
-  RichTextCommandStream_PatchPayloadBySelector(0,briefingText.text,templateText.text);
+  RichTextCommandStream_PatchPayloadBySelector(0,briefingText,templateText);
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
              g_FrontendMissionBriefingLevelDigitsUtf16);
@@ -258,7 +258,7 @@ updateBeginButton:
   } while (playersRemaining != 0);
   briefingText = TextResource_Resolve((TextResourceId)((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text);
   textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
-                     (g_UiTextStyleNormal,briefingText.text,((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->wrapWidth);
+                     (g_UiTextStyleNormal,briefingText,((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->wrapWidth);
   /* size the text control to the wrapped text plus a 6-pixel margin, then refit the scroller */
   FRONTEND_UI(frontendRoot,briefingText)->rightOffset = textExtent.widthPixels + 6;
   FRONTEND_UI(frontendRoot,briefingText)->bottomOffset = textExtent.heightPixels + 6;

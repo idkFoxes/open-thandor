@@ -201,7 +201,6 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
   GrResolution *resolutionCursor;
   GraphicsTextureResource **textureSlotCursor;
   DllLoadResult glideDll;
-  DynApiResolveResult resolveResult;
   ArenaAllocResult resolutionAlloc;
   DisplayModeResult displayModeResult;
   uint32_t *tmuCountOutput;
@@ -224,8 +223,7 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
       g_GlideRuntimeActiveCount++;
       binding = g_GlideImportBindings;
       do {
-        resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
-        if (resolveResult.failed) {
+        if (DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName) != 0) {
           DynDLL_Unload(sz_GLIDE3X);
           g_GlideRuntimeActiveCount = 0;
           return true;
@@ -755,7 +753,7 @@ StatusResult Glide3_InitAndEnumerate(void)
   GraphicsAdapterRecord *adapter;
   GraphicsDisplayMode *displayMode;
   DllLoadResult glideDll;
-  DynApiResolveResult resolveResult;
+  uint32_t resolveError;
   ArenaAllocResult resolutionAlloc;
   uint32_t sstIndex;
   int remainingBoards;
@@ -769,10 +767,10 @@ StatusResult Glide3_InitAndEnumerate(void)
   }
   binding = g_GlideImportBindings;
   do {
-    resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
-    if (resolveResult.failed) {
+    resolveError = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
+    if (resolveError != 0) {
       DynDLL_Unload(sz_GLIDE3X);
-      result.valueOrError = (uint32_t)resolveResult.procedureOrError;
+      result.valueOrError = resolveError;
       result.failed = true;
       return result;
     }

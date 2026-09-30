@@ -441,7 +441,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   WorldOwnerListNode *ownerNodeCursor;
   uint32_t *dwordCursor;
   bool testResult;
-  ArmyAssetLookupResult assetLookup;
+  ArmyAssetRecordPrefix *assetRecord;
   ModelDefinitionRecordPrefix *selectedDefinition;
   GraphicsFixedVec3 loweredChildPosition;
   Q12 translationStep;
@@ -560,9 +560,11 @@ StoreCompletedAssetId:
           dwordCursor = &(modelRuntime->linkedChildBuildState).classState70;
           *dwordCursor = *dwordCursor + 1;
           if (factionIndexOrLimit == worldRuntime->activeFactionRuntimeIndex) {
-            assetLookup = ArmyAssetRegistry_FindById(secondaryAssetId);
+            /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
+               assetRecord) */
+            ArmyAssetRegistry_FindById(secondaryAssetId,&assetRecord);
             selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                               (ownerArmyRuntime->factionIndex,(assetLookup.recordOrError)->rootNodeOffsetOrPointer);
+                               (ownerArmyRuntime->factionIndex,assetRecord->rootNodeOffsetOrPointer);
             linkedModelDefinition = (ModelDefinition *)selectedDefinition;
             linkedModelDefinition->builtCount = linkedModelDefinition->builtCount + 1;
             notificationMovieId = linkedModelDefinition->firstBuiltNotificationMovieId;
@@ -796,7 +798,8 @@ void ArmyRuntimeClass_UpdateUnitFactory
   ModelWorldPoint localPoint;
   InGameNotificationMovieId notificationMovieId;
   ArmyRuntimeSlot *linkedArmyRuntime;
-  
+  ArmyAssetRecordPrefix *unusedArmyAsset;
+
   rootNode = modelRuntime->rootModelNode;
   if (((modelRuntime->classState).classStateBC & 1) != 0) {
     if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
@@ -922,8 +925,9 @@ void ArmyRuntimeClass_UpdateUnitFactory
               /* the new army links back to this factory until it has left (case 3) */
               createdModelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = (ModelRuntimeSlot *)modelRuntime;
               if (factionOrNodeValue == worldRuntime->activeFactionRuntimeIndex) {
+                /* result unused (the lookup only records an unknown id in g_PackageLastErrorPath) */
                 ArmyAssetRegistry_FindById
-                          ((modelRuntime->classLinkState).modelLinkOrState.classState);
+                          ((modelRuntime->classLinkState).modelLinkOrState.classState,&unusedArmyAsset);
                 stateValue = (worldRuntime->motion).pitchAngle;
                 createdNode = createdModelRuntime->rootModelNodeOrSavedOffset.modelNode;
                 createdDefinition = createdModelRuntime->definitionOrSavedId.runtimeDefinition;
@@ -1032,7 +1036,8 @@ void ArmyRuntimeClass_UpdateStructureFactory
   FactionArmyAssetCount remainingAssetCount;
   uint32_t tickOrCount;
   uint32_t *dwordCursor;
-  ArmyAssetLookupResult assetLookup;
+  uint32_t lookupError;
+  ArmyAssetRecordPrefix *assetRecord;
   ModelDefinitionRecordPrefix *selectedDefinition;
   InGameNotificationMovieId notificationMovieId;
   ArmyRuntimeSlot *ownerArmyRuntime;
@@ -1104,20 +1109,20 @@ void ArmyRuntimeClass_UpdateStructureFactory
         *dwordCursor = *dwordCursor & ~ARMY_MODEL_STATE_PRODUCING;
         dwordCursor = &(modelRuntime->classState).energyLoadQ4;
         *dwordCursor = *dwordCursor - candidateValue;
-        assetLookup = ArmyAssetRegistry_FindById
-                           ((modelRuntime->classLinkState).modelLinkOrState.classState);
+        lookupError = ArmyAssetRegistry_FindById
+                           ((modelRuntime->classLinkState).modelLinkOrState.classState,&assetRecord);
         (modelRuntime->classLinkState).modelLinkOrState.modelRuntime = NULL;
-        if (!assetLookup.notFound) {
+        if (lookupError == 0) {
           tickOrCount = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
           if (tickOrCount < 64) {
             activeFactionIndex = worldRuntime->activeFactionRuntimeIndex;
             /* appended to the faction's primary asset list */
             g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[tickOrCount] =
-                 (uint32_t)assetLookup.recordOrError;
+                 (uint32_t)assetRecord;
             assetCountField = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
             *assetCountField = *assetCountField + 1;
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {
-              candidateValue = (assetLookup.recordOrError)->rootNodeOffsetOrPointer;
+              candidateValue = assetRecord->rootNodeOffsetOrPointer;
               InGameArmyStock_RebuildGrid((UiNodeBase *)worldRuntime);
               selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                                  (ownerArmyRuntime->factionIndex,candidateValue);
@@ -1718,7 +1723,7 @@ ArmyRuntime_ResolveShotAimPoint
   int aimWorldY;
   int aimWorldZ;
   ModelRuntimeNode *targetNode;
-  ShotRangeLimitResult rangeLimit;
+  Q12 shotLeadSpeedQ12;
   FixedDirection leadDirection;
   WorldPositionResult position;
   GameEntityRuntime *targetEntity;
@@ -1759,9 +1764,9 @@ ArmyRuntime_ResolveShotAimPoint
            ((((ArmyRuntimeSlot *)targetClassRecord)->movementStateFlags & 4) == 0)) {
           distanceOrAngle = FixedMath_Length3(aimWorldZ - sourceWorldZQ12,aimWorldY - sourceWorldYQ12,
                                     aimWorldX - sourceWorldXQ12);
-          rangeLimit = ShotDefinition_GetModeRangeLimitEbx(shotDefinition);
+          shotLeadSpeedQ12 = ShotDefinition_GetLeadSpeed(shotDefinition);
           leadDistance = (int)(((int64_t)(int)distanceOrAngle * (int64_t)((ModelDefinition *)definitionOrDelta)->movementSpeed) /
-                       (int64_t)rangeLimit.rangeLimitQ12);
+                       (int64_t)shotLeadSpeedQ12);
           distanceOrAngle = ShotDefinition_ComputeRampUpLeadTime(shotDefinition);
           leadDistance = leadDistance + distanceOrAngle * ((ModelDefinition *)definitionOrDelta)->movementSpeed;
           distanceOrAngle = FixedMath_Atan2Angle16
@@ -3364,9 +3369,9 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   uint32_t metricSum;
   uint32_t slotBit;
   ArmyRuntimeLinkedChildMaskSlotView *slotCursor;
-  ArmyAssetLookupResult assetLookup;
+  ArmyAssetRecordPrefix *assetRecord;
   ModelDefinitionRecordPrefix *selectedDefinition;
-  
+
   metricSum = 0;
   factionIndex = (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
   slotBit = 1;
@@ -3375,10 +3380,9 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
   do {
     if (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit) ==
         0) {
-      assetLookup = ArmyAssetRegistry_FindById(slotCursor->movementTarget0Q12);
-      if (!assetLookup.notFound) {
+      if (ArmyAssetRegistry_FindById(slotCursor->movementTarget0Q12,&assetRecord) == 0) {
         selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                          (factionIndex,(assetLookup.recordOrError)->rootNodeOffsetOrPointer);
+                          (factionIndex,assetRecord->rootNodeOffsetOrPointer);
         metricSum = metricSum + ((ModelDefinition *)selectedDefinition)->xeniteValueQ4;
       }
     }

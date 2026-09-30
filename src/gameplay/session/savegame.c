@@ -30,8 +30,8 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   UiNodeBase *firstNode;
   UiListRowIndex lastRowIndex;
   ListSelectionResult selectionResult;
-  TextResolveResult descriptionText;
-  TextResolveResult fieldText;
+  uint16_t *descriptionText;
+  uint16_t *fieldText;
 
   saveNameEntryStack =
        (UiPageStackControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEntryStack);
@@ -58,16 +58,16 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = ((ScenarioCatalogSaveRecord *)selectedRowRecord)->levelTitleTextId;
         descriptionText = TextResource_Resolve(resourceId);
-        *descriptionText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+        *descriptionText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         descriptionBox->text = (uint16_t *)resourceId;
       }
       else {
         descriptionText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
         fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->levelTitleTextId);
-        *fieldText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-        RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,descriptionText.text);
+        *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+        RichTextCommandStream_PatchPayloadBySelector(1,fieldText,descriptionText);
         fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->campaignTitleTextId);
-        RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,descriptionText.text);
+        RichTextCommandStream_PatchPayloadBySelector(0,fieldText,descriptionText);
         descriptionBox->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
       }
       firstNode = UiNode_GetRoot(&saveNameEntryStack->base);
@@ -155,9 +155,9 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   ScenarioCatalogByteOffset *clearCursor;
   ArenaAllocResult allocResult;
   FileSystemOpenResult openResult;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   ListSelectionResult selectionResult;
-  TextResolveResult fieldText;
+  uint16_t *fieldText;
   DirectoryEnumerationResult enumResult;
   void *closeHandle;
   uint32_t rowCount;
@@ -217,7 +217,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       clearCursor++;
     }
     resolvedText = TextResource_Resolve(TEXT_ID_SAVE_GAME_NEW_ROW);
-    RichTextCommandStream_CopyExpanded(256,(uint16_t *)destination,resolvedText.text);
+    RichTextCommandStream_CopyExpanded(256,(uint16_t *)destination,resolvedText);
     /* The action source is the game menu's Save button (in-game template +0x2550). */
     inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
     saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
@@ -249,16 +249,16 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = selectedRecord->levelTitleTextId;
         resolvedText = TextResource_Resolve(resourceId);
-        *resolvedText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+        *resolvedText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         descriptionText->text = (uint16_t *)resourceId;
       }
       else {
         resolvedText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
         fieldText = TextResource_Resolve(selectedRecord->levelTitleTextId);
-        *fieldText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-        RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,resolvedText.text);
+        *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+        RichTextCommandStream_PatchPayloadBySelector(1,fieldText,resolvedText);
         fieldText = TextResource_Resolve(selectedRecord->campaignTitleTextId);
-        RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,resolvedText.text);
+        RichTextCommandStream_PatchPayloadBySelector(0,fieldText,resolvedText);
         descriptionText->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
       }
     }

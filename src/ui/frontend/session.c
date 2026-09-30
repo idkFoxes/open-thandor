@@ -413,7 +413,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
   FrontendCommandPacketRecord *sourceCommandRecord;
   FrontendCommandPacketRecord *destinationCommandRecord;
   UiTransferEndpointDescriptor *endpoint;
-  TextResolveResult timeoutText;
+  uint16_t *timeoutText;
   /* the original's PUSH/POP stack of dropped player ids (at most 8 player blocks) */
   FrontendPlayerRuntimeId removedPlayerIds[8];
   
@@ -430,8 +430,8 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
         sourcePlayer->heartbeatExpiryTicks = sourcePlayer->heartbeatExpiryTicks - 1;
         if (sourcePlayer->heartbeatExpiryTicks == 0) {
           timeoutText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
-          RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText.text);
-          InGameRecentTextHistory_InsertAndRebuild8(timeoutText.text);
+          RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText);
+          InGameRecentTextHistory_InsertAndRebuild8(timeoutText);
           expired = true;
         }
       }
@@ -489,7 +489,7 @@ void FrontendClientSession_TickHostTimeout(void)
   InGameRuntimeRoot *inGameRoot;
   FrontendPlayerRuntimeBlockCount playersRemaining;
   FrontendPlayerRuntimeRecord *playerRecord;
-  TextResolveResult shutdownText;
+  uint16_t *shutdownText;
   
   inGameRoot = g_InGameRuntimeRoot;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -499,8 +499,8 @@ void FrontendClientSession_TickHostTimeout(void)
     g_NetworkBackendSlot3(); /* close */
     g_NetworkBackendSlot1(); /* cleanup */
     shutdownText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);
-    RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText.text);
-    InGameRecentTextHistory_InsertAndRebuild8(shutdownText.text);
+    RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText);
+    InGameRecentTextHistory_InsertAndRebuild8(shutdownText);
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     do {

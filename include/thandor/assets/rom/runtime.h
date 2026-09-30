@@ -83,7 +83,7 @@ void FrontendRomActionTable_ExecuteRecord
           RomRecordTableIndex recordIndex);
 
 /* 0x00546450 */
-StatusResult RomAsset_PrepareRecords(RomAssetHeader *asset);
+uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
 
 /* 0x005466A0 */
 bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
@@ -110,16 +110,16 @@ void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable);
 RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *table);
 
 /* 0x005484D0 */
-StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
+uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
 
 /* 0x00548600 */
 bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
 
 /* 0x00546330 */
-StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
+uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
 
 /* 0x005464C0 */
-ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
+ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
           (PackedArgb32 stateTintArgb,RomSerializedNodeHeader *romNodeRecord,
           WorldRuntimeContext *worldObjectArray);
 
@@ -127,12 +127,12 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
 void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitionEnabled,FrontendRomActionEntry *entry);
 
 /* 0x005487A0 */
-StatusResult RomRegistry_FindSlotValueByRecordId(RomRecordId recordId);
+bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
 
 /* 0x00548410 */
 void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record);
 
 /* 0x00548740 */
-RomRecordResult RomRegistry_FindRecordById(RomRecordId recordId);
+RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId);
 
 #endif /* THANDOR_ASSETS_ROM_RUNTIME_H */

@@ -32,7 +32,8 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
   int remainingSteps;
   uint32_t *dispatchRecord;
   PageStackSearchResult pageNotInListResult;
-  ArmyAssetLookupResult foundArmyAsset;
+  uint32_t armyLookupError;
+  ArmyAssetRecordPrefix *foundArmyAsset;
   FatalErrorCheckResult hoverRecordResult;
   FramebufferCaptureResult capturedFramebuffer;
   
@@ -140,8 +141,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
-        foundArmyAsset = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
+        hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+                                                    armyLookupError != 0);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -194,8 +196,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
-        foundArmyAsset = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
+        hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+                                                    armyLookupError != 0);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -249,8 +252,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
-        foundArmyAsset = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
+        hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+                                                    armyLookupError != 0);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -304,8 +308,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
-        foundArmyAsset = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
+        hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+                                                    armyLookupError != 0);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -419,8 +424,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     else {
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption0));
-      foundArmyAsset = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+      armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
+      hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+                                                  armyLookupError != 0);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -433,8 +439,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     else {
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption1));
-      foundArmyAsset = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+      armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
+      hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+                                                  armyLookupError != 0);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -447,8 +454,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     else {
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption2));
-      foundArmyAsset = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+      armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
+      hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+                                                  armyLookupError != 0);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -965,7 +973,7 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
   uint32_t techTextureHeight;
   uint32_t detailIndex;
   TextureSourceLoadResult loadedTexture;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   StatusResult initStatus;
   TextureSizeResult logicalSize;
   GraphicsTextureSourceAsset *loadedTextureSource;
@@ -2304,7 +2312,7 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
     resourceId = TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE;
     do {
       resolvedText = TextResource_Resolve(resourceId);
-      stream = resolvedText.text;
+      stream = resolvedText;
       resourceId++;
       RichTextCommandStream_PatchPayloadBySelector(0,g_InGameSelectionDetailNameTextUtf16,stream);
       RichTextCommandStream_PatchPayloadBySelector(1,g_InGameSelectionDetailArmourTextUtf16,stream);
@@ -2701,8 +2709,8 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   uint16_t *rosterCursor;
   uint16_t *destination;
   RichTextCopyResult copiedText;
-  TextResolveResult resolvedText;
-  TextResolveResult statusTemplate;
+  uint16_t *resolvedText;
+  uint16_t *statusTemplate;
   WorldCameraPosition cameraPosition;
   WorldCameraOrientation cameraOrientation;
   InGameRuntimeRoot *runtimeRoot;
@@ -2869,19 +2877,19 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
       if (rosterCount == 0) {
         /* Local session or no player on this faction: status template without a roster. */
         resolvedText = TextResource_Resolve(TEXT_ID_FACTION_NO_ROSTER);
-        rosterCursor = resolvedText.text;
+        rosterCursor = resolvedText;
       }
       else {
         resolvedText = TextResource_Resolve(TEXT_ID_FACTION_ROSTER_TEMPLATE);
-        rosterCursor = resolvedText.text;
+        rosterCursor = resolvedText;
         RichTextCommandStream_PatchPayloadBySelector(0,g_InGamePlayerListTextScratchUtf16,rosterCursor);
       }
       /* faction name, roster, and economyProgressScore + relationScore */
       resolvedText = TextResource_Resolve(((GameFactionRuntimeRecord *)factionRecordAddress)->colorIndex +
                                           TEXT_ID_FACTION_NAME_BASE);
       statusTemplate = TextResource_Resolve(TEXT_ID_FACTION_STATUS_TEMPLATE);
-      stream = statusTemplate.text;
-      RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,stream);
+      stream = statusTemplate;
+      RichTextCommandStream_PatchPayloadBySelector(0,resolvedText,stream);
       RichTextCommandStream_PatchPayloadBySelector(1,rosterCursor,stream);
       RichTextCommandStream_PatchPayloadBySelector(2,(void *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0),stream);
       copiedText = RichTextCommandStream_CopyExpanded(1024,destination,stream);
@@ -2911,7 +2919,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
   InGamePlayerStatusTextSlot *destination;
   FrontendPlayerNameUtf16 *playerName;
   RichTextExtentRegs textExtent;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   TextureSizeResult windowTextureSize;
   UiConditionalActionControl *statusBox;
 
@@ -2942,8 +2950,8 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
         resourceId = TEXT_ID_PLAYER_STATUS_STATE_SET;
       }
       resolvedText = TextResource_Resolve(resourceId);
-      RichTextCommandStream_PatchPayloadBySelector(0,playerName,resolvedText.text);
-      RichTextCommandStream_CopyExpanded(128,destination->text,resolvedText.text);
+      RichTextCommandStream_PatchPayloadBySelector(0,playerName,resolvedText);
+      RichTextCommandStream_CopyExpanded(128,destination->text,resolvedText);
       destination++;
       playerName = (FrontendPlayerNameUtf16 *)((uint8_t *)playerName + sizeof(FrontendPlayerRuntimeRecord));
       remainingPlayers--;
@@ -3526,7 +3534,7 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
   ArmyAssetRecord *armyDefinition;
   int modelRuntimeOrBonus;
   int registryWeight;
-  ArmyAssetLookupResult foundArmyAsset;
+  ArmyAssetRecordPrefix *foundArmyAsset;
   int flag10BonusSum;
   int class74Sum;
   int weightedClass78Sum;
@@ -3545,9 +3553,8 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
       /* modelRuntimeOrBonus: the owner army runtime (ArmyRuntimeSlot), later the flag bonus */
       if ((ownerListNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (modelRuntimeOrBonus = (int)((ModelRuntimeSlot *)ownerListNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime, activeFactionIndex == ((ArmyRuntimeSlot *)modelRuntimeOrBonus)->factionIndex)) {
-        foundArmyAsset = ArmyAssetRegistry_FindById(((ArmyRuntimeSlot *)modelRuntimeOrBonus)->armyAssetId);
-        armyDefinition = (ArmyAssetRecord *)foundArmyAsset.recordOrError;
-        if (!foundArmyAsset.notFound) {
+        if (ArmyAssetRegistry_FindById(((ArmyRuntimeSlot *)modelRuntimeOrBonus)->armyAssetId,&foundArmyAsset) == 0) {
+          armyDefinition = (ArmyAssetRecord *)foundArmyAsset;
           registryWeight = 1;
           if ((((ArmyRuntimeSlot *)modelRuntimeOrBonus)->commandModeFlags & 1) != 0) {
             registryWeight = 3;
@@ -3594,7 +3601,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   WorldInteractionFlags *interactionFlagsField;
   bool isSelected;
   RichTextExtentRegs wrappedExtent;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   InGameMissionHelpRootView *uiRoot;
 
   uiRoot = (InGameMissionHelpRootView *)source;
@@ -3632,21 +3639,21 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
        titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE;
   resolvedText = TextResource_Resolve((uiRoot->missionBriefingPanel).textResourceId);
   wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
-                    (g_UiTextStyleNormal,resolvedText.text,(uiRoot->missionBriefingPanel).wrapWidth);
+                    (g_UiTextStyleNormal,resolvedText,(uiRoot->missionBriefingPanel).wrapWidth);
   (uiRoot->missionBriefingPanel).measuredWidth = wrappedExtent.widthPixels + 6;
   (uiRoot->missionBriefingPanel).measuredHeight = wrappedExtent.heightPixels + 6;
   UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->missionBriefingPanel).scrollable);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->missionBriefingPanel).scrollable);
   resolvedText = TextResource_Resolve((uiRoot->keyboardHelpPanel).textResourceId);
   wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
-                    (g_UiTextStyleNormal,resolvedText.text,(uiRoot->keyboardHelpPanel).wrapWidth);
+                    (g_UiTextStyleNormal,resolvedText,(uiRoot->keyboardHelpPanel).wrapWidth);
   (uiRoot->keyboardHelpPanel).measuredWidth = wrappedExtent.widthPixels + 6;
   (uiRoot->keyboardHelpPanel).measuredHeight = wrappedExtent.heightPixels + 6;
   UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->keyboardHelpPanel).scrollable);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->keyboardHelpPanel).scrollable);
   resolvedText = TextResource_Resolve((uiRoot->mouseHelpPanel).textResourceId);
   wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
-                    (g_UiTextStyleNormal,resolvedText.text,(uiRoot->mouseHelpPanel).wrapWidth);
+                    (g_UiTextStyleNormal,resolvedText,(uiRoot->mouseHelpPanel).wrapWidth);
   (uiRoot->mouseHelpPanel).measuredWidth = wrappedExtent.widthPixels + 6;
   (uiRoot->mouseHelpPanel).measuredHeight = wrappedExtent.heightPixels + 6;
   UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->mouseHelpPanel).scrollable);
@@ -3825,7 +3832,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   uint32_t factionIndexCursor;
   int factionRecordAddress;
   uint32_t filledSlotCount;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   
   uiRootNode = source;
   while (uiRootNode->parent != UI_NODE_NONE) {
@@ -3844,7 +3851,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndexCursor] != 0) {
       resolvedText = TextResource_Resolve(resourceId);
-      stream = resolvedText.text;
+      stream = resolvedText;
       factionNameIndex = ((GameFactionRuntimeRecord *)factionRecordAddress)->colorIndex;
       resourceId++;
       /* nodeFlags of the check box: g_UiSevenSlotSelectionControlOffsets is relative to the root */
@@ -3852,7 +3859,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
       *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       filledSlotCount++;
       resolvedText = TextResource_Resolve(factionNameIndex + TEXT_ID_FACTION_NAME_BASE);
-      RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,stream);
+      RichTextCommandStream_PatchPayloadBySelector(0,resolvedText,stream);
     }
     factionIndexCursor++;
     factionRecordAddress = factionRecordAddress + sizeof(GameFactionRuntimeRecord);
@@ -3883,7 +3890,7 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
   SelectionPlayerRuntimeBlock *selectionBlock;
   TextResourceId resourceId;
   uint32_t filledSlotCount;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   
   uiRootNode = source;
   while (uiRootNode->parent != UI_NODE_NONE) {
@@ -3904,7 +3911,7 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
     controlFlags = (uint32_t *)&THANDOR_UI_AT(uiRootNode,g_UiSevenSlotSelectionControlOffsets[filledSlotCount])->nodeFlags;
     *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
     filledSlotCount++;
-    RichTextCommandStream_PatchPayloadBySelector(0,selectionBlock->playerNameUtf16,resolvedText.text);
+    RichTextCommandStream_PatchPayloadBySelector(0,selectionBlock->playerNameUtf16,resolvedText);
     if (6 < filledSlotCount) break;
   } while (filledSlotCount < g_FrontendPlayerRuntimeBlockCount);
   INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
@@ -5408,9 +5415,10 @@ void InGameSelectionDetailPanel_Rebuild(void)
   GameEntityRuntime **entitySlot;
   uint16_t *destinationText;
   bool conditionResult;
-  ArmyAssetLookupResult foundArmyAsset;
+  uint32_t armyLookupError;
+  ArmyAssetRecordPrefix *foundArmyAsset;
   FatalErrorCheckResult armyAssetResult;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   ModelDefinitionRecordPrefix *unlockedDefinition;
   ModelRuntimeSlot *selectedModelRuntime;
   ModelRuntimeSlot *selectedModelRuntimeTail;
@@ -5462,9 +5470,10 @@ void InGameSelectionDetailPanel_Rebuild(void)
         else {
           UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)rootCursor);
         }
-        foundArmyAsset = ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId)
-        ;
-        armyAssetResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        armyLookupError = ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId,
+                                                     &foundArmyAsset);
+        armyAssetResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+                                                  armyLookupError != 0);
         UiPageStack_SetActiveIndex(1,stack);
         detailValue = ((ArmyAssetRecord *)armyAssetResult.valueOrError)->selectionDetailValue;
         workValue = ModelRuntimeHierarchy_SumArmour((int *)lastSelectedEntity);
@@ -5482,7 +5491,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
         resolvedText = TextResource_Resolve
                            (((ModelDefinition *)*(int *)(lastSelectedEntity->common).ownership.
                                              definitionOrClassRecord)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-        sourceText = resolvedText.text;
+        sourceText = resolvedText;
         destinationText = g_InGameSelectionDetailNameTextUtf16;
         for (workValue = 64; workValue != 0; workValue--) {
           *destinationText = *sourceText;
@@ -5491,7 +5500,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
         }
         /* text 0x18004E fills unused weapon slots; name texts are 0x18004F + the definition's name index */
         resolvedText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
-        sourceText = resolvedText.text;
+        sourceText = resolvedText;
         RichTextCommandStream_CopyExpanded
                   (128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText);
         RichTextCommandStream_CopyExpanded
@@ -5504,22 +5513,23 @@ void InGameSelectionDetailPanel_Rebuild(void)
         g_InGameSelectionDetailTextSlot09Utf16[1] = 0;
         selectedModelRuntime = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
         if (((selectedModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
-          foundArmyAsset = ArmyAssetRegistry_FindById
-                             ((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId);
+          /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
+             foundArmyAsset) */
+          ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId,&foundArmyAsset);
           workValue = selectedModelRuntime->researchTechnologyId;
           ((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text =
-               (uint16_t *)((foundArmyAsset.recordOrError)->selectionDetailTemplateVariantIndex +
+               (uint16_t *)(foundArmyAsset->selectionDetailTemplateVariantIndex +
                               TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE);
           resolvedText = TextResource_Resolve(workValue * 2 + TECHNOLOGY_TEXT_ID_BASE);
           RichTextCommandStream_CopyExpanded
-                    (128,g_InGameSelectionDetailTextSlot09Utf16,resolvedText.text);
+                    (128,g_InGameSelectionDetailTextSlot09Utf16,resolvedText);
         }
         if (selectedModelRuntime->attachmentCount != 0) {
           attachedModelRuntime = selectedModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
           if (attachedModelRuntime != NULL) {
             resolvedText = TextResource_Resolve
                                (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-            sourceText = resolvedText.text;
+            sourceText = resolvedText;
             destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
             for (workValue = 64; workValue != 0; workValue--) {
               *destinationText = *sourceText;
@@ -5533,7 +5543,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
             if (attachedModelRuntime != NULL) {
               resolvedText = TextResource_Resolve
                                  (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-              sourceText = resolvedText.text;
+              sourceText = resolvedText;
               destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
               for (workValue = 64; workValue != 0; workValue--) {
                 *destinationText = *sourceText;
@@ -5547,7 +5557,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
                          childModelRuntimeOrSavedOffset, attachedModelRuntime != NULL)) {
               resolvedText = TextResource_Resolve
                                  (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-              sourceText = resolvedText.text;
+              sourceText = resolvedText;
               destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
               for (workValue = 64; workValue != 0; workValue--) {
                 *destinationText = *sourceText;
@@ -5563,15 +5573,13 @@ void InGameSelectionDetailPanel_Rebuild(void)
           if (recordCursor[43] != 1) {
             return;
           }
-          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[24]);
-          linkedArmyAsset = foundArmyAsset.recordOrError;
+          ArmyAssetRegistry_FindById(recordCursor[24],&linkedArmyAsset);
         }
         else if (workValue == MODEL_RUNTIME_CLASS_11) {
           if (recordCursor[46] != 1) {
             return;
           }
-          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[24]);
-          linkedArmyAsset = foundArmyAsset.recordOrError;
+          ArmyAssetRegistry_FindById(recordCursor[24],&linkedArmyAsset);
         }
         else {
           if (workValue != MODEL_RUNTIME_CLASS_13) {
@@ -5586,9 +5594,10 @@ void InGameSelectionDetailPanel_Rebuild(void)
           if (recordCursor[46] != 1) {
             return;
           }
-          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[24]);
-          linkedArmyAsset = foundArmyAsset.recordOrError;
+          ArmyAssetRegistry_FindById(recordCursor[24],&linkedArmyAsset);
         }
+        /* Original quirk: none of the three lookups above checks its status (an unknown id leaves the error
+           code in linkedArmyAsset) */
         linkedDefinitionListView =
              (ArmyModelTreeNodeAddressView *)linkedArmyAsset->rootNodeOffsetOrPointer;
         if (linkedArmyAsset->selectionDetailTemplateVariantIndex < 8) {
@@ -5600,7 +5609,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
                            ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                             (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
         resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-        sourceText = resolvedText.text;
+        sourceText = resolvedText;
         destinationText = g_InGameSelectionDetailTextSlot05Utf16;
         goto copyDefinitionNames;
       }
@@ -5617,10 +5626,11 @@ void InGameSelectionDetailPanel_Rebuild(void)
         if ((lastSelectedEntity != NULL) && (workValue != 0)) {
           slotCounterOrOffset = *recordCursor;
           ((UiArmyMetricsPanel *)THANDOR_UI_AT(rootCursor,slotCounterOrOffset))->entity = (RuntimeModelFactionPrefix *)lastSelectedEntity;
-          foundArmyAsset = ArmyAssetRegistry_FindById
-                             ((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId);
+          /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
+             foundArmyAsset) */
+          ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId,&foundArmyAsset);
           ((UiArmyMetricsPanel *)THANDOR_UI_AT(rootCursor,slotCounterOrOffset))->base.textureSource =
-               (GraphicsTextureSourceAsset *)foundArmyAsset.recordOrError[1].registryId;
+               (GraphicsTextureSourceAsset *)foundArmyAsset[1].registryId;
           /* adds 0: slotCounterOrOffset was just loaded from *recordCursor */
           rootCursor = (InGameRuntimeRoot *)((int)rootCursor + (slotCounterOrOffset - *recordCursor));
           workValue--;
@@ -5673,7 +5683,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
                        ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                         (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
     resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-    sourceText = resolvedText.text;
+    sourceText = resolvedText;
     destinationText = g_InGameSelectionDetailNameTextUtf16;
 copyDefinitionNames:
     for (workValue = 64; workValue != 0; workValue--) {
@@ -5682,7 +5692,7 @@ copyDefinitionNames:
       destinationText++;
     }
     resolvedText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
-    sourceText = resolvedText.text;
+    sourceText = resolvedText;
     RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText);
     RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText);
     RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText);
@@ -5691,7 +5701,7 @@ copyDefinitionNames:
                          ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                           linkedDefinitionListView->childList0Address);
       resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-      sourceText = resolvedText.text;
+      sourceText = resolvedText;
       destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
       for (workValue = 64; workValue != 0; workValue--) {
         *destinationText = *sourceText;
@@ -5703,7 +5713,7 @@ copyDefinitionNames:
                            ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                             linkedDefinitionListView->childList1Address);
         resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-        sourceText = resolvedText.text;
+        sourceText = resolvedText;
         destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
         for (workValue = 64; workValue != 0; workValue--) {
           *destinationText = *sourceText;
@@ -5715,7 +5725,7 @@ copyDefinitionNames:
                              ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                               linkedDefinitionListView->childList2Address);
           resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-          sourceText = resolvedText.text;
+          sourceText = resolvedText;
           destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
           for (workValue = 64; workValue != 0; workValue--) {
             *destinationText = *sourceText;

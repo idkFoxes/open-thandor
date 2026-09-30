@@ -612,7 +612,7 @@ StatusResult __cdecl Graphics_Init(void)
   StatusResult glideResult;
   ArenaAllocResult allocResult;
   DllLoadResult moduleLoad;
-  DynApiResolveResult procResolve;
+  uint32_t resolveError;
   CommandLineOptionResult optionResult;
   IDirect3D2 *direct3D2;
   IDirectDraw *directDraw;
@@ -673,12 +673,12 @@ StatusResult __cdecl Graphics_Init(void)
           adapterOrModule = (GraphicsAdapterRecord *)moduleLoad.moduleOrError;
           cursorOrResult = adapterOrModule;
           if (!moduleLoad.failed) {
-            procResolve = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)adapterOrModule,sz_DirectDrawCreate);
-            cursorOrResult = procResolve.procedureOrError;
-            if (!procResolve.failed) {
-              procResolve = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,sz_DirectDrawEnumerateA);
-              cursorOrResult = procResolve.procedureOrError;
-              if (!procResolve.failed) {
+            resolveError = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)adapterOrModule,sz_DirectDrawCreate);
+            cursorOrResult = (GraphicsAdapterRecord *)resolveError;
+            if (resolveError == 0) {
+              resolveError = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,sz_DirectDrawEnumerateA);
+              cursorOrResult = (GraphicsAdapterRecord *)resolveError;
+              if (resolveError == 0) {
                 hresult = pDirectDrawEnumerateA(DirectDraw_EnumAdapterCallback,NULL);
                 cursorOrResult = (GraphicsAdapterRecord *)FATAL_ERROR_DIRECTDRAW_NO_ADAPTER;
                 if ((hresult == 0) &&

@@ -372,7 +372,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   int appliedOptionMask; /* 1 = -SPIELER, 2 = -SPIEL, 4 = -NETZWERK */
   uint8_t *optionText;
   uint8_t *optionTextCursor;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   CommandLineOptionResult findOptionResult;
 
   appliedOptionMask = 0;
@@ -439,7 +439,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   /* the speed caption */
   resolvedText = TextResource_Resolve(digitValueOrSpeed + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,resolvedText.text);
+            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,resolvedText);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   FrontendNetworkSettings_SetGameName((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   if (appliedOptionMask == 7) {

@@ -431,7 +431,9 @@ void ScenarioCatalog_Rebuild(void)
   ArenaAllocResult allocation;
   FatalErrorCheckResult checkedResult;
   FileSystemOpenResult openResult;
-  ResourceLoadResult loadedResource;
+  bool loaded;
+  void *loadedBuffer;
+  uint32_t loadedByteCount;
   DirectoryEnumerationResult saveEnumeration;
   void *handleToClose;
 
@@ -447,31 +449,30 @@ void ScenarioCatalog_Rebuild(void)
   catalog->levelRecordCount = 0;
   catalog->campaignRecordCount = 0;
   catalog->saveRecordCount = 0;
-  loadedResource = Resource_Load((uint16_t *)u_level_level_dat_0050da0e);
+  loaded = Resource_Load((uint16_t *)u_level_level_dat_0050da0e,&loadedBuffer,&loadedByteCount,NULL);
   catalog = g_ScenarioCatalog;
-  if (!loadedResource.failed) {
-    recordCount = loadedResource.byteCount / SCENARIO_CATALOG_RECORD_SIZE;
+  if (loaded) {
+    recordCount = loadedByteCount / SCENARIO_CATALOG_RECORD_SIZE;
     recordsBase = (ScenarioCatalogRecord *)
              ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
     /* REP MOVSD of the whole file into the level section */
-    levelSourceDword = (uint32_t *)loadedResource.bufferOrError;
+    levelSourceDword = (uint32_t *)loadedBuffer;
     recordCopyCursor = recordsBase;
-    for (dwordsRemaining = loadedResource.byteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
+    for (dwordsRemaining = loadedByteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
       *(uint32_t *)recordCopyCursor->identifier = *levelSourceDword;
       levelSourceDword++;
       recordCopyCursor = (ScenarioCatalogRecord *)(recordCopyCursor->identifier + 2);
     }
-    Resource_Release((uint32_t *)loadedResource.bufferOrError);
+    Resource_Release((uint32_t *)loadedBuffer);
     /* level00.dat .. level99.dat: the two digit code units are packed as one dword (UTF16_DIGIT_PAIR); the
        units digit counts '0'..'9', then subtracting UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP resets it to '0' and
        increments the tens digit. */
     g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits = UTF16_DIGIT_PAIR('0','0');
     do {
-      loadedResource = Resource_Load(g_ScenarioLevelDataPathTemplateUtf16.prefixCodeUnits);
-      if (!loadedResource.failed) {
+      if (Resource_Load(g_ScenarioLevelDataPathTemplateUtf16.prefixCodeUnits,&loadedBuffer,&loadedByteCount,NULL)) {
         recordCount = ScenarioCatalog_MergeRecordsByName
-                          (loadedResource.byteCount,(ScenarioCatalogRecord *)loadedResource.bufferOrError,recordCount,recordsBase);
-        Resource_Release((ScenarioCatalogRecord *)loadedResource.bufferOrError);
+                          (loadedByteCount,(ScenarioCatalogRecord *)loadedBuffer,recordCount,recordsBase);
+        Resource_Release((ScenarioCatalogRecord *)loadedBuffer);
       }
       g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1]++;
     } while ((g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1] < '9' + 1) ||
@@ -486,28 +487,27 @@ void ScenarioCatalog_Rebuild(void)
       recordCount--;
     } while (recordCount != 0);
   }
-  loadedResource = Resource_Load((uint16_t *)u_level_campagne_dat_0050da52);
+  loaded = Resource_Load((uint16_t *)u_level_campagne_dat_0050da52,&loadedBuffer,&loadedByteCount,NULL);
   catalog = g_ScenarioCatalog;
-  if (!loadedResource.failed) {
-    recordCount = loadedResource.byteCount / SCENARIO_CATALOG_RECORD_SIZE;
+  if (loaded) {
+    recordCount = loadedByteCount / SCENARIO_CATALOG_RECORD_SIZE;
     recordsBase = (ScenarioCatalogRecord *)
              ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->campaignRecordsOffset);
-    campaignSourceDword = (uint32_t *)loadedResource.bufferOrError;
+    campaignSourceDword = (uint32_t *)loadedBuffer;
     recordCopyCursor = recordsBase;
-    for (dwordsRemaining = loadedResource.byteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
+    for (dwordsRemaining = loadedByteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
       *(uint32_t *)recordCopyCursor->identifier = *campaignSourceDword;
       campaignSourceDword++;
       recordCopyCursor = (ScenarioCatalogRecord *)(recordCopyCursor->identifier + 2);
     }
-    Resource_Release((uint32_t *)loadedResource.bufferOrError);
+    Resource_Release((uint32_t *)loadedBuffer);
     /* campagne00.dat .. campagne99.dat, counted like the level files above */
     g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits = UTF16_DIGIT_PAIR('0','0');
     do {
-      loadedResource = Resource_Load(g_ScenarioCampaignDataPathTemplateUtf16.prefixCodeUnits);
-      if (!loadedResource.failed) {
+      if (Resource_Load(g_ScenarioCampaignDataPathTemplateUtf16.prefixCodeUnits,&loadedBuffer,&loadedByteCount,NULL)) {
         recordCount = ScenarioCatalog_MergeRecordsByName
-                          (loadedResource.byteCount,(ScenarioCatalogRecord *)loadedResource.bufferOrError,recordCount,recordsBase);
-        Resource_Release((ScenarioCatalogRecord *)loadedResource.bufferOrError);
+                          (loadedByteCount,(ScenarioCatalogRecord *)loadedBuffer,recordCount,recordsBase);
+        Resource_Release((ScenarioCatalogRecord *)loadedBuffer);
       }
       g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1]++;
     } while ((g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1] < '9' + 1) ||
@@ -1179,7 +1179,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
   UiListRowCount remainingRows;
   ScenarioCatalogDisplayRecord *scenarioRecord;
   ScenarioCatalogDisplayRecord **rowPointerCursor;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   UiListRowCount rowCount;
   ScenarioCatalogDisplayRecord **rowPointers;
   
@@ -1202,18 +1202,18 @@ void ScenarioCatalog_RebuildLevelRecordListPage
       *rowPointerCursor = scenarioRecord;
       resolvedText = TextResource_Resolve(scenarioRecord->titleTextResourceId + TEXT_ID_LEVEL_COLUMN50_BASE);
       scenarioRecord->titleDisplayTag = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
-      scenarioRecord->titleResolvedText = resolvedText.text;
+      scenarioRecord->titleResolvedText = resolvedText;
       resolvedText = TextResource_Resolve(scenarioRecord->subtitleTextResourceId + TEXT_ID_LEVEL_COLUMN60_BASE);
       scenarioRecord->subtitleDisplayTag = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
-      scenarioRecord->subtitleResolvedText = resolvedText.text;
+      scenarioRecord->subtitleResolvedText = resolvedText;
       /* +0x70 is the level title; its text starts with palette colour 1 */
       resolvedText = TextResource_Resolve(scenarioRecord->scenarioTextResourceId + TEXT_ID_LEVEL_TITLE_BASE);
-      *resolvedText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_1;
+      *resolvedText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_1;
       scenarioRecord->scenarioDisplayTag = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
-      scenarioRecord->scenarioResolvedText = resolvedText.text;
+      scenarioRecord->scenarioResolvedText = resolvedText;
       resolvedText = TextResource_Resolve(scenarioRecord->modeTextResourceId + TEXT_ID_LEVEL_COLUMN80_BASE);
       scenarioRecord->modeDisplayTag = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
-      scenarioRecord->modeResolvedText = resolvedText.text;
+      scenarioRecord->modeResolvedText = resolvedText;
       rowPointerCursor++;
       scenarioRecord++;
     }
@@ -1262,7 +1262,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
   UiListRowCount remainingRows;
   void *campaignRecord;
   void **rowPointerCursor;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   UiListRowCount rowCount;
   void **rowPointers;
   
@@ -1287,7 +1287,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
                                           TEXT_ID_CAMPAIGN_TITLE_BASE);
       ((ScenarioCatalogDisplayRecord *)campaignRecord)->titleDisplayTag =
            RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_JUMP_NESTED;
-      ((ScenarioCatalogDisplayRecord *)campaignRecord)->titleResolvedText = resolvedText.text;
+      ((ScenarioCatalogDisplayRecord *)campaignRecord)->titleResolvedText = resolvedText;
       rowPointerCursor++;
       campaignRecord = (void *)((int)campaignRecord + SCENARIO_CATALOG_RECORD_SIZE);
     }
@@ -1530,8 +1530,8 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
   int rowTableOrRecord;
   TextResourceId resourceId;
   int frontendRoot;
-  TextResolveResult primaryText;
-  TextResolveResult fieldText;
+  uint16_t *primaryText;
+  uint16_t *fieldText;
   
   frontendRoot = g_FrontendRootNode;
   rowTableOrRecord = (int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList))->rowSlots;
@@ -1545,16 +1545,16 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
       resourceId = ((ScenarioCatalogSaveRecord *)rowTableOrRecord)->levelTitleTextId;
       primaryText = TextResource_Resolve(resourceId);
       /* the first code unit becomes palette colour 0 */
-      *primaryText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+      *primaryText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
       ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,savedGameDescriptionText))->text = (uint16_t *)resourceId;
     }
     else {
       primaryText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
       fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)rowTableOrRecord)->levelTitleTextId);
-      *fieldText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
-      RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,primaryText.text);
+      *fieldText = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
+      RichTextCommandStream_PatchPayloadBySelector(1,fieldText,primaryText);
       fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)rowTableOrRecord)->campaignTitleTextId);
-      RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,primaryText.text);
+      RichTextCommandStream_PatchPayloadBySelector(0,fieldText,primaryText);
       ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,savedGameDescriptionText))->text =
            (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
     }

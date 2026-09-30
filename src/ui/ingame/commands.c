@@ -95,7 +95,8 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
 {
   InGameRuntimeRoot *runtimeRoot;
   WorldRuntimeContext *worldRuntime;
-  ArmyAssetLookupResult armyAssetLookup;
+  uint32_t lookupError;
+  ArmyAssetRecordPrefix *armyRecord;
   FatalErrorCheckResult checkedAssetLookup;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_UNIT_PLACEMENT,source);
@@ -107,8 +108,9 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
   UiCommandModeG_ClearSecondarySurfaceOnly(worldRuntime);
   UiCommandModeG_ApplyRawColorVariant(worldRuntime);
   UiCommandModeG_HideRegionMarkers(worldRuntime);
-  armyAssetLookup = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
-  checkedAssetLookup = FatalError_ExitIfFailed((uint32_t)armyAssetLookup.recordOrError,armyAssetLookup.notFound);
+  lookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&armyRecord);
+  checkedAssetLookup = FatalError_ExitIfFailed(lookupError != 0 ? lookupError : (uint32_t)armyRecord,
+                                               lookupError != 0);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.valueOrError;
   InGameSelectionDetailPanel_Rebuild();
   return;
@@ -1449,7 +1451,7 @@ void InGameCommand_HandlePlayerDeparture
   InGameRuntimeRoot *runtimeRoot;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   FrontendPlayerRuntimeRecord *playerRecord;
-  TextResolveResult departureText;
+  uint16_t *departureText;
   WorldOwnerListNode *ownerNode;
   
   runtimeRoot = g_InGameRuntimeRoot;
@@ -1489,8 +1491,8 @@ void InGameCommand_HandlePlayerDeparture
           }
           /* departure message with the player name patched in */
           departureText = TextResource_Resolve(TEXT_ID_PLAYER_DEPARTED);
-          RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,departureText.text);
-          InGameRecentTextHistory_InsertAndRebuild8(departureText.text);
+          RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,departureText);
+          InGameRecentTextHistory_InsertAndRebuild8(departureText);
           return;
         }
         remainingPlayers--;

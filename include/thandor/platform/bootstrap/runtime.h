@@ -72,8 +72,8 @@ StatusResult GameData_ResetDefaults(void);
 /* 0x00512F60 */
 bool GameData_LoadExternalTables(void);
 
-/* 0x00573BC0 */
-DynApiResolveResult DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
+/* 0x00573BC0: 0 when resolved into *destination, else FATAL_ERROR_DLL_PROCEDURE_MISSING */
+uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
 
 /* 0x00573C50 */
 DllLoadResult DynDLL_Load(char *moduleName);

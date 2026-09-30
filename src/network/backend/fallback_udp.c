@@ -665,13 +665,13 @@ bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut
 /* Address: 0x00585640.
    ws2_32 counterpart of NetworkFallback_FormatPeerAddress: writes address as UTF-16 text
    (WSAAddressToStringA, at most 0x200 bytes) into outputUtf16, for showing a peer's address. When the
-   conversion fails the output is an empty string and CF is clear; otherwise CF is the copy result.
+   conversion fails the output is an empty string and CF is clear; otherwise CF is set when the copy had
+   to cut the text off.
 */
 bool NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address)
 
 {
   int conversionResult;
-  StatusResult copyStatus;
   uint32_t textBufferLength; /* in: the scratch buffer size, out: the text length */
 
   textBufferLength = 255;
@@ -679,8 +679,7 @@ bool NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *ad
                     (address,g_NetworkBackendActiveSocketAddressLength,NULL,
                      &g_NetworkEndpointTextScratchA,&textBufferLength);
   if (conversionResult == 0) {
-    copyStatus = Text_CopyNarrowToUtf16(512,outputUtf16,&g_NetworkEndpointTextScratchA);
-    return copyStatus.failed;
+    return Text_CopyNarrowToUtf16(512,outputUtf16,&g_NetworkEndpointTextScratchA) == 0;
   }
   outputUtf16[0] = 0;
   outputUtf16[1] = 0;

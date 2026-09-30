@@ -47,11 +47,11 @@ void TextResourcePage_Unload(TextResourcePageIndex pageIndex);
 AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset);
 
 /* 0x0041CEB0 */
-GlyphSizeResult FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource);
+uint32_t FontGlyph_GetLogicalSizeActiveFont(GraphicsSubresourceIndex glyphSubresource,uint32_t *outLineHeight);
 
 /* 0x0041CEF0 */
-GlyphSizeResult FontGlyph_GetLogicalSizeForStyleRegs
-          (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource);
+uint32_t FontGlyph_GetLogicalSizeForStyle
+          (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource,uint32_t *outLineHeight);
 
 /* 0x0041D370 */
 uint32_t FontGlyph_DrawBottomAligned (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate baselineY,int32_t drawX);
@@ -60,12 +60,15 @@ uint32_t FontGlyph_DrawBottomAligned (UiPixelCoordinate clipBottom,UiPixelCoordi
 uint32_t FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineHeight,UiPixelCoordinate lineBottom,int32_t drawX);
 
 /* 0x0041CA50 */
-TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path);
+bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32_t *outLocaleBlockOrError);
 
 /* 0x0041CCF0 */
 void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
 
 /* 0x0041CDE0 */
-TextResolveResult TextResource_Resolve(TextResourceId resourceId);
+bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
+
+/* TextResource_TryResolve without the found flag (a missing text gives TEXT_RESOURCE_MISSING_SENTINEL_0x33) */
+uint16_t *TextResource_Resolve(TextResourceId resourceId);
 
 #endif /* THANDOR_ASSETS_TEXT_RESOURCES_H */

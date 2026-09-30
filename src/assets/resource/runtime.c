@@ -81,28 +81,25 @@ bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
 
 
 /* Address: 0x0040F000.
-   Loads a whole resource into a fresh arena buffer and returns it with its byte count. A mounted package
-   entry is decoded into the buffer; otherwise the loose file is read, first from the executable's directory,
-   then from the path as given. On failure CF is set and EAX carries the file-system or out-of-memory code.
+   Loads a whole resource into a fresh arena buffer. A mounted package entry is decoded into the buffer;
+   otherwise the loose file is read, first from the executable's directory, then from the path as given.
+   Returns true with the buffer in *outBuffer and its byte count in *outByteCount. On failure returns false
+   with the file-system, decoder or out-of-memory code in *outErrorCode and leaves *outBuffer and
+   *outByteCount unchanged. outByteCount and outErrorCode may be NULL.
 */
-ResourceLoadResult Resource_Load(uint16_t *path)
+bool Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   PckEntryHeader *entry;
-  uint8_t *fileSize;
-  uint8_t *sizeOrErrorCode;
-  /* ECX on failure: the file size once it is known, else the caller's ECX (zero stands in for it). It is only
-     meaningful on success (byte count); callers test CF. */
-  uint32_t failureByteCount = 0;
+  uint32_t fileSize;
+  uint32_t errorCode;
+  void *fileHandle;
+  void *buffer;
   ArenaAllocResult allocResult;
-  uint32_t decodeErrorCode;
   FileSystemOpenResult openResult;
   FileSystemSizeResult sizeResult;
   FileSystemReadResult readResult;
   EngineFileHandle entryFileHandle;
-  ResourceLoadResult fileOrPackageResult;
-  ResourceLoadResult fileLoadResult;
-  ResourceLoadResult failureResult;
 
   entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
   if (entry == NULL) {
@@ -110,64 +107,63 @@ ResourceLoadResult Resource_Load(uint16_t *path)
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-    fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
     if (openResult.failed) {
       openResult = g_FileSystemOpen(0,path);
-      fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
     }
+    errorCode = openResult.handleOrError;
     if (!openResult.failed) {
-      sizeResult = g_FileSystemGetSize(fileOrPackageResult.bufferOrError);
-      fileSize = (uint8_t *)sizeResult.sizeOrError;
-      sizeOrErrorCode = fileSize;
+      fileHandle = (void *)openResult.handleOrError;
+      sizeResult = g_FileSystemGetSize(fileHandle);
+      fileSize = sizeResult.sizeOrError;
+      errorCode = fileSize;
       if (!sizeResult.failed) {
-        allocResult = g_MemoryApi.alloc((uint32_t)fileSize);
-        fileLoadResult.bufferOrError = (void *)allocResult.payloadOrError;
-        failureByteCount = (uint32_t)fileSize;
+        allocResult = g_MemoryApi.alloc(fileSize);
         if (allocResult.failed) {
           /* the requested size becomes the detail line of the out-of-memory message */
           g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)fileSize,g_FatalErrorDetail1Utf16);
-          sizeOrErrorCode = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
+          errorCode = FATAL_ERROR_OUT_OF_MEMORY;
         }
         else {
-          readResult = g_FileSystemReadExact((FileIoByteCount)fileSize,fileLoadResult.bufferOrError,
-                                             fileOrPackageResult.bufferOrError);
-          sizeOrErrorCode = (uint8_t *)readResult.valueOrError;
+          buffer = (void *)allocResult.payloadOrError;
+          readResult = g_FileSystemReadExact((FileIoByteCount)fileSize,buffer,fileHandle);
+          errorCode = readResult.valueOrError;
           if (!readResult.failed) {
-            g_FileSystemClose(fileOrPackageResult.bufferOrError);
-            fileLoadResult.byteCount = (uint32_t)fileSize;
-            fileLoadResult.failed = false;
-            return fileLoadResult;
+            g_FileSystemClose(fileHandle);
+            *outBuffer = buffer;
+            if (outByteCount != NULL) {
+              *outByteCount = fileSize;
+            }
+            return true;
           }
-          g_MemoryApi.free(fileLoadResult.bufferOrError);
+          g_MemoryApi.free(buffer);
         }
       }
-      g_FileSystemClose(fileOrPackageResult.bufferOrError);
-      fileOrPackageResult.bufferOrError = sizeOrErrorCode;
+      g_FileSystemClose(fileHandle);
     }
   }
   else {
-    fileOrPackageResult.bufferOrError = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
+    errorCode = FATAL_ERROR_OUT_OF_MEMORY;
     if (entry->packedSize < PACKAGE_SCRATCH_BUFFER_BYTES + 1) {
       allocResult = g_MemoryApi.alloc(entry->unpackedSize);
-      fileOrPackageResult.bufferOrError = (uint8_t *)allocResult.payloadOrError;
+      errorCode = allocResult.payloadOrError;
       if (!allocResult.failed) {
-        if (Package_DecodeEntryInto((uint8_t *)fileOrPackageResult.bufferOrError,entry,entryFileHandle,NULL,
-                                    &decodeErrorCode)) {
-          fileOrPackageResult.byteCount = entry->unpackedSize;
-          fileOrPackageResult.failed = false;
-          return fileOrPackageResult;
+        buffer = (void *)allocResult.payloadOrError;
+        if (Package_DecodeEntryInto((uint8_t *)buffer,entry,entryFileHandle,NULL,&errorCode)) {
+          *outBuffer = buffer;
+          if (outByteCount != NULL) {
+            *outByteCount = entry->unpackedSize;
+          }
+          return true;
         }
-        sizeOrErrorCode = (uint8_t *)decodeErrorCode;
-        g_MemoryApi.free(fileOrPackageResult.bufferOrError);
-        fileOrPackageResult.bufferOrError = sizeOrErrorCode;
+        g_MemoryApi.free(buffer);
       }
     }
   }
-  failureResult.byteCount = failureByteCount;
-  failureResult.bufferOrError = (uint32_t)fileOrPackageResult.bufferOrError;
-  failureResult.failed = true;
-  return failureResult;
+  if (outErrorCode != NULL) {
+    *outErrorCode = errorCode;
+  }
+  return false;
 }
 
 

@@ -410,7 +410,7 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
   int remainingRequests;
   AiRuntimeWorkspaceEntry *requestEntry;
   bool hasUnassignedEntry;
-  ArmyAssetLookupResult armyAssetLookup;
+  ArmyAssetRecordPrefix *armyAsset;
   
   g_AiConstructionPendingAssetConsumedCount = 0;
   remainingRequests = g_AiWorkspace04Count;
@@ -437,12 +437,11 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
                 (ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime);
     }
     else if (armyAssetId < ARM_0340_BUILDING_MDL0314) {
-      armyAssetLookup = ArmyAssetRegistry_FindById(armyAssetId);
-      if (!armyAssetLookup.notFound) {
+      if (ArmyAssetRegistry_FindById(armyAssetId,&armyAsset) == 0) {
         /* The original then compares the selected definition's +0x278 word with 1 (ignoring the selector's
            CF), but both outcomes call the same placement handler. */
         (void)ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                          (factionIndex,armyAssetLookup.recordOrError->rootNodeOffsetOrPointer);
+                          (factionIndex,armyAsset->rootNodeOffsetOrPointer);
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
       }
@@ -999,7 +998,7 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
   RuntimeToken technologyIndex;
   AiStructureWorkspaceEntry *workspaceEntry;
   bool technologyAvailable;
-  ArmyAssetLookupResult armyAssetLookup;
+  ArmyAssetRecordPrefix *armyAsset;
   
   technologyIndex = candidateEntry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
   if ((candidateEntry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
@@ -1024,9 +1023,10 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
     }
   }
   else {
-    /* the original ignores the lookup's CF and reads the class mask at +0x14 of whatever EAX holds */
-    armyAssetLookup = ArmyAssetRegistry_FindById(technologyIndex);
-    countOrClassMask = armyAssetLookup.recordOrError[1].selectionDetailTemplateVariantIndex;
+    /* Original quirk: the lookup status is not checked; the class mask is read at +0x14 of whatever
+       armyAsset holds (the error code for an unknown id) */
+    ArmyAssetRegistry_FindById(technologyIndex,&armyAsset);
+    countOrClassMask = armyAsset[1].selectionDetailTemplateVariantIndex;
     if ((g_AiWorkspace00Count != 0) && ((g_AiPurchaseAppliedArmyClassMask & countOrClassMask) == 0)) {
       remainingEntries = g_AiWorkspace00Count;
       workspaceEntry = g_AiWorkspace00Structures;
@@ -1092,7 +1092,7 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
   AiStructureWorkspaceEntry *workspaceEntry;
   int technologySlotIndex;
   RuntimeToken technologyIndex;
-  ArmyAssetLookupResult armyAssetLookup;
+  ArmyAssetRecordPrefix *armyAsset;
   
   technologyIndex = candidateEntry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
   remainingEntries = g_AiWorkspace00Count;
@@ -1118,10 +1118,9 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
   }
   else {
     GameFactionRuntime_RegisterArmyAssetPointers(UINT32_MAX,1,technologyIndex,factionIndex);
-    armyAssetLookup = ArmyAssetRegistry_FindById(technologyIndex);
-    if (!armyAssetLookup.notFound) {
+    if (ArmyAssetRegistry_FindById(technologyIndex,&armyAsset) == 0) {
       g_AiPurchaseAppliedArmyClassMask =
-           g_AiPurchaseAppliedArmyClassMask | armyAssetLookup.recordOrError[1].selectionDetailTemplateVariantIndex;
+           g_AiPurchaseAppliedArmyClassMask | armyAsset[1].selectionDetailTemplateVariantIndex;
     }
   }
   return;
@@ -1593,18 +1592,17 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   int distanceY;
   FieldGridCell **gridCellCursor;
   bool regionUnreachable;
-  ArmyAssetLookupResult armyAssetLookup;
+  ArmyAssetRecordPrefix *armyAsset;
   ModelDefinitionRecordPrefix *modelDefinition;
   PlacementDispatchResult placementResult;
   ArmyRuntimeCreateResult createdInstance;
   FieldGridCell *bestCell;
   int bestScore;
   
-  armyAssetLookup = ArmyAssetRegistry_FindById(armyAssetId);
-  if ((!armyAssetLookup.notFound) && (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0)
+  if ((ArmyAssetRegistry_FindById(armyAssetId,&armyAsset) == 0) && (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0)
      ) {
     modelDefinition = ModelDefinitionRegistry_FindById
-                       (((AiLinkedDefinitionListView *)(armyAssetLookup.recordOrError)->rootNodeOffsetOrPointer)->
+                       (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->
                         definitionIds[0]);
     if (modelDefinition != NULL) {
       radiusMetric =
@@ -1694,11 +1692,13 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
   FactionArmyAssetCount *pendingAssetCount;
   FactionArmyAssetCount remainingAssets;
   uint32_t *assetPointerCursor;
-  ArmyAssetLookupResult armyAssetLookup;
+  ArmyAssetRecordPrefix *armyAsset;
   
   g_AiConstructionPendingAssetConsumedCount++;
   remainingAssets = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-  armyAssetLookup = ArmyAssetRegistry_FindById(armyAssetId);
+  /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in armyAsset,
+     which then matches no list entry) */
+  ArmyAssetRegistry_FindById(armyAssetId,&armyAsset);
   assetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds;
   relationCounter = &g_GameFactionRuntimeImage.records[factionIndex].relationCounterB;
   (*relationCounter)++;
@@ -1706,7 +1706,7 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
     if (remainingAssets == 0) {
       return;
     }
-    if (armyAssetLookup.recordOrError == (ArmyAssetRecordPrefix *)*assetPointerCursor) break;
+    if (armyAsset == (ArmyAssetRecordPrefix *)*assetPointerCursor) break;
     assetPointerCursor++;
     remainingAssets--;
   }

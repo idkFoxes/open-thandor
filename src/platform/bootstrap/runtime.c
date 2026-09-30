@@ -282,27 +282,23 @@ bool GameData_LoadExternalTables(void)
 
 
 /* Address: 0x00573BC0.
-   Resolves procedureName in module with GetProcAddress, stores it in *destination and returns it with CF
-   clear. The name is left in g_PackageLastErrorPath and, on failure, the name of the module (when it is one
-   of g_DynamicModules) in g_FatalErrorDetail1Utf16 for the fatal-error message; CF set with
-   FATAL_ERROR_DLL_PROCEDURE_MISSING.
+   Resolves procedureName in module with GetProcAddress and stores it in *destination; returns 0. The name is
+   left in g_PackageLastErrorPath and, on failure, the name of the module (when it is one of g_DynamicModules)
+   in g_FatalErrorDetail1Utf16 for the fatal-error message; returns FATAL_ERROR_DLL_PROCEDURE_MISSING then
+   (*destination untouched).
 */
-DynApiResolveResult DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
+uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 
 {
   FARPROC resolvedProcedure;
   uint32_t modulesRemaining;
   DynamicModuleEntry *moduleEntryCursor;
-  DynApiResolveResult successResult;
-  DynApiResolveResult failureResult;
 
   Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
   if (resolvedProcedure != NULL) {
     *destination = resolvedProcedure;
-    successResult.failed = false;
-    successResult.procedureOrError = resolvedProcedure;
-    return successResult;
+    return 0;
   }
   moduleEntryCursor = g_DynamicModules;
   g_FatalErrorDetail1Utf16[0] = 0;
@@ -315,9 +311,7 @@ DynApiResolveResult DynAPI_Resolve(void **destination,HINSTANCE module,char *pro
     }
     moduleEntryCursor = moduleEntryCursor + 1;
   }
-  failureResult.failed = true;
-  failureResult.procedureOrError = (void *)FATAL_ERROR_DLL_PROCEDURE_MISSING;
-  return failureResult;
+  return FATAL_ERROR_DLL_PROCEDURE_MISSING;
 }
 
 
@@ -672,15 +666,15 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   uint32_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
   SampleVoiceSetResult voiceSetResult;
   FileSystemOpenResult openResult;
-  TextResolveResult textResolveResult;
-  TextPageLoadResult textPageLoadResult;
+  uint16_t *resolvedText;
+  uint32_t textPageError; /* the failing text page's error code */
   PackageLoadResult pcxModuleEntry;
   bool pcxModuleLoaded;
   uint32_t fncError;
   void *pcxExport;
   TextureSourceLoadResult panelTextureResult;
   ArenaAllocResult allocResult;
-  ResourceLoadResult resourceLoadResult;
+  uint32_t loadErrorCode;
   
   /* HKLM\Software\Planet4\Thandor "CD": movies are looked up under <CD>\Thandor first */
   if ((g_MemoryApi.alloc == ArenaHeap_Alloc) &&
@@ -765,70 +759,56 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   if (Package_Mount((uint16_t *)u_level_pck_00572ec2,&packageHandle)) {
     g_LevelPackageHandle = packageHandle;
   }
-  resourceLoadResult = Resource_Load((uint16_t *)u_sound_button0_sam_00572f06);
-  loadedResource = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-  if (resourceLoadResult.failed) {
-    return (uint32_t)loadedResource;
+  if (!Resource_Load((uint16_t *)u_sound_button0_sam_00572f06,(void **)&loadedResource,NULL,&loadErrorCode)) {
+    return loadErrorCode;
   }
   voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
   module = (FncModuleHeader *)voiceSetResult.voiceSet;
   if (!voiceSetResult.failed) {
     Resource_Release(loadedResource);
     g_UiButtonSoundVoiceSets7[0] = (DirectSoundVoiceSet *)module;
-    resourceLoadResult = Resource_Load((uint16_t *)u_sound_button1_sam_00572f2a);
-    loadedResource = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-    if (resourceLoadResult.failed) {
-      return (uint32_t)loadedResource;
+    if (!Resource_Load((uint16_t *)u_sound_button1_sam_00572f2a,(void **)&loadedResource,NULL,&loadErrorCode)) {
+      return loadErrorCode;
     }
     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
     module = (FncModuleHeader *)voiceSetResult.voiceSet;
     if (!voiceSetResult.failed) {
       Resource_Release(loadedResource);
       g_UiButtonSoundVoiceSets7[1] = (DirectSoundVoiceSet *)module;
-      resourceLoadResult = Resource_Load((uint16_t *)u_sound_button2_sam_00572f4e);
-      loadedResource = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-      if (resourceLoadResult.failed) {
-        return (uint32_t)loadedResource;
+      if (!Resource_Load((uint16_t *)u_sound_button2_sam_00572f4e,(void **)&loadedResource,NULL,&loadErrorCode)) {
+        return loadErrorCode;
       }
       voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
       module = (FncModuleHeader *)voiceSetResult.voiceSet;
       if (!voiceSetResult.failed) {
         Resource_Release(loadedResource);
         g_UiButtonSoundVoiceSets7[2] = (DirectSoundVoiceSet *)module;
-        resourceLoadResult = Resource_Load((uint16_t *)u_sound_button3_sam_00572f72);
-        loadedResource = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-        if (resourceLoadResult.failed) {
-          return (uint32_t)loadedResource;
+        if (!Resource_Load((uint16_t *)u_sound_button3_sam_00572f72,(void **)&loadedResource,NULL,&loadErrorCode)) {
+          return loadErrorCode;
         }
         voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
         module = (FncModuleHeader *)voiceSetResult.voiceSet;
         if (!voiceSetResult.failed) {
           Resource_Release(loadedResource);
           g_UiButtonSoundVoiceSets7[3] = (DirectSoundVoiceSet *)module;
-          resourceLoadResult = Resource_Load((uint16_t *)u_sound_button4_sam_00572f96);
-          loadedResource = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-          if (resourceLoadResult.failed) {
-            return (uint32_t)loadedResource;
+          if (!Resource_Load((uint16_t *)u_sound_button4_sam_00572f96,(void **)&loadedResource,NULL,&loadErrorCode)) {
+            return loadErrorCode;
           }
           voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
           module = (FncModuleHeader *)voiceSetResult.voiceSet;
           if (!voiceSetResult.failed) {
             Resource_Release(loadedResource);
             g_UiButtonSoundVoiceSets7[4] = (DirectSoundVoiceSet *)module;
-            resourceLoadResult = Resource_Load((uint16_t *)u_sound_button5_sam_00572fba);
-            loadedResource = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-            if (resourceLoadResult.failed) {
-              return (uint32_t)loadedResource;
+            if (!Resource_Load((uint16_t *)u_sound_button5_sam_00572fba,(void **)&loadedResource,NULL,&loadErrorCode)) {
+              return loadErrorCode;
             }
             voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
             module = (FncModuleHeader *)voiceSetResult.voiceSet;
             if (!voiceSetResult.failed) {
               Resource_Release(loadedResource);
               g_UiButtonSoundVoiceSets7[5] = (DirectSoundVoiceSet *)module;
-              resourceLoadResult = Resource_Load((uint16_t *)u_sound_button6_sam_00572fde);
-              loadedResource = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
-              if (resourceLoadResult.failed) {
-                return (uint32_t)loadedResource;
+              if (!Resource_Load((uint16_t *)u_sound_button6_sam_00572fde,(void **)&loadedResource,NULL,&loadErrorCode)) {
+                return loadErrorCode;
               }
               voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
               module = (FncModuleHeader *)voiceSetResult.voiceSet;
@@ -855,8 +835,8 @@ bindDebugOverlayTexts:
                 /* bind placeholders 0..13 of the world view info texts to the debug-overlay text slots */
                 resourceId = TEXT_ID_WORLD_VIEW_INFO_FIRST;
                 do {
-                  textResolveResult = TextResource_Resolve(resourceId);
-                  textBuffer = textResolveResult.text;
+                  resolvedText = TextResource_Resolve(resourceId);
+                  textBuffer = resolvedText;
                   resourceId = resourceId + 1;
                   RichTextCommandStream_PatchPayloadBySelector
                             (0,g_FrontendDebugOverlayTextSlot00Utf16,textBuffer);
@@ -896,40 +876,32 @@ bindDebugOverlayTexts:
                           (UI_ACTION_PAGE_INGAME_MENU,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
                 UiActionHandlers_SetPage
                           (UI_ACTION_PAGE_FRONTEND,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
-                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)u_texte_neterror_str_0050f104);
-                if (textPageLoadResult.failed) {
-                  return textPageLoadResult.errorOrValue;
+                if (!TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)u_texte_neterror_str_0050f104,&textPageError)) {
+                  return textPageError;
                 }
-                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_HELP,(uint16_t *)u_texte_help_str_00563170);
-                if (textPageLoadResult.failed) {
-                  return textPageLoadResult.errorOrValue;
+                if (!TextResourcePage_Load(GAME_TEXT_PAGE_HELP,(uint16_t *)u_texte_help_str_00563170,&textPageError)) {
+                  return textPageError;
                 }
-                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,(uint16_t *)u_texte_hilfe_str_00545b34);
-                if (textPageLoadResult.failed) {
-                  return textPageLoadResult.errorOrValue;
+                if (!TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,(uint16_t *)u_texte_hilfe_str_00545b34,&textPageError)) {
+                  return textPageError;
                 }
-                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,(uint16_t *)u_texte_menue_str_00545ba0);
-                if (textPageLoadResult.failed) {
-                  return textPageLoadResult.errorOrValue;
+                if (!TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,(uint16_t *)u_texte_menue_str_00545ba0,&textPageError)) {
+                  return textPageError;
                 }
-                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,(uint16_t *)u_texte_techno_str_0050dec4);
-                if (textPageLoadResult.failed) {
-                  return textPageLoadResult.errorOrValue;
+                if (!TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,(uint16_t *)u_texte_techno_str_0050dec4,&textPageError)) {
+                  return textPageError;
                 }
-                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,(uint16_t *)u_texte_level_str_00545bc0);
-                if (textPageLoadResult.failed) {
-                  return textPageLoadResult.errorOrValue;
+                if (!TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,(uint16_t *)u_texte_level_str_00545bc0,&textPageError)) {
+                  return textPageError;
                 }
-                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,(uint16_t *)u_texte_inhalt_str_00545be0);
-                if (textPageLoadResult.failed) {
-                  return textPageLoadResult.errorOrValue;
+                if (!TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,(uint16_t *)u_texte_inhalt_str_00545be0,&textPageError)) {
+                  return textPageError;
                 }
-                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,(uint16_t *)u_texte_tastatur_str_005631b8);
-                if (textPageLoadResult.failed) {
-                  return textPageLoadResult.errorOrValue;
+                if (!TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,(uint16_t *)u_texte_tastatur_str_005631b8,&textPageError)) {
+                  return textPageError;
                 }
-                textResolveResult = TextResource_Resolve(TEXT_ID_MOUSE_HELP);
-                RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,textResolveResult.text);
+                resolvedText = TextResource_Resolve(TEXT_ID_MOUSE_HELP);
+                RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,resolvedText);
                 /* sound effects off: every gain is 0 */
                 soundOptionsOrBufferBase =
                      PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);

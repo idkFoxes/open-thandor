@@ -186,7 +186,7 @@ StatusResult DirectSound_Init(void)
   int remainingCount;
   DirectSoundVoiceSet **registryCursor;
   DllLoadResult dllLoadResult;
-  DynApiResolveResult resolveResult;
+  uint32_t resolveError;
   ArenaAllocResult registryAlloc;
   int32_t failedStage; /* number of setup steps passed, shown in the error message */
 
@@ -195,11 +195,11 @@ StatusResult DirectSound_Init(void)
   module = dllLoadResult.moduleOrError;
   /* dynapi_20..23: "DirectSoundCreate", "DirectSoundEnumerateA", "DirectSoundCaptureCreate",
      "DirectSoundCaptureEnumerateA" */
-  if ((((!dllLoadResult.failed) &&
-       (resolveResult = DynAPI_Resolve(&pDirectSoundCreate,module,dynapi_20), !resolveResult.failed)) &&
-      (resolveResult = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21), !resolveResult.failed)) &&
-     ((resolveResult = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !resolveResult.failed &&
-      (resolveResult = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !resolveResult.failed)))) {
+  if (!dllLoadResult.failed &&
+      (resolveError = DynAPI_Resolve(&pDirectSoundCreate,module,dynapi_20)) == 0 &&
+      (resolveError = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21)) == 0 &&
+      (resolveError = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22)) == 0 &&
+      (resolveError = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23)) == 0) {
     directSoundResult = pDirectSoundCreate(NULL,&g_DirectSound,NULL);
     Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
     if (directSoundResult != 0) {
@@ -283,7 +283,7 @@ StatusResult DirectSound_Init(void)
   }
   Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
   return StatusValue_Fail(dllLoadResult.failed ? (uint32_t)dllLoadResult.moduleOrError
-                                              : (uint32_t)resolveResult.procedureOrError);
+                                              : resolveError);
 }
 
 

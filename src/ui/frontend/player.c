@@ -218,7 +218,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
   FrontendCommandPacketRecord *commandSource;
   FrontendCommandPacketRecord *commandDest;
   UiTransferEndpointDescriptor *endpoint;
-  TextResolveResult removalText;
+  uint16_t *removalText;
   /* the original's PUSH/POP stack of removed player ids (at most 8 player blocks) */
   FrontendPlayerRuntimeId removedPlayerIds[8];
   
@@ -235,8 +235,8 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
         /* remove: only the source cursors advance */
         g_FrontendPlayerRuntimeBlockCount--;
         removalText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
-        RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText.text);
-        FrontendRecentTextHistory_InsertAndRebuild5(removalText.text);
+        RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText);
+        FrontendRecentTextHistory_InsertAndRebuild5(removalText);
         removedPlayerIds[removedCount] = sourceBlock->playerRuntimeId;
         removedCount++;
       }
@@ -622,12 +622,12 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
 void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
 
 {
-  TextResolveResult labelText;
+  uint16_t *labelText;
   
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve(g_SessionNetworkTickInterval + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,labelText.text);
+            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,labelText);
   g_SessionNetworkTickInterval = g_SessionNetworkTickInterval << 1;
   return;
 }
@@ -1122,7 +1122,7 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
 {
   SelectionPlayerRuntimeBlock *playerBlock;
   uint16_t *stream;
-  TextResolveResult messageText;
+  uint16_t *messageText;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((((playerBlock->chatRecipientMaskAndWriteOffset &
@@ -1137,7 +1137,7 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
     Text_CopyNarrowToUtf16
               (96,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText);
     messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
-    stream = messageText.text;
+    stream = messageText;
     RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->playerNameUtf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
     InGameRecentTextHistory_InsertAndRebuild8(stream);
@@ -1395,7 +1395,7 @@ void FrontendPlayerMessageBuffer_PublishTextById
   FrontendPlayerRuntimeRecord *playerBlock;
   int messageBuffer;
   uint16_t *stream;
-  TextResolveResult messageText;
+  uint16_t *messageText;
   
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   messageBuffer = g_FrontendPlayerMessageBuffers;
@@ -1416,7 +1416,7 @@ void FrontendPlayerMessageBuffer_PublishTextById
   Text_CopyNarrowToUtf16(96,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,
                          (uint8_t *)(messageBuffer + FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET));
   messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
-  stream = messageText.text;
+  stream = messageText;
   RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,stream);
   RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
   FrontendRecentTextHistory_InsertAndRebuild5(stream);

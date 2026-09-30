@@ -718,18 +718,19 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 {
   uint32_t xeniteCostQ4;
   RuntimeToken registryId;
-  ArmyAssetLookupResult registryLookup;
+  uint32_t lookupError;
+  ArmyAssetRecordPrefix *armyAsset;
 
   registryId = entry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
   if ((entry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
     xeniteCostQ4 = g_TechnologyAsset->records[registryId].xeniteCostQ4;
   }
   else {
-    registryLookup = ArmyAssetRegistry_FindById(registryId);
+    lookupError = ArmyAssetRegistry_FindById(registryId,&armyAsset);
     xeniteCostQ4 = INT32_MAX;
-    if (!registryLookup.notFound) {
+    if (lookupError == 0) {
       /* +0x28 of the army asset record, reached through the 16-byte prefix type */
-      xeniteCostQ4 = registryLookup.recordOrError[2].registryId;
+      xeniteCostQ4 = armyAsset[2].registryId;
     }
   }
   return xeniteCostQ4;

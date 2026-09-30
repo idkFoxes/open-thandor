@@ -35,8 +35,8 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   UiTextResourceId *rowTextId;
   uint32_t assignableCountOrOffset; /* assignable factions left, then a control offset */
   FrontendPlayerRuntimeRecord *playerRecord;
-  TextResolveResult titleText;
-  TextResolveResult templateText;
+  uint16_t *titleText;
+  uint16_t *templateText;
   FrontendPlayerRuntimeBlockCount remainingPlayerRecords;
 
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_FACTION_SETUP,&frontendRootPage->primaryPageStack);
@@ -227,9 +227,9 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   loadedLevel = g_FrontendLoadedLevelAsset;
   rootVtable->layout(&frontendRootPage->rootNode);
   titleText = TextResource_Resolve(loadedLevel->header.titleTextResourceIndex + TEXT_ID_LEVEL_TITLE_BASE);
-  *titleText.text = FRONTEND_TEXT_STYLE_NORMAL;
+  *titleText = FRONTEND_TEXT_STYLE_NORMAL;
   templateText = TextResource_Resolve(TEXT_ID_FACTION_SETUP_TASK_TEMPLATE);
-  RichTextCommandStream_PatchPayloadBySelector(0,titleText.text,templateText.text);
+  RichTextCommandStream_PatchPayloadBySelector(0,titleText,templateText);
 }
 
 
@@ -1017,17 +1017,16 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   bool isSelected;
   SampleVoiceSetResult createVoiceResult;
   SoundPlayResult playResult;
-  ResourceLoadResult loadResult;
+  bool musicLoaded;
 
   musicEnabledBit = 0;
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-    loadResult = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e);
-    musicSample = (SoundSampleAsset *)loadResult.bufferOrError;
+    musicLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e,(void **)&musicSample,NULL,NULL);
     activeMusicBuffer = g_FrontendMusicActiveBuffer;
-    if (!loadResult.failed) {
+    if (musicLoaded) {
       createVoiceResult = g_SoundCreateSampleVoiceSet(musicSample);
       musicVoiceSet = createVoiceResult.voiceSet;
       if (createVoiceResult.failed) {

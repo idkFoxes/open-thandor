@@ -16,9 +16,7 @@
 typedef struct MovieOpenResult MovieOpenResult, *PMovieOpenResult;
 typedef struct Win32FileSeekResult Win32FileSeekResult, *PWin32FileSeekResult;
 typedef struct GridScratchAllocResult GridScratchAllocResult, *PGridScratchAllocResult;
-typedef struct ArmyAssetLookupResult ArmyAssetLookupResult, *PArmyAssetLookupResult;
 typedef struct CommandLineOptionResult CommandLineOptionResult, *PCommandLineOptionResult;
-typedef struct ResourceLoadResult ResourceLoadResult, *PResourceLoadResult;
 typedef struct Win32FileReadResult Win32FileReadResult, *PWin32FileReadResult;
 typedef struct FileSystemSeekResult FileSystemSeekResult, *PFileSystemSeekResult;
 typedef struct MovieFrameResult MovieFrameResult, *PMovieFrameResult;
@@ -40,7 +38,6 @@ typedef struct FatalErrorCheckResult FatalErrorCheckResult, *PFatalErrorCheckRes
 typedef struct PckCodecResult PckCodecResult, *PPckCodecResult;
 typedef struct TerrainPointResult TerrainPointResult, *PTerrainPointResult;
 typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
-typedef struct TextResolveResult TextResolveResult, *PTextResolveResult;
 typedef struct ArenaAllocResult ArenaAllocResult, *PArenaAllocResult;
 typedef struct Win32FileWriteResult Win32FileWriteResult, *PWin32FileWriteResult;
 typedef struct FixedDirection FixedDirection, *PFixedDirection;
@@ -66,7 +63,6 @@ typedef struct LoadedSessionInitResult LoadedSessionInitResult, *PLoadedSessionI
 typedef struct NewSessionInitResult NewSessionInitResult, *PNewSessionInitResult;
 typedef struct LevelLoadResult LevelLoadResult, *PLevelLoadResult;
 typedef struct SessionRunResult SessionRunResult, *PSessionRunResult;
-typedef struct TextPageLoadResult TextPageLoadResult, *PTextPageLoadResult;
 typedef union IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion;
 typedef struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct;
 typedef struct _OVERLAPPED _OVERLAPPED, *P_OVERLAPPED;
@@ -643,7 +639,6 @@ typedef struct PathingDestinationResult PathingDestinationResult, *PPathingDesti
 typedef struct WorldFlagsResult WorldFlagsResult, *PWorldFlagsResult;
 typedef struct FieldGridCoordinates FieldGridCoordinates, *PFieldGridCoordinates;
 typedef struct TerrainRaycastResult TerrainRaycastResult, *PTerrainRaycastResult;
-typedef struct GlyphSizeResult GlyphSizeResult, *PGlyphSizeResult;
 typedef struct WorldObjectAllocResult WorldObjectAllocResult, *PWorldObjectAllocResult;
 typedef struct NearestCellResult NearestCellResult, *PNearestCellResult;
 typedef struct DirectoryRecordBlockResult DirectoryRecordBlockResult, *PDirectoryRecordBlockResult;
@@ -667,18 +662,15 @@ typedef struct AimSmoothResult AimSmoothResult, *PAimSmoothResult;
 typedef struct FixedRollAzimuthElevation FixedRollAzimuthElevation, *PFixedRollAzimuthElevation;
 typedef struct HeightNormalSampleResult HeightNormalSampleResult, *PHeightNormalSampleResult;
 typedef struct SelectableNodeResult SelectableNodeResult, *PSelectableNodeResult;
-typedef struct RomRecordResult RomRecordResult, *PRomRecordResult;
 typedef struct WrappedLineResult WrappedLineResult, *PWrappedLineResult;
 typedef struct InputEventResult InputEventResult, *PInputEventResult;
 typedef struct MovementStepResult MovementStepResult, *PMovementStepResult;
 typedef struct ShotDefinitionResult ShotDefinitionResult, *PShotDefinitionResult;
 typedef struct WorldCameraPosition WorldCameraPosition, *PWorldCameraPosition;
-typedef struct DynApiResolveResult DynApiResolveResult, *PDynApiResolveResult;
 typedef struct RuntimeGroupIndexResult RuntimeGroupIndexResult, *PRuntimeGroupIndexResult;
 typedef struct FixedLengthAzimuthElevation FixedLengthAzimuthElevation, *PFixedLengthAzimuthElevation;
 typedef struct AiAnchorResult AiAnchorResult, *PAiAnchorResult;
 typedef struct SurfacePointResult SurfacePointResult, *PSurfacePointResult;
-typedef struct SpriteRegisterResult SpriteRegisterResult, *PSpriteRegisterResult;
 typedef struct PlacementDispatchResult PlacementDispatchResult, *PPlacementDispatchResult;
 typedef struct PackageLoadResult PackageLoadResult, *PPackageLoadResult;
 typedef struct ModelNodeCreateResult ModelNodeCreateResult, *PModelNodeCreateResult;
@@ -729,7 +721,6 @@ typedef struct ArmyModelTreeNodeAddressView ArmyModelTreeNodeAddressView, *PArmy
 typedef struct WorldRuntimeExtendedMapControlView WorldRuntimeExtendedMapControlView, *PWorldRuntimeExtendedMapControlView;
 typedef struct ArmyRuntimeClassUpdate21DefinitionView ArmyRuntimeClassUpdate21DefinitionView, *PArmyRuntimeClassUpdate21DefinitionView;
 typedef struct FixedTriangleJointAngles FixedTriangleJointAngles, *PFixedTriangleJointAngles;
-typedef struct ShotRangeLimitResult ShotRangeLimitResult, *PShotRangeLimitResult;
 typedef struct SelectionPanelAdvanceEaxEdx8 SelectionPanelAdvanceEaxEdx8, *PSelectionPanelAdvanceEaxEdx8;
 typedef struct GeneratedTextureSampleWorkRecord GeneratedTextureSampleWorkRecord, *PGeneratedTextureSampleWorkRecord;
 typedef struct GeneratedTextureScratchRuntime GeneratedTextureScratchRuntime, *PGeneratedTextureScratchRuntime;
@@ -912,20 +903,9 @@ struct GridScratchAllocResult {
     bool failed; // Physical ABI component CF
 };
 
-struct ArmyAssetLookupResult {
-    struct ArmyAssetRecordPrefix *recordOrError; // Physical ABI component EAX
-    bool notFound; // Physical ABI component CF
-};
-
 struct CommandLineOptionResult {
     uint8_t *option; // Physical ABI component EBX
     bool notFound; // Physical ABI component CF
-};
-
-struct ResourceLoadResult {
-    uint32_t bufferOrError; // Physical ABI component EAX
-    uint32_t byteCount; // Physical ABI component ECX
-    bool failed; // Physical ABI component CF
 };
 
 struct CursorFrameResult {
@@ -1186,20 +1166,12 @@ struct SessionRunResult {
     uint32_t exitCodeOrError; /* EAX result/error value. */
     bool failed;            /* Carry-flag status. */
 };
-struct TextPageLoadResult {
-    uint32_t errorOrValue; /* EAX result/error value. */
-    bool failed;         /* Carry-flag status. */
-};
 
 #ifndef _WCHAR_T_DEFINED /* Win32 wchar_t: 16-bit unsigned, same as the CRT's */
 #define _WCHAR_T_DEFINED
 typedef unsigned short wchar_t;
 #endif
 
-struct TextResolveResult {
-    uint16_t *text; // Physical ABI component EAX
-    bool notFound; // Physical ABI component CF
-};
 typedef TextureSourceLoadResult GraphicsTextureSourceLoadPackageAssetProc(uint16_t * pathUtf16);
 
 /* Recovered semantic scalar types used by canonical records. */
@@ -10846,12 +10818,6 @@ struct TerrainRaycastResult {
     bool hit; // CF hit status
 };
 
-struct GlyphSizeResult {
-    uint32_t width; // EAX glyph width
-    uint32_t lineHeight; // EDX active font line height
-    bool failed; // CF state (implementation clears on return)
-};
-
 
 struct WorldObjectAllocResult {
     struct WorldObjectRecord *recordOrError; // EAX allocated WorldObjectRecord on CF-clear; error-coded value when CF-set
@@ -10973,11 +10939,6 @@ struct SelectableNodeResult {
     bool noneSelected; // CF none-visible-selected status
 };
 
-struct RomRecordResult {
-    struct RomAssetRecordPrefix *recordOrError; // EAX ROM record pointer or error-coded value
-    bool notFound; // CF status
-};
-
 struct WrappedLineResult {
     UiPixelExtent lineAdvancePixels; // EAX wrapped-line vertical advance
     bool endOfText; // CF end/error status
@@ -11005,11 +10966,6 @@ struct WorldCameraPosition {
     Q12 zQ12; // EDX world motion Z
 };
 
-struct DynApiResolveResult {
-    void *procedureOrError; // EAX procedure address or error-coded value
-    bool failed; // CF status
-};
-
 struct RuntimeGroupIndexResult {
     uint32_t runtimeGroupIndex; // EAX one-based runtime group index
     bool notFound; // CF not-found status
@@ -11032,11 +10988,6 @@ struct SurfacePointResult {
     Q12 worldYQ12; // ECX surface-point Y
     Q12 worldZQ12; // EDX top-surface Z
     bool outOfBounds; // CF status
-};
-
-struct SpriteRegisterResult {
-    struct SpriteAssetHeader *assetOrError; // EAX relocated asset pointer or error-coded value
-    bool failed; // CF validation status
 };
 
 struct PlacementDispatchResult {
@@ -11609,11 +11560,6 @@ struct ArmyRuntimeClassUpdate21DefinitionView {
 struct FixedTriangleJointAngles {
     AngleTurn32 jointAngle0; // EAX first solved triangle joint angle
     AngleTurn32 jointAngle1; // EDX second/combined triangle joint angle
-};
-
-struct ShotRangeLimitResult {
-    Q12 rangeLimitQ12; // EBX mode-dependent shot range/launch-speed limit; 0x7fffffff sentinel when unrestricted
-    bool failed; // CF is machine-clear on all verified returns; included to match physical convention storage
 };
 
 struct SelectionPanelAdvanceEaxEdx8 {

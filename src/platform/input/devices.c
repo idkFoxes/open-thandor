@@ -124,19 +124,21 @@ StatusResult DirectInputMouse_Init(void)
   uint32_t maxWidth;
   DllLoadResult dllLoadResult;
   FatalErrorCheckResult fatalCheckResult;
-  DynApiResolveResult procResolveResult;
+  uint32_t resolveError;
   PackageLoadResult packageLoadResult;
   StatusResult successResult;
   StatusResult failureResult;
-  ResourceLoadResult resourceLoadResult;
+  void *cursorFrameData;
+  uint32_t cursorFrameBytes;
+  uint32_t cursorLoadErrorCode;
   TextureSizeResult logicalSize;
   int32_t initStage;
   
   initStage = 0;
   dllLoadResult = DynDLL_Load(dynapi_3);
   fatalCheckResult = FatalError_ExitIfFailed((uint32_t)dllLoadResult.moduleOrError,dllLoadResult.failed);
-  procResolveResult = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.valueOrError,dynapi_19);
-  FatalError_ExitIfFailed((uint32_t)procResolveResult.procedureOrError,procResolveResult.failed);
+  resolveError = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.valueOrError,dynapi_19);
+  FatalError_ExitIfFailed(resolveError,resolveError != 0);
   SetCursor(NULL);
   directInputResult = pDirectInputCreateA(g_hInstance,DIRECTINPUT_VERSION,&g_DirectInput,NULL);
   if (directInputResult == 0) {
@@ -189,11 +191,13 @@ StatusResult DirectInputMouse_Init(void)
               } while (subresourceIndex < (cursorDataOrError->tableDescriptor).subresourceCount);
               g_CursorMaxWidth = maxWidth;
               g_CursorMaxHeight = maxHeight;
-              resourceLoadResult = Resource_Load(u_engine_mouse_dat_00416886);
-              cursorDataOrError = (GraphicsTextureSourceAsset *)resourceLoadResult.bufferOrError;
-              if (!resourceLoadResult.failed) {
-                remainingFrames = resourceLoadResult.byteCount / sizeof(GraphicsCursorFrameRecord);
-                frameRecord = (GraphicsCursorFrameRecord *)cursorDataOrError;
+              if (!Resource_Load(u_engine_mouse_dat_00416886,&cursorFrameData,&cursorFrameBytes,
+                                 &cursorLoadErrorCode)) {
+                cursorDataOrError = (GraphicsTextureSourceAsset *)cursorLoadErrorCode;
+              }
+              else {
+                remainingFrames = cursorFrameBytes / sizeof(GraphicsCursorFrameRecord);
+                frameRecord = (GraphicsCursorFrameRecord *)cursorFrameData;
                 g_CursorFrameRecords = frameRecord;
                 g_CursorFrameCount = remainingFrames;
                 /* every cursor starts on the first frame of its animations */

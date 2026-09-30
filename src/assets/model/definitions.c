@@ -467,12 +467,12 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uin
                            (((SpriteAssetHeader *)loaded.bufferOrError)->registryHeader.registryId);
     if (registered == NULL) {
       /* first use of this sprite: the node owns the loaded copy and registers it */
-      SpriteRegisterResult relocated;
+      uint32_t relocateError;
       node->ownedNestedResourcePresent++;
       node->spriteAssetReference.spriteAsset = (SpriteAssetHeader *)loaded.bufferOrError;
-      relocated = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)loaded.bufferOrError);
-      if (relocated.failed) {
-        *error = (uint32_t)relocated.assetOrError;
+      relocateError = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)loaded.bufferOrError);
+      if (relocateError != 0) {
+        *error = relocateError;
         return true;
       }
     }
@@ -513,7 +513,6 @@ bool ModelDefinition_RegisterAndResolveReferences
   int slotsRemainingOrClassIndex;
   ModelDefinitionRecordPrefix **registrySlotCursor;
   MdlSerializedNodeHeader *serializedNodeCursor;
-  ShotDefinitionResult shotLookup;
 
   registrySlotCursor = g_ModelDefinitionRegistry;
   slotsRemainingOrClassIndex = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
@@ -548,11 +547,9 @@ bool ModelDefinition_RegisterAndResolveReferences
       goto ReturnFailure;
     }
   }
-  shotLookup = ShotDefinitionRegistry_FindByIdWithError
-                     ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference);
-  resolvedShot = shotLookup.definitionOrError;
-  resolverStatusOrSentinel = (uint32_t)resolvedShot;
-  if (shotLookup.notFound) goto ReturnFailure;
+  resolverStatusOrSentinel = ShotDefinitionRegistry_FindByIdWithError
+                     ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference,&resolvedShot);
+  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
   definition->shotDefinitionReference = resolvedShot;
   /* each effect field holds its serialized id until the lookup replaces it by the definition */
   resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
@@ -581,11 +578,9 @@ bool ModelDefinition_RegisterAndResolveReferences
   if (resolverStatusOrSentinel != 0) goto ReturnFailure;
   /* -1: the definition has no shot at +0x168 */
   if (definition->emitterShotDefinitionReference != (ShotDefinition *)0xffffffff) {
-    shotLookup = ShotDefinitionRegistry_FindByIdWithError
-                       ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference);
-    resolvedEmitterShot = shotLookup.definitionOrError;
-    resolverStatusOrSentinel = (uint32_t)resolvedEmitterShot;
-    if (shotLookup.notFound) goto ReturnFailure;
+    resolverStatusOrSentinel = ShotDefinitionRegistry_FindByIdWithError
+                       ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference,&resolvedEmitterShot);
+    if (resolverStatusOrSentinel != 0) goto ReturnFailure;
     definition->emitterShotDefinitionReference = resolvedEmitterShot;
   }
   resolverStatusOrSentinel = EffectDefinitionRegistry_FindById

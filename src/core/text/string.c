@@ -187,16 +187,15 @@ TextCompareResult Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightTe
 
 /* Address: 0x0041BAA0.
    Widens a NUL-terminated 8-bit string to UTF-16 (each byte zero-extended) into a buffer of capacityBytes
-   bytes. Returns the bytes written including the terminator; if the string does not fit it is cut off
-   and terminated, and CF is set with FATAL_ERROR_GENERAL_FAILURE.
+   bytes. Returns the bytes written including the terminator (always at least 2); if the string does not
+   fit it is cut off and terminated, and 0 is returned (the original reported FATAL_ERROR_GENERAL_FAILURE
+   with CF set).
 */
-StatusResult Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
+uint32_t Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
   uint32_t remainingCapacityBytes;
   bool capacityExhausted;
-  StatusResult successResult;
-  StatusResult overflowResult;
   uint8_t sourceByte;
 
   remainingCapacityBytes = capacityBytes;
@@ -207,17 +206,13 @@ StatusResult Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16
     remainingCapacityBytes = remainingCapacityBytes - 2;
     if (capacityExhausted || remainingCapacityBytes == 0) {
       destination[-1] = 0;
-      overflowResult.failed = true;
-      overflowResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
-      return overflowResult;
+      return 0;
     }
     *destination = (uint16_t)sourceByte;
     source++;
     destination++;
   } while (sourceByte != 0);
-  successResult.valueOrError = capacityBytes - remainingCapacityBytes;
-  successResult.failed = false;
-  return successResult;
+  return capacityBytes - remainingCapacityBytes;
 }
 
 

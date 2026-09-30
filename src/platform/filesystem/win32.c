@@ -1170,12 +1170,16 @@ StatusResult Win32File_GetCurrentDirectory(uint16_t *destination)
 {
   DWORD narrowPathLength;
   StatusResult copyResult;
+  uint32_t bytesWritten;
 
   narrowPathLength = GetCurrentDirectoryA(sizeof g_Win32PathScratchA - 1,(LPSTR)g_Win32PathScratchA);
   if (narrowPathLength != 0) {
-    copyResult = Text_CopyNarrowToUtf16(WIDE_PATH_MAX_CODE_UNITS * sizeof(uint16_t),destination,g_Win32PathScratchA);
-    /* the copy's EAX with CF cleared */
-    return THANDOR_BITCAST(uint64_t, StatusResult, (THANDOR_BITCAST(StatusResult, uint64_t, copyResult) & UINT32_MAX));
+    bytesWritten = Text_CopyNarrowToUtf16(WIDE_PATH_MAX_CODE_UNITS * sizeof(uint16_t),destination,g_Win32PathScratchA);
+    /* Original quirk: the copy's EAX is passed on with CF cleared, so a cut-off path "succeeds" with
+       FATAL_ERROR_GENERAL_FAILURE as its value. */
+    copyResult.valueOrError = bytesWritten != 0 ? bytesWritten : FATAL_ERROR_GENERAL_FAILURE;
+    copyResult.failed = false;
+    return copyResult;
   }
   destination[0] = 0;
   destination[1] = 0;

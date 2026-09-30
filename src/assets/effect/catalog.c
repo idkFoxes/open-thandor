@@ -60,7 +60,7 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void)
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
   EffectDefinition *linkedEffect;
-  ShotDefinitionResult shotLookup;
+  ShotDefinition *linkedShot;
   EffectDefinition *currentDefinition;
 
   registryCursor = g_EffectDefinitionRegistry;
@@ -77,12 +77,12 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void)
         currentDefinition->linkedEffectDefinition = linkedEffect;
       }
       if (currentDefinition->linkedShotPresent != 0) {
-        shotLookup = ShotDefinitionRegistry_FindByIdWithError
-                          ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition);
-        if (shotLookup.notFound) {
-          return (uint32_t)shotLookup.definitionOrError;
+        lookupError = ShotDefinitionRegistry_FindByIdWithError
+                          ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition,&linkedShot);
+        if (lookupError != 0) {
+          return lookupError;
         }
-        currentDefinition->linkedShotDefinition = shotLookup.definitionOrError;
+        currentDefinition->linkedShotDefinition = linkedShot;
       }
     }
     registryCursor++;
@@ -108,7 +108,7 @@ bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_
   bool extensionFailed;
   EffectDefinitionResult duplicateLookup;
   PackageLoadResult packageLoad;
-  SpriteRegisterResult spriteRegistration;
+  uint32_t spriteRegisterError;
 
   registrySlotCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
@@ -127,9 +127,11 @@ bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_
         if (existingSpriteAsset == NULL) {
           definition->ownedNestedResourcePresent++;
           definition->ownedNestedResource = assetOrError;
-          spriteRegistration = SpriteAsset_RegisterAndRelocatePointers(assetOrError);
-          assetOrError = spriteRegistration.assetOrError;
-          if (spriteRegistration.failed) goto ReturnFailure;
+          spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers(assetOrError);
+          if (spriteRegisterError != 0) {
+            assetOrError = (SpriteAssetHeader *)spriteRegisterError;
+            goto ReturnFailure;
+          }
         }
         else {
           definition->ownedNestedResource = existingSpriteAsset;

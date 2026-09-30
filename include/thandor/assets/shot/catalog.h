@@ -26,13 +26,14 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0052B4D0 */
-StatusResult ShotAsset_PrepareEntries(ShotAssetHeader *asset);
+uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset);
 
 /* 0x0052B7E0 */
-StatusResult ShotDefinitions_ValidateTerrainMaterialReferences(void);
+uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void);
 
 /* 0x0052B860 */
-ShotDefinitionResult ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId);
+uint32_t ShotDefinitionRegistry_FindByIdWithError
+          (PckShotDefinitionIdCatalog definitionId,ShotDefinition **outDefinition);
 
 /* 0x0052B8C0 */
 ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
@@ -43,12 +44,12 @@ ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
 uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition);
 
 /* 0x0052BD50 */
-ShotRangeLimitResult ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition);
+Q12 ShotDefinition_GetLeadSpeed(ShotDefinition *definition);
 
 /* 0x0052BD80 */
 uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition);
 
 /* 0x0052B350 */
-StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition);
+uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition);
 
 #endif /* THANDOR_ASSETS_SHOT_CATALOG_H */

@@ -401,7 +401,7 @@ bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
   FrontendPlayerRuntimeRecord *playerRecord;
   uint32_t *recordDwordCursor;
   uint8_t *chunkDestinationCursor;
-  TextResolveResult resolvedText;
+  uint16_t *resolvedText;
   
   expectedBlockCount = g_FrontendExpectedPlayerRuntimeBlockCount;
   if ((((packet->packet10000Handshake.header.packedTypeAndUnitCount & FRONTEND_PACKET_TYPE_MASK) ==
@@ -464,8 +464,8 @@ bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
       if (packet->playerRemoval10007.removedPlayerToken == playerRecord->playerRuntimeId) {
         /* "player left" message with the name, then close the gap in the record array */
         resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
-        RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText.text);
-        FrontendRecentTextHistory_InsertAndRebuild5(resolvedText.text);
+        RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText);
+        FrontendRecentTextHistory_InsertAndRebuild5(resolvedText);
         if (playersRemaining - 1 != 0) {
           nextPlayerCursor = (uint32_t *)(playerRecord + 1);
           recordDwordCursor = (uint32_t *)playerRecord;
@@ -505,8 +505,8 @@ bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
     }
     resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_ARRIVED);
     RichTextCommandStream_PatchPayloadBySelector
-              (0,packet->packet30005PlayerSnapshot.playerDescriptorPayload,resolvedText.text);
-    FrontendRecentTextHistory_InsertAndRebuild5(resolvedText.text);
+              (0,packet->packet30005PlayerSnapshot.playerDescriptorPayload,resolvedText);
+    FrontendRecentTextHistory_InsertAndRebuild5(resolvedText);
     return false;
   }
   if (((packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_10009_SNAPSHOT_CHUNK_REQUEST) &&
@@ -683,7 +683,6 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   FrontendCommandPacketRecord *batchCursor;
   uint32_t *copySource;
   uint32_t *copyDestination;
-  TextResolveResult textResolveResult;
   
   rootNodeOrCount = g_FrontendRootNode;
   if (packet->packet10000Handshake.header.packedTypeAndUnitCount ==
@@ -695,20 +694,18 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
        (((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount < (uint32_t)((UiRangeSliderControl *)FRONTEND_UI(frontendRuntime,maxPlayersSlider))->value)) {
       g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_AVAILABLE;
     }
-    textResolveResult = TextResource_Resolve(TEXT_ID_SESSION_TITLE_TEMPLATE);
-    RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),textResolveResult.text);
+    resolvedText = TextResource_Resolve(TEXT_ID_SESSION_TITLE_TEMPLATE);
+    RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),resolvedText);
     RichTextCommandStream_CopyExpanded
-              (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,textResolveResult.text);
-    textResolveResult = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
-    resolvedText = textResolveResult.text;
+              (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,resolvedText);
+    resolvedText = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
     /* the game name typed into gameNameEdit */
     RichTextCommandStream_PatchPayloadBySelector
               (0,((UiTextEditControl *)FRONTEND_UI(rootNodeOrCount,gameNameEdit))->textBuffer,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
     RichTextCommandStream_CopyExpanded
               (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText);
-    textResolveResult = TextResource_Resolve(TEXT_ID_SESSION_PLAYER_COUNT_TEMPLATE);
-    resolvedText = textResolveResult.text;
+    resolvedText = TextResource_Resolve(TEXT_ID_SESSION_PLAYER_COUNT_TEMPLATE);
     RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkRuntimeCountTextUtf16,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendNetworkPlayerCountTextUtf16,resolvedText);
     RichTextCommandStream_CopyExpanded(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText);

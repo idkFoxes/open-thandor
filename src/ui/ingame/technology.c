@@ -474,9 +474,9 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   int areaIndex;
   bool isAvailable;
   RichTextExtentRegs textExtent;
-  TextResolveResult resolvedText;
-  TextResolveResult resolvedName;
-  ArmyAssetLookupResult armyRecord;
+  uint16_t *resolvedText;
+  uint16_t *resolvedName;
+  ArmyAssetRecordPrefix *armyRecord;
   SelectableGroupNodeResult selectedArea;
   uint16_t *labelTemplate;
   UiActionId actionId;
@@ -495,10 +495,11 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
     /* window title with the unit name patched in */
     resolvedText = TextResource_Resolve(TEXT_ID_TECHNOLOGY_WINDOW_TITLE);
     resolvedName = TextResource_Resolve(((ModelDefinitionRecordPrefix *)definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-    RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.text,resolvedText.text);
-    armyRecord = ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
+    RichTextCommandStream_PatchPayloadBySelector(0,resolvedName,resolvedText);
+    /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in armyRecord) */
+    ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId,&armyRecord);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
-         (GraphicsTextureSourceAsset *)armyRecord.recordOrError[1].rootNodeOffsetOrPointer;
+         (GraphicsTextureSourceAsset *)armyRecord[1].rootNodeOffsetOrPointer;
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB1,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB2,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB3,&inGameRoot->base);
@@ -528,12 +529,12 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
         /* tab label: the technology name (payload 0) and Xenite cost (payload 1), the number formatted into the
            label text buffer at word 0xC0; the expanded label becomes the tab's tooltip text */
         resolvedText = TextResource_Resolve(TEXT_ID_TECHNOLOGY_AREA_TAB_LABEL);
-        labelText = resolvedText.text;
+        labelText = resolvedText;
         labelTemplate = labelText;
         resolvedText = TextResource_Resolve
                                  (TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).
                                   nameTextResourceId);
-        RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,labelText);
+        RichTextCommandStream_PatchPayloadBySelector(0,resolvedText,labelText);
         labelText = TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).tooltipText;
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
@@ -612,7 +613,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
                  (int)technologyAsset->records[selectedTechnologyId].researchDurationQ5 >> 5,
                  g_InGameTechnologyResearchTimeTextUtf16);
       resolvedText = TextResource_Resolve(descriptionTextId);
-      labelText = resolvedText.text;
+      labelText = resolvedText;
       RichTextCommandStream_PatchPayloadBySelector(0,&g_InGameTechnologyCostRichTextScratch,labelText);
       RichTextCommandStream_PatchPayloadBySelector(1,g_InGameTechnologyEnergyCostTextUtf16,labelText);
       RichTextCommandStream_PatchPayloadBySelector(2,g_InGameTechnologyResearchTimeTextUtf16,labelText);
