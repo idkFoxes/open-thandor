@@ -783,20 +783,21 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
   case 0x5677e0: { /* Alt+P: screenshot to the next numbered PCX file */
     GraphicsCapturedTextureSourceAsset *capture =
          g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-    PcxEncodeResult pcx;
+    void *pcxBytes;
+    uint32_t pcxByteCount;
+    uint32_t pcxError;
     uint16_t *digitHigh = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,12);
     uint16_t *digitLow = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,14);
     if (capture == NULL) {
       break;
     }
-    pcx = g_PcxFunctionExport3(g_PcxFunctionModule,capture);
-    if (pcx.failed) {
+    if (!Pcx_EncodeCapture(capture,&pcxBytes,&pcxByteCount,&pcxError)) {
       g_MemoryApi.free(capture);
       break;
     }
-    FileSystem_WriteBufferToPath(pcx.encodedByteCount,pcx.encodedBytesOrError,
+    FileSystem_WriteBufferToPath(pcxByteCount,pcxBytes,
                                    (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
-    g_MemoryApi.free(pcx.encodedBytesOrError);
+    g_MemoryApi.free(pcxBytes);
     g_MemoryApi.free(capture);
     /* advance the two-digit number in the file name */
     *digitLow = *digitLow + 1;

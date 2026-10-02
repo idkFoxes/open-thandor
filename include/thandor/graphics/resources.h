@@ -10,6 +10,7 @@
 
 #include <thandor/graphics/resources/framebuffer.h>
 #include <thandor/graphics/resources/palette.h>
+#include <thandor/graphics/resources/pcx.h>
 #include <thandor/graphics/resources/texture.h>
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_H */

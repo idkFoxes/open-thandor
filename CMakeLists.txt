@@ -89,6 +89,8 @@ add_library(thandor_curated STATIC
     src/graphics/render/shading.c
     src/graphics/resources/framebuffer.c
     src/graphics/resources/palette.c
+    src/graphics/resources/pcx_read.c
+    src/graphics/resources/pcx_write.c
     src/graphics/resources/texture.c
     src/movie/runtime/playback.c
     src/network/backend/fallback_udp.c

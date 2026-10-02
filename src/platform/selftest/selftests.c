@@ -264,6 +264,44 @@ static uint32_t SelfTest_Free(void *memory)
     return 0;
 }
 
+/* OPEN_THANDOR_SELFTEST=pcx decodes pcxtest.pcx (next to the executable) with Pcx_DecodeIndexed8 and logs
+   width, height and an FNV-1a hash over the palette (0xFFRRGGBB dwords, little endian) and the pixels;
+   tools/test/pcx_check.py writes the file and prints the expected line. */
+static void Thandor_SelfTestPcx(void)
+{
+    uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
+    uint32_t (*savedFree)(void *) = g_MemoryApi.free;
+    FILE *file = fopen("pcxtest.pcx", "rb");
+    static uint8_t bytes[1 << 20];
+    uint32_t byteCount;
+    PcxIndexedImage image;
+    uint32_t hash = 2166136261u;
+    uint32_t i;
+    if (file == NULL) {
+        Thandor_Log("pcx: pcxtest.pcx missing");
+        return;
+    }
+    byteCount = (uint32_t)fread(bytes, 1, sizeof bytes, file);
+    fclose(file);
+    g_MemoryApi.alloc = SelfTest_Alloc;
+    g_MemoryApi.free = SelfTest_Free;
+    if (!Pcx_DecodeIndexed8(bytes, byteCount, &image)) {
+        Thandor_Log("pcx: rejected (%u bytes)", byteCount);
+    }
+    else {
+        for (i = 0; i < PCX_PALETTE_COLOR_COUNT * 4; i++) {
+            hash = (hash ^ ((const uint8_t *)image.paletteColors)[i]) * 16777619u;
+        }
+        for (i = 0; i < image.width * image.height; i++) {
+            hash = (hash ^ image.pixels[i]) * 16777619u;
+        }
+        Thandor_Log("pcx: %ux%u hash %08X", image.width, image.height, hash);
+        Pcx_FreeIndexed8(&image);
+    }
+    g_MemoryApi.alloc = savedAlloc;
+    g_MemoryApi.free = savedFree;
+}
+
 static void Thandor_SelfTestScanAddresses(void)
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
@@ -466,6 +504,10 @@ int SelfTest_Run(const char *name)
 {
     if (name != NULL && strcmp(name, "codec") == 0) {
         Thandor_SelfTestCodec();
+        return 1;
+    }
+    if (name != NULL && strcmp(name, "pcx") == 0) {
+        Thandor_SelfTestPcx();
         return 1;
     }
     if (name != NULL && strcmp(name, "path") == 0) {

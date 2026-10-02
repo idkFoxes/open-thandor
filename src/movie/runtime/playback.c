@@ -669,19 +669,20 @@ void EndMovieUiRuntime_DispatchCommandByFlags
   case 0x5658f0: { /* screenshot */
     GraphicsCapturedTextureSourceAsset *capture =
          g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-    PcxEncodeResult pcx;
+    void *pcxBytes;
+    uint32_t pcxByteCount;
+    uint32_t pcxError;
     uint16_t *digitHigh = &g_ScreenshotFileNameUtf16[6];
     uint16_t *digitLow = &g_ScreenshotFileNameUtf16[7];
     if (capture == NULL) {
       break;
     }
-    pcx = g_PcxFunctionExport3(g_PcxFunctionModule,capture);
-    if (pcx.failed) {
+    if (!Pcx_EncodeCapture(capture,&pcxBytes,&pcxByteCount,&pcxError)) {
       g_MemoryApi.free(capture);
       break;
     }
-    FileSystem_WriteBufferToPath(pcx.encodedByteCount,pcx.encodedBytesOrError,g_ScreenshotFileNameUtf16);
-    g_MemoryApi.free(pcx.encodedBytesOrError);
+    FileSystem_WriteBufferToPath(pcxByteCount,pcxBytes,g_ScreenshotFileNameUtf16);
+    g_MemoryApi.free(pcxBytes);
     g_MemoryApi.free(capture);
     /* two-digit counter in the file name, wrapping from 99 to 00 */
     (*digitLow)++;

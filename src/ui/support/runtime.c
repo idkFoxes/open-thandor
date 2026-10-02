@@ -7,6 +7,8 @@
 
 #include <thandor/ui/support/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/graphics/resources/pcx.h>
+#include <string.h>
 
 /* Implementation ownership: ui/support/runtime. */
 
@@ -186,22 +188,19 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 /* Address: 0x0054D5D0.
    Loads a 64x64 8-bit PCX picture named by sourcePath (a leaf name; path and wildcard characters are
    dropped, the extension becomes .pcx, the file is looked up next to the executable) into outputPreview:
-   its 256-colour RGB palette followed by the 4096 pixel indices. CF set when the file is missing, cannot
-   be decoded or has another size.
+   its 256-colour palette (3 bytes per colour in the order blue, green, red) followed by the 4096 pixel
+   indices. CF set when the file is missing, cannot be decoded (see Pcx_DecodeIndexed8: only 8-bit paletted
+   files) or has another size.
 */
 bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath)
 
 {
   uint16_t pathChar;
-  int headerOrPixelDataOffset;
   void *sourceBytes;
-  void *decodedImage;
-  int dwordsRemaining;
-  uint32_t *paletteEntryCursor;
-  uint32_t *pixelDwordCursor;
+  int colorIndex;
+  uint32_t color;
   uint16_t *sanitizedPathCursor;
-  uint8_t *outputCursor;
-  PcxDecodeResult pcxDecodeResult;
+  PcxIndexedImage image;
   uint32_t sourceByteCount;
 
   /* copy the leaf, dropping every character that is not allowed in a file name, and '.' */
@@ -217,38 +216,26 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_PCX,(uint16_t *)&g_LevelResourcePathScratchUtf16);
   if (Resource_Load((uint16_t *)&g_LevelResourcePathScratchUtf16,&sourceBytes,&sourceByteCount,NULL)) {
-    pcxDecodeResult = g_PcxFunctionExport2(g_PcxFunctionModule,sourceByteCount,sourceBytes);
-    decodedImage = pcxDecodeResult.decodedImageOrError;
-    if (!pcxDecodeResult.failed) {
-      /* the decoder's image record: +0xB8 offset of the image header, which holds +0x08 (must be 0),
-         +0x0C the offset of the pixels, +0x18 width and +0x1C height; the palette is at +0x200 with
-         one 8-byte entry per colour */
-      headerOrPixelDataOffset = *(int *)((uint8_t *)decodedImage + PCX_DECODED_IMAGE_HEADER_OFFSET);
-      if (*(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 8) == 0 &&
-          *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + PCX_IMAGE_HEADER_WIDTH) == 64 &&
-          *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + PCX_IMAGE_HEADER_HEIGHT) == 64) {
-        paletteEntryCursor = (uint32_t *)((uint8_t *)decodedImage + PCX_DECODED_PALETTE);
-        headerOrPixelDataOffset = *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + PCX_IMAGE_HEADER_PIXEL_OFFSET);
-        /* each colour is stored as a whole dword and the output advances by 3 bytes: the fourth byte is
-           overwritten by the next colour (the last one by the first pixel dword) */
-        outputCursor = (uint8_t *)outputPreview->palette;
-        for (dwordsRemaining = 256; dwordsRemaining != 0; dwordsRemaining--) {
-          *(uint32_t *)outputCursor = *paletteEntryCursor;
-          paletteEntryCursor = paletteEntryCursor + 2;
-          outputCursor = outputCursor + sizeof(PcxRgb24);
+    /* the original called pcx.fnc export 2 here and accepted only a paletted record (direct-colour 3-plane
+       files were rejected as well) */
+    if (Pcx_DecodeIndexed8((const uint8_t *)sourceBytes,sourceByteCount,&image)) {
+      if (image.width == 64 && image.height == 64) {
+        /* Original quirk: each colour dword 0xFFRRGGBB was stored whole with the output advancing by 3
+           bytes, the 0xFF byte being overwritten by the next colour (the last one by the first pixels).
+           What remains are the bytes blue, green, red, i.e. the PcxRgb24 fields named red/green/blue
+           receive blue/green/red. */
+        for (colorIndex = 0; colorIndex < PCX_PALETTE_COLOR_COUNT; colorIndex++) {
+          color = image.paletteColors[colorIndex];
+          outputPreview->palette[colorIndex].red = (uint8_t)color;
+          outputPreview->palette[colorIndex].green = (uint8_t)(color >> 8);
+          outputPreview->palette[colorIndex].blue = (uint8_t)(color >> 16);
         }
-        /* 64 * 64 pixel bytes as 1024 dwords */
-        pixelDwordCursor = (uint32_t *)((uint8_t *)decodedImage + headerOrPixelDataOffset);
-        for (dwordsRemaining = 1024; dwordsRemaining != 0; dwordsRemaining--) {
-          *(uint32_t *)outputCursor = *pixelDwordCursor;
-          pixelDwordCursor++;
-          outputCursor = outputCursor + 4;
-        }
-        g_MemoryApi.free(decodedImage);
+        memcpy(outputPreview->pixels,image.pixels,sizeof outputPreview->pixels);
+        Pcx_FreeIndexed8(&image);
         Resource_Release(sourceBytes);
         return false;
       }
-      g_MemoryApi.free(decodedImage);
+      Pcx_FreeIndexed8(&image);
     }
     Resource_Release(sourceBytes);
   }

@@ -630,8 +630,9 @@ uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 /* Address: 0x00573140.
    Loads everything the frontend needs once at startup: takes the CD path from the registry, mounts the patch,
    level and core packages, creates the seven UI button sounds, moves the screenshot name past the existing
-   screen??.pcx files, loads the text pages, applies the sound settings, binds the PCX codec module and
-   allocates the fixed runtime buffers. Returns 0, or the error code of the first failing step (the caller
+   screen??.pcx files, loads the text pages, applies the sound settings and allocates the fixed runtime
+   buffers. (The original also loaded and bound the PCX codec module engine\pcx.fnc here; open-thandor
+   reads and writes PCX in C instead.) Returns 0, or the error code of the first failing step (the caller
    treats non-zero as failure).
 */
 uint32_t __cdecl Game_LoadCoreAssets(void)
@@ -639,8 +640,8 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
 {
   wchar_t screenshotTensDigit;
   int statusOrCount;
-  SoundSampleAsset *loadedResource; /* a button sample, later the engine\pcx.fnc package buffer */
-  FncModuleHeader *module; /* a voice set or the PCX module; the error code on the failure paths */
+  SoundSampleAsset *loadedResource; /* a button sample */
+  FncModuleHeader *module; /* a button voice set; the error code on the failure paths */
   uint16_t *textBuffer;
   uint32_t soundOptionsOrBufferBase;
   AudioMixerGainQ15 uiSoundGain;
@@ -658,11 +659,6 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   void *screenshotFile;
   uint16_t *resolvedText;
   uint32_t textPageError; /* the failing text page's error code */
-  FncModuleHeader *pcxModuleEntry;
-  uint32_t pcxLoadErrorCode;
-  bool pcxModuleLoaded;
-  uint32_t fncError;
-  void *pcxExport;
   GraphicsTextureSourceAsset *panelTexture;
   uint32_t panelTextureError;
   uint32_t allocError;
@@ -924,190 +920,168 @@ bindDebugOverlayTexts:
                 if (!AiRuntime_InitWorkspace(&aiInitError)) {
                   return aiInitError;
                 }
-                pcxModuleEntry = Package_LoadEntry((uint16_t *)u_engine_pcx_fnc_00573028,&pcxLoadErrorCode);
-                if (pcxModuleEntry == NULL) {
-                  return pcxLoadErrorCode;
+                /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
+                   written in C, graphics/resources/pcx_read.c and pcx_write.c. */
+                panelTexture = g_GraphicsTextureSourceLoadPackageAsset
+                                   ((uint16_t *)u_gfx_panel_stat_gfx_00573002,&panelTextureError);
+                if (panelTexture == NULL) {
+                  return panelTextureError;
                 }
-                pcxModuleLoaded = FncModule_LoadAndRelocate(pcxModuleEntry,&module,&fncError);
-                if (!pcxModuleLoaded) {
-                  module = (FncModuleHeader *)fncError; /* the error code for the failure exit below */
+                g_InGameStatusPanelTextureSource = panelTexture;
+                allocError = g_MemoryApi.alloc
+                                 (RECENT_TEXT_HISTORY_SLOT_COUNT * sizeof(RecentTextHistorySlot),
+                                  (void **)&g_RecentTextSlotStorage);
+                if (allocError != 0) {
+                  return allocError;
                 }
-                loadedResource = (SoundSampleAsset *)pcxModuleEntry;
-                if (pcxModuleLoaded) {
-                  g_PcxFunctionModule = module;
-                  fncError = FncModule_GetExportByIndex(3,module,&pcxExport);
-                  module = (FncModuleHeader *)fncError;
-                  if (fncError == 0) {
-                    g_PcxFunctionExport3 = (PcxEncodeProc *)pcxExport;
-                    fncError = FncModule_GetExportByIndex(2,g_PcxFunctionModule,&pcxExport);
-                    module = (FncModuleHeader *)fncError;
-                    if (fncError == 0) {
-                      g_PcxFunctionExport2 = (PcxDecodeProc *)pcxExport;
-                      /* EDX still holds the engine\pcx.fnc package buffer. */
-                      Resource_Release((SoundSampleAsset *)pcxModuleEntry);
-                      panelTexture = g_GraphicsTextureSourceLoadPackageAsset
-                                         ((uint16_t *)u_gfx_panel_stat_gfx_00573002,&panelTextureError);
-                      if (panelTexture == NULL) {
-                        return panelTextureError;
-                      }
-                      g_InGameStatusPanelTextureSource = panelTexture;
-                      allocError = g_MemoryApi.alloc
-                                       (RECENT_TEXT_HISTORY_SLOT_COUNT * sizeof(RecentTextHistorySlot),
-                                        (void **)&g_RecentTextSlotStorage);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      allocError = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&g_OldUnitSecondaryTable);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      allocError = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES,(void **)&g_OldUnitPrimaryTable);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      allocError = g_MemoryApi.alloc
-                                       (FRONTEND_PLAYER_LIST_ROW_COUNT * FRONTEND_PLAYER_LIST_ROW_BYTES,&allocPayload);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      soundOptionsOrBufferBase = (uint32_t)allocPayload;
-                      g_FrontendPlayerListRow1 = soundOptionsOrBufferBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                      g_FrontendPlayerListRow2 = soundOptionsOrBufferBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                      g_FrontendPlayerListRow3 = soundOptionsOrBufferBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                      g_FrontendPlayerListRow4 = soundOptionsOrBufferBase + 4 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                      g_FrontendPlayerListRow5 = soundOptionsOrBufferBase + 5 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                      g_FrontendPlayerListRow6 = soundOptionsOrBufferBase + 6 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                      g_FrontendPlayerListRow7 = soundOptionsOrBufferBase + 7 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                      g_FrontendPlayerListRows = soundOptionsOrBufferBase;
-                      allocError = g_MemoryApi.alloc
-                                       (ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot),
-                                        (void **)&g_RomRegistrySlots);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      allocError = g_MemoryApi.alloc
-                                       (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord *),
-                                        (void **)&g_FrontendSessionListRows);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      allocError = g_MemoryApi.alloc
-                                       (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord),
-                                        (void **)&g_FrontendSessionDiscoveryRecords);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      allocError = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES,(void **)&textBuffer);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      g_InGameFactionStatusTextScratchUtf16 = textBuffer;
-                      g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
-                      allocError = g_MemoryApi.alloc
-                                       (INGAME_PLAYER_LIST_TEXT_BYTES,(void **)&g_InGamePlayerListTextScratchUtf16);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
-                                                     CUBIC_SPLINE_MATRIX_FLOATS * sizeof(float),
-                                                     (void **)&splineBuffer);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_FLOATS;
-                      g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_FLOATS;
-                      g_WorldMotionSplineMatrixWorkspaces[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_FLOATS;
-                      g_WorldMotionSplineMatrixWorkspaces[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_FLOATS;
-                      g_WorldMotionSplineMatrixWorkspaces[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_FLOATS;
-                      g_WorldMotionSplineMatrixWorkspaces[0] = splineBuffer;
-                      /* one coefficient vector of CUBIC_SPLINE_MATRIX_ORDER floats per channel */
-                      allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
-                                                     CUBIC_SPLINE_MATRIX_ORDER * sizeof(float),
-                                                     (void **)&splineBuffer);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_ORDER;
-                      g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_ORDER;
-                      g_WorldMotionSplineCoefficientTables[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_ORDER;
-                      g_WorldMotionSplineCoefficientTables[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_ORDER;
-                      g_WorldMotionSplineCoefficientTables[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_ORDER;
-                      g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
-                      allocError = g_MemoryApi.alloc
-                                       (SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock),
-                                        (void **)&g_SelectionPlayerBlocks);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      allocError = g_MemoryApi.alloc(FRONTEND_SNAPSHOT_PAYLOAD_BYTES,&allocPayload);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      g_FrontendLocalPlayerPcxPreview = (uint32_t)allocPayload;
-                      allocError = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8,&allocPayload); /* 8-byte records */
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      g_TerrainRegionCollectionEntries = (uint32_t)allocPayload;
-                      allocError = g_MemoryApi.alloc(800,&allocPayload);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      g_FrontendPlayerMessageBuffers = (uint32_t)allocPayload;
-                      allocError = g_MemoryApi.alloc
-                                       (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord),
-                                        (void **)&playerRecordCursor);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      playerRuntimePointerTableWriteCursor =
-                           g_FrontendPlayerRuntimeRecordPointers32;
-                      g_FrontendPlayerRuntimeBlockCount = 1;
-                      g_LocalPlayerRuntimeId = 0;
-                      g_FrontendPlayerRuntimeBlocks = playerRecordCursor;
-                      (playerRecordCursor->playerName).textUtf16[0] = 0;
-                      (playerRecordCursor->playerName).textUtf16[1] = 0;
-                      playerRecordCursor->playerRuntimeId = 0;
-                      (playerRecordCursor->factionAssignment).roleStateFlags = 0;
-                      playerRecordCursor->snapshotTransferFlags = 0;
-                      /* pointers to 32 consecutive records, although only the first
-                         FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT are allocated.
-                         Original quirk: entries 8..31 point past the buffer (the original
-                         also allocates 0x9D80 and loops 0x20 times with stride 0x13B0). Harmless:
-                         the table is only the hostLobbyPlayerList row table, whose rowCount is
-                         capped by maxPlayersSlider (range 2..8), so only rows 0..7 are used. */
-                      statusOrCount = 32;
-                      do {
-                        *playerRuntimePointerTableWriteCursor = playerRecordCursor;
-                        playerRuntimePointerTableWriteCursor++;
-                        playerRecordCursor++;
-                        statusOrCount--;
-                      } while (statusOrCount != 0);
-                      allocError = g_MemoryApi.alloc
-                                       (CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES,
-                                        (void **)&scratchCursor);
-                      if (allocError != 0) {
-                        return allocError;
-                      }
-                      g_CoreAssetScratchSlice1 = scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                      g_CoreAssetScratchSlice2 = scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                      g_CoreAssetScratchSlice3 = scratchCursor + 3 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                      g_CoreAssetScratchSlice4 = scratchCursor + 4 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                      g_CoreAssetScratchSlice5 = scratchCursor + 5 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                      g_CoreAssetScratchSlice6 = scratchCursor + 6 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                      g_CoreAssetScratchSlice0 = scratchCursor;
-                      for (statusOrCount = CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES / 4;
-                           statusOrCount != 0; statusOrCount--) {
-                        scratchCursor[0] = 0;
-                        scratchCursor[1] = 0;
-                        scratchCursor[2] = 0;
-                        scratchCursor[3] = 0;
-                        scratchCursor += 4;
-                      }
-                      return 0;
-                    }
-                  }
+                allocError = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&g_OldUnitSecondaryTable);
+                if (allocError != 0) {
+                  return allocError;
                 }
+                allocError = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES,(void **)&g_OldUnitPrimaryTable);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                allocError = g_MemoryApi.alloc
+                                 (FRONTEND_PLAYER_LIST_ROW_COUNT * FRONTEND_PLAYER_LIST_ROW_BYTES,&allocPayload);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                soundOptionsOrBufferBase = (uint32_t)allocPayload;
+                g_FrontendPlayerListRow1 = soundOptionsOrBufferBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                g_FrontendPlayerListRow2 = soundOptionsOrBufferBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                g_FrontendPlayerListRow3 = soundOptionsOrBufferBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                g_FrontendPlayerListRow4 = soundOptionsOrBufferBase + 4 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                g_FrontendPlayerListRow5 = soundOptionsOrBufferBase + 5 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                g_FrontendPlayerListRow6 = soundOptionsOrBufferBase + 6 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                g_FrontendPlayerListRow7 = soundOptionsOrBufferBase + 7 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                g_FrontendPlayerListRows = soundOptionsOrBufferBase;
+                allocError = g_MemoryApi.alloc
+                                 (ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot),
+                                  (void **)&g_RomRegistrySlots);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                allocError = g_MemoryApi.alloc
+                                 (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord *),
+                                  (void **)&g_FrontendSessionListRows);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                allocError = g_MemoryApi.alloc
+                                 (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord),
+                                  (void **)&g_FrontendSessionDiscoveryRecords);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                allocError = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES,(void **)&textBuffer);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                g_InGameFactionStatusTextScratchUtf16 = textBuffer;
+                g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
+                allocError = g_MemoryApi.alloc
+                                 (INGAME_PLAYER_LIST_TEXT_BYTES,(void **)&g_InGamePlayerListTextScratchUtf16);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
+                                               CUBIC_SPLINE_MATRIX_FLOATS * sizeof(float),
+                                               (void **)&splineBuffer);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_FLOATS;
+                g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_FLOATS;
+                g_WorldMotionSplineMatrixWorkspaces[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_FLOATS;
+                g_WorldMotionSplineMatrixWorkspaces[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_FLOATS;
+                g_WorldMotionSplineMatrixWorkspaces[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_FLOATS;
+                g_WorldMotionSplineMatrixWorkspaces[0] = splineBuffer;
+                /* one coefficient vector of CUBIC_SPLINE_MATRIX_ORDER floats per channel */
+                allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
+                                               CUBIC_SPLINE_MATRIX_ORDER * sizeof(float),
+                                               (void **)&splineBuffer);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_ORDER;
+                g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_ORDER;
+                g_WorldMotionSplineCoefficientTables[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_ORDER;
+                g_WorldMotionSplineCoefficientTables[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_ORDER;
+                g_WorldMotionSplineCoefficientTables[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_ORDER;
+                g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
+                allocError = g_MemoryApi.alloc
+                                 (SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock),
+                                  (void **)&g_SelectionPlayerBlocks);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                allocError = g_MemoryApi.alloc(FRONTEND_SNAPSHOT_PAYLOAD_BYTES,&allocPayload);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                g_FrontendLocalPlayerPcxPreview = (uint32_t)allocPayload;
+                allocError = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8,&allocPayload); /* 8-byte records */
+                if (allocError != 0) {
+                  return allocError;
+                }
+                g_TerrainRegionCollectionEntries = (uint32_t)allocPayload;
+                allocError = g_MemoryApi.alloc(800,&allocPayload);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                g_FrontendPlayerMessageBuffers = (uint32_t)allocPayload;
+                allocError = g_MemoryApi.alloc
+                                 (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord),
+                                  (void **)&playerRecordCursor);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                playerRuntimePointerTableWriteCursor =
+                     g_FrontendPlayerRuntimeRecordPointers32;
+                g_FrontendPlayerRuntimeBlockCount = 1;
+                g_LocalPlayerRuntimeId = 0;
+                g_FrontendPlayerRuntimeBlocks = playerRecordCursor;
+                (playerRecordCursor->playerName).textUtf16[0] = 0;
+                (playerRecordCursor->playerName).textUtf16[1] = 0;
+                playerRecordCursor->playerRuntimeId = 0;
+                (playerRecordCursor->factionAssignment).roleStateFlags = 0;
+                playerRecordCursor->snapshotTransferFlags = 0;
+                /* pointers to 32 consecutive records, although only the first
+                   FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT are allocated.
+                   Original quirk: entries 8..31 point past the buffer (the original
+                   also allocates 0x9D80 and loops 0x20 times with stride 0x13B0). Harmless:
+                   the table is only the hostLobbyPlayerList row table, whose rowCount is
+                   capped by maxPlayersSlider (range 2..8), so only rows 0..7 are used. */
+                statusOrCount = 32;
+                do {
+                  *playerRuntimePointerTableWriteCursor = playerRecordCursor;
+                  playerRuntimePointerTableWriteCursor++;
+                  playerRecordCursor++;
+                  statusOrCount--;
+                } while (statusOrCount != 0);
+                allocError = g_MemoryApi.alloc
+                                 (CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES,
+                                  (void **)&scratchCursor);
+                if (allocError != 0) {
+                  return allocError;
+                }
+                g_CoreAssetScratchSlice1 = scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                g_CoreAssetScratchSlice2 = scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                g_CoreAssetScratchSlice3 = scratchCursor + 3 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                g_CoreAssetScratchSlice4 = scratchCursor + 4 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                g_CoreAssetScratchSlice5 = scratchCursor + 5 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                g_CoreAssetScratchSlice6 = scratchCursor + 6 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                g_CoreAssetScratchSlice0 = scratchCursor;
+                for (statusOrCount = CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES / 4;
+                     statusOrCount != 0; statusOrCount--) {
+                  scratchCursor[0] = 0;
+                  scratchCursor[1] = 0;
+                  scratchCursor[2] = 0;
+                  scratchCursor[3] = 0;
+                  scratchCursor += 4;
+                }
+                return 0;
               }
             }
           }
