@@ -325,11 +325,12 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
   uint32_t trackStartOffset;
   int horizontalTrackEnd;
   int localY;
-  int localXOrTrackBottom;
+  int localX;
+  int verticalTrackBottom;
   bool horizontalBarHit;
   GraphicsTextureLogicalSize textureSize;
 
-  localXOrTrackBottom = pointerX - (control->base).left;
+  localX = pointerX - (control->base).left;
   localY = pointerY - (control->base).top;
   /* Horizontal bar first: the pointer must be inside the bar and between the vertical bar(s). */
   horizontalBarHit = false;
@@ -355,7 +356,7 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
         trackStartOffset = textureSize.logicalWidthPixels;
       }
       horizontalBarHit =
-           ((int)trackStartOffset <= localXOrTrackBottom) && (localXOrTrackBottom < horizontalTrackEnd);
+           ((int)trackStartOffset <= localX) && (localX < horizontalTrackEnd);
     }
   }
   if (!horizontalBarHit) {
@@ -365,25 +366,25 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
     }
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
-      if (localXOrTrackBottom < 0) {
+      if (localX < 0) {
         return;
       }
-      if ((int)textureSize.logicalWidthPixels <= localXOrTrackBottom) {
+      if ((int)textureSize.logicalWidthPixels <= localX) {
         return;
       }
     }
     else {
-      if ((control->base).layoutWidth <= localXOrTrackBottom) {
+      if ((control->base).layoutWidth <= localX) {
         return;
       }
-      if (localXOrTrackBottom < (int)((control->base).layoutWidth - textureSize.logicalWidthPixels)) {
+      if (localX < (int)((control->base).layoutWidth - textureSize.logicalWidthPixels)) {
         return;
       }
     }
-    localXOrTrackBottom = (control->base).layoutHeight;
+    verticalTrackBottom = (control->base).layoutHeight;
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
-      localXOrTrackBottom = localXOrTrackBottom - textureSize.logicalHeightPixels;
+      verticalTrackBottom = verticalTrackBottom - textureSize.logicalHeightPixels;
     }
     trackStartOffset = 0;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
@@ -392,7 +393,7 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
     if (localY < (int)trackStartOffset) {
       return;
     }
-    if (localXOrTrackBottom <= localY) {
+    if (verticalTrackBottom <= localY) {
       return;
     }
     if (localY < control->verticalThumbTop) {
@@ -416,7 +417,7 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
         return;
       }
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
-      if (localXOrTrackBottom - localY <= (int)textureSize.logicalHeightPixels) {
+      if (verticalTrackBottom - localY <= (int)textureSize.logicalHeightPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
              (UI_SCROLL_VERTICAL_INCREMENT_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
@@ -428,9 +429,9 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
            control->scrollStateFlags | UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE;
     }
   }
-  else if (localXOrTrackBottom < control->horizontalThumbLeft) {
+  else if (localX < control->horizontalThumbLeft) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
-    if ((int)(localXOrTrackBottom - trackStartOffset) < (int)textureSize.logicalWidthPixels) {
+    if ((int)(localX - trackStartOffset)< (int)textureSize.logicalWidthPixels) {
       control->scrollStateFlags =
            control->scrollStateFlags |
            (UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
@@ -442,14 +443,14 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
          control->scrollStateFlags | UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE;
   }
   else {
-    if (localXOrTrackBottom < control->horizontalThumbRight) {
-      control->pointerAnchorX = localXOrTrackBottom - control->horizontalThumbLeft;
+    if (localX < control->horizontalThumbRight) {
+      control->pointerAnchorX = localX - control->horizontalThumbLeft;
       control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_HORIZONTAL_THUMB_ACTIVE;
       UiNode_InvalidateRoot(&control->base);
       return;
     }
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
-    if (horizontalTrackEnd - localXOrTrackBottom <= (int)textureSize.logicalWidthPixels) {
+    if (horizontalTrackEnd - localX <=(int)textureSize.logicalWidthPixels) {
       control->scrollStateFlags =
            control->scrollStateFlags |
            (UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
@@ -749,23 +750,30 @@ void UiScrollableControl_HandlePointerWheel
   UiNodeBase *firstChildNode;
   int scrollStep;
 
-  if (((((control->scrollStateFlags &
-         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) &&
-       ((control->scrollStateFlags &
-         (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE|UI_SCROLL_SECONDARY_INTERACTION_ACTIVE)) == 0)) &&
-      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0)) &&
-     (firstChildNode = (control->base).firstChild, wheelDelta != 0)) {
-    scrollStep = g_UiScrollWheelDefaultStep;
-    if ((firstChildNode != UI_NODE_NONE) &&
-       (((firstChildNode->vtable == &g_UiTimedListControlVtable ||
-         (firstChildNode->vtable == &g_UiTextListControlVtable)) ||
-        (firstChildNode->vtable == &g_UiListControlVtable)))) {
-      scrollStep = g_UiScrollWheelListStep;
-    }
-    control->scrollOffsetY = control->scrollOffsetY + wheelDelta * scrollStep;
-    UiScrollableControl_RefreshChildAndScrollThumbs(control);
-    UiNode_InvalidateRoot(&control->base);
+  if ((control->scrollStateFlags & (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
+    return;
   }
+  if ((control->scrollStateFlags &
+      (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE|UI_SCROLL_SECONDARY_INTERACTION_ACTIVE)) != 0) {
+    return;
+  }
+  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+    return;
+  }
+  if (wheelDelta == 0) {
+    return;
+  }
+  firstChildNode = (control->base).firstChild;
+  scrollStep = g_UiScrollWheelDefaultStep;
+  if ((firstChildNode != UI_NODE_NONE) &&
+     ((firstChildNode->vtable == &g_UiTimedListControlVtable) ||
+      (firstChildNode->vtable == &g_UiTextListControlVtable) ||
+      (firstChildNode->vtable == &g_UiListControlVtable))) {
+    scrollStep = g_UiScrollWheelListStep;
+  }
+  control->scrollOffsetY = control->scrollOffsetY + wheelDelta * scrollStep;
+  UiScrollableControl_RefreshChildAndScrollThumbs(control);
+  UiNode_InvalidateRoot(&control->base);
   return;
 }
 
@@ -811,19 +819,22 @@ void UiListControl_SelectRowFromPointer
     rowIndex = (uint32_t)(pointerY - *topEdgeField) / control->rowHeight;
     if (rowIndex < control->rowCount) {
       control->listStateFlags = control->listStateFlags | UI_LIST_SELECTION_CONFIRMED;
-      if ((((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) ||
-         (control->listStateFlags = control->listStateFlags & ~UI_LIST_SELECTION_CONFIRMED,
-         control->rowSlots + rowIndex != control->selectedRowSlot)) {
-        control->selectedRowSlot = control->rowSlots + rowIndex;
-        rowTop = rowIndex * control->rowHeight;
-        UiScrollableControl_ClampOffsetsToViewport
-                  (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
-                   (UiScrollableControl *)(control->base).parent);
-        UiActionQueue_Enqueue(control->actionId,control);
-        if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
-           (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+      if (((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) == 0) {
+        /* Single click: not confirmed, and the already selected row does nothing. */
+        control->listStateFlags = control->listStateFlags & ~UI_LIST_SELECTION_CONFIRMED;
+        if (control->rowSlots + rowIndex == control->selectedRowSlot) {
+          return;
         }
+      }
+      control->selectedRowSlot = control->rowSlots + rowIndex;
+      rowTop = rowIndex * control->rowHeight;
+      UiScrollableControl_ClampOffsetsToViewport
+                (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
+                 (UiScrollableControl *)(control->base).parent);
+      UiActionQueue_Enqueue(control->actionId,control);
+      if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
+         (control->activationSound != NULL)) {
+        g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
       }
     }
   }
@@ -842,63 +853,54 @@ void UiPointerList_SortByDwordPairFieldDescending
 {
   void *swapEntry;
   void *selectedEntry;
-  uint32_t leftKey;
-  uint32_t rightKey;
-  int innerCountOrRowTop;
-  int outerCount;
+  const uint32_t *pivotKey;
+  const uint32_t *scanKey;
+  int passLength;
+  int compareCount;
+  int selectedRowTop;
   UiListRowCount rowsRemaining;
   void **pivotSlot;
   void **scanSlot;
-  
-  scanSlot = control->rowSlots;
-  if (scanSlot != NULL) {
-    innerCountOrRowTop = control->rowCount - 1;
-    if ((innerCountOrRowTop != 0) && (-1 < innerCountOrRowTop)) {
-      selectedEntry = *control->selectedRowSlot;
-      pivotSlot = scanSlot;
-      outerCount = innerCountOrRowTop;
-      /* each pass moves the largest remaining key to pivotSlot */
-      do {
-        do {
-          scanSlot++;
-          leftKey = *(uint32_t *)((int)*pivotSlot + fieldOffset);
-          rightKey = *(uint32_t *)((int)*scanSlot + fieldOffset);
-          if ((leftKey <= rightKey) &&
-             ((leftKey < rightKey ||
-              (((uint32_t *)((int)*pivotSlot + fieldOffset))[1] <=
-               ((uint32_t *)((int)*scanSlot + fieldOffset))[1])))) {
-            LOCK(); /* the original swaps with XCHG */
-            swapEntry = *scanSlot;
-            *scanSlot = *pivotSlot;
-            UNLOCK();
-            *pivotSlot = swapEntry;
-          }
-          innerCountOrRowTop--;
-        } while (innerCountOrRowTop != 0);
-        scanSlot = pivotSlot + 1;
-        innerCountOrRowTop = outerCount - 1;
-        pivotSlot = scanSlot;
-        outerCount = innerCountOrRowTop;
-      } while (innerCountOrRowTop != 0);
-      scanSlot = control->rowSlots;
-      rowsRemaining = control->rowCount;
-      innerCountOrRowTop = 0;
-      do {
-        if (selectedEntry == *scanSlot) break;
-        innerCountOrRowTop = innerCountOrRowTop + control->rowHeight;
-        scanSlot++;
-        rowsRemaining--;
-      } while (rowsRemaining != 0);
-      if (rowsRemaining == 0) {
-        /* Not found: select the first row (the row top stays past the last row, as in the original). */
-        scanSlot = control->rowSlots;
-      }
-      control->selectedRowSlot = scanSlot;
-      UiScrollableControl_ClampOffsetsToViewport
-                (innerCountOrRowTop + 1 + control->rowHeight,control->base.rightOffset,innerCountOrRowTop,0,
-                 (UiScrollableControl *)control->base.parent);
-    }
+
+  if (control->rowSlots == NULL) {
+    return;
   }
+  passLength = control->rowCount - 1;
+  if (passLength <= 0) {
+    return;
+  }
+  selectedEntry = *control->selectedRowSlot;
+  /* Each pass moves the largest remaining key to pivotSlot. */
+  pivotSlot = control->rowSlots;
+  for (; passLength != 0; passLength--) {
+    scanSlot = pivotSlot;
+    for (compareCount = passLength; compareCount != 0; compareCount--) {
+      scanSlot++;
+      pivotKey = (const uint32_t *)((uint8_t *)*pivotSlot + fieldOffset);
+      scanKey = (const uint32_t *)((uint8_t *)*scanSlot + fieldOffset);
+      if ((pivotKey[0] <= scanKey[0]) && ((pivotKey[0] < scanKey[0]) || (pivotKey[1] <= scanKey[1]))) {
+        swapEntry = *scanSlot;
+        *scanSlot = *pivotSlot;
+        *pivotSlot = swapEntry;
+      }
+    }
+    pivotSlot++;
+  }
+  scanSlot = control->rowSlots;
+  selectedRowTop = 0;
+  for (rowsRemaining = control->rowCount; rowsRemaining != 0; rowsRemaining--) {
+    if (selectedEntry == *scanSlot) break;
+    selectedRowTop = selectedRowTop + control->rowHeight;
+    scanSlot++;
+  }
+  if (rowsRemaining == 0) {
+    /* Not found: select the first row (the row top stays past the last row, as in the original). */
+    scanSlot = control->rowSlots;
+  }
+  control->selectedRowSlot = scanSlot;
+  UiScrollableControl_ClampOffsetsToViewport
+            (selectedRowTop + 1 + control->rowHeight,control->base.rightOffset,selectedRowTop,0,
+             (UiScrollableControl *)control->base.parent);
   return;
 }
 
@@ -913,56 +915,50 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
 {
   void *swapEntry;
   void *selectedEntry;
-  int innerCountOrRowTop;
-  int outerCount;
+  int passLength;
+  int compareCount;
+  int selectedRowTop;
   UiListRowCount rowsRemaining;
   void **pivotSlot;
   void **scanSlot;
-  
-  scanSlot = control->rowSlots;
-  if (scanSlot != NULL) {
-    innerCountOrRowTop = control->rowCount - 1;
-    if ((innerCountOrRowTop != 0) && (-1 < innerCountOrRowTop)) {
-      selectedEntry = *control->selectedRowSlot;
-      pivotSlot = scanSlot;
-      outerCount = innerCountOrRowTop;
-      /* each pass moves the smallest remaining key to pivotSlot */
-      do {
-        do {
-          scanSlot++;
-          if (*(uint32_t *)((uint8_t *)*scanSlot + fieldOffset) <= *(uint32_t *)((uint8_t *)*pivotSlot + fieldOffset)) {
-            LOCK(); /* the original swaps with XCHG */
-            swapEntry = *scanSlot;
-            *scanSlot = *pivotSlot;
-            UNLOCK();
-            *pivotSlot = swapEntry;
-          }
-          innerCountOrRowTop--;
-        } while (innerCountOrRowTop != 0);
-        scanSlot = pivotSlot + 1;
-        innerCountOrRowTop = outerCount - 1;
-        pivotSlot = scanSlot;
-        outerCount = innerCountOrRowTop;
-      } while (innerCountOrRowTop != 0);
-      scanSlot = control->rowSlots;
-      rowsRemaining = control->rowCount;
-      innerCountOrRowTop = 0;
-      do {
-        if (selectedEntry == *scanSlot) break;
-        innerCountOrRowTop = innerCountOrRowTop + control->rowHeight;
-        scanSlot++;
-        rowsRemaining--;
-      } while (rowsRemaining != 0);
-      if (rowsRemaining == 0) {
-        /* Not found: select the first row (the row top stays past the last row, as in the original). */
-        scanSlot = control->rowSlots;
-      }
-      control->selectedRowSlot = scanSlot;
-      UiScrollableControl_ClampOffsetsToViewport
-                (innerCountOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,innerCountOrRowTop,0,
-                 (UiScrollableControl *)(control->base).parent);
-    }
+
+  if (control->rowSlots == NULL) {
+    return;
   }
+  passLength = control->rowCount - 1;
+  if (passLength <= 0) {
+    return;
+  }
+  selectedEntry = *control->selectedRowSlot;
+  /* Each pass moves the smallest remaining key to pivotSlot. */
+  pivotSlot = control->rowSlots;
+  for (; passLength != 0; passLength--) {
+    scanSlot = pivotSlot;
+    for (compareCount = passLength; compareCount != 0; compareCount--) {
+      scanSlot++;
+      if (*(uint32_t *)((uint8_t *)*scanSlot + fieldOffset) <= *(uint32_t *)((uint8_t *)*pivotSlot + fieldOffset)) {
+        swapEntry = *scanSlot;
+        *scanSlot = *pivotSlot;
+        *pivotSlot = swapEntry;
+      }
+    }
+    pivotSlot++;
+  }
+  scanSlot = control->rowSlots;
+  selectedRowTop = 0;
+  for (rowsRemaining = control->rowCount; rowsRemaining != 0; rowsRemaining--) {
+    if (selectedEntry == *scanSlot) break;
+    selectedRowTop = selectedRowTop + control->rowHeight;
+    scanSlot++;
+  }
+  if (rowsRemaining == 0) {
+    /* Not found: select the first row (the row top stays past the last row, as in the original). */
+    scanSlot = control->rowSlots;
+  }
+  control->selectedRowSlot = scanSlot;
+  UiScrollableControl_ClampOffsetsToViewport
+            (selectedRowTop + 1 + control->rowHeight,(control->base).rightOffset,selectedRowTop,0,
+             (UiScrollableControl *)(control->base).parent);
   return;
 }
 
@@ -1079,28 +1075,29 @@ UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,U
   uint16_t *recordLabelCursor;
   uint16_t *queryLabelCursor;
   bool charsEqual;
-  
+
+  /* Length of the query label including its terminator, at most 256 code units. */
   scanRemaining = 256;
-  recordLabelCursor = labelUtf16;
-  do {
-    if (scanRemaining == 0) break;
+  queryLabelCursor = labelUtf16;
+  while (scanRemaining != 0) {
     scanRemaining--;
-    labelChar = *recordLabelCursor;
-    recordLabelCursor++;
-  } while (labelChar != 0);
+    labelChar = *queryLabelCursor;
+    queryLabelCursor++;
+    if (labelChar == 0) break;
+  }
   for (recordsRemaining = recordBlock->countOrLabelText; recordsRemaining != 0; recordsRemaining--) {
     recordBlock++;
     charsEqual = false;
     compareRemaining = 256 - scanRemaining;
     recordLabelCursor = (uint16_t *)recordBlock->countOrLabelText;
     queryLabelCursor = labelUtf16;
-    do {
-      if (compareRemaining == 0) break;
+    while (compareRemaining != 0) {
       compareRemaining--;
       charsEqual = *recordLabelCursor == *queryLabelCursor;
       recordLabelCursor++;
       queryLabelCursor++;
-    } while (charsEqual);
+      if (!charsEqual) break;
+    }
     if (charsEqual) {
       return recordBlock;
     }
@@ -1585,14 +1582,15 @@ void UiTimedListControl_ToggleDirectoryRecordExpansion
 
 {
   UiTimedListTreeRecord *targetRecord;
-  bool cfResult;
-  
+  bool selectionWasInBranch;
+  bool attachFailed;
+
   targetRecord = UiTimedListControl_GetSelectedRecord(control);
   if ((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) {
     if ((record->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
-      cfResult = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
+      selectionWasInBranch = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
                         (targetRecord,record->childBlockOrParentRecord);
-      if (cfResult) {
+      if (selectionWasInBranch) {
         UiActionQueue_Enqueue((control->base).actionId,control);
         targetRecord = record;
       }
@@ -1601,8 +1599,8 @@ void UiTimedListControl_ToggleDirectoryRecordExpansion
       UiTimedListControl_SelectRecordAndScrollIntoView(targetRecord,control);
       return;
     }
-    cfResult = UiTimedListTree_AttachDirectoryRecordBlock(record);
-    if (!cfResult) {
+    attachFailed = UiTimedListTree_AttachDirectoryRecordBlock(record);
+    if (!attachFailed) {
       record->flags = record->flags | UI_TIMED_LIST_RECORD_EXPANDED;
       UiTimedListControl_SetRecordTreeAndRecomputeLayout((control->base).recordTree,control);
       UiTimedListControl_SelectRecordAndScrollIntoView(targetRecord,control);
@@ -1814,26 +1812,27 @@ bool UiSelectableGroup_FindVisibleSelected
           (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...)
 
 {
-  int controlAddress;
+  UiSelectableControl **controlSlots;
+  UiSelectableControl *control;
   uint32_t controlIndex;
-  int controlPointerByteOffset;
   bool found;
 
-  controlPointerByteOffset = 0;
+  /* The control pointers follow controlCount on the stack. */
+  controlSlots = (UiSelectableControl **)(&controlCount + 1);
   controlIndex = 0;
   found = true;
-  while ((controlAddress = *(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset),
-         (((UiSelectableControl *)controlAddress)->base.nodeFlags & UI_NODE_SUPPRESSED) != 0 ||
-         ((((UiSelectableControl *)controlAddress)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0))) {
+  control = controlSlots[0];
+  while (((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
+         ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0)) {
     controlIndex++;
-    controlPointerByteOffset = controlPointerByteOffset + 4;
     if (controlCount <= controlIndex) {
       found = false;
       break;
     }
+    control = controlSlots[controlIndex];
   }
   if (outNode != NULL) {
-    *outNode = (UiNodeBase *)controlAddress;
+    *outNode = (UiNodeBase *)control;
   }
   if (outIndex != NULL) {
     *outIndex = controlIndex;
@@ -2614,25 +2613,35 @@ void UiScrollableControl_BeginSecondaryScrollInteraction
   control->scrollStateFlags = control->scrollStateFlags &
        ~(UI_SCROLL_VERTICAL_PARTS_ACTIVE|UI_SCROLL_HORIZONTAL_PARTS_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE|
          UI_SCROLL_SECONDARY_INTERACTION_ACTIVE); /* clears the bit set above too, as in the original */
-  if (((((int)control->contentOriginX <= localPointerX) &&
-       ((int)control->contentOriginY <= localPointerY)) &&
-      ((int)(localPointerX - control->viewportWidth) < (int)control->contentOriginX)) &&
-     (((int)(localPointerY - control->viewportHeight) < (int)control->contentOriginY &&
-      (control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_SECONDARY_PANNING_CONTENT,
-      (control->scrollStateFlags &
-      (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
-       UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)))) {
-    cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN;
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
-      cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_VERTICAL;
-    }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
-      cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL;
-    }
-    g_GraphicsCursorSetFrame(cursorFrame);
+  /* Press outside the content view: no panning of the content. */
+  if (localPointerX < (int)control->contentOriginX) {
+    return;
   }
+  if (localPointerY < (int)control->contentOriginY) {
+    return;
+  }
+  if ((int)control->contentOriginX <= (int)(localPointerX - control->viewportWidth)) {
+    return;
+  }
+  if ((int)control->contentOriginY <= (int)(localPointerY - control->viewportHeight)) {
+    return;
+  }
+  control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_SECONDARY_PANNING_CONTENT;
+  if ((control->scrollStateFlags &
+      (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
+       UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
+    return;
+  }
+  cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN;
+  if ((control->scrollStateFlags &
+      (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
+    cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_VERTICAL;
+  }
+  if ((control->scrollStateFlags &
+      (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
+    cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL;
+  }
+  g_GraphicsCursorSetFrame(cursorFrame);
   return;
 }
 
@@ -2718,28 +2727,30 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
 
 {
   int columnWidth;
+  int firstRowIndex;
   int rowTop;
   uint8_t *rowRecord;
   uint32_t lastRowIndex;
   int columnX;
   void **lastRowSlot;
-  int widthOrColumnCount;
+  int highlightWidth;
+  int columnsRemaining;
   UiListColumn *column;
   void **rowSlot;
   uint16_t *commandStream;
   bool accessFailed;
   RichTextExtent textExtent;
   GraphicsTextureLogicalSize textureSize;
-  
+
   if (control->rowCount != 0) {
-    rowTop = (clipTop - (control->base).top) / (int)control->rowHeight;
-    if (rowTop < 0) {
-      rowTop = 0;
+    firstRowIndex = (clipTop - (control->base).top) / (int)control->rowHeight;
+    if (firstRowIndex < 0) {
+      firstRowIndex = 0;
     }
-    rowSlot = control->rowSlots + rowTop;
+    rowSlot = control->rowSlots + firstRowIndex;
     lastRowIndex =
          (uint32_t)(((clipBottom - (control->base).top) + (int)control->rowHeight) / (int)control->rowHeight);
-    rowTop = rowTop * (int)control->rowHeight;
+    rowTop = firstRowIndex * (int)control->rowHeight;
     if (control->rowCount <= lastRowIndex) {
       lastRowIndex = control->rowCount - 1;
     }
@@ -2747,21 +2758,21 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
     if (rowSlot <= lastRowSlot) {
       accessFailed = g_GraphicsFramebufferBeginAccess();
       if (!accessFailed) {
-        do {
+        for (; rowSlot <= lastRowSlot; rowSlot++) {
           if (rowSlot == control->selectedRowSlot) {
-            widthOrColumnCount = (control->base).layoutWidth;
+            highlightWidth = (control->base).layoutWidth;
             if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
-                        (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,widthOrColumnCount,
+                        (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,highlightWidth,
                          rowTop,0,control);
             }
             else {
               textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,
                                                                   g_UiWindowTextureSource);
-              widthOrColumnCount = widthOrColumnCount - textureSize.logicalWidthPixels;
+              highlightWidth = highlightWidth - textureSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
                         (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,
-                         widthOrColumnCount,rowTop,
+                         highlightWidth,rowTop,
                          textureSize.logicalWidthPixels,control);
               g_GraphicsTextureSourceBlitSourceAlpha
                         (clipBottom,clipRight,clipTop,clipLeft,rowTop + (control->base).top,
@@ -2769,41 +2780,36 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
                          g_FramebufferAccess);
               g_GraphicsTextureSourceBlitSourceAlpha
                         (clipBottom,clipRight,clipTop,clipLeft,rowTop + (control->base).top,
-                         widthOrColumnCount + (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT,
+                         highlightWidth + (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT,
                          g_UiWindowTextureSource,
                          g_FramebufferAccess);
             }
           }
-          widthOrColumnCount = control->columnCount;
           rowRecord = (uint8_t *)*rowSlot;
-          if (widthOrColumnCount != 0) {
-            columnX = 3; /* text inset */
-            column = control->columns;
-            do {
-              columnWidth = column->width;
-              if (columnWidth < 0) {
-                columnX = columnX - columnWidth;
-                commandStream = (uint16_t *)(rowRecord + column->rowTextOffset);
-                textExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,commandStream);
-                RichTextCommandStream_DrawSingleLine
-                          (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,commandStream,
-                           rowTop + 1 + (control->base).top,
-                           (columnX - (textExtent.widthPixels + 6)) + (control->base).left);
-              }
-              else {
-                columnX = columnX + columnWidth;
-                RichTextCommandStream_DrawSingleLine
-                          (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,
-                           (uint16_t *)(rowRecord + column->rowTextOffset),
-                           rowTop + 1 + (control->base).top,(columnX - columnWidth) + (control->base).left);
-              }
-              column++;
-              widthOrColumnCount--;
-            } while (widthOrColumnCount != 0);
+          columnX = 3; /* text inset */
+          column = control->columns;
+          for (columnsRemaining = control->columnCount; columnsRemaining != 0; columnsRemaining--) {
+            columnWidth = column->width;
+            if (columnWidth < 0) {
+              columnX = columnX - columnWidth;
+              commandStream = (uint16_t *)(rowRecord + column->rowTextOffset);
+              textExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,commandStream);
+              RichTextCommandStream_DrawSingleLine
+                        (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,commandStream,
+                         rowTop + 1 + (control->base).top,
+                         (columnX - (textExtent.widthPixels + 6)) + (control->base).left);
+            }
+            else {
+              columnX = columnX + columnWidth;
+              RichTextCommandStream_DrawSingleLine
+                        (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,
+                         (uint16_t *)(rowRecord + column->rowTextOffset),
+                         rowTop + 1 + (control->base).top,(columnX - columnWidth) + (control->base).left);
+            }
+            column++;
           }
-          rowSlot++;
           rowTop = (int)control->rowHeight + rowTop;
-        } while (rowSlot <= lastRowSlot);
+        }
         g_GraphicsFramebufferEndAccess();
       }
     }
@@ -2820,9 +2826,11 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
 void UiListControl_TickActivationPulse(UiListControl *control)
 
 {
-  if (((control->listStateFlags & UI_LIST_DEFERRED_ACTION_PENDING) != 0) &&
-     (control->listStateFlags = control->listStateFlags - UI_LIST_COUNTDOWN_ONE,
-     (control->listStateFlags & UI_LIST_COUNTDOWN_MASK) == 0)) {
+  if ((control->listStateFlags & UI_LIST_DEFERRED_ACTION_PENDING) == 0) {
+    return;
+  }
+  control->listStateFlags = control->listStateFlags - UI_LIST_COUNTDOWN_ONE;
+  if ((control->listStateFlags & UI_LIST_COUNTDOWN_MASK) == 0) {
     control->listStateFlags =
          control->listStateFlags &
          (UI_LIST_FLAGS_MASK & ~(UI_LIST_DEFERRED_ACTION_PENDING|UI_LIST_SELECTION_CONFIRMED));
@@ -3068,9 +3076,11 @@ void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int cl
 void UiTimedListControl_TickActionDelay(UiTimedListControl *control)
 
 {
-  if (((control->listStateAndDelay & UI_TIMED_LIST_ACTION_DELAY_PENDING) != 0) &&
-     (control->listStateAndDelay = control->listStateAndDelay - UI_LIST_COUNTDOWN_ONE,
-     (control->listStateAndDelay & UI_LIST_COUNTDOWN_MASK) == 0)) {
+  if ((control->listStateAndDelay & UI_TIMED_LIST_ACTION_DELAY_PENDING) == 0) {
+    return;
+  }
+  control->listStateAndDelay = control->listStateAndDelay - UI_LIST_COUNTDOWN_ONE;
+  if ((control->listStateAndDelay & UI_LIST_COUNTDOWN_MASK) == 0) {
     control->listStateAndDelay =
          control->listStateAndDelay & (UI_LIST_FLAGS_MASK & ~UI_TIMED_LIST_ACTION_DELAY_PENDING);
     UiActionQueue_Enqueue(control->actionId,control);
@@ -3808,38 +3818,39 @@ void UiScrollableControl_ClampOffsetsToViewport
 
 {
   char changeCount;
-  int viewLeftOrOverflow;
+  int viewLeft;
   int viewTop;
   int viewBottom;
   int viewRight;
   int horizontalOverflow;
-  
+  int verticalOverflow;
+
   if ((control->base).vtable == &g_UiScrollableControlVtable) {
     /* the visible content rectangle; the scroll offsets are the negated view position */
-    viewLeftOrOverflow = -control->scrollOffsetX;
+    viewLeft = -control->scrollOffsetX;
     viewTop = -control->scrollOffsetY;
     changeCount = 0;
-    viewRight = control->viewportWidth + viewLeftOrOverflow;
+    viewRight = control->viewportWidth + viewLeft;
     viewBottom = control->viewportHeight + viewTop;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
       horizontalOverflow = viewRight - targetRight;
-      changeCount = viewRight < targetRight;
-      if ((bool)changeCount) {
-        control->scrollOffsetX = control->scrollOffsetX + horizontalOverflow;
-        viewLeftOrOverflow = viewLeftOrOverflow - horizontalOverflow;
-      }
-      if (viewLeftOrOverflow - targetLeft != 0 && targetLeft <= viewLeftOrOverflow) {
+      if (viewRight < targetRight) {
         changeCount++;
-        control->scrollOffsetX = control->scrollOffsetX + (viewLeftOrOverflow - targetLeft);
+        control->scrollOffsetX = control->scrollOffsetX + horizontalOverflow;
+        viewLeft = viewLeft - horizontalOverflow;
+      }
+      if (viewLeft - targetLeft != 0 && targetLeft <= viewLeft) {
+        changeCount++;
+        control->scrollOffsetX = control->scrollOffsetX + (viewLeft - targetLeft);
       }
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      viewLeftOrOverflow = viewBottom - targetBottom;
+      verticalOverflow = viewBottom - targetBottom;
       if (viewBottom < targetBottom) {
-        control->scrollOffsetY = control->scrollOffsetY + viewLeftOrOverflow;
-        viewTop = viewTop - viewLeftOrOverflow;
+        control->scrollOffsetY = control->scrollOffsetY + verticalOverflow;
+        viewTop = viewTop - verticalOverflow;
         changeCount++;
       }
       if (viewTop - targetTop != 0 && targetTop <= viewTop) {

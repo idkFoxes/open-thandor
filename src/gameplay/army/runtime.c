@@ -726,6 +726,168 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
 }
 
 
+/* Takes the first queued secondary asset whose flags match the factory definition's buildable mask
+   (classParameterC4) and which the faction can pay for: the Xenite is paid, the build interval and the asset's
+   Energy load (held while building) are stored in the factory, and the factory starts building. */
+static void ArmyUnitFactory_StartBuildingFirstAffordableAsset(ModelRuntimeUpdateView *modelRuntime,
+          FactionRuntimeIndex factionIndex)
+{
+  FactionArmyAssetCount remainingAssetCount;
+  uint32_t *queueEntry;
+  ArmyAssetRecord *candidateAsset;
+  uint32_t xeniteCostQ4;
+  uint32_t buildTicks;
+  uint32_t energyLoadQ4;
+  PckArmyAssetIdCatalog selectedAssetId;
+
+  remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
+  queueEntry = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
+  for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1, queueEntry = queueEntry + 1) {
+    candidateAsset = (ArmyAssetRecord *)*queueEntry;
+    if ((candidateAsset->flags & modelRuntime->modelDefinition->classParameterC4) == 0) {
+      continue;
+    }
+    xeniteCostQ4 = candidateAsset->xeniteCostQ4;
+    if (g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 < xeniteCostQ4) {
+      continue;
+    }
+    g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
+         g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - xeniteCostQ4;
+    buildTicks = candidateAsset->buildTicks;
+    energyLoadQ4 = candidateAsset->energyLoadQ4;
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+      buildTicks = (buildTicks >> 4) + 1;
+    }
+    selectedAssetId = candidateAsset->registryId;
+    (modelRuntime->classLinkState).classState68 = buildTicks;
+    (modelRuntime->classLinkState).classState74 = energyLoadQ4;
+    (modelRuntime->classLinkState).modelLinkOrState.classState = (uint32_t)selectedAssetId;
+    (modelRuntime->classState).energyLoadQ4 = (modelRuntime->classState).energyLoadQ4 + energyLoadQ4;
+    (modelRuntime->classLinkState).classState64 = 0;
+    g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount =
+         g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
+    /* remove the entry: shift the rest of the queue down by one */
+    do {
+      *queueEntry = queueEntry[1];
+      queueEntry = queueEntry + 1;
+      remainingAssetCount = remainingAssetCount - 1;
+    } while (remainingAssetCount != 0);
+    (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_BUILDING;
+    (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags | ARMY_MODEL_STATE_PRODUCING;
+    return;
+  }
+}
+
+/* Plays the factory definition's one-shot sound at the factory, unless the factory's terrain cell has mask bits
+   0/1 set. */
+static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime,
+          ModelDefinition *factoryDefinition)
+{
+  uint32_t soundIndex;
+  ModelRuntimeNode *rootNode;
+  DirectSoundVoiceSet **soundVoiceSet;
+  GraphicsFixedVec3 *translationVec;
+
+  soundIndex = factoryDefinition->primarySoundIndex;
+  if ((soundIndex == 0) || (worldRuntime->dwordArrayCount <= soundIndex) || (worldRuntime->dwordArray == NULL)) {
+    return;
+  }
+  rootNode = modelRuntime->rootModelNode;
+  /* Original quirk (0x0052499F, 0x00524B0B): the voice set is read from rootNode + index * 4, not from
+     worldRuntime->dwordArray, which is only tested for NULL. */
+  soundVoiceSet = *(DirectSoundVoiceSet ***)((uint8_t *)rootNode + soundIndex * 4);
+  translationVec = &(rootNode->worldTransform).translation;
+  if (soundVoiceSet == NULL) {
+    return;
+  }
+  if (!TerrainGrid_TestProjectedCellMaskBits01((rootNode->worldTransform).translation.y,translationVec->x,
+                                               worldRuntime)) {
+    SpatialSound_PlayPositionedOneShot
+              (factoryDefinition->positionedSoundMaximumDistanceQ12,factoryDefinition->positionedSoundGainQ15,
+               translationVec,soundVoiceSet);
+  }
+}
+
+/* The build is done: creates the army at the spawn point (lookup key 0/5), heading towards the exit point (lookup
+   key 1/5), links it to the factory, releases the held Energy load, starts opening the door and, for the active
+   faction, queues the "army created" notification. */
+static void ArmyUnitFactory_CreateBuiltArmy(WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime,
+          ModelRuntimeNode *rootNode)
+{
+  ModelPackedPointRecord *packedPoint;
+  ModelWorldPoint exitPoint;
+  ModelWorldPoint spawnPoint;
+  uint32_t exitXQ12;
+  uint32_t exitYQ12;
+  uint32_t spawnHeading;
+  ArmyRuntimeSlot *ownerArmyRuntime;
+  ArmyRuntimeSlot *createdArmyRuntime;
+  ModelRuntimeSlot *createdModelRuntime;
+  ModelRuntimeNode *createdNode;
+  ModelDefinition *createdDefinition;
+  ModelDefinition *factoryDefinition;
+  FactionRuntimeIndex createdFactionIndex;
+  uint32_t heldEnergyLoadQ4;
+  uint32_t viewPitchAngle;
+  int nodeHeading;
+  InGameNotificationMovieId notificationMovieId;
+  ArmyAssetRecordPrefix *unusedArmyAsset;
+
+  if (!ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
+    return;
+  }
+  exitPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
+  exitYQ12 = exitPoint.yQ12;
+  exitXQ12 = exitPoint.xQ12;
+  if (!ModelLookupTable_FindPackedPoint(0,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
+    return;
+  }
+  spawnPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
+  spawnHeading = FixedMath_Atan2Angle16(exitYQ12 - spawnPoint.yQ12,exitXQ12 - spawnPoint.xQ12);
+  ownerArmyRuntime = modelRuntime->ownerArmyRuntime;
+  createdArmyRuntime = ArmyRuntime_CreateInstanceFromAsset
+                     (4,spawnHeading,spawnPoint.yQ12,spawnPoint.xQ12,ownerArmyRuntime->factionIndex,
+                      (modelRuntime->classLinkState).modelLinkOrState.classState,worldRuntime,NULL);
+  if (createdArmyRuntime == NULL) {
+    return;
+  }
+  g_GameFactionRuntimeImage.records[ownerArmyRuntime->factionIndex].relationCounterA =
+       g_GameFactionRuntimeImage.records[ownerArmyRuntime->factionIndex].relationCounterA + 1;
+  factoryDefinition = modelRuntime->modelDefinition;
+  createdArmyRuntime->movementStateFlags = createdArmyRuntime->movementStateFlags |
+                                           (ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_LOCKED);
+  ArmyUnitFactory_PlayPrimarySound(worldRuntime,modelRuntime,factoryDefinition);
+  heldEnergyLoadQ4 = (modelRuntime->classLinkState).classState74;
+  (modelRuntime->classLinkState).armyLinkOrState.armyRuntime = createdArmyRuntime;
+  createdFactionIndex = createdArmyRuntime->factionIndex;
+  (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_OPENING;
+  (modelRuntime->classLinkState).classState74 = 0;
+  (modelRuntime->classState).energyLoadQ4 = (modelRuntime->classState).energyLoadQ4 - heldEnergyLoadQ4;
+  createdModelRuntime = createdArmyRuntime->modelRuntimeOrSavedOffset.modelRuntime;
+  createdArmyRuntime->movementStateFlags = createdArmyRuntime->movementStateFlags | ARMY_MOVEMENT_LOCKED;
+  /* the new army links back to this factory until it has left (ARMY_FACTORY_STATE_WAITING_EXIT) */
+  createdModelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = (ModelRuntimeSlot *)modelRuntime;
+  if (createdFactionIndex != worldRuntime->activeFactionRuntimeIndex) {
+    return;
+  }
+  /* result unused (the lookup only records an unknown id in g_PackageLastErrorPath) */
+  ArmyAssetRegistry_FindById((modelRuntime->classLinkState).modelLinkOrState.classState,&unusedArmyAsset);
+  viewPitchAngle = (worldRuntime->motion).pitchAngle;
+  createdNode = createdModelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  createdDefinition = createdModelRuntime->definitionOrSavedId.runtimeDefinition;
+  nodeHeading = createdNode->modelPayload.worldRotationAngle2;
+  createdDefinition->builtCount = createdDefinition->builtCount + 1;
+  notificationMovieId = createdDefinition->firstBuiltNotificationMovieId;
+  if (createdDefinition->builtCount != 1) {
+    notificationMovieId = createdDefinition->nextBuiltNotificationMovieId;
+  }
+  InGameNotificationQueue_InsertPriorityRecord
+            (ARMY_CREATED,0,viewPitchAngle,
+             nodeHeading + ARMY_FACTORY_NOTIFICATION_HEADING_OFFSET_ANGLE16 & FIXED_ANGLE16_MASK,
+             createdNode->worldTransform.translation.y,createdNode->worldTransform.translation.x,2,
+             notificationMovieId);
+}
+
 /* Address: 0x00524740.
    Runtime update of the unit factory class (13), reached only through
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[13]. On the first update it stores the
@@ -737,36 +899,14 @@ void ArmyRuntimeClass_UpdateUnitFactory
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
 
 {
-  uint32_t *exitPointPendingFlags;
-  FactionRelationCounter *relationCounter;
-  uint32_t *derivedValue;
-  FactionArmyAssetCount *assetCountField;
   ModelRuntimeNode *rootNode;
-  ModelDefinition *semanticDefinition;
+  ModelDefinition *factoryDefinition;
   ModelRuntimeSlot *linkedModelRuntime;
-  int factionOrNodeValue;
-  ModelRuntimeSlot *createdModelRuntime;
-  ModelRuntimeNode *createdNode;
-  ModelDefinition *createdDefinition;
-  int nodeHeading;
-  DirectSoundVoiceSet **soundVoiceSet;
-  ModelRuntimeSlotLinkOrState selectedAssetLink;
-  uint32_t stateValue;
-  ArmyRuntimeSlot *createdArmyRuntime;
-  Q12 targetWorldXQ12;
-  uint32_t secondaryValue;
-  Q12 worldXQ12;
-  GraphicsFixedVec3 *translationVec;
-  FactionArmyAssetCount remainingAssetCount;
-  Q12 worldYQ12;
-  uint32_t tickOrSoundIndex;
-  uint32_t *dwordCursor;
-  bool cellMasked;
+  uint32_t behaviorState;
+  uint32_t elapsedTicks;
   ModelPackedPointRecord *packedPoint;
   ModelWorldPoint localPoint;
-  InGameNotificationMovieId notificationMovieId;
   ArmyRuntimeSlot *linkedArmyRuntime;
-  ArmyAssetRecordPrefix *unusedArmyAsset;
 
   rootNode = modelRuntime->rootModelNode;
   if (((modelRuntime->classState).classStateBC & 1) != 0) {
@@ -774,60 +914,20 @@ void ArmyRuntimeClass_UpdateUnitFactory
       localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
       (modelRuntime->classLinkState).classState78 = localPoint.xQ12;
       (modelRuntime->classLinkState).classState7C = localPoint.yQ12;
-      exitPointPendingFlags = &(modelRuntime->classState).classStateBC;
-      *exitPointPendingFlags = *exitPointPendingFlags & ~1u;
+      (modelRuntime->classState).classStateBC = (modelRuntime->classState).classStateBC & ~1u;
     }
   }
-  stateValue = (modelRuntime->classState).behaviorState;
-  semanticDefinition = modelRuntime->modelDefinition;
+  behaviorState = (modelRuntime->classState).behaviorState;
+  factoryDefinition = modelRuntime->modelDefinition;
   if ((3 < rootNode->childCount) && (rootNode->childNodes[3] != NULL)) {
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
     rootNode->childNodes[3] = NULL;
   }
-  switch(stateValue) {
+  switch(behaviorState) {
   case ARMY_FACTORY_STATE_IDLE: /* start the first affordable queued asset this factory can build */
     if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
       if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) {
-        factionOrNodeValue = modelRuntime->ownerArmyRuntime->factionIndex;
-        remainingAssetCount = g_GameFactionRuntimeImage.records[factionOrNodeValue].secondaryArmyAssetCount;
-        dwordCursor = g_GameFactionRuntimeImage.records[factionOrNodeValue].secondaryArmyAssetPointersOrIds;
-        if (remainingAssetCount != 0) {
-          do {
-            if (((((ArmyAssetRecord *)*dwordCursor)->flags &
-                 modelRuntime->modelDefinition->classParameterC4) != 0) &&
-               (tickOrSoundIndex = ((ArmyAssetRecord *)*dwordCursor)->xeniteCostQ4,
-               tickOrSoundIndex <= g_GameFactionRuntimeImage.records[factionOrNodeValue].xeniteCurrentQ4)) {
-              stateValue = *dwordCursor;
-              g_GameFactionRuntimeImage.records[factionOrNodeValue].xeniteCurrentQ4 =
-                   g_GameFactionRuntimeImage.records[factionOrNodeValue].xeniteCurrentQ4 - tickOrSoundIndex;
-              tickOrSoundIndex = ((ArmyAssetRecord *)stateValue)->buildTicks;
-              secondaryValue = ((ArmyAssetRecord *)stateValue)->energyLoadQ4;
-              if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
-                tickOrSoundIndex = (tickOrSoundIndex >> 4) + 1;
-              }
-              selectedAssetLink = *(ModelRuntimeSlotLinkOrState *)&((ArmyAssetRecord *)stateValue)->registryId;
-              (modelRuntime->classLinkState).classState68 = tickOrSoundIndex;
-              (modelRuntime->classLinkState).classState74 = secondaryValue;
-              (modelRuntime->classLinkState).modelLinkOrState = selectedAssetLink;
-              derivedValue = &(modelRuntime->classState).energyLoadQ4;
-              *derivedValue = *derivedValue + secondaryValue;
-              (modelRuntime->classLinkState).classState64 = 0;
-              assetCountField = &g_GameFactionRuntimeImage.records[factionOrNodeValue].secondaryArmyAssetCount;
-              *assetCountField = *assetCountField - 1;
-              do {
-                *dwordCursor = dwordCursor[1];
-                dwordCursor = dwordCursor + 1;
-                remainingAssetCount = remainingAssetCount - 1;
-              } while (remainingAssetCount != 0);
-              (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_BUILDING;
-              dwordCursor = &(modelRuntime->classState).stateFlags;
-              *dwordCursor = *dwordCursor | ARMY_MODEL_STATE_PRODUCING;
-              break;
-            }
-            dwordCursor = dwordCursor + 1;
-            remainingAssetCount = remainingAssetCount - 1;
-          } while (remainingAssetCount != 0);
-        }
+        ArmyUnitFactory_StartBuildingFirstAffordableAsset(modelRuntime,modelRuntime->ownerArmyRuntime->factionIndex);
       }
     }
     else if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
@@ -838,98 +938,30 @@ void ArmyRuntimeClass_UpdateUnitFactory
   case ARMY_FACTORY_STATE_BUILDING: /* when done create the army at the spawn point (lookup keys 1/5 and 0/5 give
                                        its heading) */
     if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
-      dwordCursor = &(modelRuntime->classLinkState).classState64;
-      *dwordCursor = *dwordCursor + g_InGameSimulationStepTicks;
+      (modelRuntime->classLinkState).classState64 =
+           (modelRuntime->classLinkState).classState64 + g_InGameSimulationStepTicks;
       ArmyRuntime_UpdateTimedShotAndEffectEmitters(worldRuntime,modelRuntime);
-      tickOrSoundIndex = (modelRuntime->classLinkState).classState64;
+      elapsedTicks = (modelRuntime->classLinkState).classState64;
       ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,modelRuntime);
-      if ((modelRuntime->classLinkState).classState68 <= tickOrSoundIndex) {
-        if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
-          localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
-          secondaryValue = localPoint.yQ12;
-          stateValue = localPoint.xQ12;
-          if (ModelLookupTable_FindPackedPoint(0,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
-            localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
-            stateValue = FixedMath_Atan2Angle16(secondaryValue - localPoint.yQ12,stateValue - localPoint.xQ12);
-            linkedArmyRuntime = modelRuntime->ownerArmyRuntime;
-            createdArmyRuntime = ArmyRuntime_CreateInstanceFromAsset
-                               (4,stateValue,localPoint.yQ12,localPoint.xQ12,linkedArmyRuntime->factionIndex,
-                                (modelRuntime->classLinkState).modelLinkOrState.classState,
-                                worldRuntime,NULL);
-            if (createdArmyRuntime != NULL) {
-              relationCounter = &g_GameFactionRuntimeImage.records[linkedArmyRuntime->factionIndex].
-                        relationCounterA;
-              *relationCounter = *relationCounter + 1;
-              semanticDefinition = modelRuntime->modelDefinition;
-              createdArmyRuntime->movementStateFlags = createdArmyRuntime->movementStateFlags |
-                                                 (ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_LOCKED);
-              tickOrSoundIndex = semanticDefinition->primarySoundIndex;
-              if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-                 (worldRuntime->dwordArray != NULL)) {
-                rootNode = modelRuntime->rootModelNode;
-                /* as in the original (0x0052499F): the voice set is read from rootNode + index * 4, not from
-                   worldRuntime->dwordArray, which is only tested for NULL */
-                soundVoiceSet = *(DirectSoundVoiceSet ***)((uint8_t *)rootNode + tickOrSoundIndex * 4);
-                translationVec = &(rootNode->worldTransform).translation;
-                if ((soundVoiceSet != NULL) &&
-                   (cellMasked = TerrainGrid_TestProjectedCellMaskBits01
-                                       ((rootNode->worldTransform).translation.y,translationVec->x,
-                                        worldRuntime), !cellMasked)) {
-                  SpatialSound_PlayPositionedOneShot
-                            (semanticDefinition->positionedSoundMaximumDistanceQ12,
-                             semanticDefinition->positionedSoundGainQ15,translationVec,soundVoiceSet);
-                }
-              }
-              stateValue = (modelRuntime->classLinkState).classState74;
-              (modelRuntime->classLinkState).armyLinkOrState.armyRuntime = createdArmyRuntime;
-              factionOrNodeValue = createdArmyRuntime->factionIndex;
-              (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_OPENING;
-              (modelRuntime->classLinkState).classState74 = 0;
-              dwordCursor = &(modelRuntime->classState).energyLoadQ4;
-              *dwordCursor = *dwordCursor - stateValue;
-              createdModelRuntime = createdArmyRuntime->modelRuntimeOrSavedOffset.modelRuntime;
-              createdArmyRuntime->movementStateFlags = createdArmyRuntime->movementStateFlags | ARMY_MOVEMENT_LOCKED;
-              /* the new army links back to this factory until it has left (case 3) */
-              createdModelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = (ModelRuntimeSlot *)modelRuntime;
-              if (factionOrNodeValue == worldRuntime->activeFactionRuntimeIndex) {
-                /* result unused (the lookup only records an unknown id in g_PackageLastErrorPath) */
-                ArmyAssetRegistry_FindById
-                          ((modelRuntime->classLinkState).modelLinkOrState.classState,&unusedArmyAsset);
-                stateValue = (worldRuntime->motion).pitchAngle;
-                createdNode = createdModelRuntime->rootModelNodeOrSavedOffset.modelNode;
-                createdDefinition = createdModelRuntime->definitionOrSavedId.runtimeDefinition;
-                nodeHeading = createdNode->modelPayload.worldRotationAngle2;
-                createdDefinition->builtCount = createdDefinition->builtCount + 1;
-                notificationMovieId = createdDefinition->firstBuiltNotificationMovieId;
-                if (createdDefinition->builtCount != 1) {
-                  notificationMovieId = createdDefinition->nextBuiltNotificationMovieId;
-                }
-                InGameNotificationQueue_InsertPriorityRecord
-                          (ARMY_CREATED,0,stateValue,nodeHeading + ARMY_FACTORY_NOTIFICATION_HEADING_OFFSET_ANGLE16 & FIXED_ANGLE16_MASK,
-                           createdNode->worldTransform.translation.y,
-                           createdNode->worldTransform.translation.x,2,notificationMovieId);
-              }
-            }
-          }
-        }
+      if ((modelRuntime->classLinkState).classState68 <= elapsedTicks) {
+        ArmyUnitFactory_CreateBuiltArmy(worldRuntime,modelRuntime,rootNode);
       }
     }
     break;
   case ARMY_FACTORY_STATE_OPENING: /* then send the new army out to the point stored at +0x78/+0x7C */
     rootNode->primaryTextureOffsetV =
          rootNode->primaryTextureOffsetV +
-         semanticDefinition->movementSpeed * g_InGameSimulationStepTicks;
+         factoryDefinition->movementSpeed * g_InGameSimulationStepTicks;
     if (ARMY_DOOR_TEXTURE_OPEN_V - 1 < rootNode->primaryTextureOffsetV) {
       rootNode->primaryTextureOffsetV = ARMY_DOOR_TEXTURE_OPEN_V;
       (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_WAITING_EXIT;
       if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
         linkedArmyRuntime = (modelRuntime->classLinkState).armyLinkOrState.armyRuntime;
         localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
-        targetWorldXQ12 = localPoint.yQ12;
         linkedModelRuntime = (linkedArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
         ArmyRuntime_StartMoveCommandWithAuxiliaryValues
                   ((modelRuntime->classLinkState).classState7C,
-                   (modelRuntime->classLinkState).classState78,targetWorldXQ12,localPoint.xQ12,
+                   (modelRuntime->classLinkState).classState78,localPoint.yQ12,localPoint.xQ12,
                    (ArmyMovementRuntime *)linkedArmyRuntime);
         (linkedModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime =
              (ModelRuntimeSlot *)modelRuntime;
@@ -942,36 +974,20 @@ void ArmyRuntimeClass_UpdateUnitFactory
        ((ModelRuntimeUpdateView *)
         (((linkedArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).
         linkedArmyRuntimeOrSavedOffset.modelRuntime != modelRuntime)) {
-      semanticDefinition = modelRuntime->modelDefinition;
+      factoryDefinition = modelRuntime->modelDefinition;
       (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_CLOSING;
       (modelRuntime->classLinkState).armyLinkOrState.armyRuntime = NULL;
-      tickOrSoundIndex = semanticDefinition->primarySoundIndex;
-      if ((tickOrSoundIndex != 0) &&
-         ((tickOrSoundIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)))) {
-        rootNode = modelRuntime->rootModelNode;
-        /* same original quirk as in case 1 (0x00524B0B) */
-        soundVoiceSet = *(DirectSoundVoiceSet ***)((uint8_t *)rootNode + tickOrSoundIndex * 4);
-        translationVec = &(rootNode->worldTransform).translation;
-        if ((soundVoiceSet != NULL) &&
-           (cellMasked = TerrainGrid_TestProjectedCellMaskBits01
-                               ((rootNode->worldTransform).translation.y,translationVec->x,worldRuntime),
-           !cellMasked)) {
-          SpatialSound_PlayPositionedOneShot
-                    (semanticDefinition->positionedSoundMaximumDistanceQ12,semanticDefinition->positionedSoundGainQ15,
-                     translationVec,soundVoiceSet);
-        }
-      }
+      ArmyUnitFactory_PlayPrimarySound(worldRuntime,modelRuntime,factoryDefinition);
     }
     break;
   case ARMY_FACTORY_STATE_CLOSING:
     rootNode->primaryTextureOffsetV =
          rootNode->primaryTextureOffsetV -
-         semanticDefinition->movementSpeed * g_InGameSimulationStepTicks;
+         factoryDefinition->movementSpeed * g_InGameSimulationStepTicks;
     if (rootNode->primaryTextureOffsetV < 1) {
       rootNode->primaryTextureOffsetV = 0;
       (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_IDLE;
-      dwordCursor = &(modelRuntime->classState).stateFlags;
-      *dwordCursor = *dwordCursor & ~ARMY_MODEL_STATE_PRODUCING;
+      (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags & ~ARMY_MODEL_STATE_PRODUCING;
     }
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
@@ -2693,6 +2709,65 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
   (ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 3) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 2) | \
    ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 1) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 0))
 
+/* One output pixel of the preview downsampling (MMX in the original): the four ARGB pixels of a 2x2 block are
+   premultiplied by their alpha, summed per channel with the rounding bias and scaled by the reciprocal of their
+   average alpha. */
+static uint32_t ArmyPreview_AverageAlphaWeighted2x2(uint32_t pixelTopLeft,uint32_t pixelTopRight,
+          uint32_t pixelBottomLeft,uint32_t pixelBottomRight)
+{
+  uint64_t topLeftLanes;
+  uint64_t topRightLanes;
+  uint64_t bottomLeftLanes;
+  uint64_t bottomRightLanes;
+  uint64_t alphaReciprocal;
+  uint16_t channelSum0;
+  uint16_t channelSum1;
+  uint16_t channelSum2;
+  uint16_t channelSum3;
+  uint16_t channelClamp0;
+  uint16_t channelClamp1;
+  uint16_t channelClamp2;
+  uint16_t channelClamp3;
+
+  /* PUNPCKLBW mm,mm; PSRLW mm,4: each pixel byte b becomes the 16-bit lane (b * 0x101) >> 4. */
+  topLeftLanes =
+       pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopLeft),
+              g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelTopLeft >> 24]);
+  topRightLanes =
+       pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopRight),
+              g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelTopRight >> 24]);
+  bottomLeftLanes =
+       pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomLeft),
+              g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelBottomLeft >> 24]);
+  bottomRightLanes =
+       pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomRight),
+              g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelBottomRight >> 24]);
+  alphaReciprocal =
+       g_ArmyPreviewAverageAlphaReciprocalMmxLut256
+       [((pixelTopLeft >> 24) + (pixelTopRight >> 24) + (pixelBottomLeft >> 24) + (pixelBottomRight >> 24)) >> 2];
+  channelSum0 = ((short)topLeftLanes + (short)topRightLanes + (short)bottomLeftLanes + (short)bottomRightLanes +
+                 (short)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx) * (short)alphaReciprocal;
+  channelSum1 = ((short)(topLeftLanes >> 16) + (short)(topRightLanes >> 16) + (short)(bottomLeftLanes >> 16) +
+                 (short)(bottomRightLanes >> 16) +
+                 (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 16)) *
+                (short)(alphaReciprocal >> 16);
+  channelSum2 = ((short)(topLeftLanes >> 32) + (short)(topRightLanes >> 32) + (short)(bottomLeftLanes >> 32) +
+                 (short)(bottomRightLanes >> 32) +
+                 (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 32)) *
+                (short)(alphaReciprocal >> 32);
+  channelSum3 = ((short)(topLeftLanes >> 48) + (short)(topRightLanes >> 48) + (short)(bottomLeftLanes >> 48) +
+                 (short)(bottomRightLanes >> 48) +
+                 (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 48)) *
+                (short)(alphaReciprocal >> 48);
+  channelClamp0 = channelSum0 >> 8;
+  channelClamp1 = channelSum1 >> 8;
+  channelClamp2 = channelSum2 >> 8;
+  channelClamp3 = channelSum3 >> 8;
+  /* PSRLW 8 leaves every lane <= 0xFF, so PACKUSWB never saturates: it just packs the low bytes. */
+  return (uint32_t)(uint8_t)channelClamp3 << 24 | (uint32_t)(uint8_t)channelClamp2 << 16 |
+         (uint32_t)(uint8_t)channelClamp1 << 8 | (uint32_t)(uint8_t)channelClamp0;
+}
+
 /* Address: 0x0051BC00.
    Renders the picture of an army type for the in-game panels: spawns a temporary army of armyAssetId for
    factionIndex, turns it to a fixed three-quarter view, frames its bounds and renders it off screen at twice the
@@ -2705,171 +2780,110 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
           WorldRuntimeContext *worldRuntime)
 
 {
-  uint64_t alphaReciprocal;
-  ModelRuntimeNode *rootNodeOrSize;
-  uint32_t pixelTopLeft;
-  uint32_t pixelTopRight;
-  uint32_t pixelBottomLeft;
-  uint32_t pixelBottomRight;
-  GraphicsPixelDimension savedPreviewWidth;
-  GameEntityRuntime *previewArmyOrValue;
+  ModelRuntimeNode *rootNode;
+  GameEntityRuntime *previewArmy;
   int boundsSpanY;
   GameEntityRuntime *previewTexture;
-  void *halvedWidth;
   int boundsSpanZ;
   int maxBoundsSpan;
-  Q12 *sourcePixels;
-  Q12 *destinationPixels;
-  uint16_t topLeftAlphaOrSum0;
-  uint16_t topRightAlphaOrClamp0;
-  uint16_t bottomLeftAlphaOrSum1;
-  uint16_t bottomRightAlphaOrClamp1;
-  uint16_t channelSum2;
-  uint16_t channelClamp2;
-  uint64_t mm0PackedValue0;
-  uint16_t channelSum3;
-  uint16_t channelClamp3;
-  uint64_t mm1PackedValue0;
-  uint64_t mm2PackedValue0;
-  uint64_t mm3PackedValue0;
+  uint32_t *sourcePixels;
+  uint32_t *destinationPixels;
+  GraphicsPixelDimension remainingRows;
+  GraphicsPixelDimension remainingColumns;
+  int halvedWidth;
+  int halvedHeight;
+  uint32_t allocationSize;
 
-  savedPreviewWidth = previewWidth;
   /* a temporary army at world position (ARMY_PREVIEW_WORLD_POSITION_Q12 on both axes) */
-  previewArmyOrValue = (GameEntityRuntime *)ArmyRuntime_CreateInstanceFromAsset
+  previewArmy = (GameEntityRuntime *)ArmyRuntime_CreateInstanceFromAsset
                      (1,0,ARMY_PREVIEW_WORLD_POSITION_Q12,ARMY_PREVIEW_WORLD_POSITION_Q12,factionIndex,armyAssetId,
                       worldRuntime,NULL);
-  if (previewArmyOrValue != NULL) {
-    rootNodeOrSize = (previewArmyOrValue->common).ownership.modelNode;
-    /* armies of runtime class 13 lose their fourth child node */
-    if (((((ModelRuntimeSlot *)(previewArmyOrValue->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
-          runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (3 < rootNodeOrSize->childCount)) &&
-       (rootNodeOrSize->childNodes[3] != NULL)) {
-      WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNodeOrSize->childNodes[3]);
-      rootNodeOrSize->childNodes[3] = NULL;
-    }
-    /* angles are 16-bit turns: 45 and 67.5 degrees */
-    (rootNodeOrSize->modelPayload).worldRotationAngle2 = FIXED_ANGLE16_EIGHTH_TURN;
-    (rootNodeOrSize->modelPayload).worldRotationAngle1 = 3 * FIXED_ANGLE16_FULL_TURN / 16;
-    rootNodeOrSize->runtimeFlags = rootNodeOrSize->runtimeFlags | 1;
-    rootNodeOrSize->tintArgb = 0xffffffff;
-    ModelNodeRuntime_RebuildTransformsFromRoot(rootNodeOrSize);
-    /* start the bounds at the root position; the recursion widens them over all nodes */
-    g_ModelBoundsMinimumX = (rootNodeOrSize->worldTransform).translation.x;
-    g_ModelBoundsMinimumY = (rootNodeOrSize->worldTransform).translation.y;
-    g_ModelBoundsMinimumZ = (rootNodeOrSize->worldTransform).translation.z;
-    g_ModelBoundsMaximumX = g_ModelBoundsMinimumX;
-    g_ModelBoundsMaximumY = g_ModelBoundsMinimumY;
-    g_ModelBoundsMaximumZ = g_ModelBoundsMinimumZ;
-    ModelNodeRuntime_AccumulateTransformedBoundsRecursive(rootNodeOrSize);
-    boundsSpanY = g_ModelBoundsMaximumY - g_ModelBoundsMinimumY;
-    boundsSpanZ = g_ModelBoundsMaximumZ - g_ModelBoundsMinimumZ;
-    maxBoundsSpan = boundsSpanZ;
-    if (boundsSpanZ < boundsSpanY) {
-      maxBoundsSpan = boundsSpanY;
-    }
-    /* camera centred on the bounds in Y and Z, backed off by four times the larger span in X */
-    g_ArmyPreviewViewOriginYQ12 = boundsSpanY + g_ModelBoundsMinimumY * 2 >> 1;
-    g_ArmyPreviewViewOriginZQ12 = boundsSpanZ + g_ModelBoundsMinimumZ * 2 >> 1;
-    g_ArmyPreviewAuxiliaryOrientation0 = ARMY_PREVIEW_AUXILIARY_ORIENTATION0_ANGLE16;
-    g_ArmyPreviewAuxiliaryOrientation1 = ARMY_PREVIEW_AUXILIARY_ORIENTATION1_ANGLE16;
-    g_ArmyPreviewViewOriginXQ12 = g_ModelBoundsMaximumX + maxBoundsSpan * 4;
-    g_ArmyPreviewPrimaryColorArgb = ARMY_PREVIEW_PRIMARY_COLOR_ARGB;
-    g_ArmyPreviewSecondaryColorArgb = ARMY_PREVIEW_SECONDARY_COLOR_ARGB;
-    g_ArmyPreviewProjectionScaleQ12 = Q12_ONE / 2;
-    g_ArmyPreviewViewAngle0 = ARMY_PREVIEW_VIEW_ANGLE0;
-    g_ArmyPreviewViewAngle1 = 0;
-    g_ArmyPreviewProjectionShift = 4;
-    g_ArmyPreviewModelNodePointer = (uint32_t)rootNodeOrSize;
-    previewTexture = (GameEntityRuntime *)g_GraphicsOffscreenRenderModelListToTextureSource
-                       ((GraphicsOffscreenSceneExtents *)&g_ArmyPreviewPrimaryColorArgb,
-                        &g_ArmyPreviewAuxiliaryOrientation0,
-                        (GraphicsOffscreenViewParameters *)&g_ArmyPreviewViewOriginXQ12,
-                        previewHeight * 2,previewWidth * 2,1,
-                        (ModelRuntimeNode **)&g_ArmyPreviewModelNodePointer);
-    if (previewTexture != NULL) {
-      /* the texture is typed as GameEntityRuntime here: its pixels start at +0x220 and the header fields
-         rewritten below (+0x200/+0x204 and +0x218/+0x21C) hold its width and height; +0x04 is the
-         allocation size */
-      sourcePixels = &previewTexture[1].common.commandTarget.targetWorldXQ12;
-      ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmyOrValue);
-      /* downsample in place: each output pixel averages a 2x2 block of the double-size image */
-      destinationPixels = sourcePixels;
-      previewWidth = savedPreviewWidth;
-      do {
-        do {
-          pixelTopLeft = *sourcePixels;
-          pixelTopRight = sourcePixels[1];
-          pixelBottomLeft = sourcePixels[savedPreviewWidth * 2];
-          pixelBottomRight = sourcePixels[savedPreviewWidth * 2 + 1];
-          /* PUNPCKLBW mm,mm; PSRLW mm,4: each pixel byte b becomes the 16-bit lane (b * 0x101) >> 4. */
-          mm0PackedValue0 =
-               pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopLeft),
-                      g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelTopLeft >> 24]);
-          mm1PackedValue0 =
-               pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopRight),
-                      g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelTopRight >> 24]);
-          mm2PackedValue0 =
-               pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomLeft),
-                      g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelBottomLeft >> 24]);
-          mm3PackedValue0 =
-               pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomRight),
-                      g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelBottomRight >> 24]);
-          alphaReciprocal =
-               g_ArmyPreviewAverageAlphaReciprocalMmxLut256
-               [(pixelTopLeft >> 24) + (pixelTopRight >> 24) + (pixelBottomLeft >> 24) +
-                (pixelBottomRight >> 24) >> 2];
-          topLeftAlphaOrSum0 = ((short)mm0PackedValue0 + (short)mm1PackedValue0 +
-                    (short)mm2PackedValue0 + (short)mm3PackedValue0 +
-                   (short)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx) * (short)alphaReciprocal;
-          bottomLeftAlphaOrSum1 = ((short)((uint64_t)mm0PackedValue0 >> 16) +
-                    (short)((uint64_t)mm1PackedValue0 >> 16) +
-                    (short)((uint64_t)mm2PackedValue0 >> 16) +
-                    (short)((uint64_t)mm3PackedValue0 >> 16) +
-                   (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 16)) *
-                   (short)((uint64_t)alphaReciprocal >> 16);
-          channelSum2 = ((short)((uint64_t)mm0PackedValue0 >> 32) +
-                    (short)((uint64_t)mm1PackedValue0 >> 32) +
-                    (short)((uint64_t)mm2PackedValue0 >> 32) +
-                    (short)((uint64_t)mm3PackedValue0 >> 32) +
-                   (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 32)) *
-                   (short)((uint64_t)alphaReciprocal >> 32);
-          channelSum3 = ((short)((uint64_t)mm0PackedValue0 >> 48) +
-                    (short)((uint64_t)mm1PackedValue0 >> 48) +
-                    (short)((uint64_t)mm2PackedValue0 >> 48) +
-                    (short)((uint64_t)mm3PackedValue0 >> 48) +
-                   (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 48)) *
-                   (short)((uint64_t)alphaReciprocal >> 48);
-          topRightAlphaOrClamp0 = topLeftAlphaOrSum0 >> 8;
-          bottomRightAlphaOrClamp1 = bottomLeftAlphaOrSum1 >> 8;
-          channelClamp2 = channelSum2 >> 8;
-          channelClamp3 = channelSum3 >> 8;
-          /* PSRLW 8 leaves every lane <= 0xFF, so PACKUSWB never saturates: it just packs the low bytes. */
-          *destinationPixels = (uint32_t)(uint8_t)channelClamp3 << 24 | (uint32_t)(uint8_t)channelClamp2 << 16 |
-                               (uint32_t)(uint8_t)bottomRightAlphaOrClamp1 << 8 | (uint32_t)(uint8_t)topRightAlphaOrClamp0;
-          sourcePixels = sourcePixels + 2;
-          destinationPixels = destinationPixels + 1;
-          previewWidth = previewWidth - 1;
-        } while (previewWidth != 0);
-        sourcePixels = sourcePixels + savedPreviewWidth * 2; /* skip the second source row of the pair */
-        previewHeight = previewHeight - 1;
-        previewWidth = savedPreviewWidth;
-      } while (previewHeight != 0);
-      /* halve the stored sizes (previewArmyOrValue now holds the halved height) and shrink the allocation
-         to the 0x220-byte header plus 32-bit pixels */
-      halvedWidth = (void *)((int)previewTexture[1].common.commandFlags >> 1);
-      previewArmyOrValue = (GameEntityRuntime *)((int)previewTexture[1].common.commandTarget.targetEntity >> 1);
-      previewTexture[1].common.commandFlags = (GameEntityCommandFlags)halvedWidth;
-      previewTexture[1].common.commandTarget.targetEntity = previewArmyOrValue;
-      previewTexture[1].common.ownership.definitionOrClassRecord = halvedWidth;
-      previewTexture[1].common.ownership.modelNode = (ModelRuntimeNode *)previewArmyOrValue;
-      rootNodeOrSize = (ModelRuntimeNode *)((int)halvedWidth * (int)previewArmyOrValue * 4 + ARMY_PREVIEW_TEXTURE_HEADER_BYTES);
-      (previewTexture->common).ownership.modelNode = rootNodeOrSize;
-      g_MemoryApi.shrinkInPlace((uint32_t)rootNodeOrSize,previewTexture);
-      return (GraphicsTextureResource *)previewTexture;
-    }
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmyOrValue);
+  if (previewArmy == NULL) {
+    return NULL;
   }
-  return NULL;
+  rootNode = (previewArmy->common).ownership.modelNode;
+  /* armies of runtime class 13 lose their fourth child node */
+  if (((((ModelRuntimeSlot *)(previewArmy->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+        runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) && (3 < rootNode->childCount)) &&
+     (rootNode->childNodes[3] != NULL)) {
+    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
+    rootNode->childNodes[3] = NULL;
+  }
+  /* angles are 16-bit turns: 45 and 67.5 degrees */
+  (rootNode->modelPayload).worldRotationAngle2 = FIXED_ANGLE16_EIGHTH_TURN;
+  (rootNode->modelPayload).worldRotationAngle1 = 3 * FIXED_ANGLE16_FULL_TURN / 16;
+  rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+  rootNode->tintArgb = 0xffffffff;
+  ModelNodeRuntime_RebuildTransformsFromRoot(rootNode);
+  /* start the bounds at the root position; the recursion widens them over all nodes */
+  g_ModelBoundsMinimumX = (rootNode->worldTransform).translation.x;
+  g_ModelBoundsMinimumY = (rootNode->worldTransform).translation.y;
+  g_ModelBoundsMinimumZ = (rootNode->worldTransform).translation.z;
+  g_ModelBoundsMaximumX = g_ModelBoundsMinimumX;
+  g_ModelBoundsMaximumY = g_ModelBoundsMinimumY;
+  g_ModelBoundsMaximumZ = g_ModelBoundsMinimumZ;
+  ModelNodeRuntime_AccumulateTransformedBoundsRecursive(rootNode);
+  boundsSpanY = g_ModelBoundsMaximumY - g_ModelBoundsMinimumY;
+  boundsSpanZ = g_ModelBoundsMaximumZ - g_ModelBoundsMinimumZ;
+  maxBoundsSpan = boundsSpanZ;
+  if (boundsSpanZ < boundsSpanY) {
+    maxBoundsSpan = boundsSpanY;
+  }
+  /* camera centred on the bounds in Y and Z, backed off by four times the larger span in X */
+  g_ArmyPreviewViewOriginYQ12 = (boundsSpanY + g_ModelBoundsMinimumY * 2) >> 1;
+  g_ArmyPreviewViewOriginZQ12 = (boundsSpanZ + g_ModelBoundsMinimumZ * 2) >> 1;
+  g_ArmyPreviewAuxiliaryOrientation0 = ARMY_PREVIEW_AUXILIARY_ORIENTATION0_ANGLE16;
+  g_ArmyPreviewAuxiliaryOrientation1 = ARMY_PREVIEW_AUXILIARY_ORIENTATION1_ANGLE16;
+  g_ArmyPreviewViewOriginXQ12 = g_ModelBoundsMaximumX + maxBoundsSpan * 4;
+  g_ArmyPreviewPrimaryColorArgb = ARMY_PREVIEW_PRIMARY_COLOR_ARGB;
+  g_ArmyPreviewSecondaryColorArgb = ARMY_PREVIEW_SECONDARY_COLOR_ARGB;
+  g_ArmyPreviewProjectionScaleQ12 = Q12_ONE / 2;
+  g_ArmyPreviewViewAngle0 = ARMY_PREVIEW_VIEW_ANGLE0;
+  g_ArmyPreviewViewAngle1 = 0;
+  g_ArmyPreviewProjectionShift = 4;
+  g_ArmyPreviewModelNodePointer = (uint32_t)rootNode;
+  previewTexture = (GameEntityRuntime *)g_GraphicsOffscreenRenderModelListToTextureSource
+                     ((GraphicsOffscreenSceneExtents *)&g_ArmyPreviewPrimaryColorArgb,
+                      &g_ArmyPreviewAuxiliaryOrientation0,
+                      (GraphicsOffscreenViewParameters *)&g_ArmyPreviewViewOriginXQ12,
+                      previewHeight * 2,previewWidth * 2,1,
+                      (ModelRuntimeNode **)&g_ArmyPreviewModelNodePointer);
+  if (previewTexture == NULL) {
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmy);
+    return NULL;
+  }
+  /* the texture is typed as GameEntityRuntime here: its pixels start at +0x220 and the header fields
+     rewritten below (+0x200/+0x204 and +0x218/+0x21C) hold its width and height; +0x04 is the
+     allocation size */
+  sourcePixels = (uint32_t *)&previewTexture[1].common.commandTarget.targetWorldXQ12;
+  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmy);
+  /* downsample in place: each output pixel averages a 2x2 block of the double-size image */
+  destinationPixels = sourcePixels;
+  remainingRows = previewHeight;
+  do {
+    remainingColumns = previewWidth;
+    do {
+      *destinationPixels = ArmyPreview_AverageAlphaWeighted2x2
+                             (sourcePixels[0],sourcePixels[1],sourcePixels[previewWidth * 2],
+                              sourcePixels[previewWidth * 2 + 1]);
+      sourcePixels = sourcePixels + 2;
+      destinationPixels = destinationPixels + 1;
+      remainingColumns = remainingColumns - 1;
+    } while (remainingColumns != 0);
+    sourcePixels = sourcePixels + previewWidth * 2; /* skip the second source row of the pair */
+    remainingRows = remainingRows - 1;
+  } while (remainingRows != 0);
+  /* halve the stored sizes and shrink the allocation to the 0x220-byte header plus 32-bit pixels */
+  halvedWidth = (int)previewTexture[1].common.commandFlags >> 1;
+  halvedHeight = (int)previewTexture[1].common.commandTarget.targetEntity >> 1;
+  previewTexture[1].common.commandFlags = (GameEntityCommandFlags)halvedWidth;
+  previewTexture[1].common.commandTarget.targetEntity = (GameEntityRuntime *)halvedHeight;
+  previewTexture[1].common.ownership.definitionOrClassRecord = (void *)halvedWidth;
+  previewTexture[1].common.ownership.modelNode = (ModelRuntimeNode *)halvedHeight;
+  allocationSize = (uint32_t)(halvedWidth * halvedHeight * 4 + ARMY_PREVIEW_TEXTURE_HEADER_BYTES);
+  (previewTexture->common).ownership.modelNode = (ModelRuntimeNode *)allocationSize;
+  g_MemoryApi.shrinkInPlace(allocationSize,previewTexture);
+  return (GraphicsTextureResource *)previewTexture;
 }
 
 
@@ -4027,6 +4041,58 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
 }
 
 
+/* Picks the model point of the timed effect emitter: the model (the first child for aircraft) has effect points
+   with packed keys n << 4 | 6; one of them is chosen in turn (definition modelFlags bit 0) or at random and
+   transformed to world space. Returns false when the model has no such point (the caller then uses the root
+   position). */
+static bool ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,ModelDefinition *emitterDefinition,
+          ModelWorldPoint *outWorldPoint)
+{
+  MdlSerializedNodeHeader *serializedNode;
+  ModelResource *modelResource;
+  int remainingRecords;
+  uint32_t *pointRecordCursor;
+  uint32_t pointCount;
+  uint32_t pointSelector;
+  ModelPackedPointRecord *emitterPoint;
+  ModelRuntimeNode *modelNode;
+
+  serializedNode = (MdlSerializedNodeHeader *)emitterDefinition->rootNodeOffsetOrPointer;
+  if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
+    serializedNode = (MdlSerializedNodeHeader *)serializedNode->childSerializedOffsets[0];
+  }
+  modelResource = (ModelResource *)serializedNode->spriteAssetReference.modelResource;
+  remainingRecords = modelResource->packedLookupTableEntryCount;
+  if (remainingRecords == 0) {
+    return false;
+  }
+  pointCount = 0;
+  pointRecordCursor = (uint32_t *)((uint8_t *)modelResource + modelResource->packedLookupTableRelativeOffset);
+  /* count the effect points: highest n + 1 of the packed keys n << 4 | 6 */
+  for (; remainingRecords != 0; remainingRecords = remainingRecords - 1, pointRecordCursor = pointRecordCursor + 4) {
+    if (((*pointRecordCursor & 0xf) == 6) && (pointCount <= *pointRecordCursor >> 4)) {
+      pointCount = (*pointRecordCursor >> 4) + 1;
+    }
+  }
+  if (pointCount == 0) {
+    return false;
+  }
+  pointSelector = (modelRuntime->classState).effectEmitterPointIndex;
+  if ((emitterDefinition->modelFlags & 1) == 0) {
+    pointSelector = g_RandomGeneratorState.next();
+  }
+  if (!ModelLookupTable_FindPackedPoint
+            (pointSelector % pointCount,6,serializedNode->spriteAssetReference.modelResource,&emitterPoint)) {
+    return false;
+  }
+  modelNode = modelRuntime->rootModelNode;
+  if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
+    modelNode = modelNode->childNodes[0];
+  }
+  *outWorldPoint = ModelNodeRuntime_TransformLocalPoint(emitterPoint,modelNode);
+  return true;
+}
+
 /* Address: 0x00527C00.
    Timed emitters of an army model, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
    .runtimeUpdate[0] and [16] and directly from most class updates (here, gameplay/army/combat and movement).
@@ -4039,135 +4105,84 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
 
 {
-  uint32_t *emitterTimer;
   ModelDefinition *emitterDefinition;
-  int modelResourceAddress;
-  uint32_t nodeOrWorldX;
-  uint32_t pointSelector;
-  int32_t waterDelta;
-  uint32_t randomValue;
-  int remainingRecords;
-  uint32_t worldY;
-  AngleTurn32 orientationAngle0;
-  uint32_t randomOrPointCount;
-  uint32_t *pointRecordCursor;
-  uint32_t worldZQ12;
-  AngleTurn32 orientationAngle1;
-  ModelRuntimeNode *modelNode;
-  EffectDefinition *selectedEffectDefinition;
   int previousTimerTicks;
-  ModelPackedPointRecord *emitterPoint;
+  uint32_t randomValue;
+  uint32_t randomTicks;
+  ModelRuntimeNode *modelNode;
   FixedDirection launchDirection;
-  ModelWorldPoint localPoint;
-  AngleTurn32 orientationAngle2;
   GraphicsWorldCoordinateQ12 launchWorldZQ12;
   GraphicsWorldCoordinateQ12 launchWorldYQ12;
   GraphicsWorldCoordinateQ12 launchWorldXQ12;
   ShotDefinition *shotDefinition;
+  ModelWorldPoint emitterPoint;
+  uint32_t worldX;
+  uint32_t worldY;
+  uint32_t worldZQ12;
+  int32_t waterDelta;
   EffectDefinition *effectDefinition;
-  WorldRuntimeContext *worldContext;
-  
+  AngleTurn32 orientationAngle0;
+  AngleTurn32 orientationAngle1;
+  AngleTurn32 orientationAngle2;
+
   emitterDefinition = modelRuntime->modelDefinition;
-  emitterTimer = &(modelRuntime->classState).shotEmitterTimerTicks;
-  previousTimerTicks = (int)*emitterTimer;
-  *emitterTimer = *emitterTimer - g_InGameSimulationStepTicks;
-  /* SUB + JG: the shot timer has reached 0 or below (signed compare of the old value with the step) */
+  previousTimerTicks = (int)(modelRuntime->classState).shotEmitterTimerTicks;
+  (modelRuntime->classState).shotEmitterTimerTicks =
+       (modelRuntime->classState).shotEmitterTimerTicks - g_InGameSimulationStepTicks;
+  /* the shot timer has reached 0 or below (signed compare of the old value with the step) */
   if (previousTimerTicks <= (int)g_InGameSimulationStepTicks &&
      ((emitterDefinition->emitterShotDefinitionReference).definition != (ShotDefinition *)0xffffffff)) {
-    randomOrPointCount = 0;
+    randomTicks = 0;
     if (emitterDefinition->shotEmitterRandomTicks != 0) {
-      nodeOrWorldX = g_RandomGeneratorState.next();
-      randomOrPointCount = nodeOrWorldX % emitterDefinition->shotEmitterRandomTicks;
+      randomValue = g_RandomGeneratorState.next();
+      randomTicks = randomValue % emitterDefinition->shotEmitterRandomTicks;
     }
     shotDefinition = (emitterDefinition->emitterShotDefinitionReference).definition;
     modelNode = modelRuntime->rootModelNode;
-    (modelRuntime->classState).shotEmitterTimerTicks = randomOrPointCount + emitterDefinition->shotEmitterIntervalTicks;
+    (modelRuntime->classState).shotEmitterTimerTicks = randomTicks + emitterDefinition->shotEmitterIntervalTicks;
     launchWorldXQ12 = (modelNode->worldTransform).translation.x;
     launchWorldYQ12 = (modelNode->worldTransform).translation.y;
     launchWorldZQ12 = (modelNode->worldTransform).translation.z;
-    worldContext = worldRuntime;
     launchDirection = FixedMath_DirectionFromAnglesScaled
                        ((modelNode->modelPayload).worldRotationAngle1,
                         (modelNode->modelPayload).worldRotationAngle0,Q12_ONE);
     ShotRuntimePool_CreateProjectileFromDefinition
               (0,modelRuntime->ownerArmyRuntime,launchDirection.z + launchWorldZQ12,
                launchDirection.y + launchWorldYQ12,launchDirection.x + launchWorldXQ12,launchWorldZQ12,
-               launchWorldYQ12,launchWorldXQ12,shotDefinition,worldContext);
+               launchWorldYQ12,launchWorldXQ12,shotDefinition,worldRuntime);
   }
   emitterDefinition = modelRuntime->modelDefinition;
-  emitterTimer = &(modelRuntime->classState).effectEmitterTimerTicks;
-  previousTimerTicks = (int)*emitterTimer;
-  *emitterTimer = *emitterTimer - g_InGameSimulationStepTicks;
+  previousTimerTicks = (int)(modelRuntime->classState).effectEmitterTimerTicks;
+  (modelRuntime->classState).effectEmitterTimerTicks =
+       (modelRuntime->classState).effectEmitterTimerTicks - g_InGameSimulationStepTicks;
   /* the effect timer has reached 0 or below (signed) and there is an effect to emit */
   if (previousTimerTicks <= (int)g_InGameSimulationStepTicks &&
       ((emitterDefinition->emitterEffectDefinitionReference).definition != NULL ||
        (emitterDefinition->waterEmitterEffectDefinitionReference).definition != NULL)) {
-    randomOrPointCount = 0;
+    randomTicks = 0;
     if (emitterDefinition->effectEmitterRandomTicks != 0) {
-      nodeOrWorldX = g_RandomGeneratorState.next();
-      randomOrPointCount = nodeOrWorldX % emitterDefinition->effectEmitterRandomTicks;
+      randomValue = g_RandomGeneratorState.next();
+      randomTicks = randomValue % emitterDefinition->effectEmitterRandomTicks;
     }
-    (modelRuntime->classState).effectEmitterTimerTicks = randomOrPointCount + emitterDefinition->effectEmitterIntervalTicks;
-    nodeOrWorldX = emitterDefinition->rootNodeOffsetOrPointer;
-    if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-      nodeOrWorldX = ((MdlSerializedNodeHeader *)nodeOrWorldX)->childSerializedOffsets[0];
+    (modelRuntime->classState).effectEmitterTimerTicks = randomTicks + emitterDefinition->effectEmitterIntervalTicks;
+    if (ArmyEmitter_FindEffectPoint(modelRuntime,emitterDefinition,&emitterPoint)) {
+      worldZQ12 = emitterPoint.zQ12;
+      worldY = emitterPoint.yQ12;
+      worldX = emitterPoint.xQ12;
     }
-    modelResourceAddress = (int)((MdlSerializedNodeHeader *)nodeOrWorldX)->spriteAssetReference.modelResource;
-    remainingRecords = ((ModelResource *)modelResourceAddress)->packedLookupTableEntryCount;
-    worldContext = worldRuntime;
-    if (remainingRecords == 0) {
-UseRootPosition:
+    else {
       modelNode = modelRuntime->rootModelNode;
-      nodeOrWorldX = (modelNode->worldTransform).translation.x;
+      worldX = (modelNode->worldTransform).translation.x;
       worldY = (modelNode->worldTransform).translation.y;
       worldZQ12 = (modelNode->worldTransform).translation.z;
     }
-    else {
-      randomOrPointCount = 0;
-      pointRecordCursor =
-           (uint32_t *)
-           (modelResourceAddress +
-           ((ModelResource *)modelResourceAddress)->packedLookupTableRelativeOffset);
-      /* count the effect points: highest n + 1 of the packed keys n << 4 | 6 */
-      do {
-        if (((*pointRecordCursor & 0xf) == 6) && (randomOrPointCount <= *pointRecordCursor >> 4)) {
-          randomOrPointCount = (*pointRecordCursor >> 4) + 1;
-        }
-        remainingRecords = remainingRecords - 1;
-        pointRecordCursor = pointRecordCursor + 4;
-      } while (remainingRecords != 0);
-      if (randomOrPointCount == 0)
-      goto UseRootPosition;
-      pointSelector = (modelRuntime->classState).effectEmitterPointIndex;
-      if ((emitterDefinition->modelFlags & 1) == 0) {
-        pointSelector = g_RandomGeneratorState.next();
-      }
-      nodeOrWorldX = emitterDefinition->rootNodeOffsetOrPointer;
-      if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-        nodeOrWorldX = ((MdlSerializedNodeHeader *)nodeOrWorldX)->childSerializedOffsets[0];
-      }
-      if (!ModelLookupTable_FindPackedPoint
-                (pointSelector % randomOrPointCount,6,
-                 ((MdlSerializedNodeHeader *)nodeOrWorldX)->spriteAssetReference.modelResource,&emitterPoint))
-      goto UseRootPosition;
-      modelNode = modelRuntime->rootModelNode;
-      if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-        modelNode = modelNode->childNodes[0];
-      }
-      localPoint = ModelNodeRuntime_TransformLocalPoint(emitterPoint,modelNode);
-      worldZQ12 = localPoint.zQ12;
-      worldY = localPoint.yQ12;
-      nodeOrWorldX = localPoint.xQ12;
-    }
-    selectedEffectDefinition = (emitterDefinition->emitterEffectDefinitionReference).definition;
-    effectDefinition = selectedEffectDefinition;
-    waterDelta = FieldGrid_GetNearestWaterDelta(worldY,nodeOrWorldX,worldRuntime->fieldGrid);
+    effectDefinition = (emitterDefinition->emitterEffectDefinitionReference).definition;
+    waterDelta = FieldGrid_GetNearestWaterDelta(worldY,worldX,worldRuntime->fieldGrid);
     if (0 < waterDelta) {
-      selectedEffectDefinition = (emitterDefinition->waterEmitterEffectDefinitionReference).definition;
-      effectDefinition = selectedEffectDefinition;
+      effectDefinition = (emitterDefinition->waterEmitterEffectDefinitionReference).definition;
     }
-    if ((selectedEffectDefinition == NULL) ||
-       ((selectedEffectDefinition->transitionPrefix).transitionKind !=
+    if ((effectDefinition == NULL) ||
+       ((effectDefinition->transitionPrefix).transitionKind !=
         EFFECT_TRANSITION_INTEGRATE_LINEAR_MOTION_AND_SHADING_POSITION)) {
       modelNode = modelRuntime->rootModelNode;
       orientationAngle2 = (modelNode->modelPayload).worldRotationAngle0;
@@ -4182,10 +4197,8 @@ UseRootPosition:
     }
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },orientationAngle0,
-               orientationAngle1,orientationAngle2,worldZQ12,worldY,nodeOrWorldX,effectDefinition,
-               worldContext);
-    emitterTimer = &(modelRuntime->classState).effectEmitterPointIndex;
-    *emitterTimer = *emitterTimer + 1;
+               orientationAngle1,orientationAngle2,worldZQ12,worldY,worldX,effectDefinition,worldRuntime);
+    (modelRuntime->classState).effectEmitterPointIndex = (modelRuntime->classState).effectEmitterPointIndex + 1;
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;

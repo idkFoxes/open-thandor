@@ -1330,6 +1330,9 @@ bool GraphicsTextureSource_GetFirstLogicalSize
 }
 
 
+/* Shared upload body, defined below with its helpers (also used by GraphicsTexture_UploadColor_2x/_4x). */
+static void GraphicsTextureUploadScaled_Upload(GraphicsTextureResource *texture,uint32_t blockSize);
+
 /* Address: 0x0057ADA0.
    Copies the pixels of a texture's subresource into its staging surface at full size, converted to the
    surface's pixel format (g_GraphicsDispatchTable.colorUpload[0], used for downsample shift 0 by
@@ -1337,414 +1340,13 @@ bool GraphicsTextureSource_GetFirstLogicalSize
    sources are handled; for RGB surfaces each channel is shifted into the position of its mask (16-bit or
    32-bit stores); an 8-bit surface receives the palette indices, or the alpha byte of direct pixels, and a
    matching palette (a grey ramp for direct pixels) is built. A lost surface is restored first;
-   g_ActiveTextureUploads is raised for the duration.
+   g_ActiveTextureUploads is raised for the duration. With a block size of 1 this is exactly the shared
+   scaled-upload path (one source pixel per block, the "average" of one texel is the texel itself).
 */
 void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
 
 {
-  int offsetOrGreenTopBit;
-  DDPIXELFORMAT *destinationFormat;
-  uint32_t maskOrArgb;
-  uint32_t greenMask;
-  uint32_t blueMask;
-  int blueTopBit;
-  uint8_t paletteGreen;
-  uint8_t paletteBlue;
-  uint8_t paletteFlags;
-  TH_LEGACY_LONG destinationPitch;
-  TH_LEGACY_LPVOID surfaceBits;
-  TH_LEGACY_HRESULT hresult;
-  int paletteIndexOrCounter;
-  DirectDrawPaletteEntry grayPaletteEntry;
-  uint8_t *sourcePixel;
-  GraphicsTexturePaletteEntry *paletteSourceCursor;
-  uint16_t *destinationWord;
-  uint8_t *byteCursorOrSourceRow;
-  DirectDrawPaletteEntry *paletteEntryCursor;
-  uint32_t *destinationDword;
-  uint8_t *sourceByteRow;
-  uint16_t *destinationWordRow;
-  uint8_t *destinationByteRow;
-  uint32_t *destinationDwordRow;
-  IDirectDrawPalette *createdPalette;
-  GraphicsTextureSourceAsset *paletteBank;
-  int rowsRemaining;
-  int sourceWidth;
-  int alphaShiftRight;
-  int blueShiftRight;
-  int greenShiftRight;
-  int redShiftRight;
-  int alphaShiftLeft;
-  int blueShiftLeft;
-  int greenShiftLeft;
-  int redShiftLeft;
-  IDirectDrawSurface3 *stagingSurface3;
-  uint32_t subresourceIndex;
-  GraphicsTextureSourceAsset *sourceAsset;
-  
-  g_ActiveTextureUploads++;
-  stagingSurface3 = texture->stagingSurface3;
-  sourceAsset = texture->sourceAsset;
-  subresourceIndex = texture->subresourceIndex;
-  if (stagingSurface3 != NULL) {
-    hresult = stagingSurface3->lpVtbl->IsLost(stagingSurface3);
-    paletteIndexOrCounter = 0;
-    if (hresult != 0) {
-      paletteIndexOrCounter = stagingSurface3->lpVtbl->Restore(stagingSurface3);
-    }
-    if (paletteIndexOrCounter == 0) {
-      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
-      hresult = stagingSurface3->lpVtbl->Lock
-                         (stagingSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT,
-                          NULL);
-      surfaceBits = g_SurfaceDesc.lpSurface;
-      destinationPitch = g_SurfaceDesc.lPitch;
-      if (hresult == 0) {
-        offsetOrGreenTopBit = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE +
-                              (sourceAsset->tableDescriptor).subresourceTableOffset;
-        paletteIndexOrCounter = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->paletteIndex;
-        sourceWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->pixelWidth;
-        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->pixelHeight;
-        offsetOrGreenTopBit = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->dataOffset;
-        if (paletteIndexOrCounter < 0) {
-          sourcePixel = (uint8_t *)sourceAsset + offsetOrGreenTopBit
-          ;
-          if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
-            paletteIndexOrCounter = sourceWidth;
-            byteCursorOrSourceRow = g_SurfaceDesc.lpSurface;
-            sourceByteRow = sourcePixel;
-            destinationByteRow = g_SurfaceDesc.lpSurface;
-            if (destinationFormat->dwRGBBitCount == 8) {
-              do {
-                do {
-                  *byteCursorOrSourceRow = sourcePixel[3];
-                  sourcePixel = sourcePixel + 4;
-                  paletteIndexOrCounter--;
-                  byteCursorOrSourceRow++;
-                } while (paletteIndexOrCounter != 0);
-                sourcePixel = sourceByteRow + sourceWidth * 4;
-                rowsRemaining--;
-                paletteIndexOrCounter = sourceWidth;
-                byteCursorOrSourceRow = destinationByteRow + destinationPitch;
-                sourceByteRow = sourcePixel;
-                destinationByteRow = destinationByteRow + destinationPitch;
-              } while (rowsRemaining != 0);
-              stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
-              paletteIndexOrCounter = 256;
-              grayPaletteEntry.red = 0;
-              grayPaletteEntry.green = 0;
-              grayPaletteEntry.blue = 0;
-              grayPaletteEntry.flags = 0;
-              /* grey ramp: all four bytes step by one per entry */
-              paletteEntryCursor = g_TexturePaletteEntries;
-              do {
-                *paletteEntryCursor = grayPaletteEntry;
-                paletteEntryCursor++;
-                /* bytes never exceed 255 before the last (unused) step, so no carry crosses bytes */
-                grayPaletteEntry.red++;
-                grayPaletteEntry.green++;
-                grayPaletteEntry.blue++;
-                grayPaletteEntry.flags++;
-                paletteIndexOrCounter--;
-              } while (paletteIndexOrCounter != 0);
-              /* as in the original, the palette is released at once and never attached (no SetPalette) */
-              hresult = g_DirectDraw2->lpVtbl->CreatePalette
-                                 (g_DirectDraw2,DDPCAPS_8BIT | DDPCAPS_ALLOW256,g_TexturePaletteEntries,&createdPalette,
-                                  NULL);
-              if (hresult == 0) {
-                createdPalette->lpVtbl->Release(createdPalette);
-              }
-              goto GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn;
-            }
-            maskOrArgb = destinationFormat->dwRBitMask;
-            greenMask = destinationFormat->dwGBitMask;
-            blueMask = destinationFormat->dwBBitMask;
-            if (((maskOrArgb != 0) && (greenMask != 0)) && (blueMask != 0)) {
-              /* per channel: shift the ARGB byte right to the mask's width, then left to its lowest bit */
-              redShiftLeft = 0;
-              if (maskOrArgb != 0) {
-                for (; (maskOrArgb >> redShiftLeft & 1) == 0; redShiftLeft++) {
-                }
-              }
-              greenShiftLeft = 0;
-              if (greenMask != 0) {
-                for (; (greenMask >> greenShiftLeft & 1) == 0; greenShiftLeft++) {
-                }
-              }
-              blueShiftLeft = 0;
-              if (blueMask != 0) {
-                for (; (blueMask >> blueShiftLeft & 1) == 0; blueShiftLeft++) {
-                }
-              }
-              paletteIndexOrCounter = 31;
-              if (destinationFormat->dwRBitMask != 0) {
-                for (; destinationFormat->dwRBitMask >> paletteIndexOrCounter == 0; paletteIndexOrCounter--) {
-                }
-              }
-              offsetOrGreenTopBit = 31;
-              if (destinationFormat->dwGBitMask != 0) {
-                for (; destinationFormat->dwGBitMask >> offsetOrGreenTopBit == 0; offsetOrGreenTopBit--) {
-                }
-              }
-              blueTopBit = 31;
-              if (destinationFormat->dwBBitMask != 0) {
-                for (; destinationFormat->dwBBitMask >> blueTopBit == 0; blueTopBit--) {
-                }
-              }
-              redShiftRight = 24 - ((paletteIndexOrCounter + 1) - redShiftLeft);
-              greenShiftRight = 16 - ((offsetOrGreenTopBit + 1) - greenShiftLeft);
-              blueShiftRight = 8 - ((blueTopBit + 1) - blueShiftLeft);
-              maskOrArgb = destinationFormat->dwRGBAlphaBitMask;
-              if (maskOrArgb == 0) {
-                alphaShiftRight = 0;
-                alphaShiftLeft = 16;
-              }
-              else {
-                alphaShiftLeft = 0;
-                if (maskOrArgb != 0) {
-                  for (; (maskOrArgb >> alphaShiftLeft & 1) == 0; alphaShiftLeft++) {
-                  }
-                }
-                paletteIndexOrCounter = 31;
-                if (maskOrArgb != 0) {
-                  for (; maskOrArgb >> paletteIndexOrCounter == 0; paletteIndexOrCounter--) {
-                  }
-                }
-                alphaShiftRight = 32 - ((paletteIndexOrCounter + 1) - alphaShiftLeft);
-              }
-              paletteIndexOrCounter = sourceWidth;
-              destinationDword = g_SurfaceDesc.lpSurface;
-              destinationWord = g_SurfaceDesc.lpSurface;
-              byteCursorOrSourceRow = sourcePixel;
-              destinationDwordRow = g_SurfaceDesc.lpSurface;
-              destinationWordRow = g_SurfaceDesc.lpSurface;
-              if (destinationFormat->dwRGBBitCount < 17) {
-                do {
-                  do {
-                    maskOrArgb = *(uint32_t *)sourcePixel;
-                    *destinationWord = (uint16_t)(((maskOrArgb & ARGB8888_ALPHA_MASK) >> ((uint8_t)alphaShiftRight & SHIFT_COUNT_MASK)) <<
-                                       ((uint8_t)alphaShiftLeft & SHIFT_COUNT_MASK)) |
-                               (uint16_t)(((maskOrArgb & ARGB8888_BLUE_MASK) >> ((uint8_t)blueShiftRight & SHIFT_COUNT_MASK)) <<
-                                       ((uint8_t)blueShiftLeft & SHIFT_COUNT_MASK)) |
-                               (uint16_t)(((maskOrArgb & ARGB8888_GREEN_MASK) >> ((uint8_t)greenShiftRight & SHIFT_COUNT_MASK)) <<
-                                       ((uint8_t)greenShiftLeft & SHIFT_COUNT_MASK)) |
-                               (uint16_t)(((maskOrArgb & ARGB8888_RED_MASK) >> ((uint8_t)redShiftRight & SHIFT_COUNT_MASK)) <<
-                                       ((uint8_t)redShiftLeft & SHIFT_COUNT_MASK));
-                    sourcePixel = sourcePixel + 4;
-                    paletteIndexOrCounter--;
-                    destinationWord++;
-                  } while (paletteIndexOrCounter != 0);
-                  sourcePixel = byteCursorOrSourceRow + sourceWidth * 4;
-                  rowsRemaining--;
-                  paletteIndexOrCounter = sourceWidth;
-                  destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
-                  byteCursorOrSourceRow = sourcePixel;
-                  destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
-                } while (rowsRemaining != 0);
-                rowsRemaining = 0;
-              }
-              else {
-                do {
-                  do {
-                    maskOrArgb = *(uint32_t *)sourcePixel;
-                    *destinationDword = ((maskOrArgb & ARGB8888_ALPHA_MASK) >> ((uint8_t)alphaShiftRight & SHIFT_COUNT_MASK)) <<
-                               ((uint8_t)alphaShiftLeft & SHIFT_COUNT_MASK) |
-                               ((maskOrArgb & ARGB8888_BLUE_MASK) >> ((uint8_t)blueShiftRight & SHIFT_COUNT_MASK)) <<
-                               ((uint8_t)blueShiftLeft & SHIFT_COUNT_MASK) |
-                               ((maskOrArgb & ARGB8888_GREEN_MASK) >> ((uint8_t)greenShiftRight & SHIFT_COUNT_MASK)) <<
-                               ((uint8_t)greenShiftLeft & SHIFT_COUNT_MASK) |
-                               ((maskOrArgb & ARGB8888_RED_MASK) >> ((uint8_t)redShiftRight & SHIFT_COUNT_MASK)) <<
-                               ((uint8_t)redShiftLeft & SHIFT_COUNT_MASK);
-                    sourcePixel = sourcePixel + 4;
-                    paletteIndexOrCounter--;
-                    destinationDword++;
-                  } while (paletteIndexOrCounter != 0);
-                  sourcePixel = byteCursorOrSourceRow + sourceWidth * 4;
-                  rowsRemaining--;
-                  paletteIndexOrCounter = sourceWidth;
-                  destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
-                  byteCursorOrSourceRow = sourcePixel;
-                  destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
-                } while (rowsRemaining != 0);
-                rowsRemaining = 0;
-              }
-            }
-          }
-        }
-        else {
-          sourcePixel = (uint8_t *)sourceAsset + offsetOrGreenTopBit
-          ;
-          paletteBank = sourceAsset + paletteIndexOrCounter * 4 + 1;
-          if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
-            paletteIndexOrCounter = sourceWidth;
-            byteCursorOrSourceRow = g_SurfaceDesc.lpSurface;
-            sourceByteRow = sourcePixel;
-            destinationByteRow = g_SurfaceDesc.lpSurface;
-            if (destinationFormat->dwRGBBitCount == 8) {
-              do {
-                do {
-                  *byteCursorOrSourceRow = *sourcePixel;
-                  sourcePixel++;
-                  paletteIndexOrCounter--;
-                  byteCursorOrSourceRow++;
-                } while (paletteIndexOrCounter != 0);
-                sourcePixel = sourceByteRow + sourceWidth;
-                rowsRemaining--;
-                paletteIndexOrCounter = sourceWidth;
-                byteCursorOrSourceRow = destinationByteRow + destinationPitch;
-                sourceByteRow = sourcePixel;
-                destinationByteRow = destinationByteRow + destinationPitch;
-              } while (rowsRemaining != 0);
-              stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
-              paletteIndexOrCounter = 256;
-              /* the four bytes of each entry's argb8888 word, copied in memory order */
-              paletteSourceCursor = (GraphicsTexturePaletteEntry *)paletteBank;
-              paletteEntryCursor = g_TexturePaletteEntries;
-              do {
-                paletteGreen = ((uint8_t *)&paletteSourceCursor->argb8888)[1];
-                paletteBlue = ((uint8_t *)&paletteSourceCursor->argb8888)[2];
-                paletteFlags = ((uint8_t *)&paletteSourceCursor->argb8888)[3];
-                paletteEntryCursor->red = ((uint8_t *)&paletteSourceCursor->argb8888)[0];
-                paletteEntryCursor->green = paletteGreen;
-                paletteEntryCursor->blue = paletteBlue;
-                paletteEntryCursor->flags = paletteFlags;
-                paletteSourceCursor++;
-                paletteEntryCursor++;
-                paletteIndexOrCounter--;
-              } while (paletteIndexOrCounter != 0);
-              /* as in the original, the palette is released at once and never attached (no SetPalette) */
-              hresult = g_DirectDraw2->lpVtbl->CreatePalette
-                                 (g_DirectDraw2,DDPCAPS_8BIT | DDPCAPS_ALLOW256,g_TexturePaletteEntries,&createdPalette,
-                                  NULL);
-              if (hresult == 0) {
-                createdPalette->lpVtbl->Release(createdPalette);
-              }
-              goto GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn;
-            }
-            maskOrArgb = destinationFormat->dwRBitMask;
-            greenMask = destinationFormat->dwGBitMask;
-            blueMask = destinationFormat->dwBBitMask;
-            if (((maskOrArgb != 0) && (greenMask != 0)) && (blueMask != 0)) {
-              /* per channel: shift the ARGB byte right to the mask's width, then left to its lowest bit */
-              redShiftLeft = 0;
-              if (maskOrArgb != 0) {
-                for (; (maskOrArgb >> redShiftLeft & 1) == 0; redShiftLeft++) {
-                }
-              }
-              greenShiftLeft = 0;
-              if (greenMask != 0) {
-                for (; (greenMask >> greenShiftLeft & 1) == 0; greenShiftLeft++) {
-                }
-              }
-              blueShiftLeft = 0;
-              if (blueMask != 0) {
-                for (; (blueMask >> blueShiftLeft & 1) == 0; blueShiftLeft++) {
-                }
-              }
-              paletteIndexOrCounter = 31;
-              if (destinationFormat->dwRBitMask != 0) {
-                for (; destinationFormat->dwRBitMask >> paletteIndexOrCounter == 0; paletteIndexOrCounter--) {
-                }
-              }
-              offsetOrGreenTopBit = 31;
-              if (destinationFormat->dwGBitMask != 0) {
-                for (; destinationFormat->dwGBitMask >> offsetOrGreenTopBit == 0; offsetOrGreenTopBit--) {
-                }
-              }
-              blueTopBit = 31;
-              if (destinationFormat->dwBBitMask != 0) {
-                for (; destinationFormat->dwBBitMask >> blueTopBit == 0; blueTopBit--) {
-                }
-              }
-              redShiftRight = 24 - ((paletteIndexOrCounter + 1) - redShiftLeft);
-              greenShiftRight = 16 - ((offsetOrGreenTopBit + 1) - greenShiftLeft);
-              blueShiftRight = 8 - ((blueTopBit + 1) - blueShiftLeft);
-              maskOrArgb = destinationFormat->dwRGBAlphaBitMask;
-              if (maskOrArgb == 0) {
-                alphaShiftRight = 0;
-                alphaShiftLeft = 16;
-              }
-              else {
-                alphaShiftLeft = 0;
-                if (maskOrArgb != 0) {
-                  for (; (maskOrArgb >> alphaShiftLeft & 1) == 0; alphaShiftLeft++) {
-                  }
-                }
-                paletteIndexOrCounter = 31;
-                if (maskOrArgb != 0) {
-                  for (; maskOrArgb >> paletteIndexOrCounter == 0; paletteIndexOrCounter--) {
-                  }
-                }
-                alphaShiftRight = 32 - ((paletteIndexOrCounter + 1) - alphaShiftLeft);
-              }
-              paletteIndexOrCounter = sourceWidth;
-              destinationDword = g_SurfaceDesc.lpSurface;
-              destinationWord = g_SurfaceDesc.lpSurface;
-              byteCursorOrSourceRow = sourcePixel;
-              destinationDwordRow = g_SurfaceDesc.lpSurface;
-              destinationWordRow = g_SurfaceDesc.lpSurface;
-              if (destinationFormat->dwRGBBitCount < 17) {
-                do {
-                  do {
-                    maskOrArgb = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)*sourcePixel].argb8888;
-                    *destinationWord = (uint16_t)(((maskOrArgb & ARGB8888_ALPHA_MASK) >> ((uint8_t)alphaShiftRight & SHIFT_COUNT_MASK)) <<
-                                       ((uint8_t)alphaShiftLeft & SHIFT_COUNT_MASK)) |
-                               (uint16_t)(((maskOrArgb & ARGB8888_BLUE_MASK) >> ((uint8_t)blueShiftRight & SHIFT_COUNT_MASK)) <<
-                                       ((uint8_t)blueShiftLeft & SHIFT_COUNT_MASK)) |
-                               (uint16_t)(((maskOrArgb & ARGB8888_GREEN_MASK) >> ((uint8_t)greenShiftRight & SHIFT_COUNT_MASK)) <<
-                                       ((uint8_t)greenShiftLeft & SHIFT_COUNT_MASK)) |
-                               (uint16_t)(((maskOrArgb & ARGB8888_RED_MASK) >> ((uint8_t)redShiftRight & SHIFT_COUNT_MASK)) <<
-                                       ((uint8_t)redShiftLeft & SHIFT_COUNT_MASK));
-                    sourcePixel++;
-                    paletteIndexOrCounter--;
-                    destinationWord++;
-                  } while (paletteIndexOrCounter != 0);
-                  sourcePixel = byteCursorOrSourceRow + sourceWidth;
-                  rowsRemaining--;
-                  paletteIndexOrCounter = sourceWidth;
-                  destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
-                  byteCursorOrSourceRow = sourcePixel;
-                  destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
-                } while (rowsRemaining != 0);
-                stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
-              }
-              else {
-                do {
-                  do {
-                    maskOrArgb = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)*sourcePixel].argb8888;
-                    *destinationDword = ((maskOrArgb & ARGB8888_ALPHA_MASK) >> ((uint8_t)alphaShiftRight & SHIFT_COUNT_MASK)) <<
-                               ((uint8_t)alphaShiftLeft & SHIFT_COUNT_MASK) |
-                               ((maskOrArgb & ARGB8888_BLUE_MASK) >> ((uint8_t)blueShiftRight & SHIFT_COUNT_MASK)) <<
-                               ((uint8_t)blueShiftLeft & SHIFT_COUNT_MASK) |
-                               ((maskOrArgb & ARGB8888_GREEN_MASK) >> ((uint8_t)greenShiftRight & SHIFT_COUNT_MASK)) <<
-                               ((uint8_t)greenShiftLeft & SHIFT_COUNT_MASK) |
-                               ((maskOrArgb & ARGB8888_RED_MASK) >> ((uint8_t)redShiftRight & SHIFT_COUNT_MASK)) <<
-                               ((uint8_t)redShiftLeft & SHIFT_COUNT_MASK);
-                    sourcePixel++;
-                    paletteIndexOrCounter--;
-                    destinationDword++;
-                  } while (paletteIndexOrCounter != 0);
-                  sourcePixel = byteCursorOrSourceRow + sourceWidth;
-                  rowsRemaining--;
-                  paletteIndexOrCounter = sourceWidth;
-                  destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
-                  byteCursorOrSourceRow = sourcePixel;
-                  destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
-                } while (rowsRemaining != 0);
-                stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
-              }
-              goto GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn;
-            }
-          }
-        }
-        stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
-      }
-    }
-  }
-GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn:
-  g_ActiveTextureUploads--;
-  return;
+  GraphicsTextureUploadScaled_Upload(texture,1);
 }
 
 
@@ -1828,7 +1430,8 @@ static uint32_t GraphicsTextureUploadScaled_PlaceChannels
 /* Average of the blockSize x blockSize source block whose top-left pixel is at `block` (rows sourceWidth
    pixels apart), as ARGB8888. Direct sources (palette == NULL) hold ARGB8888 pixels, paletted ones one palette
    index per byte. Each channel is its texel sum (as a 16-bit word) divided by the texel count (4 or 16, a
-   right shift by 2 or 4 in the original), saturated to a byte like PACKUSWB. */
+   right shift by 2 or 4 in the original), saturated to a byte like PACKUSWB. For blockSize 1 (the 1x upload,
+   which converts each pixel directly) this returns the texel unchanged. */
 static uint32_t GraphicsTextureUploadScaled_AverageBlock
           (const uint8_t *block,uint32_t sourceWidth,const GraphicsTexturePaletteEntry *palette,uint32_t blockSize)
 {
@@ -2026,8 +1629,8 @@ static void GraphicsTextureUploadScaled_FillLockedSurface
   stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
 }
 
-/* Shared body of GraphicsTexture_UploadColor_2x (blockSize 2) and GraphicsTexture_UploadColor_4x
-   (blockSize 4): restores a lost staging surface, locks it and fills it. */
+/* Shared body of GraphicsTexture_UploadColor_1x (blockSize 1), GraphicsTexture_UploadColor_2x (blockSize 2)
+   and GraphicsTexture_UploadColor_4x (blockSize 4): restores a lost staging surface, locks it and fills it. */
 static void GraphicsTextureUploadScaled_Upload(GraphicsTextureResource *texture,uint32_t blockSize)
 {
   IDirectDrawSurface3 *stagingSurface3;
@@ -2612,6 +2215,57 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
 }
 
 
+/* GraphicsTextureSet_AllocateMetadata: fills set->entries from the asset's source entries (rows
+   GFX_SUBRESOURCE_RECORD_SIZE bytes apart, starting at firstSourceEntry), entryCount of them; at least one
+   entry is always processed, as in the original. Each entry gets no texture yet, its image index, the source
+   asset and entry, and log2 of the width and height (31 for a zero size). Returns false at the first image
+   whose width or height is not a power of two (that entry is left partly written). */
+static bool GraphicsTextureSet_FillEntries
+          (GraphicsTextureSet *set,GraphicsTextureSourceAsset *sourceAsset,uint8_t *firstSourceEntry,
+           GraphicsAssetAllocationByteSize entryCount)
+{
+  GraphicsTextureSetEntry *entry = set->entries;
+  GraphicsTextureSourceEntry *sourceEntry = (GraphicsTextureSourceEntry *)firstSourceEntry;
+  GraphicsAssetAllocationByteSize entriesRemaining = entryCount;
+  int entryIndex = 0;
+  uint32_t widthLog2;
+  int heightLog2;
+
+  do {
+    /* index of the highest set bit of pixelWidth; the original leaves the register undefined for 0 */
+    widthLog2 = 31;
+    if (sourceEntry->pixelWidth != 0) {
+      while (sourceEntry->pixelWidth >> widthLog2 == 0) {
+        widthLog2--;
+      }
+    }
+    entry->texture = NULL;
+    entry->subresourceIndex = entryIndex;
+    entry->widthLog2 = widthLog2;
+    if (1 << ((uint8_t)widthLog2 & SHIFT_COUNT_MASK) != sourceEntry->pixelWidth) {
+      return false;
+    }
+    entry->sourceAsset = sourceAsset;
+    /* index of the highest set bit of pixelHeight */
+    heightLog2 = 31;
+    if (sourceEntry->pixelHeight != 0) {
+      while (sourceEntry->pixelHeight >> heightLog2 == 0) {
+        heightLog2--;
+      }
+    }
+    entry->sourceEntry = sourceEntry;
+    entry->heightLog2 = heightLog2;
+    if (1 << ((uint8_t)heightLog2 & SHIFT_COUNT_MASK) != sourceEntry->pixelHeight) {
+      return false;
+    }
+    entry++;
+    sourceEntry = (GraphicsTextureSourceEntry *)((uint8_t *)sourceEntry + GFX_SUBRESOURCE_RECORD_SIZE);
+    entryIndex++;
+    entriesRemaining--;
+  } while (entriesRemaining != 0);
+  return true;
+}
+
 /* Address: 0x00485EA0.
    Builds a texture set for a 'gfx' asset: converts its palettes to the display format, then allocates the
    set (an 8-byte header with the source asset and image count, then one 0x20-byte GraphicsTextureSetEntry
@@ -2622,69 +2276,28 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
 GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode)
 
 {
-  uint32_t widthLog2;
-  int heightLog2;
   GraphicsPaletteTextureSourceAsset *convertedSource;
-  GraphicsPaletteTextureSourceAsset *metadataOrError;
-  int entryIndex;
-  GraphicsPaletteTextureFormatVersion *entryFieldCursor;
-  uint8_t *sourceEntry;
-  uint32_t convertError;
-  uint32_t metadataAllocationError;
-  GraphicsAssetAllocationByteSize entriesRemaining;
+  GraphicsTextureSet *set;
+  uint32_t errorCode;
+  GraphicsAssetAllocationByteSize entryCount;
 
   convertedSource = (GraphicsPaletteTextureSourceAsset *)sourceAsset;
-  convertError = g_GraphicsTextureSourceConvertPaletteEntries(convertedSource);
-  metadataOrError = (GraphicsPaletteTextureSourceAsset *)convertError;
-  if (convertError == 0) {
-    entriesRemaining = convertedSource->subresourceCount;
-    /* the set is typed as a palette asset here: magic = sourceAsset, allocationSizeBytes = image count, and
-       from formatVersion on eight dwords per entry */
-    metadataAllocationError = g_MemoryApi.alloc(entriesRemaining * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + 8,
-                                                (void **)&metadataOrError);
-    if (metadataAllocationError != 0) {
-      metadataOrError = (GraphicsPaletteTextureSourceAsset *)metadataAllocationError;
-    }
-    else {
-      entryFieldCursor = &metadataOrError->formatVersion;
-      metadataOrError->magic = (GraphicsPaletteTextureAssetMagic)convertedSource;
-      metadataOrError->allocationSizeBytes = entriesRemaining;
-      sourceEntry = (uint8_t *)convertedSource + convertedSource->subresourceTableOffset;
-      entryIndex = 0;
-      while( true ) {
-        /* BSR of pixelWidth (source entry +0x18); the original leaves the register undefined for 0 */
-        widthLog2 = 31;
-        if (((GraphicsTextureSourceEntry *)sourceEntry)->pixelWidth != 0) {
-          for (; ((GraphicsTextureSourceEntry *)sourceEntry)->pixelWidth >> widthLog2 == 0; widthLog2--) {
-          }
-        }
-        *entryFieldCursor = 0;
-        entryFieldCursor[5] = entryIndex;
-        entryFieldCursor[1] = widthLog2;
-        if (1 << ((uint8_t)widthLog2 & SHIFT_COUNT_MASK) != ((GraphicsTextureSourceEntry *)sourceEntry)->pixelWidth) break;
-        entryFieldCursor[3] = (GraphicsPaletteTextureFormatVersion)convertedSource;
-        /* BSR of pixelHeight (source entry +0x1C) */
-        heightLog2 = 31;
-        if (((GraphicsTextureSourceEntry *)sourceEntry)->pixelHeight != 0) {
-          for (; ((GraphicsTextureSourceEntry *)sourceEntry)->pixelHeight >> heightLog2 == 0; heightLog2--) {
-          }
-        }
-        entryFieldCursor[4] = (GraphicsPaletteTextureFormatVersion)sourceEntry;
-        entryFieldCursor[2] = heightLog2;
-        if (1 << ((uint8_t)heightLog2 & SHIFT_COUNT_MASK) != ((GraphicsTextureSourceEntry *)sourceEntry)->pixelHeight) break;
-        entryFieldCursor = entryFieldCursor + 8;
-        sourceEntry = sourceEntry + GFX_SUBRESOURCE_RECORD_SIZE;
-        entryIndex++;
-        entriesRemaining--;
-        if (entriesRemaining == 0) {
-          return (GraphicsTextureSet *)metadataOrError;
-        }
+  errorCode = g_GraphicsTextureSourceConvertPaletteEntries(convertedSource);
+  if (errorCode == 0) {
+    entryCount = convertedSource->subresourceCount;
+    errorCode = g_MemoryApi.alloc(entryCount * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + 8,(void **)&set);
+    if (errorCode == 0) {
+      set->sourceAsset = sourceAsset;
+      set->subresourceCount = entryCount;
+      if (GraphicsTextureSet_FillEntries
+               (set,sourceAsset,(uint8_t *)convertedSource + convertedSource->subresourceTableOffset,entryCount)) {
+        return set;
       }
-      metadataOrError = (GraphicsPaletteTextureSourceAsset *)FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO;
+      errorCode = FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO;
     }
   }
   if (outErrorCode != NULL) {
-    *outErrorCode = (uint32_t)metadataOrError;
+    *outErrorCode = errorCode;
   }
   return NULL;
 }

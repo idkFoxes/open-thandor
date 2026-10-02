@@ -21,15 +21,45 @@ void UiTooltip_TickCountdown(void)
   if ((g_UiPointerCaptureTarget == UI_NODE_NONE) &&
      ((g_UiTooltipState.targetNode == NULL ||
       (((g_UiTooltipState.targetNode)->nodeFlags & UI_NODE_SUPPRESSED) == 0)))) {
-    if ((g_UiTooltipState.countdownFrames != 0) &&
-       (g_UiTooltipState.countdownFrames--,
-       g_UiTooltipState.countdownFrames == 0)) {
-      UiTooltip_PrepareTargetText(g_UiTooltipState.targetNode);
+    if (g_UiTooltipState.countdownFrames != 0) {
+      g_UiTooltipState.countdownFrames--;
+      if (g_UiTooltipState.countdownFrames == 0) {
+        UiTooltip_PrepareTargetText(g_UiTooltipState.targetNode);
+      }
     }
     return;
   }
   UiTooltip_UpdateHoverTarget(g_UiTooltipState.pointerY,g_UiTooltipState.pointerX);
-  return;
+}
+
+
+/* Removes the selected range of the numeric text edit: the code units from selectionEnd up to the buffer
+   end move down to selectionStart and the freed tail is zero-filled. Cursor and selection collapse at
+   selectionStart. */
+static void UiNumericTextEdit_RemoveSelectedRange(UiNumericTextControl *control)
+
+{
+  UiTextCodeUnitIndex selectionEnd;
+  int removedCount;
+  int movedCount;
+  uint16_t *sourceCursor;
+  uint16_t *destinationCursor;
+
+  selectionEnd = control->selectionEnd;
+  removedCount = selectionEnd - control->selectionStart;
+  sourceCursor = control->textBuffer + selectionEnd;
+  destinationCursor = control->textBuffer + control->selectionStart;
+  for (movedCount = UI_NUMERIC_TEXT_BUFFER_UNITS - selectionEnd; movedCount != 0; movedCount--) {
+    *destinationCursor = *sourceCursor;
+    sourceCursor++;
+    destinationCursor++;
+  }
+  for (; removedCount != 0; removedCount--) {
+    *destinationCursor = 0;
+    destinationCursor++;
+  }
+  control->cursorIndex = control->selectionStart;
+  control->selectionEnd = control->selectionStart;
 }
 
 
@@ -37,7 +67,7 @@ void UiTooltip_TickCountdown(void)
    Keyboard handler of the numeric text edit (keyboardEvent slot of g_UiNumericTextEditControlVtable): inserts
    digits, '-' (signed values) and A-F (hexadecimal values), edits and moves the cursor and Shift selection,
    and after every handled key parses and commits the value. Enter queues the action when the control acts on
-   Enter only; everything else goes to UiNode_DefaultKeyboardEventMoveFocusNext. CF clear: consumed.
+   Enter only; everything else goes to UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
 bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiNumericTextControl *control)
@@ -49,8 +79,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
   bool recomputeLayout;
   bool normalizeSelection;
   UiTextCodeUnitIndex codeUnitIndex;
-  int countOrIndex;
-  int shiftCountOrScanIndex;
+  int shiftCount;
   uint32_t insertIndex;
   uint16_t *sourceCursor;
   uint16_t *destinationCursor;
@@ -88,23 +117,8 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
     }
     insertIndex = control->cursorIndex;
     if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
-      codeUnitIndex = control->selectionEnd;
-      countOrIndex = codeUnitIndex - control->selectionStart;
-      sourceCursor = control->textBuffer + codeUnitIndex;
-      destinationCursor = control->textBuffer + control->selectionStart;
-      for (shiftCountOrScanIndex = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0;
-           shiftCountOrScanIndex--) {
-        *destinationCursor = *sourceCursor;
-        sourceCursor++;
-        destinationCursor++;
-      }
-      for (; countOrIndex != 0; countOrIndex--) {
-        *destinationCursor = 0;
-        destinationCursor++;
-      }
+      UiNumericTextEdit_RemoveSelectedRange(control);
       insertIndex = control->selectionStart;
-      control->cursorIndex = insertIndex;
-      control->selectionEnd = insertIndex;
     }
     /* At most 14 code units: the insertion shifts the text up to index 13 only. */
     if (insertIndex < UI_NUMERIC_TEXT_BUFFER_UNITS - 2) {
@@ -147,22 +161,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
         codeUnitIndex = control->cursorIndex;
         if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd)) {
           /* Backspace/Delete with a selection: remove the selected range, zero-fill the tail. */
-          codeUnitIndex = control->selectionEnd;
-          countOrIndex = codeUnitIndex - control->selectionStart;
-          sourceCursor = control->textBuffer + codeUnitIndex;
-          destinationCursor = control->textBuffer + control->selectionStart;
-          for (shiftCountOrScanIndex = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0;
-               shiftCountOrScanIndex--) {
-            *destinationCursor = *sourceCursor;
-            sourceCursor++;
-            destinationCursor++;
-          }
-          for (; countOrIndex != 0; countOrIndex--) {
-            *destinationCursor = 0;
-            destinationCursor++;
-          }
-          control->cursorIndex = control->selectionStart;
-          control->selectionEnd = control->selectionStart;
+          UiNumericTextEdit_RemoveSelectedRange(control);
         }
         else if (keyCode == KEYBOARD_KEY_CODE_BACKSPACE) {
           /* Backspace: remove the code unit before the cursor. */
@@ -172,7 +171,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
           }
           sourceCursor = control->textBuffer + codeUnitIndex;
           destinationCursor = control->textBuffer + (codeUnitIndex - 1);
-          for (countOrIndex = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; countOrIndex != 0; countOrIndex--) {
+          for (shiftCount = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCount != 0; shiftCount--) {
             *destinationCursor = *sourceCursor;
             sourceCursor++;
             destinationCursor++;
@@ -189,7 +188,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
           }
           sourceCursor = control->textBuffer + codeUnitIndex + 1;
           destinationCursor = control->textBuffer + codeUnitIndex;
-          for (countOrIndex = UI_NUMERIC_TEXT_BUFFER_UNITS - 1 - codeUnitIndex; countOrIndex != 0; countOrIndex--) {
+          for (shiftCount = UI_NUMERIC_TEXT_BUFFER_UNITS - 1 - codeUnitIndex; shiftCount != 0; shiftCount--) {
             *destinationCursor = *sourceCursor;
             sourceCursor++;
             destinationCursor++;
@@ -278,9 +277,8 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
         do {
           *selectionBoundary = *selectionBoundary + 1;
           control->cursorIndex++;
-          shiftCountOrScanIndex = codeUnitIndex + 1;
           codeUnitIndex++;
-        } while (control->textBuffer[shiftCountOrScanIndex] != 0);
+        } while (control->textBuffer[codeUnitIndex] != 0);
         normalizeSelection = true;
         break;
       case KEYBOARD_KEY_CODE_LEFT:
@@ -1330,33 +1328,23 @@ void UiTextEditControl_UpdateSelectionFromPointer
           UiTextEditControl *control)
 
 {
-  UiTextCodeUnitIndex previousCursorOrSelectionStart;
-  UiNodeVtable *nodeVtable;
-  uint32_t movedBoundaryIndex;
-  
+  UiTextCodeUnitIndex previousCursorIndex;
+  uint32_t pointerCursorIndex;
+
   if ((control->editStateFlags & UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE) != 0) {
-    previousCursorOrSelectionStart = control->cursorIndex;
-    movedBoundaryIndex = UiTextEditControl_FindCursorIndexAtX(pointerX,control);
-    control->cursorIndex = movedBoundaryIndex;
-    if (previousCursorOrSelectionStart == control->selectionStart) {
-      control->selectionStart = movedBoundaryIndex;
-      movedBoundaryIndex = control->selectionEnd;
+    previousCursorIndex = control->cursorIndex;
+    pointerCursorIndex = UiTextEditControl_FindCursorIndexAtX(pointerX,control);
+    control->cursorIndex = pointerCursorIndex;
+    if (previousCursorIndex == control->selectionStart) {
+      control->selectionStart = pointerCursorIndex;
     }
     else {
-      control->selectionEnd = movedBoundaryIndex;
+      control->selectionEnd = pointerCursorIndex;
     }
-    nodeVtable = (control->base).vtable;
-    if (movedBoundaryIndex < control->selectionStart) {
-      LOCK();
-      previousCursorOrSelectionStart = control->selectionStart;
-      control->selectionStart = movedBoundaryIndex;
-      UNLOCK();
-      control->selectionEnd = previousCursorOrSelectionStart;
-    }
-    nodeVtable->layout(&control->base);
+    UiTextEdit_OrderSelection(control);
+    (control->base).vtable->layout(&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
-  return;
 }
 
 
@@ -1430,6 +1418,35 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
 }
 
 
+/* Shared tail of the pointer list sorts: selects the row that now holds selectedRecord (the first row if it
+   is gone) and scrolls that row into view. */
+static void UiPointerList_ReselectRecordAfterSort(void *selectedRecord,UiPointerListControl *control)
+
+{
+  void **rowSlotCursor;
+  UiListRowCount remainingRows;
+  int selectedRowTop;
+
+  rowSlotCursor = control->rowSlots;
+  remainingRows = control->rowCount;
+  selectedRowTop = 0;
+  do {
+    if (selectedRecord == *rowSlotCursor) break;
+    selectedRowTop = selectedRowTop + control->rowHeight;
+    rowSlotCursor++;
+    remainingRows--;
+  } while (remainingRows != 0);
+  if (remainingRows == 0) {
+    /* Not found: select the first row (the row top stays past the last row, as in the original). */
+    rowSlotCursor = control->rowSlots;
+  }
+  control->selectedRowSlot = rowSlotCursor;
+  UiScrollableControl_ClampOffsetsToViewport
+            (selectedRowTop + 1 + control->rowHeight,(control->base).rightOffset,selectedRowTop,0,
+             (UiScrollableControl *)(control->base).parent);
+}
+
+
 /* Address: 0x004BB5C0.
    Sorts the rows of a pointer list in ascending order of the rich text found fieldOffset bytes into each row
    record (expanded, ASCII case-insensitive), with an exchange sort that moves the smallest remaining row to
@@ -1441,23 +1458,22 @@ void UiPointerList_SortByExpandedTextFieldAscending
 
 {
   void *swappedRecord;
-  int comparisonsOrRowTop;
+  int lastRowIndex;
+  int comparisonsLeft;
   int remainingPasses;
-  UiListRowCount remainingRows;
   void **passAnchorSlot;
   void **rowSlotCursor;
   int textOrder;
   void *selectedRecord;
 
-  rowSlotCursor = control->rowSlots;
-  if (rowSlotCursor != NULL) {
-    comparisonsOrRowTop = control->rowCount - 1;
-    if ((comparisonsOrRowTop != 0) && (-1 < comparisonsOrRowTop)) {
+  if (control->rowSlots != NULL) {
+    lastRowIndex = control->rowCount - 1;
+    if ((lastRowIndex != 0) && (-1 < lastRowIndex)) {
       selectedRecord = *control->selectedRowSlot;
-      passAnchorSlot = rowSlotCursor;
-      remainingPasses = comparisonsOrRowTop;
-      do {
-        do {
+      passAnchorSlot = control->rowSlots;
+      for (remainingPasses = lastRowIndex; remainingPasses != 0; remainingPasses--) {
+        rowSlotCursor = passAnchorSlot;
+        for (comparisonsLeft = remainingPasses; comparisonsLeft != 0; comparisonsLeft--) {
           rowSlotCursor++;
           textOrder = UiPointerList_CompareExpandedText
                             ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
@@ -1469,33 +1485,12 @@ void UiPointerList_SortByExpandedTextFieldAscending
             UNLOCK();
             *passAnchorSlot = swappedRecord;
           }
-          comparisonsOrRowTop--;
-        } while (comparisonsOrRowTop != 0);
-        rowSlotCursor = passAnchorSlot + 1;
-        comparisonsOrRowTop = remainingPasses - 1;
-        passAnchorSlot = rowSlotCursor;
-        remainingPasses = comparisonsOrRowTop;
-      } while (comparisonsOrRowTop != 0);
-      rowSlotCursor = control->rowSlots;
-      remainingRows = control->rowCount;
-      comparisonsOrRowTop = 0;
-      do {
-        if (selectedRecord == *rowSlotCursor) break;
-        comparisonsOrRowTop = comparisonsOrRowTop + control->rowHeight;
-        rowSlotCursor++;
-        remainingRows--;
-      } while (remainingRows != 0);
-      if (remainingRows == 0) {
-        /* Not found: select the first row (the row top stays past the last row, as in the original). */
-        rowSlotCursor = control->rowSlots;
+        }
+        passAnchorSlot++;
       }
-      control->selectedRowSlot = rowSlotCursor;
-      UiScrollableControl_ClampOffsetsToViewport
-                (comparisonsOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,comparisonsOrRowTop,0,
-                 (UiScrollableControl *)(control->base).parent);
+      UiPointerList_ReselectRecordAfterSort(selectedRecord,control);
     }
   }
-  return;
 }
 
 
@@ -1509,23 +1504,22 @@ void UiPointerList_SortByExpandedTextFieldDescending
 
 {
   void *swappedRecord;
-  int comparisonsOrRowTop;
+  int lastRowIndex;
+  int comparisonsLeft;
   int remainingPasses;
-  UiListRowCount remainingRows;
   void **passAnchorSlot;
   void **rowSlotCursor;
   int textOrder;
   void *selectedRecord;
 
-  rowSlotCursor = control->rowSlots;
-  if (rowSlotCursor != NULL) {
-    comparisonsOrRowTop = control->rowCount - 1;
-    if ((comparisonsOrRowTop != 0) && (-1 < comparisonsOrRowTop)) {
+  if (control->rowSlots != NULL) {
+    lastRowIndex = control->rowCount - 1;
+    if ((lastRowIndex != 0) && (-1 < lastRowIndex)) {
       selectedRecord = *control->selectedRowSlot;
-      passAnchorSlot = rowSlotCursor;
-      remainingPasses = comparisonsOrRowTop;
-      do {
-        do {
+      passAnchorSlot = control->rowSlots;
+      for (remainingPasses = lastRowIndex; remainingPasses != 0; remainingPasses--) {
+        rowSlotCursor = passAnchorSlot;
+        for (comparisonsLeft = remainingPasses; comparisonsLeft != 0; comparisonsLeft--) {
           rowSlotCursor++;
           textOrder = UiPointerList_CompareExpandedText
                             ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
@@ -1537,33 +1531,12 @@ void UiPointerList_SortByExpandedTextFieldDescending
             UNLOCK();
             *passAnchorSlot = swappedRecord;
           }
-          comparisonsOrRowTop--;
-        } while (comparisonsOrRowTop != 0);
-        rowSlotCursor = passAnchorSlot + 1;
-        comparisonsOrRowTop = remainingPasses - 1;
-        passAnchorSlot = rowSlotCursor;
-        remainingPasses = comparisonsOrRowTop;
-      } while (comparisonsOrRowTop != 0);
-      rowSlotCursor = control->rowSlots;
-      remainingRows = control->rowCount;
-      comparisonsOrRowTop = 0;
-      do {
-        if (selectedRecord == *rowSlotCursor) break;
-        comparisonsOrRowTop = comparisonsOrRowTop + control->rowHeight;
-        rowSlotCursor++;
-        remainingRows--;
-      } while (remainingRows != 0);
-      if (remainingRows == 0) {
-        /* Not found: select the first row (the row top stays past the last row, as in the original). */
-        rowSlotCursor = control->rowSlots;
+        }
+        passAnchorSlot++;
       }
-      control->selectedRowSlot = rowSlotCursor;
-      UiScrollableControl_ClampOffsetsToViewport
-                (comparisonsOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,comparisonsOrRowTop,0,
-                 (UiScrollableControl *)(control->base).parent);
+      UiPointerList_ReselectRecordAfterSort(selectedRecord,control);
     }
   }
-  return;
 }
 
 
@@ -1634,8 +1607,10 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
   uint32_t edgeTileWidth;
   int32_t frameLeft;
   int32_t frameRight;
-  int frameWidthOrMiddleEnd;
-  int targetLeftOrTileX;
+  int frameWidth;
+  int targetLeft;
+  int middleEnd;
+  int tileX;
   int frameTop;
   bool framebufferUnavailable;
   RichTextExtent textExtent;
@@ -1655,17 +1630,17 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
     textExtent = RichTextCommandStream_MeasureLine(g_UiTooltipTextStyle,commandStream);
     tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,g_UiWindowTextureSource);
     edgeTileWidth = tileSize.logicalWidthPixels;
-    frameWidthOrMiddleEnd = textExtent.widthPixels + edgeTileWidth * 2;
-    targetLeftOrTileX = tooltipTarget->left;
+    frameWidth = textExtent.widthPixels + edgeTileWidth * 2;
+    targetLeft = tooltipTarget->left;
     frameTop = tooltipTarget->top - tileSize.logicalHeightPixels;
     targetRight = tooltipTarget->right;
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
-      frameLeft = (targetLeftOrTileX + targetRight) - frameWidthOrMiddleEnd >> 1;
+      frameLeft = ((targetLeft + targetRight) - frameWidth) >> 1;
       if (rootNode == UI_NODE_NONE) {
         rootNode = tooltipTarget;
       }
-      frameRight = frameWidthOrMiddleEnd + frameLeft;
+      frameRight = frameWidth + frameLeft;
       if (frameLeft < rootNode->left) {
         frameRight = frameRight - (frameLeft - rootNode->left);
         frameLeft = rootNode->left;
@@ -1681,23 +1656,23 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
                 (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameLeft,UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,
                  g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      frameWidthOrMiddleEnd = frameRight - edgeTileWidth;
+      middleEnd = frameRight - edgeTileWidth;
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameWidthOrMiddleEnd,
+                (clipBottom,clipRight,clipTop,clipLeft,frameTop,middleEnd,
                  UI_WINDOW_SUBRESOURCE_TOOLTIP_RIGHT,g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      if (clipRight < frameWidthOrMiddleEnd) {
-        frameWidthOrMiddleEnd = clipRight;
+      if (clipRight < middleEnd) {
+        middleEnd = clipRight;
       }
       tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_MIDDLE,g_UiWindowTextureSource);
-      targetLeftOrTileX = edgeTileWidth + frameLeft;
+      tileX = edgeTileWidth + frameLeft;
       do {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,frameWidthOrMiddleEnd,clipTop,clipLeft,frameTop,targetLeftOrTileX,
+                  (clipBottom,middleEnd,clipTop,clipLeft,frameTop,tileX,
                    UI_WINDOW_SUBRESOURCE_TOOLTIP_MIDDLE,g_UiWindowTextureSource,
                    g_FramebufferAccess);
-        targetLeftOrTileX = targetLeftOrTileX + tileSize.logicalWidthPixels;
-      } while (targetLeftOrTileX < frameWidthOrMiddleEnd);
+        tileX = tileX + tileSize.logicalWidthPixels;
+      } while (tileX < middleEnd);
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,g_UiTooltipTextStyle,commandStream,frameTop + 3, /* text inset */
                  edgeTileWidth + frameLeft);
@@ -2052,6 +2027,31 @@ void UiFramedTextButtonControl_NonRightRelease
 }
 
 
+/* True when the point lies inside the framed button's box (with UI_BUTTON_FRAME_INSET: inside its frame,
+   g_UiWindowFrameInset pixels in from every edge). */
+static bool UiFramedTextButtonControl_ContainsPoint
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control)
+
+{
+  int relativeX;
+  int relativeY;
+
+  relativeX = pointerX - (control->selectable).base.left;
+  relativeY = pointerY - (control->selectable).base.top;
+  if ((pointerX < (control->selectable).base.left) || (pointerY < (control->selectable).base.top) ||
+      ((control->selectable).base.layoutWidth <= relativeX) ||
+      ((control->selectable).base.layoutHeight <= relativeY)) {
+    return false;
+  }
+  if (((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0) {
+    return true;
+  }
+  return (g_UiWindowFrameInset <= relativeX) && (g_UiWindowFrameInset <= relativeY) &&
+         (relativeX + g_UiWindowFrameInset < (control->selectable).base.layoutWidth) &&
+         (relativeY + g_UiWindowFrameInset < (control->selectable).base.layoutHeight);
+}
+
+
 /* Address: 0x004B23F0.
    Primary-button drag with a framed button captured (nonRightDrag slot of g_UiNodeVtable_004B1D80 and
    g_UiWindowControlVtable): a momentary button shows itself pressed while the pointer is inside its box
@@ -2062,38 +2062,19 @@ void UiFramedTextButtonControl_NonRightDrag
           UiFramedTextButtonControl *control)
 
 {
-  UiSelectableStateFlags *clearedStateFlagsField;
-  int32_t *edgeField;
-  int relativeX;
-  int relativeY;
-  UiSelectableStateFlags *stateFlagsField;
-  
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) {
-    edgeField = &(control->selectable).base.left;
-    relativeX = pointerX - *edgeField;
-    if (((pointerX < *edgeField) ||
-        (((edgeField = &(control->selectable).base.top, relativeY = pointerY - *edgeField, pointerY < *edgeField
-          || ((control->selectable).base.layoutWidth <= relativeX)) ||
-         ((control->selectable).base.layoutHeight <= relativeY)))) ||
-       ((((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) != 0 &&
-        (((relativeX < g_UiWindowFrameInset || (relativeY < g_UiWindowFrameInset)) ||
-         (((control->selectable).base.layoutWidth <= relativeX + g_UiWindowFrameInset ||
-          ((control->selectable).base.layoutHeight <= relativeY + g_UiWindowFrameInset)))))))) {
+    if (!UiFramedTextButtonControl_ContainsPoint(pointerY,pointerX,control)) {
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-        clearedStateFlagsField = &(control->selectable).stateFlags;
-        *clearedStateFlagsField = *clearedStateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+        (control->selectable).stateFlags = (control->selectable).stateFlags & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
         UiNode_InvalidateRoot((UiNodeBase *)control);
       }
     }
     else if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-      stateFlagsField = &(control->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
+      (control->selectable).stateFlags = (control->selectable).stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
       UiNode_InvalidateRoot((UiNodeBase *)control);
-      return;
     }
   }
-  return;
 }
 
 
@@ -2106,27 +2087,11 @@ UiNodeBase * UiFramedTextButtonControl_HitTestRect
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control)
 
 {
-  int32_t *edgeField;
-  UiFramedTextButtonControl *hitResult;
-  int relativeX;
-  int relativeY;
-  
-  hitResult = (UiFramedTextButtonControl *)UI_NODE_NONE;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    edgeField = &(control->selectable).base.left;
-    relativeX = pointerX - *edgeField;
-    if (((((*edgeField <= pointerX) &&
-          (edgeField = &(control->selectable).base.top, relativeY = pointerY - *edgeField, *edgeField <= pointerY
-          )) && (relativeX < (control->selectable).base.layoutWidth)) &&
-        (relativeY < (control->selectable).base.layoutHeight)) &&
-       ((((control->selectable).stateFlags & UI_BUTTON_FRAME_INSET) == 0 ||
-        (((g_UiWindowFrameInset <= relativeX && (g_UiWindowFrameInset <= relativeY)) &&
-         ((relativeX + g_UiWindowFrameInset < (control->selectable).base.layoutWidth &&
-          (relativeY + g_UiWindowFrameInset < (control->selectable).base.layoutHeight)))))))) {
-      hitResult = control;
-    }
+  if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+     (UiFramedTextButtonControl_ContainsPoint(pointerY,pointerX,control))) {
+    return (UiNodeBase *)control;
   }
-  return (UiNodeBase *)hitResult;
+  return UI_NODE_NONE;
 }
 
 
@@ -2643,6 +2608,36 @@ UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,i
 }
 
 
+/* Draws one row of fill panel tiles at tileTop, starting at the panel's left edge: a single tile, or with
+   UI_FILL_PANEL_TILE_X tiles every tileWidth pixels while they start left of clipRight. Each tile is drawn
+   over its drop shadow when UI_FILL_PANEL_DROP_SHADOW is set. */
+static void UiFillPanelControl_DrawTileRow
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,int32_t tileTop,uint32_t tileWidth,UiFillPanelControl *control)
+
+{
+  int tileLeft;
+
+  tileLeft = (control->base).left;
+  do {
+    if ((control->fillFlags & UI_FILL_PANEL_DROP_SHADOW) != 0) {
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
+                (clipBottom,clipRight,clipTop,clipLeft,
+                 control->shadowOffsetY + tileTop,
+                 control->shadowOffsetX + tileLeft,TEXT_SHADOW_COLOR_ARGB,control->subresourceOrFillArgb,
+                 control->textureSource,g_FramebufferAccess);
+    }
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,tileTop,tileLeft,control->subresourceOrFillArgb,
+               control->textureSource,g_FramebufferAccess);
+    if ((control->fillFlags & UI_FILL_PANEL_TILE_X) == 0) {
+      return;
+    }
+    tileLeft = tileLeft + tileWidth;
+  } while (tileLeft < clipRight);
+}
+
+
 /* Address: 0x004B3AA0.
    Draws a fill panel (drawClipped slot of g_UiFillPanelControlVtable): without a texture, a rectangle in the
    ARGB colour subresourceOrFillArgb; with one, its subresource once or tiled across and/or down the box
@@ -2656,21 +2651,21 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
   int controlRight;
   int controlBottom;
   uint32_t tileWidth;
-  int tileLeft;
+  int controlLeft;
   uint32_t tileHeight;
   int32_t tileTop;
   bool framebufferUnavailable;
   GraphicsTextureLogicalSize tileSize;
-  
+
   controlRight = (control->base).right;
   controlBottom = (control->base).bottom;
-  tileLeft = (control->base).left;
+  controlLeft = (control->base).left;
   tileTop = (control->base).top;
   if (control->textureSource == NULL) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       g_GraphicsFramebufferFillRectArgb
-                (clipBottom,clipRight,clipTop,clipLeft,controlBottom,controlRight,tileTop,tileLeft,
+                (clipBottom,clipRight,clipTop,clipLeft,controlBottom,controlRight,tileTop,controlLeft,
                  control->subresourceOrFillArgb,
                  g_FramebufferAccess);
       g_GraphicsFramebufferEndAccess();
@@ -2690,30 +2685,15 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       /* Tile rows left to right (UI_FILL_PANEL_TILE_X), then top to bottom (UI_FILL_PANEL_TILE_Y). */
-      while( true ) {
-        if ((control->fillFlags & UI_FILL_PANEL_DROP_SHADOW) != 0) {
-          g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                    (clipBottom,clipRight,clipTop,clipLeft,
-                     control->shadowOffsetY + tileTop,
-                     control->shadowOffsetX + tileLeft,TEXT_SHADOW_COLOR_ARGB,control->subresourceOrFillArgb,
-                     control->textureSource,g_FramebufferAccess);
-        }
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,tileTop,tileLeft,control->subresourceOrFillArgb,
-                   control->textureSource,g_FramebufferAccess);
-        if ((control->fillFlags & UI_FILL_PANEL_TILE_X) != 0) {
-          tileLeft = tileLeft + tileWidth;
-          if (tileLeft < clipRight) continue;
-          tileLeft = (control->base).left;
-        }
-        if (((control->fillFlags & UI_FILL_PANEL_TILE_Y) == 0) || (tileTop = tileTop + tileHeight,
-                                                                   clipBottom <= tileTop)) break;
-      }
+      do {
+        UiFillPanelControl_DrawTileRow(clipBottom,clipRight,clipTop,clipLeft,tileTop,tileWidth,control);
+        if ((control->fillFlags & UI_FILL_PANEL_TILE_Y) == 0) break;
+        tileTop = tileTop + tileHeight;
+      } while (tileTop < clipBottom);
       g_GraphicsFramebufferEndAccess();
     }
   }
   UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
-  return;
 }
 
 
@@ -2801,6 +2781,67 @@ void UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
 }
 
 
+/* The label's rich-text command stream: the text itself, or the resolved text resource. */
+static uint16_t *UiSingleLineTextControl_GetCommandStream(UiSingleLineTextControl *control)
+
+{
+  if ((control->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
+    return TextResource_Resolve((TextResourceId)control->text);
+  }
+  return control->text;
+}
+
+
+/* One piece of the keyboard-focus mark at (markTop, x): drawn as its shadow (TEXT_SHADOW_COLOR_ARGB) or as
+   itself. */
+static void UiSingleLineTextControl_BlitFocusMarkPiece
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,int markTop,int x,uint32_t subresource,bool shadow)
+
+{
+  if (shadow) {
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,markTop,x,TEXT_SHADOW_COLOR_ARGB,subresource,
+               g_UiWindowTextureSource,g_FramebufferAccess);
+  }
+  else {
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,markTop,x,subresource,g_UiWindowTextureSource,
+               g_FramebufferAccess);
+  }
+}
+
+
+/* Draws the keyboard-focus mark (or its shadow) behind a label line: the left cap at markLeft, the right cap
+   at markLeft + lineWidth - capWidth, and the middle tiled from the end of the left cap up to the right cap
+   (or clipRight). */
+static void UiSingleLineTextControl_DrawFocusMark
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,int markTop,int markLeft,int lineWidth,int capWidth,bool shadow)
+
+{
+  int rightCapX;
+  int tileX;
+  GraphicsTextureLogicalSize tileSize;
+
+  rightCapX = (lineWidth + markLeft) - capWidth;
+  UiSingleLineTextControl_BlitFocusMarkPiece
+            (clipBottom,clipRight,clipTop,clipLeft,markTop,markLeft,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,shadow);
+  UiSingleLineTextControl_BlitFocusMarkPiece
+            (clipBottom,clipRight,clipTop,clipLeft,markTop,rightCapX,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,shadow);
+  tileX = capWidth + markLeft;
+  if (rightCapX <= clipRight) {
+    clipRight = rightCapX;
+  }
+  tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
+  do {
+    UiSingleLineTextControl_BlitFocusMarkPiece
+              (clipBottom,clipRight,clipTop,clipLeft,markTop,tileX,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,shadow);
+    tileX = tileX + tileSize.logicalWidthPixels;
+  } while (tileX < clipRight);
+}
+
+
 /* Address: 0x004B95E0.
    Draws a single-line label that forwards its focus to a child (drawClipped slot of
    g_UiFocusProxyControlVtable): measures the line, aligns it by labelFlags (room for the focus-mark caps
@@ -2814,23 +2855,17 @@ void UiSingleLineTextControl_DrawClipped
 
 {
   UiPackedTextStyle packedStyleOverride;
-  UiNodeBase *streamOrCapWidthOrChild;
-  UiNodeBase *capWidthOrStream;
-  int rightCapXOrFrameTop;
+  uint16_t *commandStream;
+  UiNodeBase *focusLendTarget;
+  int capWidth;
   uint32_t textStyle;
   int lineWidth;
   int alignOffsetY;
-  int frameTopOrTileX;
   int alignOffsetX;
-  int tileX;
   bool framebufferUnavailable;
   RichTextExtent textExtent;
-  uint16_t *resolvedText;
   GraphicsTextureLogicalSize tileSize;
-  UiPixelCoordinate originalClipRight;
-  UiPixelCoordinate restoredClipRight;
-  
-  originalClipRight = clipRight;
+
   textStyle = g_UiTextStyleNormal;
   alignOffsetX = 0;
   alignOffsetY = 0;
@@ -2849,22 +2884,21 @@ void UiSingleLineTextControl_DrawClipped
       textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
     }
     packedStyleOverride = control->styleOverride;
-    streamOrCapWidthOrChild = (UiNodeBase *)control->text;
-    if ((control->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
-      resolvedText = TextResource_Resolve((TextResourceId)streamOrCapWidthOrChild);
-      streamOrCapWidthOrChild = (UiNodeBase *)resolvedText;
-    }
+    commandStream = UiSingleLineTextControl_GetCommandStream(control);
     textExtent = RichTextCommandStream_MeasureLine((textStyle | packedStyleOverride) & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE),
-                                                   (uint16_t *)streamOrCapWidthOrChild);
+                                                   commandStream);
     lineWidth = (int)(g_UiTextStyleNormal << 16) >> 24; /* signed byte 1 of the packed style */
     if (lineWidth < 0) {
       lineWidth = -lineWidth;
     }
     lineWidth = textExtent.widthPixels + lineWidth;
     tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource);
-    streamOrCapWidthOrChild = (UiNodeBase *)tileSize.logicalWidthPixels;
+    capWidth = (int)tileSize.logicalWidthPixels;
+    /* Original quirk: until the framebuffer is accessed, the node the focus is lent to below is the cap
+       width reinterpreted as a pointer. */
+    focusLendTarget = (UiNodeBase *)(uintptr_t)tileSize.logicalWidthPixels;
     if (control->focusChild != NULL) {
-      lineWidth = lineWidth + (int)streamOrCapWidthOrChild * 2;
+      lineWidth = lineWidth + capWidth * 2;
     }
     if ((control->labelFlags & UI_LABEL_ALIGN_RIGHT) != 0) {
       alignOffsetX = (control->base).layoutWidth - lineWidth;
@@ -2876,80 +2910,28 @@ void UiSingleLineTextControl_DrawClipped
       alignOffsetY = (int)((control->base).layoutHeight - tileSize.logicalHeightPixels) >> 1;
     }
     if ((control->labelFlags & UI_LABEL_CENTER_X) != 0) {
-      alignOffsetX = (control->base).layoutWidth - lineWidth >> 1;
+      alignOffsetX = ((control->base).layoutWidth - lineWidth) >> 1;
     }
     lineWidth--;
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
-      restoredClipRight = clipRight;
       if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
-        tileX = alignOffsetX + 1 + (control->base).left;
-        frameTopOrTileX = alignOffsetY + 1 + (control->base).top;
-        rightCapXOrFrameTop = lineWidth + tileX;
-        g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,frameTopOrTileX,tileX,TEXT_SHADOW_COLOR_ARGB,
-                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        rightCapXOrFrameTop = rightCapXOrFrameTop - (int)streamOrCapWidthOrChild;
-        g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,frameTopOrTileX,rightCapXOrFrameTop,TEXT_SHADOW_COLOR_ARGB,
-                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        tileX = (int)streamOrCapWidthOrChild + tileX;
-        if (rightCapXOrFrameTop <= clipRight) {
-          clipRight = rightCapXOrFrameTop;
-        }
-        tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
-                                                         g_UiWindowTextureSource);
-        capWidthOrStream = streamOrCapWidthOrChild;
-        do {
-          g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                    (clipBottom,clipRight,clipTop,clipLeft,frameTopOrTileX,tileX,TEXT_SHADOW_COLOR_ARGB,
-                     UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
-                     g_UiWindowTextureSource,g_FramebufferAccess);
-          tileX = tileX + tileSize.logicalWidthPixels;
-        } while (tileX < clipRight);
-        frameTopOrTileX = alignOffsetX + (control->base).left;
-        rightCapXOrFrameTop = alignOffsetY + (control->base).top;
-        streamOrCapWidthOrChild = capWidthOrStream;
-        restoredClipRight = originalClipRight;
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,originalClipRight,clipTop,clipLeft,rightCapXOrFrameTop,frameTopOrTileX,
-                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-        lineWidth = (lineWidth + frameTopOrTileX) - (int)capWidthOrStream;
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,originalClipRight,clipTop,clipLeft,rightCapXOrFrameTop,lineWidth,
-                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-        frameTopOrTileX = (int)capWidthOrStream + frameTopOrTileX;
-        clipRight = originalClipRight;
-        if (lineWidth <= originalClipRight) {
-          clipRight = lineWidth;
-        }
-        tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
-                                                         g_UiWindowTextureSource);
-        do {
-          g_GraphicsTextureSourceBlitSourceAlpha
-                    (clipBottom,clipRight,clipTop,clipLeft,rightCapXOrFrameTop,frameTopOrTileX,
-                     UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
-                     g_FramebufferAccess);
-          frameTopOrTileX = frameTopOrTileX + tileSize.logicalWidthPixels;
-        } while (frameTopOrTileX < clipRight);
+        /* The focus mark: first its shadow one pixel down and right, then the mark itself. */
+        UiSingleLineTextControl_DrawFocusMark
+                  (clipBottom,clipRight,clipTop,clipLeft,alignOffsetY + 1 + (control->base).top,
+                   alignOffsetX + 1 + (control->base).left,lineWidth,capWidth,true);
+        UiSingleLineTextControl_DrawFocusMark
+                  (clipBottom,clipRight,clipTop,clipLeft,alignOffsetY + (control->base).top,
+                   alignOffsetX + (control->base).left,lineWidth,capWidth,false);
       }
-      clipRight = restoredClipRight;
       if (control->focusChild != NULL) {
-        alignOffsetX = (int)streamOrCapWidthOrChild + alignOffsetX;
+        alignOffsetX = capWidth + alignOffsetX;
         alignOffsetY++;
       }
-      capWidthOrStream = (UiNodeBase *)control->text;
-      if ((control->labelFlags & UI_LABEL_TEXT_IS_STREAM) == 0) {
-        resolvedText = TextResource_Resolve((TextResourceId)capWidthOrStream);
-        capWidthOrStream = (UiNodeBase *)resolvedText;
-      }
-      streamOrCapWidthOrChild = control->focusChild;
+      commandStream = UiSingleLineTextControl_GetCommandStream(control);
+      focusLendTarget = control->focusChild;
       textStyle = g_UiTextStyleNormal;
-      if ((streamOrCapWidthOrChild != NULL) && ((streamOrCapWidthOrChild->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+      if ((focusLendTarget != NULL) && ((focusLendTarget->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
         textStyle = g_UiTextStyleDisabled;
       }
       if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {
@@ -2967,24 +2949,23 @@ void UiSingleLineTextControl_DrawClipped
       control->styleOverride = control->styleOverride & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE);
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,textStyle | control->styleOverride,
-                 (uint16_t *)capWidthOrStream,alignOffsetY + (control->base).top,alignOffsetX + (control->base).left);
+                 commandStream,alignOffsetY + (control->base).top,alignOffsetX + (control->base).left);
       g_GraphicsFramebufferEndAccess();
     }
-    /* NOTE: as in the original (EDX), streamOrCapWidthOrChild is the focus child only when the framebuffer
-       could be accessed (else it still holds the cap width), and a focused label without a focus child
-       dereferences NULL here. */
+    /* NOTE: as in the original, focusLendTarget is the focus child only when the framebuffer could be
+       accessed (else it still holds the cap width), and a focused label without a focus child dereferences
+       NULL here. */
     if (&control->base == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = streamOrCapWidthOrChild;
-      streamOrCapWidthOrChild->nodeFlags = streamOrCapWidthOrChild->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = focusLendTarget;
+      focusLendTarget->nodeFlags = focusLendTarget->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
       UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
-      streamOrCapWidthOrChild->nodeFlags = streamOrCapWidthOrChild->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      focusLendTarget->nodeFlags = focusLendTarget->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
       g_UiKeyboardFocusNode = &control->base;
     }
     else {
       UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
     }
   }
-  return;
 }
 
 
@@ -2998,7 +2979,8 @@ void UiTextListControl_DrawRowsAndSelection
           UiPixelCoordinate clipLeft,UiTextListControl *control)
 
 {
-  int firstRowOrRowTop;
+  int firstVisibleRow;
+  int rowTop;
   uint32_t lastVisibleRow;
   int highlightWidth;
   uint16_t **lastRowSlot;
@@ -3006,15 +2988,15 @@ void UiTextListControl_DrawRowsAndSelection
   bool framebufferUnavailable;
   RichTextExtent rowExtent;
   GraphicsTextureLogicalSize capSize;
-  
+
   if (control->rowCount != 0) {
-    firstRowOrRowTop = (clipTop - (control->base).top) / (int)control->rowHeight;
-    if (firstRowOrRowTop < 0) {
-      firstRowOrRowTop = 0;
+    firstVisibleRow = (clipTop - (control->base).top) / (int)control->rowHeight;
+    if (firstVisibleRow < 0) {
+      firstVisibleRow = 0;
     }
-    rowSlot = control->rowTextSlots + firstRowOrRowTop;
+    rowSlot = control->rowTextSlots + firstVisibleRow;
     lastVisibleRow = (int)((clipBottom - (control->base).top) + control->rowHeight) / (int)control->rowHeight;
-    firstRowOrRowTop = firstRowOrRowTop * control->rowHeight;
+    rowTop = firstVisibleRow * control->rowHeight;
     if (control->rowCount <= lastVisibleRow) {
       lastVisibleRow = control->rowCount - 1;
     }
@@ -3029,7 +3011,7 @@ void UiTextListControl_DrawRowsAndSelection
             if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
                         (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_LIST_SELECTION,highlightWidth,
-                         firstRowOrRowTop,0,control);
+                         rowTop,0,control);
             }
             else {
               capSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_LEFT,
@@ -3037,14 +3019,14 @@ void UiTextListControl_DrawRowsAndSelection
               highlightWidth = highlightWidth - capSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
                         (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_MIDDLE,
-                         highlightWidth,firstRowOrRowTop,
+                         highlightWidth,rowTop,
                          capSize.logicalWidthPixels,control);
               g_GraphicsTextureSourceBlitSourceAlpha
-                        (clipBottom,clipRight,clipTop,clipLeft,firstRowOrRowTop + (control->base).top,
+                        (clipBottom,clipRight,clipTop,clipLeft,rowTop + (control->base).top,
                          (control->base).left,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_LEFT,g_UiWindowTextureSource,
                          g_FramebufferAccess);
               g_GraphicsTextureSourceBlitSourceAlpha
-                        (clipBottom,clipRight,clipTop,clipLeft,firstRowOrRowTop + (control->base).top,
+                        (clipBottom,clipRight,clipTop,clipLeft,rowTop + (control->base).top,
                          highlightWidth + (control->base).left,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_RIGHT,
                          g_UiWindowTextureSource,
                          g_FramebufferAccess);
@@ -3052,9 +3034,9 @@ void UiTextListControl_DrawRowsAndSelection
           }
           RichTextCommandStream_DrawSingleLine
                     (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,*rowSlot,
-                     firstRowOrRowTop + 1 + (control->base).top,(control->base).left + 3);
+                     rowTop + 1 + (control->base).top,(control->base).left + 3);
           rowSlot++;
-          firstRowOrRowTop = firstRowOrRowTop + control->rowHeight;
+          rowTop = rowTop + control->rowHeight;
         } while (rowSlot <= lastRowSlot);
         g_GraphicsFramebufferEndAccess();
       }
@@ -3075,38 +3057,43 @@ void UiTextListControl_SelectRowFromPointer
           UiTextListControl *control)
 
 {
-  int32_t *topField;
-  int32_t *leftField;
   uint32_t rowIndex;
-  int controlLeftOrRowTop;
+  int controlLeft;
+  int rowTop;
   RichTextExtent rowExtent;
   uint16_t **clickedRowSlot;
-  
-  topField = &(control->base).top;
-  if (((*topField <= pointerY) &&
-      (leftField = &(control->base).left, controlLeftOrRowTop = *leftField, *leftField <= pointerX)) &&
-     (rowIndex = (uint32_t)(pointerY - *topField) / control->rowHeight, rowIndex < control->rowCount)) {
-    clickedRowSlot = control->rowTextSlots + rowIndex;
-    rowExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,*clickedRowSlot);
-    if (pointerX - controlLeftOrRowTop < (int)(rowExtent.widthPixels + 6)) {
-      control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_SELECTION_CONFIRMED;
-      if ((((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) ||
-         (control->listStateFlags = control->listStateFlags & ~UI_TEXT_LIST_SELECTION_CONFIRMED,
-         clickedRowSlot != control->selectedRowSlot)) {
-        control->selectedRowSlot = clickedRowSlot;
-        controlLeftOrRowTop = rowIndex * control->rowHeight;
-        UiScrollableControl_ClampOffsetsToViewport
-                  (controlLeftOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,controlLeftOrRowTop,0,
-                   (UiScrollableControl *)(control->base).parent);
-        UiActionQueue_Enqueue(control->actionId,control);
-        if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
-           (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
-        }
-      }
+
+  if (((control->base).top > pointerY) || ((control->base).left > pointerX)) {
+    return;
+  }
+  controlLeft = (control->base).left;
+  rowIndex = (uint32_t)(pointerY - (control->base).top) / control->rowHeight;
+  if (rowIndex >= control->rowCount) {
+    return;
+  }
+  clickedRowSlot = control->rowTextSlots + rowIndex;
+  rowExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,*clickedRowSlot);
+  if (pointerX - controlLeft >= (int)(rowExtent.widthPixels + 6)) {
+    return;
+  }
+  control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_SELECTION_CONFIRMED;
+  if (((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) == 0) {
+    /* A single click: not confirmed, and nothing to do on the already selected row. */
+    control->listStateFlags = control->listStateFlags & ~UI_TEXT_LIST_SELECTION_CONFIRMED;
+    if (clickedRowSlot == control->selectedRowSlot) {
+      return;
     }
   }
-  return;
+  control->selectedRowSlot = clickedRowSlot;
+  rowTop = rowIndex * control->rowHeight;
+  UiScrollableControl_ClampOffsetsToViewport
+            (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
+             (UiScrollableControl *)(control->base).parent);
+  UiActionQueue_Enqueue(control->actionId,control);
+  if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
+     (control->activationSound != NULL)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+  }
 }
 
 
@@ -3117,7 +3104,7 @@ void UiTextListControl_SelectRowFromPointer
    and queues the action; Home/End/Page Up/Page Down/Up/Down move the selection. A changed selection plays
    the selection sound when enabled, is scrolled into view and arms the deferred action, which
    UiTextListControl_TickActivationPulse queues after g_UiListActivationPulseFrames frames. Other keys go to
-   UiNode_DefaultKeyboardEventMoveFocusNext. CF clear: consumed.
+   UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
 bool UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
@@ -3125,31 +3112,34 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
 
 {
   uint16_t **previousSelectedSlot;
-  uint16_t **slotCursorOrSelection;
-  int rowIndexOrTopOrPulse;
+  uint16_t **scanSlot;
+  uint16_t **selectedSlot;
+  int pageUpRow;
+  int selectedRowTop;
+  int pulseFrames;
   uint32_t pageDownRow;
   UiListRowCount remainingRows;
   uint16_t **candidateSlot;
-  bool delegatedOrMismatch;
+  bool rowBelowKey;
   UiScrollableViewportSize viewportSize;
-  
+
   previousSelectedSlot = control->selectedRowSlot;
   if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
     if (((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) ||
        ((control->listStateFlags & UI_TEXT_LIST_TYPE_SEARCH_ENABLED) == 0)) {
-      delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-      return delegatedOrMismatch;
+      return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     }
     remainingRows = control->rowCount;
-    slotCursorOrSelection = control->rowTextSlots;
+    scanSlot = control->rowTextSlots;
     if (remainingRows != 0) {
+      /* Stops at the first row that is not below the typed character, else at the last row. */
       do {
-        candidateSlot = slotCursorOrSelection;
-        delegatedOrMismatch = g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags
+        candidateSlot = scanSlot;
+        rowBelowKey = g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags
                           (keyCode,*(uint32_t *)*candidateSlot);
-        if (!delegatedOrMismatch) break;
+        if (!rowBelowKey) break;
         remainingRows--;
-        slotCursorOrSelection = candidateSlot + 1;
+        scanSlot = candidateSlot + 1;
       } while (remainingRows != 0);
       control->selectedRowSlot = candidateSlot;
     }
@@ -3166,12 +3156,12 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
     viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-    rowIndexOrTopOrPulse = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) -
+    pageUpRow = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) -
             ((int)(viewportSize.height / control->rowHeight) - 1);
-    if (rowIndexOrTopOrPulse < 0) {
-      rowIndexOrTopOrPulse = 0;
+    if (pageUpRow < 0) {
+      pageUpRow = 0;
     }
-    control->selectedRowSlot = control->rowTextSlots + rowIndexOrTopOrPulse;
+    control->selectedRowSlot = control->rowTextSlots + pageUpRow;
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
     viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
@@ -3194,25 +3184,23 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
     }
   }
   else {
-    delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    return delegatedOrMismatch;
+    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
-  slotCursorOrSelection = control->selectedRowSlot;
-  if (slotCursorOrSelection != previousSelectedSlot) {
+  selectedSlot = control->selectedRowSlot;
+  if (selectedSlot != previousSelectedSlot) {
     if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
        (control->activationSound != NULL)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
     }
-    rowIndexOrTopOrPulse =
-         ((uint32_t)((int)slotCursorOrSelection - (int)control->rowTextSlots) >> 2) * control->rowHeight;
+    selectedRowTop = ((uint32_t)((int)selectedSlot - (int)control->rowTextSlots) >> 2) * control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
-              (rowIndexOrTopOrPulse + control->rowHeight + 1,(control->base).rightOffset,rowIndexOrTopOrPulse,0,
+              (selectedRowTop + control->rowHeight + 1,(control->base).rightOffset,selectedRowTop,0,
                (UiScrollableControl *)(control->base).parent);
     /* arm the deferred action: the frame counter lives in the top byte */
-    rowIndexOrTopOrPulse = g_UiListActivationPulseFrames;
+    pulseFrames = g_UiListActivationPulseFrames;
     control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_DEFERRED_ACTION_PENDING;
     control->listStateFlags = control->listStateFlags & UI_LIST_FLAGS_MASK;
-    control->listStateFlags = control->listStateFlags | rowIndexOrTopOrPulse << UI_LIST_COUNTDOWN_SHIFT;
+    control->listStateFlags = control->listStateFlags | pulseFrames << UI_LIST_COUNTDOWN_SHIFT;
   }
   return false;
 }
@@ -3226,15 +3214,16 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
 void UiTextListControl_TickActivationPulse(UiTextListControl *control)
 
 {
-  if (((control->listStateFlags & UI_TEXT_LIST_DEFERRED_ACTION_PENDING) != 0) &&
-     (control->listStateFlags = control->listStateFlags - UI_STATE_FRAME_COUNTER_UNIT,
-     (control->listStateFlags & UI_LIST_COUNTDOWN_MASK) == 0)) {
+  if ((control->listStateFlags & UI_TEXT_LIST_DEFERRED_ACTION_PENDING) == 0) {
+    return;
+  }
+  control->listStateFlags = control->listStateFlags - UI_STATE_FRAME_COUNTER_UNIT;
+  if ((control->listStateFlags & UI_LIST_COUNTDOWN_MASK) == 0) {
     control->listStateFlags =
          control->listStateFlags &
          (UI_LIST_FLAGS_MASK & ~(UI_TEXT_LIST_DEFERRED_ACTION_PENDING|UI_TEXT_LIST_SELECTION_CONFIRMED));
     UiActionQueue_Enqueue(control->actionId,control);
   }
-  return;
 }
 
 
@@ -3868,6 +3857,28 @@ bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
 }
 
 
+/* The tooltip-eligible node under the pointer in the top root, or NULL: none while a node holds the pointer
+   capture, no root is open, the pointer is outside the root's box or the hit node is not eligible. */
+static UiNodeBase *UiTooltip_FindEligibleNodeAt(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+
+{
+  UiNodeBase *hitTestNode;
+
+  if ((g_UiPointerCaptureTarget != UI_NODE_NONE) || (g_UiRootNode == UI_ROOT_STACK_END)) {
+    return NULL;
+  }
+  if (((g_UiRootNode->base).left > pointerX) || ((g_UiRootNode->base).top > pointerY) ||
+      (pointerX >= (g_UiRootNode->base).right) || (pointerY >= (g_UiRootNode->base).bottom)) {
+    return NULL;
+  }
+  hitTestNode = (*((g_UiRootNode->base).vtable)->hitTest)(pointerY,pointerX,&g_UiRootNode->base);
+  if ((hitTestNode == UI_NODE_NONE) || ((hitTestNode->nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) == 0)) {
+    return NULL;
+  }
+  return hitTestNode;
+}
+
+
 /* Address: 0x004B0150.
    Tracks which node the tooltip belongs to: remembers the pointer position and takes the node under the
    pointer in the top root (only while no button holds a capture, and only tooltip-eligible nodes). When the
@@ -3876,27 +3887,22 @@ bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
 void UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
-  UiNodeBase *node;
-  UiNodeBase *hitTestNode;
-  
-  node = g_UiTooltipState.targetNode;
+  UiNodeBase *previousTarget;
+  UiNodeBase *hoveredNode;
+
+  previousTarget = g_UiTooltipState.targetNode;
   g_UiTooltipState.pointerX = pointerX;
   g_UiTooltipState.pointerY = pointerY;
   g_UiTooltipState.targetNode = NULL;
-  if ((((((g_UiPointerCaptureTarget == UI_NODE_NONE) &&
-         (g_UiRootNode != UI_ROOT_STACK_END)) && ((g_UiRootNode->base).left <= pointerX)) &&
-       (((g_UiRootNode->base).top <= pointerY && (pointerX < (g_UiRootNode->base).right)))) &&
-      ((pointerY < (g_UiRootNode->base).bottom &&
-       ((hitTestNode = (*((g_UiRootNode->base).vtable)->hitTest)
-                                 (pointerY,pointerX,&g_UiRootNode->base),
-        hitTestNode != UI_NODE_NONE &&
-        ((hitTestNode->nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) != 0)))))) &&
-     (g_UiTooltipState.targetNode = hitTestNode, hitTestNode == node)) {
-    return;
+  hoveredNode = UiTooltip_FindEligibleNodeAt(pointerY,pointerX);
+  if (hoveredNode != NULL) {
+    g_UiTooltipState.targetNode = hoveredNode;
+    if (hoveredNode == previousTarget) {
+      return;
+    }
   }
   g_UiTooltipState.countdownFrames = g_UiTooltipDelayFrames;
-  UiTooltip_PrepareTargetText(node);
-  return;
+  UiTooltip_PrepareTargetText(previousTarget);
 }
 
 
@@ -3910,7 +3916,8 @@ void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
 {
   uint32_t remainingValue;
   int8_t rotateShift;
-  uint32_t highBitOrDigitsLeft;
+  uint32_t highBitIndex;
+  uint32_t hexDigitsLeft;
   uint32_t digitCodeUnit;
   uint16_t *outputCursor;
   
@@ -3934,35 +3941,36 @@ void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
   control->textBuffer[15] = 0;
   if (((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0) && ((int)remainingValue < 0)) {
     *outputCursor = '-';
-    remainingValue = -remainingValue;
+    remainingValue = 0 - remainingValue;
     outputCursor = control->textBuffer + 1;
   }
   if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,remainingValue,outputCursor);
   }
   else {
-    highBitOrDigitsLeft = 31;
+    highBitIndex = 31;
     if (remainingValue != 0) {
-      for (; remainingValue >> highBitOrDigitsLeft == 0; highBitOrDigitsLeft--) {
+      while (remainingValue >> highBitIndex == 0) {
+        highBitIndex--;
       }
     }
     if (remainingValue != 0) {
-      /* NOTE: faithful to the original (BSR; AND 0x1c; ROR; SHR 2): the leading nonzero hex digit
-         is dropped, and a value below 0x10 gives a digit count of 0, which the DEC/JNZ loop wraps
-         (runaway write). */
-      rotateShift = (int8_t)(highBitOrDigitsLeft & UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK);
-      highBitOrDigitsLeft = (highBitOrDigitsLeft & UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK) >> 2;
-      remainingValue = remainingValue >> rotateShift | remainingValue << 32 - rotateShift;
+      /* NOTE: faithful to the original (highest set bit, masked to a multiple of 4, rotate right, digit
+         count = masked bit / 4): the leading nonzero hex digit is dropped, and a value below 0x10 gives a
+         digit count of 0, which the count-down loop wraps (runaway write). */
+      rotateShift = (int8_t)(highBitIndex & UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK);
+      hexDigitsLeft = (highBitIndex & UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK) >> 2;
+      remainingValue = remainingValue >> rotateShift | remainingValue << (32 - rotateShift);
       do {
         digitCodeUnit = (remainingValue >> 28) + '0';
         if ('9' < digitCodeUnit) {
           digitCodeUnit = digitCodeUnit + ('A' - '9' - 1);
         }
         *outputCursor = (uint16_t)digitCodeUnit;
-        highBitOrDigitsLeft--;
+        hexDigitsLeft--;
         remainingValue = remainingValue << 4;
         outputCursor++;
-      } while (highBitOrDigitsLeft != 0);
+      } while (hexDigitsLeft != 0);
     }
     else {
       *outputCursor = '0';
@@ -3970,6 +3978,33 @@ void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
   }
   UiNumericTextControl_UpdateRangeValidity(control);
   return;
+}
+
+
+/* Digit value of a hexadecimal digit '0'-'9', 'A'-'F' or 'a'-'f'; false for any other code unit. */
+static bool UiNumericTextControl_TryHexDigitValue(uint32_t codeUnit,uint32_t *digitValue)
+
+{
+  uint32_t value;
+
+  if (codeUnit < '0') {
+    return false;
+  }
+  value = codeUnit - '0';
+  if (9 < value) {
+    value = codeUnit - ('A' - 10);
+    if (value < 10) {
+      return false;
+    }
+    if (15 < value) {
+      value = codeUnit - ('a' - 10);
+      if ((value < 10) || (15 < value)) {
+        return false;
+      }
+    }
+  }
+  *digitValue = value;
+  return true;
 }
 
 
@@ -3990,50 +4025,48 @@ void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
 
   textCursor = control->textBuffer;
   sign = 1;
-  if (*textCursor != 0) {
-    if (*textCursor == '-') {
-      sign = -1;
-      textCursor = control->textBuffer + 1;
-    }
-    if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
-      parsedValue = 0;
-      for (; codeUnit = (uint32_t)*textCursor, codeUnit != 0; textCursor++) {
-        if ((codeUnit < '0') || (9 < codeUnit - '0')) {
-          control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-          return;
-        }
-        parsedValue = parsedValue * 10 + (codeUnit - '0');
+  if (*textCursor == 0) {
+    /* Empty text: invalid. */
+    control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
+    return;
+  }
+  if (*textCursor == '-') {
+    sign = -1;
+    textCursor = control->textBuffer + 1;
+  }
+  parsedValue = 0;
+  if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
+    for (; *textCursor != 0; textCursor++) {
+      codeUnit = (uint32_t)*textCursor;
+      if ((codeUnit < '0') || (9 < codeUnit - '0')) {
+        control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
+        return;
       }
+      parsedValue = parsedValue * 10 + (codeUnit - '0');
     }
-    else {
-      parsedValue = 0;
-      for (; codeUnit = (uint32_t)*textCursor, codeUnit != 0; textCursor++) {
-        /* digit value of '0'-'9', 'A'-'F' or 'a'-'f' */
-        digitValue = codeUnit - '0';
-        if ((codeUnit < '0') ||
-           ((9 < digitValue &&
-            ((digitValue = codeUnit - ('A' - 10), digitValue < 10 ||
-             ((15 < digitValue && ((digitValue = codeUnit - ('a' - 10), digitValue < 10 ||
-                                     (15 < digitValue)))))))))) {
-          control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-          return;
-        }
-        parsedValue = parsedValue << 4 | digitValue & 0xf;
+  }
+  else {
+    for (; *textCursor != 0; textCursor++) {
+      if (!UiNumericTextControl_TryHexDigitValue((uint32_t)*textCursor,&digitValue)) {
+        control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
+        return;
       }
+      parsedValue = parsedValue << 4 | digitValue & 0xf;
     }
-    if ((-1 < sign) ||
-       (parsedValue = -parsedValue, (control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0)) {
-      control->currentValue = parsedValue;
-      if ((control->editStateFlags & UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
-        UiActionQueue_Enqueue(control->actionId,control);
-      }
-      UiNumericTextControl_UpdateRangeValidity(control);
+  }
+  if (sign < 0) {
+    parsedValue = 0 - parsedValue;
+    if ((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) == 0) {
+      /* A negative value for an unsigned control: invalid. */
+      control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
       return;
     }
   }
-  /* Empty text, or a negative value for an unsigned control: invalid. */
-  control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-  return;
+  control->currentValue = parsedValue;
+  if ((control->editStateFlags & UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
+    UiActionQueue_Enqueue(control->actionId,control);
+  }
+  UiNumericTextControl_UpdateRangeValidity(control);
 }
 
 
@@ -4226,9 +4259,11 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
 
 {
   UiTextCodeUnitCount prefixLength;
-  UiPixelOffset cursorWidthOrMinScroll;
+  UiPixelOffset cursorWidth;
+  UiPixelOffset minScrollOffset;
   UiPixelCoordinate fullTextWidth;
-  int overflowOrContentWidth;
+  int cursorOverflow;
+  int contentWidth;
   UiPixelOffset maxScrollOffset;
   uint32_t glyphWidth;
   GraphicsTextureLogicalSize decorationSize;
@@ -4236,41 +4271,40 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
   (control->base).layoutWidth = (control->base).right - (control->base).left;
   (control->base).layoutHeight = (control->base).bottom - (control->base).top;
   prefixLength = control->cursorIndex;
-  cursorWidthOrMinScroll = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
-  maxScrollOffset = cursorWidthOrMinScroll;
+  cursorWidth = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
+  maxScrollOffset = cursorWidth;
   if (prefixLength != 0) {
     glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength - 1],NULL);
-    maxScrollOffset = cursorWidthOrMinScroll - glyphWidth;
+    maxScrollOffset = cursorWidth - glyphWidth;
   }
-  overflowOrContentWidth = cursorWidthOrMinScroll - (control->base).layoutWidth;
+  cursorOverflow = cursorWidth - (control->base).layoutWidth;
   if (control->textBuffer[prefixLength] != 0) {
     glyphWidth = FontGlyph_GetLogicalSizeActiveFont((uint32_t)control->textBuffer[prefixLength],NULL);
-    overflowOrContentWidth = overflowOrContentWidth + glyphWidth;
+    cursorOverflow = cursorOverflow + glyphWidth;
   }
-  /* NOTE: as in the original (PUSH 0x10), only the first 16 code units (the numeric text buffer) count, also
-     for the longer path and required text edits. */
+  /* NOTE: as in the original (a fixed count of 16), only the first 16 code units (the numeric text buffer)
+     count, also for the longer path and required text edits. */
   fullTextWidth = UiTextEditControl_MeasurePrefixWidth(UI_NUMERIC_TEXT_BUFFER_UNITS,control);
   decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE,g_UiWindowTextureSource);
-  cursorWidthOrMinScroll = overflowOrContentWidth + decorationSize.logicalWidthPixels;
-  overflowOrContentWidth = fullTextWidth + decorationSize.logicalWidthPixels;
+  minScrollOffset = cursorOverflow + decorationSize.logicalWidthPixels;
+  contentWidth = fullTextWidth + decorationSize.logicalWidthPixels;
   if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
     decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
                                                            g_UiWindowTextureSource);
-    overflowOrContentWidth = overflowOrContentWidth + decorationSize.logicalWidthPixels * 2;
-    cursorWidthOrMinScroll = cursorWidthOrMinScroll + decorationSize.logicalWidthPixels * 2;
+    contentWidth = contentWidth + decorationSize.logicalWidthPixels * 2;
+    minScrollOffset = minScrollOffset + decorationSize.logicalWidthPixels * 2;
   }
-  if ((control->base).layoutWidth < overflowOrContentWidth) {
+  if ((control->base).layoutWidth < contentWidth) {
     if ((int)maxScrollOffset < (int)control->horizontalScrollPixels) {
       control->horizontalScrollPixels = maxScrollOffset;
     }
-    else if ((int)control->horizontalScrollPixels < (int)cursorWidthOrMinScroll) {
-      control->horizontalScrollPixels = cursorWidthOrMinScroll;
+    else if ((int)control->horizontalScrollPixels < (int)minScrollOffset) {
+      control->horizontalScrollPixels = minScrollOffset;
     }
   }
   else {
     control->horizontalScrollPixels = 0;
   }
-  return;
 }
 
 
