@@ -50,7 +50,7 @@ bool ArmyPlacement_CanPlaceAnchoredModel
     ModelLookupTable_FindPackedPoint
               (1,5,((MdlSerializedNodeHeader *)modelDefinition->rootNodeOffsetOrPointer)->
                    spriteAssetReference.modelResource,&anchorRecord);
-    offsetLengthAngle = FixedMath_Vector2AngleAndLengthRegs
+    offsetLengthAngle = FixedMath_Vector2AngleAndLength
                       ((anchorRecord->localPosition).y,(anchorRecord->localPosition).x);
     rotatedOffset = FixedMath_SinCosScaled(offsetLengthAngle.angle + placementHeading & FIXED_ANGLE16_MASK,offsetLengthAngle.length);
     offsetYQ12 = (int)rotatedOffset;
@@ -104,7 +104,7 @@ bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
   if (!blocked) {
     placementDefinition = modelRuntime->modelDefinition;
     if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
-      anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorRecord,modelNodeRuntime);
+      anchorWorldPoint = ModelNodeRuntime_TransformLocalPoint(anchorRecord,modelNodeRuntime);
       worldXQ12 = anchorWorldPoint.yQ12;
       worldYQ12 = anchorWorldPoint.xQ12;
       /* the anchor's height with the definition's and the resource's height offsets taken off */
@@ -1170,7 +1170,7 @@ bool ArmyPlacementCandidate_TestModelAnchorDistance
 
   modelNodeRuntime = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
-    anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorRecord,modelNodeRuntime);
+    anchorWorldPoint = ModelNodeRuntime_TransformLocalPoint(anchorRecord,modelNodeRuntime);
     anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.yQ12 - targetWorldXQ12,
                                           anchorWorldPoint.xQ12 - targetWorldYQ12);
     if ((int)anchorDistanceQ12 <= queryRadiusQ12 + ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12) {

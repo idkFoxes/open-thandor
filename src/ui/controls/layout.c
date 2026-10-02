@@ -270,7 +270,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
   uint32_t titleCapX;
   int rightEdgeOrCursorX;
   bool beginAccessFailed;
-  RichTextExtentRegs titleExtent;
+  RichTextExtent titleExtent;
   uint16_t *titleText;
   GraphicsTextureLogicalSize textureSize;
   int savedRightEdgeX;
@@ -317,7 +317,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
                rightEdgeOrCursorX,bottomEdgeY,cornerWidth,control);
     titleText = TextResource_Resolve(control->titleTextResourceId);
     commandStream = titleText;
-    titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
+    titleExtent = RichTextCommandStream_MeasureLine(g_UiWindowTitleTextStyle,commandStream);
     titleCapX = cornerWidth;
     if ((control->titleFlags & UI_TITLED_WINDOW_CENTERED_TITLE) != 0) {
       /* centred title: the top edge runs from the corner to the left cap */
@@ -338,7 +338,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
     RichTextCommandStream_DrawSingleLine
               (clipBottom,clipRight,clipTop,clipLeft,g_UiWindowTitleTextStyle,commandStream,
                control->base.top,rightEdgeOrCursorX + control->base.left);
-    titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
+    titleExtent = RichTextCommandStream_MeasureLine(g_UiWindowTitleTextStyle,commandStream);
     rightEdgeOrCursorX = rightEdgeOrCursorX + titleExtent.widthPixels;
     g_GraphicsTextureSourceBlitSourceAlpha
               (clipBottom,clipRight,clipTop,clipLeft,control->base.top,rightEdgeOrCursorX + control->base.left,
@@ -675,12 +675,12 @@ void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *co
   uint32_t titleHeightOrRightInset;
   uint32_t topInset;
   uint32_t bottomInset;
-  RichTextExtentRegs titleExtent;
+  RichTextExtent titleExtent;
   uint16_t *titleText;
   GraphicsTextureLogicalSize cornerSize;
 
   titleText = TextResource_Resolve(control->titleTextResourceId);
-  titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,titleText);
+  titleExtent = RichTextCommandStream_MeasureLine(g_UiWindowTitleTextStyle,titleText);
   titleHeightOrRightInset = titleExtent.heightPixels;
   cornerSize = g_GraphicsTextureSourceGetLogicalSize
                          (UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_TOP_LEFT,g_UiWindowTextureSource);

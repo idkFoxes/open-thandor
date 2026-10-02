@@ -89,7 +89,7 @@ void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
 {
   FixedDirection translationDelta;
 
-  translationDelta = FixedMath_DirectionFromAnglesScaledRegs
+  translationDelta = FixedMath_DirectionFromAnglesScaled
                     (elevationAngle,worldRuntime->motion.headingAngle + FIXED_ANGLE16_THREE_QUARTER_TURN & FIXED_ANGLE16_MASK,
                      screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
   worldRuntime->motion.positionXQ12 += translationDelta.x;
@@ -122,7 +122,7 @@ void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,Wor
     elevationAngle = -worldRuntime->motion.pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
     azimuthAngle = azimuthAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
   }
-  translationDelta = FixedMath_DirectionFromAnglesScaledRegs
+  translationDelta = FixedMath_DirectionFromAnglesScaled
                     (elevationAngle,azimuthAngle,screenDelta * _k_CameraScreenDeltaDistanceScaleQ16)
   ;
   worldRuntime->motion.positionXQ12 += translationDelta.x;
@@ -147,7 +147,7 @@ void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
 {
   FixedDirection translationDelta;
 
-  translationDelta = FixedMath_DirectionFromAnglesScaledRegs
+  translationDelta = FixedMath_DirectionFromAnglesScaled
                     (-worldRuntime->motion.pitchAngle,
                      worldRuntime->motion.headingAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,
                      screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
@@ -176,7 +176,7 @@ void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRu
   azimuthAngle = worldRuntime->motion.headingAngle +
                  headingDeltaInput * g_WorldMotionHeadingInputScale & FIXED_ANGLE16_MASK;
   worldRuntime->motion.headingAngle = azimuthAngle;
-  cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
+  cameraOffset = FixedMath_DirectionFromAnglesScaled
                     (worldRuntime->motion.pitchAngle,azimuthAngle,
                      worldRuntime->motion.targetDistanceQ12);
   worldRuntime->motion.positionXQ12 = worldRuntime->motion.targetPositionXQ12 - cameraOffset.x;
@@ -239,7 +239,7 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
   }
   worldRuntime->motion.targetDistanceQ12 = clampedDistanceQ12;
   worldRuntime->motion.committedDistanceQ12 = clampedDistanceQ12;
-  cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
+  cameraOffset = FixedMath_DirectionFromAnglesScaled
                     (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,clampedDistanceQ12);
   worldRuntime->motion.positionXQ12 = worldRuntime->motion.targetPositionXQ12 - cameraOffset.x;
   worldRuntime->motion.positionYQ12 = worldRuntime->motion.targetPositionYQ12 - cameraOffset.y;
@@ -326,7 +326,7 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
     clampedPitchAngle = FIXED_ANGLE16_QUARTER_TURN;
   }
   worldRuntime->motion.pitchAngle = clampedPitchAngle;
-  cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
+  cameraOffset = FixedMath_DirectionFromAnglesScaled
                     (clampedPitchAngle,worldRuntime->motion.headingAngle,
                      worldRuntime->motion.targetDistanceQ12);
   worldRuntime->motion.positionXQ12 = worldRuntime->motion.targetPositionXQ12 - cameraOffset.x;

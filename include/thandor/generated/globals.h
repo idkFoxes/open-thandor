@@ -26,7 +26,7 @@ typedef uint32_t FileSystemEnumerateDirectoryOrVolumeEntriesProc(FileSystemEnume
 typedef DriveLetterEnumeration FileSystemEnumerateDriveLettersEaxEcxProc(uint8_t * lettersOut); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef bool FileSystemGetCurrentDirectoryProc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef EngineDriveTypeCode FileSystemGetDriveTypeCodePreserveProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef Win32DriveCapacityEdxEax8 FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef Win32DriveCapacity FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemGetLastWriteDosDateProc(uint16_t * path, uint32_t * outDosDateTime); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemGetLastWriteTimeHighProc(uint16_t * path, uint32_t * outLastWriteTimeHigh); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef bool FileSystemGetPositionProc(void * handle, uint32_t * outPosition); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
@@ -127,7 +127,7 @@ typedef void SoftwareBuildPixelPackTablesProc(int32_t colorScaleQ16, int32_t col
 typedef void SoftwareDrawQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef SoftwareFramebufferAccess * SoftwareFramebufferCreateProc(uint32_t bytesPerPixel, uint32_t height, uint32_t width, uint32_t * outError); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void SoftwareRasterHandler(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitivePacket * packet); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef uint64_t SoundQueryVoiceRegsProc(IDirectSoundBuffer * voice); /* Ghidra FunctionDefinition /Thandor/Sound/Methods */
+typedef uint32_t SoundQueryVoiceRegsProc(IDirectSoundBuffer * voice); /* Ghidra FunctionDefinition /Thandor/Sound/Methods */
 typedef void SpinLockAcquireProc(RuntimeSpinLockValue * lockValue); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void SpinLockReleaseCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void SpinLockReleaseAndInvokeProc(SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue); /* Ghidra FunctionDefinition /Thandor/System/Methods */
@@ -1408,7 +1408,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_FileSystemGetCurrentDirectory (*(FileSystemGetCurrentDirectoryProc * *)THANDOR_IMAGE(0x0040b1e0))
 #define g_FileSystemSetCurrentDirectory (*(FileSystemSetCurrentDirectoryProc * *)THANDOR_IMAGE(0x0040b1e4))
 #define g_FileSystemRemoveDirectory (*(FileSystemRemoveDirectoryProc * *)THANDOR_IMAGE(0x0040b1ec))
-#define g_FileSystemGetFreeAndTotalBytesRegs (*(FileSystemGetFreeAndTotalBytesRegsProc * *)THANDOR_IMAGE(0x0040b1fc))
+#define g_FileSystemGetFreeAndTotalBytes (*(FileSystemGetFreeAndTotalBytesRegsProc * *)THANDOR_IMAGE(0x0040b1fc))
 #define g_FileSystemGetLastWriteDosDate (*(FileSystemGetLastWriteDosDateProc * *)THANDOR_IMAGE(0x0040b200))
 #define g_FileSystemGetLastWriteTimeHigh (*(FileSystemGetLastWriteTimeHighProc * *)THANDOR_IMAGE(0x0040b204))
 #define g_FileSystemGetVolumeSerialNumber (*(FileSystemGetVolumeSerialNumberProc * *)THANDOR_IMAGE(0x0040b208))
@@ -1609,7 +1609,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_PrimarySoundBuffer (*(IDirectSoundBuffer * *)THANDOR_IMAGE(0x00582ee4))
 #define g_PrimaryVolume (*(TH_LEGACY_LONG *)THANDOR_IMAGE(0x00582ee8))
 #define g_PrimaryPan (*(TH_LEGACY_LONG *)THANDOR_IMAGE(0x00582eec))
-#define g_SoundQueryVoiceRegs (*(SoundQueryVoiceRegsProc * *)THANDOR_IMAGE(0x0041735c))
+#define g_SoundQueryVoice (*(SoundQueryVoiceRegsProc * *)THANDOR_IMAGE(0x0041735c))
 #define pDirectSoundCreate (*(DirectSoundCreate * *)THANDOR_IMAGE(0x00573fc8))
 #define pDirectSoundEnumerateA (*(DirectSoundEnumerateA * *)THANDOR_IMAGE(0x00573fcc))
 #define dynapi_20 (*(char (*)[18])THANDOR_IMAGE(0x0057459a))

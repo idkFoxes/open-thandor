@@ -47,8 +47,8 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
 uint32_t GraphicsIntensityClampTable_Initialize(void);
 
 /* 0x004CCA90 */
-MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
-          (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulatorMmx);
+MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
+          (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulator);
 
 /* 0x004CCB40 */
 GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord

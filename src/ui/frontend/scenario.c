@@ -162,7 +162,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   FrontendPlayerRuntimeRecord *playerRecord;
   int unclaimedActiveFactions;
   FactionRuntimeLifecycleObservedState *factionStateCursor;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint16_t *briefingText;
   uint16_t *templateText;
   MovieRuntime *firstFrameMovie;
@@ -260,7 +260,7 @@ updateBeginButton:
     playerRecord++;
   } while (playersRemaining != 0);
   briefingText = TextResource_Resolve((TextResourceId)((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text);
-  textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
+  textExtent = RichTextCommandStream_MeasureWrappedBlock
                      (g_UiTextStyleNormal,briefingText,((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->wrapWidth);
   /* size the text control to the wrapped text plus a 6-pixel margin, then refit the scroller */
   FRONTEND_UI(frontendRoot,briefingText)->rightOffset = textExtent.widthPixels + 6;

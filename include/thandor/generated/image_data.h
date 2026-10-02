@@ -128,7 +128,7 @@ typedef struct ImageData_0040ABBC {
     FileSystemEnumerateDriveLettersEaxEcxProc * at_g_FileSystemEnumerateDriveLetters; /* 0040B1F0 g_FileSystemEnumerateDriveLetters */
     FileSystemGetDriveTypeCodePreserveProc * at_g_FileSystemGetDriveTypeCode; /* 0040B1F4 g_FileSystemGetDriveTypeCode */
     FileSystemDriveReadyProc * at_g_FileSystemCheckDriveMediaReady; /* 0040B1F8 g_FileSystemCheckDriveMediaReady */
-    FileSystemGetFreeAndTotalBytesRegsProc * at_g_FileSystemGetFreeAndTotalBytesRegs; /* 0040B1FC g_FileSystemGetFreeAndTotalBytesRegs */
+    FileSystemGetFreeAndTotalBytesRegsProc * at_g_FileSystemGetFreeAndTotalBytes; /* 0040B1FC g_FileSystemGetFreeAndTotalBytes */
     FileSystemGetLastWriteDosDateProc * at_g_FileSystemGetLastWriteDosDate; /* 0040B200 g_FileSystemGetLastWriteDosDate */
     FileSystemGetLastWriteTimeHighProc * at_g_FileSystemGetLastWriteTimeHigh; /* 0040B204 g_FileSystemGetLastWriteTimeHigh */
     FileSystemGetVolumeSerialNumberProc * at_g_FileSystemGetVolumeSerialNumber; /* 0040B208 g_FileSystemGetVolumeSerialNumber */
@@ -238,7 +238,7 @@ typedef struct ImageData_004172E8 {
     SoundStopVoiceProc * at_g_SoundStopVoice; /* 00417350 g_SoundStopVoice */
     SoundStopAllVoicesProc * at_g_SoundStopAllVoices; /* 00417354 g_SoundStopAllVoices */
     SoundIsVoicePlayingProc * at_g_SoundIsVoicePlaying; /* 00417358 g_SoundIsVoicePlaying */
-    SoundQueryVoiceRegsProc * at_g_SoundQueryVoiceRegs; /* 0041735C g_SoundQueryVoiceRegs */
+    SoundQueryVoiceRegsProc * at_g_SoundQueryVoice; /* 0041735C g_SoundQueryVoice */
     SoundSetVoiceGainsProc * at_g_SoundSetVoiceGains; /* 00417360 g_SoundSetVoiceGains */
     short at_g_SoundSampleCoefficientBlock[256]; /* 00417364 g_SoundSampleCoefficientBlock */
     uint32_t at_g_SoundSampleCoefficientBlock_rest[3]; /* beyond the declared type */
@@ -3697,7 +3697,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0040b1f0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemEnumerateDriveLetters)
 #define THANDOR_IMAGE_0x0040b1f4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetDriveTypeCode)
 #define THANDOR_IMAGE_0x0040b1f8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCheckDriveMediaReady)
-#define THANDOR_IMAGE_0x0040b1fc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetFreeAndTotalBytesRegs)
+#define THANDOR_IMAGE_0x0040b1fc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetFreeAndTotalBytes)
 #define THANDOR_IMAGE_0x0040b200 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetLastWriteDosDate)
 #define THANDOR_IMAGE_0x0040b204 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetLastWriteTimeHigh)
 #define THANDOR_IMAGE_0x0040b208 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetVolumeSerialNumber)
@@ -3775,7 +3775,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00417350 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundStopVoice)
 #define THANDOR_IMAGE_0x00417354 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundStopAllVoices)
 #define THANDOR_IMAGE_0x00417358 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundIsVoicePlaying)
-#define THANDOR_IMAGE_0x0041735c ((uintptr_t)&g_ImageData_004172E8.at_g_SoundQueryVoiceRegs)
+#define THANDOR_IMAGE_0x0041735c ((uintptr_t)&g_ImageData_004172E8.at_g_SoundQueryVoice)
 #define THANDOR_IMAGE_0x00417360 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundSetVoiceGains)
 #define THANDOR_IMAGE_0x00417364 ((uintptr_t)&g_ImageData_004172E8.at_g_SoundSampleCoefficientBlock)
 #define THANDOR_IMAGE_0x0041a540 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendInstanceTable)

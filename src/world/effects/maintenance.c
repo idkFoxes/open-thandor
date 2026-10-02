@@ -181,7 +181,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       if ((effectSlot->shadingStartCountdownTicksRemaining == 0) && (modelNode->shadingRecord == NULL)) {
         if (ModelLookupTable_FindPackedPoint
               (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource,&packedPoint)) {
-          localPoint = ModelNodeRuntime_TransformLocalPointRegs
+          localPoint = ModelNodeRuntime_TransformLocalPoint
                              (packedPoint,(ModelRuntimeNode *)modelNode);
           /* the alpha byte of the shading colour is the radius in 1/16 world units */
           modelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
@@ -254,7 +254,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       if (ModelLookupTable_FindPackedPoint
             (1,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource,&packedPoint)) {
         periodicDefinition = effectDefinition->periodicEffectDefinition;
-        localPoint = ModelNodeRuntime_TransformLocalPointRegs
+        localPoint = ModelNodeRuntime_TransformLocalPoint
                            (packedPoint,(ModelRuntimeNode *)modelNode);
         /* the periodic child effect always starts with rotation angle 1 at a quarter turn */
         EffectRuntimePool_CreateInstanceFromDefinition
@@ -270,7 +270,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         if (effectSlot->linkedEffectPresent == 0) {
           if (ModelLookupTable_FindPackedPoint
                 (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource,&packedPoint)) {
-            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+            localPoint = ModelNodeRuntime_TransformLocalPoint
                                (packedPoint,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
@@ -292,7 +292,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex + 1;
           if (ModelLookupTable_FindPackedPoint
                 (keyIndex,MODEL_POINT_CLASS_SHOT,effectDefinition->ownedNestedResource,&packedPoint)) {
-            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+            localPoint = ModelNodeRuntime_TransformLocalPoint
                                (packedPoint,(ModelRuntimeNode *)modelNode);
             ShotRuntimePool_CreateProjectileFromDefinition
                       (0,NULL,
@@ -309,7 +309,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         if (effectSlot->linkedEffectPresent == 0) {
           if (ModelLookupTable_FindPackedPoint
                 (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource,&packedPoint)) {
-            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+            localPoint = ModelNodeRuntime_TransformLocalPoint
                                (packedPoint,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
@@ -373,7 +373,7 @@ SpawnArmyFromOwner:
       }
       break;
     case EFFECT_TRANSITION_INTEGRATE_LINEAR_MOTION_AND_SHADING_POSITION:
-      scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
+      scaledDirection = FixedMath_DirectionFromAnglesScaled
                          (modelNode->modelPayload.worldRotationAngle1,
                           modelNode->modelPayload.worldRotationAngle0,
                           effectDefinition->movementSpeedQ12);
@@ -401,13 +401,13 @@ SpawnArmyFromOwner:
         /* Both register-returned directions are spilled to the stack in the binary; Ghidra showed
            them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. Both are unit vectors
            (0x10000000 = 1.0 in Q28); the motion elevation drops with the square of the effect's age. */
-        scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
+        scaledDirection = FixedMath_DirectionFromAnglesScaled
                   ((int)terrainNormalAngles >> 16,terrainNormalAngles & FIXED_ANGLE16_MASK,
                    Q28_ONE);
         terrainNormalDirection.x = scaledDirection.x;
         terrainNormalDirection.y = scaledDirection.y;
         terrainNormalDirection.z = scaledDirection.z;
-        scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
+        scaledDirection = FixedMath_DirectionFromAnglesScaled
                   (modelNode->modelPayload.worldRotationAngle1 -
                    effectSlot->effectAgeTicks * effectSlot->effectAgeTicks * effectDefinition->pitchDropPerAgeSquared,
                    modelNode->modelPayload.worldRotationAngle0,Q28_ONE);

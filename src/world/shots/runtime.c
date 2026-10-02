@@ -57,7 +57,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
   InGameRuntimeRoot *inGameRoot;
   FactionRelationState relationState;
   bool alreadyHostile;
-  ModelRuntimeScaleRatioRegisterPairQ12 conditionRatio;
+  Q12 conditionRatio;
   FactionNotificationCodeBase activeFactionCodeForFirst;
   FactionNotificationCodeBase activeFactionCodeForSecond;
   FactionRelationStateNibble stateFirstTowardSecond;
@@ -70,10 +70,10 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
   targetEntity = targetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime; /* the hit model's army */
   if (shooterArmy != NULL) {
     if (shotRuntime->definitionOrSavedId.definition->targetClassImpactDamageQ12[0] < 0) {
-      /* EAX = condition ratio, EDX = 0x1000: equal means the target is fully repaired */
-      conditionRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs
+      /* a condition ratio of 1.0 means the target is fully repaired */
+      conditionRatio = ModelRuntime_QueryHierarchyConditionRatioQ12
                         ((RuntimeModelFactionPrefix *)targetEntity);
-      if ((int)conditionRatio == (int)(conditionRatio >> 32) &&
+      if (conditionRatio == Q12_ONE &&
           (shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
           targetEntity == (GameEntityRuntime *)shooterArmy->commandTargetArmyRuntime) {
         ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
@@ -378,13 +378,13 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotRuntimeCursor->lifetimeTicksRemaining = shotDefinition->projectileLifetimeTicks;
   shotRuntimeCursor->launchSpeedQ12 = runtimeLaunchSpeedQ12;
   shotRuntimeCursor->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
-  launchAngles = ShotDefinition_ComputeLaunchAnglesRegs
+  launchAngles = ShotDefinition_ComputeLaunchAngles
                      (targetWorldZQ12,targetWorldYQ12,targetWorldXQ12,launchWorldZQ12,
                       launchWorldYQ12,launchWorldXQ12,shotDefinition);
   shotModelNode->modelPayload.worldRotationAngle0 = launchAngles.headingAngle;
   shotModelNode->modelPayload.worldRotationAngle1 = launchAngles.elevationAngle;
   shotModelNode->modelPayload.worldRotationAngle2 = launchAngles.headingAngle;
-  launchDirection = FixedMath_DirectionFromAnglesScaledRegs
+  launchDirection = FixedMath_DirectionFromAnglesScaled
                      (launchAngles.elevationAngle,launchAngles.headingAngle,shotDefinition->launchSpeedQ12);
   directionZOrNeighborhoodMask = launchDirection.z;
   shotRuntimeCursor->ownerAndTrajectory.directionComponent0Q12 = launchDirection.x;
@@ -421,7 +421,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
     shotModelNode->shadingRecord = NULL;
   }
   else {
-    localPoint = ModelNodeRuntime_TransformLocalPointRegs
+    localPoint = ModelNodeRuntime_TransformLocalPoint
                        (packedPoint,(ModelRuntimeNode *)shotModelNode);
     shotModelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
                        (shotDefinition->shadingTransitionDurationTicks,
@@ -448,7 +448,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
   if (ModelLookupTable_FindPackedPoint
         (0,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource,&packedPoint)) {
-    localPoint = ModelNodeRuntime_TransformLocalPointRegs
+    localPoint = ModelNodeRuntime_TransformLocalPoint
                        (packedPoint,(ModelRuntimeNode *)shotModelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),

@@ -127,7 +127,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   GameEntityRuntime *entry;
   bool testResult;
   bool classifySelectedState;
-  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
+  Q12 conditionRatioQ12;
 
   classifySelectedState = false;
   g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = WORLD_POINTER_NO_HIT;
@@ -286,8 +286,8 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   if (testResult) {
     return WORLD_CURSOR_TARGET_REJECTED;
   }
-  scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix *)entry);
-  if ((int)scaleRatio != (int)(scaleRatio >> 32)) {
+  conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12((RuntimeModelFactionPrefix *)entry);
+  if (conditionRatioQ12 != Q12_ONE) {
     testResult = SelectionInfo_IsEntryAbsent(entry);
     if (testResult) {
       return WORLD_CURSOR_TARGET;
@@ -586,7 +586,7 @@ void InGameWorldInput_CommitPointerAction
   GameEntityRuntime *entry;
   CommandPayload armyRuntimeIndex;
   bool testResult;
-  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
+  Q12 conditionRatioQ12;
   
   if (((((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) !=
          0) ||
@@ -724,8 +724,8 @@ test_candidate_capability:
         testResult = GameFactionRuntime_TestCapabilityBitClear
                           ((entry->common).ownership.ownerIndex,ownerIndex);
         if (testResult) goto release_pointer_capture;
-        scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix *)entry);
-        if ((int)scaleRatio != (int)(scaleRatio >> 32)) goto select_candidate_army;
+        conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12((RuntimeModelFactionPrefix *)entry);
+        if (conditionRatioQ12 != Q12_ONE) goto select_candidate_army;
       }
       if (ownerIndex == (entry->common).ownership.ownerIndex) {
         armyRuntimeIndex = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;

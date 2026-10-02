@@ -61,6 +61,21 @@ void DebugStateHash_SessionStart(void)
   s_output = fopen("statehash.txt", "w");
   Thandor_Log("test aid: state hash for %d simulation steps, seed %s -> statehash.txt", s_stepsWanted,
               seed != NULL ? seed : "12345");
+  /* OPEN_THANDOR_STATEHASH_SPEED=1..5: game speed from the first step on (what key G sets, but at a fixed step
+     instead of a wall-clock moment, so runs stay comparable) */
+  {
+    const char *speed = getenv("OPEN_THANDOR_STATEHASH_SPEED");
+    int stepTicks = speed != NULL ? atoi(speed) : 0;
+    unsigned playerIndex;
+    if (stepTicks >= 1 && stepTicks <= INGAME_SIMULATION_STEP_TICKS_MAX) {
+      for (playerIndex = 0; playerIndex < g_FrontendPlayerRuntimeBlockCount; playerIndex++) {
+        g_SelectionPlayerRuntimeBlockPointers[g_FrontendPlayerRuntimeBlocks[playerIndex].playerRuntimeId]
+             ->simulationStepTicks = (InGameSimulationStepBatchTicks)stepTicks;
+      }
+      g_InGameSimulationStepTicks = (InGameSimulationStepBatchTicks)stepTicks;
+      Thandor_Log("test aid: simulation step ticks %d", stepTicks);
+    }
+  }
 }
 
 /* Scenario orders (OPEN_THANDOR_ARENA_ORDERS), issued from the step hook at fixed step numbers so they happen at

@@ -456,7 +456,7 @@ ImageData_0040ABBC g_ImageData_0040ABBC = {
     0, /* 0040B1F0 g_FileSystemEnumerateDriveLetters */
     0, /* 0040B1F4 g_FileSystemGetDriveTypeCode */
     0, /* 0040B1F8 g_FileSystemCheckDriveMediaReady */
-    0, /* 0040B1FC g_FileSystemGetFreeAndTotalBytesRegs */
+    0, /* 0040B1FC g_FileSystemGetFreeAndTotalBytes */
     0, /* 0040B200 g_FileSystemGetLastWriteDosDate */
     0, /* 0040B204 g_FileSystemGetLastWriteTimeHigh */
     0, /* 0040B208 g_FileSystemGetVolumeSerialNumber */
@@ -564,7 +564,7 @@ ImageData_004172E8 g_ImageData_004172E8 = {
     (void *)SoundBackendDisabled_StopVoice, /* 00417350 g_SoundStopVoice */
     (void *)SoundBackendDisabled_StopAllVoices, /* 00417354 g_SoundStopAllVoices */
     (void *)SoundBackendDisabled_IsVoicePlaying, /* 00417358 g_SoundIsVoicePlaying */
-    (void *)SoundBackendDisabled_QueryVoiceRegs, /* 0041735C g_SoundQueryVoiceRegs */
+    (void *)SoundBackendDisabled_QueryVoice, /* 0041735C g_SoundQueryVoice */
     (void *)SoundBackendDisabled_SetVoiceGains, /* 00417360 g_SoundSetVoiceGains */
     {0}, /* 00417364 g_SoundSampleCoefficientBlock */
     {

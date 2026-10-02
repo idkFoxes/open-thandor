@@ -72,6 +72,10 @@ reference. Scenarios: `battle` (every unit and building type on both sides, move
 and research started at step 20). Without `--reference` each scenario runs twice in parallel and the runs must
 match each other; `--detail <tick>` writes every army's values at the first differing tick. After an intended
 behaviour change, save new references with `--save-reference tools/test/determinism_reference`.
+The arena scenarios have no computer opponents; `python tools/test/compare_map_hash.py stromschnelle 1400 <dir>
+<dir2> ...` plays a stock map with strong computer opponents under the same state hash in several game
+directories at once (game speed 5 from the first step, `OPEN_THANDOR_STATEHASH_SPEED`) and reports the first
+differing step - put the previous build into one directory to compare versions.
 `python tools/test/run_campaign_chain.py <game dir> pairs` plays into each level that needs the previous
 level's units (tutorial 2 and 3, Hansolo 9, 13, 23) through the real level change and checks that units
 arrive; `... campaigns [--only tutorial,luke]` wins every level of each campaign in turn up to the campaign

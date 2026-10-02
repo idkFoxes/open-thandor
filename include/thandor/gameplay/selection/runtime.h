@@ -192,19 +192,19 @@ void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
 void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection);
 
 /* 0x0052D600 */
-SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
+SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex);
 
 /* 0x0052D6F0 */
-SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
+SelectionPanelCellAdvance SelectionPanel_DrawIconCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelCellIndex cellIndex);
 
 /* 0x0052D770 */
-SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+SelectionPanelCellAdvance SelectionPanel_DrawSteppedMeterCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,

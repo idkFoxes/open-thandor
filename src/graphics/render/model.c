@@ -970,7 +970,7 @@ void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform,nodeWorldTransform,
              &g_ViewProjectionMatrixFixed);
-  viewAngles = FixedMath_VectorToAngles3Regs
+  viewAngles = FixedMath_VectorToAngles
                     (nodeWorldZ - g_ViewOriginFixed.z,nodeWorldY - g_ViewOriginFixed.y,
                      nodeWorldX - g_ViewOriginFixed.x);
   FixedMath_WriteDirectionQ28

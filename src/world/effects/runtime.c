@@ -295,7 +295,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
         if (shadingStartTicks == 0) {
           if (ModelLookupTable_FindPackedPoint
                 (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource,&lightPoint)) {
-            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+            localPoint = ModelNodeRuntime_TransformLocalPoint
                                (lightPoint,(ModelRuntimeNode *)effectModelNode);
             /* the alpha byte of the shading colour is the radius in 1/16 world units */
             effectModelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord

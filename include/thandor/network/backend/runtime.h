@@ -70,12 +70,12 @@ bool NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex);
 
 
 /* 0x00583D10 */
-uint32_t Unreferenced_ReturnZeroPreserveRegs_00583D10(void);
+uint32_t Unreferenced_ReturnZero_00583D10(void);
 
 /* 0x00583D30 */
-void Unreferenced_NoOpPreserveRegs_00583D30(void);
+void Unreferenced_NoOp_00583D30(void);
 
 /* 0x00583D40 */
-uint32_t Unreferenced_ReturnZeroPreserveRegs_00583D40(void);
+uint32_t Unreferenced_ReturnZero_00583D40(void);
 
 #endif /* THANDOR_NETWORK_BACKEND_RUNTIME_H */

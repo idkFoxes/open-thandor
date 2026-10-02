@@ -886,7 +886,7 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                   }
                                   soundSlotCursor = soundLoopWorldRuntime->dwordArray;
                                   soundLoopWorldRuntimeCopy = soundLoopWorldRuntime;
-                                  modelFlagsOrSoundIndex = WidePath_ParseTrailingNumberBeforeExtensionRegs
+                                  modelFlagsOrSoundIndex = WidePath_ParseTrailingNumberBeforeExtension
                                                     (soundDirectoryPathCursor);
                                   if (modelFlagsOrSoundIndex < soundLoopWorldRuntime->dwordArrayCount) {
                                     if (soundsInPackage) {
@@ -1530,7 +1530,7 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
                                               soundSlotCursor = worldRuntime->dwordArray;
                                               soundLoopWorldRuntime = worldRuntime;
                                               soundSlotIndex = 
-                                                  WidePath_ParseTrailingNumberBeforeExtensionRegs
+                                                  WidePath_ParseTrailingNumberBeforeExtension
                                                             (soundDirectoryPathCursor);
                                               if (soundSlotIndex < worldRuntime->dwordArrayCount) {
                                                 if (soundsInPackage) {

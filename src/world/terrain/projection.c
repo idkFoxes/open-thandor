@@ -473,7 +473,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
       if (remainingCount != 0) {
         vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + columnOrVertexCount);
         do {
-          TerrainProjectedQuad_QueueAsTwoTrianglesRegs(gridWidth * sizeof(FieldGridCell),vertexCursor,renderContext);
+          TerrainProjectedQuad_QueueAsTwoTriangles(gridWidth * sizeof(FieldGridCell),vertexCursor,renderContext);
           vertexCursor = vertexCursor + 1;
           remainingCount = remainingCount - 1;
         } while (remainingCount != 0);
@@ -1472,7 +1472,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge5(TerrainDirectionalScanStep scan
    secondary-surface packet; rowStrideBytes is one grid row of vertex records. Called for every quad of the
    visible spans by TerrainProjectedGrid_TransformShadeAndQueue.
 */
-void TerrainProjectedQuad_QueueAsTwoTrianglesRegs
+void TerrainProjectedQuad_QueueAsTwoTriangles
           (uint32_t rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
           FrontendModelPointerContext *renderContext)
 
@@ -1542,7 +1542,7 @@ void TerrainProjectedVertex_TransformProjectAndShade(TerrainProjectedVertexWorkR
     /* vertex color PUNPCKLBW/PSRLW 6 (optionally lit), base color PUNPCKLBW/PSRLW 2, PMULHW, PACKUSWB */
     lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
     if (vertex->lightingLookupIndexOrSentinel == FIELD_CELL_LIGHTING_VISIBLE) {
-      lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+      lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
                          (&vertex->viewPointA,lightingFactors);
     }
     shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));
@@ -1587,7 +1587,7 @@ void TerrainProjectedVertex_TransformProjectAndShade(TerrainProjectedVertexWorkR
     baseColor = vertex->basePackedColor;
     lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
     if (vertex->lightingLookupIndexOrSentinel == FIELD_CELL_LIGHTING_VISIBLE) {
-      lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+      lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
                          (&vertex->viewPointB,lightingFactors);
     }
     shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));
@@ -1660,7 +1660,7 @@ void TerrainProjectedVertex_ReshadeKeepingProjection(TerrainProjectedVertexWorkR
     baseColor = vertex->basePackedColor;
     lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
     if (vertex->lightingLookupIndexOrSentinel == FIELD_CELL_LIGHTING_VISIBLE) {
-      lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+      lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
                          (&vertex->viewPointB,lightingFactors);
     }
     shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));
@@ -1670,7 +1670,7 @@ void TerrainProjectedVertex_ReshadeKeepingProjection(TerrainProjectedVertexWorkR
   baseColor = vertex->basePackedColor;
   lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
   if (vertex->lightingLookupIndexOrSentinel == FIELD_CELL_LIGHTING_VISIBLE) {
-    lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+    lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
                        (&vertex->viewPointA,lightingFactors);
   }
   shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));

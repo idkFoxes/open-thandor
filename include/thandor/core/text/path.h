@@ -15,7 +15,7 @@
 /* Engine path buffers hold at most 256 UTF-16 code units (0x200 bytes) including the terminator, e.g.
    g_FileSystemCombinedPathScratchUtf16 and g_ExecutableDirectoryUtf16. */
 #define WIDE_PATH_MAX_CODE_UNITS 0x100
-/* WidePath_ParseTrailingNumberBeforeExtensionRegs: code units scanned for the terminator and the digits */
+/* WidePath_ParseTrailingNumberBeforeExtension: code units scanned for the terminator and the digits */
 #define WIDE_PATH_NUMBER_SCAN_MAX_UNITS 32
 /* Extension codes for WidePath_SetExtensionCode: the three lower-case letters packed little-endian (the same
    packing as the ASSET_MAGIC_* values). */
@@ -50,6 +50,6 @@ bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t 
 void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory);
 
 /* 0x00531170 */
-uint32_t WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path);
+uint32_t WidePath_ParseTrailingNumberBeforeExtension(uint16_t *path);
 
 #endif /* THANDOR_CORE_TEXT_PATH_H */

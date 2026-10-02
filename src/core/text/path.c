@@ -207,9 +207,9 @@ void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint1
 /* Address: 0x00531170.
    Parses the decimal number that ends right before a 4-character extension (".sav" in "save12.sav" gives 12):
    reads digits backwards from the fifth code unit before the terminator until a non-digit. The terminator
-   search and the digit count share a limit of 32 code units. Returns the number in ECX, 0 if there is none.
+   search and the digit count share a limit of 32 code units. Returns the number, 0 if there is none.
 */
-uint32_t WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path)
+uint32_t WidePath_ParseTrailingNumberBeforeExtension(uint16_t *path)
 
 {
   uint32_t parsedValue;

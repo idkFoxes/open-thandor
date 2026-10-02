@@ -68,7 +68,7 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   if ((shotRuntime->definitionOrSavedId.definition->trajectoryMode ==
        SHOT_TRAJECTORY_DIRECT_LINE) && (modelNode->renderDepthBiasOrState != 0)) {
     /* renderDepthBiasOrState holds the beam length (see the primaryUpdate callback) */
-    probeOffset = FixedMath_DirectionFromAnglesScaledRegs
+    probeOffset = FixedMath_DirectionFromAnglesScaled
                        (modelNode->modelPayload.worldRotationAngle1,
                         modelNode->modelPayload.worldRotationAngle0,
                         modelNode->renderDepthBiasOrState >> 1);
@@ -77,7 +77,7 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
                        probeOffset.x + modelNode->worldTransform.translation.x,
                        worldRuntime->fieldGrid);
     combinedOccupancyMask = primaryOccupancyMask | probeOccupancyMask;
-    probeOffset = FixedMath_DirectionFromAnglesScaledRegs
+    probeOffset = FixedMath_DirectionFromAnglesScaled
                        (modelNode->modelPayload.worldRotationAngle1,
                         modelNode->modelPayload.worldRotationAngle0,
                         modelNode->renderDepthBiasOrState);
@@ -242,7 +242,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
             (1,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource,&emitterRecord)) {
         effectDefinition = shotDefinition->secondaryEffectDefinition;
         effectWorldRuntime = worldRuntime;
-        emitterWorldPoint = ModelNodeRuntime_TransformLocalPointRegs
+        emitterWorldPoint = ModelNodeRuntime_TransformLocalPoint
                            (emitterRecord,(ModelRuntimeNode *)modelNode);
         emitterWorldYQ12 = emitterWorldPoint.yQ12;
         EffectRuntimePool_CreateInstanceFromDefinition
@@ -314,7 +314,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
             shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
             effectDefinition = shotDefinition->primaryEffectDefinition;
             effectWorldRuntime = worldRuntime;
-            directionOffset = FixedMath_DirectionFromAnglesScaledRegs
+            directionOffset = FixedMath_DirectionFromAnglesScaled
                                (modelNode->modelPayload.worldRotationAngle1,
                                 modelNode->modelPayload.worldRotationAngle0,secondaryHitDistance);
             EffectRuntimePool_CreateInstanceFromDefinition
@@ -347,7 +347,7 @@ HandleNearestArmyHitAndContinueMotion:
                (effectDefinition != NULL)) {
               shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
               effectWorldRuntime = worldRuntime;
-              directionOffset = FixedMath_DirectionFromAnglesScaledRegs
+              directionOffset = FixedMath_DirectionFromAnglesScaled
                                  (modelNode->modelPayload.worldRotationAngle1,
                                   modelNode->modelPayload.worldRotationAngle0,frameAccumulatorOrDistance);
               EffectRuntimePool_CreateInstanceFromDefinition
@@ -373,7 +373,7 @@ HandleNearestArmyHitAndContinueMotion:
           shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
           effectDefinition = shotDefinition->terrainImpactEffectDefinitions31[terrainMaterialIndex];
           effectWorldRuntime = worldRuntime;
-          directionOffset = FixedMath_DirectionFromAnglesScaledRegs
+          directionOffset = FixedMath_DirectionFromAnglesScaled
                              (modelNode->modelPayload.worldRotationAngle1,
                               modelNode->modelPayload.worldRotationAngle0,terrainHitDistance);
           EffectRuntimePool_CreateInstanceFromDefinition
@@ -450,7 +450,7 @@ HandleNearestArmyHitAndContinueMotion:
             InterpolationState_SetNegatedTargetAndRescaleProgress
                       (shotDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
             effectDefinition = shotDefinition->primaryEffectDefinition;
-            directionOffset = FixedMath_DirectionFromAnglesScaledRegs
+            directionOffset = FixedMath_DirectionFromAnglesScaled
                                (modelNode->modelPayload.worldRotationAngle1,
                                 modelNode->modelPayload.worldRotationAngle0,frameAccumulatorOrDistance);
             EffectRuntimePool_CreateInstanceFromDefinition
@@ -482,7 +482,7 @@ HandleNearestArmyHitAndTerminateProjectile:
             effectDefinition = shotDefinition->targetClassImpactEffectDefinitions8[targetClassIndex];
             rotationAngle = modelNode->modelPayload.worldRotationAngle0;
             if (effectDefinition != NULL) {
-              directionOffset = FixedMath_DirectionFromAnglesScaledRegs
+              directionOffset = FixedMath_DirectionFromAnglesScaled
                                  (modelNode->modelPayload.worldRotationAngle1,
                                   modelNode->modelPayload.worldRotationAngle0,frameCountDistanceOrAge);
               EffectRuntimePool_CreateInstanceFromDefinition
@@ -509,7 +509,7 @@ HandleNearestArmyHitAndTerminateProjectile:
           InterpolationState_SetNegatedTargetAndRescaleProgress
                     (shotDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
           effectDefinition = shotDefinition->terrainImpactEffectDefinitions31[terrainMaterialIndex];
-          directionOffset = FixedMath_DirectionFromAnglesScaledRegs
+          directionOffset = FixedMath_DirectionFromAnglesScaled
                              (modelNode->modelPayload.worldRotationAngle1,
                               modelNode->modelPayload.worldRotationAngle0,
                               movingTerrainHitDistance);
@@ -527,7 +527,7 @@ HandleNearestArmyHitAndTerminateProjectile:
       }
       shotDefinition = shotRuntime->definitionOrSavedId.definition;
       if (shotDefinition->trajectoryMode != SHOT_TRAJECTORY_DIRECT_LINE) {
-        directionOffset = FixedMath_DirectionFromAnglesScaledRegs
+        directionOffset = FixedMath_DirectionFromAnglesScaled
                            (modelNode->modelPayload.worldRotationAngle1 -
                             shotRuntime->elevationOffsetAngle16,
                             modelNode->modelPayload.worldRotationAngle0,
@@ -556,7 +556,7 @@ HandleNearestArmyHitAndTerminateProjectile:
             workingValue = (int)((ModelRuntimeNode *)workingValue)->childNodes[0];
           }
           modelNodeRuntime = shotRuntime->modelNodeOrSavedOffset.modelNode;
-          targetAngles = FixedMath_VectorToAngles3Regs
+          targetAngles = FixedMath_VectorToAngles
                              ((((ModelRuntimeSlot *)targetStateRecord)->definitionOrSavedId.runtimeDefinition->
                                aimHeightOffsetQ12 +
                               ((ModelRuntimeNode *)workingValue)->worldTransform.translation.z) -
@@ -624,7 +624,7 @@ HandleNearestArmyHitAndTerminateProjectile:
         else if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
           shotRuntime->ownerAndTrajectory.directionComponent2Q12 -=
                shotRuntime->definitionOrSavedId.definition->ballisticDivisorQ12;
-          ballisticAngles = FixedMath_VectorToAnglesAndLengthVec3Regs
+          ballisticAngles = FixedMath_VectorToAnglesAndLengthVec3
                              ((GraphicsFixedVec3 *)
                               &shotRuntime->ownerAndTrajectory.directionComponent0Q12);
           ballisticAzimuthAngle = ballisticAngles.azimuthAngle;

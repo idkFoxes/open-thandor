@@ -66,7 +66,7 @@ void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice);
 bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
 
 /* 0x00417600 */
-uint64_t SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice);
+uint32_t SoundBackendDisabled_QueryVoice(IDirectSoundBuffer *voice);
 
 /* 0x00417610 */
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
@@ -107,7 +107,7 @@ bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice);
 void DirectSound_StopAllVoices(void);
 
 /* 0x00583C60 */
-uint64_t DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice);
+uint32_t DirectSound_QueryVoiceStub(IDirectSoundBuffer *voice);
 
 /* 0x00583C70 */
 void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,

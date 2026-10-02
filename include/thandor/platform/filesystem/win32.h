@@ -69,7 +69,7 @@ uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags
 uint32_t Win32File_RemoveDirectory(uint16_t *path);
 
 /* 0x005765F0 */
-Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode32 driveLetter);
+Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLetter);
 
 /* 0x005766B0 */
 DriveLetterEnumeration Win32Drive_EnumerateLetters(uint8_t *lettersOut);

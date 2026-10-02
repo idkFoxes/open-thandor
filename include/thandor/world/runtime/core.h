@@ -124,10 +124,10 @@ void WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world);
 
 /* 0x0050D610 */
-WorldCameraPosition WorldRuntime_GetCameraPositionRegs(WorldRuntimeContext *world);
+WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world);
 
 /* 0x0050D630 */
-WorldCameraOrientation WorldRuntime_GetCameraOrientationRegs(WorldRuntimeContext *world);
+WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *world);
 
 /* 0x0050D650 */
 uint32_t WorldRuntime_GetFlags(WorldRuntimeContext *world);
@@ -161,13 +161,13 @@ void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTra
           WorldRuntimeContext *world);
 
 /* 0x0050EC80 */
-RuntimeImagePointerByteSizeEdxEax8 __cdecl RuntimeHexSegment_GetLightImageAndToggleFlagRegs(void);
+RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void);
 
 /* 0x0050ECA0 */
 void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void);
 
 /* 0x0050ECB0 */
-ResourceRegistrationImagePair RuntimeHexSegment_GetFieldImageRegs(InGameFieldImageSaveContext58 *fieldImageContext);
+RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext);
 
 /* 0x0050ECD0 */
 void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext);

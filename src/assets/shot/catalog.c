@@ -120,7 +120,7 @@ uint32_t ShotDefinitionRegistry_FindByIdWithError
    pass the points in Z, Y, X order (Z = height). Called directly by the weapon aiming code (gameplay/army/combat.c,
    movement.c, runtime.c) and the shot launch in world/shots/runtime.c.
 */
-ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
+ShotLaunchAngles ShotDefinition_ComputeLaunchAngles
           (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
           ShotDefinition *definition)
 
@@ -139,7 +139,7 @@ ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
 
   heightDelta = targetZ - launchZ;
   if (definition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
-    planarLengthAngle = FixedMath_Vector2AngleAndLengthRegs(targetY - launchY,targetX - launchX);
+    planarLengthAngle = FixedMath_Vector2AngleAndLength(targetY - launchY,targetX - launchX);
     computedHeading = planarLengthAngle.angle & FIXED_ANGLE16_MASK;
     /* tan(elevation) = (v^2 +- sqrt(v^4 - 2*g*h*v^2 - (g*r)^2)) / (g*r) */
     launchSpeedSquared = definition->launchSpeedQ12 * definition->launchSpeedQ12;
@@ -164,7 +164,7 @@ ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
       fixedRangeAngles.elevationAngle = FIXED_ANGLE16_QUARTER_TURN;
       return fixedRangeAngles;
     }
-    vectorAngles = FixedMath_VectorToAngles3Regs(heightDelta,targetY - launchY,targetX - launchX);
+    vectorAngles = FixedMath_VectorToAngles(heightDelta,targetY - launchY,targetX - launchX);
     computedHeading = vectorAngles.azimuthAngle;
     computedElevation = vectorAngles.elevationAngle + definition->elevationOffsetAngle16;
     if (FIXED_ANGLE16_QUARTER_TURN < (int)computedElevation) {

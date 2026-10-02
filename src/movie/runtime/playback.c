@@ -2023,7 +2023,7 @@ uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
   
   green = rgb888 >> 8 & ARGB8888_CHANNEL_MASK;
   /* 0xDDB4 = 0x8000 * sqrt(3) */
-  angleAndLength = FixedMath_Vector2AngleAndLengthRegs
+  angleAndLength = FixedMath_Vector2AngleAndLength
                     (((rgb888 & ARGB8888_CHANNEL_MASK) - green) * MOVIE_CHROMA_SQRT3_Q15,
                      (green + (rgb888 & ARGB8888_CHANNEL_MASK) + (rgb888 >> 16 & ARGB8888_CHANNEL_MASK) * -2) * (1 << 15));
   return angleAndLength.length >> 9 & MOVIE_COLOR_SATURATION_MASK | angleAndLength.angle >> 6 & MOVIE_COLOR_HUE_MASK;

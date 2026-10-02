@@ -289,7 +289,7 @@ void WorldRuntime_PointCameraAtTarget
   runtime->motion.targetDistanceQ12 = distance;
   runtime->motion.committedDistanceQ12 = distance;
   directionOffset =
-       FixedMath_DirectionFromAnglesScaledRegs(-pitchAngle,headingAngle ^ FIXED_ANGLE16_HALF_TURN,distance);
+       FixedMath_DirectionFromAnglesScaled(-pitchAngle,headingAngle ^ FIXED_ANGLE16_HALF_TURN,distance);
   runtime->motion.positionXQ12 = directionOffset.x + runtime->motion.targetPositionXQ12;
   runtime->motion.positionYQ12 = directionOffset.y + runtime->motion.targetPositionYQ12;
   runtime->motion.positionZQ12 = directionOffset.z + runtime->motion.targetPositionZQ12;
@@ -608,14 +608,14 @@ void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world
 
 
 /* Address: 0x0050D610.
-   Returns the camera position (motion.positionX/Y/ZQ12, context +0x60..+0x68) in EAX, ECX and EDX.
+   Returns the camera position (motion.positionX/Y/ZQ12, context +0x60..+0x68).
 */
-WorldCameraPosition WorldRuntime_GetCameraPositionRegs(WorldRuntimeContext *world)
+WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world)
 
 {
   WorldCameraPosition positionVector;
 
-  positionVector.xQ12= world->motion.positionXQ12;
+  positionVector.xQ12 = world->motion.positionXQ12;
   positionVector.yQ12 = world->motion.positionYQ12;
   positionVector.zQ12 = world->motion.positionZQ12;
   return positionVector;
@@ -624,14 +624,14 @@ WorldCameraPosition WorldRuntime_GetCameraPositionRegs(WorldRuntimeContext *worl
 
 /* Address: 0x0050D630.
    Returns the camera orientation (motion.positionMagnitudeQ12, headingAngle, pitchAngle, context
-   +0x6C..+0x74) in EAX, ECX and EDX.
+   +0x6C..+0x74).
 */
-WorldCameraOrientation WorldRuntime_GetCameraOrientationRegs(WorldRuntimeContext *world)
+WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *world)
 
 {
   WorldCameraOrientation motionVector;
 
-  motionVector.magnitudeQ12= world->motion.positionMagnitudeQ12;
+  motionVector.magnitudeQ12 = world->motion.positionMagnitudeQ12;
   motionVector.headingAngle = world->motion.headingAngle;
   motionVector.pitchAngle = world->motion.pitchAngle;
   return motionVector;
@@ -814,22 +814,25 @@ void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTra
 
 /* Address: 0x0050EC80.
    Pre-serializer provider of the light.hex save segment (called by
-   InGameSaveGame_WritePackage): returns the shading runtime records (EAX) and their byte
-   size 0x4000 (EDX), and inverts serializationToggleDword of record 0 so the saved image carries the
+   InGameSaveGame_WritePackage): returns the shading runtime records and their byte
+   size 0x4000, and inverts serializationToggleDword of record 0 so the saved image carries the
    inverted value; RuntimeHexSegment_ToggleLightImageFlag inverts it back after saving.
 */
-RuntimeImagePointerByteSizeEdxEax8 __cdecl RuntimeHexSegment_GetLightImageAndToggleFlagRegs(void)
+RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void)
 
 {
+  RuntimeHexSegmentImage segment;
+
   g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =
        ~g_GraphicsShadingRuntimeRecords[0].serializationToggleDword;
-  /* EDX:EAX = byte size 0x4000, shading runtime records */
-  return ((uint64_t)sizeof(g_GraphicsShadingRuntimeRecords) << 32) | (uint32_t)(uintptr_t)g_GraphicsShadingRuntimeRecords;
+  segment.image = (uint32_t *)g_GraphicsShadingRuntimeRecords;
+  segment.byteSize = sizeof(g_GraphicsShadingRuntimeRecords);
+  return segment;
 }
 
 /* Address: 0x0050ECA0.
    Post-serializer hook of the light.hex save segment: inverts serializationToggleDword of shading record 0
-   back (RuntimeHexSegment_GetLightImageAndToggleFlagRegs inverted it before), so the saved image carries the
+   back (RuntimeHexSegment_GetLightImageAndToggleFlag inverted it before), so the saved image carries the
    inverted value while the live one is unchanged. The caller keeps the serializer flags.
 */
 void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void)
@@ -843,16 +846,16 @@ void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void)
 /* Address: 0x0050ECB0.
    Pre-serializer provider of the field.hex save segment (called by
    InGameSaveGame_WritePackage): returns the attached field grid (+0x54) and its whole
-   allocation size (asset +0x04), so the field image is saved as one block. The original returns the image
-   in EAX and the size in EDX.
+   allocation size (asset +0x04), so the field image is saved as one block.
 */
-ResourceRegistrationImagePair
-RuntimeHexSegment_GetFieldImageRegs(InGameFieldImageSaveContext58 *fieldImageContext)
+RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext)
 
 {
-  /* The pair is stored as {low: byte count (EDX), high: image (EAX)}, as the caller reads it. */
-  return (uint64_t)(uintptr_t)fieldImageContext->fieldGridAsset << 32 |
-         (uint64_t)(uint32_t)(fieldImageContext->fieldGridAsset->common).allocationSizeBytes;
+  RuntimeHexSegmentImage segment;
+
+  segment.image = (uint32_t *)fieldImageContext->fieldGridAsset;
+  segment.byteSize = (uint32_t)(fieldImageContext->fieldGridAsset->common).allocationSizeBytes;
+  return segment;
 }
 
 /* Address: 0x0050ECD0.
@@ -1168,7 +1171,7 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
     return;
   }
   worldRuntime->motion.targetDistanceQ12 = hitDistanceQ12;
-  endpointOffset = FixedMath_DirectionFromAnglesScaledRegs
+  endpointOffset = FixedMath_DirectionFromAnglesScaled
                     (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,hitDistanceQ12);
   worldRuntime->motion.targetPositionXQ12 = endpointOffset.x + worldRuntime->motion.positionXQ12;
   worldRuntime->motion.targetPositionYQ12 = endpointOffset.y + worldRuntime->motion.positionYQ12;

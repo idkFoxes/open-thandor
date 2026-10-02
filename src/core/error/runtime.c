@@ -82,7 +82,7 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
   int remainingDwords;
   uint32_t *templateImageCursor;
   UiRootNode *templateCopyCursor;
-  RichTextExtentRegs wrappedExtent;
+  RichTextExtent wrappedExtent;
   uint32_t errorOrValue;
   uint16_t *resolvedText;
 
@@ -114,7 +114,7 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
     templateCopyCursor = (UiRootNode *)&(templateCopyCursor->base).firstChild;
   }
   /* the text height is subtracted from the dialog's top offset */
-  wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
+  wrappedExtent = RichTextCommandStream_MeasureWrappedBlock
                     (g_UiTextStyleNormal,g_FatalErrorRichTextStream,
                      ((g_FatalErrorRichTextRight - g_FatalErrorRichTextLeft) +
                      g_FatalErrorRichTextBottom) - g_FatalErrorRichTextTop);

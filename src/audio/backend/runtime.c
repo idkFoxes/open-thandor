@@ -148,10 +148,9 @@ bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 
 
 /* Address: 0x00417600.
-   Silent-backend stub in slot g_SoundQueryVoiceRegs (image 0x0041735C): returns 0 in EDX:EAX, i.e.
-   no voice state.
+   Silent-backend stub in slot g_SoundQueryVoice (image 0x0041735C): returns 0, i.e. no voice state.
 */
-uint64_t SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice)
+uint32_t SoundBackendDisabled_QueryVoice(IDirectSoundBuffer *voice)
 
 {
   return 0;
@@ -261,7 +260,7 @@ uint32_t DirectSound_Init(void)
                       g_SoundStopVoice = DirectSound_StopVoice;
                       g_SoundStopAllVoices = DirectSound_StopAllVoices;
                       g_SoundIsVoicePlaying = DirectSound_IsVoicePlaying;
-                      g_SoundQueryVoiceRegs = DirectSound_QueryVoiceRegsStub;
+                      g_SoundQueryVoice = DirectSound_QueryVoiceStub;
                       g_SoundSetVoiceGains = DirectSound_SetVoiceGains;
                       CosineDerivedLookupTables_Init();
                       return 0;
@@ -755,10 +754,10 @@ void DirectSound_StopAllVoices(void)
 
 
 /* Address: 0x00583C60.
-   Backend slot g_SoundQueryVoiceRegs: takes a voice and returns 0 in EDX:EAX. No call site uses the
-   slot, so what it was meant to query is unknown.
+   Backend slot g_SoundQueryVoice: takes a voice and returns 0 (the original also cleared EDX; no call
+   site uses the slot, so what it was meant to query is unknown).
 */
-uint64_t DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice)
+uint32_t DirectSound_QueryVoiceStub(IDirectSoundBuffer *voice)
 
 {
   return 0;

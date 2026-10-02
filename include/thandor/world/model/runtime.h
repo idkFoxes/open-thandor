@@ -29,7 +29,7 @@
 /* ModelDefinition flags dword (+0x68, modelFlags) bit that makes the model's root node ray transparent */
 #define MODEL_DEFINITION_FLAG_RAY_TRANSPARENT 0x100
 /* ModelDefinition flags (+0x68) bit: the energy demand of directly attached models counts
-   (ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs, ArmyAssetHierarchy_SumEnergyFrom) */
+   (ModelRuntimeHierarchy_ComputeEnergyDemand, ArmyAssetHierarchy_SumEnergyFrom) */
 #define MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY 0x80
 /* ModelRuntimeNode.runtimeFlags bit: ModelNodeRuntime_UpdateStateTintRecursive fades the alpha to 0 */
 #define MODEL_NODE_FLAG_FORCE_TRANSPARENT 0x1000
@@ -76,14 +76,14 @@ bool ModelRuntime_RaycastCandidateListNearest
 Q12 ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x0051C260 */
-ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix *runtimeEntry);
+Q12 ModelRuntime_QueryHierarchyConditionRatioQ12(RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x0051C280 */
 int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051C2A0 */
-ModelRuntimeActiveTotalMetricRegisterPair
-ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix *runtimeEntry);
+ModelHierarchyEnergyDemand
+ModelRuntime_QueryHierarchyEnergyDemand(RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x00528A40 */
 uint32_t __cdecl ModelRuntimePool_Init(void);

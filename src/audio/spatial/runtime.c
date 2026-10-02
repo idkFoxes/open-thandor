@@ -99,7 +99,7 @@ void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDi
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&g_SpatialSoundRelativeX,worldPosition,
                (GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform);
-    lengthAngles = FixedMath_VectorToAnglesAndLength3Regs
+    lengthAngles = FixedMath_VectorToAnglesAndLength
                       (g_SpatialSoundRelativeY,g_SpatialSoundRelativeX,g_SpatialSoundRelativeZ);
     azimuthOrRightGainQ15 = lengthAngles.azimuthAngle;
     distanceOrPannedGainQ15 = lengthAngles.lengthQ12;
@@ -170,7 +170,7 @@ void SpatialSound_UpdateDesiredPositionedGains
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&g_SpatialSoundRelativeX,worldPosition,
                (GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform);
-    lengthAngles = FixedMath_VectorToAnglesAndLength3Regs
+    lengthAngles = FixedMath_VectorToAnglesAndLength
                       (g_SpatialSoundRelativeY,g_SpatialSoundRelativeX,g_SpatialSoundRelativeZ);
     azimuthOrLeftGainQ15 = lengthAngles.azimuthAngle;
     distanceOrPannedGainQ15 = lengthAngles.lengthQ12;

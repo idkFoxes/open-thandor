@@ -721,10 +721,10 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   uint32_t *sourceCursor;
   uint32_t *destinationCursor;
   bool allZero;
-  RuntimeImagePointerByteSizeEdxEax8 pointerImage;
   EngineFileHandle packageHandle;
   uint32_t oldUnitAllocationError;
   ResourceRegistrationImagePair domainImagePair;
+  RuntimeHexSegmentImage segmentImage;
   bool upsertOk;
 
   g_InGameResourceRegistrationBusyCount++;
@@ -744,9 +744,11 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
     if (!InGameSaveGame_CreatePackage(savePath,&packageHandle)) goto failed;
   }
   handle = (void *)(uintptr_t)packageHandle;
-  pointerImage = ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs();
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 32),
-                              (uint32_t *)pointerImage,(uint16_t *)u_army_hex_0050dfb4,(EngineFileHandle)handle);
+  ArmyRuntimePool_ConvertPointersToOffsetsForSave();
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+                              (PckDecodedByteCount)(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot)),
+                              (uint32_t *)g_ArmyRuntimeSlots,(uint16_t *)u_army_hex_0050dfb4,
+                              (EngineFileHandle)handle);
   ArmyRuntimePool_RebaseAfterLoad();
   if (!upsertOk) goto failed;
   ModelRuntimePool_UnrebaseBeforeSave();
@@ -776,14 +778,14 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
                               (EngineFileHandle)handle);
   ResourceRegistrationRuntime_RebaseLoadedRecords(worldView);
   if (!upsertOk) goto failed;
-  pointerImage = RuntimeHexSegment_GetLightImageAndToggleFlagRegs();
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 32),
-                              (uint32_t *)pointerImage,(uint16_t *)u_light_hex_0050e016,(EngineFileHandle)handle);
+  segmentImage = RuntimeHexSegment_GetLightImageAndToggleFlag();
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
+                              segmentImage.image,(uint16_t *)u_light_hex_0050e016,(EngineFileHandle)handle);
   RuntimeHexSegment_ToggleLightImageFlag();
   if (!upsertOk) goto failed;
-  domainImagePair = RuntimeHexSegment_GetFieldImageRegs(worldView);
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_field_hex_0050e002,
+  segmentImage = RuntimeHexSegment_GetFieldImage(worldView);
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
+                              segmentImage.image,(uint16_t *)u_field_hex_0050e002,
                               (EngineFileHandle)handle);
   RuntimeHexSegment_AfterFieldImageNoOp(worldView);
   sourceData = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
@@ -2759,7 +2761,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   }
   runtimeRoot = g_InGameRuntimeRoot;
   world = &g_InGameRuntimeRoot->worldRuntime;
-  cameraPosition = WorldRuntime_GetCameraPositionRegs(world);
+  cameraPosition = WorldRuntime_GetCameraPosition(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,cameraPosition.xQ12,g_FrontendDebugOverlayTextSlot04Utf16);
@@ -2769,7 +2771,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,cameraPosition.zQ12,g_FrontendDebugOverlayTextSlot06Utf16);
-  cameraOrientation = WorldRuntime_GetCameraOrientationRegs(world);
+  cameraOrientation = WorldRuntime_GetCameraOrientation(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,cameraOrientation.magnitudeQ12,g_FrontendDebugOverlayTextSlot07Utf16);
@@ -2909,7 +2911,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
   int panelHalfHeight;
   InGamePlayerStatusTextSlot *destination;
   FrontendPlayerNameUtf16 *playerName;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint16_t *resolvedText;
   GraphicsTextureLogicalSize windowTextureSize;
   UiConditionalActionControl *statusBox;
@@ -2922,7 +2924,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
     windowTextureSize = g_GraphicsTextureSourceGetLogicalSize(114,g_UiWindowTextureSource);
     /* the loop walks the player records by their name field (the pointer the original keeps in EDI) */
     playerName = &playerRecord->playerName;
-    textExtent = RichTextCommandStream_MeasureRegs
+    textExtent = RichTextCommandStream_MeasureLine
                       (g_UiTextStyleNormal,(uint16_t *)u_gfx_panel_panel0_gfx_005630d0);
     panelHalfHeight = (textExtent.heightPixels * remainingPlayers >> 1) + windowTextureSize.logicalHeightPixels;
     destination = g_InGamePlayerStatusTextSlots;
@@ -3591,7 +3593,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
 {
   WorldInteractionFlags *interactionFlagsField;
   bool isSelected;
-  RichTextExtentRegs wrappedExtent;
+  RichTextExtent wrappedExtent;
   uint16_t *resolvedText;
   InGameMissionHelpRootView *uiRoot;
 
@@ -3629,21 +3631,21 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
        ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).header.
        titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE;
   resolvedText = TextResource_Resolve((uiRoot->missionBriefingPanel).textResourceId);
-  wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
+  wrappedExtent = RichTextCommandStream_MeasureWrappedBlock
                     (g_UiTextStyleNormal,resolvedText,(uiRoot->missionBriefingPanel).wrapWidth);
   (uiRoot->missionBriefingPanel).measuredWidth = wrappedExtent.widthPixels + 6;
   (uiRoot->missionBriefingPanel).measuredHeight = wrappedExtent.heightPixels + 6;
   UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->missionBriefingPanel).scrollable);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->missionBriefingPanel).scrollable);
   resolvedText = TextResource_Resolve((uiRoot->keyboardHelpPanel).textResourceId);
-  wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
+  wrappedExtent = RichTextCommandStream_MeasureWrappedBlock
                     (g_UiTextStyleNormal,resolvedText,(uiRoot->keyboardHelpPanel).wrapWidth);
   (uiRoot->keyboardHelpPanel).measuredWidth = wrappedExtent.widthPixels + 6;
   (uiRoot->keyboardHelpPanel).measuredHeight = wrappedExtent.heightPixels + 6;
   UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->keyboardHelpPanel).scrollable);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->keyboardHelpPanel).scrollable);
   resolvedText = TextResource_Resolve((uiRoot->mouseHelpPanel).textResourceId);
-  wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
+  wrappedExtent = RichTextCommandStream_MeasureWrappedBlock
                     (g_UiTextStyleNormal,resolvedText,(uiRoot->mouseHelpPanel).wrapWidth);
   (uiRoot->mouseHelpPanel).measuredWidth = wrappedExtent.widthPixels + 6;
   (uiRoot->mouseHelpPanel).measuredHeight = wrappedExtent.heightPixels + 6;

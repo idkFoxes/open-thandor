@@ -335,7 +335,7 @@ void FrontendFactionSetup_ChooseFaction
 void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void);
 
 /* 0x005474E0 */
-void FrontendRuntime_ShutdownAndReleaseResourcesRegs(void);
+void FrontendRuntime_ShutdownAndReleaseResources(void);
 
 /* 0x0050AD90 */
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerHitContext *context);

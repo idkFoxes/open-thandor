@@ -36,7 +36,7 @@ uint32_t ShotDefinitionRegistry_FindByIdWithError
           (PckShotDefinitionIdCatalog definitionId,ShotDefinition **outDefinition);
 
 /* 0x0052B8C0 */
-ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
+ShotLaunchAngles ShotDefinition_ComputeLaunchAngles
           (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
           ShotDefinition *definition);
 

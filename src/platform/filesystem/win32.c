@@ -135,7 +135,7 @@ uint32_t __cdecl FileSystem_Init(void)
   g_FileSystemEnumerateDriveLetters = Win32Drive_EnumerateLetters;
   g_FileSystemGetDriveTypeCode = Win32Drive_GetEngineTypeCode;
   g_FileSystemCheckDriveMediaReady = Win32Drive_CheckMediaReady;
-  g_FileSystemGetFreeAndTotalBytesRegs = Win32Drive_GetFreeAndTotalBytesRegs;
+  g_FileSystemGetFreeAndTotalBytes = Win32Drive_GetFreeAndTotalBytes;
   g_FileSystemGetLastWriteDosDate = Win32File_GetLastWriteDosDate;
   g_FileSystemGetLastWriteTimeHigh = Win32File_GetLastWriteTimeHigh;
   g_FileSystemGetVolumeSerialNumber = Win32Drive_GetVolumeSerialNumber;
@@ -617,15 +617,16 @@ uint32_t Win32File_RemoveDirectory(uint16_t *path)
 
 
 /* Address: 0x005765F0.
-   Returns the free (EAX) and total (EDX) bytes of a drive, both 0 when the query fails. The products
-   are 32-bit, so drives above 4 GiB wrap.
+   Returns the free and total bytes of a drive, both 0 when the query fails. The products are 32-bit, so
+   drives above 4 GiB wrap.
 */
-Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode32 driveLetter)
+Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLetter)
 
 {
   BOOL gotDiskSpace;
   int freeBytes;
   int totalBytes;
+  Win32DriveCapacity capacity;
 
   g_Win32DriveRootPathScratchA[0] = (char)driveLetter; /* "X:\" root path scratch */
   gotDiskSpace =
@@ -641,7 +642,9 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
     totalBytes = g_Win32DiskTotalClustersScratch *
                  g_Win32DiskBytesPerSectorScratch * g_Win32DiskSectorsPerClusterScratch;
   }
-  return (uint64_t)(uint32_t)totalBytes << 32 | (uint64_t)(uint32_t)freeBytes; /* EDX = total, EAX = free */
+  capacity.freeBytes = (uint32_t)freeBytes;
+  capacity.totalBytes = (uint32_t)totalBytes;
+  return capacity;
 }
 
 /* Address: 0x005766B0.

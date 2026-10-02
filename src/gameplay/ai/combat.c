@@ -74,7 +74,7 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
   ArmyRuntimeSlot *targetArmy;
   AiTargetWorkspaceEntry *targetCandidateRecordCursor;
   ArmyRuntimeSlot **collectedArmyCursor;
-  ModelRuntimeScaleRatioRegisterPairQ12 collectedHierarchyScaleRatioPairQ12;
+  Q12 collectedConditionRatioQ12;
   ModelRuntimeSlot *candidateTargetModelRuntime;
 
   if (1 < g_AiCollectedEntityCount) {
@@ -85,16 +85,13 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
        "&->modelNodeRuntime" (offset 4) steps to the next one. */
     targetArmy = (ArmyRuntimeSlot *)g_AiWorkspace14CollectedArmies;
     do {
-      collectedHierarchyScaleRatioPairQ12 =
-           ModelRuntime_QueryHierarchyScaleRatioQ12Regs
+      collectedConditionRatioQ12 =
+           ModelRuntime_QueryHierarchyConditionRatioQ12
                      ((RuntimeModelFactionPrefix *)(targetArmy->modelRuntimeOrSavedOffset).modelRuntime);
       assignedCommandGeneration = g_AiCommandGenerationCandidateBase;
-      THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4) =
-           (uint32_t)(collectedHierarchyScaleRatioPairQ12 >> 32);
-      if ((THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4) != 0) &&
-         (accumulatedScaleRatio = accumulatedScaleRatio + (uint32_t)((int)collectedHierarchyScaleRatioPairQ12 << 8) /
-                          THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4),
-          accumulatedScaleRatio > AI_UNIT_GROUP_ATTACK_STRENGTH - 1)) {
+      accumulatedScaleRatio =
+           accumulatedScaleRatio + (uint32_t)(collectedConditionRatioQ12 << 8) / (uint32_t)Q12_ONE;
+      if (accumulatedScaleRatio > AI_UNIT_GROUP_ATTACK_STRENGTH - 1) {
         remainingOrBestScore = 0;
         targetCandidateRecordsRemaining = g_AiWorkspace07Count;
         targetCandidateRecordCursor = g_AiWorkspace07Targets;
@@ -251,8 +248,8 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
    masks, a faction relation that fits the search (not friendly for sourceClassCount > 0, friendly otherwise,
    where only damaged candidates count) and a horizontal distance within the source radius (+0x4C) plus 2.0.
    The score adds weighted terms for the remaining clearance, the class base score, the two armies' class
-   counters and the condition deficit (1.0 - ModelRuntime_QueryHierarchyScaleRatioQ12Regs, whose EDX is the
-   Q12 unity the counter and deficit terms are divided by); a score above currentBestScore is then
+   counters and the condition deficit (1.0 - ModelRuntime_QueryHierarchyConditionRatioQ12; the counter and
+   deficit terms are divided by the Q12 unity); a score above currentBestScore is then
    quartered when the weapon line-of-fire test returns true, and dropped unless the source definition's +0x18
    is set. The class definitions are read through two dereferences (definition+0x5C), i.e. the live type.
    Called by AiCombatTarget_SelectBestCandidate and ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate.
@@ -273,7 +270,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   ModelRuntimeNode *candidateAimModelNode;
   int classBaseScore;
   bool testPassed;
-  ModelRuntimeScaleRatioRegisterPairQ12 hierarchyScaleRatioPairQ12;
+  Q12 conditionRatioQ12;
   uint32_t candidateScore;
   uint32_t sourceRadiusQ12;
   ModelRuntimeSlot *sourceModelRuntime;
@@ -336,25 +333,21 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
                g_AiCombatTargetClassBaseScores
                  [candidateDefinition->runtimeClassId] *
                g_AiCombatTargetClassBaseScoreMultiplier;
-          hierarchyScaleRatioPairQ12 =
-               ModelRuntime_QueryHierarchyScaleRatioQ12Regs
+          conditionRatioQ12 =
+               ModelRuntime_QueryHierarchyConditionRatioQ12
                          ((RuntimeModelFactionPrefix *)candidateArmyRuntime);
-          THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4) = (uint32_t)(hierarchyScaleRatioPairQ12 >> 32);
-          /* low half = condition ratio, high half = Q12 unity; a friendly search needs condition < 1.0 */
-          if ((-1 < sourceClassCount) ||
-             ((uint32_t)hierarchyScaleRatioPairQ12 < THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4))) {
+          /* a friendly search needs condition < 1.0 (unsigned compare as in the original) */
+          if ((-1 < sourceClassCount) || ((uint32_t)conditionRatioQ12 < (uint32_t)Q12_ONE)) {
             candidateScore =
                  (int)(((int)radialClearanceQ12 * clearanceSquaredOrWeight) / (int64_t)(int)sourceRadiusQ12) +
                 classBaseScore +
                  (int)(((int64_t)g_AiCombatTargetSourceCounterCountWeight * (int64_t)reachDeltaOrSourceCounter) /
-                      (int64_t)(int)THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4)) +
+                      (int64_t)Q12_ONE) +
                  (int)(((int64_t)g_AiCombatTargetCandidateCounterCountWeight * (int64_t)deltaXOrCandidateCounter) /
-                      (int64_t)(int)THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4)) +
+                      (int64_t)Q12_ONE) +
                  (int)(((int64_t)g_AiCombatTargetScaleDeficitWeight *
-                       (int64_t)
-                       (int)(THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4) -
-                            (uint32_t)hierarchyScaleRatioPairQ12)) /
-                      (int64_t)(int)THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4));
+                       (int64_t)(int)((uint32_t)Q12_ONE - (uint32_t)conditionRatioQ12)) /
+                      (int64_t)Q12_ONE);
             if (reachDeltaOrSourceCounter == 0) {
               candidateScore = candidateScore >> 2;
             }

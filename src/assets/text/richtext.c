@@ -18,16 +18,16 @@
 
 /* Address: 0x0041D300.
    Measures a text block wrapped to maximumWidth: flattens the stream into the font runtime buffer, sets the
-   style's font and colour, and sums the heights of all wrapped lines. Returns maximumWidth itself in EAX (not
-   the widest line) and the total height in EDX.
+   style's font and colour, and sums the heights of all wrapped lines. Returns maximumWidth itself as the width
+   (not the widest line) and the total height.
 */
-RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
+RichTextExtent RichTextCommandStream_MeasureWrappedBlock
           (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth)
 
 {
   uint32_t colorPaletteIndex;
   int totalHeight;
-  RichTextExtentRegs blockExtent;
+  RichTextExtent blockExtent;
   UiPixelExtent lineHeight;
 
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
@@ -94,12 +94,12 @@ bool RichTextCommandStream_DrawSingleLine
   int glyphAdvance;
   uint32_t imageWidth;
   uint16_t *commandCursor;
-  RichTextExtentRegs lineExtent;
+  RichTextExtent lineExtent;
   GraphicsTextureLogicalSize imageSize;
   uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
-  lineExtent = RichTextCommandStream_MeasureRegs(packedStyle,commandStream);
+  lineExtent = RichTextCommandStream_MeasureLine(packedStyle,commandStream);
   alignShiftOrPaletteIndex = lineExtent.widthPixels;
   lineBaselineY = lineTopY + lineExtent.heightPixels;
   if ((packedStyle & TEXT_STYLE_ALIGN_RIGHT) != 0) {
@@ -1054,10 +1054,10 @@ bool RichTextCommandStream_CopyExpanded
 
 /* Address: 0x0041CF30.
    Measures one line of a rich-text command stream (up to its end or the first line break), following nested
-   streams and font changes and including inline images. Returns the total width in EAX and the tallest glyph or
-   image in EDX; used to align a line before it is drawn.
+   streams and font changes and including inline images. Returns the total width and the height of the tallest
+   glyph or image; used to align a line before it is drawn.
 */
-RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *commandStream)
+RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,uint16_t *commandStream)
 
 {
   /* Rewritten from the assembly (0x0041CF30-0x0041D0E0). Command 0x18 enters a nested stream and pushes
@@ -1065,7 +1065,7 @@ RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedSty
      Ghidra turned that stack into a counter, so nested text was measured forever. */
   uint16_t *returnStack[RICHTEXT_NESTING_LIMIT];
   int nesting = 0;
-  RichTextExtentRegs extent;
+  RichTextExtent extent;
   uint32_t glyphWidth;
   uint32_t glyphLineHeight;
   GraphicsTextureLogicalSize textureSize;

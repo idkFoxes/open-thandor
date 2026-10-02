@@ -143,10 +143,10 @@ void GraphicsBackend_RefreshActiveAdapterNoOp(void);
 
 /* 0x004BCFE0 */
 FixedRollAzimuthElevation
-GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsObject);
+GraphicsObject_ExtractTransformEulerAngles(GraphicsObjectAddress32 graphicsObject);
 
 /* 0x004BD000 */
-FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
+FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAngles
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           GraphicsObjectAddress32 graphicsObject);
 

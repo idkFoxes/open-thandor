@@ -155,7 +155,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge4(TerrainDirectionalScanStep scan
 void FieldGridTerrainOverlayVariantB_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell);
 
 /* 0x00500CE0 */
-void TerrainProjectedQuad_QueueAsTwoTrianglesRegs
+void TerrainProjectedQuad_QueueAsTwoTriangles
           (uint32_t rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
           FrontendModelPointerContext *renderContext);
 

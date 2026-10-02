@@ -50,7 +50,7 @@ void ModelNodeRuntime_UpdateDepthBinMasks(DepthIntervalRadius32 minimumRadius,Mo
 
 /* 0x004BEB80 */
 ModelWorldPoint
-ModelNodeRuntime_TransformLocalPointRegs
+ModelNodeRuntime_TransformLocalPoint
           (ModelPackedPointRecord *localPointRecord,ModelRuntimeNode *modelNodeRuntime);
 
 /* 0x004BEBC0 */
@@ -103,10 +103,10 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node);
 void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime);
 
 /* 0x0052A690 */
-ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime);
+Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntime);
 
 /* 0x0052A6F0 */
-ModelRuntimeActiveTotalMetricRegisterPair ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRuntime);
+ModelHierarchyEnergyDemand ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime);
 
 /* 0x0052AAC0 */
 bool ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetYawAngle16);

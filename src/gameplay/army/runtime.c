@@ -802,7 +802,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
   rootNode = modelRuntime->rootModelNode;
   if (((modelRuntime->classState).classStateBC & 1) != 0) {
     if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
-      localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
+      localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
       (modelRuntime->classLinkState).classState78 = localPoint.xQ12;
       (modelRuntime->classLinkState).classState7C = localPoint.yQ12;
       exitPointPendingFlags = &(modelRuntime->classState).classStateBC;
@@ -876,11 +876,11 @@ void ArmyRuntimeClass_UpdateUnitFactory
       ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,modelRuntime);
       if ((modelRuntime->classLinkState).classState68 <= tickOrSoundIndex) {
         if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
-          localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
+          localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
           secondaryValue = localPoint.yQ12;
           stateValue = localPoint.xQ12;
           if (ModelLookupTable_FindPackedPoint(0,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
-            localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
+            localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
             stateValue = FixedMath_Atan2Angle16(secondaryValue - localPoint.yQ12,stateValue - localPoint.xQ12);
             linkedArmyRuntime = modelRuntime->ownerArmyRuntime;
             createdArmyRuntime = ArmyRuntime_CreateInstanceFromAsset
@@ -955,7 +955,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
       (modelRuntime->classState).behaviorState = ARMY_FACTORY_STATE_WAITING_EXIT;
       if (ModelLookupTable_FindPackedPoint(1,5,(rootNode->modelPayload).modelResource,&packedPoint)) {
         linkedArmyRuntime = (modelRuntime->classLinkState).armyLinkOrState.armyRuntime;
-        localPoint = ModelNodeRuntime_TransformLocalPointRegs(packedPoint,rootNode);
+        localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,rootNode);
         targetWorldXQ12 = localPoint.yQ12;
         linkedModelRuntime = (linkedArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
         ArmyRuntime_StartMoveCommandWithAuxiliaryValues
@@ -1759,7 +1759,7 @@ ArmyRuntime_ResolveShotAimPoint
                              ((ArmyRuntimeSlot *)targetClassRecord)->modelNodeRuntime->worldTransform.translation.y,
                              ((ArmyRuntimeSlot *)targetClassRecord)->movementPosition0Q12 -
                              ((ArmyRuntimeSlot *)targetClassRecord)->modelNodeRuntime->worldTransform.translation.x);
-          leadDirection = FixedMath_DirectionFromAnglesScaledRegs(0,distanceOrAngle,leadDistance);
+          leadDirection = FixedMath_DirectionFromAnglesScaled(0,distanceOrAngle,leadDistance);
           directionY = leadDirection.y;
           distanceOrAngle = leadDirection.x;
           targetEntity = (targetState->common).commandTarget.targetEntity;
@@ -1983,10 +1983,10 @@ void ArmyRuntime_ShutdownPoolAndGraphics(void)
 /* Address: 0x0051D960.
    Savegame writing (called by the in-game save in ui/ingame/runtime): turns the four pointers of every used
    army slot (model runtime, model node, command target, +0x98) into offsets and zeroes the unused slots, so the
-   pool can be written as it is. Returns the pool base in EAX and its byte size 0x48000 in EDX;
+   pool can be written as it is (the caller then writes g_ArmyRuntimeSlots, ARMY_RUNTIME_SLOT_COUNT slots);
    ArmyRuntimePool_RebaseAfterLoad is the counterpart.
 */
-RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs(void)
+void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void)
 
 {
   uint32_t assignedTargetOffset;
@@ -2007,8 +2007,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
       }
       slotsRemaining = slotsRemaining - 1;
       if (slotsRemaining == 0) {
-        /* EDX = pool byte size, EAX = pool base. */
-        return (uint64_t)(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot)) << 32 | (uint32_t)g_ArmyRuntimeSlots;
+        return;
       }
     }
     savedModelRuntimeOffset = (ModelRuntimeSlot *)
@@ -2029,13 +2028,12 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
     slotCursor = slotCursor + 1;
     slotsRemaining = slotsRemaining - 1;
   } while (slotsRemaining != 0);
-  return (uint64_t)(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot)) << 32 | (uint32_t)g_ArmyRuntimeSlots;
 }
 
 
 /* Address: 0x0051D9F0.
    After a savegame load: turns the saved offsets in every used army slot (model node != 0) back into
-   pointers, the counterpart of ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs. Model runtime (+0x00)
+   pointers, the counterpart of ArmyRuntimePool_ConvertPointersToOffsetsForSave. Model runtime (+0x00)
    and model node (+0x04) are rebased by their pools' deltas; the army references (+0x1C, +0x98) are saved
    as pointer - (pool base - 1), so 0 stays NULL.
 */
@@ -2363,26 +2361,25 @@ void ArmyRuntimeClass_UpdateWaterPositionedSounds(WorldRuntimeContext *worldRunt
 /* Address: 0x00526FE0.
    Segment meter of the selection panel (called directly by gameplay/selection/runtime with a model runtime):
    filled segments from +0x6C of the passed runtime (the completed linked assets of a class-22 pad), total
-   segments from +0xC4 of its definition (the linked-child slot capacity). Returned in EBX/ECX.
-   Original register convention: result in EBX and ECX; EAX and EDX preserved.
+   segments from +0xC4 of its definition (the linked-child slot capacity).
 */
-ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeterRegs(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime)
+ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeter(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime)
 
 {
-  ArmySegmentMeter metricRegs;
-  
-  metricRegs.totalSegments = linkedChildRuntime->modelDefinition->linkedChildSlotCapacity;
-  metricRegs.filledSegments = (linkedChildRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount;
-  return metricRegs;
+  ArmySegmentMeter slotMeter;
+
+  slotMeter.totalSegments = linkedChildRuntime->modelDefinition->linkedChildSlotCapacity;
+  slotMeter.filledSegments = (linkedChildRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount;
+  return slotMeter;
 }
 
 
 /* Address: 0x00527150.
-   Returns in EBX which of the three linked-child asset ids (g_ArmyLinkedChildAssetIdSlot0/1/2 as bits 1/2/4)
+   Returns which of the three linked-child asset ids (g_ArmyLinkedChildAssetIdSlot0/1/2 as bits 1/2/4)
    occur among the army's 13 attachment asset-id slots (dwords from +0x78); the selection panel ORs these
    masks over all selected armies.
 */
-int ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime)
+int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime)
 
 {
   int attachmentAssetId;
@@ -2595,7 +2592,7 @@ bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
   if (remainingEntries == 0) {
     return true;
   }
-  launchPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNode);
+  launchPoint = ModelNodeRuntime_TransformLocalPoint(localPointRecord,modelNode);
   launchWorldZQ12 = launchPoint.zQ12;
   launchWorldYQ12 = launchPoint.yQ12;
   ShotRuntimePool_CreateProjectileFromDefinition
@@ -3268,7 +3265,7 @@ bool ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime
     modelNodeRuntime = sourceModelRuntime->rootModelNodeOrSavedOffset.modelNode;
     candidateNode = candidateModelRuntime->rootModelNodeOrSavedOffset.modelNode;
     if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
-      anchorPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorRecord,modelNodeRuntime);
+      anchorPoint = ModelNodeRuntime_TransformLocalPoint(anchorRecord,modelNodeRuntime);
       anchorDistance = FixedMath_Length2(anchorPoint.yQ12 - (candidateNode->worldTransform).translation.y,
                                 anchorPoint.xQ12 - (candidateNode->worldTransform).translation.x);
       if ((int)anchorDistance <= (int)(candidateRadius + 3 * Q12_ONE / 4)) {
@@ -3554,7 +3551,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
   for (radiusOrCount = ((ModelResource *)radiusOrCount)->packedLookupTableEntryCount;
       radiusOrCount != 0; radiusOrCount = radiusOrCount - 1) {
     if (localPointRecord->packedLookupKey == (modelPointOrdinal << 4 | 2)) {
-      localPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,sourceRuntime);
+      localPoint = ModelNodeRuntime_TransformLocalPoint(localPointRecord,sourceRuntime);
       ShotRuntimePool_CreateProjectileFromDefinition
                 (effectFlags,
                  ((ModelRuntimeNode *)sourceRuntime)->runtimePayload.modelRuntime->ownerArmyRuntimeOrSavedOffset.
@@ -3609,7 +3606,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
       if (recordCountOrTable != 0) {
         do {
           if (channelIndex * 16 + 3 == pointRecord->packedLookupKey) {
-            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+            localPoint = ModelNodeRuntime_TransformLocalPoint
                               (pointRecord,(modelRuntime->rootModelNodeOrSavedOffset).modelNode);
             worldXQ12 = localPoint.yQ12;
             modelNode = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
@@ -3650,7 +3647,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
                 (((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->childCount != 0)) &&
                (modelNode = ((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->childNodes[0],
                modelNode != NULL)) {
-              localPoint = ModelNodeRuntime_TransformLocalPointRegs(pointRecord,modelNode);
+              localPoint = ModelNodeRuntime_TransformLocalPoint(pointRecord,modelNode);
               childWorldXQ12 = localPoint.yQ12;
               EffectRuntimePool_CreateInstanceFromDefinition
                         (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
@@ -4114,7 +4111,7 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
     launchWorldYQ12 = (modelNode->worldTransform).translation.y;
     launchWorldZQ12 = (modelNode->worldTransform).translation.z;
     worldContext = worldRuntime;
-    launchDirection = FixedMath_DirectionFromAnglesScaledRegs
+    launchDirection = FixedMath_DirectionFromAnglesScaled
                        ((modelNode->modelPayload).worldRotationAngle1,
                         (modelNode->modelPayload).worldRotationAngle0,Q12_ONE);
     ShotRuntimePool_CreateProjectileFromDefinition
@@ -4182,7 +4179,7 @@ UseRootPosition:
       if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
         modelNode = modelNode->childNodes[0];
       }
-      localPoint = ModelNodeRuntime_TransformLocalPointRegs(emitterPoint,modelNode);
+      localPoint = ModelNodeRuntime_TransformLocalPoint(emitterPoint,modelNode);
       worldZQ12 = localPoint.zQ12;
       worldY = localPoint.yQ12;
       nodeOrWorldX = localPoint.xQ12;

@@ -128,11 +128,11 @@ void __cdecl GridScratch_CopyPrimaryToSecondary(void);
 void GridScratch_SwapPrimarySecondary(void);
 
 /* 0x00533580 */
-void GridScratch_FloodFillConnectedCellsRegs
+void GridScratch_FloodFillConnectedCells
           (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
 /* 0x00533C50 */
-bool GridScratch_TestConnectedReachabilityRecursiveRegs
+bool GridScratch_TestConnectedReachabilityRecursive
           (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell);
 
 /* 0x00533EF0 */

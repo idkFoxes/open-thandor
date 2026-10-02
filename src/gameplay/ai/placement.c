@@ -275,7 +275,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
        MODEL_RUNTIME_CLASS_13)) {
       if (ModelLookupTable_FindPackedPoint
                 (1,5,(modelNodeRuntime->modelPayload).modelResource,&markerRecord)) {
-        markerPoint = ModelNodeRuntime_TransformLocalPointRegs(markerRecord,modelNodeRuntime);
+        markerPoint = ModelNodeRuntime_TransformLocalPoint(markerRecord,modelNodeRuntime);
         markerDistance = FixedMath_Length2(markerPoint.yQ12 - terrainFeatureCell->worldY,
                                   markerPoint.xQ12 - terrainFeatureCell->worldX);
         if ((int)markerDistance < 2 * Q12_ONE + 1) { /* within 2.0 */

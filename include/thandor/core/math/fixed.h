@@ -78,26 +78,25 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BECB0 */
-FixedAzimuthElevationRoll FixedTransform_ComposeEulerAnglesRegs
+FixedAzimuthElevationRoll FixedTransform_ComposeEulerAngles
           (AngleTurn32 inputAngle0,AngleTurn32 inputAngle1,AngleTurn32 inputAngle2,
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2);
 
 /* 0x00484930 */
 FixedLengthAzimuthElevation
-FixedMath_VectorToAnglesAndLength3Regs
-          (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z);
+FixedMath_VectorToAnglesAndLength(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z);
 
 /* 0x00484A10 */
-FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector);
+FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3(GraphicsFixedVec3 *vector);
 
 /* 0x00484B70 */
-FixedLengthAngle FixedMath_Vector2AngleAndLengthRegs
+FixedLengthAngle FixedMath_Vector2AngleAndLength
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1);
 
 /* 0x004BEB20 */
 FixedVectorQ12
-FixedTransform_ApplyEulerRotationToVectorRegs
-          (Q12 inputZQ12,Q12 inputYQ12,Q12 inputXQ12,AngleTurn32 rotationAngle0,
+FixedTransform_RotateVectorByEulerAngles
+          (Q12 inputXQ12,Q12 inputYQ12,Q12 inputZQ12,AngleTurn32 rotationAngle0,
           AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
 /* 0x004BED10 */
@@ -106,21 +105,21 @@ void FixedVector_StepBackwardAlongOwnDirection
           FixedVectorStateAddress32 vectorState);
 
 /* 0x00521FA0 */
-FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12);
+FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12);
 
 /* 0x004849D0 */
 uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z);
 
 /* 0x00484E50 */
-FixedVectorAngles FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform);
+FixedVectorAngles FixedTransform_ExtractForwardAngles(GraphicsFixedMatrix3x4 *transform);
 
 /* 0x004857A0 */
 void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input);
 
 /* 0x004BEC20 */
 FixedVectorQ12
-FixedTransform_RotateDirectionScaledRegs
+FixedTransform_RotateScaledDirection
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
@@ -158,18 +157,18 @@ void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperan
                   GraphicsFixedVec3 *leftOperand);
 
 /* 0x0052AD50 */
-FixedPlanarPointEdxEax8 FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 baseX);
+FixedPlanarPointQ12 FixedTrig_ProjectPlanarPoint(Q12 baseX,Q12 baseY,Q12 distance,AngleTurn32 angle16);
 
 /* 0x004BEC50 */
-FixedVectorQ12 FixedTransform_RotateDirectionScaledCoreRegs
+FixedVectorQ12 FixedTransform_RotateScaledDirectionCore
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
 /* 0x00484A70 */
-FixedElevationAzimuth FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector);
+FixedElevationAzimuth FixedMath_VectorToAnglesVec3(GraphicsFixedVec3 *vector);
 
 /* 0x00484E00 */
-FixedRollAzimuthElevation FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform);
+FixedRollAzimuthElevation FixedTransform_ExtractEulerAngles(GraphicsFixedMatrix3x4 *transform);
 
 /* 0x00484AC0 */
 uint32_t FixedMath_LengthVec3(GraphicsFixedVec3 *vector);
@@ -178,13 +177,11 @@ uint32_t FixedMath_LengthVec3(GraphicsFixedVec3 *vector);
 uint32_t FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y);
 
 /* 0x00484770 */
-FixedDirection
-FixedMath_DirectionFromAnglesScaledRegs
-          (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 scale);
+FixedDirection FixedMath_DirectionFromAnglesScaled(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
+          FixedMathScale32 scale);
 
 /* 0x004847E0 */
-FixedDirection
-FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
+FixedDirection FixedMath_DirectionFromAnglesQ28(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x00484840 */
 void FixedMath_WriteDirectionScaled(GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
@@ -195,7 +192,7 @@ void FixedTransform_Compose(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x
           GraphicsFixedMatrix3x4 *outerTransform);
 
 /* 0x00484990 */
-FixedVectorAngles FixedMath_VectorToAngles3Regs
+FixedVectorAngles FixedMath_VectorToAngles
           (FixedMathVectorComponent32 z,FixedMathVectorComponent32 y,FixedMathVectorComponent32 x);
 
 /* 0x00484E70 */

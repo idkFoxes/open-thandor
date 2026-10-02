@@ -294,62 +294,52 @@ bool ModelRuntime_RaycastCandidateListNearest
 
 
 /* Address: 0x0051C240.
-   Returns the condition ratio (Q12) of an army's model hierarchy: the EAX half of
-   ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs; EDX is preserved. No caller in the C code (function map only).
+   Returns the condition ratio (Q12) of an army's model hierarchy (ModelRuntimeHierarchy_ComputeConditionRatioQ12).
+   No caller in the C code (function map only).
 */
 Q12 ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix *runtimeEntry)
 
 {
-  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatioPairQ12;
-
-  scaleRatioPairQ12 = ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(runtimeEntry->modelRuntime);
-  return (Q12)scaleRatioPairQ12;
+  return ModelRuntimeHierarchy_ComputeConditionRatioQ12(runtimeEntry->modelRuntime);
 }
 
 
 /* Address: 0x0051C260.
-   Returns ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs (EDX:EAX) for the model runtime hierarchy of a
-   runtime entry (an army).
+   Returns the condition ratio (Q12, Q12_ONE = full condition) of the model hierarchy of a runtime entry (an
+   army); same result as ModelRuntime_QueryHierarchyScaleRatioQ12 (the original differs only in the registers
+   it leaves set).
 */
-ModelRuntimeScaleRatioRegisterPairQ12
-ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix *runtimeEntry)
+Q12 ModelRuntime_QueryHierarchyConditionRatioQ12(RuntimeModelFactionPrefix *runtimeEntry)
 
 {
-  return ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(runtimeEntry->modelRuntime);
+  return ModelRuntimeHierarchy_ComputeConditionRatioQ12(runtimeEntry->modelRuntime);
 }
 
 
 /* Address: 0x0051C280.
-   Returns the active metric of an army's model hierarchy (the EAX half of
-   ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs); the in-game selection detail shows it divided by 16
-   as the energy value. EDX is preserved.
+   Returns the active energy demand of an army's model hierarchy (ModelRuntimeHierarchy_ComputeEnergyDemand);
+   the in-game selection detail shows it divided by 16 as the energy value.
 */
 int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeActiveTotalMetricRegisterPair activeHierarchyMetricPair;
+  ModelHierarchyEnergyDemand energyDemand;
 
-  activeHierarchyMetricPair =
-       ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs
-                 (armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
-  return (int)activeHierarchyMetricPair;
+  energyDemand =
+       ModelRuntimeHierarchy_ComputeEnergyDemand(armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
+  return (int)energyDemand.activeQ4;
 }
 
 
 /* Address: 0x0051C2A0.
-   Returns the energy demand of an army's model hierarchy as ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs
-   does: EAX the active part, EDX the total. The selection panel (src/gameplay/selection/runtime.c) draws it as a
-   stepped meter.
+   Returns the energy demand of an army's model hierarchy (ModelRuntimeHierarchy_ComputeEnergyDemand): the
+   active part and the total. The selection panel (src/gameplay/selection/runtime.c) draws it as a stepped meter.
 */
-ModelRuntimeActiveTotalMetricRegisterPair
-ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix *runtimeEntry)
+ModelHierarchyEnergyDemand
+ModelRuntime_QueryHierarchyEnergyDemand(RuntimeModelFactionPrefix *runtimeEntry)
 
 {
-  ModelRuntimeActiveTotalMetricRegisterPair activeTotalMetrics;
-
-  activeTotalMetrics =
-       ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(runtimeEntry->modelRuntime);
-  return activeTotalMetrics;
+  return ModelRuntimeHierarchy_ComputeEnergyDemand(runtimeEntry->modelRuntime);
 }
 
 
@@ -730,7 +720,7 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
       modelPointRecordsRemaining != 0; modelPointRecordsRemaining--)
   {
     if ((localPointRecord->packedLookupKey & 0xf) == MODEL_POINT_CLASS_SHOT) {
-      launchPointWorld = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
+      launchPointWorld = ModelNodeRuntime_TransformLocalPoint(localPointRecord,modelNodeRuntime);
       ShotRuntimePool_CreateProjectileFromDefinition
                 (targetModelReference,
                  (ArmyRuntimeSlot *)

@@ -547,7 +547,7 @@ void UiConditionalActionControl_DrawClipped
   uint32_t lineIndexOrCount;
   int innerWidthOrRight;
   bool accessFailed;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   GraphicsTextureLogicalSize cornerSize;
   GraphicsSubresourceIndex backgroundSubresource;
 
@@ -618,7 +618,7 @@ void UiConditionalActionControl_DrawClipped
     if (innerHeightOrBottom < clipBottom) {
       clipBottom = innerHeightOrBottom;
     }
-    textExtent = RichTextCommandStream_MeasureRegs(g_UiTextStyleNormal,control->textLines[0]);
+    textExtent = RichTextCommandStream_MeasureLine(g_UiTextStyleNormal,control->textLines[0]);
     if (backgroundSubresource == UI_TEXT_BOX_SUBRESOURCE_INTERIOR) {
       lineIndexOrCount = 0;
       do {

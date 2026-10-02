@@ -191,7 +191,7 @@ void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeC
 void ArmyRuntime_ShutdownPoolAndGraphics(void);
 
 /* 0x0051D960 */
-RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs(void);
+void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void);
 
 /* 0x0051D9F0 */
 void ArmyRuntimePool_RebaseAfterLoad(void);
@@ -212,10 +212,10 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (WorldRuntimeContex
 void ArmyRuntimeClass_UpdateWaterPositionedSounds(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00526FE0 */
-ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeterRegs(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime);
+ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeter(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime);
 
 /* 0x00527150 */
-int ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime);
+int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime);
 
 /* 0x00527FE0 */
 void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);

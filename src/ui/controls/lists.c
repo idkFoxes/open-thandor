@@ -36,7 +36,7 @@ bool UiTimedListControl_HandleKeyboardNavigation
   int rowIndex;
   int stepCounter;
   bool handled;
-  UiScrollableContentDimensionsEdxEax8 contentSize;
+  UiScrollableViewportSize viewportSize;
 
   /* A record block is a header record (count, parent block, parent record, ANCESTOR_BOUNDARY flag)
      followed by count row records; an expanded row (flags 1|2) links its child block. */
@@ -65,8 +65,8 @@ bool UiTimedListControl_HandleKeyboardNavigation
     if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
       /* Page: one step less than the rows visible in the viewport (unsigned 32-bit DIV).
          NOTE: exactly one visible row gives 0 steps, which the do/while wraps like the original. */
-      contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
-      rowAccumulator = (int)((uint32_t)(contentSize >> 32) / control->rowHeight);
+      viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
+      rowAccumulator = (int)(viewportSize.height / control->rowHeight);
       stepCounter = rowAccumulator - 1;
       if (rowAccumulator < 1) {
         stepCounter = 1;
@@ -100,8 +100,8 @@ bool UiTimedListControl_HandleKeyboardNavigation
   case KEYBOARD_KEY_CODE_PAGE_DOWN:
   case KEYBOARD_KEY_CODE_DOWN:
     if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
-      contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
-      rowAccumulator = (int)((uint32_t)(contentSize >> 32) / control->rowHeight);
+      viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
+      rowAccumulator = (int)(viewportSize.height / control->rowHeight);
       stepCounter = rowAccumulator - 1;
       if (rowAccumulator < 1) {
         stepCounter = 1;
@@ -214,7 +214,7 @@ bool UiListControl_HandleKeyboardNavigation
   int rowValue;
   uint32_t targetRowIndex;
   bool handled;
-  UiScrollableContentDimensionsEdxEax8 contentSize;
+  UiScrollableViewportSize viewportSize;
   
   previousSelectedSlot = control->selectedRowSlot;
   if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) != 0) { /* not a plain character */
@@ -229,20 +229,18 @@ bool UiListControl_HandleKeyboardNavigation
       control->selectedRowSlot = control->rowSlots + (control->rowCount - 1);
     }
     else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
-      contentSize = UiScrollableControl_QueryContentSizeRegs
-                        ((UiScrollableControl *)(control->base).parent);
+      viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
       rowValue = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) -
-              ((int)((contentSize >> 32) / (uint64_t)control->rowHeight) - 1);
+              ((int)(viewportSize.height / control->rowHeight) - 1);
       if (rowValue < 0) {
         rowValue = 0;
       }
       control->selectedRowSlot = control->rowSlots + rowValue;
     }
     else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
-      contentSize = UiScrollableControl_QueryContentSizeRegs
-                        ((UiScrollableControl *)(control->base).parent);
+      viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
       targetRowIndex = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) +
-              (int)((contentSize >> 32) / (uint64_t)control->rowHeight) - 1;
+              (int)(viewportSize.height / control->rowHeight) - 1;
       if (control->rowCount <= targetRowIndex) {
         targetRowIndex = control->rowCount - 1;
       }
@@ -1042,8 +1040,8 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
   }
   x = x - (int)list->iconColumnPixels;
   if (x > 0) {
-    RichTextExtentRegs extent =
-         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
+    RichTextExtent extent =
+         RichTextCommandStream_MeasureLine(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
     x = x - (int)extent.widthPixels;
     if ((x > 0) && (x > 6)) {
       return;
@@ -2765,7 +2763,7 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
   void **rowSlot;
   uint16_t *commandStream;
   bool accessFailed;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   GraphicsTextureLogicalSize textureSize;
   
   if (control->rowCount != 0) {
@@ -2821,7 +2819,7 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
               if (columnWidth < 0) {
                 columnX = columnX - columnWidth;
                 commandStream = (uint16_t *)(rowRecord + column->rowTextOffset);
-                textExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,commandStream);
+                textExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,commandStream);
                 RichTextCommandStream_DrawSingleLine
                           (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,commandStream,
                            rowTop + 1 + (control->base).top,
@@ -3044,8 +3042,8 @@ void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int cl
                  g_FramebufferAccess);
       x = x + (int)list->iconColumnPixels - control->left;
       if (record == list->base.selectedRecord) {
-        RichTextExtentRegs extent =
-             RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
+        RichTextExtent extent =
+             RichTextCommandStream_MeasureLine(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
         int width = (int)extent.widthPixels + 6;
         if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
           GraphicsTextureLogicalSize cap =
@@ -3165,7 +3163,7 @@ void UiCatalogEntryControl_DrawClipped
   FactionArmyAssetCount assetSlotIndex;
   int factionIndexOrPercent;
   bool accessFailed;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint32_t backgroundSubresource;
   GraphicsTextureSourceAsset *spriteTextureSource;
   SoftwareFramebufferAccess *framebuffer;
@@ -3224,7 +3222,7 @@ void UiCatalogEntryControl_DrawClipped
                      g_UiCatalogEntryRichTextScratchUtf16 + 1);
   /* ' ' and the terminator */
   *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
-  textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
+  textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
              ((control->command).sprite.selectable.base.bottom - textExtent.heightPixels) - 2,
@@ -3288,7 +3286,7 @@ void UiCatalogEntryControl_DrawClipped
         *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
         /* ' ' and the terminator */
         *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' ';
-        textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,
+        textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,
                                                        g_UiCatalogEntryRichTextScratchUtf16);
         RichTextCommandStream_DrawSingleLine
                   (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,
@@ -3379,7 +3377,7 @@ void UiCatalogEntryControl_DrawClipped
     *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
     /* ' ' and the terminator */
     *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' ';
-    textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
+    textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
     RichTextCommandStream_DrawSingleLine
               (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
                (control->command).sprite.selectable.base.top + 2,
@@ -3540,25 +3538,21 @@ UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *
 
 
 /* Address: 0x004B9460.
-   Returns the size of the view of a scroll frame (viewportWidth in EAX, viewportHeight in EDX), or 0/0 when
-   control is not a scroll frame. The lists use it on their parent to page by a view's height.
+   Returns the size of the view of a scroll frame, or 0/0 when control is not a scroll frame. The lists use it
+   on their parent to page by a view's height.
 */
-UiScrollableContentDimensionsEdxEax8
-UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control)
+UiScrollableViewportSize UiScrollableControl_GetViewportSize(UiScrollableControl *control)
 
 {
-  UiPixelExtent contentWidth;
-  UiPixelExtent contentHeight;
-  
-  contentWidth = 0;
-  contentHeight = 0;
+  UiScrollableViewportSize viewportSize;
+
+  viewportSize.width = 0;
+  viewportSize.height = 0;
   if ((control->base).vtable == &g_UiScrollableControlVtable) {
-    contentWidth = control->viewportWidth;
-    contentHeight = control->viewportHeight;
+    viewportSize.width = control->viewportWidth;
+    viewportSize.height = control->viewportHeight;
   }
-  /* EDX:EAX = height:width */
-  return ((UiScrollableContentDimensionsEdxEax8)contentHeight << 32) |
-         (UiScrollableContentDimensionsEdxEax8)contentWidth;
+  return viewportSize;
 }
 
 /* Address: 0x004BC1C0.
@@ -3593,8 +3587,8 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
   widest = 0;
   depth = 0;
   while (remaining != 0) {
-    RichTextExtentRegs extent =
-         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
+    RichTextExtent extent =
+         RichTextCommandStream_MeasureLine(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
     width = extent.widthPixels + control->iconColumnPixels +
             control->indentPixelsPerLevel * (uint32_t)depth;
     record++;

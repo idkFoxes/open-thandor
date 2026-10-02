@@ -605,7 +605,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                      GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT;
         if (((-1 < countOrWaterDeltaOrColumn) && (angleOrCountOrRow = (int)(scaledRowTerm * 2 + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT, -1 < angleOrCountOrRow)) &&
            ((countOrWaterDeltaOrColumn < (int)g_GridScratchWidth && (angleOrCountOrRow < (int)g_GridScratchHeight)))) {
-          GridScratch_FloodFillConnectedCellsRegs
+          GridScratch_FloodFillConnectedCells
                     (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT30 | GRID_SCRATCH_TERRAIN_CLASS_BIT29 |
                      GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_TRAVERSAL_VISITED,g_GridScratchWidth << 3,
                      g_GridScratchPrimary + angleOrCountOrRow * g_GridScratchWidth + countOrWaterDeltaOrColumn);
@@ -641,7 +641,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
                      GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT;
         if ((((-1 < countOrWaterDeltaOrColumn) && (angleOrCountOrRow = (int)(scaledRowTerm * 2 + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT, -1 < angleOrCountOrRow)) &&
             (countOrWaterDeltaOrColumn < (int)g_GridScratchWidth)) && (angleOrCountOrRow < (int)g_GridScratchHeight)) {
-          GridScratch_FloodFillConnectedCellsRegs
+          GridScratch_FloodFillConnectedCells
                     (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT27 | GRID_SCRATCH_TERRAIN_CLASS_BIT26 |
                      GRID_SCRATCH_TERRAIN_CLASS_BIT25 | GRID_SCRATCH_TRAVERSAL_VISITED,g_GridScratchWidth << 3,
                      g_GridScratchPrimary + angleOrCountOrRow * g_GridScratchWidth + countOrWaterDeltaOrColumn);
@@ -1359,8 +1359,8 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
 /* Address: 0x00533D60.
    Tests whether a mover blocked by traversalMask can get from the source world point to the target world
    point: converts both to primary scratch cells, clears every visited bit and flood-fills from the source
-   (GridScratch_TestConnectedReachabilityRecursiveRegs), treating map-edge and visited cells as walls. Returns
-   true (CF set) when the fill never reaches the target cell.
+   (GridScratch_TestConnectedReachabilityRecursive), treating map-edge and visited cells as walls. Returns
+   true when the fill never reaches the target cell.
 */
 bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
           GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
@@ -1416,7 +1416,7 @@ bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorld
     cellsRemaining = cellsRemaining - 16;
   } while (cellsRemaining != 0);
   /* the row stride is passed in bytes (8-byte GridScratchCell records) */
-  unreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
+  unreachable = GridScratch_TestConnectedReachabilityRecursive
                     (traversalMask | (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED),scratchWidth << 3,
                      &targetCell->stateMask,&sourceCell->stateMask);
   return unreachable;
@@ -1577,7 +1577,7 @@ void GridScratch_SwapPrimarySecondary(void)
    traversalMask bit as visited, then recurses into every such cell of the row above and the row below that span.
    A blocked or already visited start cell does nothing.
 */
-void GridScratch_FloodFillConnectedCellsRegs
+void GridScratch_FloodFillConnectedCells
           (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
@@ -1599,13 +1599,13 @@ void GridScratch_FloodFillConnectedCellsRegs
     spanLeftOrPrevRowCursor = (GridScratchCell *)((uint8_t *)(spanLeftOrPrevRowCursor + 1) - rowStrideBytes);
     do {
       if ((spanLeftOrPrevRowCursor->stateMask & traversalMask) == 0) {
-        GridScratch_FloodFillConnectedCellsRegs(traversalMask,rowStrideBytes,spanLeftOrPrevRowCursor);
+        GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,spanLeftOrPrevRowCursor);
       }
       spanLeftOrPrevRowCursor = spanLeftOrPrevRowCursor + 1;
     } while (spanLeftOrPrevRowCursor <= (GridScratchCell *)((uint8_t *)currentCell - rowStrideBytes));
     do {
       if ((nextRowCursor->stateMask & traversalMask) == 0) {
-        GridScratch_FloodFillConnectedCellsRegs(traversalMask,rowStrideBytes,nextRowCursor);
+        GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,nextRowCursor);
       }
       nextRowCursor = nextRowCursor + 1;
     } while (nextRowCursor < (GridScratchCell *)((uint8_t *)currentCell - rowStrideBytes + rowStrideBytes * 2));
@@ -1616,12 +1616,12 @@ void GridScratch_FloodFillConnectedCellsRegs
 
 /* Address: 0x00533C50.
    Scanline flood fill that stops as soon as it reaches targetCell (the same walk as
-   GridScratch_FloodFillConnectedCellsRegs, on the stateMask words of 8-byte scratch cells): marks the run of
+   GridScratch_FloodFillConnectedCells, on the stateMask words of 8-byte scratch cells): marks the run of
    open cells around currentCell as visited, then recurses into the open cells of the neighbouring rows,
    searching the row on the side of the target first. Cells with any traversalMask bit are walls. Returns false
-   (CF clear) when the target was reached, true when this region does not contain it.
+   when the target was reached, true when this region does not contain it.
 */
-bool GridScratch_TestConnectedReachabilityRecursiveRegs
+bool GridScratch_TestConnectedReachabilityRecursive
           (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell)
 
 {
@@ -1659,12 +1659,12 @@ bool GridScratch_TestConnectedReachabilityRecursiveRegs
     secondRowCursor = (uint32_t *)((uint8_t *)spanLeftBoundary + rowStrideBytes);
     firstRowCursor = (uint32_t *)((uint8_t *)(spanLeftBoundary + 2) - rowStrideBytes);
     while (((*firstRowCursor & traversalMask) != 0 ||
-           (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
+           (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursive
                               (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
       firstRowCursor = firstRowCursor + 2;
       if ((uint32_t *)((uint8_t *)currentCell - rowStrideBytes) < firstRowCursor) {
         while (((*secondRowCursor & traversalMask) != 0 ||
-               (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
+               (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursive
                                   (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
           secondRowCursor = secondRowCursor + 2;
           if ((uint32_t *)((uint8_t *)currentCell - rowStrideBytes + rowStrideBytes * 2) <= secondRowCursor) {
@@ -1680,12 +1680,12 @@ bool GridScratch_TestConnectedReachabilityRecursiveRegs
   secondRowCursor = (uint32_t *)((uint8_t *)spanLeftCell - rowStrideBytes);
   firstRowCursor = (uint32_t *)((uint8_t *)spanLeftBoundary + rowStrideBytes);
   while (((*firstRowCursor & traversalMask) != 0 ||
-         (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
+         (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursive
                             (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
     firstRowCursor = firstRowCursor + 2;
     if ((uint32_t *)((uint8_t *)currentCell + rowStrideBytes) <= firstRowCursor) {
       while (((*secondRowCursor & traversalMask) != 0 ||
-             (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
+             (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursive
                                 (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
         secondRowCursor = secondRowCursor + 2;
         if ((uint32_t *)((uint8_t *)currentCell + rowStrideBytes + rowStrideBytes * -2) < secondRowCursor) {

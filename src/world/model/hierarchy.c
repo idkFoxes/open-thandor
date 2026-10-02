@@ -189,10 +189,10 @@ void ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime
   uint32_t viewFacingAngle16;
   FixedVectorQ12 viewRelativeVector;
 
-  viewRelativeVector = FixedTransform_ApplyEulerRotationToVectorRegs
-                    (modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z,
+  viewRelativeVector = FixedTransform_RotateVectorByEulerAngles
+                    (modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x,
                      modelNodeRuntime->worldTransform.translation.y - g_ViewOriginFixed.y,
-                     modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x,0,
+                     modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z,0,
                      modelNodeRuntime->modelPayload.worldRotationAngle1,
                      modelNodeRuntime->modelPayload.worldRotationAngle0 - FIXED_ANGLE16_HALF_TURN);
   viewFacingAngle16 = FixedMath_Atan2Angle16(viewRelativeVector.yQ12,viewRelativeVector.xQ12);
@@ -215,7 +215,7 @@ void ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
   uint32_t angle0;
   FixedVectorAngles viewAngles;
 
-  viewAngles = FixedMath_VectorToAngles3Regs
+  viewAngles = FixedMath_VectorToAngles
                     (modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z,
                      modelNodeRuntime->worldTransform.translation.y - g_ViewOriginFixed.y,
                      modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x);
@@ -289,11 +289,10 @@ void ModelNodeRuntime_UpdateDepthBinMasks(DepthIntervalRadius32 minimumRadius,Mo
 
 /* Address: 0x004BEB80.
    Transforms a model-local point record (anchor, launch or marker point) into world coordinates through the
-   node's world transform. The original returns the point in EAX/ECX/EDX (x/y/z) after writing it to
-   g_ModelTransformOutputX..Z.
+   node's world transform. The point is written to g_ModelTransformOutputX..Z and also returned.
 */
 ModelWorldPoint
-ModelNodeRuntime_TransformLocalPointRegs
+ModelNodeRuntime_TransformLocalPoint
           (ModelPackedPointRecord *localPointRecord,ModelRuntimeNode *modelNodeRuntime)
 
 {
@@ -326,13 +325,13 @@ ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
   ModelRelativeDirectionAngles relativeAngles;
 
   negatedAngle2 = -modelNodeRuntime->modelPayload.worldRotationAngle2;
-  rotatedDirection = FixedTransform_RotateDirectionScaledRegs
+  rotatedDirection = FixedTransform_RotateScaledDirection
                     (Q12_ONE,elevationAngle,azimuthAngle,negatedAngle2 & FIXED_ANGLE16_MASK,
                      modelNodeRuntime->modelPayload.worldRotationAngle1,
                      modelNodeRuntime->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
                      negatedAngle2 & FIXED_ANGLE16_MASK)
   ;
-  directionAngles = FixedMath_VectorToAngles3Regs(rotatedDirection.zQ12,rotatedDirection.yQ12,rotatedDirection.xQ12);
+  directionAngles = FixedMath_VectorToAngles(rotatedDirection.zQ12,rotatedDirection.yQ12,rotatedDirection.xQ12);
   relativeAngles.relativeYawAngle =
        directionAngles.azimuthAngle + modelNodeRuntime->modelPayload.localRotationAngle2 & FIXED_ANGLE16_MASK;
   relativeAngles.relativePitchAngle = directionAngles.elevationAngle;
@@ -1187,10 +1186,9 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
 /* Address: 0x0052A690.
    Condition of a model hierarchy as a Q12 ratio: the node's armour points (+0x3C) relative to its
    definition's maximum (+0x60), multiplied by the average of 1.0 and the ratios of all attached child
-   hierarchies. EAX carries the ratio and EDX the Q12 unity 0x1000 (the 8-byte return type models that
-   register pair). Unrelated to the draw scale at node +0xC0.
+   hierarchies; Q12_ONE is full condition. Unrelated to the draw scale at node +0xC0.
 */
-ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
+Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *childModelRuntime;
@@ -1198,7 +1196,7 @@ ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12
   int accumulatedHierarchyScaleQ12;
   ModelRuntimeSlot *attachmentDescriptorCursor;
   int scaleSampleCount;
-  ModelRuntimeScaleRatioRegisterPairQ12 childScaleRatioPairQ12;
+  Q12 childConditionRatioQ12;
 
   accumulatedHierarchyScaleQ12 = Q12_ONE;
   scaleSampleCount = 1;
@@ -1207,31 +1205,27 @@ ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12
       attachmentsRemaining--) {
     childModelRuntime = attachmentDescriptorCursor->attachments[0].childModelRuntimeOrSavedOffset;
     if (childModelRuntime != NULL) {
-      childScaleRatioPairQ12 = ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(childModelRuntime);
-      accumulatedHierarchyScaleQ12 = accumulatedHierarchyScaleQ12 + (int)childScaleRatioPairQ12;
+      childConditionRatioQ12 = ModelRuntimeHierarchy_ComputeConditionRatioQ12(childModelRuntime);
+      accumulatedHierarchyScaleQ12 = accumulatedHierarchyScaleQ12 + childConditionRatioQ12;
       scaleSampleCount++;
     }
     /* steps the cursor by one 0x20-byte attachments[] entry */
     attachmentDescriptorCursor =
          (ModelRuntimeSlot *)((uint8_t *)attachmentDescriptorCursor + sizeof(ModelRuntimeAttachmentDescriptor));
   }
-  /* EAX = the scale ratio, EDX = 0x1000 */
-  return (uint64_t)Q12_ONE << 32 |
-         (uint64_t)(uint32_t)(int)(((int64_t)(int)modelRuntime->health *
-                             (int64_t)accumulatedHierarchyScaleQ12) /
-                            (int64_t)
-                            (scaleSampleCount *
-                            (int)modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth));
+  return (Q12)(((int64_t)(int)modelRuntime->health * (int64_t)accumulatedHierarchyScaleQ12) /
+               (int64_t)(scaleSampleCount *
+                         (int)modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth));
 }
 
 
 /* Address: 0x0052A6F0.
-   Energy demand of a model and its directly attached models (value +0xF4): EDX returns the total, EAX only
-   the part of models not switched off (stateFlags bit 0). Attached models count only when the definition
-   has flag 0x80 at +0x68; the walk is one level deep, not recursive.
+   Energy demand of a model and its directly attached models (value +0xF4): totalQ4 is the whole demand,
+   activeQ4 only the part of models not switched off (stateFlags bit 0). Attached models count only when the
+   definition has flag 0x80 at +0x68; the walk is one level deep, not recursive.
 */
-ModelRuntimeActiveTotalMetricRegisterPair
-ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRuntime)
+ModelHierarchyEnergyDemand
+ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
 
 {
   uint32_t activeMetricTotal;
@@ -1239,7 +1233,8 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
   uint32_t totalMetric;
   ModelRuntimeSlot *currentChildModelRuntime;
   uint32_t childMetric;
-  
+  ModelHierarchyEnergyDemand energyDemand;
+
   totalMetric = modelRuntime->classState.energyLoadQ4;
   attachmentsRemaining = modelRuntime->attachmentCount;
   activeMetricTotal = 0;
@@ -1261,7 +1256,9 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
       modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
     }
   }
-  return (uint64_t)totalMetric << 32 | (uint64_t)activeMetricTotal; /* EDX = total, EAX = active */
+  energyDemand.activeQ4 = activeMetricTotal;
+  energyDemand.totalQ4 = totalMetric;
+  return energyDemand;
 }
 
 /* Address: 0x0052AAC0.
@@ -1496,7 +1493,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
                   (&currentChild->worldTransform,
                    (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
                    &modelNodeRuntime->worldTransform);
-        childEulerAngles = FixedTransform_ExtractEulerAnglesRegs(&currentChild->worldTransform);
+        childEulerAngles = FixedTransform_ExtractEulerAngles(&currentChild->worldTransform);
         currentChild->modelPayload.worldRotationAngle2 = childEulerAngles.rollAngle;
         currentChild->modelPayload.worldRotationAngle0 = childEulerAngles.azimuthAngle;
         currentChild->modelPayload.worldRotationAngle1 = childEulerAngles.elevationAngle;

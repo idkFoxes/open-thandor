@@ -15,37 +15,35 @@
    Composes two orientations given as angle triples: builds the rotation basis of each (basis angles into
    g_ModelTransformScratchMatrix, input angles into the input scratch), multiplies them and extracts the angles
    of the product again. Used by the army movement code to add a local rotation to a heading.
-   Returns EAX = azimuth, EBX = elevation, EDX = roll of the composed rotation.
+   Returns the azimuth, elevation and roll of the composed rotation.
 */
-FixedAzimuthElevationRoll FixedTransform_ComposeEulerAnglesRegs
+FixedAzimuthElevationRoll FixedTransform_ComposeEulerAngles
           (AngleTurn32 inputAngle0,AngleTurn32 inputAngle1,AngleTurn32 inputAngle2,
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2)
 
 {
   FixedRollAzimuthElevation extractedAngles;
   FixedAzimuthElevationRoll composedAngles;
-  
+
   FixedTransform_BuildRotationBasis(&g_ModelTransformScratchMatrix,basisAngle0,basisAngle1,basisAngle2);
   FixedTransform_BuildRotationBasis(&g_FixedTransformInputRotationScratch,inputAngle0,inputAngle1,inputAngle2);
   FixedTransform_Compose(&g_FixedTransformComposedRotationScratch,&g_FixedTransformInputRotationScratch,
                          &g_ModelTransformScratchMatrix);
-  extractedAngles = FixedTransform_ExtractEulerAnglesRegs(&g_FixedTransformComposedRotationScratch);
-  /* extracted EAX = roll, ECX = azimuth, EDX = elevation, rotated into EDX, EAX, EBX */
+  extractedAngles = FixedTransform_ExtractEulerAngles(&g_FixedTransformComposedRotationScratch);
   composedAngles.rollAngle = extractedAngles.rollAngle;
-  composedAngles.azimuthAngle = (int)THANDOR_PART(uint64_t, extractedAngles, 4);
-  composedAngles.elevationAngle = (int)((uint64_t)THANDOR_PART(uint64_t, extractedAngles, 4) >> 32);
+  composedAngles.azimuthAngle = extractedAngles.azimuthAngle;
+  composedAngles.elevationAngle = extractedAngles.elevationAngle;
   return composedAngles;
 }
 
 
 /* Address: 0x00484930.
    Converts the vector (x, y, z) into its length and two 16-bit angles: the elevation of x over the (y, z) plane
-   and the azimuth within that plane. Returned in registers: EAX = length, EDX = elevation, ECX = azimuth (low
-   16 bits); squares are summed in 64 bits so Q12 components cannot overflow.
+   and the azimuth within that plane (masked to 16 bits); squares are summed in 64 bits so Q12 components
+   cannot overflow.
 */
 FixedLengthAzimuthElevation
-FixedMath_VectorToAnglesAndLength3Regs
-          (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
+FixedMath_VectorToAnglesAndLength(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
 {
   uint32_t planeLength;
@@ -71,11 +69,11 @@ FixedMath_VectorToAnglesAndLength3Regs
 
 /* Address: 0x00484A10.
    Converts a vector into its length and two 16-bit angles: the elevation of z over the (x, y) plane and the
-   azimuth atan2(y, x) within it (the component roles differ from FixedMath_VectorToAnglesAndLength3Regs).
-   Returns EAX = length, EDX = elevation, ECX = azimuth (low 16 bits); squares are summed in 64 bits.
+   azimuth atan2(y, x) within it (the component roles differ from FixedMath_VectorToAnglesAndLength).
+   The azimuth is masked to 16 bits; squares are summed in 64 bits.
    Used by the shot maintenance code for ballistic angles.
 */
-FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
+FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3(GraphicsFixedVec3 *vector)
 
 {
   uint32_t horizontalLengthQ12;
@@ -106,11 +104,11 @@ FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFi
 
 
 /* Address: 0x00484B70.
-   Angle and length of a 2D vector: EDX = atan2(component0, component1) as a 16-bit angle (65536 = full
-   turn), EAX = floor(sqrt(component0^2 + component1^2)). Used by the army movement and combat code and the
+   Angle and length of a 2D vector: angle = atan2(component0, component1) as a 16-bit angle (65536 = full
+   turn), length = floor(sqrt(component0^2 + component1^2)). Used by the army movement and combat code and the
    shot catalog for planar headings and distances.
 */
-FixedLengthAngle FixedMath_Vector2AngleAndLengthRegs
+FixedLengthAngle FixedMath_Vector2AngleAndLength
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1)
 
 {
@@ -127,13 +125,13 @@ FixedLengthAngle FixedMath_Vector2AngleAndLengthRegs
 
 
 /* Address: 0x004BEB20.
-   Rotates the Q12 vector (x, y, z) by the rotation basis built from three angles and returns it in
-   EAX = x, ECX = y, EDX = z. The parameters are in the original's stack order (z first). Works through the
-   shared model-transform scratch globals; used by the model hierarchy for view-relative vectors.
+   Rotates the Q12 vector (x, y, z) by the rotation basis built from three angles and returns the rotated
+   vector (the original pushed the components z first). Works through the shared model-transform scratch
+   globals; used by the model hierarchy for view-relative vectors.
 */
 FixedVectorQ12
-FixedTransform_ApplyEulerRotationToVectorRegs
-          (Q12 inputZQ12,Q12 inputYQ12,Q12 inputXQ12,AngleTurn32 rotationAngle0,
+FixedTransform_RotateVectorByEulerAngles
+          (Q12 inputXQ12,Q12 inputYQ12,Q12 inputZQ12,AngleTurn32 rotationAngle0,
           AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
@@ -169,8 +167,8 @@ void FixedVector_StepBackwardAlongOwnDirection
   FixedElevationAzimuth vectorAngles;
   ModelRuntimeNode *node = (ModelRuntimeNode *)vectorState;
 
-  vectorAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)&node->modelPayload.localTranslationXQ12);
-  stepDirection = FixedMath_DirectionFromAnglesScaledRegs(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,
+  vectorAngles = FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&node->modelPayload.localTranslationXQ12);
+  stepDirection = FixedMath_DirectionFromAnglesScaled(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,
                                                           directionScale);
   node->modelPayload.localTranslationXQ12 -= stepDirection.x * stepMultiplier;
   node->modelPayload.localTranslationYQ12 -= stepDirection.y * stepMultiplier;
@@ -180,11 +178,12 @@ void FixedVector_StepBackwardAlongOwnDirection
 
 /* Address: 0x00521FA0.
    Two-bone joint solver for the leg suspension: for a triangle with sides s0, s1 and base s2 it returns
-   EAX = the angle between s2 and s1 and EDX = that angle plus the one between s2 and s0 (the bend at the
-   joint of s0 and s1). The height over the base comes from 64-bit sums of squares; when the triangle cannot
-   close or the base is at most 0x10, both angles are 0 when s0 < s2 (unsigned) and 0x8000 (half turn) otherwise.
+   jointAngle0 = the angle between s2 and s1 and jointAngle1 = that angle plus the one between s2 and s0 (the
+   bend at the joint of s0 and s1). The height over the base comes from 64-bit sums of squares; when the
+   triangle cannot close or the base is at most 0x10, both angles are 0 when s0 < s2 (unsigned) and 0x8000
+   (half turn) otherwise.
 */
-FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
+FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
 
 {
   int64_t projectionOrHeightSquared;
@@ -207,7 +206,7 @@ FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLeng
   side1Squared = (int64_t)sideLength1Q12 * (int64_t)sideLength1Q12;
   side0Squared = (int64_t)sideLength0Q12 * (int64_t)sideLength0Q12;
   cosineNumerator0 = (side2Squared - side1Squared) + side0Squared;
-  /* 64-bit (EBX:ECX) -p^2 - s2^2 + 2*s1^2 + 2*s0^2, in the original's order; with p = (s0^2 - s1^2) / s2
+  /* 64-bit -p^2 - s2^2 + 2*s1^2 + 2*s0^2, in the original's order; with p = (s0^2 - s1^2) / s2
      this is (2 * height)^2, so the square root is halved below like the two base projections */
   projectionOrHeightSquared = (((0 - projectionOrHeightSquared) - side2Squared) + side1Squared * 2) + side0Squared * 2;
   if (projectionOrHeightSquared > -1 && sideLength2Q12 > 16) {
@@ -251,16 +250,16 @@ uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent
 
 /* Address: 0x00484E50.
    Returns the direction angles of the transform's third basis column (row0[2], row1[2], row2[2]):
-   EDX = elevation of row2[2] over the other two, ECX = azimuth atan2(row1[2], row0[2]). Same as the first
-   step of FixedTransform_ExtractEulerAnglesRegs. No caller, function-pointer table or data reference to
+   the elevation of row2[2] over the other two and the azimuth atan2(row1[2], row0[2]). Same as the first
+   step of FixedTransform_ExtractEulerAngles. No caller, function-pointer table or data reference to
    0x00484E50 was found in the port or the image data.
 */
-FixedVectorAngles FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
+FixedVectorAngles FixedTransform_ExtractForwardAngles(GraphicsFixedMatrix3x4 *transform)
 
 {
   FixedVectorAngles forwardAngles;
   
-  forwardAngles = FixedMath_VectorToAngles3Regs
+  forwardAngles = FixedMath_VectorToAngles
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
   return forwardAngles;
 }
@@ -300,26 +299,18 @@ void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
 
 
 /* Address: 0x004BEC20.
-   Wrapper around FixedTransform_RotateDirectionScaledCoreRegs that returns the rotated direction in
-   EAX = x, ECX = y, EDX = z instead of the core's EAX/EBX/EDX (MOV ECX,EBX), keeping EBX. Used by the model
-   hierarchy.
+   Wrapper around FixedTransform_RotateScaledDirectionCore; the original only moved the result into a
+   different register layout, so it returns the same rotated direction. Used by the model hierarchy.
 */
 FixedVectorQ12
-FixedTransform_RotateDirectionScaledRegs
+FixedTransform_RotateScaledDirection
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
-  FixedVectorQ12 rotatedVector;
-  FixedVectorQ12 coreRotatedVector;
-  
-  coreRotatedVector = FixedTransform_RotateDirectionScaledCoreRegs
+  return FixedTransform_RotateScaledDirectionCore
                     (directionScale,elevationAngle,azimuthAngle,rotationAngle0,rotationAngle1,
                      rotationAngle2);
-  rotatedVector.xQ12 = coreRotatedVector.xQ12;
-  rotatedVector.yQ12 = coreRotatedVector.yQ12;
-  rotatedVector.zQ12 = coreRotatedVector.zQ12;
-  return rotatedVector;
 }
 
 
@@ -682,29 +673,28 @@ void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperan
 
 
 /* Address: 0x0052AD50.
-   Moves a planar point by distance in the direction of a 16-bit angle: returns EAX = baseX + cos(angle) *
-   distance and EDX = baseY + sin(angle) * distance (Q28 table products shifted right by 28). Used by the
+   Moves a planar point by distance in the direction of a 16-bit angle: returns x = baseX + cos(angle) *
+   distance and y = baseY + sin(angle) * distance (Q28 table products shifted right by 28). Used by the
    army movement code to step a unit along its heading.
 */
-FixedPlanarPointEdxEax8
-FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 baseX)
+FixedPlanarPointQ12
+FixedTrig_ProjectPlanarPoint(Q12 baseX,Q12 baseY,Q12 distance,AngleTurn32 angle16)
 
 {
-  uint32_t pointX;
-  uint32_t pointY;
+  FixedPlanarPointQ12 point;
 
-  /* SHLD EDX,EAX,4 of the 64-bit products: bits 28..59 */
-  pointX = baseX + (uint32_t)((int64_t)g_FixedCosQ28[angle16 & FIXED_ANGLE16_MASK] * (int64_t)distance >> 28);
-  pointY = (uint32_t)((int64_t)g_FixedSinQ28[angle16 & FIXED_ANGLE16_MASK] * (int64_t)distance >> 28) + baseY;
-  return (uint64_t)pointY << 32 | (uint64_t)pointX; /* EDX = y, EAX = x */
+  /* bits 28..59 of the 64-bit products */
+  point.xQ12 = (Q12)(baseX + (uint32_t)((int64_t)g_FixedCosQ28[angle16 & FIXED_ANGLE16_MASK] * (int64_t)distance >> 28));
+  point.yQ12 = (Q12)((uint32_t)((int64_t)g_FixedSinQ28[angle16 & FIXED_ANGLE16_MASK] * (int64_t)distance >> 28) + baseY);
+  return point;
 }
 
 /* Address: 0x004BEC50.
    Builds the direction of (elevationAngle, azimuthAngle) with length directionScale, rotates it by the
-   rotation basis of the three rotation angles and returns it in EAX = x, EBX = y, EDX = z. Works through the
-   shared model-transform scratch globals; called only by FixedTransform_RotateDirectionScaledRegs.
+   rotation basis of the three rotation angles and returns the rotated vector. Works through the shared
+   model-transform scratch globals; called only by FixedTransform_RotateScaledDirection.
 */
-FixedVectorQ12 FixedTransform_RotateDirectionScaledCoreRegs
+FixedVectorQ12 FixedTransform_RotateScaledDirectionCore
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
@@ -731,10 +721,11 @@ FixedVectorQ12 FixedTransform_RotateDirectionScaledCoreRegs
    as 16-bit angles (the horizontal length is summed in 64 bits). Used by the army suspension, the graphics
    direction setup and FixedVector_StepBackwardAlongOwnDirection.
 */
-FixedElevationAzimuth FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
+FixedElevationAzimuth FixedMath_VectorToAnglesVec3(GraphicsFixedVec3 *vector)
 
 {
-  uint32_t magnitudeOrElevationAngle;
+  uint32_t horizontalLengthQ12;
+  uint32_t elevationAngle16;
   uint32_t azimuthAngle16;
   int y;
   int x;
@@ -744,13 +735,10 @@ FixedElevationAzimuth FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector
   x = vector->x;
   y = vector->y;
   horizontalSquaredLengthAccumulatorQ24 = (int64_t)y * (int64_t)y + (int64_t)x * (int64_t)x;
-  magnitudeOrElevationAngle = FIXED_UINT64_SQRT(horizontalSquaredLengthAccumulatorQ24);
-  magnitudeOrElevationAngle = FixedMath_Atan2Angle16(vector->z,magnitudeOrElevationAngle);
+  horizontalLengthQ12 = FIXED_UINT64_SQRT(horizontalSquaredLengthAccumulatorQ24);
+  elevationAngle16 = FixedMath_Atan2Angle16(vector->z,horizontalLengthQ12);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
-  /* The original returns EDX = elevation and ECX = azimuth & 0xffff (as FixedMath_VectorToAngles3Regs).
-     The port returns them elevation first (FixedElevationAzimuth), which its consumers
-     (FixedVector_StepBackwardAlongOwnDirection, ArmyArticulatedRuntime_UpdateSuspensionHierarchy) expect. */
-  vectorAngles.elevationAngle = magnitudeOrElevationAngle;
+  vectorAngles.elevationAngle = elevationAngle16;
   vectorAngles.azimuthAngle = azimuthAngle16 & FIXED_ANGLE16_MASK;
   return vectorAngles;
 }
@@ -758,10 +746,10 @@ FixedElevationAzimuth FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector
 
 /* Address: 0x00484E00.
    Inverse of FixedTransform_BuildRotationBasis: recovers the angles from a rotation basis, elevation
-   (EDX) and azimuth (ECX) from the third column and the roll (EAX) from the upper 2x2 block. Used to turn
-   a composed suspension rotation back into a model node's local angles.
+   and azimuth from the third column and the roll from the upper 2x2 block. Used to turn a composed
+   suspension rotation back into a model node's local angles.
 */
-FixedRollAzimuthElevation FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform)
+FixedRollAzimuthElevation FixedTransform_ExtractEulerAngles(GraphicsFixedMatrix3x4 *transform)
 
 {
   uint32_t rollAngle16;
@@ -769,11 +757,11 @@ FixedRollAzimuthElevation FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMat
   FixedVectorAngles forwardAngles;
   FixedRollAzimuthElevation eulerAngles;
 
-  forwardAngles = FixedMath_VectorToAngles3Regs
+  forwardAngles = FixedMath_VectorToAngles
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
   eulerAngles.elevationAngle = forwardAngles.elevationAngle;
   eulerAngles.azimuthAngle = forwardAngles.azimuthAngle;
-  if ((int)forwardAngles.elevationAngle < 0) { /* TEST EDX,EDX: elevation sign */
+  if ((int)forwardAngles.elevationAngle < 0) {
     /* for a negative elevation the 2x2 block yields roll - 2 * azimuth */
     rollMinusTwoAzimuth16 = FixedMath_Atan2Angle16
                       (transform->basisRow1[0] + transform->basisRow0[1],
@@ -826,14 +814,13 @@ uint32_t FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent
 
 
 /* Address: 0x00484770.
-   Returns the direction of an elevation and an azimuth angle (16-bit turns) multiplied by scale, in EAX (x),
-   ECX (y) and EDX (z): x = cos(az)cos(el) * scale, y = sin(az)cos(el) * scale, z = sin(el) * scale. The shot
-   creator uses it to seed projectile velocities. As in FixedMath_WriteDirectionQ28 the products come from
-   sum-to-product identities; the halving is folded into the shift (29 instead of 28).
+   Returns the direction of an elevation and an azimuth angle (16-bit turns) multiplied by scale:
+   x = cos(az)cos(el) * scale, y = sin(az)cos(el) * scale, z = sin(el) * scale. The shot creator uses it to
+   seed projectile velocities. As in FixedMath_WriteDirectionQ28 the products come from sum-to-product
+   identities; the halving is folded into the shift (29 instead of 28).
 */
-FixedDirection
-FixedMath_DirectionFromAnglesScaledRegs
-          (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 scale)
+FixedDirection FixedMath_DirectionFromAnglesScaled(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
+          FixedMathScale32 scale)
 
 {
   int64_t scaledYProduct;
@@ -860,12 +847,11 @@ FixedMath_DirectionFromAnglesScaledRegs
 
 
 /* Address: 0x004847E0.
-   Returns the Q28 unit direction of an elevation and an azimuth angle (16-bit turns) in EAX (x), ECX (y) and
-   EDX (z): x = cos(az)cos(el), y = sin(az)cos(el), z = sin(el), formed like FixedMath_WriteDirectionQ28.
-   The rotation-basis builder uses it for its rows.
+   Returns the Q28 unit direction of an elevation and an azimuth angle (16-bit turns): x = cos(az)cos(el),
+   y = sin(az)cos(el), z = sin(el), formed like FixedMath_WriteDirectionQ28. The rotation-basis builder uses
+   it for its rows.
 */
-FixedDirection
-FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
+FixedDirection FixedMath_DirectionFromAnglesQ28(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
   uint32_t azimuthPlusElevationAngle16;
@@ -886,7 +872,7 @@ FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azim
 /* Address: 0x00484840.
    Scaled form of FixedMath_WriteDirectionQ28: writes {cos(el)cos(az), cos(el)sin(az), sin(el)} * scale, so the
    output has the scale's fixed-point format. x and y use the sum-to-product sums (twice the value), hence the
-   shift by 29 instead of 28. Used for the frustum corner rays and by FixedTransform_RotateDirectionScaledCoreRegs.
+   shift by 29 instead of 28. Used for the frustum corner rays and by FixedTransform_RotateScaledDirectionCore.
 */
 void FixedMath_WriteDirectionScaled(GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           FixedMathScale32 scale)
@@ -995,11 +981,11 @@ void FixedTransform_Compose(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x
 
 
 /* Address: 0x00484990.
-   Converts a vector, passed in the order z, y, x, into its direction angles (16-bit turns): EDX = elevation
-   atan2(z, sqrt(x*x + y*y)) and ECX = azimuth atan2(y, x); EAX is preserved. It is the inverse of
-   FixedMath_WriteDirectionQ28 and is used for aiming and view angles.
+   Converts a vector, passed in the order z, y, x, into its direction angles (16-bit turns): elevation
+   atan2(z, sqrt(x*x + y*y)) and azimuth atan2(y, x). It is the inverse of FixedMath_WriteDirectionQ28 and is
+   used for aiming and view angles.
 */
-FixedVectorAngles FixedMath_VectorToAngles3Regs
+FixedVectorAngles FixedMath_VectorToAngles
           (FixedMathVectorComponent32 z,FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
 
 {
@@ -1072,11 +1058,11 @@ void FixedTransform_BuildRotationBasis(GraphicsFixedMatrix3x4 *output,AngleTurn3
   int sinElevationQ28;
   int64_t secondTermTimesSinElevation;
 
-  directionRow = FixedMath_DirectionFromAnglesQ28Regs(elevationAngle,azimuthAngle);
+  directionRow = FixedMath_DirectionFromAnglesQ28(elevationAngle,azimuthAngle);
   output->basisRow0[2] = directionRow.x;
   output->basisRow1[2] = directionRow.y;
   output->basisRow2[2] = directionRow.z;
-  directionRow = FixedMath_DirectionFromAnglesQ28Regs(elevationAngle,rollAngle - azimuthAngle);
+  directionRow = FixedMath_DirectionFromAnglesQ28(elevationAngle,rollAngle - azimuthAngle);
   rollAngleUnmasked = (rollAngle - azimuthAngle) + azimuthAngle;
   output->basisRow2[1] = directionRow.y;
   output->basisRow2[0] = -directionRow.x;

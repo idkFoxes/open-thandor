@@ -527,10 +527,10 @@ bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
 
 
 /* Address: 0x00583D10.
-   Stub in the network backend code that returns 0 and preserves the other registers; nothing references
-   it (neither a call nor a table entry).
+   Stub in the network backend code that returns 0; nothing references it (neither a call nor a table
+   entry).
 */
-uint32_t Unreferenced_ReturnZeroPreserveRegs_00583D10(void)
+uint32_t Unreferenced_ReturnZero_00583D10(void)
 
 {
   return 0;
@@ -539,17 +539,16 @@ uint32_t Unreferenced_ReturnZeroPreserveRegs_00583D10(void)
 /* Address: 0x00583D30.
    Empty stub in the network backend code (a bare RET); nothing references it.
 */
-void Unreferenced_NoOpPreserveRegs_00583D30(void)
+void Unreferenced_NoOp_00583D30(void)
 
 {
   return;
 }
 
 /* Address: 0x00583D40.
-   Stub in the network backend code that returns 0 and preserves the other registers; nothing references
-   it.
+   Stub in the network backend code that returns 0; nothing references it.
 */
-uint32_t Unreferenced_ReturnZeroPreserveRegs_00583D40(void)
+uint32_t Unreferenced_ReturnZero_00583D40(void)
 
 {
   return 0;

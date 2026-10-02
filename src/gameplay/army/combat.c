@@ -139,7 +139,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     else {
       currentNode = modelRuntime->rootModelNode;
       pitchNode = currentNode->childNodes[0];
-      launchAngles = ShotDefinition_ComputeLaunchAnglesRegs
+      launchAngles = ShotDefinition_ComputeLaunchAngles
                         (aimZQ12,aimYQ12,aimXQ12,(pitchNode->worldTransform).translation.z,
                          (pitchNode->worldTransform).translation.y,
                          (pitchNode->worldTransform).translation.x,weaponDefinitionView->shotDefinition);
@@ -471,7 +471,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   shotDefinition = weaponDefinition->shotDefinition;
   deltaZ = targetWorldZQ12 - (originNode->worldTransform).translation.z;
   if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
-    horizontalVector = FixedMath_Vector2AngleAndLengthRegs(deltaYOrSpeedSquared,deltaXOrScaledLength);
+    horizontalVector = FixedMath_Vector2AngleAndLength(deltaYOrSpeedSquared,deltaXOrScaledLength);
     deltaYOrSpeedSquared = shotDefinition->launchSpeedQ12 * shotDefinition->launchSpeedQ12;
     deltaXOrScaledLength = horizontalVector.length * shotDefinition->ballisticDivisorQ12;
     discriminant = (int64_t)(deltaYOrSpeedSquared + shotDefinition->ballisticDivisorQ12 * deltaZ * -2) *
@@ -524,7 +524,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_FIXED_RANGE) {
     return false;
   }
-  targetVector = FixedMath_VectorToAnglesAndLength3Regs(deltaZ,deltaYOrSpeedSquared,deltaXOrScaledLength);
+  targetVector = FixedMath_VectorToAnglesAndLength(deltaZ,deltaYOrSpeedSquared,deltaXOrScaledLength);
   elevationAngle = targetVector.elevationAngle;
   azimuthAngle = targetVector.azimuthAngle;
   angleOrDistance = targetVector.lengthQ12;
@@ -712,7 +712,7 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
     pointZQ12 = (modelNodeRuntime->worldTransform).translation.z;
   }
   else {
-    transformedPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
+    transformedPoint = ModelNodeRuntime_TransformLocalPoint(localPointRecord,modelNodeRuntime);
     pointZQ12 = transformedPoint.zQ12;
     pointYQ12 = transformedPoint.yQ12;
     randomOrPointX = transformedPoint.xQ12;

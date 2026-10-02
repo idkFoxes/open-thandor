@@ -392,7 +392,7 @@ typedef struct TextResourcePageBinding TextResourcePageBinding, *PTextResourcePa
 typedef struct TextResourceLocaleBlockPrefix TextResourceLocaleBlockPrefix, *PTextResourceLocaleBlockPrefix;
 typedef struct WideNumberFormatState WideNumberFormatState, *PWideNumberFormatState;
 typedef struct TextResourceOverrideTable TextResourceOverrideTable, *PTextResourceOverrideTable;
-typedef struct RichTextExtentRegs RichTextExtentRegs, *PRichTextExtentRegs;
+typedef struct RichTextExtent RichTextExtent, *PRichTextExtent;
 typedef struct GraphicsDisplayMode GraphicsDisplayMode, *PGraphicsDisplayMode;
 typedef struct GraphicsTexturePaletteEntry GraphicsTexturePaletteEntry, *PGraphicsTexturePaletteEntry;
 typedef struct GraphicsProjectedVertexSource GraphicsProjectedVertexSource, *PGraphicsProjectedVertexSource;
@@ -625,7 +625,7 @@ typedef struct ArmyModelTreeNodeAddressView ArmyModelTreeNodeAddressView, *PArmy
 typedef struct WorldRuntimeExtendedMapControlView WorldRuntimeExtendedMapControlView, *PWorldRuntimeExtendedMapControlView;
 typedef struct ArmyRuntimeClassUpdate21DefinitionView ArmyRuntimeClassUpdate21DefinitionView, *PArmyRuntimeClassUpdate21DefinitionView;
 typedef struct FixedTriangleJointAngles FixedTriangleJointAngles, *PFixedTriangleJointAngles;
-typedef struct SelectionPanelAdvanceEaxEdx8 SelectionPanelAdvanceEaxEdx8, *PSelectionPanelAdvanceEaxEdx8;
+typedef struct SelectionPanelCellAdvance SelectionPanelCellAdvance, *PSelectionPanelCellAdvance;
 typedef struct GeneratedTextureSampleWorkRecord GeneratedTextureSampleWorkRecord, *PGeneratedTextureSampleWorkRecord;
 typedef struct GeneratedTextureScratchRuntime GeneratedTextureScratchRuntime, *PGeneratedTextureScratchRuntime;
 typedef struct InGameMissionHelpTextPanel InGameMissionHelpTextPanel, *PInGameMissionHelpTextPanel;
@@ -798,12 +798,11 @@ struct GraphicsTextureLogicalSize {
 
 
 struct FixedVectorAngles {
-    uint32_t azimuthAngle; // Physical ABI component ECX
-    uint32_t elevationAngle; // Physical ABI component EDX
+    uint32_t azimuthAngle; // atan2(y, x), low 16 bits
+    uint32_t elevationAngle; // elevation over the horizontal plane, 16-bit angle
 };
 
-/* The angle pair of FixedMath_VectorToAnglesVec3Regs, which returns them in the opposite
-   order to FixedVectorAngles (elevation first). */
+/* The angle pair of FixedMath_VectorToAnglesVec3 (elevation first). */
 typedef struct FixedElevationAzimuth FixedElevationAzimuth;
 struct FixedElevationAzimuth {
     uint32_t elevationAngle; 
@@ -812,21 +811,21 @@ struct FixedElevationAzimuth {
 
 
 struct ArmySegmentMeter {
-    uint32_t filledSegments; // Physical ABI component EBX
-    uint32_t totalSegments; // Physical ABI component ECX
+    uint32_t filledSegments; // segments shown as filled
+    uint32_t totalSegments; // segments of the whole meter
 };
 
 struct ModelWorldPoint {
-    uint32_t xQ12; // Physical ABI component EAX
-    uint32_t yQ12; // Physical ABI component ECX
-    uint32_t zQ12; // Physical ABI component EDX
+    uint32_t xQ12;
+    uint32_t yQ12;
+    uint32_t zQ12;
 };
 
 
 struct FixedDirection {
-    uint32_t x; // Physical ABI component EAX
-    uint32_t y; // Physical ABI component ECX
-    uint32_t z; // Physical ABI component EDX
+    uint32_t x; // cos(azimuth) * cos(elevation) part, in the format of the scale (Q28 for unit directions)
+    uint32_t y; // sin(azimuth) * cos(elevation) part
+    uint32_t z; // sin(elevation) part
 };
 
 /* Callback/function-definition ABIs. */
@@ -5203,7 +5202,10 @@ typedef int AiCandidateScore32;
 
 typedef uint32_t DosDriveLetterCode32;
 
-typedef uint64_t Win32DriveCapacityEdxEax8;
+typedef struct Win32DriveCapacity {
+    uint32_t freeBytes; /* free clusters * bytes per sector * sectors per cluster, 32-bit product */
+    uint32_t totalBytes; /* total clusters * bytes per sector * sectors per cluster, 32-bit product */
+} Win32DriveCapacity;
 
 typedef uint32_t FrontendBackendSessionValue;
 
@@ -5678,7 +5680,10 @@ typedef uint32_t GraphicsPixelChannelBitCount;
 
 typedef uint32_t MemoryByteCount;
 
-typedef uint64_t UiScrollableContentDimensionsEdxEax8;
+typedef struct UiScrollableViewportSize {
+    UiPixelExtent width;
+    UiPixelExtent height;
+} UiScrollableViewportSize;
 
 typedef uint16_t Win32Minute16;
 
@@ -8147,9 +8152,15 @@ struct ResourceRegistrationRuntimeImage {
 typedef uint64_t ResourceRegistrationImagePair;
 
 struct ResourceRegistrationImagePairComponents8 {
-    void *runtimeImageBase; 
-    uint32_t byteLength; 
+    void *runtimeImageBase;
+    uint32_t byteLength;
 };
+
+/* One runtime save-segment image: the block to write and its byte size. */
+typedef struct RuntimeHexSegmentImage {
+    uint32_t *image;
+    uint32_t byteSize;
+} RuntimeHexSegmentImage;
 
 struct ResourceRegistrationDomainPairDispatchTable3 {
     ResourceRegistrationImagePair (*callbacks[3])(void); 
@@ -8679,7 +8690,7 @@ typedef enum WideNumberFormatFlags {
 } WideNumberFormatFlags;
 typedef uint32_t WideNumberFormatUtf16Proc(WideNumberFormatFlags flags, uint32_t fractionalDigits, uint32_t integerDigitLimit, uint32_t denominator, int32_t value, uint16_t * destination);
 
-struct RichTextExtentRegs {
+struct RichTextExtent {
     uint32_t widthPixels; 
     uint32_t heightPixels; 
 };
@@ -9714,11 +9725,13 @@ typedef uint64_t WorldPositionXYRegisterPairQ12;
 
 typedef uint8_t FactionRuntimeLifecycleState;
 
-typedef uint64_t ModelRuntimeScaleRatioRegisterPairQ12;
-
 typedef uint64_t ModelRuntimeAttachmentCollectionRegisterPair;
 
-typedef uint64_t ModelRuntimeActiveTotalMetricRegisterPair;
+/* Energy demand of a model and its directly attached models (ModelRuntimeHierarchy_ComputeEnergyDemand) */
+typedef struct ModelHierarchyEnergyDemand {
+    uint32_t activeQ4; /* demand of the models not switched off */
+    uint32_t totalQ4;  /* demand of all counted models */
+} ModelHierarchyEnergyDemand;
 
 typedef uint64_t ShotAimXZRegisterPairQ12;
 
@@ -10436,12 +10449,18 @@ struct FieldGridInterpolationCallbackTable5 {
     bool (*callbacks[5])(Q12, Q12, struct FieldGridAsset *, Q12 *); // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.
 };
 
-/* Q12 vector returned by the fixed-point rotation helpers (the original returns it in EAX/ECX/EDX, the
-   rotation core in EAX/EBX/EDX). */
+/* Q12 vector returned by the fixed-point rotation helpers. */
 struct FixedVectorQ12 {
     Q12 xQ12;
     Q12 yQ12;
     Q12 zQ12;
+};
+
+/* Planar Q12 point (x, y), as FixedTrig_ProjectPlanarPoint returns it. */
+typedef struct FixedPlanarPointQ12 FixedPlanarPointQ12;
+struct FixedPlanarPointQ12 {
+    Q12 xQ12;
+    Q12 yQ12;
 };
 
 struct PathingDestination {
@@ -10463,14 +10482,14 @@ struct StatusResult {
 };
 
 struct WorldCameraOrientation {
-    UQ12 magnitudeQ12; // EAX world motion magnitude
-    AngleTurn32 headingAngle; // ECX world motion heading
-    AngleTurn32 pitchAngle; // EDX world motion pitch
+    UQ12 magnitudeQ12; // world motion magnitude
+    AngleTurn32 headingAngle; // world motion heading
+    AngleTurn32 pitchAngle; // world motion pitch
 };
 
 struct ShotLaunchAngles {
-    AngleTurn32 headingAngle; // EAX launch heading/azimuth
-    AngleTurn32 elevationAngle; // EDX launch elevation
+    AngleTurn32 headingAngle; // launch heading/azimuth
+    AngleTurn32 elevationAngle; // launch elevation
 };
 
 
@@ -10482,7 +10501,7 @@ struct WorldPositionResult {
 };
 
 
-/* Angles of a rotation basis as FixedTransform_ExtractEulerAnglesRegs returns them (EAX, ECX, EDX). */
+/* Angles of a rotation basis as FixedTransform_ExtractEulerAngles returns them. */
 struct FixedRollAzimuthElevation {
     AngleTurn32 rollAngle;
     AngleTurn32 azimuthAngle;
@@ -10500,15 +10519,15 @@ struct InputEventResult {
 };
 
 struct WorldCameraPosition {
-    Q12 xQ12; // EAX world motion X
-    Q12 yQ12; // ECX world motion Y
-    Q12 zQ12; // EDX world motion Z
+    Q12 xQ12; // world motion X
+    Q12 yQ12; // world motion Y
+    Q12 zQ12; // world motion Z
 };
 
 struct FixedLengthAzimuthElevation {
-    uint32_t lengthQ12; // EAX vector length
-    AngleTurn32 azimuthAngle; // ECX azimuth/heading
-    AngleTurn32 elevationAngle; // EDX elevation/pitch
+    uint32_t lengthQ12; // vector length
+    AngleTurn32 azimuthAngle; // azimuth/heading, low 16 bits
+    AngleTurn32 elevationAngle; // elevation/pitch
 };
 
 /* runtimeUpdate, classMethodD (sound update) and classCommand of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
@@ -10532,8 +10551,8 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
     void (*gridInfluenceRemove[24])(struct GameEntityRuntime *);
 };
 
-/* Angles of a composed rotation as FixedTransform_ComposeEulerAnglesRegs returns them (EAX, EBX, EDX); the
-   order of the model nodes' worldRotationAngle0..2. */
+/* Angles of a composed rotation as FixedTransform_ComposeEulerAngles returns them; the order of the model
+   nodes' worldRotationAngle0..2. */
 struct FixedAzimuthElevationRoll {
     AngleTurn32 azimuthAngle;
     AngleTurn32 elevationAngle;
@@ -10597,7 +10616,7 @@ struct GeneratedTextureRenderContextView {
     uint8_t reserved00_53[84]; // Unresolved prefix; caller is FrontendModelPointerContext_DrawClipped control object.
     struct FieldGridAsset *fieldGrid; // World/terrain grid consumed by generated-texture surface probes.
     uint8_t reserved58_B7[96]; // Unresolved context fields.
-    AngleTurn32 lightAzimuthAngle; // +0xB8 azimuth of the shadow-casting light direction (second DirectionFromAnglesScaledRegs argument).
+    AngleTurn32 lightAzimuthAngle; // +0xB8 azimuth of the shadow-casting light direction (second FixedMath_DirectionFromAnglesScaled argument).
     AngleTurn32 lightElevationAngle; // +0xBC elevation of the shadow-casting light direction (first argument).
     uint8_t reservedC0_C7[8]; // Unresolved context fields.
     uint32_t *projectedPointBlockPool; // Pool descriptor used by reserve/rollback helpers; descriptor[1] is allocation cursor and descriptor[2] data base.
@@ -10968,13 +10987,13 @@ struct ArmyRuntimeClassUpdate21DefinitionView {
 };
 
 struct FixedTriangleJointAngles {
-    AngleTurn32 jointAngle0; // EAX first solved triangle joint angle
-    AngleTurn32 jointAngle1; // EDX second/combined triangle joint angle
+    AngleTurn32 jointAngle0; // angle between the base and side 1
+    AngleTurn32 jointAngle1; // jointAngle0 plus the angle between the base and side 0 (bend at the joint)
 };
 
-struct SelectionPanelAdvanceEaxEdx8 {
-    UiPixelCoordinate nextX; // EAX horizontal coordinate after the cell (origin + offset + width unless suppressed)
-    UiPixelCoordinate nextY; // EDX vertical coordinate after the cell (origin + offset + height unless suppressed)
+struct SelectionPanelCellAdvance {
+    UiPixelCoordinate nextX; // horizontal coordinate after the cell (origin + offset + width unless suppressed)
+    UiPixelCoordinate nextY; // vertical coordinate after the cell (origin + offset + height unless suppressed)
 };
 
 struct GeneratedTextureSampleWorkRecord {
@@ -11965,8 +11984,8 @@ struct WorldPositionXY {
 };
 
 struct FixedLengthAngle {
-    uint32_t length; // Physical EAX result from FixedMath_Length2.
-    AngleTurn32 angle; // Physical EDX result: masked low-16 angle from FixedMath_Atan2Angle16.
+    uint32_t length; // Result of FixedMath_Length2.
+    AngleTurn32 angle; // Masked low-16 angle from FixedMath_Atan2Angle16.
 };
 
 struct TerrainPlacementResult {
@@ -11999,7 +12018,7 @@ union NetworkBackendSocketAddress16 {
 
 struct ModelRelativeDirectionAngles {
     AngleTurn32 relativeYawAngle; // EAX wrapped yaw/azimuth relative to model local rotation.
-    AngleTurn32 relativePitchAngle; // EDX transformed elevation/pitch angle retained from FixedMath_VectorToAngles3Regs.
+    AngleTurn32 relativePitchAngle; // EDX transformed elevation/pitch angle retained from FixedMath_VectorToAngles.
 };
 
 struct ModelRuntimeLinkedChildSpawnInheritedState {

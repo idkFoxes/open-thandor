@@ -37,12 +37,12 @@ void SelectionPanel_RenderArmyRuntimeMetrics
   uint32_t halfFilledSegments;
   ModelRuntimeSlot *armyRuntime;
   bool framebufferBusy;
-  ModelRuntimeActiveTotalMetricRegisterPair activeTotalMetrics;
-  SelectionPanelAdvanceEaxEdx8 topLeftAdvance;
-  SelectionPanelAdvanceEaxEdx8 topRightAdvance;
-  SelectionPanelAdvanceEaxEdx8 bottomLeftAdvance;
-  SelectionPanelAdvanceEaxEdx8 bottomRightAdvance;
-  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
+  ModelHierarchyEnergyDemand energyDemand;
+  SelectionPanelCellAdvance topLeftAdvance;
+  SelectionPanelCellAdvance topRightAdvance;
+  SelectionPanelCellAdvance bottomLeftAdvance;
+  SelectionPanelCellAdvance bottomRightAdvance;
+  Q12 conditionRatioQ12;
   uint32_t groupNumber;
   ArmySegmentMeter armyMetrics;
   
@@ -62,32 +62,32 @@ void SelectionPanel_RenderArmyRuntimeMetrics
         if (((armyRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING) &&
            ((armyRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13 ||
             (armyRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11)))) {
-          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+          energyDemand = ModelRuntime_QueryHierarchyEnergyDemand(runtimeEntry);
+          topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
-                              (UiNumericValue32)(activeTotalMetrics >> 32),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                              (UiNumericValue32)energyDemand.totalQ4,(UiNumericValue32)energyDemand.activeQ4,SELECTION_PANEL_CELL_HIERARCHY_METER);
           groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
           if (groupNumber == 0) {
-            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
-            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
-          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,(armyRuntime->classLinkState).classState68,
                      (armyRuntime->classLinkState).classState64,SELECTION_PANEL_CELL_TOP_BAR);
-          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+          conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           SelectionPanel_DrawSolidCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
@@ -109,38 +109,38 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           /* a weapon: its reload countdown against the weapon definition's reload ticks */
           workingValue = ((ModelRuntimeWeaponAimStateView *)childModelRuntime)->attachmentReloadCountdownTicks;
           capacityOrMetric = ((ModelRuntimeWeaponAimStateView *)childModelRuntime)->modelDefinition->attachmentReloadTicks;
-          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          activeMetricMaximum = (int)(activeTotalMetrics >> 32);
+          energyDemand = ModelRuntime_QueryHierarchyEnergyDemand(runtimeEntry);
+          activeMetricMaximum = (int)energyDemand.totalQ4;
           if (activeMetricMaximum == 0) {
-            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
-            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
-                                activeMetricMaximum,(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                                activeMetricMaximum,(UiNumericValue32)energyDemand.activeQ4,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
           if (groupNumber == 0) {
-            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
-            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
-          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,capacityOrMetric,capacityOrMetric - workingValue,SELECTION_PANEL_CELL_TOP_BAR);
-          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+          conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           SelectionPanel_DrawSolidCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
@@ -176,38 +176,38 @@ void SelectionPanel_RenderArmyRuntimeMetrics
             if (0 < (int)runtimeKindOrValue) {
               workingValue = -runtimeKindOrValue;
             }
-            activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-            capacityOrMetric = (int)(activeTotalMetrics >> 32);
+            energyDemand = ModelRuntime_QueryHierarchyEnergyDemand(runtimeEntry);
+            capacityOrMetric = (int)energyDemand.totalQ4;
             if (capacityOrMetric == 0) {
-              topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+              topLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                                  (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
             }
             else {
-              topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+              topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvance
                                  (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,capacityOrMetric,
-                                  (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                                  (UiNumericValue32)energyDemand.activeQ4,SELECTION_PANEL_CELL_HIERARCHY_METER);
             }
             groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
             if (groupNumber == 0) {
-              topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+              topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                                  (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
             }
             else {
-              topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
+              topRightAdvance = SelectionPanel_DrawNumberCellAndAdvance
                                  (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                   groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
             }
-            bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-            bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
             SelectionPanel_DrawProportionalCappedBar
                       (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                        topLeftAdvance.nextX,maximumValue,workingValue + maximumValue,SELECTION_PANEL_CELL_TOP_BAR);
-            scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+            conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
             SelectionPanel_DrawProportionalCappedBar
                       (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                       bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
+                       bottomLeftAdvance.nextX,(UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,
                        SELECTION_PANEL_CELL_BOTTOM_BAR);
             SelectionPanel_DrawSolidCappedBar
                       (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
@@ -223,34 +223,34 @@ void SelectionPanel_RenderArmyRuntimeMetrics
               (armyRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22)) {
         if (((ArmyRuntimeArticulatedContactState *)&(armyRuntime->classState).classStateAC)->
             terrainContactMode == ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
-          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+          energyDemand = ModelRuntime_QueryHierarchyEnergyDemand(runtimeEntry);
+          topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
-                              (UiNumericValue32)(activeTotalMetrics >> 32),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                              (UiNumericValue32)energyDemand.totalQ4,(UiNumericValue32)energyDemand.activeQ4,SELECTION_PANEL_CELL_HIERARCHY_METER);
           groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
           if (groupNumber == 0) {
-            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
-            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
-          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,(armyRuntime->classLinkState).classState68,
                      (armyRuntime->classLinkState).classState64,SELECTION_PANEL_CELL_TOP_BAR);
-          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+          conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
-          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
+          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeter((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
@@ -261,40 +261,40 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                      panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
         else if (((armyRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) {
-          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          workingValue = (int)(activeTotalMetrics >> 32);
+          energyDemand = ModelRuntime_QueryHierarchyEnergyDemand(runtimeEntry);
+          workingValue = (int)energyDemand.totalQ4;
           if (workingValue == 0) {
-            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
-            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
-                                (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                                (UiNumericValue32)energyDemand.activeQ4,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
           if (groupNumber == 0) {
-            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
-            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
-          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawForwardCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
-          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+          conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
-          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
+          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeter((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
@@ -305,41 +305,41 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                      panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
         else {
-          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          workingValue = (int)(activeTotalMetrics >> 32);
+          energyDemand = ModelRuntime_QueryHierarchyEnergyDemand(runtimeEntry);
+          workingValue = (int)energyDemand.totalQ4;
           if (workingValue == 0) {
-            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
-            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
-                                (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                                (UiNumericValue32)energyDemand.activeQ4,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
           if (groupNumber == 0) {
-            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
-            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvance
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
-          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,armyRuntime->researchDurationTicks,
                      armyRuntime->researchElapsedTicks,SELECTION_PANEL_CELL_TOP_BAR);
-          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+          conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
-          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
+          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeter((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
@@ -353,38 +353,38 @@ void SelectionPanel_RenderArmyRuntimeMetrics
       }
     }
     if (((armyRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) {
-      activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-      workingValue = (int)(activeTotalMetrics >> 32);
+      energyDemand = ModelRuntime_QueryHierarchyEnergyDemand(runtimeEntry);
+      workingValue = (int)energyDemand.totalQ4;
       if (workingValue == 0) {
-        topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+        topLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
       }
       else {
-        topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+        topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvance
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
-                            (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                            (UiNumericValue32)energyDemand.activeQ4,SELECTION_PANEL_CELL_HIERARCHY_METER);
       }
       groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
       if (groupNumber == 0) {
-        topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+        topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
       }
       else {
-        topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
+        topRightAdvance = SelectionPanel_DrawNumberCellAndAdvance
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                             groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
       }
-      bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+      bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                          (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-      bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+      bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                          (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
       SelectionPanel_DrawForwardCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
                  SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
-      scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+      conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
-                 ,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
+                 ,(UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,SELECTION_PANEL_CELL_BOTTOM_BAR);
       SelectionPanel_DrawSolidCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
                  SELECTION_PANEL_CELL_LEFT_BAR);
@@ -393,39 +393,39 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                  SELECTION_PANEL_CELL_RIGHT_BAR);
     }
     else {
-      activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-      workingValue = (int)(activeTotalMetrics >> 32);
+      energyDemand = ModelRuntime_QueryHierarchyEnergyDemand(runtimeEntry);
+      workingValue = (int)energyDemand.totalQ4;
       if (workingValue == 0) {
-        topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+        topLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
       }
       else {
-        topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+        topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvance
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
-                            (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                            (UiNumericValue32)energyDemand.activeQ4,SELECTION_PANEL_CELL_HIERARCHY_METER);
       }
       groupNumber = GameFactionRuntime_FindRuntimeGroupNumber(runtimeEntry);
       if (groupNumber == 0) {
-        topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+        topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
       }
       else {
-        topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
+        topRightAdvance = SelectionPanel_DrawNumberCellAndAdvance
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                             groupNumber,SELECTION_PANEL_CELL_GROUP_NUMBER);
       }
-      bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+      bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                          (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-      bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+      bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                          (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
       SelectionPanel_DrawProportionalCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
                  armyRuntime->researchDurationTicks,
                  armyRuntime->researchElapsedTicks,SELECTION_PANEL_CELL_TOP_BAR);
-      scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+      conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
-                 ,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
+                 ,(UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,SELECTION_PANEL_CELL_BOTTOM_BAR);
       SelectionPanel_DrawSolidCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
                  SELECTION_PANEL_CELL_LEFT_BAR);
@@ -435,20 +435,20 @@ void SelectionPanel_RenderArmyRuntimeMetrics
     }
   }
   else {
-    topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+    topLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                        (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
-    topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+    topRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                        (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
-    bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+    bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvance
                        (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
-    bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
+    bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvance
                        (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
     SelectionPanel_DrawForwardCappedBar
               (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
-    scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+    conditionRatioQ12 = ModelRuntime_QueryHierarchyConditionRatioQ12(runtimeEntry);
     SelectionPanel_DrawProportionalCappedBar
               (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX,
-               (UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
+               (UiNumericValue32)Q12_ONE,(UiNumericValue32)conditionRatioQ12,SELECTION_PANEL_CELL_BOTTOM_BAR);
     SelectionPanel_DrawSolidCappedBar
               (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
     SelectionPanel_DrawSolidCappedBar
@@ -1484,7 +1484,7 @@ bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
 
 /* Address: 0x00530770.
    Returns the OR of the attachment effect variant masks of all entities in the local selection (per entity from
-   ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs).
+   ArmyRuntime_GetAttachmentEffectVariantMask).
 */
 uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
 
@@ -1499,7 +1499,7 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntryCursor != NULL) {
-      entryVariantMask = ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs
+      entryVariantMask = ArmyRuntime_GetAttachmentEffectVariantMask
                         (((*selectionEntryCursor)->common).ownership.definitionOrClassRecord);
       effectVariantMask = effectVariantMask | entryVariantMask;
     }
@@ -1732,7 +1732,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
     ((ModelRuntimeSlot *)class13Record)->classState.stateFlags =
          ((ModelRuntimeSlot *)class13Record)->classState.stateFlags & ~ARMY_MODEL_STATE_RALLY_POINT_SET;
     if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
-      localPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorRecord,modelNodeRuntime);
+      localPoint = ModelNodeRuntime_TransformLocalPoint(anchorRecord,modelNodeRuntime);
       ((ModelRuntimeSlot *)class13Record)->classLinkState.classState78 = localPoint.xQ12;
       ((ModelRuntimeSlot *)class13Record)->classLinkState.classState7C = localPoint.yQ12;
       SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);
@@ -1829,13 +1829,13 @@ void SelectionPanel_DrawHorizontalNumberTextCappedBar
   uint32_t textRightBorderSubresource;
   uint32_t requiredEnd;
   uint32_t *cellFlags;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   GraphicsTextureLogicalSize pieceSize;
   GraphicsTextureLogicalSize textLeftBorderSize;
   GraphicsTextureLogicalSize textRightBorderSize;
   GraphicsTextureLogicalSize leftCapSize;
   
-  textExtent = RichTextCommandStream_MeasureRegs(g_SelectionPanelNumberTextStyle,commandStream);
+  textExtent = RichTextCommandStream_MeasureLine(g_SelectionPanelNumberTextStyle,commandStream);
   panelData = g_SelectionPanelData;
   textWidth = textExtent.widthPixels;
   cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
@@ -1967,11 +1967,11 @@ void SelectionPanel_DrawHorizontalNumberTextCappedBar
 
 /* Address: 0x0052D600.
    Draws a number cell: the cell's sprite at (originY, originX) plus the cell offsets, with value formatted as
-   signed decimal text centred on it. Returns the coordinates after the cell (see SelectionPanelAdvanceEaxEdx8;
+   signed decimal text centred on it. Returns the coordinates after the cell (see SelectionPanelCellAdvance;
    SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_* keep an axis at the origin plus offset). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the group number.
 */
-SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
+SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex)
@@ -1984,14 +1984,14 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
   uint32_t spriteHeight;
   int cellX;
   uint32_t *cellFlagsPtr;
-  RichTextExtentRegs textExtent;
-  SelectionPanelAdvanceEaxEdx8 cellAdvance;
+  RichTextExtent textExtent;
+  SelectionPanelCellAdvance cellAdvance;
   GraphicsTextureLogicalSize spriteSize;
 
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,15,1,value,
              (uint16_t *)&g_SelectionPanelNumberScratchUtf16);
-  textExtent = RichTextCommandStream_MeasureRegs
+  textExtent = RichTextCommandStream_MeasureLine
                     (g_SelectionPanelNumberTextStyle,(uint16_t *)&g_SelectionPanelNumberScratchUtf16);
   panelData = g_SelectionPanelData;
   cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
@@ -2030,10 +2030,10 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
 
 /* Address: 0x0052D6F0.
    Draws an icon cell: the cell's sprite at (originY, originX) plus the cell offsets. Returns the coordinates
-   after the cell (see SelectionPanel_DrawNumberCellAndAdvanceRegs). Called by
+   after the cell (see SelectionPanel_DrawNumberCellAndAdvance). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the frame corners.
 */
-SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
+SelectionPanelCellAdvance SelectionPanel_DrawIconCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelCellIndex cellIndex)
@@ -2044,7 +2044,7 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
   uint32_t subresourceOrWidth;
   uint32_t spriteHeight;
   uint32_t *cellFlagsPtr;
-  SelectionPanelAdvanceEaxEdx8 cellAdvance;
+  SelectionPanelCellAdvance cellAdvance;
   GraphicsTextureLogicalSize spriteSize;
 
   panelData = g_SelectionPanelData;
@@ -2080,10 +2080,10 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
 /* Address: 0x0052D770.
    Draws a meter cell: the cell's base sprite at (originY, originX) plus the cell offsets and over it frame
    1..17 of the meter (currentValue clamped to 0..maximumValue, rounded to sixteenths; 17 when maximumValue is
-   0). Returns the coordinates after the cell (see SelectionPanel_DrawNumberCellAndAdvanceRegs). Called by
+   0). Returns the coordinates after the cell (see SelectionPanel_DrawNumberCellAndAdvance). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the hierarchy meter.
 */
-SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+SelectionPanelCellAdvance SelectionPanel_DrawSteppedMeterCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
@@ -2099,7 +2099,7 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
   int cellY;
   uint32_t spriteHeight;
   uint32_t *cellFlagsPtr;
-  SelectionPanelAdvanceEaxEdx8 cellAdvance;
+  SelectionPanelCellAdvance cellAdvance;
   GraphicsTextureLogicalSize spriteSize;
 
   panelData = g_SelectionPanelData;

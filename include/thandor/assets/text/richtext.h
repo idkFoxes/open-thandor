@@ -78,7 +78,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041D300 */
-RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
+RichTextExtent RichTextCommandStream_MeasureWrappedBlock
           (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth);
 
 /* 0x0041D7C0 */
@@ -136,7 +136,7 @@ bool RichTextCommandStream_CopyExpanded
            uint32_t *outBytesWritten);
 
 /* 0x0041CF30 */
-RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *commandStream);
+RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,uint16_t *commandStream);
 
 /* 0x0041D0F0 */
 bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight);

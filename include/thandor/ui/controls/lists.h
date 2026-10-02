@@ -280,7 +280,7 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
 UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed);
 
 /* 0x004B9460 */
-UiScrollableContentDimensionsEdxEax8 UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control);
+UiScrollableViewportSize UiScrollableControl_GetViewportSize(UiScrollableControl *control);
 
 /* 0x004BC310 */
 uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord *recordBlock);

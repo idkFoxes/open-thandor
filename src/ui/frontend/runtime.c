@@ -95,7 +95,7 @@ nextFrame:
           g_FrontendPendingPageActionDepth = 0;
           if ((g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE) && (g_UiRootNode == UI_ROOT_STACK_END)) {
             /* the last UI root was popped: the player quit the game */
-            FrontendRuntime_ShutdownAndReleaseResourcesRegs();
+            FrontendRuntime_ShutdownAndReleaseResources();
             /* The asm returns with CLC and EAX left over from UiFrame_ProcessAndPresent (the shutdown helper
                preserves EAX), which the only caller ignores. */
             return true;
@@ -248,7 +248,7 @@ nextFrame:
       else {
         if (g_FrontendPendingPageAction != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE) {
           /* every remaining action leaves the menu: tear the frontend down first */
-          FrontendRuntime_ShutdownAndReleaseResourcesRegs();
+          FrontendRuntime_ShutdownAndReleaseResources();
           if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_START_SESSION) {
             PersistentSettings_Flush();
             if (!InGameRuntime_RunSessionUntilExit
@@ -337,7 +337,7 @@ advanceCampaign:
     } while (true);
   }
 initFailed:
-  FrontendRuntime_ShutdownAndReleaseResourcesRegs();
+  FrontendRuntime_ShutdownAndReleaseResources();
   *outError = errorOrByteCount;
   return false;
 noNextLevel:
@@ -1342,7 +1342,7 @@ void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
     }
     callbackContext->motion.targetDistanceQ12 = targetDistance + convergenceStep;
     /* heading ^ 0x8000 turns half round: the camera sits behind the target */
-    cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
+    cameraOffset = FixedMath_DirectionFromAnglesScaled
                       (-callbackContext->motion.pitchAngle,
                        callbackContext->motion.headingAngle ^ FIXED_ANGLE16_HALF_TURN,targetDistance + convergenceStep);
     callbackContext->motion.positionXQ12 =
@@ -1593,7 +1593,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   int channel3OrHintValue;
   int keyframeChannel5;
   int channel4OrHalfHeight;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint32_t activePageIndex;
   uint16_t *hintTextResult;
   GraphicsTextureLogicalSize windowTextureSize;
@@ -1670,7 +1670,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   commandStream = hintTextResult;
   if (commandStream != previousCommandStream) {
     frontendRuntime->hintBox.commandStream = commandStream;
-    textExtent = RichTextCommandStream_MeasureRegs(g_UiTextStyleNormal,commandStream);
+    textExtent = RichTextCommandStream_MeasureLine(g_UiTextStyleNormal,commandStream);
     channel3OrHintValue = (int)(textExtent.widthPixels + 1) >> 1;
     channel4OrHalfHeight = (int)(textExtent.heightPixels + 1) >> 1;
     frontendRuntime->hintBox.base.leftOffset = channel3OrHintValue;
@@ -2676,7 +2676,7 @@ void Frontend_PlaySelectedEndMovie(void)
    installs the 3D menu-room callbacks and activates the record's camera transition. It then reports this
    player ready and draws frames until every player is ready (network sessions wait here for the peers).
    Returns true on success (the root is g_FrontendRootNode); false with the failing call's error in *outError.
-   FrontendRuntime_ShutdownAndReleaseResourcesRegs undoes it.
+   FrontendRuntime_ShutdownAndReleaseResources undoes it.
 */
 bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
 
@@ -3429,7 +3429,7 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
     g_TextureDeviceReloadCount = 0;
   }
   world = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
-  worldVector0 = WorldRuntime_GetCameraPositionRegs(world);
+  worldVector0 = WorldRuntime_GetCameraPosition(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,worldVector0.xQ12,g_FrontendDebugOverlayTextSlot04Utf16);
@@ -3439,7 +3439,7 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,worldVector0.zQ12,g_FrontendDebugOverlayTextSlot06Utf16);
-  worldVector1 = WorldRuntime_GetCameraOrientationRegs(world);
+  worldVector1 = WorldRuntime_GetCameraOrientation(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,worldVector1.magnitudeQ12,g_FrontendDebugOverlayTextSlot07Utf16);
@@ -3468,9 +3468,9 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
    Tears down what Frontend_Init built, before a session starts, before the menu is rebuilt and when the game
    quits: removes the frame hooks and frontend timers, saves the root's state snapshot and pops/frees the
    frontend root, releases the ROM registry, world objects, central ROM, textures, palette, menu sounds and
-   music, and flushes pending input. Preserves EAX, ECX and EDX.
+   music, and flushes pending input.
 */
-void FrontendRuntime_ShutdownAndReleaseResourcesRegs(void)
+void FrontendRuntime_ShutdownAndReleaseResources(void)
 
 {
   UiRootNode *root;

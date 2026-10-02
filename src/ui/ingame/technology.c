@@ -472,7 +472,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   uint32_t costColor;
   int areaIndex;
   bool isAvailable;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint16_t *resolvedText;
   uint16_t *resolvedName;
   ArmyAssetRecordPrefix *armyRecord;
@@ -615,7 +615,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       RichTextCommandStream_PatchPayloadBySelector(0,&g_InGameTechnologyCostRichTextScratch,labelText);
       RichTextCommandStream_PatchPayloadBySelector(1,g_InGameTechnologyEnergyCostTextUtf16,labelText);
       RichTextCommandStream_PatchPayloadBySelector(2,g_InGameTechnologyResearchTimeTextUtf16,labelText);
-      textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
+      textExtent = RichTextCommandStream_MeasureWrappedBlock
                          (g_UiTextStyleNormal,labelText,
                           ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->wrapWidth);
       INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = textExtent.widthPixels + 6;

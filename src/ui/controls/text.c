@@ -1781,7 +1781,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
   int targetLeftOrTileX;
   int frameTop;
   bool framebufferUnavailable;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint16_t *resolvedText;
   GraphicsTextureLogicalSize tileSize;
   
@@ -1795,7 +1795,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
       resolvedText = TextResource_Resolve((TextResourceId)commandStream);
       commandStream = resolvedText;
     }
-    textExtent = RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
+    textExtent = RichTextCommandStream_MeasureLine(g_UiTooltipTextStyle,commandStream);
     tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,g_UiWindowTextureSource);
     edgeTileWidth = tileSize.logicalWidthPixels;
     frameWidthOrMiddleEnd = textExtent.widthPixels + edgeTileWidth * 2;
@@ -1932,7 +1932,7 @@ void UiFramedTextButtonControl_DrawClipped
   int rightCornerXOrTextY;
   bool framebufferUnavailable;
   bool drawFrame;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint16_t *resolvedText;
   GraphicsTextureLogicalSize tileSizeOrEndCapSize;
   GraphicsTextureLogicalSize focusTileSize;
@@ -2006,7 +2006,7 @@ void UiFramedTextButtonControl_DrawClipped
     }
     resolvedText = TextResource_Resolve(control->textResourceId);
     commandStream = resolvedText;
-    textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
+    textExtent = RichTextCommandStream_MeasureLine(control->packedTextStyle,commandStream);
     framePieceOrTextWidth = textExtent.widthPixels;
     bottomCornerYOrTextX = (int)((control->selectable).base.layoutWidth - framePieceOrTextWidth) >> 1;
     rightCornerXOrTextY = (int)((control->selectable).base.layoutHeight - textExtent.heightPixels) >> 1;
@@ -2293,7 +2293,7 @@ void UiWindowControl_DrawFramedTextAndChrome
   int focusCoordOrIconX;
   int rightCornerXOrTextY;
   bool framebufferUnavailable;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint16_t *resolvedText;
   GraphicsTextureLogicalSize tileSizeOrEndCapSize;
   GraphicsTextureLogicalSize focusTileSize;
@@ -2361,7 +2361,7 @@ void UiWindowControl_DrawFramedTextAndChrome
   resolvedText = TextResource_Resolve(control->textResourceId);
   commandStream = resolvedText;
   bottomCornerYOrTextX = (control->selectable).base.layoutWidth;
-  textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
+  textExtent = RichTextCommandStream_MeasureLine(control->packedTextStyle,commandStream);
   framePieceOrTextWidth = textExtent.widthPixels;
   rightCornerXOrTextY = (int)((control->selectable).base.layoutHeight - textExtent.heightPixels) >> 1;
   bottomCornerYOrTextX = ((int)(((uint32_t)(bottomCornerYOrTextX * 3) >> 2) - framePieceOrTextWidth) >> 1) +
@@ -2952,7 +2952,7 @@ void UiSingleLineTextControl_DrawClipped
   int alignOffsetX;
   int tileX;
   bool framebufferUnavailable;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint16_t *resolvedText;
   GraphicsTextureLogicalSize tileSize;
   UiPixelCoordinate originalClipRight;
@@ -2982,7 +2982,7 @@ void UiSingleLineTextControl_DrawClipped
       resolvedText = TextResource_Resolve((TextResourceId)streamOrCapWidthOrChild);
       streamOrCapWidthOrChild = (UiNodeBase *)resolvedText;
     }
-    textExtent = RichTextCommandStream_MeasureRegs((textStyle | packedStyleOverride) & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE),
+    textExtent = RichTextCommandStream_MeasureLine((textStyle | packedStyleOverride) & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE),
                                                    (uint16_t *)streamOrCapWidthOrChild);
     lineWidth = (int)(g_UiTextStyleNormal << 16) >> 24; /* signed byte 1 of the packed style */
     if (lineWidth < 0) {
@@ -3132,7 +3132,7 @@ void UiTextListControl_DrawRowsAndSelection
   uint16_t **lastRowSlot;
   uint16_t **rowSlot;
   bool framebufferUnavailable;
-  RichTextExtentRegs rowExtent;
+  RichTextExtent rowExtent;
   GraphicsTextureLogicalSize capSize;
   
   if (control->rowCount != 0) {
@@ -3152,7 +3152,7 @@ void UiTextListControl_DrawRowsAndSelection
       if (!framebufferUnavailable) {
         do {
           if (rowSlot == control->selectedRowSlot) {
-            rowExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*rowSlot);
+            rowExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,*rowSlot);
             highlightWidth = rowExtent.widthPixels + 6;
             if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
@@ -3207,7 +3207,7 @@ void UiTextListControl_SelectRowFromPointer
   int32_t *leftField;
   uint32_t rowIndex;
   int controlLeftOrRowTop;
-  RichTextExtentRegs rowExtent;
+  RichTextExtent rowExtent;
   uint16_t **clickedRowSlot;
   
   topField = &(control->base).top;
@@ -3215,7 +3215,7 @@ void UiTextListControl_SelectRowFromPointer
       (leftField = &(control->base).left, controlLeftOrRowTop = *leftField, *leftField <= pointerX)) &&
      (rowIndex = (uint32_t)(pointerY - *topField) / control->rowHeight, rowIndex < control->rowCount)) {
     clickedRowSlot = control->rowTextSlots + rowIndex;
-    rowExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*clickedRowSlot);
+    rowExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,*clickedRowSlot);
     if (pointerX - controlLeftOrRowTop < (int)(rowExtent.widthPixels + 6)) {
       control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_SELECTION_CONFIRMED;
       if ((((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) ||
@@ -3259,7 +3259,7 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
   UiListRowCount remainingRows;
   uint16_t **candidateSlot;
   bool delegatedOrMismatch;
-  UiScrollableContentDimensionsEdxEax8 contentSize;
+  UiScrollableViewportSize viewportSize;
   
   previousSelectedSlot = control->selectedRowSlot;
   if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
@@ -3293,18 +3293,18 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
     control->selectedRowSlot = control->rowTextSlots + (control->rowCount - 1);
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
-    contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
+    viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
     rowIndexOrTopOrPulse = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) -
-            ((int)((contentSize >> 32) / (uint64_t)control->rowHeight) - 1);
+            ((int)(viewportSize.height / control->rowHeight) - 1);
     if (rowIndexOrTopOrPulse < 0) {
       rowIndexOrTopOrPulse = 0;
     }
     control->selectedRowSlot = control->rowTextSlots + rowIndexOrTopOrPulse;
   }
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
-    contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
+    viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
     pageDownRow = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) +
-            (int)((contentSize >> 32) / (uint64_t)control->rowHeight) - 1;
+            (int)(viewportSize.height / control->rowHeight) - 1;
     if (control->rowCount <= pageDownRow) {
       pageDownRow = control->rowCount - 1;
     }
@@ -3413,7 +3413,7 @@ void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **row
   UiNodeBase *parentNode;
   UiPixelExtent rowHeightPixels;
   uint32_t maximumTextWidthPixels;
-  RichTextExtentRegs measuredTextExtent;
+  RichTextExtent measuredTextExtent;
   uint32_t lineHeight;
   UiNodeVtable *parentVtable;
 
@@ -3426,7 +3426,7 @@ void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **row
   control->selectedRowSlot = rowPointers;
   (control->base).bottomOffset = rowHeightPixels * rowCount + 1;
   for (; rowCount != 0; rowCount--) {
-    measuredTextExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*rowPointers);
+    measuredTextExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,*rowPointers);
     if (maximumTextWidthPixels < measuredTextExtent.widthPixels) {
       maximumTextWidthPixels = measuredTextExtent.widthPixels;
     }
@@ -4149,7 +4149,7 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
       resolvedText = TextResource_Resolve((TextResourceId)commandStream);
       commandStream = resolvedText;
     }
-    RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
+    RichTextCommandStream_MeasureLine(g_UiTooltipTextStyle,commandStream);
     /* the size of window piece 0xBC is queried but not used */
     g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,g_UiWindowTextureSource);
     UiRootStack_InvalidateAll();
@@ -4385,7 +4385,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   int textYOrTileX;
   uint32_t textStyle;
   bool framebufferUnavailable;
-  RichTextExtentRegs textExtent;
+  RichTextExtent textExtent;
   uint16_t *resolvedText;
   GraphicsTextureLogicalSize skinSizeOrEndCapSize;
   GraphicsTextureLogicalSize focusTileSize;
@@ -4419,7 +4419,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   textXOrFocusEnd = skinSizeOrEndCapSize.logicalWidthPixels + 6;
   resolvedText = TextResource_Resolve(control->textResourceId);
   commandStream = resolvedText;
-  textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
+  textExtent = RichTextCommandStream_MeasureLine(control->packedTextStyle,commandStream);
   textYOrTileX = (int)(skinSizeOrEndCapSize.logicalHeightPixels - textExtent.heightPixels) >> 1;
   textStyle = g_UiTextStyleDisabled;
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&

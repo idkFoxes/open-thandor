@@ -239,7 +239,7 @@ void Graphics_SetProjectionClipRect
    view angles, builds the view rotation, the camera matrix (identity rotation, translation to the eye) and
    their composition g_ViewProjectionMatrixFixed, and stores the sin/cos pairs of the view azimuth plus and minus
    the half view angle atan2(1 << (12 - projectionShift), projectionScale).
-   The azimuth/elevation names follow FixedMath_DirectionFromAnglesScaledRegs, which
+   The azimuth/elevation names follow FixedMath_DirectionFromAnglesScaled, which
    Graphics_RebuildFrustumPlanes feeds with the same two angles.
 */
 void Graphics_SetViewProjectionParameters
@@ -403,7 +403,7 @@ void Graphics_RebuildFrustumPlanes(void)
   viewElevationAngle16 = g_ViewAngle1;
   viewAzimuthAngle16 = g_ViewAngle0;
   scale = 1 << (12U - (char)g_ProjectionShift & SHIFT_COUNT_MASK);
-  viewDirection = FixedMath_DirectionFromAnglesScaledRegs(g_ViewAngle1,g_ViewAngle0,g_ProjectionScaleFixed);
+  viewDirection = FixedMath_DirectionFromAnglesScaled(g_ViewAngle1,g_ViewAngle0,g_ProjectionScaleFixed);
   forwardZ = viewDirection.z;
   forwardY = viewDirection.y;
   forwardX = viewDirection.x;
@@ -461,17 +461,17 @@ void GraphicsBackend_RefreshActiveAdapterNoOp(void)
 }
 
 /* Address: 0x004BCFE0.
-   Returns the Euler angles (FixedTransform_ExtractEulerAnglesRegs, EAX/ECX/EDX) of the object's world transform
+   Returns the Euler angles (FixedTransform_ExtractEulerAngles) of the object's world transform
    at +0x10. Part of an object-transform helper family (0x004BCFE0-0x004BD0B0) that nothing in the executable
    calls; it is only listed in g_ThandorFunctionMap.
 */
 FixedRollAzimuthElevation
-GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsObject)
+GraphicsObject_ExtractTransformEulerAngles(GraphicsObjectAddress32 graphicsObject)
 
 {
   FixedRollAzimuthElevation eulerAngles;
   
-  eulerAngles = FixedTransform_ExtractEulerAnglesRegs(&((GraphicsObject *)graphicsObject)->worldTransform);
+  eulerAngles = FixedTransform_ExtractEulerAngles(&((GraphicsObject *)graphicsObject)->worldTransform);
   return eulerAngles;
 }
 
@@ -481,7 +481,7 @@ GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsO
    transform at +0x10 into the shared scratch matrix, applies it to the direction's unit vector and returns the
    resulting angles. No caller in the executable (only in g_ThandorFunctionMap).
 */
-FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
+FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAngles
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           GraphicsObjectAddress32 graphicsObject)
 
@@ -492,7 +492,7 @@ FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesReg
             (&g_GraphicsDirectionInverseTransform,&((GraphicsObject *)graphicsObject)->worldTransform);
   FixedMath_WriteDirectionQ28(&g_GraphicsDirectionWorld,elevationAngle,azimuthAngle);
   FixedTransform_ApplyPoint(&g_GraphicsDirectionLocal,&g_GraphicsDirectionWorld,&g_GraphicsDirectionInverseTransform);
-  localAngles = FixedMath_VectorToAnglesVec3Regs(&g_GraphicsDirectionLocal);
+  localAngles = FixedMath_VectorToAnglesVec3(&g_GraphicsDirectionLocal);
   return localAngles;
 }
 
@@ -500,7 +500,7 @@ FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesReg
 /* Address: 0x004BD050.
    Sets the object's offset from its parent in polar form: the distance at +0x40 and the 16-bit elevation and
    azimuth packed into +0x44 (elevation in the high word), which GraphicsObject_RebuildTransformHierarchyRecursive
-   turns into the translation with FixedMath_DirectionFromAnglesScaledRegs. No caller in the executable (only in
+   turns into the translation with FixedMath_DirectionFromAnglesScaled. No caller in the executable (only in
    g_ThandorFunctionMap).
 */
 void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
@@ -553,7 +553,7 @@ void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 g
   
   object = (GraphicsObject *)graphicsObjectAddress;
   /* a child builds its local transform in the scratch matrix shared with
-     GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs */
+     GraphicsObject_ConvertWorldDirectionAnglesToLocalAngles */
   output = &g_GraphicsDirectionInverseTransform;
   parentObjectOrCursor = object->parentObject;
   if (parentObjectOrCursor == 0) {
@@ -562,7 +562,7 @@ void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 g
   FixedTransform_BuildRotationBasis
             (output,(int)object->rotationAnglesPacked >> 16,object->rotationAnglesPacked & FIXED_ANGLE16_MASK,
              object->rotationAzimuth);
-  translationDirection = FixedMath_DirectionFromAnglesScaledRegs
+  translationDirection = FixedMath_DirectionFromAnglesScaled
                     ((int)object->translationAnglesPacked >> 16,object->translationAnglesPacked & FIXED_ANGLE16_MASK,
                      object->translationDistance);
   (output->translation).x = translationDirection.x;
