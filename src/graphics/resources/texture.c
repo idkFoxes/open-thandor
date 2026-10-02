@@ -269,56 +269,56 @@ GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
 
 /* Address: 0x004A92C0.
    Hit test of a sprite drawn at (drawX, drawY) (installed as g_GraphicsTextureSourceTestOpaquePixel): maps the
-   query point into the stored pixels of the subresource and sets CF when that pixel has a non-zero alpha,
-   for direct ARGB and paletted subresources alike. CF is clear for transparent pixels, points outside the
-   stored pixels and invalid input.
+   query point into the stored pixels of the subresource and returns true when that pixel has a non-zero
+   alpha, for direct ARGB and paletted subresources alike. Returns false for transparent pixels, points
+   outside the stored pixels and invalid input.
 */
 bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  uint8_t *recordField;
-  AssetRelativeOffset tableOffset;
-  int paletteIndex;
-  int localXOrPixelIndex;
+  const GraphicsTextureSourceEntry *entry;
+  const uint8_t *pixels;
   int recordOffset;
+  int paletteIndex;
+  int localX;
   int localY;
+  int pixelIndex;
 
-  if ((drawX <= queryX) && (drawY <= queryY)) {
-    if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
-       (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-      tableOffset = (sourceAsset->tableDescriptor).subresourceTableOffset;
-      recordOffset = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE;
-      recordField = (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->originX;
-      localXOrPixelIndex = (queryX - drawX) - *(int *)recordField;
-      if ((((*(int *)recordField <= queryX - drawX) &&
-           (recordField = (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->originY,
-           localY = (queryY - drawY) - *(int *)recordField,
-           *(int *)recordField <= queryY - drawY)) &&
-          (localXOrPixelIndex < (int)((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->pixelWidth)) &&
-         (localY < (int)((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->pixelHeight)) {
-        paletteIndex = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->paletteIndex;
-        localXOrPixelIndex = localY * ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->pixelWidth +
-                             localXOrPixelIndex;
-        /* opaque = any alpha bit set in the ARGB8888 pixel (direct) or palette entry (paletted, 8 bytes each in
-           the 256-entry bank at asset + 0x200 + paletteIndex * 0x800) */
-        if (paletteIndex == -1) {
-          if (ARGB8888_RGB_MASK <
-              *(uint32_t *)(localXOrPixelIndex * 4 +
-                        (int)((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->dataOffset +
-                        (int)sourceAsset)) {
-            return true;
-          }
-        }
-        else if (ARGB8888_RGB_MASK <
-                 ((GraphicsPaletteTextureSourceAsset *)sourceAsset)->paletteEntries[paletteIndex * GRAPHICS_PALETTE_BANK_ENTRIES + (uint32_t)*(uint8_t *)(localXOrPixelIndex + (int)((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->dataOffset + (int)sourceAsset)].argb8888) {
-          return true;
-        }
-      }
-    }
+  if ((queryX < drawX) || (queryY < drawY)) {
+    return false;
   }
-  return false;
+  if (((sourceAsset->common).magic != ASSET_MAGIC_GFX) ||
+      (subresourceIndex >= (sourceAsset->tableDescriptor).subresourceCount)) {
+    return false;
+  }
+  recordOffset = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE;
+  entry = (const GraphicsTextureSourceEntry *)
+          ((uint8_t *)sourceAsset + recordOffset + (sourceAsset->tableDescriptor).subresourceTableOffset);
+  /* query point relative to the stored pixels, which start at (originX, originY) of the sprite */
+  localX = (queryX - drawX) - entry->originX;
+  if (entry->originX > queryX - drawX) {
+    return false;
+  }
+  localY = (queryY - drawY) - entry->originY;
+  if (entry->originY > queryY - drawY) {
+    return false;
+  }
+  if ((localX >= (int)entry->pixelWidth) || (localY >= (int)entry->pixelHeight)) {
+    return false;
+  }
+  paletteIndex = entry->paletteIndex;
+  pixelIndex = localY * entry->pixelWidth + localX;
+  pixels = (const uint8_t *)sourceAsset + entry->dataOffset;
+  /* opaque = any alpha bit set in the ARGB8888 pixel (direct) or palette entry (paletted, 8 bytes each in
+     the 256-entry bank at asset + 0x200 + paletteIndex * 0x800) */
+  if (paletteIndex == -1) {
+    return ARGB8888_RGB_MASK < ((const uint32_t *)pixels)[pixelIndex];
+  }
+  return ARGB8888_RGB_MASK <
+         ((GraphicsPaletteTextureSourceAsset *)sourceAsset)->paletteEntries
+                    [paletteIndex * GRAPHICS_PALETTE_BANK_ENTRIES + (uint32_t)pixels[pixelIndex]].argb8888;
 }
 
 
@@ -1681,6 +1681,119 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
 }
 
 
+/* Unscaled alpha of one destination pixel: at full size (blockSize 1) the source byte itself, otherwise the
+   16-bit sum of four bytes of the blockSize x blockSize source block: the whole 2x2 block at half size, the
+   bytes at (0,0), (2,0), (0,2) and (2,2) at quarter size. */
+static uint16_t GraphicsTextureUploadAlpha_SampleBlock(const uint8_t *maskCursor,int maskWidth,int blockSize)
+{
+  int tap;
+
+  if (blockSize == 1) {
+    return *maskCursor;
+  }
+  tap = blockSize / 2;
+  return (uint16_t)((uint16_t)maskCursor[0] + (uint16_t)maskCursor[tap] + (uint16_t)maskCursor[maskWidth * tap] +
+                    (uint16_t)maskCursor[maskWidth * tap + tap]);
+}
+
+/* GraphicsTextureUploadAlpha_Upload once g_SurfaceDesc holds the locked staging surface: writes one alpha
+   value per blockSize x blockSize block of source bytes (8-bit surfaces are left untouched) and unlocks it. */
+static void GraphicsTextureUploadAlpha_FillLockedSurface
+          (GraphicsTextureResource *texture,IDirectDrawSurface3 *stagingSurface3,
+           GraphicsTextureSourceAsset *sourceAsset,GraphicsSubresourceIndex subresourceIndex,int blockSize)
+{
+  TH_LEGACY_LPVOID surfaceBits = g_SurfaceDesc.lpSurface;
+  TH_LEGACY_LONG destinationPitch = g_SurfaceDesc.lPitch;
+  const GraphicsTextureSourceEntry *entry;
+  const uint8_t *maskCursor;
+  int maskWidth;
+  int rowsRemaining;
+  int columnsRemaining;
+  DDPIXELFORMAT *destinationFormat;
+  bool sixteenBitPixels;
+  int topAlphaBit;
+  uint8_t rotateShift;
+  uint32_t rgbMaskBits;
+  uint16_t maskSum;
+  uint8_t *destinationRow;
+  uint8_t *destination;
+
+  entry = (const GraphicsTextureSourceEntry *)
+          ((uint8_t *)sourceAsset + (int)(subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE +
+                                          (sourceAsset->tableDescriptor).subresourceTableOffset));
+  maskWidth = (int)entry->pixelWidth;
+  rowsRemaining = (int)entry->pixelHeight;
+  maskCursor = (const uint8_t *)sourceAsset + entry->dataOffset;
+  destinationFormat = texture->pixelFormat;
+  if ((maskWidth != 0) && (rowsRemaining != 0) && (destinationFormat->dwRGBBitCount != 8)) {
+    topAlphaBit = 31;
+    if (destinationFormat->dwRGBAlphaBitMask != 0) {
+      topAlphaBit = GraphicsTextureUploadScaled_HighestMaskBit(destinationFormat->dwRGBAlphaBitMask);
+    }
+    /* ROL by (top alpha bit - 7) puts the byte's top bit on the mask's top bit (top alpha bit - 9 for the
+       10-bit sum of four bytes); bits that spill into the RGB fields are hidden by OR-ing all RGB mask bits */
+    rotateShift = (uint8_t)(topAlphaBit - ((blockSize == 1) ? 7 : 9)) & SHIFT_COUNT_MASK;
+    rgbMaskBits = destinationFormat->dwRBitMask | destinationFormat->dwGBitMask | destinationFormat->dwBBitMask;
+    sixteenBitPixels = destinationFormat->dwRGBBitCount < 17;
+    destinationRow = (uint8_t *)surfaceBits;
+    do {
+      destination = destinationRow;
+      columnsRemaining = maskWidth;
+      do {
+        maskSum = GraphicsTextureUploadAlpha_SampleBlock(maskCursor,maskWidth,blockSize);
+        if (sixteenBitPixels) {
+          *(uint16_t *)destination =
+               (uint16_t)(maskSum << rotateShift | maskSum >> (32 - rotateShift) | (uint16_t)rgbMaskBits);
+        }
+        else {
+          *(uint32_t *)destination =
+               (uint32_t)maskSum << rotateShift | (uint32_t)(maskSum >> (32 - rotateShift)) | rgbMaskBits;
+        }
+        /* Original quirk: 32-bit stores also advance only 2 bytes (ADD EDI,0x2), so each one overlaps the
+           previous one. */
+        destination += 2;
+        maskCursor += blockSize;
+        columnsRemaining -= blockSize;
+      } while (columnsRemaining > 0);
+      /* skip the source rows the block covered below this one */
+      maskCursor += maskWidth * (blockSize - 1);
+      destinationRow += destinationPitch;
+      rowsRemaining -= blockSize;
+    } while (rowsRemaining > 0);
+  }
+  stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
+}
+
+/* Shared body of GraphicsTexture_UploadAlpha_1x (blockSize 1), GraphicsTexture_UploadAlpha_2x (blockSize 2)
+   and GraphicsTexture_UploadAlpha_4x (blockSize 4): restores a lost staging surface, locks it and fills it. */
+static void GraphicsTextureUploadAlpha_Upload(GraphicsTextureResource *texture,int blockSize)
+{
+  IDirectDrawSurface3 *stagingSurface3;
+  GraphicsTextureSourceAsset *sourceAsset;
+  GraphicsSubresourceIndex subresourceIndex;
+  TH_LEGACY_HRESULT restoreResult;
+
+  g_ActiveTextureUploads++;
+  stagingSurface3 = texture->stagingSurface3;
+  sourceAsset = texture->sourceAsset;
+  subresourceIndex = texture->subresourceIndex;
+  if (stagingSurface3 != NULL) {
+    restoreResult = 0;
+    if (stagingSurface3->lpVtbl->IsLost(stagingSurface3) != 0) {
+      restoreResult = stagingSurface3->lpVtbl->Restore(stagingSurface3);
+    }
+    if (restoreResult == 0) {
+      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
+      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
+      if (stagingSurface3->lpVtbl->Lock(stagingSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT,NULL) == 0) {
+        GraphicsTextureUploadAlpha_FillLockedSurface
+                  (texture,stagingSurface3,sourceAsset,subresourceIndex,blockSize);
+      }
+    }
+  }
+  g_ActiveTextureUploads--;
+}
+
 /* Address: 0x0057C6C0.
    Alpha counterpart of GraphicsTexture_UploadColor_1x (g_GraphicsDispatchTable.alphaUpload[0], called by
    GraphicsTextureSet_RefreshAlpha): the subresource's pixels are read as one alpha byte each and written, at
@@ -1690,104 +1803,7 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
 void GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
 
 {
-  IDirectDrawSurface3 *stagingSurface3;
-  GraphicsTextureSourceAsset *sourceAsset;
-  GraphicsSubresourceIndex subresourceIndex;
-  DDPIXELFORMAT *destinationFormat;
-  uint8_t rotateShift;
-  TH_LEGACY_LONG destinationPitch;
-  TH_LEGACY_LPVOID surfaceBits;
-  TH_LEGACY_HRESULT hresult;
-  int restoreResultOrMaskWidth;
-  uint8_t alphaShift;
-  uint32_t rgbMaskBits;
-  uint8_t *maskCursor;
-  uint16_t *destinationWord;
-  uint32_t *destinationDword;
-  int offsetOrColumnsRemaining;
-  uint16_t *destinationWordRow;
-  uint32_t *destinationDwordRow;
-  int rowsRemaining;
-  
-  g_ActiveTextureUploads++;
-  stagingSurface3 = texture->stagingSurface3;
-  sourceAsset = texture->sourceAsset;
-  subresourceIndex = texture->subresourceIndex;
-  if (stagingSurface3 != NULL) {
-    hresult = stagingSurface3->lpVtbl->IsLost(stagingSurface3);
-    restoreResultOrMaskWidth = 0;
-    if (hresult != 0) {
-      restoreResultOrMaskWidth = stagingSurface3->lpVtbl->Restore(stagingSurface3);
-    }
-    if (restoreResultOrMaskWidth == 0) {
-      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
-      hresult = stagingSurface3->lpVtbl->Lock
-                        (stagingSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT,NULL);
-      surfaceBits = g_SurfaceDesc.lpSurface;
-      destinationPitch = g_SurfaceDesc.lPitch;
-      if (hresult == 0) {
-        offsetOrColumnsRemaining = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE +
-                                   (sourceAsset->tableDescriptor).subresourceTableOffset;
-        restoreResultOrMaskWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelWidth;
-        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelHeight;
-        maskCursor = (uint8_t *)sourceAsset +
-                     ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->dataOffset;
-        if (((restoreResultOrMaskWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) &&
-           (destinationFormat->dwRGBBitCount != 8)) {
-          offsetOrColumnsRemaining = 31;
-          if (destinationFormat->dwRGBAlphaBitMask != 0) {
-            for (; destinationFormat->dwRGBAlphaBitMask >> offsetOrColumnsRemaining == 0; offsetOrColumnsRemaining--) {
-            }
-          }
-          /* ROL by (top alpha bit - 7) puts the byte's top bit on the mask's top bit; bits that spill into the RGB
-             fields are hidden by OR-ing all RGB mask bits */
-          alphaShift = (char)offsetOrColumnsRemaining - 7;
-          rgbMaskBits = destinationFormat->dwRBitMask | destinationFormat->dwGBitMask | destinationFormat->dwBBitMask;
-          destinationDword = g_SurfaceDesc.lpSurface;
-          destinationWord = g_SurfaceDesc.lpSurface;
-          offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-          destinationDwordRow = g_SurfaceDesc.lpSurface;
-          destinationWordRow = g_SurfaceDesc.lpSurface;
-          if (destinationFormat->dwRGBBitCount < 17) {
-            do {
-              do {
-                rotateShift = alphaShift & SHIFT_COUNT_MASK;
-                *destinationWord = (uint16_t)*maskCursor << rotateShift | (uint16_t)(*maskCursor >> (32 - rotateShift)) |
-                           (uint16_t)rgbMaskBits;
-                maskCursor++;
-                offsetOrColumnsRemaining--;
-                destinationWord++;
-              } while (offsetOrColumnsRemaining != 0);
-              destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
-              rowsRemaining--;
-              offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-              destinationWordRow = destinationWord;
-            } while (rowsRemaining != 0);
-          }
-          else {
-            do {
-              do {
-                rotateShift = alphaShift & SHIFT_COUNT_MASK;
-                *destinationDword = (uint32_t)*maskCursor << rotateShift | (uint32_t)(*maskCursor >> (32 - rotateShift)) | rgbMaskBits;
-                maskCursor++;
-                offsetOrColumnsRemaining--;
-                /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
-                destinationDword = (uint32_t *)((int)destinationDword + 2);
-              } while (offsetOrColumnsRemaining != 0);
-              destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
-              rowsRemaining--;
-              offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-              destinationDwordRow = destinationDword;
-            } while (rowsRemaining != 0);
-          }
-        }
-        stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
-      }
-    }
-  }
-  g_ActiveTextureUploads--;
-  return;
+  GraphicsTextureUploadAlpha_Upload(texture,1);
 }
 
 
@@ -1798,121 +1814,7 @@ void GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
 void GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
 
 {
-  int nextRemaining;
-  IDirectDrawSurface3 *stagingSurface3;
-  GraphicsTextureSourceAsset *sourceAsset;
-  GraphicsSubresourceIndex subresourceIndex;
-  DDPIXELFORMAT *destinationFormat;
-  bool hasMore;
-  TH_LEGACY_LONG destinationPitch;
-  TH_LEGACY_LPVOID surfaceBits;
-  uint8_t rotateShift;
-  uint16_t maskSum;
-  TH_LEGACY_HRESULT hresult;
-  int restoreResultOrMaskWidth;
-  uint8_t alphaShift;
-  uint32_t rgbMaskBits;
-  uint8_t *maskCursor;
-  uint16_t *destinationWord;
-  uint32_t *destinationDword;
-  int offsetOrColumnsRemaining;
-  uint16_t *destinationWordRow;
-  uint32_t *destinationDwordRow;
-  int rowsRemaining;
-  
-  g_ActiveTextureUploads++;
-  stagingSurface3 = texture->stagingSurface3;
-  sourceAsset = texture->sourceAsset;
-  subresourceIndex = texture->subresourceIndex;
-  if (stagingSurface3 != NULL) {
-    hresult = stagingSurface3->lpVtbl->IsLost(stagingSurface3);
-    restoreResultOrMaskWidth = 0;
-    if (hresult != 0) {
-      restoreResultOrMaskWidth = stagingSurface3->lpVtbl->Restore(stagingSurface3);
-    }
-    if (restoreResultOrMaskWidth == 0) {
-      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
-      hresult = stagingSurface3->lpVtbl->Lock
-                         (stagingSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT,NULL);
-      surfaceBits = g_SurfaceDesc.lpSurface;
-      destinationPitch = g_SurfaceDesc.lPitch;
-      if (hresult == 0) {
-        offsetOrColumnsRemaining = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE +
-                                   (sourceAsset->tableDescriptor).subresourceTableOffset;
-        restoreResultOrMaskWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelWidth;
-        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelHeight;
-        maskCursor = (uint8_t *)sourceAsset +
-                     ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->dataOffset;
-        if (((restoreResultOrMaskWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) &&
-           (destinationFormat->dwRGBBitCount != 8)) {
-          offsetOrColumnsRemaining = 31;
-          if (destinationFormat->dwRGBAlphaBitMask != 0) {
-            for (; destinationFormat->dwRGBAlphaBitMask >> offsetOrColumnsRemaining == 0; offsetOrColumnsRemaining--) {
-            }
-          }
-          /* as in the 1x version, for the 10-bit sum of four bytes */
-          alphaShift = (char)offsetOrColumnsRemaining - 9;
-          rgbMaskBits = destinationFormat->dwRBitMask | destinationFormat->dwGBitMask | destinationFormat->dwBBitMask;
-          destinationDword = g_SurfaceDesc.lpSurface;
-          destinationWord = g_SurfaceDesc.lpSurface;
-          offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-          destinationDwordRow = g_SurfaceDesc.lpSurface;
-          destinationWordRow = g_SurfaceDesc.lpSurface;
-          if (destinationFormat->dwRGBBitCount < 17) {
-            do {
-              do {
-                /* ADD AL / ADC AH: 16-bit sum of the 2x2 mask bytes. */
-                maskSum = (uint16_t)((uint16_t)*maskCursor + (uint16_t)maskCursor[1] + (uint16_t)maskCursor[restoreResultOrMaskWidth] +
-                                   (uint16_t)maskCursor[restoreResultOrMaskWidth + 1]);
-                rotateShift = alphaShift & SHIFT_COUNT_MASK;
-                *destinationWord = maskSum << rotateShift | maskSum >> (32 - rotateShift) | (uint16_t)rgbMaskBits;
-                maskCursor = maskCursor + 2;
-                nextRemaining = offsetOrColumnsRemaining - 2;
-                hasMore = 1 < offsetOrColumnsRemaining;
-                destinationWord++;
-                offsetOrColumnsRemaining = nextRemaining;
-              } while (nextRemaining != 0 && hasMore);
-              maskCursor = maskCursor + restoreResultOrMaskWidth;
-              destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
-              nextRemaining = rowsRemaining - 2;
-              hasMore = 1 < rowsRemaining;
-              offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-              destinationWordRow = destinationWord;
-              rowsRemaining = nextRemaining;
-            } while (nextRemaining != 0 && hasMore);
-          }
-          else {
-            do {
-              do {
-                /* ADD AL / ADC AH: 16-bit sum of the 2x2 mask bytes. */
-                maskSum = (uint16_t)((uint16_t)*maskCursor + (uint16_t)maskCursor[1] + (uint16_t)maskCursor[restoreResultOrMaskWidth] +
-                                   (uint16_t)maskCursor[restoreResultOrMaskWidth + 1]);
-                rotateShift = alphaShift & SHIFT_COUNT_MASK;
-                *destinationDword = (uint32_t)maskSum << rotateShift | (uint32_t)(maskSum >> (32 - rotateShift)) | rgbMaskBits;
-                maskCursor = maskCursor + 2;
-                nextRemaining = offsetOrColumnsRemaining - 2;
-                hasMore = 1 < offsetOrColumnsRemaining;
-                /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
-                destinationDword = (uint32_t *)((int)destinationDword + 2);
-                offsetOrColumnsRemaining = nextRemaining;
-              } while (nextRemaining != 0 && hasMore);
-              maskCursor = maskCursor + restoreResultOrMaskWidth;
-              destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
-              nextRemaining = rowsRemaining - 2;
-              hasMore = 1 < rowsRemaining;
-              offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-              destinationDwordRow = destinationDword;
-              rowsRemaining = nextRemaining;
-            } while (nextRemaining != 0 && hasMore);
-          }
-        }
-        stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
-      }
-    }
-  }
-  g_ActiveTextureUploads--;
-  return;
+  GraphicsTextureUploadAlpha_Upload(texture,2);
 }
 
 
@@ -1924,123 +1826,7 @@ void GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
 void GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
 
 {
-  int nextRemaining;
-  IDirectDrawSurface3 *stagingSurface3;
-  GraphicsTextureSourceAsset *sourceAsset;
-  GraphicsSubresourceIndex subresourceIndex;
-  DDPIXELFORMAT *destinationFormat;
-  bool hasMore;
-  TH_LEGACY_LONG destinationPitch;
-  TH_LEGACY_LPVOID surfaceBits;
-  uint8_t rotateShift;
-  uint16_t maskSum;
-  TH_LEGACY_HRESULT hresult;
-  int restoreResultOrMaskWidth;
-  uint8_t alphaShift;
-  uint32_t rgbMaskBits;
-  uint8_t *maskCursor;
-  uint16_t *destinationWord;
-  uint32_t *destinationDword;
-  int offsetOrColumnsRemaining;
-  uint16_t *destinationWordRow;
-  uint32_t *destinationDwordRow;
-  int rowsRemaining;
-  
-  g_ActiveTextureUploads++;
-  stagingSurface3 = texture->stagingSurface3;
-  sourceAsset = texture->sourceAsset;
-  subresourceIndex = texture->subresourceIndex;
-  if (stagingSurface3 != NULL) {
-    hresult = stagingSurface3->lpVtbl->IsLost(stagingSurface3);
-    restoreResultOrMaskWidth = 0;
-    if (hresult != 0) {
-      restoreResultOrMaskWidth = stagingSurface3->lpVtbl->Restore(stagingSurface3);
-    }
-    if (restoreResultOrMaskWidth == 0) {
-      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
-      hresult = stagingSurface3->lpVtbl->Lock
-                         (stagingSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT,NULL);
-      surfaceBits = g_SurfaceDesc.lpSurface;
-      destinationPitch = g_SurfaceDesc.lPitch;
-      if (hresult == 0) {
-        offsetOrColumnsRemaining = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE +
-                                   (sourceAsset->tableDescriptor).subresourceTableOffset;
-        restoreResultOrMaskWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelWidth;
-        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelHeight;
-        maskCursor = (uint8_t *)sourceAsset +
-                     ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->dataOffset;
-        if (((restoreResultOrMaskWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) &&
-           (destinationFormat->dwRGBBitCount != 8)) {
-          offsetOrColumnsRemaining = 31;
-          if (destinationFormat->dwRGBAlphaBitMask != 0) {
-            for (; destinationFormat->dwRGBAlphaBitMask >> offsetOrColumnsRemaining == 0; offsetOrColumnsRemaining--) {
-            }
-          }
-          /* as in the 1x version, for the 10-bit sum of four bytes */
-          alphaShift = (char)offsetOrColumnsRemaining - 9;
-          rgbMaskBits = destinationFormat->dwRBitMask | destinationFormat->dwGBitMask | destinationFormat->dwBBitMask;
-          destinationDword = g_SurfaceDesc.lpSurface;
-          destinationWord = g_SurfaceDesc.lpSurface;
-          offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-          destinationDwordRow = g_SurfaceDesc.lpSurface;
-          destinationWordRow = g_SurfaceDesc.lpSurface;
-          if (destinationFormat->dwRGBBitCount < 17) {
-            do {
-              do {
-                /* ADD AL / ADC AH: 16-bit sum of the four mask taps. */
-                maskSum = (uint16_t)((uint16_t)*maskCursor + (uint16_t)maskCursor[2] +
-                                   (uint16_t)maskCursor[restoreResultOrMaskWidth * 2] +
-                                   (uint16_t)maskCursor[restoreResultOrMaskWidth * 2 + 2]);
-                rotateShift = alphaShift & SHIFT_COUNT_MASK;
-                *destinationWord = maskSum << rotateShift | maskSum >> (32 - rotateShift) | (uint16_t)rgbMaskBits;
-                maskCursor = maskCursor + 4;
-                nextRemaining = offsetOrColumnsRemaining - 4;
-                hasMore = 3 < offsetOrColumnsRemaining;
-                destinationWord++;
-                offsetOrColumnsRemaining = nextRemaining;
-              } while (nextRemaining != 0 && hasMore);
-              maskCursor = maskCursor + restoreResultOrMaskWidth * 3;
-              destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
-              nextRemaining = rowsRemaining - 4;
-              hasMore = 3 < rowsRemaining;
-              offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-              destinationWordRow = destinationWord;
-              rowsRemaining = nextRemaining;
-            } while (nextRemaining != 0 && hasMore);
-          }
-          else {
-            do {
-              do {
-                /* ADD AL / ADC AH: 16-bit sum of the four mask taps. */
-                maskSum = (uint16_t)((uint16_t)*maskCursor + (uint16_t)maskCursor[2] +
-                                   (uint16_t)maskCursor[restoreResultOrMaskWidth * 2] +
-                                   (uint16_t)maskCursor[restoreResultOrMaskWidth * 2 + 2]);
-                rotateShift = alphaShift & SHIFT_COUNT_MASK;
-                *destinationDword = (uint32_t)maskSum << rotateShift | (uint32_t)(maskSum >> (32 - rotateShift)) | rgbMaskBits;
-                maskCursor = maskCursor + 4;
-                nextRemaining = offsetOrColumnsRemaining - 4;
-                hasMore = 3 < offsetOrColumnsRemaining;
-                /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
-                destinationDword = (uint32_t *)((int)destinationDword + 2);
-                offsetOrColumnsRemaining = nextRemaining;
-              } while (nextRemaining != 0 && hasMore);
-              maskCursor = maskCursor + restoreResultOrMaskWidth * 3;
-              destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
-              nextRemaining = rowsRemaining - 4;
-              hasMore = 3 < rowsRemaining;
-              offsetOrColumnsRemaining = restoreResultOrMaskWidth;
-              destinationDwordRow = destinationDword;
-              rowsRemaining = nextRemaining;
-            } while (nextRemaining != 0 && hasMore);
-          }
-        }
-        stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
-      }
-    }
-  }
-  g_ActiveTextureUploads--;
-  return;
+  GraphicsTextureUploadAlpha_Upload(texture,4);
 }
 
 
@@ -2089,6 +1875,52 @@ void GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,G
 }
 
 
+/* One creation attempt of GraphicsTexture_CreateDeviceTexture, with g_SurfaceDesc describing the device
+   surface: creates the surface, queries its IDirectDrawSurface3 and IDirect3DTexture2 interfaces and loads the
+   staging texture into it. Returns the result of the first failing step (0 when all succeeded); the objects
+   obtained so far are left in *deviceSurfaceBase, *deviceSurface3 and *deviceTexture2. */
+static TH_LEGACY_HRESULT GraphicsTexture_CreateAndLoadDeviceSurface
+          (GraphicsTextureResource *texture,IDirectDrawSurface **deviceSurfaceBase,
+           IDirectDrawSurface3 **deviceSurface3,IDirect3DTexture2 **deviceTexture2)
+{
+  TH_LEGACY_HRESULT hresult;
+
+  hresult = g_DirectDraw2->lpVtbl->CreateSurface(g_DirectDraw2,&g_SurfaceDesc,deviceSurfaceBase,NULL);
+  if (hresult != 0) {
+    return hresult;
+  }
+  hresult = (*deviceSurfaceBase)->lpVtbl->QueryInterface
+                    (*deviceSurfaceBase,&IID_IDirectDrawSurface3_Local,deviceSurface3);
+  if (hresult != 0) {
+    return hresult;
+  }
+  hresult = (*deviceSurface3)->lpVtbl->QueryInterface
+                    (*deviceSurface3,&IID_IDirect3DTexture2_Local,deviceTexture2);
+  if (hresult != 0) {
+    return hresult;
+  }
+  return (*deviceTexture2)->lpVtbl->Load(*deviceTexture2,texture->stagingTexture2);
+}
+
+/* Releases the objects of a failed device texture attempt (texture interface first) and clears the pointers. */
+static void GraphicsTexture_ReleaseDeviceAttempt
+          (IDirectDrawSurface **deviceSurfaceBase,IDirectDrawSurface3 **deviceSurface3,
+           IDirect3DTexture2 **deviceTexture2)
+{
+  if (*deviceTexture2 != NULL) {
+    (*deviceTexture2)->lpVtbl->Release(*deviceTexture2);
+    *deviceTexture2 = NULL;
+  }
+  if (*deviceSurface3 != NULL) {
+    (*deviceSurface3)->lpVtbl->Release(*deviceSurface3);
+    *deviceSurface3 = NULL;
+  }
+  if (*deviceSurfaceBase != NULL) {
+    (*deviceSurfaceBase)->lpVtbl->Release(*deviceSurfaceBase);
+    *deviceSurfaceBase = NULL;
+  }
+}
+
 /* Address: 0x0057AAD0.
    Makes a texture usable by the Direct3D device: creates the square device surface (video memory for a
    hardware device, system memory for an emulated one), loads the staging texture into it and stores the
@@ -2102,11 +1934,7 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   D3DDEVICEDESC_DX6 *deviceDesc;
   uint32_t largerExtent;
   TH_LEGACY_HRESULT hresult;
-  int32_t handleResult;
   GraphicsTextureDownsampleShift effectiveShift;
-  int dwordsRemaining;
-  DDPIXELFORMAT *sourceFormatCursor;
-  DDPIXELFORMAT *destinationFormatCursor;
   GraphicsTextureLogicalSize logicalSize;
   uint32_t textureHandle;
   IDirect3DTexture2 *deviceTexture2;
@@ -2140,73 +1968,34 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   g_SurfaceDesc.dwHeight = largerExtent >> ((uint8_t)g_TextureDownsampleShift & SHIFT_COUNT_MASK);
   effectiveShift = g_TextureDownsampleShift;
   /* textures are at least 16x16: lower the downsample shift until the edge reaches 16 */
-  do {
-    if (15 < (int)g_SurfaceDesc.dwHeight) break;
+  while ((int)g_SurfaceDesc.dwHeight <= 15) {
     g_SurfaceDesc.dwHeight = g_SurfaceDesc.dwHeight * 2;
     effectiveShift = effectiveShift - GRAPHICS_TEXTURE_DOWNSAMPLE_2X;
-  } while (effectiveShift != GRAPHICS_TEXTURE_DOWNSAMPLE_1X);
+    if (effectiveShift == GRAPHICS_TEXTURE_DOWNSAMPLE_1X) {
+      break;
+    }
+  }
   texture->downsampleShift = effectiveShift;
-  sourceFormatCursor = texture->pixelFormat;
-  destinationFormatCursor = &g_SurfaceDesc.ddpfPixelFormat;
   g_SurfaceDesc.dwWidth = g_SurfaceDesc.dwHeight;
-  /* copy the 32-byte DDPIXELFORMAT dword by dword */
-  for (dwordsRemaining = 8; dwordsRemaining != 0; dwordsRemaining--) {
-    destinationFormatCursor->dwSize = sourceFormatCursor->dwSize;
-    sourceFormatCursor = (DDPIXELFORMAT *)&sourceFormatCursor->dwFlags;
-    destinationFormatCursor = (DDPIXELFORMAT *)&destinationFormatCursor->dwFlags;
-  }
+  g_SurfaceDesc.ddpfPixelFormat = *texture->pixelFormat;
+  /* A failed attempt is released; on DDERR_OUTOFVIDEOMEMORY the oldest device texture is evicted and the
+     creation retried, as long as there was one to evict (the eviction returns true when there was none). */
   do {
-    hresult = g_DirectDraw2->lpVtbl->CreateSurface
-                      (g_DirectDraw2,&g_SurfaceDesc,&deviceSurfaceBase,NULL);
-    if (hresult == 0) {
-      hresult = deviceSurfaceBase->lpVtbl->QueryInterface
-                        (deviceSurfaceBase,&IID_IDirectDrawSurface3_Local,&deviceSurface3);
-      if ((hresult == 0) &&
-         (hresult = deviceSurface3->lpVtbl->QueryInterface
-                            (deviceSurface3,&IID_IDirect3DTexture2_Local,&deviceTexture2),
-         hresult == 0)) {
-        hresult = deviceTexture2->lpVtbl->Load(deviceTexture2,texture->stagingTexture2);
-        if (hresult == 0) {
-          handleResult = deviceTexture2->lpVtbl->GetHandle
-                            (deviceTexture2,g_Direct3DDevice2,&textureHandle);
-          if (handleResult == 0) {
-            texture->deviceSurfaceBase = deviceSurfaceBase;
-            texture->deviceSurface3 = deviceSurface3;
-            texture->deviceTexture2 = deviceTexture2;
-            texture->textureHandle = textureHandle;
-            return;
-          }
-          /* GetHandle failed: give up without retrying. */
-          break;
-        }
-      }
+    hresult = GraphicsTexture_CreateAndLoadDeviceSurface(texture,&deviceSurfaceBase,&deviceSurface3,&deviceTexture2);
+    if (hresult != 0) {
+      GraphicsTexture_ReleaseDeviceAttempt(&deviceSurfaceBase,&deviceSurface3,&deviceTexture2);
     }
-    /* A creation step or Load failed: release this attempt; on DDERR_OUTOFVIDEOMEMORY evict the oldest device
-       texture and retry while eviction succeeds. */
-    if (deviceTexture2 != NULL) {
-      deviceTexture2->lpVtbl->Release(deviceTexture2);
-      deviceTexture2 = NULL;
-    }
-    if (deviceSurface3 != NULL) {
-      deviceSurface3->lpVtbl->Release(deviceSurface3);
-      deviceSurface3 = NULL;
-    }
-    if (deviceSurfaceBase != NULL) {
-      deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
-      deviceSurfaceBase = NULL;
-    }
-    /* stop unless out of video memory and an eviction succeeded; the De Morgan form
-       (hresult == ... && !Evict(...)) changes the register load order after the loop */
-  } while (!((hresult != DDERR_OUTOFVIDEOMEMORY) || GraphicsTexture_EvictOldestDeviceTexture(texture)));
-  if (deviceTexture2 != NULL) {
-    deviceTexture2->lpVtbl->Release(deviceTexture2);
+  } while ((hresult == DDERR_OUTOFVIDEOMEMORY) && !GraphicsTexture_EvictOldestDeviceTexture(texture));
+  if ((hresult == 0) &&
+      (deviceTexture2->lpVtbl->GetHandle(deviceTexture2,g_Direct3DDevice2,&textureHandle) == 0)) {
+    texture->deviceSurfaceBase = deviceSurfaceBase;
+    texture->deviceSurface3 = deviceSurface3;
+    texture->deviceTexture2 = deviceTexture2;
+    texture->textureHandle = textureHandle;
+    return;
   }
-  if (deviceSurface3 != NULL) {
-    deviceSurface3->lpVtbl->Release(deviceSurface3);
-  }
-  if (deviceSurfaceBase != NULL) {
-    deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
-  }
+  /* creation failed (nothing left to release) or GetHandle failed (no retry): release what is held */
+  GraphicsTexture_ReleaseDeviceAttempt(&deviceSurfaceBase,&deviceSurface3,&deviceTexture2);
   texture->deviceSurfaceBase = NULL;
   texture->deviceSurface3 = NULL;
   texture->deviceTexture2 = NULL;

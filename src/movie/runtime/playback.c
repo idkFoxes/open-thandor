@@ -71,8 +71,9 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
    the provider returns as a keyframe and every further frame as a delta against it (the delta encoder keeps
    the first frame's pixels up to date as its reference), then fills in the frame count and sizes. The
    provider is called with NULL for the next frame and with a frame to release it; it ends the sequence with CF
-   set and 0xFFFFFFFF. Returns true and stores the total byte count in *outByteCount, or returns false (output
-   untouched) when the provider ends with any other error. A leftover of the movie tools: no caller found in
+   set and 0xFFFFFFFF. Returns true and stores the total byte count in *outByteCount, or returns false
+   (*outByteCount untouched, the buffer already written) when the provider yields no frame at all or ends
+   with any other error. A leftover of the movie tools: no caller found in
    src/ or src/generated/image_data.c.
 */
 bool Movie_EncodeFlmBufferFromFrameProvider
@@ -80,76 +81,78 @@ bool Movie_EncodeFlmBufferFromFrameProvider
           uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount)
 
 {
-  uint32_t packedTimeOrDate;
-  void *frameOrStatus; /* the provider's frame, or its CF-set status (0xFFFFFFFF: no more frames) */
+  MovieFileHeader *header;
+  uint32_t packedTime;
+  uint32_t packedDate;
   uint32_t byteCount;
   int clearCount;
   uint32_t frameCount;
+  void *firstFrame;
   uint32_t *firstFramePixels;
+  void *frame;
   uint32_t *outputCursor;
   FrameProviderResult providerResult;
-  void *firstFrame;
 
+  header = (MovieFileHeader *)outputBuffer;
   outputCursor = outputBuffer;
   for (clearCount = MOVIE_FILE_HEADER_BYTES / 4; clearCount != 0; clearCount--) {
     *outputCursor = 0;
     outputCursor++;
   }
-  /* MovieFileHeader, addressed from the end of the cleared header (dword indices -0x80..-1) */
-  outputCursor[-128] = ASSET_MAGIC_FLM;
-  outputCursor[-127] = MOVIE_FILE_HEADER_BYTES; /* allocation size; the final size is stored at the end */
-  outputCursor[-126] = 1; /* format version */
-  outputCursor[-125] = MOVIE_FLM_CONVERTER_VERSION;
-  /* three build stamps at 0x10..0x27, each the time and then the date */
-  packedTimeOrDate = g_LocaleGetPackedCurrentTime();
-  outputCursor[-124] = packedTimeOrDate;
-  outputCursor[-122] = packedTimeOrDate;
-  outputCursor[-120] = packedTimeOrDate;
-  packedTimeOrDate = g_LocaleGetPackedCurrentDate();
-  outputCursor[-123] = packedTimeOrDate;
-  outputCursor[-121] = packedTimeOrDate;
-  outputCursor[-119] = packedTimeOrDate;
-  /* producer and source name at 0x30 and 0x70 */
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -116));
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -100));
-  *(uint8_t *)(outputCursor + -64) = 0; /* offset 0x100 */
-  outputCursor[-84] = frameWidthPixels;
-  outputCursor[-83] = frameHeightPixels;
-  outputCursor[-82] = 0; /* frame count */
-  outputCursor[-81] = 0; /* no audio tracks */
+  /* outputCursor now points at the video stream, right after the cleared header */
+  header->common.magic = ASSET_MAGIC_FLM;
+  header->common.allocationSizeBytes = MOVIE_FILE_HEADER_BYTES; /* the final size is stored at the end */
+  header->common.formatVersion = 1;
+  header->common.converterVersion = MOVIE_FLM_CONVERTER_VERSION;
+  packedTime = g_LocaleGetPackedCurrentTime();
+  header->common.buildMetadata.timestamps.timeValue0 = packedTime;
+  header->common.buildMetadata.timestamps.timeValue1 = packedTime;
+  header->common.buildMetadata.timestamps.timeValue2 = packedTime;
+  packedDate = g_LocaleGetPackedCurrentDate();
+  header->common.buildMetadata.timestamps.dateValue0 = packedDate;
+  header->common.buildMetadata.timestamps.dateValue1 = packedDate;
+  header->common.buildMetadata.timestamps.dateValue2 = packedDate;
+  g_LocaleCopyDefaultComputerLabelUtf16(header->common.buildMetadata.names.producerName);
+  g_LocaleCopyDefaultComputerLabelUtf16(header->common.buildMetadata.names.sourceName);
+  header->unusedText[0] = 0;
+  header->widthPixels = frameWidthPixels;
+  header->heightPixels = frameHeightPixels;
+  header->frameCount = 0;
+  header->audioTrackCount = 0;
   providerResult = frameProvider(NULL);
-  frameOrStatus = providerResult.frameOrError;
-  if (!providerResult.noFrame) {
-    frameCount = 1;
-    /* a frame is a gfx texture source; its pixels are those of the first subresource entry */
-    firstFramePixels = MOVIE_FRAME_PIXELS(frameOrStatus);
-    byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels);
-    outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
-    firstFrame = frameOrStatus;
-    while (providerResult = frameProvider(NULL), frameOrStatus = providerResult.frameOrError,
-           !providerResult.noFrame) {
-      frameCount++;
-      byteCount = Movie_EncodeFrame4x4Delta
-                        (frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels,
-                         MOVIE_FRAME_PIXELS(frameOrStatus));
-      outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
-      frameProvider(frameOrStatus); /* release */
-    }
-    frameProvider(firstFrame); /* release */
-    byteCount = (int)outputCursor - (int)outputBuffer;
-    ((MovieFileHeader *)outputBuffer)->frameCount = frameCount;
-    ((MovieFileHeader *)outputBuffer)->frameIntervalMilliseconds = 16;
-    ((MovieFileHeader *)outputBuffer)->common.allocationSizeBytes = byteCount;
-    /* video stream bytes once the header is subtracted below */
-    ((MovieFileHeader *)outputBuffer)->videoStreamBytes = byteCount;
-    if (frameOrStatus == (void *)0xffffffff) {
-      ((MovieFileHeader *)outputBuffer)->videoStreamBytes =
-           ((MovieFileHeader *)outputBuffer)->videoStreamBytes - MOVIE_FILE_HEADER_BYTES;
-      *outByteCount = byteCount;
-      return true;
-    }
+  if (providerResult.noFrame) {
+    return false;
   }
-  return false;
+  frameCount = 1;
+  firstFrame = providerResult.frameOrError;
+  /* a frame is a gfx texture source; its pixels are those of the first subresource entry */
+  firstFramePixels = MOVIE_FRAME_PIXELS(firstFrame);
+  byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels);
+  outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
+  providerResult = frameProvider(NULL);
+  while (!providerResult.noFrame) {
+    frame = providerResult.frameOrError;
+    frameCount++;
+    byteCount = Movie_EncodeFrame4x4Delta
+                      (frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels,MOVIE_FRAME_PIXELS(frame));
+    outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
+    frameProvider(frame); /* release */
+    providerResult = frameProvider(NULL);
+  }
+  frameProvider(firstFrame); /* release */
+  byteCount = (uint32_t)((uint8_t *)outputCursor - (uint8_t *)outputBuffer);
+  header->frameCount = frameCount;
+  header->frameIntervalMilliseconds = 16;
+  header->common.allocationSizeBytes = byteCount;
+  /* video stream bytes once the header is subtracted below */
+  header->videoStreamBytes = byteCount;
+  /* the provider ends the sequence with the error 0xFFFFFFFF; any other error fails the encode */
+  if (providerResult.frameOrError != (void *)0xffffffff) {
+    return false;
+  }
+  header->videoStreamBytes = header->videoStreamBytes - MOVIE_FILE_HEADER_BYTES;
+  *outByteCount = byteCount;
+  return true;
 }
 
 
@@ -242,6 +245,22 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
 }
 
 
+/* Failure exit of Movie_Open once a file or package handle is open: closes the handle unless it is a shared
+   package handle, stores error in *outError (when not NULL) and returns false. */
+static bool Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPackageHandle,uint32_t error,
+                           uint32_t *outError)
+
+{
+  if (isSharedPackageHandle == 0) {
+    g_FileSystemClose(handle);
+  }
+  if (outError != NULL) {
+    *outError = error;
+  }
+  return false;
+}
+
+
 /* Address: 0x004A8590.
    Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a
    mounted package, the executable directory or the plain path, in that order. Loads the header and the video
@@ -264,13 +283,15 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
   MovieSubresourceCount frameWidth;
   MoviePaletteBankCount frameHeight;
   MovieAudioGainQ15 defaultAudioGain;
-  HANDLE semaphoreOrThread;
-  uint32_t sizeOrValue;
+  HANDLE workerThread;
+  uint32_t streamBufferBytes;
+  uint32_t runtimeBytes;
+  uint32_t packedTime;
+  uint32_t packedDate;
   uint32_t initialVideoBytes;
   uint32_t status;
   bool looseFileOpened;
   uint32_t openError;
-  bool gotPosition;
   uint32_t allocError;
   void *allocPayload;
   DirectSoundVoiceSet *audioVoiceSet;
@@ -316,130 +337,124 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
     }
   }
   status = g_FileSystemReadExact(MOVIE_FILE_HEADER_BYTES,g_PackageScratchBuffer,handle);
-  if (status == 0) {
-    header = (MovieFileHeader *)g_PackageScratchBuffer;
-    status = FATAL_ERROR_MOVIE_INVALID;
-    if ((header->common.magic == ASSET_MAGIC_FLM) &&
-        ((uint32_t)header->common.converterVersion == MOVIE_FLM_CONVERTER_VERSION)) {
-      /* the buffer holds the header and the whole video stream, or a bounded window of it when streaming */
-      sizeOrValue = header->videoStreamBytes + MOVIE_FILE_HEADER_BYTES;
-      if ((MOVIE_STREAM_BUFFER_MAX_BYTES < sizeOrValue) && (movieOpenFlags != 0)) {
-        sizeOrValue = MOVIE_STREAM_BUFFER_MAX_BYTES;
-      }
-      allocError = g_MemoryApi.alloc(sizeOrValue,&allocPayload);
-      status = allocError != 0 ? allocError : (uint32_t)allocPayload;
-      if (allocError == 0) {
-        copySource = (uint32_t *)g_PackageScratchBuffer;
-        copyDestination = (uint32_t *)allocPayload;
-        for (copyCount = MOVIE_FILE_HEADER_BYTES / 4; copyCount != 0; copyCount--) {
-          *copyDestination = *copySource;
-          copySource++;
-          copyDestination++;
-        }
-        header = (MovieFileHeader *)allocPayload;
-        initialVideoBytes = header->videoStreamBytes;
-        if ((MOVIE_INITIAL_VIDEO_MAX_BYTES < initialVideoBytes) && (movieOpenFlags != 0)) {
-          initialVideoBytes = MOVIE_INITIAL_VIDEO_MAX_BYTES;
-        }
-        remainingByteCount = header->videoStreamBytes - initialVideoBytes;
-        loadedEnd = (uint8_t *)(header + 1) + initialVideoBytes;
-        status = g_FileSystemReadExact(initialVideoBytes,header + 1,handle);
-        if (status == 0) {
-          /* a failed position query fails the open with status 0 (JC 0x004a89f1) */
-          gotPosition = g_FileSystemGetPosition(handle,&streamPosition);
-          status = streamPosition;
-          if (gotPosition) {
-            status = Movie_OpenLoadRandomAudioTrack(header,remainingByteCount,handle,&audioVoiceSet);
-          }
-          if (gotPosition && (status == 0)) {
-            sizeOrValue = header->widthPixels * header->heightPixels * 4 + MOVIE_RUNTIME_PIXELS_OFFSET;
-            allocError = g_MemoryApi.alloc(sizeOrValue,&allocPayload);
-            status = allocError != 0 ? allocError : (uint32_t)allocPayload;
-            if (allocError == 0) {
-              movie = (MovieRuntime *)allocPayload;
-              g_ActiveMovie = movie;
-              if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
-                g_FileSystemClose(handle);
-              }
-              movie->textureCommon.magic = ASSET_MAGIC_GFX;
-              movie->textureCommon.allocationSizeBytes = sizeOrValue;
-              movie->textureCommon.formatVersion = 1;
-              movie->textureCommon.converterVersion = 0;
-              movie->audioVoiceSet = audioVoiceSet;
-              movie->activeAudioBuffer = NULL;
-              frameWidth = header->widthPixels;
-              frameHeight = header->heightPixels;
-              sizeOrValue = g_LocaleGetPackedCurrentTime();
-              movie->textureCommon.buildMetadata.timestamps.timeValue0 = sizeOrValue;
-              movie->textureCommon.buildMetadata.timestamps.timeValue1 = sizeOrValue;
-              movie->textureCommon.buildMetadata.timestamps.timeValue2 = sizeOrValue;
-              sizeOrValue = g_LocaleGetPackedCurrentDate();
-              movie->textureCommon.buildMetadata.timestamps.dateValue0 = sizeOrValue;
-              movie->textureCommon.buildMetadata.timestamps.dateValue1 = sizeOrValue;
-              movie->textureCommon.buildMetadata.timestamps.dateValue2 = sizeOrValue;
-              g_LocaleCopyDefaultComputerLabelUtf16
-                        (movie->textureCommon.buildMetadata.names.producerName);
-              g_LocaleCopyDefaultComputerLabelUtf16
-                        (movie->textureCommon.buildMetadata.names.sourceName);
-              movie->unusedText[0] = 0;
-              movie->subresourceTableOffset = offsetof(MovieRuntime,sourceEntry); /* right after the gfx header */
-              movie->paletteBankCount = 0;
-              movie->subresourceCount = 1;
-              movie->fileHeader = header;
-              movie->currentFrameIndex = 0;
-              movie->videoStreamOffset = MOVIE_FILE_HEADER_BYTES;
-              movie->sourceEntry.dataOffset = MOVIE_RUNTIME_PIXELS_OFFSET;
-              movie->sourceEntry.pixelWidth = frameWidth;
-              movie->sourceEntry.pixelHeight = frameHeight;
-              movie->sourceEntry.logicalWidth = frameWidth;
-              movie->sourceEntry.logicalHeight = frameHeight;
-              movie->sourceEntry.paletteIndex = -1;
-              movie->sourceEntry.originX = 0;
-              movie->sourceEntry.originY = 0;
-              movie->remainingVideoBytes = remainingByteCount;
-              movie->streamHandle = handle;
-              movie->loadedVideoEnd = loadedEnd;
-              defaultAudioGain = g_MovieDefaultAudioGainQ15;
-              movie->streamHandleIsSharedPackage = isSharedPackageHandle;
-              movie->openFlags = movieOpenFlags;
-              movie->streamFileOffset = streamPosition;
-              movie->audioGainQ15 = defaultAudioGain;
-              movie->workerActive = 0;
-              movie->streamState = MOVIE_STREAM_IDLE;
-              movie->refillSemaphore = NULL;
-              if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
-                movie->workerActive++;
-                semaphoreOrThread = CreateSemaphoreA(NULL,0,1,NULL);
-                movie->refillSemaphore = semaphoreOrThread;
-                /* The original passes the address of its remainingByteCount local as lpThreadId. */
-                semaphoreOrThread = CreateThread(NULL,0,
-                                      (LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,NULL,0,
-                                      &remainingByteCount);
-                if (semaphoreOrThread == NULL) {
-                  movie->workerActive--;
-                }
-                else {
-                  CloseHandle(semaphoreOrThread);
-                }
-              }
-              if (outPlaybackRateHz != NULL) {
-                *outPlaybackRateHz = header->frameIntervalMilliseconds; /* MOV ECX,[ESI+0xFC] */
-              }
-              return true;
-            }
-          }
-        }
-        g_MemoryApi.free(header);
-      }
-    }
+  if (status != 0) {
+    return Movie_OpenFail(handle,isSharedPackageHandle,status,outError);
   }
-  if (isSharedPackageHandle == 0) {
+  header = (MovieFileHeader *)g_PackageScratchBuffer;
+  if ((header->common.magic != ASSET_MAGIC_FLM) ||
+      ((uint32_t)header->common.converterVersion != MOVIE_FLM_CONVERTER_VERSION)) {
+    return Movie_OpenFail(handle,isSharedPackageHandle,FATAL_ERROR_MOVIE_INVALID,outError);
+  }
+  /* the buffer holds the header and the whole video stream, or a bounded window of it when streaming */
+  streamBufferBytes = header->videoStreamBytes + MOVIE_FILE_HEADER_BYTES;
+  if ((MOVIE_STREAM_BUFFER_MAX_BYTES < streamBufferBytes) && (movieOpenFlags != 0)) {
+    streamBufferBytes = MOVIE_STREAM_BUFFER_MAX_BYTES;
+  }
+  allocError = g_MemoryApi.alloc(streamBufferBytes,&allocPayload);
+  if (allocError != 0) {
+    return Movie_OpenFail(handle,isSharedPackageHandle,allocError,outError);
+  }
+  copySource = (uint32_t *)g_PackageScratchBuffer;
+  copyDestination = (uint32_t *)allocPayload;
+  for (copyCount = MOVIE_FILE_HEADER_BYTES / 4; copyCount != 0; copyCount--) {
+    *copyDestination = *copySource;
+    copySource++;
+    copyDestination++;
+  }
+  header = (MovieFileHeader *)allocPayload;
+  initialVideoBytes = header->videoStreamBytes;
+  if ((MOVIE_INITIAL_VIDEO_MAX_BYTES < initialVideoBytes) && (movieOpenFlags != 0)) {
+    initialVideoBytes = MOVIE_INITIAL_VIDEO_MAX_BYTES;
+  }
+  remainingByteCount = header->videoStreamBytes - initialVideoBytes;
+  loadedEnd = (uint8_t *)(header + 1) + initialVideoBytes;
+  status = g_FileSystemReadExact(initialVideoBytes,header + 1,handle);
+  if (status != 0) {
+    g_MemoryApi.free(header);
+    return Movie_OpenFail(handle,isSharedPackageHandle,status,outError);
+  }
+  if (!g_FileSystemGetPosition(handle,&streamPosition)) {
+    /* a failed position query fails the open with the position value as the error (0, JC 0x004a89f1) */
+    g_MemoryApi.free(header);
+    return Movie_OpenFail(handle,isSharedPackageHandle,streamPosition,outError);
+  }
+  status = Movie_OpenLoadRandomAudioTrack(header,remainingByteCount,handle,&audioVoiceSet);
+  if (status != 0) {
+    g_MemoryApi.free(header);
+    return Movie_OpenFail(handle,isSharedPackageHandle,status,outError);
+  }
+  runtimeBytes = header->widthPixels * header->heightPixels * 4 + MOVIE_RUNTIME_PIXELS_OFFSET;
+  allocError = g_MemoryApi.alloc(runtimeBytes,&allocPayload);
+  if (allocError != 0) {
+    g_MemoryApi.free(header);
+    return Movie_OpenFail(handle,isSharedPackageHandle,allocError,outError);
+  }
+  movie = (MovieRuntime *)allocPayload;
+  g_ActiveMovie = movie;
+  if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
     g_FileSystemClose(handle);
   }
-  if (outError != NULL) {
-    *outError = status;
+  movie->textureCommon.magic = ASSET_MAGIC_GFX;
+  movie->textureCommon.allocationSizeBytes = runtimeBytes;
+  movie->textureCommon.formatVersion = 1;
+  movie->textureCommon.converterVersion = 0;
+  movie->audioVoiceSet = audioVoiceSet;
+  movie->activeAudioBuffer = NULL;
+  frameWidth = header->widthPixels;
+  frameHeight = header->heightPixels;
+  packedTime = g_LocaleGetPackedCurrentTime();
+  movie->textureCommon.buildMetadata.timestamps.timeValue0 = packedTime;
+  movie->textureCommon.buildMetadata.timestamps.timeValue1 = packedTime;
+  movie->textureCommon.buildMetadata.timestamps.timeValue2 = packedTime;
+  packedDate = g_LocaleGetPackedCurrentDate();
+  movie->textureCommon.buildMetadata.timestamps.dateValue0 = packedDate;
+  movie->textureCommon.buildMetadata.timestamps.dateValue1 = packedDate;
+  movie->textureCommon.buildMetadata.timestamps.dateValue2 = packedDate;
+  g_LocaleCopyDefaultComputerLabelUtf16(movie->textureCommon.buildMetadata.names.producerName);
+  g_LocaleCopyDefaultComputerLabelUtf16(movie->textureCommon.buildMetadata.names.sourceName);
+  movie->unusedText[0] = 0;
+  movie->subresourceTableOffset = offsetof(MovieRuntime,sourceEntry); /* right after the gfx header */
+  movie->paletteBankCount = 0;
+  movie->subresourceCount = 1;
+  movie->fileHeader = header;
+  movie->currentFrameIndex = 0;
+  movie->videoStreamOffset = MOVIE_FILE_HEADER_BYTES;
+  movie->sourceEntry.dataOffset = MOVIE_RUNTIME_PIXELS_OFFSET;
+  movie->sourceEntry.pixelWidth = frameWidth;
+  movie->sourceEntry.pixelHeight = frameHeight;
+  movie->sourceEntry.logicalWidth = frameWidth;
+  movie->sourceEntry.logicalHeight = frameHeight;
+  movie->sourceEntry.paletteIndex = -1;
+  movie->sourceEntry.originX = 0;
+  movie->sourceEntry.originY = 0;
+  movie->remainingVideoBytes = remainingByteCount;
+  movie->streamHandle = handle;
+  movie->loadedVideoEnd = loadedEnd;
+  defaultAudioGain = g_MovieDefaultAudioGainQ15;
+  movie->streamHandleIsSharedPackage = isSharedPackageHandle;
+  movie->openFlags = movieOpenFlags;
+  movie->streamFileOffset = streamPosition;
+  movie->audioGainQ15 = defaultAudioGain;
+  movie->workerActive = 0;
+  movie->streamState = MOVIE_STREAM_IDLE;
+  movie->refillSemaphore = NULL;
+  if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
+    movie->workerActive++;
+    movie->refillSemaphore = CreateSemaphoreA(NULL,0,1,NULL);
+    /* The original passes the address of its remainingByteCount local as lpThreadId. */
+    workerThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,NULL,0,
+                                &remainingByteCount);
+    if (workerThread == NULL) {
+      movie->workerActive--;
+    }
+    else {
+      CloseHandle(workerThread);
+    }
   }
-  return false;
+  if (outPlaybackRateHz != NULL) {
+    *outPlaybackRateHz = header->frameIntervalMilliseconds;
+  }
+  return true;
 }
 
 
@@ -730,6 +745,10 @@ void IntroMovie_TimerTick(void)
   return;
 }
 
+/* Defined further down with the delta encoder; it writes the same 8-byte colour block that the keyframe
+   encoder writes inline in the original. */
+static void MovieDeltaEncode_Block(uint32_t *output,const PackedRgb24 *blockPixels,uint32_t rowStridePixels);
+
 /* Address: 0x004A7030.
    Encodes a whole frame as FLM 4x4 colour blocks of 8 bytes each (no skip tokens), for the first frame in
    Movie_EncodeFlmBufferFromFrameProvider, its only caller. A block stores the chroma code of its average
@@ -742,29 +761,7 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
           uint32_t *encodedOutput,uint32_t *sourcePixels)
 
 {
-  uint32_t maxLumaOrLevel;
-  uint32_t minLumaOrBaseLuma;
-  uint32_t sampleLumaOrLevel;
-  uint32_t minLumaChromaOrLevel;
-  int level0;
-  int level1;
-  int level2;
-  int level3;
-  int level4;
-  int level5;
-  int level6;
-  int level7;
-  int level8;
-  uint32_t wideLevel0;
-  uint32_t wideLevel1;
-  uint32_t wideLevel2;
-  uint32_t wideLevel3;
-  uint32_t wideLevel4;
-  uint32_t wideLevel5;
-  PackedRgb24 *blockRowPixels;
   uint32_t *outputCursor;
-  PackedRgb24 averageColor;
-  uint64_t channelSums;
   uint32_t blocksLeftInRow;
   uint32_t blockRowsLeft;
 
@@ -773,413 +770,17 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
   blocksLeftInRow = frameWidthPixels >> 2;
   do {
     do {
-      channelSums = Movie_AddRowToChannelSums(0,sourcePixels[0],sourcePixels[1],sourcePixels[2],sourcePixels[3]);
-      maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*sourcePixels);
-      minLumaOrBaseLuma = MovieColor_ComputeLuma5FromRgb888(sourcePixels[1]);
-      minLumaChromaOrLevel = minLumaOrBaseLuma;
-      if (((int)maxLumaOrLevel <= (int)minLumaOrBaseLuma) &&
-          (minLumaChromaOrLevel = maxLumaOrLevel, (int)maxLumaOrLevel < (int)minLumaOrBaseLuma)) {
-        maxLumaOrLevel = minLumaOrBaseLuma;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(sourcePixels[2]);
-      minLumaOrBaseLuma = sampleLumaOrLevel;
-      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) &&
-          (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(sourcePixels[3]);
-      minLumaChromaOrLevel = sampleLumaOrLevel;
-      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) &&
-          (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      blockRowPixels = sourcePixels + frameWidthPixels;
-      channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
-                                              blockRowPixels[3]);
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-      minLumaOrBaseLuma = sampleLumaOrLevel;
-      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) &&
-          (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-      minLumaChromaOrLevel = sampleLumaOrLevel;
-      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) &&
-          (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-      minLumaOrBaseLuma = sampleLumaOrLevel;
-      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) &&
-          (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-      minLumaChromaOrLevel = sampleLumaOrLevel;
-      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) &&
-          (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      blockRowPixels = blockRowPixels + frameWidthPixels;
-      channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
-                                              blockRowPixels[3]);
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-      minLumaOrBaseLuma = sampleLumaOrLevel;
-      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) &&
-          (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-      minLumaChromaOrLevel = sampleLumaOrLevel;
-      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) &&
-          (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-      minLumaOrBaseLuma = sampleLumaOrLevel;
-      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) &&
-          (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-      minLumaChromaOrLevel = sampleLumaOrLevel;
-      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) &&
-          (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      blockRowPixels = blockRowPixels + frameWidthPixels;
-      channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
-                                              blockRowPixels[3]);
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-      minLumaOrBaseLuma = sampleLumaOrLevel;
-      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) &&
-          (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-      minLumaChromaOrLevel = sampleLumaOrLevel;
-      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) &&
-          (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-      minLumaOrBaseLuma = sampleLumaOrLevel;
-      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) &&
-          (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-      minLumaChromaOrLevel = sampleLumaOrLevel;
-      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) &&
-          (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
-        maxLumaOrLevel = sampleLumaOrLevel;
-      }
-      averageColor = Movie_PackChannelAverages(channelSums);
-      minLumaOrBaseLuma = (int)((minLumaChromaOrLevel - 8) + maxLumaOrLevel) >> 1;
-      if ((int)minLumaOrBaseLuma < 0) {
-        minLumaOrBaseLuma = 0;
-      }
-      else if (MOVIE_TOKEN_BASE_LUMA_MAX < (int)minLumaOrBaseLuma) {
-        minLumaOrBaseLuma = MOVIE_TOKEN_BASE_LUMA_MAX;
-      }
-      if (maxLumaOrLevel - minLumaChromaOrLevel < 12) {
-        *outputCursor = minLumaOrBaseLuma;
-        minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-        level0 = maxLumaOrLevel - minLumaOrBaseLuma;
-        if (level0 < 0) {
-          level0 = 0;
-        }
-        else if (7 < level0) {
-          level0 = 7;
-        }
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-        level1 = maxLumaOrLevel - minLumaOrBaseLuma;
-        if (level1 < 0) {
-          level1 = 0;
-        }
-        else if (7 < level1) {
-          level1 = 7;
-        }
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-        level2 = maxLumaOrLevel - minLumaOrBaseLuma;
-        if (level2 < 0) {
-          level2 = 0;
-        }
-        else if (7 < level2) {
-          level2 = 7;
-        }
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        level3 = maxLumaOrLevel - minLumaOrBaseLuma;
-        if (level3 < 0) {
-          level3 = 0;
-        }
-        else if (7 < level3) {
-          level3 = 7;
-        }
-        blockRowPixels = blockRowPixels - frameWidthPixels;
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-        level4 = maxLumaOrLevel - minLumaOrBaseLuma;
-        if (level4 < 0) {
-          level4 = 0;
-        }
-        else if (7 < level4) {
-          level4 = 7;
-        }
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-        level5 = maxLumaOrLevel - minLumaOrBaseLuma;
-        if (level5 < 0) {
-          level5 = 0;
-        }
-        else if (7 < level5) {
-          level5 = 7;
-        }
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-        maxLumaOrLevel = maxLumaOrLevel - minLumaOrBaseLuma;
-        if ((int)maxLumaOrLevel < 0) {
-          maxLumaOrLevel = 0;
-        }
-        else if (7 < (int)maxLumaOrLevel) {
-          maxLumaOrLevel = 7;
-        }
-        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        outputCursor[1] = (minLumaChromaOrLevel & MOVIE_COLOR_CHROMA_MASK) << 16 | level0 << 18 | level1 << 15 | level2 << 12 |
-                     level3 << 9 | level4 << 6 | level5 << 3 | maxLumaOrLevel;
-        level0 = sampleLumaOrLevel - minLumaOrBaseLuma;
-        if (level0 < 0) {
-          level0 = 0;
-        }
-        else if (7 < level0) {
-          level0 = 7;
-        }
-        blockRowPixels = blockRowPixels - frameWidthPixels;
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-        level1 = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if (level1 < 0) {
-          level1 = 0;
-        }
-        else if (7 < level1) {
-          level1 = 7;
-        }
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-        level2 = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if (level2 < 0) {
-          level2 = 0;
-        }
-        else if (7 < level2) {
-          level2 = 7;
-        }
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-        level3 = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if (level3 < 0) {
-          level3 = 0;
-        }
-        else if (7 < level3) {
-          level3 = 7;
-        }
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        level4 = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if (level4 < 0) {
-          level4 = 0;
-        }
-        else if (7 < level4) {
-          level4 = 7;
-        }
-        blockRowPixels = blockRowPixels - frameWidthPixels;
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-        level5 = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if (level5 < 0) {
-          level5 = 0;
-        }
-        else if (7 < level5) {
-          level5 = 7;
-        }
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-        level6 = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if (level6 < 0) {
-          level6 = 0;
-        }
-        else if (7 < level6) {
-          level6 = 7;
-        }
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-        level7 = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if (level7 < 0) {
-          level7 = 0;
-        }
-        else if (7 < level7) {
-          level7 = 7;
-        }
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        level8 = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if (level8 < 0) {
-          level8 = 0;
-        }
-        else if (7 < level8) {
-          level8 = 7;
-        }
-        *outputCursor = *outputCursor |
-                   level0 << 29 | level1 << 26 | level2 << 23 | level3 << 20 | level4 << 17
-                   | level5 << 14 | level6 << 11 | level7 << 8 | level8 << 5;
-      }
-      else {
-        minLumaOrBaseLuma = minLumaOrBaseLuma - 4;
-        if ((int)minLumaOrBaseLuma < 0) {
-          minLumaOrBaseLuma = 0;
-        }
-        else if (16 < (int)minLumaOrBaseLuma) {
-          minLumaOrBaseLuma = 16;
-        }
-        *outputCursor = minLumaOrBaseLuma;
-        minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-        maxLumaOrLevel = maxLumaOrLevel - minLumaOrBaseLuma;
-        if ((int)maxLumaOrLevel < 0) {
-          maxLumaOrLevel = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)maxLumaOrLevel) {
-          maxLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-        sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
-        if ((int)sampleLumaOrLevel < 0) {
-          sampleLumaOrLevel = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)sampleLumaOrLevel) {
-          sampleLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel0 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-        wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
-        if ((int)wideLevel0 < 0) {
-          wideLevel0 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel0) {
-          wideLevel0 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel1 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
-        if ((int)wideLevel1 < 0) {
-          wideLevel1 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel1) {
-          wideLevel1 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        blockRowPixels = blockRowPixels - frameWidthPixels;
-        wideLevel2 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-        wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
-        if ((int)wideLevel2 < 0) {
-          wideLevel2 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel2) {
-          wideLevel2 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-        wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
-        if ((int)wideLevel3 < 0) {
-          wideLevel3 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel3) {
-          wideLevel3 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel4 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-        wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
-        if ((int)wideLevel4 < 0) {
-          wideLevel4 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel4) {
-          wideLevel4 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel5 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        outputCursor[1] = (minLumaChromaOrLevel & MOVIE_COLOR_CHROMA_MASK) * (1 << 16) + MOVIE_BLOCK_DOUBLE_STEPS | (maxLumaOrLevel >> 1) << 18 |
-                     (sampleLumaOrLevel >> 1) << 15 | (wideLevel0 >> 1) << 12 | (wideLevel1 >> 1) << 9 |
-                     (wideLevel2 >> 1) << 6 | (wideLevel3 >> 1) << 3 | wideLevel4 >> 1;
-        wideLevel5 = wideLevel5 - minLumaOrBaseLuma;
-        if ((int)wideLevel5 < 0) {
-          wideLevel5 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel5) {
-          wideLevel5 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        blockRowPixels = blockRowPixels - frameWidthPixels;
-        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-        minLumaChromaOrLevel = minLumaChromaOrLevel - minLumaOrBaseLuma;
-        if ((int)minLumaChromaOrLevel < 0) {
-          minLumaChromaOrLevel = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)minLumaChromaOrLevel) {
-          minLumaChromaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-        maxLumaOrLevel = maxLumaOrLevel - minLumaOrBaseLuma;
-        if ((int)maxLumaOrLevel < 0) {
-          maxLumaOrLevel = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)maxLumaOrLevel) {
-          maxLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-        sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
-        if ((int)sampleLumaOrLevel < 0) {
-          sampleLumaOrLevel = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)sampleLumaOrLevel) {
-          sampleLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel0 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
-        if ((int)wideLevel0 < 0) {
-          wideLevel0 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel0) {
-          wideLevel0 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        blockRowPixels = blockRowPixels - frameWidthPixels;
-        wideLevel1 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
-        wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
-        if ((int)wideLevel1 < 0) {
-          wideLevel1 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel1) {
-          wideLevel1 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel2 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
-        wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
-        if ((int)wideLevel2 < 0) {
-          wideLevel2 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel2) {
-          wideLevel2 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
-        wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
-        if ((int)wideLevel3 < 0) {
-          wideLevel3 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel3) {
-          wideLevel3 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        wideLevel4 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
-        if ((int)wideLevel4 < 0) {
-          wideLevel4 = 0;
-        }
-        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel4) {
-          wideLevel4 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
-        }
-        *outputCursor = *outputCursor |
-                   (wideLevel5 >> 1) << 29 | (minLumaChromaOrLevel >> 1) << 26 | (maxLumaOrLevel >> 1) << 23 |
-                   (sampleLumaOrLevel >> 1) << 20 | (wideLevel0 >> 1) << 17 | (wideLevel1 >> 1) << 14 |
-                   (wideLevel2 >> 1) << 11 | (wideLevel3 >> 1) << 8 | (wideLevel4 >> 1) << 5;
-      }
-      sourcePixels = blockRowPixels + 4;
+      MovieDeltaEncode_Block(outputCursor,sourcePixels,frameWidthPixels);
+      sourcePixels = sourcePixels + 4;
       outputCursor = outputCursor + 2;
       blocksLeftInRow--;
     } while (blocksLeftInRow != 0);
+    /* past the other three pixel rows of this block row */
     sourcePixels = sourcePixels + frameWidthPixels * 3;
     blockRowsLeft--;
     blocksLeftInRow = frameWidthPixels >> 2;
   } while (blockRowsLeft != 0);
-  return (int)outputCursor - (int)encodedOutput;
+  return (uint32_t)((uint8_t *)outputCursor - (uint8_t *)encodedOutput);
 }
 
 

@@ -302,6 +302,69 @@ static void Thandor_SelfTestPcx(void)
     g_MemoryApi.free = savedFree;
 }
 
+/* OPEN_THANDOR_SELFTEST=movieenc encodes synthetic 64x48 frames (gradients, noise, flat areas, black/white
+   extremes) with Movie_EncodeFrame4x4Keyframe and then Movie_EncodeFrame4x4Delta for frames that change in
+   parts, and logs the byte counts and an FNV-1a hash over every encoded byte and the reference frame the delta
+   encoder keeps. Run it with two builds to check that a rewrite of the encoders kept their output. */
+#define MOVIEENC_WIDTH 64
+#define MOVIEENC_HEIGHT 48
+#define MOVIEENC_FRAMES 6
+static uint32_t SelfTest_MovieEncodePixel(uint32_t frame, uint32_t x, uint32_t y, uint32_t *seed)
+{
+    uint32_t region = (x / 16 + (y / 16) * 4 + frame) % 6;
+    *seed = *seed * 1103515245u + 12345u;
+    if (frame > 0 && ((x / 8 + y / 8 + frame) & 3) != 0) {
+        region = (x / 16 + (y / 16) * 4) % 6; /* most blocks keep the content of frame 0 */
+    }
+    switch (region) {
+    case 0:
+        return 0xFF000000u | (x * 4) << 16 | (y * 5) << 8 | ((x + y) * 2);
+    case 1:
+        return 0xFF000000u | (*seed >> 8 & 0xFFFFFFu);
+    case 2:
+        return 0xFF406080u;
+    case 3:
+        return ((x ^ y) & 1) != 0 ? 0xFFFFFFFFu : 0xFF000000u;
+    case 4:
+        return 0xFF000000u | ((*seed >> 16 & 15) + 120) * 0x010101u;
+    default:
+        return 0xFF000000u | (255 - x * 4) << 16 | (frame * 40 & 255) << 8 | (y * 5);
+    }
+}
+
+static void Thandor_SelfTestMovieEncode(void)
+{
+    static uint32_t reference[MOVIEENC_WIDTH * MOVIEENC_HEIGHT];
+    static uint32_t current[MOVIEENC_WIDTH * MOVIEENC_HEIGHT];
+    static uint32_t encoded[MOVIEENC_WIDTH * MOVIEENC_HEIGHT * 2];
+    uint32_t hash = 2166136261u;
+    uint32_t seed = 1;
+    uint32_t frame;
+    uint32_t i;
+    uint32_t byteCount;
+    for (frame = 0; frame < MOVIEENC_FRAMES; frame++) {
+        uint32_t *pixels = frame == 0 ? reference : current;
+        for (i = 0; i < MOVIEENC_WIDTH * MOVIEENC_HEIGHT; i++) {
+            pixels[i] = SelfTest_MovieEncodePixel(frame, i % MOVIEENC_WIDTH, i / MOVIEENC_WIDTH, &seed);
+        }
+        memset(encoded, 0xCD, sizeof encoded);
+        if (frame == 0) {
+            byteCount = Movie_EncodeFrame4x4Keyframe(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, encoded, reference);
+        }
+        else {
+            byteCount = Movie_EncodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, encoded, reference, current);
+        }
+        for (i = 0; i < byteCount && i < sizeof encoded; i++) {
+            hash = (hash ^ ((const uint8_t *)encoded)[i]) * 16777619u;
+        }
+        for (i = 0; i < sizeof reference; i++) {
+            hash = (hash ^ ((const uint8_t *)reference)[i]) * 16777619u;
+        }
+        Thandor_Log("movieenc: frame %u %u bytes, hash so far %08X", frame, byteCount, hash);
+    }
+    Thandor_Log("movieenc: hash %08X", hash);
+}
+
 static void Thandor_SelfTestScanAddresses(void)
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
@@ -508,6 +571,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "pcx") == 0) {
         Thandor_SelfTestPcx();
+        return 1;
+    }
+    if (name != NULL && strcmp(name, "movieenc") == 0) {
+        Thandor_SelfTestMovieEncode();
         return 1;
     }
     if (name != NULL && strcmp(name, "path") == 0) {

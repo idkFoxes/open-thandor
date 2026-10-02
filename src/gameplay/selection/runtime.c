@@ -611,7 +611,7 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
 {
   uint32_t primaryEntityOffset;
   ModelRuntimeNode *modelNode;
-  int definitionAddress;
+  ModelDefinition *definition;
   int placementContactKind;
   int newWorldXQ12;
   GameEntityRuntime *target;
@@ -628,7 +628,7 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
     modelNode = (target->common).ownership.modelNode;
     newWorldXQ12 = deltaXQ12 + (modelNode->worldTransform).translation.x;
     newWorldYQ12 = deltaYQ12 + (modelNode->worldTransform).translation.y;
-    definitionAddress = *(int *)(target->common).ownership.definitionOrClassRecord;
+    definition = *(ModelDefinition **)(target->common).ownership.definitionOrClassRecord;
     (target->common).pathCoordinate0Q12 = newWorldXQ12;
     (target->common).pathCoordinate1Q12 = newWorldYQ12;
     (target->common).trackedCoordinate0Q12 = newWorldXQ12;
@@ -636,16 +636,15 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
     (target->common).damageState.trackedCoordinate0Q12 = newWorldXQ12;
     (target->common).damageState.trackedCoordinate1Q12 = newWorldYQ12;
     (modelNode->worldTransform).translation.x = newWorldXQ12;
-    placementContactKind = ((ModelDefinition *)definitionAddress)->placementContactKindIndex;
+    placementContactKind = definition->placementContactKindIndex;
     (modelNode->worldTransform).translation.y = newWorldYQ12;
     if (placementContactKind == ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION) {
       ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = INT32_MAX;
     }
     g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
-              (((ModelDefinition *)definitionAddress)->placementHeightOffsetQ12,newWorldYQ12,newWorldXQ12,modelNode,
-               worldRuntime);
+              (definition->placementHeightOffsetQ12,newWorldYQ12,newWorldXQ12,modelNode,worldRuntime);
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
-    ModelNodeRuntime_UpdateDepthBinMasks(((ModelDefinition *)definitionAddress)->footprintRadius,modelNode);
+    ModelNodeRuntime_UpdateDepthBinMasks(definition->footprintRadius,modelNode);
   }
   return;
 }
@@ -679,6 +678,108 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
 }
 
 
+/* Empties the 32 selection entries of all eight player blocks. */
+static void SelectionInfoPanel_ClearAllPlayerSelections(void)
+
+{
+  int blockIndex;
+  int entryIndex;
+
+  for (blockIndex = 0; blockIndex < 8; blockIndex++) {
+    for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+      g_SelectionPlayerBlocks[blockIndex].selection.entries[entryIndex] = NULL;
+    }
+  }
+}
+
+
+/* The subresource entry table of a loaded texture source. */
+static GraphicsTextureSourceEntry *SelectionInfoPanel_TextureEntries(GraphicsTextureSourceAsset *textureSource)
+
+{
+  return (GraphicsTextureSourceEntry *)
+         ((uint8_t *)textureSource + (textureSource->tableDescriptor).subresourceTableOffset);
+}
+
+
+/* Stores a dword at byteOffset inside a texture-source record (records are not aligned). */
+static void SelectionInfoPanel_SetRecordDword(uint8_t *record,int byteOffset,uint32_t value)
+
+{
+  *(uint32_t *)(record + byteOffset) = value;
+}
+
+
+/* Rewrites a two-dword info.gfx record to { 0, referencePayloadValue }. */
+static void SelectionInfoPanel_PatchShortRecord(uint8_t *record,uint32_t referencePayloadValue)
+
+{
+  SelectionInfoPanel_SetRecordDword(record,0,0);
+  SelectionInfoPanel_SetRecordDword(record,4,referencePayloadValue);
+}
+
+
+/* Rewrites an eight-dword info.gfx record to { first, second, 0xFFFF0000 x4, first, second }. */
+static void SelectionInfoPanel_PatchLongRecord(uint8_t *record,uint32_t first,uint32_t second)
+
+{
+  int byteOffset;
+
+  SelectionInfoPanel_SetRecordDword(record,0,first);
+  SelectionInfoPanel_SetRecordDword(record,4,second);
+  for (byteOffset = 8; byteOffset <= 20; byteOffset += 4) {
+    SelectionInfoPanel_SetRecordDword(record,byteOffset,0xFFFF0000u);
+  }
+  SelectionInfoPanel_SetRecordDword(record,24,first);
+  SelectionInfoPanel_SetRecordDword(record,28,second);
+}
+
+
+/* select.gfx: swaps the data offsets of subresources 45 and 46 (an XCHG in the original). */
+static void SelectionInfoPanel_PatchSelectionTexture(GraphicsTextureSourceAsset *selectionTextureSource)
+
+{
+  GraphicsTextureSourceEntry *entries;
+  AssetRelativeOffset swappedDataOffset;
+
+  entries = SelectionInfoPanel_TextureEntries(selectionTextureSource);
+  swappedDataOffset = entries[46].dataOffset;
+  entries[46].dataOffset = entries[45].dataOffset;
+  entries[45].dataOffset = swappedDataOffset;
+}
+
+
+/* info.gfx: rewrites the records of several sequences (the records at the dataOffset of subresources
+   0x2D..0x33; their layout is not typed) and sets the heights of subresources 45, 46, 50 and 51 to 4.
+   referencePayloadValue is the first dword of the record of subresource 0x2C. */
+static void SelectionInfoPanel_PatchInfoTexture(GraphicsTextureSourceAsset *infoTextureSource)
+
+{
+  uint8_t *base;
+  GraphicsTextureSourceEntry *entries;
+  uint32_t referencePayloadValue;
+
+  base = (uint8_t *)infoTextureSource;
+  entries = SelectionInfoPanel_TextureEntries(infoTextureSource);
+  referencePayloadValue = *(uint32_t *)(base + entries[44].dataOffset);
+  SelectionInfoPanel_PatchShortRecord(base + entries[47].dataOffset,referencePayloadValue);
+  SelectionInfoPanel_PatchShortRecord(base + entries[48].dataOffset,referencePayloadValue);
+  SelectionInfoPanel_PatchShortRecord(base + entries[49].dataOffset,referencePayloadValue);
+  entries[50].pixelHeight = 4;
+  entries[50].logicalHeight = 4;
+  entries[51].pixelHeight = 4;
+  entries[51].logicalHeight = 4;
+  entries[45].pixelHeight = 4;
+  entries[45].logicalHeight = 4;
+  entries[46].pixelHeight = 4;
+  entries[46].logicalHeight = 4;
+  SelectionInfoPanel_PatchLongRecord(base + entries[50].dataOffset,0,referencePayloadValue);
+  SelectionInfoPanel_PatchLongRecord(base + entries[51].dataOffset,0,referencePayloadValue);
+  SelectionInfoPanel_PatchLongRecord(base + entries[45].dataOffset,referencePayloadValue,0);
+  SelectionInfoPanel_PatchLongRecord(base + entries[46].dataOffset,referencePayloadValue,0);
+}
+
+
 /* Address: 0x0052CEE0.
    Loads the selection and information panel graphics (gfx\panel\select.gfx, info.gfx) and their 0x1A4-byte .dat
    tables, empties the selection of all eight player blocks and stores the caller's entity-slot table. Then it
@@ -689,278 +790,43 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
 bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError)
 
 {
-  uint8_t *patchBytes;
-  AssetRelativeOffset tableOffset;
-  GraphicsTextureSourceAsset *loadedResource;
-  int entriesRemaining;
-  int blockCountOrRecordOffset;
-  SelectionPlayerRuntimeBlock *playerBlockCursor;
+  GraphicsTextureSourceAsset *selectionTextureSource;
+  GraphicsTextureSourceAsset *infoTextureSource;
+  GraphicsTextureSourceAsset *selectionPanelData;
+  GraphicsTextureSourceAsset *infoPanelData;
   uint32_t loadErrorCode;
-  AssetRelativeOffset swappedSelectionDataOffset;
-  uint32_t referencePayloadValue;
 
-  loadedResource = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_select_gfx_0052ce18,&loadErrorCode);
-  if (loadedResource == NULL) {
-    loadedResource = (GraphicsTextureSourceAsset *)loadErrorCode;
+  selectionTextureSource =
+       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_select_gfx_0052ce18,&loadErrorCode);
+  if (selectionTextureSource == NULL) {
+    *outError = loadErrorCode;
+    return false;
   }
-  else {
-    g_SelectionPanelTextureSource = loadedResource;
-    loadedResource = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_info_gfx_0052ce42,&loadErrorCode);
-    if (loadedResource == NULL) {
-      loadedResource = (GraphicsTextureSourceAsset *)loadErrorCode;
-    }
-    else {
-      g_InfoPanelTextureSource = loadedResource;
-      loadedResource = Package_LoadEntry((uint16_t *)u_gfx_panel_select_dat_0052ce68,&loadErrorCode);
-      if (loadedResource == NULL) {
-        loadedResource = (GraphicsTextureSourceAsset *)loadErrorCode;
-      }
-      else {
-        g_SelectionPanelData = loadedResource;
-        loadedResource = Package_LoadEntry((uint16_t *)u_gfx_panel_info_dat_0052ce92,&loadErrorCode);
-        if (loadedResource == NULL) {
-          loadedResource = (GraphicsTextureSourceAsset *)loadErrorCode;
-        }
-        else {
-          blockCountOrRecordOffset = 8; /* player blocks */
-          playerBlockCursor = g_SelectionPlayerBlocks;
-          g_InfoPanelData = loadedResource;
-          do {
-            /* clear the 32 selection entries; the cursor then skips the rest of the block */
-            for (entriesRemaining = SELECTION_ENTRY_CAPACITY; loadedResource = g_SelectionPanelTextureSource, entriesRemaining != 0;
-                entriesRemaining--) {
-              (playerBlockCursor->selection).entries[0] = NULL;
-              playerBlockCursor = (SelectionPlayerRuntimeBlock *)((playerBlockCursor->selection).entries + 1);
-            }
-            playerBlockCursor = (SelectionPlayerRuntimeBlock *)&playerBlockCursor->pendingPlacementArmyAsset;
-            blockCountOrRecordOffset--;
-          } while (blockCountOrRecordOffset != 0);
-          g_SelectionInfoEntitySlots = entitySlots;
-          tableOffset = (g_SelectionPanelTextureSource->tableDescriptor).subresourceTableOffset;
-          /* select.gfx: swap the data offsets of subresources 46 and 45 (XCHG in the original) */
-          LOCK();
-          swappedSelectionDataOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[46].dataOffset;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[46].dataOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[45].dataOffset;
-          UNLOCK();
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[45].dataOffset =
-               swappedSelectionDataOffset;
-          /* info.gfx: rewrite records of several sequences (the records at the dataOffset of subresources
-             0x2C..0x33; their layout is not typed); referencePayloadValue is the first dword of the record of
-             subresource 0x2C */
-          loadedResource = g_InfoPanelTextureSource;
-          tableOffset = (g_InfoPanelTextureSource->tableDescriptor).subresourceTableOffset;
-          referencePayloadValue =
-               *(uint32_t *)((uint8_t *)g_InfoPanelTextureSource +
-                            ((GraphicsTextureSourceEntry *)((uint8_t *)g_InfoPanelTextureSource + tableOffset))[44].
-                            dataOffset);
-          blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)g_InfoPanelTextureSource + tableOffset))[47].dataOffset;
-          patchBytes = (uint8_t *)g_InfoPanelTextureSource + blockCountOrRecordOffset;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
-               referencePayloadValue;
-          blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[48].dataOffset;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
-               referencePayloadValue;
-          blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[49].dataOffset;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
-               referencePayloadValue;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[50].pixelHeight = 4;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[50].logicalHeight = 4;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[51].pixelHeight = 4;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[51].logicalHeight = 4;
-          patchBytes =
-               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[45].pixelHeight;
-          patchBytes[0] = 4;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          patchBytes =
-               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[45].logicalHeight;
-          patchBytes[0] = 4;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          patchBytes =
-               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[46].pixelHeight;
-          patchBytes[0] = 4;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          patchBytes =
-               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[46].logicalHeight;
-          patchBytes[0] = 4;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[50].dataOffset;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
-               referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 8;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 12;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 16;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 20;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 24;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 28) =
-               referencePayloadValue;
-          blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[51].dataOffset;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
-               referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 8;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 12;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 16;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 20;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 24;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 28) =
-               referencePayloadValue;
-          blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[45].dataOffset;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset) =
-               referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 4;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 8;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 12;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 16;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 20;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 24) =
-               referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 28;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[46].dataOffset;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset) =
-               referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 4;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 8;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 12;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 16;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 20;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0xff;
-          patchBytes[3] = 0xff;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 24) =
-               referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 28;
-          patchBytes[0] = 0;
-          patchBytes[1] = 0;
-          patchBytes[2] = 0;
-          patchBytes[3] = 0;
-          return true;
-        }
-      }
-    }
+  g_SelectionPanelTextureSource = selectionTextureSource;
+  infoTextureSource =
+       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_info_gfx_0052ce42,&loadErrorCode);
+  if (infoTextureSource == NULL) {
+    *outError = loadErrorCode;
+    return false;
   }
-  *outError = (uint32_t)loadedResource;
-  return false;
+  g_InfoPanelTextureSource = infoTextureSource;
+  selectionPanelData = Package_LoadEntry((uint16_t *)u_gfx_panel_select_dat_0052ce68,&loadErrorCode);
+  if (selectionPanelData == NULL) {
+    *outError = loadErrorCode;
+    return false;
+  }
+  g_SelectionPanelData = selectionPanelData;
+  infoPanelData = Package_LoadEntry((uint16_t *)u_gfx_panel_info_dat_0052ce92,&loadErrorCode);
+  if (infoPanelData == NULL) {
+    *outError = loadErrorCode;
+    return false;
+  }
+  g_InfoPanelData = infoPanelData;
+  SelectionInfoPanel_ClearAllPlayerSelections();
+  g_SelectionInfoEntitySlots = entitySlots;
+  SelectionInfoPanel_PatchSelectionTexture(g_SelectionPanelTextureSource);
+  SelectionInfoPanel_PatchInfoTexture(g_InfoPanelTextureSource);
+  return true;
 }
 
 
@@ -1141,31 +1007,27 @@ bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerI
 
 {
   ModelRuntimeSlot *classRecord;
-  int entriesRemaining;
+  int entryIndex;
   int activeEntryCount;
-  GameEntityRuntime **selectionEntryCursor;
   GameEntityRuntime *currentEntry;
 
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   activeEntryCount = 0;
-  selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
-    currentEntry = *selectionEntryCursor;
-    if (currentEntry != NULL) {
-      classRecord = (currentEntry->common).ownership.definitionOrClassRecord; /* the model runtime */
-      if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
-        return true;
-      }
-      if (classRecord->definitionOrSavedId.runtimeDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_22) {
-        return true;
-      }
-      if (classRecord->classLinkState.classState70 != 0) {
-        activeEntryCount++;
-      }
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    currentEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
+    if (currentEntry == NULL) {
+      continue;
     }
-    selectionEntryCursor++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+    classRecord = (currentEntry->common).ownership.definitionOrClassRecord; /* the model runtime */
+    if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
+      return true;
+    }
+    if (classRecord->definitionOrSavedId.runtimeDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_22) {
+      return true;
+    }
+    if (classRecord->classLinkState.classState70 != 0) {
+      activeEntryCount++;
+    }
+  }
   return activeEntryCount == 0;
 }
 
@@ -1178,31 +1040,65 @@ bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerI
 bool SelectionInfo_TestAnyActiveOrSingleClass13(void)
 
 {
-  int entriesRemaining;
+  int entryIndex;
   int selectedEntryCount;
-  GameEntityRuntime **selectionEntryCursor;
+  GameEntityRuntime *selectedEntry;
   bool selectedEntryIsClass13;
-  int selectedDefinitionRecordAddress;
+  ModelDefinition *selectedDefinition;
 
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectedEntryCount = 0;
   selectedEntryIsClass13 = false;
-  selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
-    if (*selectionEntryCursor != NULL) {
-      selectedEntryCount++;
-      selectedDefinitionRecordAddress =
-           *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (((ModelDefinition *)selectedDefinitionRecordAddress)->accelerationPerTick != 0) {
-        return false;
-      }
-      selectedEntryIsClass13 = ((ModelDefinition *)selectedDefinitionRecordAddress)->runtimeClassId == MODEL_RUNTIME_CLASS_13;
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    selectedEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
+    if (selectedEntry == NULL) {
+      continue;
     }
-    selectionEntryCursor++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+    selectedEntryCount++;
+    selectedDefinition = *(ModelDefinition **)(selectedEntry->common).ownership.definitionOrClassRecord;
+    if (selectedDefinition->accelerationPerTick != 0) {
+      return false;
+    }
+    selectedEntryIsClass13 = selectedDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13;
+  }
   if ((selectedEntryCount == 1) && (selectedEntryIsClass13)) {
     return false;
+  }
+  return true;
+}
+
+
+/* Fallback of SelectionInfo_TestPositionCommandAtWorldPoint: the first class-0x0D entity of the local selection
+   tests the grid cell mask bands selected by its capability flags (0x80 -> band 3, 4 -> band 1, else 6);
+   true when there is no such entity. */
+static bool SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12)
+
+{
+  GameEntityRuntime *selectedEntity;
+  ModelDefinition *class13Definition;
+  uint32_t capabilityFlags;
+  uint8_t highBandIndex;
+  int entryIndex;
+
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    selectedEntity = g_SelectionInfoEntitySlots->entries[entryIndex];
+    if (selectedEntity == NULL) {
+      continue;
+    }
+    class13Definition = *(ModelDefinition **)(selectedEntity->common).ownership.definitionOrClassRecord;
+    if (class13Definition->runtimeClassId != MODEL_RUNTIME_CLASS_13) {
+      continue;
+    }
+    capabilityFlags = class13Definition->classParameterC4;
+    if ((capabilityFlags & 0x80) != 0) {
+      highBandIndex = 3;
+    }
+    else if ((capabilityFlags & 4) != 0) {
+      highBandIndex = 1;
+    }
+    else {
+      highBandIndex = 6;
+    }
+    return GridScratch_TestProjectedCellMaskBands(worldXQ12,worldYQ12,7,highBandIndex);
   }
   return true;
 }
@@ -1217,60 +1113,35 @@ bool SelectionInfo_TestAnyActiveOrSingleClass13(void)
 bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
 
 {
-  GraphicsFixedVec3 *translationPtr;
-  GraphicsWorldCoordinateQ12 *translationYPtr;
   GraphicsWorldCoordinateQ12 savedTranslationX;
   GraphicsWorldCoordinateQ12 savedTranslationY;
   ModelRuntimeNode *selectedModelNode;
-  int class13Definition;
-  uint32_t capabilityFlags;
-  int entriesRemaining;
-  uint8_t highBandIndex;
-  GameEntityRuntime **selectionEntryCursor;
+  int entryIndex;
   bool testResult;
   GameEntityRuntime *selectedEntity;
-  
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
-  selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  while ((selectedEntity = *selectionEntryCursor, selectedEntity == NULL ||
-         (selectedModelNode = (selectedEntity->common).ownership.modelNode,
-         ((ModelRuntimeSlot *)(selectedEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
-         runtimeDefinition->accelerationPerTick == 0)))
-  {
-    selectionEntryCursor++;
-    entriesRemaining--;
-    if (entriesRemaining == 0) {
-      entriesRemaining = SELECTION_ENTRY_CAPACITY;
-      selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-      while ((*selectionEntryCursor == NULL ||
-             (class13Definition = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord,
-             ((ModelDefinition *)class13Definition)->runtimeClassId != MODEL_RUNTIME_CLASS_13))) {
-        selectionEntryCursor++;
-        entriesRemaining--;
-        if (entriesRemaining == 0) {
-          return true;
-        }
-      }
-      capabilityFlags = ((ModelDefinition *)class13Definition)->classParameterC4;
-      highBandIndex = 3;
-      if (((capabilityFlags & 0x80) == 0) && (highBandIndex = 1, (capabilityFlags & 4) == 0)) {
-        highBandIndex = 6;
-      }
-      testResult = GridScratch_TestProjectedCellMaskBands(worldXQ12,worldYQ12,7,highBandIndex);
-      return testResult;
+
+  selectedEntity = NULL;
+  selectedModelNode = NULL;
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    selectedEntity = g_SelectionInfoEntitySlots->entries[entryIndex];
+    if (selectedEntity == NULL) {
+      continue;
+    }
+    selectedModelNode = (selectedEntity->common).ownership.modelNode;
+    if (((ModelRuntimeSlot *)(selectedEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+        runtimeDefinition->accelerationPerTick != 0) {
+      break;
     }
   }
-  /* XCHG in the original; note that translation.x receives worldYQ12 and translation.y worldXQ12 */
-  LOCK();
-  translationPtr = &(selectedModelNode->worldTransform).translation;
-  savedTranslationX = translationPtr->x;
-  translationPtr->x = worldYQ12;
-  UNLOCK();
-  LOCK();
-  translationYPtr = &(selectedModelNode->worldTransform).translation.y;
-  savedTranslationY = *translationYPtr;
-  *translationYPtr = worldXQ12;
-  UNLOCK();
+  if (entryIndex == SELECTION_ENTRY_CAPACITY) {
+    return SelectionInfo_TestClass13CellBandsAtWorldPoint(worldXQ12,worldYQ12);
+  }
+  /* swap the point in (an XCHG in the original); note that translation.x receives worldYQ12 and
+     translation.y worldXQ12 */
+  savedTranslationX = (selectedModelNode->worldTransform).translation.x;
+  (selectedModelNode->worldTransform).translation.x = worldYQ12;
+  savedTranslationY = (selectedModelNode->worldTransform).translation.y;
+  (selectedModelNode->worldTransform).translation.y = worldXQ12;
   testResult = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)selectedEntity,inGameRuntime);
   (selectedModelNode->worldTransform).translation.x = savedTranslationX;
   (selectedModelNode->worldTransform).translation.y = savedTranslationY;
@@ -1396,22 +1267,17 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
 
 {
   uint32_t effectVariantMask;
-  int entriesRemaining;
-  uint32_t entryVariantMask;
-  GameEntityRuntime **selectionEntryCursor;
+  int entryIndex;
+  GameEntityRuntime *selectedEntry;
 
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   effectVariantMask = 0;
-  selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
-    if (*selectionEntryCursor != NULL) {
-      entryVariantMask = ArmyRuntime_GetAttachmentEffectVariantMask
-                        (((*selectionEntryCursor)->common).ownership.definitionOrClassRecord);
-      effectVariantMask = effectVariantMask | entryVariantMask;
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    selectedEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
+    if (selectedEntry != NULL) {
+      effectVariantMask |=
+           ArmyRuntime_GetAttachmentEffectVariantMask((selectedEntry->common).ownership.definitionOrClassRecord);
     }
-    selectionEntryCursor++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   return effectVariantMask;
 }
 
@@ -1424,27 +1290,24 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
 
 {
   uint32_t capabilityMask;
-  int entriesRemaining;
-  GameEntityRuntime **selectionEntryCursor;
-  int currentEntityDefinition;
+  int entryIndex;
+  GameEntityRuntime *selectedEntry;
+  ModelDefinition *entityDefinition;
 
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   capabilityMask = 0;
-  selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
-    if (*selectionEntryCursor != NULL) {
-      currentEntityDefinition =
-           *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (((ModelDefinition *)currentEntityDefinition)->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-        capabilityMask = capabilityMask | 8;
-      }
-      else if (((ModelDefinition *)currentEntityDefinition)->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
-        capabilityMask = capabilityMask | ((ModelDefinition *)currentEntityDefinition)->classParameterC4;
-      }
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    selectedEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
+    if (selectedEntry == NULL) {
+      continue;
     }
-    selectionEntryCursor++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+    entityDefinition = *(ModelDefinition **)(selectedEntry->common).ownership.definitionOrClassRecord;
+    if (entityDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
+      capabilityMask = capabilityMask | 8;
+    }
+    else if (entityDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
+      capabilityMask = capabilityMask | entityDefinition->classParameterC4;
+    }
+  }
   return capabilityMask;
 }
 
@@ -1505,66 +1368,57 @@ void SelectionPointerArray_ApplyMoveCommand
 
 {
   ArmyMovementRuntime *movementRuntime;
-  void *class13Record;
-  int entriesRemaining;
+  ModelRuntimeSlot *class13Record;
+  int entryIndex;
   Q12 entryTargetY;
   int selectedEntryCount;
   Q12 entryTargetX;
-  int *singleClass13Entry;
-  GameEntityRuntime **commandEntryCursor;
-  GameEntityRuntime **selectionEntryCursor;
+  GameEntityRuntime *selectedEntry;
+  GameEntityRuntime *singleClass13Entry;
   bool spreadTooLarge;
-  int entityDefinitionAddress;
+  ModelDefinition *entityDefinition;
 
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
   entryTargetY = targetWorldY;
   entryTargetX = targetWorldX;
-  commandEntryCursor = selection->entries;
-  do {
-    movementRuntime = (ArmyMovementRuntime *)*commandEntryCursor;
-    if (movementRuntime != NULL) {
-      /* classState60/ownerValue64 are the entity's selection offsets (common +0x60/+0x64, centre - position)
-         written by SelectionPointerArray_RecenterOffsetsAroundAveragePosition */
-      if (!spreadTooLarge) {
-        entryTargetX = entryTargetX - movementRuntime->classState60;
-        entryTargetY = entryTargetY - movementRuntime->ownerValue64;
-      }
-      ArmyRuntime_StartRoutedMoveCommand(entryTargetY,entryTargetX,movementRuntime);
-      if (!spreadTooLarge) {
-        entryTargetX = entryTargetX + movementRuntime->classState60;
-        entryTargetY = entryTargetY + movementRuntime->ownerValue64;
-      }
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    movementRuntime = (ArmyMovementRuntime *)selection->entries[entryIndex];
+    if (movementRuntime == NULL) {
+      continue;
     }
-    commandEntryCursor = commandEntryCursor + 1;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
+    /* classState60/ownerValue64 are the entity's selection offsets (common +0x60/+0x64, centre - position)
+       written by SelectionPointerArray_RecenterOffsetsAroundAveragePosition */
+    if (!spreadTooLarge) {
+      entryTargetX = entryTargetX - movementRuntime->classState60;
+      entryTargetY = entryTargetY - movementRuntime->ownerValue64;
+    }
+    ArmyRuntime_StartRoutedMoveCommand(entryTargetY,entryTargetX,movementRuntime);
+    if (!spreadTooLarge) {
+      entryTargetX = entryTargetX + movementRuntime->classState60;
+      entryTargetY = entryTargetY + movementRuntime->ownerValue64;
+    }
+  }
   selectedEntryCount = 0;
   singleClass13Entry = NULL;
-  selectionEntryCursor = selection->entries;
-  do {
-    if (*selectionEntryCursor != NULL) {
-      selectedEntryCount++;
-      entityDefinitionAddress =
-           *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (((ModelDefinition *)entityDefinitionAddress)->accelerationPerTick != 0) {
-        return;
-      }
-      if (((ModelDefinition *)entityDefinitionAddress)->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
-        singleClass13Entry = (int *)*selectionEntryCursor;
-      }
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    selectedEntry = selection->entries[entryIndex];
+    if (selectedEntry == NULL) {
+      continue;
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
-  if ((selectedEntryCount == 1) &&
-     ((GameEntityRuntime *)singleClass13Entry != NULL)) {
-    class13Record = (((GameEntityRuntime *)singleClass13Entry)->common).ownership.definitionOrClassRecord;
-    ((ModelRuntimeSlot *)class13Record)->classLinkState.classState78 = targetWorldX;
-    ((ModelRuntimeSlot *)class13Record)->classLinkState.classState7C = targetWorldY;
-    ((ModelRuntimeSlot *)class13Record)->classState.stateFlags =
-         ((ModelRuntimeSlot *)class13Record)->classState.stateFlags | ARMY_MODEL_STATE_RALLY_POINT_SET;
+    selectedEntryCount++;
+    entityDefinition = *(ModelDefinition **)(selectedEntry->common).ownership.definitionOrClassRecord;
+    if (entityDefinition->accelerationPerTick != 0) {
+      return;
+    }
+    if (entityDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
+      singleClass13Entry = selectedEntry;
+    }
+  }
+  if ((selectedEntryCount == 1) && (singleClass13Entry != NULL)) {
+    class13Record = (ModelRuntimeSlot *)(singleClass13Entry->common).ownership.definitionOrClassRecord;
+    class13Record->classLinkState.classState78 = targetWorldX;
+    class13Record->classLinkState.classState7C = targetWorldY;
+    class13Record->classState.stateFlags = class13Record->classState.stateFlags | ARMY_MODEL_STATE_RALLY_POINT_SET;
     SelectionPointerArray_Clear32(selection);
   }
 }
@@ -1581,66 +1435,57 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
 
 {
   ModelRuntimeSlot *entryModelRuntime;
-  int definitionAddress;
-  void *class13Record;
+  ModelDefinition *entityDefinition;
+  ModelRuntimeSlot *class13Record;
   ModelRuntimeNode *modelNodeRuntime;
-  int entriesRemaining;
+  int entryIndex;
   int selectedEntryCount;
-  GameEntityRuntime *currentEntity;
-  GameEntityRuntime **selectionEntryCursor;
+  ArmyRuntimeSlot *entryArmy;
+  GameEntityRuntime *selectedEntry;
+  GameEntityRuntime *singleClass13Entry;
   ModelPackedPointRecord *anchorRecord;
   ModelWorldPoint localPoint;
 
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
-  selectionEntryCursor = selectionEntries;
-  do {
-    currentEntity = *selectionEntryCursor;
-    if ((currentEntity != NULL) &&
-       ((((ArmyRuntimeSlot *)currentEntity)->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0))
-    {
-      ArmyRuntime_ResetMovementStateFromModel((ArmyRuntimeSlot *)currentEntity);
-      ((ArmyRuntimeSlot *)currentEntity)->commandModeFlags =
-           ((ArmyRuntimeSlot *)currentEntity)->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
-      ((ArmyRuntimeSlot *)currentEntity)->movementStateFlags =
-           ((ArmyRuntimeSlot *)currentEntity)->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
-      entryModelRuntime = ((ArmyRuntimeSlot *)currentEntity)->modelRuntimeOrSavedOffset.modelRuntime;
-      if ((entryModelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-        *selectionEntryCursor = NULL;
-        (entryModelRuntime->classState).classStateDC = 0;
-      }
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    entryArmy = (ArmyRuntimeSlot *)selectionEntries[entryIndex];
+    if ((entryArmy == NULL) || ((entryArmy->movementStateFlags & ARMY_MOVEMENT_LOCKED) != 0)) {
+      continue;
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
+    ArmyRuntime_ResetMovementStateFromModel(entryArmy);
+    entryArmy->commandModeFlags = entryArmy->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
+    entryArmy->movementStateFlags = entryArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
+    entryModelRuntime = entryArmy->modelRuntimeOrSavedOffset.modelRuntime;
+    if ((entryModelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
+      selectionEntries[entryIndex] = NULL;
+      (entryModelRuntime->classState).classStateDC = 0;
+    }
+  }
   selectedEntryCount = 0;
-  currentEntity = NULL;
+  singleClass13Entry = NULL;
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
             ((SelectionPointerArray32 *)selectionEntries);
-  selectionEntryCursor = selectionEntries;
-  do {
-    if (*selectionEntryCursor != NULL) {
-      selectedEntryCount++;
-      definitionAddress = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (((ModelDefinition *)definitionAddress)->accelerationPerTick != 0) {
-        return;
-      }
-      if (((ModelDefinition *)definitionAddress)->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
-        currentEntity = *selectionEntryCursor;
-      }
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    selectedEntry = selectionEntries[entryIndex];
+    if (selectedEntry == NULL) {
+      continue;
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
-  if ((selectedEntryCount == 1) && (currentEntity != NULL)) {
-    class13Record = (currentEntity->common).ownership.definitionOrClassRecord;
-    modelNodeRuntime = (currentEntity->common).ownership.modelNode;
-    ((ModelRuntimeSlot *)class13Record)->classState.stateFlags =
-         ((ModelRuntimeSlot *)class13Record)->classState.stateFlags & ~ARMY_MODEL_STATE_RALLY_POINT_SET;
+    selectedEntryCount++;
+    entityDefinition = *(ModelDefinition **)(selectedEntry->common).ownership.definitionOrClassRecord;
+    if (entityDefinition->accelerationPerTick != 0) {
+      return;
+    }
+    if (entityDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
+      singleClass13Entry = selectedEntry;
+    }
+  }
+  if ((selectedEntryCount == 1) && (singleClass13Entry != NULL)) {
+    class13Record = (ModelRuntimeSlot *)(singleClass13Entry->common).ownership.definitionOrClassRecord;
+    modelNodeRuntime = (singleClass13Entry->common).ownership.modelNode;
+    class13Record->classState.stateFlags = class13Record->classState.stateFlags & ~ARMY_MODEL_STATE_RALLY_POINT_SET;
     if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
       localPoint = ModelNodeRuntime_TransformLocalPoint(anchorRecord,modelNodeRuntime);
-      ((ModelRuntimeSlot *)class13Record)->classLinkState.classState78 = localPoint.xQ12;
-      ((ModelRuntimeSlot *)class13Record)->classLinkState.classState7C = localPoint.yQ12;
+      class13Record->classLinkState.classState78 = localPoint.xQ12;
+      class13Record->classLinkState.classState7C = localPoint.yQ12;
       SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);
     }
   }
@@ -1658,18 +1503,19 @@ void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
   PckArmyAssetIdCatalog sourceArmyAssetId;
   int sourceFactionIndex;
   GameEntityRuntime *entityRuntime;
-  WorldRuntimeNode *worldNodeCursor;
+  WorldOwnerListNode *ownerNode;
 
   sourceArmyAssetId = sourceArmyRuntime->armyAssetId;
   sourceFactionIndex = sourceArmyRuntime->factionIndex;
-  /* world owner list; worldNodeCursor[2].common.nextNode is the ownerClassId dword at +0xA4
-     (0 = WORLD_OWNER_RUNTIME_MODEL) */
-  for (worldNodeCursor = (WorldRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-      worldNodeCursor != NULL;
-      worldNodeCursor = (worldNodeCursor->common).nextNode) {
-    if (((worldNodeCursor[2].common.nextNode == NULL) &&
-        (entityRuntime = *(GameEntityRuntime **)((int)worldNodeCursor->runtimePayload + 8),
-        sourceArmyAssetId == (entityRuntime->common).runtimeIdentityOrArmyAssetId)) &&
+  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
+      ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    /* model payload: the ModelRuntimeSlot; its owner army is the entity */
+    entityRuntime =
+         (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    if ((sourceArmyAssetId == (entityRuntime->common).runtimeIdentityOrArmyAssetId) &&
        (sourceFactionIndex == (entityRuntime->common).ownership.ownerIndex)) {
       SelectionPointerArray_InsertUniqueAndRecenter(entityRuntime,selection);
     }
@@ -1871,6 +1717,40 @@ void SelectionPanel_DrawHorizontalNumberTextCappedBar
   return;
 }
 
+/* The SELECTION_PANEL_CELL_SIZE-byte record of cellIndex in select.dat (fields SELECTION_PANEL_CELL_*). */
+static uint8_t *SelectionPanel_GetCellRecord(SelectionPanelCellIndex cellIndex)
+
+{
+  return (uint8_t *)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE;
+}
+
+
+/* Shared tail of the cell draw functions: the coordinates after a cell drawn at (cellY, cellX) with a sprite of
+   spriteSize; SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_* keep an axis at the cell position. */
+static SelectionPanelCellAdvance SelectionPanel_AdvancePastCell
+          (uint8_t *cell,int cellY,int cellX,GraphicsTextureLogicalSize spriteSize)
+
+{
+  uint32_t cellFlags;
+  uint32_t advanceWidth;
+  uint32_t advanceHeight;
+  SelectionPanelCellAdvance cellAdvance;
+
+  advanceWidth = spriteSize.logicalWidthPixels;
+  advanceHeight = spriteSize.logicalHeightPixels;
+  cellFlags = *(uint32_t *)(cell + SELECTION_PANEL_CELL_FLAGS);
+  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X) != 0) {
+    advanceWidth = 0;
+  }
+  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y) != 0) {
+    advanceHeight = 0;
+  }
+  cellAdvance.nextX = advanceWidth + cellX;
+  cellAdvance.nextY = advanceHeight + cellY;
+  return cellAdvance;
+}
+
+
 /* Address: 0x0052D600.
    Draws a number cell: the cell's sprite at (originY, originX) plus the cell offsets, with value formatted as
    signed decimal text centred on it. Returns the coordinates after the cell (see SelectionPanelCellAdvance;
@@ -1883,15 +1763,11 @@ SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex)
 
 {
-  uint32_t cellFlags;
-  void *panelData;
-  uint32_t subresourceOrWidth;
+  uint8_t *cell;
+  uint32_t subresource;
   int cellY;
-  uint32_t spriteHeight;
   int cellX;
-  uint32_t *cellFlagsPtr;
   RichTextExtent textExtent;
-  SelectionPanelCellAdvance cellAdvance;
   GraphicsTextureLogicalSize spriteSize;
 
   g_WideNumberFormatUtf16
@@ -1899,38 +1775,20 @@ SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
              (uint16_t *)&g_SelectionPanelNumberScratchUtf16);
   textExtent = RichTextCommandStream_MeasureLine
                     (g_SelectionPanelNumberTextStyle,(uint16_t *)&g_SelectionPanelNumberScratchUtf16);
-  panelData = g_SelectionPanelData;
-  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                              SELECTION_PANEL_CELL_FLAGS);
-  cellX = originX + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                             SELECTION_PANEL_CELL_OFFSET_X);
-  cellY = originY + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                             SELECTION_PANEL_CELL_OFFSET_Y);
-  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                     SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cell = SelectionPanel_GetCellRecord(cellIndex);
+  cellX = originX + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_X);
+  cellY = originY + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
+  subresource = *(uint32_t *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   g_SelectionPanelBlitOpaque
-            (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,subresourceOrWidth,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,subresource,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
-  spriteHeight = spriteSize.logicalHeightPixels;
-  subresourceOrWidth = spriteSize.logicalWidthPixels;
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresource,g_SelectionPanelTextureSource);
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,g_SelectionPanelNumberTextStyle,
              (uint16_t *)&g_SelectionPanelNumberScratchUtf16,
-             ((int)(spriteHeight - textExtent.heightPixels) >> 1) + cellY,
-             ((int)(subresourceOrWidth - textExtent.widthPixels) >> 1) + cellX);
-  cellFlags = *cellFlagsPtr;
-  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X) != 0) {
-    subresourceOrWidth = 0;
-  }
-  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y) != 0) {
-    spriteHeight = 0;
-  }
-  cellAdvance.nextX = subresourceOrWidth + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                                   SELECTION_PANEL_CELL_OFFSET_X) + originX;
-  cellAdvance.nextY = spriteHeight + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                             SELECTION_PANEL_CELL_OFFSET_Y) + originY;
-  return cellAdvance;
+             ((int)(spriteSize.logicalHeightPixels - textExtent.heightPixels) >> 1) + cellY,
+             ((int)(spriteSize.logicalWidthPixels - textExtent.widthPixels) >> 1) + cellX);
+  return SelectionPanel_AdvancePastCell(cell,cellY,cellX,spriteSize);
 }
 
 
@@ -1945,41 +1803,21 @@ SelectionPanelCellAdvance SelectionPanel_DrawIconCellAndAdvance
           SelectionPanelCellIndex cellIndex)
 
 {
-  uint32_t cellFlags;
-  void *panelData;
-  uint32_t subresourceOrWidth;
-  uint32_t spriteHeight;
-  uint32_t *cellFlagsPtr;
-  SelectionPanelCellAdvance cellAdvance;
+  uint8_t *cell;
+  uint32_t subresource;
+  int cellY;
+  int cellX;
   GraphicsTextureLogicalSize spriteSize;
 
-  panelData = g_SelectionPanelData;
-  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                              SELECTION_PANEL_CELL_FLAGS);
-  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                     SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cell = SelectionPanel_GetCellRecord(cellIndex);
+  subresource = *(uint32_t *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cellY = originY + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
+  cellX = originX + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_X);
   g_SelectionPanelBlitOpaque
-            (clipBottom,clipRight,clipTop,clipLeft,
-             originY + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                SELECTION_PANEL_CELL_OFFSET_Y),
-             originX + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                SELECTION_PANEL_CELL_OFFSET_X),subresourceOrWidth,
-             g_SelectionPanelTextureSource,g_FramebufferAccess);
-  spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
-  spriteHeight = spriteSize.logicalHeightPixels;
-  subresourceOrWidth = spriteSize.logicalWidthPixels;
-  cellFlags = *cellFlagsPtr;
-  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X) != 0) {
-    subresourceOrWidth = 0;
-  }
-  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y) != 0) {
-    spriteHeight = 0;
-  }
-  cellAdvance.nextX = subresourceOrWidth + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                                   SELECTION_PANEL_CELL_OFFSET_X) + originX;
-  cellAdvance.nextY = spriteHeight + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                             SELECTION_PANEL_CELL_OFFSET_Y) + originY;
-  return cellAdvance;
+            (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,subresource,g_SelectionPanelTextureSource,
+             g_FramebufferAccess);
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresource,g_SelectionPanelTextureSource);
+  return SelectionPanel_AdvancePastCell(cell,cellY,cellX,spriteSize);
 }
 
 
@@ -1996,19 +1834,13 @@ SelectionPanelCellAdvance SelectionPanel_DrawSteppedMeterCellAndAdvance
           SelectionPanelCellIndex cellIndex)
 
 {
+  uint8_t *cell;
   int baseSubresource;
-  uint32_t cellFlags;
-  void *panelData;
   int meterFrame;
   int cellX;
-  uint32_t subresourceOrWidth;
   int cellY;
-  uint32_t spriteHeight;
-  uint32_t *cellFlagsPtr;
-  SelectionPanelCellAdvance cellAdvance;
   GraphicsTextureLogicalSize spriteSize;
 
-  panelData = g_SelectionPanelData;
   if (currentValue < 0) {
     currentValue = 0;
   }
@@ -2022,37 +1854,33 @@ SelectionPanelCellAdvance SelectionPanel_DrawSteppedMeterCellAndAdvance
     /* round(16 * current / maximum) + 1 */
     meterFrame = ((uint32_t)(currentValue * 32 + maximumValue) / (uint32_t)maximumValue >> 1) + 1;
   }
-  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                              SELECTION_PANEL_CELL_FLAGS);
-  baseSubresource = *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                             SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
-  cellX = originX + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                             SELECTION_PANEL_CELL_OFFSET_X);
-  cellY = originY + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                             SELECTION_PANEL_CELL_OFFSET_Y);
-  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                     SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cell = SelectionPanel_GetCellRecord(cellIndex);
+  baseSubresource = *(int *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cellX = originX + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_X);
+  cellY = originY + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
   g_SelectionPanelBlitOpaque
-            (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,subresourceOrWidth,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,baseSubresource,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,meterFrame + baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
-  spriteHeight = spriteSize.logicalHeightPixels;
-  subresourceOrWidth = spriteSize.logicalWidthPixels;
-  cellFlags = *cellFlagsPtr;
-  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X) != 0) {
-    subresourceOrWidth = 0;
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
+  return SelectionPanel_AdvancePastCell(cell,cellY,cellX,spriteSize);
+}
+
+
+/* numerator / maximumValue rounded to the nearest integer: the quotient is rounded up when twice the remainder
+   (as a 32-bit int) exceeds maximumValue. */
+static int SelectionPanel_DivideRounded(int64_t numerator,UiNumericValue32 maximumValue)
+
+{
+  int quotient;
+
+  quotient = (int)(numerator / (int64_t)maximumValue);
+  if (maximumValue < (int)(numerator % (int64_t)maximumValue) * 2) {
+    quotient++;
   }
-  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y) != 0) {
-    spriteHeight = 0;
-  }
-  cellAdvance.nextX = subresourceOrWidth + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                                   SELECTION_PANEL_CELL_OFFSET_X) + originX;
-  cellAdvance.nextY = spriteHeight + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
-                                             SELECTION_PANEL_CELL_OFFSET_Y) + originY;
-  return cellAdvance;
+  return quotient;
 }
 
 
@@ -2074,14 +1902,15 @@ void SelectionPanel_DrawProportionalCappedBar
   int interiorStart;
   int endCapCoordinate;
   uint32_t baseSubresource;
-  int64_t interiorSpan64;
   int filledSpan;
   int fillFrame;
   int fixedDrawCoordinate;
+  uint8_t *cell;
   GraphicsTextureLogicalSize capSize;
-  
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+
+  cell = SelectionPanel_GetCellRecord(cellIndex);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *(uint32_t *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
@@ -2099,20 +1928,14 @@ void SelectionPanel_DrawProportionalCappedBar
   else if (maximumValue < currentValue) {
     currentValue = maximumValue;
   }
-  /* filled length and fill frame are rounded to the nearest integer (remainder * 2 > maximum rounds up) */
-  if ((maximumValue != 0) &&
-     (interiorSpan64 = (int64_t)filledSpan, filledSpan = (int)((interiorSpan64 * currentValue) / (int64_t)maximumValue),
-     maximumValue < (int)((interiorSpan64 * currentValue) % (int64_t)maximumValue) * 2)) {
-    filledSpan++;
-  }
+  /* filled length and fill frame are rounded to the nearest integer (remainder * 2 > maximum rounds up);
+     without a maximum the whole interior is filled with frame 6 */
   if (maximumValue == 0) {
     fillFrame = 6;
   }
   else {
-    fillFrame = (int)(((int64_t)currentValue * 6) / (int64_t)maximumValue);
-    if (maximumValue < (int)(((int64_t)currentValue * 6) % (int64_t)maximumValue) * 2) {
-      fillFrame++;
-    }
+    filledSpan = SelectionPanel_DivideRounded((int64_t)filledSpan * currentValue,maximumValue);
+    fillFrame = SelectionPanel_DivideRounded((int64_t)currentValue * 6,maximumValue);
   }
   g_SelectionPanelBlitClipped
             (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,filledSpan + interiorStart,fixedDrawCoordinate,interiorStart,
@@ -2140,14 +1963,15 @@ void SelectionPanel_DrawVerticalProportionalCappedBar
   int interiorStart;
   int endCapCoordinate;
   uint32_t baseSubresource;
-  int64_t interiorSpan64;
   int filledSpan;
   int fillFrame;
   int fixedDrawCoordinate;
+  uint8_t *cell;
   GraphicsTextureLogicalSize capSize;
-  
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+
+  cell = SelectionPanel_GetCellRecord(cellIndex);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_X);
+  baseSubresource = *(uint32_t *)(cell + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
@@ -2165,20 +1989,14 @@ void SelectionPanel_DrawVerticalProportionalCappedBar
   else if (maximumValue < currentValue) {
     currentValue = maximumValue;
   }
-  /* filled length and fill frame are rounded to the nearest integer (remainder * 2 > maximum rounds up) */
-  if ((maximumValue != 0) &&
-     (interiorSpan64 = (int64_t)filledSpan, filledSpan = (int)((interiorSpan64 * currentValue) / (int64_t)maximumValue),
-     maximumValue < (int)((interiorSpan64 * currentValue) % (int64_t)maximumValue) * 2)) {
-    filledSpan++;
-  }
+  /* filled length and fill frame are rounded to the nearest integer (remainder * 2 > maximum rounds up);
+     without a maximum the whole interior is filled with frame 6 */
   if (maximumValue == 0) {
     fillFrame = 6;
   }
   else {
-    fillFrame = (int)(((int64_t)currentValue * 6) / (int64_t)maximumValue);
-    if (maximumValue < (int)(((int64_t)currentValue * 6) % (int64_t)maximumValue) * 2) {
-      fillFrame++;
-    }
+    filledSpan = SelectionPanel_DivideRounded((int64_t)filledSpan * currentValue,maximumValue);
+    fillFrame = SelectionPanel_DivideRounded((int64_t)currentValue * 6,maximumValue);
   }
   g_SelectionPanelBlitClipped
             (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate - filledSpan,fixedDrawCoordinate,
@@ -2679,47 +2497,37 @@ void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRunt
 void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection)
 
 {
-  int positionRecord;
+  ModelRuntimeNode *modelNode;
+  GameEntityRuntime *entry;
   int averageXQ12;
-  int selectedCountOrRemaining;
   int averageYQ12;
-  int remainingOrEntryAddress;
-  GameEntityRuntime **entryCursor;
+  int selectedCount;
+  int entryIndex;
 
-  /* positionRecord is the entity's model node */
   averageXQ12 = 0;
   averageYQ12 = 0;
-  selectedCountOrRemaining = 0;
-  remainingOrEntryAddress = SELECTION_ENTRY_CAPACITY;
-  entryCursor = selection->entries;
-  do {
-    if (*entryCursor != NULL) {
-      positionRecord = (int)((*entryCursor)->common).ownership.modelNode;
-      selectedCountOrRemaining++;
-      averageXQ12 = averageXQ12 + ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.x;
-      averageYQ12 = averageYQ12 + ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.y;
+  selectedCount = 0;
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    entry = selection->entries[entryIndex];
+    if (entry != NULL) {
+      modelNode = (entry->common).ownership.modelNode;
+      selectedCount++;
+      averageXQ12 = averageXQ12 + modelNode->worldTransform.translation.x;
+      averageYQ12 = averageYQ12 + modelNode->worldTransform.translation.y;
     }
-    entryCursor = entryCursor + 1;
-    remainingOrEntryAddress--;
-  } while (remainingOrEntryAddress != 0);
-  if (selectedCountOrRemaining != 0) {
-    averageXQ12 = averageXQ12 / selectedCountOrRemaining;
-    averageYQ12 = averageYQ12 / selectedCountOrRemaining;
-    selectedCountOrRemaining = SELECTION_ENTRY_CAPACITY;
-    do {
-      remainingOrEntryAddress = *(int *)selection;
-      if (remainingOrEntryAddress != 0) {
-        positionRecord = (int)(((GameEntityRuntime *)remainingOrEntryAddress)->common).ownership.modelNode;
-        averageXQ12 = averageXQ12 - ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.x;
-        averageYQ12 = averageYQ12 - ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.y;
-        (((GameEntityRuntime *)remainingOrEntryAddress)->common).selectionOffsetXQ12 = averageXQ12;
-        (((GameEntityRuntime *)remainingOrEntryAddress)->common).selectionOffsetYQ12 = averageYQ12;
-        averageXQ12 = averageXQ12 + ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.x;
-        averageYQ12 = averageYQ12 + ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.y;
-      }
-      selection = (SelectionPointerArray32 *)((int)selection + 4);
-      selectedCountOrRemaining--;
-    } while (selectedCountOrRemaining != 0);
+  }
+  if (selectedCount == 0) {
+    return;
+  }
+  averageXQ12 = averageXQ12 / selectedCount;
+  averageYQ12 = averageYQ12 / selectedCount;
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    entry = selection->entries[entryIndex];
+    if (entry != NULL) {
+      modelNode = (entry->common).ownership.modelNode;
+      (entry->common).selectionOffsetXQ12 = averageXQ12 - modelNode->worldTransform.translation.x;
+      (entry->common).selectionOffsetYQ12 = averageYQ12 - modelNode->worldTransform.translation.y;
+    }
   }
 }
 
@@ -2753,47 +2561,46 @@ bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerAr
 bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
 
 {
-  int entryAddress;
+  GameEntityRuntime *entry;
   int minOffsetX;
   int maxOffsetX;
+  int minOffsetY;
   int maxOffsetY;
-  int firstEntryOrMinOffsetY;
-  int entriesRemaining;
+  int entryIndex;
 
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   /* the first non-empty entry seeds the bounds */
-  while (firstEntryOrMinOffsetY = *(int *)selection, firstEntryOrMinOffsetY == 0) {
-    selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining--;
-    if (entriesRemaining == 0) {
+  entryIndex = 0;
+  while (selection->entries[entryIndex] == NULL) {
+    entryIndex++;
+    if (entryIndex == SELECTION_ENTRY_CAPACITY) {
       return false;
     }
   }
-  minOffsetX = ((GameEntityRuntime *)firstEntryOrMinOffsetY)->common.selectionOffsetXQ12;
-  maxOffsetY = ((GameEntityRuntime *)firstEntryOrMinOffsetY)->common.selectionOffsetYQ12;
+  entry = selection->entries[entryIndex];
+  minOffsetX = entry->common.selectionOffsetXQ12;
+  maxOffsetY = entry->common.selectionOffsetYQ12;
   maxOffsetX = minOffsetX;
-  firstEntryOrMinOffsetY = maxOffsetY;
-  do {
-    entryAddress = *(int *)selection;
-    if (entryAddress != 0) {
-      if (((GameEntityRuntime *)entryAddress)->common.selectionOffsetXQ12 < minOffsetX) {
-        minOffsetX = ((GameEntityRuntime *)entryAddress)->common.selectionOffsetXQ12;
-      }
-      if (((GameEntityRuntime *)entryAddress)->common.selectionOffsetYQ12 < firstEntryOrMinOffsetY) {
-        firstEntryOrMinOffsetY = ((GameEntityRuntime *)entryAddress)->common.selectionOffsetYQ12;
-      }
-      if (maxOffsetX < ((GameEntityRuntime *)entryAddress)->common.selectionOffsetXQ12) {
-        maxOffsetX = ((GameEntityRuntime *)entryAddress)->common.selectionOffsetXQ12;
-      }
-      if (maxOffsetY < ((GameEntityRuntime *)entryAddress)->common.selectionOffsetYQ12) {
-        maxOffsetY = ((GameEntityRuntime *)entryAddress)->common.selectionOffsetYQ12;
-      }
+  minOffsetY = maxOffsetY;
+  for (; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    entry = selection->entries[entryIndex];
+    if (entry == NULL) {
+      continue;
     }
-    selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
-  if (((maxOffsetX - minOffsetX < 5 * Q12_ONE + 1) && (maxOffsetY - firstEntryOrMinOffsetY < 5 * Q12_ONE + 1)) &&
-     ((maxOffsetX - minOffsetX) + (maxOffsetY - firstEntryOrMinOffsetY) < 7 * Q12_ONE + 1)) {
+    if (entry->common.selectionOffsetXQ12 < minOffsetX) {
+      minOffsetX = entry->common.selectionOffsetXQ12;
+    }
+    if (entry->common.selectionOffsetYQ12 < minOffsetY) {
+      minOffsetY = entry->common.selectionOffsetYQ12;
+    }
+    if (maxOffsetX < entry->common.selectionOffsetXQ12) {
+      maxOffsetX = entry->common.selectionOffsetXQ12;
+    }
+    if (maxOffsetY < entry->common.selectionOffsetYQ12) {
+      maxOffsetY = entry->common.selectionOffsetYQ12;
+    }
+  }
+  if (((maxOffsetX - minOffsetX < 5 * Q12_ONE + 1) && (maxOffsetY - minOffsetY < 5 * Q12_ONE + 1)) &&
+     ((maxOffsetX - minOffsetX) + (maxOffsetY - minOffsetY) < 7 * Q12_ONE + 1)) {
     return false;
   }
   return true;
@@ -2815,21 +2622,23 @@ void SelectionPointerArray_SetAircraftPadTargets
 
 {
   ModelRuntimeLinkedChildSpawnAndBuildView *padRuntime;
+  GameEntityRuntime *selectedEntry;
   int markerSourceId;
-  int entriesRemaining;
+  int entryIndex;
   int packedMarkerMatches;
   int markerSlotIndex;
 
-  entriesRemaining = SELECTION_ENTRY_CAPACITY;
-  do {
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+    selectedEntry = selection->entries[entryIndex];
+    if (selectedEntry == NULL) {
+      continue;
+    }
     /* entry -> model runtime (dword 0) -> definition */
-    if ((*(int **)selection != NULL) &&
-       (padRuntime = (ModelRuntimeLinkedChildSpawnAndBuildView *)**(int **)selection,
-       padRuntime->modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22)) {
-      markerSlotIndex = 12;
+    padRuntime = *(ModelRuntimeLinkedChildSpawnAndBuildView **)selectedEntry;
+    if (padRuntime->modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
       /* one match counter per byte: lane 1 in bits 0-7, lane 2 in bits 8-15, lane 4 in bits 16-23 */
       packedMarkerMatches = 0;
-      do {
+      for (markerSlotIndex = 12; markerSlotIndex >= 0; markerSlotIndex--) {
         markerSourceId = padRuntime->completedSecondaryArmyAssetIds[markerSlotIndex];
         if (markerSourceId == g_ArmyLinkedChildAssetIdSlot0) {
           packedMarkerMatches = packedMarkerMatches + SELECTION_PACKED_LANE_ONE(0);
@@ -2840,8 +2649,7 @@ void SelectionPointerArray_SetAircraftPadTargets
         if (markerSourceId == g_ArmyLinkedChildAssetIdSlot2) {
           packedMarkerMatches = packedMarkerMatches + SELECTION_PACKED_LANE_ONE(2);
         }
-        markerSlotIndex--;
-      } while (-1 < markerSlotIndex);
+      }
       if ((laneMask & 1) != 0) {
         /* the lane's match count becomes its pending launch count; the point its launch target */
         padRuntime->linkedChildPendingSpawnCounts.slot0 = (char)packedMarkerMatches;
@@ -2862,9 +2670,7 @@ void SelectionPointerArray_SetAircraftPadTargets
         padRuntime->linkedChildSpawnInheritedState[2].inheritedValue78 = heading16;
       }
     }
-    selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   return;
 }
 

@@ -911,16 +911,20 @@ bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t 
      both biased by GRID_SCRATCH_INDEX_BIAS_Q12 and taken in scratch cells */
   scaledRowTerm = FIXED_MUL_SHR(worldYQ12, FIELD_GRID_WORLD_Y_TO_ROW_Q20, Q20_SHIFT + 1);
   cellColumn = (int)((FIXED_MUL_SHR(worldXQ12, FIELD_GRID_WORLD_X_TO_COLUMN_Q20, Q20_SHIFT) - scaledRowTerm) + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT;
-  if ((((-1 < cellColumn) && (cellRow = (int)(scaledRowTerm * 2 + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT, -1 < cellRow)) &&
-      (cellColumn < (int)g_GridScratchWidth)) && (cellRow < (int)g_GridScratchHeight)) {
-    cellStateMask = g_GridScratchPrimary[cellRow * g_GridScratchWidth + cellColumn].stateMask;
-    /* sign bit: GRID_SCRATCH_BLOCKED */
-    if (((-1 < (int)cellStateMask) && ((GRID_SCRATCH_LOW_BAND0 << (lowBandIndex & 31) & cellStateMask) == 0)) &&
-       ((GRID_SCRATCH_TERRAIN_CLASS_BIT24 << (highBandIndex & 31) & cellStateMask) == 0)) {
-      return false;
-    }
+  cellRow = (int)(scaledRowTerm * 2 + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT;
+  if (cellColumn < 0 || cellRow < 0 ||
+      cellColumn >= (int)g_GridScratchWidth || cellRow >= (int)g_GridScratchHeight) {
+    return true;
   }
-  return true;
+  cellStateMask = g_GridScratchPrimary[cellRow * g_GridScratchWidth + cellColumn].stateMask;
+  /* sign bit: GRID_SCRATCH_BLOCKED */
+  if ((int)cellStateMask < 0) {
+    return true;
+  }
+  if ((GRID_SCRATCH_LOW_BAND0 << (lowBandIndex & 31) & cellStateMask) != 0) {
+    return true;
+  }
+  return (GRID_SCRATCH_TERRAIN_CLASS_BIT24 << (highBandIndex & 31) & cellStateMask) != 0;
 }
 
 
@@ -1600,36 +1604,40 @@ void GridScratch_FloodFillConnectedCells
           (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
-  GridScratchCell *spanLeftOrPrevRowCursor;
-  GridScratchCell *nextRowCursor;
+  GridScratchCell *leftStopCell;
+  GridScratchCell *rightStopCell;
+  GridScratchCell *rowAboveCell;
+  GridScratchCell *rowAboveLastCell;
+  GridScratchCell *rowBelowCell;
+  GridScratchCell *rowBelowEndCell;
 
-  if ((currentCell->stateMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED)) == 0) {
-    currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    spanLeftOrPrevRowCursor = currentCell;
-    while (spanLeftOrPrevRowCursor = spanLeftOrPrevRowCursor - 1, (spanLeftOrPrevRowCursor->stateMask & traversalMask) == 0) {
-      spanLeftOrPrevRowCursor->stateMask = spanLeftOrPrevRowCursor->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    }
-    while (currentCell = currentCell + 1, (currentCell->stateMask & traversalMask) == 0) {
-      currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    }
-    /* the row above is scanned from the span's first cell up to the column of the right stopping cell, the row
-       below from the column of the left stopping cell up to the span's last cell (addresses as in the original) */
-    nextRowCursor = (GridScratchCell *)((uint8_t *)spanLeftOrPrevRowCursor + rowStrideBytes);
-    spanLeftOrPrevRowCursor = (GridScratchCell *)((uint8_t *)(spanLeftOrPrevRowCursor + 1) - rowStrideBytes);
-    do {
-      if ((spanLeftOrPrevRowCursor->stateMask & traversalMask) == 0) {
-        GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,spanLeftOrPrevRowCursor);
-      }
-      spanLeftOrPrevRowCursor = spanLeftOrPrevRowCursor + 1;
-    } while (spanLeftOrPrevRowCursor <= (GridScratchCell *)((uint8_t *)currentCell - rowStrideBytes));
-    do {
-      if ((nextRowCursor->stateMask & traversalMask) == 0) {
-        GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,nextRowCursor);
-      }
-      nextRowCursor = nextRowCursor + 1;
-    } while (nextRowCursor < (GridScratchCell *)((uint8_t *)currentCell - rowStrideBytes + rowStrideBytes * 2));
+  if ((currentCell->stateMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED)) != 0) {
+    return;
   }
-  return;
+  currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+  for (leftStopCell = currentCell - 1; (leftStopCell->stateMask & traversalMask) == 0; leftStopCell--) {
+    leftStopCell->stateMask = leftStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+  }
+  for (rightStopCell = currentCell + 1; (rightStopCell->stateMask & traversalMask) == 0; rightStopCell++) {
+    rightStopCell->stateMask = rightStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+  }
+  /* the row above is scanned from the span's first cell up to the column of the right stopping cell, the row
+     below from the column of the left stopping cell up to the span's last cell (addresses as in the original).
+     Both ranges are never empty, so testing before the first cell is the same as the original's do-while. */
+  rowAboveLastCell = (GridScratchCell *)((uint8_t *)rightStopCell - rowStrideBytes);
+  for (rowAboveCell = (GridScratchCell *)((uint8_t *)(leftStopCell + 1) - rowStrideBytes);
+       rowAboveCell <= rowAboveLastCell; rowAboveCell++) {
+    if ((rowAboveCell->stateMask & traversalMask) == 0) {
+      GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowAboveCell);
+    }
+  }
+  rowBelowEndCell = (GridScratchCell *)((uint8_t *)rightStopCell + rowStrideBytes);
+  for (rowBelowCell = (GridScratchCell *)((uint8_t *)leftStopCell + rowStrideBytes);
+       rowBelowCell < rowBelowEndCell; rowBelowCell++) {
+    if ((rowBelowCell->stateMask & traversalMask) == 0) {
+      GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowBelowCell);
+    }
+  }
 }
 
 
@@ -2094,36 +2102,39 @@ int GridFootprint_ClearTraversalFlagsDiagonalPositive
 void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
-  GridScratchCell *prevRowEnd;
-  GridScratchCell *spanLeftCell;
+  GridScratchCell *leftStopCell;
+  GridScratchCell *rightStopCell;
   GridScratchCell *prevRowCursor;
+  GridScratchCell *prevRowEnd;
   GridScratchCell *nextRowCursor;
+  GridScratchCell *nextRowEnd;
 
   currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-  spanLeftCell = currentCell;
-  while (spanLeftCell = spanLeftCell + -1, (spanLeftCell->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
-    spanLeftCell->stateMask = spanLeftCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+  for (leftStopCell = currentCell - 1; (leftStopCell->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0;
+       leftStopCell--) {
+    leftStopCell->stateMask = leftStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  while (currentCell = currentCell + 1, (currentCell->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
-    currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+  for (rightStopCell = currentCell + 1; (rightStopCell->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0;
+       rightStopCell++) {
+    rightStopCell->stateMask = rightStopCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  /* spanLeftCell and currentCell are now the stop cells left and right of the run */
-  nextRowCursor = (GridScratchCell *)((uint8_t *)spanLeftCell + rowStrideBytes);
-  prevRowEnd = (GridScratchCell *)((uint8_t *)currentCell - rowStrideBytes);
-  prevRowCursor = (GridScratchCell *)((uint8_t *)(spanLeftCell + 1) - rowStrideBytes);
-  do {
+  /* row above: from the span's first cell up to the column of the right stop cell (inclusive); row below: from
+     the column of the left stop cell up to the span's last cell. Neither range is ever empty, so testing before
+     the first cell matches the original's do-while. */
+  prevRowEnd = (GridScratchCell *)((uint8_t *)rightStopCell - rowStrideBytes);
+  for (prevRowCursor = (GridScratchCell *)((uint8_t *)(leftStopCell + 1) - rowStrideBytes);
+       prevRowCursor <= prevRowEnd; prevRowCursor++) {
     if ((prevRowCursor->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
       GridReachability_MarkOpenRegionRecursive(rowStrideBytes,prevRowCursor);
     }
-    prevRowCursor++;
-  } while (prevRowCursor <= prevRowEnd);
-  do {
+  }
+  nextRowEnd = (GridScratchCell *)((uint8_t *)rightStopCell + rowStrideBytes);
+  for (nextRowCursor = (GridScratchCell *)((uint8_t *)leftStopCell + rowStrideBytes);
+       nextRowCursor < nextRowEnd; nextRowCursor++) {
     if ((nextRowCursor->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
       GridReachability_MarkOpenRegionRecursive(rowStrideBytes,nextRowCursor);
     }
-    nextRowCursor++;
-  } while (nextRowCursor < (GridScratchCell *)((uint8_t *)prevRowEnd + rowStrideBytes * 2));
-  return;
+  }
 }
 
 
@@ -2135,41 +2146,69 @@ void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratc
 void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
-  GridScratchCell *spanRightCell;
-  GridScratchCell *prevRowEnd;
-  GridScratchCell *spanLeftCell;
+  GridScratchCell *leftStopCell;
+  GridScratchCell *rightStopCell;
   GridScratchCell *prevRowCursor;
+  GridScratchCell *prevRowEnd;
   GridScratchCell *nextRowCursor;
-  
+  GridScratchCell *nextRowEnd;
+
   currentCell->stateMask = currentCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-  spanRightCell = currentCell + 1;
-  while ((spanLeftCell = currentCell + -1, (spanLeftCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 &&
-         (currentCell[-1].pathCost != 0))) {
-    spanLeftCell->stateMask = spanLeftCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    currentCell = spanLeftCell;
+  for (leftStopCell = currentCell - 1;
+       (leftStopCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && leftStopCell->pathCost != 0;
+       leftStopCell--) {
+    leftStopCell->stateMask = leftStopCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  for (; ((spanRightCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && (spanRightCell->pathCost != 0));
-      spanRightCell = spanRightCell + 1) {
-    spanRightCell->stateMask = spanRightCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+  for (rightStopCell = currentCell + 1;
+       (rightStopCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && rightStopCell->pathCost != 0;
+       rightStopCell++) {
+    rightStopCell->stateMask = rightStopCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  nextRowCursor = (GridScratchCell *)((uint8_t *)spanLeftCell + rowStrideBytes);
-  prevRowEnd = (GridScratchCell *)((uint8_t *)spanRightCell - rowStrideBytes);
-  prevRowCursor = (GridScratchCell *)((uint8_t *)(spanLeftCell + 1) - rowStrideBytes);
-  do {
-    if (((prevRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) && (prevRowCursor->pathCost != 0)
-       ) {
+  /* same row ranges as GridReachability_MarkOpenRegionRecursive; neither is ever empty, so testing before the
+     first cell matches the original's do-while */
+  prevRowEnd = (GridScratchCell *)((uint8_t *)rightStopCell - rowStrideBytes);
+  for (prevRowCursor = (GridScratchCell *)((uint8_t *)(leftStopCell + 1) - rowStrideBytes);
+       prevRowCursor <= prevRowEnd; prevRowCursor++) {
+    if ((prevRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && prevRowCursor->pathCost != 0) {
       GridReachability_ClearCostedRegionRecursive(rowStrideBytes,prevRowCursor);
     }
-    prevRowCursor++;
-  } while (prevRowCursor <= prevRowEnd);
-  do {
-    if (((nextRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) &&
-       (nextRowCursor->pathCost != 0)) {
+  }
+  nextRowEnd = (GridScratchCell *)((uint8_t *)rightStopCell + rowStrideBytes);
+  for (nextRowCursor = (GridScratchCell *)((uint8_t *)leftStopCell + rowStrideBytes);
+       nextRowCursor < nextRowEnd; nextRowCursor++) {
+    if ((nextRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && nextRowCursor->pathCost != 0) {
       GridReachability_ClearCostedRegionRecursive(rowStrideBytes,nextRowCursor);
     }
-    nextRowCursor++;
-  } while (nextRowCursor < (GridScratchCell *)((uint8_t *)prevRowEnd + rowStrideBytes * 2));
-  return;
+  }
+}
+
+
+/* Hex distance on the skewed scratch grid: |dc| + |dr| when both deltas have the same sign, else the larger
+   of the two. */
+static int GridPathCost_HexDistance(int columnDelta,int rowDelta)
+
+{
+  int hexDistance;
+
+  hexDistance = columnDelta;
+  if (hexDistance < 0) {
+    hexDistance = -hexDistance;
+    if (rowDelta < 0) {
+      hexDistance = hexDistance - rowDelta;
+    }
+    else if (hexDistance < rowDelta) {
+      hexDistance = rowDelta;
+    }
+  }
+  else if (rowDelta < 0) {
+    if (hexDistance < -rowDelta) {
+      hexDistance = -rowDelta;
+    }
+  }
+  else {
+    hexDistance = hexDistance + rowDelta;
+  }
+  return hexDistance;
 }
 
 
@@ -2184,40 +2223,42 @@ bool GridPathCost_RelocateFromBlockedCell
           FieldGridCellCoordinate *outColumn)
 
 {
-  int cellIndexOrMinColumn;
+  int cellIndex;
+  int minColumn;
   int scanColumn;
   int hexDistance;
   uint32_t maxColumn;
   int scanWidth;
-  int columnsRemaining;
   GridScratchStateMask blockedMask;
   uint32_t maxRow;
   int bestHexDistance;
   int searchRow;
-  int rowDelta;
+  int rowsRemaining;
   GridScratchCell *scanCell;
   GridScratchCell *rowStartCell;
-  int rowsRemaining;
+  GridScratchCell *rowAboveCell;
   int bestRow;
   int bestColumn;
-  
-  cellIndexOrMinColumn = cellRow * g_GridScratchWidth + cellColumn;
+
+  cellIndex = cellRow * g_GridScratchWidth + cellColumn;
   blockedMask = g_GridPathBlockingMask | GRID_SCRATCH_BLOCKED;
-  if (((((g_GridScratchPrimary[cellIndexOrMinColumn].stateMask & blockedMask) == 0) ||
-       (scanCell = g_GridScratchPrimary + cellIndexOrMinColumn + -g_GridScratchWidth,
-       (scanCell->stateMask & blockedMask) == 0)) || ((scanCell[1].stateMask & blockedMask) == 0)) ||
-     ((((scanCell[g_GridScratchWidth - 1].stateMask & blockedMask) == 0 ||
-       ((scanCell[g_GridScratchWidth + 1].stateMask & blockedMask) == 0)) ||
-      (((scanCell[g_GridScratchWidth * 2 - 1].stateMask & blockedMask) == 0 ||
-       ((scanCell[g_GridScratchWidth * 2].stateMask & blockedMask) == 0)))))) {
+  /* the cell itself, then its six hex neighbours: above, above-right, left, right, below-left, below */
+  rowAboveCell = g_GridScratchPrimary + cellIndex - g_GridScratchWidth;
+  if ((g_GridScratchPrimary[cellIndex].stateMask & blockedMask) == 0 ||
+      (rowAboveCell->stateMask & blockedMask) == 0 ||
+      (rowAboveCell[1].stateMask & blockedMask) == 0 ||
+      (rowAboveCell[g_GridScratchWidth - 1].stateMask & blockedMask) == 0 ||
+      (rowAboveCell[g_GridScratchWidth + 1].stateMask & blockedMask) == 0 ||
+      (rowAboveCell[g_GridScratchWidth * 2 - 1].stateMask & blockedMask) == 0 ||
+      (rowAboveCell[g_GridScratchWidth * 2].stateMask & blockedMask) == 0) {
     /* open cell: both callers (EntityPathing_ResolveDestinationAndRebuildRoutes,
        EntityPathing_UpdateRouteSegment) read the cell only after a relocation */
     return false;
   }
   /* search window: +-GRID_PATH_NEAREST_SEARCH_RADIUS, clipped to the grid */
-  cellIndexOrMinColumn = cellColumn - GRID_PATH_NEAREST_SEARCH_RADIUS;
-  if (cellIndexOrMinColumn < 0) {
-    cellIndexOrMinColumn = 0;
+  minColumn = cellColumn - GRID_PATH_NEAREST_SEARCH_RADIUS;
+  if (minColumn < 0) {
+    minColumn = 0;
   }
   searchRow = cellRow - GRID_PATH_NEAREST_SEARCH_RADIUS;
   if (searchRow < 0) {
@@ -2231,64 +2272,35 @@ bool GridPathCost_RelocateFromBlockedCell
   if ((int)g_GridScratchHeight < (int)(cellRow + (uint32_t)GRID_PATH_NEAREST_SEARCH_RADIUS)) {
     maxRow = g_GridScratchHeight;
   }
-  scanWidth = maxColumn - cellIndexOrMinColumn;
-  if (scanWidth != 0 && cellIndexOrMinColumn <= (int)maxColumn) {
-    rowsRemaining = maxRow - searchRow;
-    if (rowsRemaining != 0 && searchRow <= (int)maxRow) {
-      scanCell = g_GridScratchPrimary + searchRow * g_GridScratchWidth + cellIndexOrMinColumn;
-      bestHexDistance = INT32_MAX;
-      scanColumn = cellIndexOrMinColumn;
-      columnsRemaining = scanWidth;
-      rowStartCell = scanCell;
-      do {
-        do {
-          if ((scanCell->stateMask & (g_GridPathBlockingMask | GRID_SCRATCH_BLOCKED)) == 0) {
-            /* hex distance on the skewed grid: |dc| + |dr| when both deltas have the same sign, else the larger */
-            hexDistance = scanColumn - cellColumn;
-            if (hexDistance < 0) {
-              hexDistance = -hexDistance;
-              rowDelta = searchRow - cellRow;
-              if (rowDelta < 0) {
-                hexDistance = hexDistance - rowDelta;
-              }
-              else if (hexDistance < rowDelta) {
-                hexDistance = rowDelta;
-              }
-            }
-            else {
-              rowDelta = searchRow - cellRow;
-              if (rowDelta < 0) {
-                if (hexDistance < -rowDelta) {
-                  hexDistance = -rowDelta;
-                }
-              }
-              else {
-                hexDistance = hexDistance + rowDelta;
-              }
-            }
-            if (hexDistance < bestHexDistance) {
-              bestHexDistance = hexDistance;
-              bestRow = searchRow;
-              bestColumn = scanColumn;
-            }
-          }
-          scanCell++;
-          columnsRemaining--;
-          scanColumn++;
-        } while (columnsRemaining != 0);
-        scanCell = rowStartCell + g_GridScratchWidth;
-        searchRow++;
-        rowsRemaining--;
-        scanColumn = cellIndexOrMinColumn;
-        columnsRemaining = scanWidth;
-        rowStartCell = scanCell;
-      } while (rowsRemaining != 0);
-      if (bestHexDistance < INT32_MAX) {
-        *outRow = bestRow;
-        *outColumn = bestColumn;
-        return true;
+  scanWidth = maxColumn - minColumn;
+  rowsRemaining = maxRow - searchRow;
+  if (scanWidth == 0 || minColumn > (int)maxColumn || rowsRemaining == 0 || searchRow > (int)maxRow) {
+    *outRow = cellRow;
+    *outColumn = cellColumn;
+    return true;
+  }
+  bestHexDistance = INT32_MAX;
+  rowStartCell = g_GridScratchPrimary + searchRow * g_GridScratchWidth + minColumn;
+  for (; rowsRemaining != 0; rowsRemaining--) {
+    scanCell = rowStartCell;
+    for (scanColumn = minColumn; scanColumn != minColumn + scanWidth; scanColumn++) {
+      if ((scanCell->stateMask & blockedMask) == 0) {
+        hexDistance = GridPathCost_HexDistance(scanColumn - cellColumn,searchRow - cellRow);
+        if (hexDistance < bestHexDistance) {
+          bestHexDistance = hexDistance;
+          bestRow = searchRow;
+          bestColumn = scanColumn;
+        }
       }
+      scanCell++;
     }
+    rowStartCell = rowStartCell + g_GridScratchWidth;
+    searchRow++;
+  }
+  if (bestHexDistance < INT32_MAX) {
+    *outRow = bestRow;
+    *outColumn = bestColumn;
+    return true;
   }
   *outRow = cellRow;
   *outColumn = cellColumn;

@@ -501,6 +501,52 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
 }
 
 
+/* First registered model definition with the given id, or NULL. */
+static ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId)
+{
+  int registryIndex;
+  ModelDefinitionRecordPrefix *registeredDefinition;
+
+  for (registryIndex = 0; registryIndex < MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryIndex++) {
+    registeredDefinition = g_ModelDefinitionRegistry[registryIndex];
+    if ((registeredDefinition != NULL) && (registeredDefinition->definitionId == definitionId)) {
+      return registeredDefinition;
+    }
+  }
+  return NULL;
+}
+
+
+/* Turns the saved offsets of the used attachment descriptors back into pointers: children get
+   g_ModelRuntimeRebaseDelta, parent nodes g_RuntimeObjectRebaseBaseMinusOne; zero offsets stay NULL. */
+static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRuntime)
+{
+  ModelRuntimeAttachmentDescriptor *attachment;
+  uint32_t attachmentsRemaining;
+  ModelRuntimeSlot *savedChildRuntime;
+  ModelRuntimeNode *savedParentNode;
+  ModelRuntimeSlot *rebasedChildRuntime;
+  ModelRuntimeNode *rebasedParentNode;
+
+  attachment = modelRuntime->attachments;
+  for (attachmentsRemaining = modelRuntime->attachmentCount; attachmentsRemaining != 0; attachmentsRemaining--) {
+    savedChildRuntime = attachment->childModelRuntimeOrSavedOffset;
+    savedParentNode = attachment->parentModelNodeOrSavedOffset;
+    rebasedChildRuntime = NULL;
+    if (savedChildRuntime != NULL) {
+      rebasedChildRuntime = (ModelRuntimeSlot *)((uint8_t *)savedChildRuntime + g_ModelRuntimeRebaseDelta);
+    }
+    rebasedParentNode = NULL;
+    if (savedParentNode != NULL) {
+      rebasedParentNode = (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)savedParentNode);
+    }
+    attachment->childModelRuntimeOrSavedOffset = rebasedChildRuntime;
+    attachment->parentModelNodeOrSavedOffset = rebasedParentNode;
+    attachment++;
+  }
+}
+
+
 /* Address: 0x00528CF0.
    After a savegame load, counterpart of ModelRuntimePool_UnrebaseBeforeSave: turns the saved offsets of every
    used model runtime slot back into pointers, replaces the saved definition id by the registered definition,
@@ -510,100 +556,61 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
 void ModelRuntimePool_RebaseAfterLoad(void)
 
 {
-  ModelRuntimeSlot *linkedRuntimeOrCursor;
-  ModelRuntimeSlot *rebasedChildRuntime;
-  ArmyRuntimeSlot *ownerOrLinkedArmy;
-  ArmyRuntimeSlot *rebasedLinkedArmy;
-  int registryRemaining;
-  uint32_t classIndexOrCount;
-  int slotsRemaining;
-  ModelRuntimeNode *rebasedParentNode;
-  ModelDefinitionRecordPrefix **registryEntry;
+  int slotIndex;
   ModelRuntimeSlot *modelRuntime;
+  ArmyRuntimeSlot *rebasedOwnerArmy;
+  ArmyRuntimeSlot *savedLinkedArmy;
+  ArmyRuntimeSlot *rebasedLinkedArmy;
+  ModelRuntimeSlot *rebasedLinkedRuntime;
   ModelDefinitionRecordPrefix *registeredDefinition;
-  ModelRuntimeNode *savedParentNode;
-  ModelRuntimeSlot *savedChildRuntime;
-  
-  slotsRemaining = MODEL_RUNTIME_SLOT_COUNT;
-  modelRuntime = g_ModelRuntimeSlots;
-  do {
-    if (modelRuntime->rootModelNodeOrSavedOffset.modelNode != NULL) {
-      /* saved offsets + pool deltas: the owner army (+0x08, always rebased) and the linked army (+0xF0) get
-         g_ArmyRuntimeRebaseBaseMinusOne, the root node (+0x04) and attachment parent nodes
-         g_RuntimeObjectRebaseBaseMinusOne, the linked model runtime (+0x38) and attachment children
-         g_ModelRuntimeRebaseDelta; zero offsets other than the owner stay NULL. */
-      ownerOrLinkedArmy = (ArmyRuntimeSlot *)((int)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime +
-                                              (int)g_ArmyRuntimeRebaseBaseMinusOne);
-      modelRuntime->rootModelNodeOrSavedOffset.modelNode =
-           (ModelRuntimeNode *)
-           (g_RuntimeObjectRebaseBaseMinusOne +
-           (int)(modelRuntime->rootModelNodeOrSavedOffset).modelNode);
-      modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = ownerOrLinkedArmy;
-      ownerOrLinkedArmy = modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime;
-      linkedRuntimeOrCursor = NULL;
-      if (modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime != NULL) {
-        linkedRuntimeOrCursor = (ModelRuntimeSlot *)
-                     ((uint8_t *)(modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime +
-                     g_ModelRuntimeRebaseDelta);
-      }
-      rebasedLinkedArmy = NULL;
-      if (ownerOrLinkedArmy != NULL) {
-        rebasedLinkedArmy = (ArmyRuntimeSlot *)((int)ownerOrLinkedArmy + (int)g_ArmyRuntimeRebaseBaseMinusOne);
-      }
-      modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = linkedRuntimeOrCursor;
-      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = rebasedLinkedArmy;
-      registryEntry = g_ModelDefinitionRegistry;
-      registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
-      do {
-        registeredDefinition = *registryEntry;
-        if ((registeredDefinition != NULL) &&
-           (modelRuntime->definitionOrSavedId.definition ==
-            (ModelDefinitionRecordPrefix *)registeredDefinition->definitionId)) {
-          classIndexOrCount = ((ModelDefinition *)registeredDefinition)->runtimeClassId;
-          modelRuntime->definitionOrSavedId.definition = registeredDefinition;
-          g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair[classIndexOrCount]
-                    (modelRuntime);
-          linkedRuntimeOrCursor = modelRuntime;
-          if (modelRuntime->attachmentCount != 0) {
-            for (classIndexOrCount = modelRuntime->attachmentCount; classIndexOrCount != 0; classIndexOrCount--) {
-              savedChildRuntime = linkedRuntimeOrCursor->attachments[0].childModelRuntimeOrSavedOffset;
-              savedParentNode = linkedRuntimeOrCursor->attachments[0].parentModelNodeOrSavedOffset;
-              rebasedChildRuntime = NULL;
-              if (savedChildRuntime != NULL) {
-                rebasedChildRuntime = (ModelRuntimeSlot *)
-                             ((uint8_t *)savedChildRuntime + g_ModelRuntimeRebaseDelta);
-              }
-              rebasedParentNode = NULL;
-              if (savedParentNode != NULL) {
-                rebasedParentNode = (ModelRuntimeNode *)
-                             (g_RuntimeObjectRebaseBaseMinusOne +
-                             (int)savedParentNode);
-              }
-              linkedRuntimeOrCursor->attachments[0].childModelRuntimeOrSavedOffset = rebasedChildRuntime;
-              linkedRuntimeOrCursor->attachments[0].parentModelNodeOrSavedOffset = rebasedParentNode;
-              /* next attachment descriptor: 0x20 bytes on */
-              linkedRuntimeOrCursor = (ModelRuntimeSlot *)
-                                      ((uint8_t *)linkedRuntimeOrCursor + sizeof(ModelRuntimeAttachmentDescriptor));
-            }
-            modelRuntime->attachmentCount = 0;
-            ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
-                      (modelRuntime,
-                       (MdlSerializedNodeHeader *)
-                       modelRuntime->definitionOrSavedId.runtimeDefinition->rootNodeOffsetOrPointer);
-          }
-          break;
-        }
-        registryEntry++;
-        registryRemaining--;
-        if (registryRemaining == 0) {
-          /* definition no longer registered: drop the instance */
-          modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
-        }
-      } while (registryRemaining != 0);
+
+  for (slotIndex = 0; slotIndex < MODEL_RUNTIME_SLOT_COUNT; slotIndex++) {
+    modelRuntime = &g_ModelRuntimeSlots[slotIndex];
+    if (modelRuntime->rootModelNodeOrSavedOffset.modelNode == NULL) {
+      continue;
     }
-    modelRuntime++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+    /* saved offsets + pool deltas: the owner army (+0x08, always rebased) and the linked army (+0xF0) get
+       g_ArmyRuntimeRebaseBaseMinusOne, the root node (+0x04) and attachment parent nodes
+       g_RuntimeObjectRebaseBaseMinusOne, the linked model runtime (+0x38) and attachment children
+       g_ModelRuntimeRebaseDelta; zero offsets other than the owner stay NULL. */
+    rebasedOwnerArmy = (ArmyRuntimeSlot *)((int)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime +
+                                           (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    modelRuntime->rootModelNodeOrSavedOffset.modelNode =
+         (ModelRuntimeNode *)
+         (g_RuntimeObjectRebaseBaseMinusOne + (int)modelRuntime->rootModelNodeOrSavedOffset.modelNode);
+    modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = rebasedOwnerArmy;
+    savedLinkedArmy = modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime;
+    rebasedLinkedRuntime = NULL;
+    if (modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime != NULL) {
+      rebasedLinkedRuntime = (ModelRuntimeSlot *)
+                   ((uint8_t *)modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime + g_ModelRuntimeRebaseDelta);
+    }
+    rebasedLinkedArmy = NULL;
+    if (savedLinkedArmy != NULL) {
+      rebasedLinkedArmy = (ArmyRuntimeSlot *)((int)savedLinkedArmy + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    }
+    modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = rebasedLinkedRuntime;
+    modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = rebasedLinkedArmy;
+
+    registeredDefinition = ModelDefinitionRegistry_FindById
+                             ((PckModelDefinitionIdCatalog)modelRuntime->definitionOrSavedId.savedIdOrOffset);
+    if (registeredDefinition == NULL) {
+      /* definition no longer registered: drop the instance */
+      modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
+      continue;
+    }
+    modelRuntime->definitionOrSavedId.definition = registeredDefinition;
+    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair
+      [((ModelDefinition *)registeredDefinition)->runtimeClassId](modelRuntime);
+    if (modelRuntime->attachmentCount != 0) {
+      ModelRuntime_RebaseAttachmentsAfterLoad(modelRuntime);
+      modelRuntime->attachmentCount = 0;
+      ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+                (modelRuntime,
+                 (MdlSerializedNodeHeader *)
+                 modelRuntime->definitionOrSavedId.runtimeDefinition->rootNodeOffsetOrPointer);
+    }
+  }
 }
 
 
@@ -626,24 +633,24 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   Q12 translationY;
   AngleTurn32 orientationAngle;
   int ownerDefinition;
-  uint32_t classIndexOrCount;
-  ModelRuntimeSlot *attachmentCursor;
+  uint32_t runtimeClassId;
+  uint32_t attachmentsRemaining;
+  ModelRuntimeAttachmentDescriptor *attachment;
+  ModelRuntimeSlot *parentRuntime;
   ModelRuntimeNode *parentModelNode;
 
-  modelDefinition =
-       (ModelDefinitionRecordPrefix *)modelRuntime->definitionOrSavedId.savedIdOrOffset;
-  classIndexOrCount = ((ModelDefinition *)modelDefinition)->runtimeClassId;
+  modelDefinition = modelRuntime->definitionOrSavedId.definition;
+  runtimeClassId = ((ModelDefinition *)modelDefinition)->runtimeClassId;
   FrontendPlayerRuntime_ClearAssignmentTokenFromAll((RuntimeToken)modelRuntime);
-  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[classIndexOrCount]
+  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[runtimeClassId]
             (modelDefinition,modelRuntime);
-  attachmentCursor = modelRuntime;
-  for (classIndexOrCount = modelRuntime->attachmentCount; classIndexOrCount != 0; classIndexOrCount--) {
-    childRuntime = attachmentCursor->attachments[0].childModelRuntimeOrSavedOffset;
+  attachment = modelRuntime->attachments;
+  for (attachmentsRemaining = modelRuntime->attachmentCount; attachmentsRemaining != 0; attachmentsRemaining--) {
+    childRuntime = attachment->childModelRuntimeOrSavedOffset;
     if (childRuntime != NULL) {
       ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,childRuntime);
     }
-    /* steps the cursor by one 0x20-byte attachments[] entry */
-    attachmentCursor = (ModelRuntimeSlot *)((uint8_t *)attachmentCursor + sizeof(ModelRuntimeAttachmentDescriptor));
+    attachment++;
   }
   rootModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   entityRuntime = (GameEntityRuntime *)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
@@ -676,16 +683,16 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
     }
   }
   else {
-    attachmentCursor = parentModelNode->runtimePayload.modelRuntime;
-    for (classIndexOrCount = attachmentCursor->attachmentCount; classIndexOrCount != 0; classIndexOrCount--) {
-      if (attachmentCursor->attachments[0].childModelRuntimeOrSavedOffset == modelRuntime) {
-        attachmentCursor->attachments[0].childModelRuntimeOrSavedOffset = NULL;
+    parentRuntime = parentModelNode->runtimePayload.modelRuntime;
+    attachment = parentRuntime->attachments;
+    for (attachmentsRemaining = parentRuntime->attachmentCount; attachmentsRemaining != 0; attachmentsRemaining--) {
+      if (attachment->childModelRuntimeOrSavedOffset == modelRuntime) {
+        attachment->childModelRuntimeOrSavedOffset = NULL;
       }
-      attachmentCursor = (ModelRuntimeSlot *)((uint8_t *)attachmentCursor + sizeof(ModelRuntimeAttachmentDescriptor));
+      attachment++;
     }
     ArmyRuntime_RebuildDerivedSelectionMetrics((ArmyRuntimeSlot *)entityRuntime);
   }
-  return;
 }
 
 
@@ -748,130 +755,85 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot **outModelRuntime)
 
 {
-  uint32_t copiedValueA;
-  uint32_t state44CandidateOrFlags;
-  uint32_t state90Candidate;
-  uint32_t copiedValueB;
-  uint32_t copiedValueC;
-  ModelRuntimeNode *modelNodeRuntime;
-  int slotsRemaining;
-  int registryRemaining;
-  ModelDefinitionRecordPrefix **registryEntry;
+  int slotIndex;
+  int prefixIndex;
   ModelRuntimeSlot *modelRuntime;
   ModelDefinition *definitionView;
+  uint32_t modelFlags;
+  ModelRuntimeNode *modelNodeRuntime;
 
   /* first free slot (no root node) */
-  modelRuntime = g_ModelRuntimeSlots;
-  if (modelRuntime == NULL) {
+  if (g_ModelRuntimeSlots == NULL) {
     return FATAL_ERROR_GENERAL_FAILURE;
   }
-  slotsRemaining = MODEL_RUNTIME_SLOT_COUNT;
-  while (modelRuntime->rootModelNodeOrSavedOffset.modelNode != NULL) {
-    modelRuntime++;
-    slotsRemaining--;
-    if (slotsRemaining == 0) {
+  slotIndex = 0;
+  while (g_ModelRuntimeSlots[slotIndex].rootModelNodeOrSavedOffset.modelNode != NULL) {
+    slotIndex++;
+    if (slotIndex == MODEL_RUNTIME_SLOT_COUNT) {
       return FATAL_ERROR_GENERAL_FAILURE;
     }
   }
-  for (registryEntry = g_ModelDefinitionRegistry, registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
-      registryRemaining != 0; registryEntry++, registryRemaining--) {
-    definitionView = (ModelDefinition *)*registryEntry;
-    if ((definitionView != NULL) && (definitionView->definitionId == modelDefinitionId)) {
-      modelRuntime->definitionOrSavedId.definition = (ModelDefinitionRecordPrefix *)definitionView;
-      copiedValueA = definitionView->maximumHealth;
-      state44CandidateOrFlags = definitionView->visibilityRadius;
-      state90Candidate = definitionView->occupancyMarkRadius;
-      modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
-      modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = armyRuntime;
-      modelRuntime->attachmentCount = 0;
-      modelRuntime->health = copiedValueA;
-      if (armyRuntime->visibilityRadius < state44CandidateOrFlags) {
-        armyRuntime->visibilityRadius = state44CandidateOrFlags;
-      }
-      if (armyRuntime->occupancyMarkRadius < state90Candidate) {
-        armyRuntime->occupancyMarkRadius = state90Candidate;
-      }
-      modelRuntime->classPrefixState[0] = 0;
-      modelRuntime->classPrefixState[1] = 0;
-      modelRuntime->classPrefixState[2] = 0;
-      modelRuntime->classPrefixState[3] = 0;
-      modelRuntime->classPrefixState[4] = 0;
-      modelRuntime->classPrefixState[5] = 0;
-      modelRuntime->classPrefixState[6] = 0;
-      modelRuntime->classPrefixState[7] = 0;
-      modelRuntime->classPrefixState[8] = 0;
-      modelRuntime->classPrefixState[9] = 0;
-      modelRuntime->classPrefixState[10] = 0;
-      modelRuntime->classPrefixState[11] = 0;
-      modelRuntime->classPrefixState[12] = 0;
-      modelRuntime->classPrefixState[13] = 0;
-      modelRuntime->classPrefixState[14] = 0;
-      modelRuntime->classPrefixState[15] = 0;
-      modelRuntime->classPrefixState[16] = 0;
-      modelRuntime->classPrefixState[17] = 0;
-      modelRuntime->classPrefixState[18] = 0;
-      modelRuntime->classPrefixState[19] = 0;
-      modelRuntime->classPrefixState[20] = 0;
-      modelRuntime->classPrefixState[21] = 0;
-      modelRuntime->classPrefixState[22] = 0;
-      modelRuntime->classPrefixState[23] = 0;
-      modelRuntime->classPrefixState[24] = 0;
-      modelRuntime->classPrefixState[25] = 0;
-      modelRuntime->classPrefixState[26] = 0;
-      modelRuntime->classPrefixState[27] = 0;
-      modelRuntime->classPrefixState[28] = 0;
-      modelRuntime->classPrefixState[29] = 0;
-      modelRuntime->classPrefixState[30] = 0;
-      modelRuntime->classPrefixState[31] = 0;
-      modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = NULL;
-      copiedValueA = definitionView->destructionEffectDelayTicks1;
-      copiedValueB = definitionView->destructionEffectDelayTicks2;
-      copiedValueC = definitionView->destructionEffectDelayTicks3;
-      modelRuntime->destructionEffectTimers[0] = definitionView->destructionEffectDelayTicks0;
-      modelRuntime->destructionEffectTimers[1] = copiedValueA;
-      modelRuntime->destructionEffectTimers[2] = copiedValueB;
-      modelRuntime->destructionEffectTimers[3] = copiedValueC;
-      copiedValueA = definitionView->destructionEffectDelayTicks5;
-      copiedValueB = definitionView->destructionEffectDelayTicks6;
-      copiedValueC = definitionView->destructionEffectDelayTicks7;
-      modelRuntime->destructionEffectTimers[4] = definitionView->destructionEffectDelayTicks4;
-      modelRuntime->destructionEffectTimers[5] = copiedValueA;
-      modelRuntime->destructionEffectTimers[6] = copiedValueB;
-      modelRuntime->destructionEffectTimers[7] = copiedValueC;
-      copiedValueA = definitionView->energyLoadQ4;
-      modelRuntime->classState.shotEmitterTimerTicks = 1;
-      modelRuntime->classState.effectEmitterTimerTicks = 1;
-      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
-      modelRuntime->classState.energyLoadQ4 = copiedValueA;
-      modelRuntime->classState.stateFlags = 0;
-      modelRuntime->classState.healthRegenerationDelayTicks = 0;
-      modelRuntime->classState.dismantleTickCountdown = 0;
-      modelRuntime->damageEffectPointIndex = 0;
-      state44CandidateOrFlags = definitionView->modelFlags;
-      if ((MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer != NULL) {
-        if (!ModelNodeRuntime_CreateHierarchyRecursive
-                (paletteAsset,textureSet,modelRuntime,
-                 (MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer,worldRuntime,
-                 &modelNodeRuntime)) {
-          /* the hierarchy's error code: no free world object record */
-          return FATAL_ERROR_GENERAL_FAILURE;
-        }
-        modelRuntime->rootModelNodeOrSavedOffset.modelNode = modelNodeRuntime;
-        ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
-        ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
-        if ((state44CandidateOrFlags & MODEL_DEFINITION_FLAG_RAY_TRANSPARENT) != 0) {
-          modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_RAY_TRANSPARENT;
-        }
-      }
-      (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize
-        [modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId])
-                (modelRuntime->definitionOrSavedId.definition,modelRuntime);
-      *outModelRuntime = modelRuntime;
-      return 0;
+  modelRuntime = &g_ModelRuntimeSlots[slotIndex];
+
+  definitionView = (ModelDefinition *)ModelDefinitionRegistry_FindById(modelDefinitionId);
+  if (definitionView == NULL) {
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
+    return FATAL_ERROR_MODEL_DEFINITION_MISSING;
+  }
+
+  modelRuntime->definitionOrSavedId.definition = (ModelDefinitionRecordPrefix *)definitionView;
+  modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
+  modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = armyRuntime;
+  modelRuntime->attachmentCount = 0;
+  modelRuntime->health = definitionView->maximumHealth;
+  if (armyRuntime->visibilityRadius < definitionView->visibilityRadius) {
+    armyRuntime->visibilityRadius = definitionView->visibilityRadius;
+  }
+  if (armyRuntime->occupancyMarkRadius < definitionView->occupancyMarkRadius) {
+    armyRuntime->occupancyMarkRadius = definitionView->occupancyMarkRadius;
+  }
+  /* Original quirk: only +0x10..+0x2F are cleared; effectModelFlags (+0x30) and +0x34 keep the old slot's values. */
+  for (prefixIndex = 0; prefixIndex < 32; prefixIndex++) {
+    modelRuntime->classPrefixState[prefixIndex] = 0;
+  }
+  modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = NULL;
+  modelRuntime->destructionEffectTimers[0] = definitionView->destructionEffectDelayTicks0;
+  modelRuntime->destructionEffectTimers[1] = definitionView->destructionEffectDelayTicks1;
+  modelRuntime->destructionEffectTimers[2] = definitionView->destructionEffectDelayTicks2;
+  modelRuntime->destructionEffectTimers[3] = definitionView->destructionEffectDelayTicks3;
+  modelRuntime->destructionEffectTimers[4] = definitionView->destructionEffectDelayTicks4;
+  modelRuntime->destructionEffectTimers[5] = definitionView->destructionEffectDelayTicks5;
+  modelRuntime->destructionEffectTimers[6] = definitionView->destructionEffectDelayTicks6;
+  modelRuntime->destructionEffectTimers[7] = definitionView->destructionEffectDelayTicks7;
+  modelRuntime->classState.shotEmitterTimerTicks = 1;
+  modelRuntime->classState.effectEmitterTimerTicks = 1;
+  modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+  modelRuntime->classState.energyLoadQ4 = definitionView->energyLoadQ4;
+  modelRuntime->classState.stateFlags = 0;
+  modelRuntime->classState.healthRegenerationDelayTicks = 0;
+  modelRuntime->classState.dismantleTickCountdown = 0;
+  modelRuntime->damageEffectPointIndex = 0;
+  modelFlags = definitionView->modelFlags;
+  if ((MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer != NULL) {
+    if (!ModelNodeRuntime_CreateHierarchyRecursive
+            (paletteAsset,textureSet,modelRuntime,
+             (MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer,worldRuntime,
+             &modelNodeRuntime)) {
+      /* the hierarchy's error code: no free world object record */
+      return FATAL_ERROR_GENERAL_FAILURE;
+    }
+    modelRuntime->rootModelNodeOrSavedOffset.modelNode = modelNodeRuntime;
+    ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
+    ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+    if ((modelFlags & MODEL_DEFINITION_FLAG_RAY_TRANSPARENT) != 0) {
+      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_RAY_TRANSPARENT;
     }
   }
-  g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
-  return FATAL_ERROR_MODEL_DEFINITION_MISSING;
+  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize
+    [modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId])
+            (modelRuntime->definitionOrSavedId.definition,modelRuntime);
+  *outModelRuntime = modelRuntime;
+  return 0;
 }
 

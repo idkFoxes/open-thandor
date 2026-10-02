@@ -14,6 +14,16 @@
 
 /* Implementation ownership: gameplay/session/runtime. */
 
+/* Failure exit of InGameRuntime_RunSessionUntilExit: releases what the session set up and reports the error. */
+static bool InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
+
+{
+  InGameRuntime_ShutdownAndReleaseResources();
+  *outError = sessionError;
+  return false;
+}
+
+
 /* Address: 0x00564F70.
    Runs one in-game session from the frontend: starts a new level or loads a saved game (bit 0 of
    loadExistingSessionFlag), then renders frames until the session is closed, the end movie is due or the local
@@ -25,12 +35,16 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
 
 {
   uint32_t startupError;
+  bool started;
 
   if ((loadExistingSessionFlag & 1U) == 0) {
-    if (!InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError)) goto shutdown_and_fail;
+    started = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError);
   }
   else {
-    if (!InGameRuntime_InitializeLoadedSession(levelPathUtf16,&startupError)) goto shutdown_and_fail;
+    started = InGameRuntime_InitializeLoadedSession(levelPathUtf16,&startupError);
+  }
+  if (!started) {
+    return InGameRuntime_FailSession(startupError,outError);
   }
 #ifdef THANDOR_TEST_AIDS
   g_TestAidSessionCount++;
@@ -84,11 +98,7 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       return true;
     }
   } while (g_UiRootNode != UI_ROOT_STACK_END);
-  startupError = FATAL_ERROR_GENERAL_FAILURE;
-shutdown_and_fail:
-  InGameRuntime_ShutdownAndReleaseResources();
-  *outError = startupError;
-  return false;
+  return InGameRuntime_FailSession(FATAL_ERROR_GENERAL_FAILURE,outError);
 }
 
 
@@ -493,23 +503,25 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
 void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage)
 
 {
-  void *tailNestedPointer;
-  FrontendPlayerRuntimeRecord *playerRuntimeBlocks;
-  uint8_t *primaryPointer;
-  uint8_t *auxiliaryPointer;
-  GraphicsTextureSet *selectedTextureSet;
-  SpriteAssetHeader *resolvedSprite;
-  uint8_t *secondaryPointer;
-  uint32_t nestedRemaining;
-  GraphicsPaletteAsset *selectedPalette;
   ResourceRegistrationRecord *registrationRecord;
+  ResourceRegistrationRecord *tailRecord;
   uint32_t remainingRecords;
+  uint32_t nestedCount;
+  uint32_t nestedIndex;
+  uint8_t *primaryPointer;
+  uint8_t *secondaryPointer;
   uint8_t *nestedBasePointer;
-  ResourceRegistrationRecord *nestedCursor;
+  uint8_t *auxiliaryPointer;
+  void *tailNestedPointer;
+  GraphicsTextureSet *selectedTextureSet;
+  GraphicsPaletteAsset *selectedPalette;
+  SpriteAssetHeader *resolvedSprite;
   ArmyRuntimeSlot *payloadSlot;
-  
+
   registrationRecord = runtimeImage->records;
   remainingRecords = runtimeImage->recordCount;
+  /* Original quirk: the record loop tests its count only after the first record, so an image with recordCount 0
+     would walk 2^32 records. */
   do {
     if ((registrationRecord->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
       primaryPointer = (uint8_t *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset;
@@ -530,22 +542,19 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer = nestedBasePointer;
       (registrationRecord->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
       auxiliaryPointer = (uint8_t *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
-      nestedRemaining = registrationRecord->nestedCount;
+      nestedCount = registrationRecord->nestedCount;
       if (auxiliaryPointer != NULL) {
         /* 1-based offset from the shading records; 0 is null */
         auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer);
       }
       (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)auxiliaryPointer;
-      nestedCursor = registrationRecord;
-      selectedPalette = g_ShotPalette;
-      for (; g_ShotPalette = selectedPalette, nestedRemaining != 0; nestedRemaining = nestedRemaining - 1) {
-        if (nestedCursor->nestedPointersOrSavedOffsets[0].runtimePointer != NULL) {
-          nestedCursor->nestedPointersOrSavedOffsets[0].runtimePointer =
-               (uint8_t *)((int)nestedCursor->nestedPointersOrSavedOffsets[0].runtimePointer +
+      /* the nested pointers are 1-based offsets from the runtime-object base as well */
+      for (nestedIndex = 0; nestedIndex < nestedCount; nestedIndex++) {
+        if (registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer != NULL) {
+          registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer =
+               (uint8_t *)((int)registrationRecord->nestedPointersOrSavedOffsets[nestedIndex].runtimePointer +
                        (int)g_RuntimeObjectRebaseBaseMinusOne);
         }
-        nestedCursor = (ResourceRegistrationRecord *)&nestedCursor->secondaryPointerOrSavedOffset;
-        selectedPalette = g_ShotPalette;
       }
       payloadSlot = (registrationRecord->runtimePayload).armyRuntime;
       switch(registrationRecord->domainIndex) {
@@ -561,7 +570,7 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
         payloadSlot = (ArmyRuntimeSlot *)
                      (g_ShotRuntimeRebaseBaseMinusOne + (int)payloadSlot);
         registrationRecord->textureSet = g_ShotTextureSet;
-        registrationRecord->paletteAsset = selectedPalette;
+        registrationRecord->paletteAsset = g_ShotPalette;
         break;
       case RESOURCE_DOMAIN_EFFECT_RUNTIME:
         payloadSlot = (ArmyRuntimeSlot *)
@@ -581,20 +590,18 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       resolvedSprite = SpriteAssetRegistry_FindById((SpriteAssetId)registrationRecord->spriteAsset);
       registrationRecord->spriteAsset = resolvedSprite;
     }
-    playerRuntimeBlocks = g_FrontendPlayerRuntimeBlocks;
     registrationRecord++;
-    remainingRecords = remainingRecords - 1;
+    remainingRecords--;
   } while (remainingRecords != 0);
   /* the last nested slot of the last record is the saved tail record */
   tailNestedPointer = runtimeImage->records[runtimeImage->recordCount - 1].nestedPointersOrSavedOffsets
            [12].runtimePointer;
-  registrationRecord = NULL;
+  tailRecord = NULL;
   if (tailNestedPointer != NULL) {
-    registrationRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + (int)tailNestedPointer);
+    tailRecord = (ResourceRegistrationRecord *)(g_RuntimeObjectRebaseBaseMinusOne + (int)tailNestedPointer);
   }
-  runtimeImage->tailRecord = registrationRecord;
-  (playerRuntimeBlocks->factionAssignment).factionAssignmentIndex = runtimeImage->factionAssignmentIndex;
-  return;
+  runtimeImage->tailRecord = tailRecord;
+  (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex = runtimeImage->factionAssignmentIndex;
 }
 
 
@@ -936,54 +943,34 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
 }
 
 
-/* Address: 0x005641D0.
-   Starts a new game on a level: resets the session counters and the per-player blocks, installs the step timer
-   and InGameRuntime_UpdateSimulationAndNetworkTick as the UI synchronization hook, builds the in-game UI root from
-   its template, opens the level movie that plays while loading and loads the level (world, terrain, shading,
-   technologies, units). It then reports itself ready to the other players and keeps drawing the player-status
-   screen while stepping until every player is ready, and finally queues the level's five intro notifications.
-   Returns true on success; on failure returns false and stores the error of the failing step in *outError.
-*/
-bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
-                                        uint32_t *outError)
+/* Failure exit of InGameRuntime_InitializeNewSession: closes the level movie (also when it was not opened yet),
+   stores the error in *outError and returns false. */
+static bool InGameNewSession_Fail(uint32_t error,uint32_t *outError)
 
 {
-  WorldRuntimeFlags *worldRuntimeFlags;
-  WorldRuntimeContext *world;
-  uint16_t titleChar;
-  UiTextResourceId titleTextIndex;
-  PlayerRuntimeId localPlayerId;
-  uint16_t *titleSource;
-  InGameRuntimeRoot *inGameRoot;
-  uint32_t settingOrFactionToken;
-  uint32_t gridHalfSize;
-  uint32_t subresourceCount;
-  int countOrPlayerId;
+  Movie_Close();
+  *outError = error;
+  return false;
+}
+
+
+/* Resets the session state for a new game: session counters and end-movie state, clears the player-removal packet
+   area and all selection blocks, sets up every player's frontend record and selection block (not ready, command
+   sync pending, fresh timeout, faction and name), and starts the periodic step timer and the UI synchronization
+   hooks.
+*/
+static void InGameNewSession_ResetSessionState(void)
+
+{
+  uint32_t *clearCursor;
+  int remainingCount;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
-  InGameNotificationMovieId notificationMovieId;
-  InGameNotificationMovieId unusedNotificationMovieId;
-  SelectionPlayerRuntimeBlock *selectionBlock;
-  FrontendPlayerNameUtf16 *playerNameSource;
-  uint32_t *templateCursor;
-  FrontendPlayerRemovalPacket10007 *packetCursor;
-  SelectionPlayerRuntimeBlock *selectionBlockCursor;
   FrontendPlayerRuntimeRecord *frontendPlayer;
-  uint8_t *playerNameDestination;
-  uint16_t *sessionNameClearCursor;
-  uint16_t *sessionNameCursor;
-  InGameRuntimeRoot *rootCursorOrError;
-  InGameNotificationQueueRecord *queueRecord;
-  bool subsystemFailed;
-  uint16_t *resolvedTitle;
-  uint32_t allocationError;
-  uint32_t resetDefaultsError;
-  uint32_t stepError;
-  uint16_t *loadingMoviePath;
-  bool firstFrameDecoded;
-  MovieRuntime *firstFrameMovie;
-  uint32_t movieEndCode;
-  bool gridScratchAllocated;
-  uint32_t gridScratchError;
+  SelectionPlayerRuntimeBlock *selectionBlock;
+  PlayerRuntimeId playerId;
+  uint32_t factionIndex;
+  uint32_t *nameSource;
+  uint32_t *nameDestination;
 
   g_UiCommandRuntimeFlags = UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED;
   g_SessionNetworkTickCounter = 1;
@@ -1001,36 +988,40 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
   g_EndMovieSelectionIndex = UINT32_MAX;
   g_EndMovieVariantIndex = 0;
   g_EndMoviePath = NULL;
-  /* clear the 0x280-byte player-removal packet and all selection blocks (0x10230 dwords) */
-  packetCursor = &g_FrontendClientPlayerRemovalPacket10007;
-  for (countOrPlayerId = 160; countOrPlayerId != 0; countOrPlayerId--) {
-    (packetCursor->header).packedTypeAndUnitCount = 0;
-    packetCursor = (FrontendPlayerRemovalPacket10007 *)&(packetCursor->header).sequenceToken;
+  /* clear 0x280 bytes from the player-removal packet on and all selection blocks (0x10230 dwords) */
+  clearCursor = (uint32_t *)&g_FrontendClientPlayerRemovalPacket10007;
+  for (remainingCount = 160; remainingCount != 0; remainingCount--) {
+    *clearCursor = 0;
+    clearCursor++;
   }
-  selectionBlockCursor = g_SelectionPlayerBlocks;
-  for (countOrPlayerId = SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock) / sizeof(uint32_t);
-       remainingPlayers = g_FrontendPlayerRuntimeBlockCount,
-       selectionBlock = g_SelectionPlayerBlocks,
-      frontendPlayer = g_FrontendPlayerRuntimeBlocks, countOrPlayerId != 0; countOrPlayerId--) {
-    (selectionBlockCursor->selection).entries[0] = NULL;
-    selectionBlockCursor = (SelectionPlayerRuntimeBlock *)((selectionBlockCursor->selection).entries + 1);
+  clearCursor = (uint32_t *)g_SelectionPlayerBlocks;
+  for (remainingCount = SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock) / sizeof(uint32_t);
+       remainingCount != 0; remainingCount--) {
+    *clearCursor = 0;
+    clearCursor++;
   }
-  /* per player: not ready, command sync pending, fresh timeout; link its selection block and copy the name */
+  /* per player: not ready, command sync pending, fresh timeout; link its selection block and copy the name.
+     Original quirk: the player count is tested only after the first player. */
+  remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+  selectionBlock = g_SelectionPlayerBlocks;
+  frontendPlayer = g_FrontendPlayerRuntimeBlocks;
   do {
-    countOrPlayerId = frontendPlayer->playerRuntimeId;
+    playerId = frontendPlayer->playerRuntimeId;
     (frontendPlayer->factionAssignment).readyOrWaitState = 0;
     frontendPlayer->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
     frontendPlayer->heartbeatExpiryTicks = 1024;
-    settingOrFactionToken = (frontendPlayer->factionAssignment).factionAssignmentIndex;
-    g_SelectionPlayerRuntimeBlockPointers[countOrPlayerId] = selectionBlock;
-    selectionBlock->factionIndex = settingOrFactionToken;
+    factionIndex = (frontendPlayer->factionAssignment).factionAssignmentIndex;
+    g_SelectionPlayerRuntimeBlockPointers[playerId] = selectionBlock;
+    selectionBlock->factionIndex = factionIndex;
     selectionBlock->simulationStepTicks = 1;
-    playerNameSource = &frontendPlayer->playerName;
-    playerNameDestination = (uint8_t *)selectionBlock->playerNameUtf16;
-    for (countOrPlayerId = 20; countOrPlayerId != 0; countOrPlayerId--) {
-      *(uint32_t *)playerNameDestination = *(uint32_t *)playerNameSource->textUtf16;
-      playerNameSource = (FrontendPlayerNameUtf16 *)(playerNameSource->textUtf16 + 2);
-      playerNameDestination = playerNameDestination + 4;
+    /* Original quirk: 20 dwords (80 bytes) are copied although both name fields hold 20 UTF-16 characters
+       (40 bytes), so the copy also covers the 40 bytes behind each of them. */
+    nameSource = (uint32_t *)frontendPlayer->playerName.textUtf16;
+    nameDestination = (uint32_t *)selectionBlock->playerNameUtf16;
+    for (remainingCount = 20; remainingCount != 0; remainingCount--) {
+      *nameDestination = *nameSource;
+      nameSource++;
+      nameDestination++;
     }
     remainingPlayers--;
     selectionBlock++;
@@ -1042,304 +1033,413 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
   g_TimerRegisterPeriodic(INGAME_PERIODIC_TIMER_HZ,InGameRuntime_PeriodicCountdownAndClockTick);
   UiRuntime_SetSynchronizationHooks
             (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
-  /* session name = the level title without the characters Windows forbids in file names (at most 31);
-     the first title character is skipped */
-  titleTextIndex = (levelAsset->header).titleTextResourceIndex;
-  sessionNameClearCursor = &g_InGameSessionNameScratchUtf16;
-  for (countOrPlayerId = 32; countOrPlayerId != 0; countOrPlayerId--) {
-    *sessionNameClearCursor = 0;
-    sessionNameClearCursor++;
+}
+
+
+/* Whether the session name keeps titleChar: the characters Windows forbids in file names and '.' are dropped. */
+static bool InGameNewSession_IsSessionNameCharacter(uint16_t titleChar)
+
+{
+  switch (titleChar) {
+  case '*':
+  case '<':
+  case '>':
+  case '"':
+  case '/':
+  case '\\':
+  case '.':
+  case '?':
+  case ':':
+  case '|':
+    return false;
+  default:
+    return true;
   }
-  resolvedTitle = TextResource_Resolve(titleTextIndex + TEXT_ID_LEVEL_TITLE_BASE);
-  titleSource = resolvedTitle;
+}
+
+
+/* Sets g_InGameSessionNameScratchUtf16 to the level title without the characters dropped by
+   InGameNewSession_IsSessionNameCharacter. The first title character is skipped and at most the next 31 are
+   looked at. */
+static void InGameNewSession_BuildSessionName(UiTextResourceId titleTextIndex)
+
+{
+  uint16_t *sessionNameCursor;
+  uint16_t *titleSource;
+  uint16_t titleChar;
+  int remainingCount;
+
   sessionNameCursor = &g_InGameSessionNameScratchUtf16;
-  countOrPlayerId = 31;
-  do {
+  for (remainingCount = 32; remainingCount != 0; remainingCount--) {
+    *sessionNameCursor = 0;
+    sessionNameCursor++;
+  }
+  titleSource = TextResource_Resolve(titleTextIndex + TEXT_ID_LEVEL_TITLE_BASE);
+  sessionNameCursor = &g_InGameSessionNameScratchUtf16;
+  for (remainingCount = 31; remainingCount != 0; remainingCount--) {
     titleSource++;
     titleChar = *titleSource;
-    if (titleChar == 0) break;
-    if ((((((titleChar != '*') && (titleChar != '<')) && (titleChar != '>')) &&
-         ((titleChar != '"' && (titleChar != '/')))) &&
-        ((titleChar != '\\' && ((titleChar != '.' && (titleChar != '?')))))) &&
-       ((titleChar != ':' && (titleChar != '|')))) {
+    if (titleChar == 0) {
+      break;
+    }
+    if (InGameNewSession_IsSessionNameCharacter(titleChar)) {
       *sessionNameCursor = titleChar;
       sessionNameCursor++;
     }
-    countOrPlayerId--;
-  } while (countOrPlayerId != 0);
+  }
+}
+
+
+/* Allocates the zeroed world object pool, the selection info panel resources of the local player and the in-game
+   root (a copy of g_InGameRuntimeDefaultImageTemplate with its control tree, world callbacks and camera limits) and
+   pushes the root onto the UI root stack. Returns true with the root in *outRoot; on failure returns false with
+   the error in *outError.
+*/
+static bool InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *outError)
+
+{
+  void *objectPool;
+  InGameRuntimeRoot *inGameRoot;
+  SelectionPlayerRuntimeBlock *localPlayerBlock;
+  uint32_t *clearCursor;
+  uint32_t *copyCursor;
+  uint32_t *templateCursor;
+  int remainingCount;
+  uint32_t allocationError;
+  uint32_t stepError;
+
   /* 4 MB pool for the world objects (INGAME_WORLD_OBJECT_RECORD_COUNT records), zeroed */
-  allocationError = g_MemoryApi.alloc(INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),
-                                      (void **)&rootCursorOrError);
+  allocationError = g_MemoryApi.alloc(INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),&objectPool);
   if (allocationError != 0) {
-    rootCursorOrError = (InGameRuntimeRoot *)allocationError;
+    *outError = allocationError;
+    return false;
+  }
+  g_RuntimeObjectRebaseBaseMinusOne = (uint8_t *)objectPool - 1;
+  g_InGameWorldObjectRecords = (WorldObjectRecord *)objectPool;
+  clearCursor = (uint32_t *)objectPool;
+  for (remainingCount = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingCount != 0;
+       remainingCount--) {
+    *clearCursor = 0;
+    clearCursor++;
+  }
+  if (!SelectionInfoPanel_InitResources
+                     ((SelectionInfoEntitySlots *)
+                      g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId],&stepError)) {
+    *outError = stepError;
+    return false;
+  }
+  allocationError = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot),(void **)&inGameRoot);
+  if (allocationError != 0) {
+    *outError = allocationError;
+    return false;
+  }
+  templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
+  g_InGameRuntimeRoot = inGameRoot;
+  /* copy the in-game root template (sizeof(InGameRuntimeRoot) / 4 dwords) */
+  copyCursor = (uint32_t *)inGameRoot;
+  for (remainingCount = sizeof(InGameRuntimeRoot) / 4; remainingCount != 0; remainingCount--) {
+    *copyCursor = *templateCursor;
+    templateCursor++;
+    copyCursor++;
+  }
+  if (!InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot,&stepError)) {
+    *outError = stepError;
+    return false;
+  }
+  /* world input and command callbacks, camera limits, and the step hook for the world runtime */
+  inGameRoot->worldOverlayCallback =
+       InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
+  (inGameRoot->worldRuntime).selection.dispatchCommandCallback =
+       InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
+  (inGameRoot->worldRuntime).selection.resolveContextActionPrimaryCallback =
+       InGameWorldInput_ResolveContextActionAndCursor;
+  (inGameRoot->worldRuntime).selection.resolveContextActionSecondaryCallback =
+       InGameWorldInput_ResolveContextActionAndCursor;
+  (inGameRoot->worldRuntime).selection.beginPointerCaptureCallback =
+       InGameWorldInput_BeginPointerCapture;
+  (inGameRoot->worldRuntime).selection.updateDragSelectionCallback =
+       InGameWorldInput_UpdateDragSelectionAndCamera;
+  (inGameRoot->worldRuntime).selection.commitPointerActionCallback =
+       InGameWorldInput_CommitPointerAction;
+  (inGameRoot->worldRuntime).fieldRegion.clearTransientStateCallback =
+       InGameUiRuntime_ResetNotificationButtonCursor;
+  (inGameRoot->worldRuntime).selection.dispatchWorldContextActionCallback =
+       InGameUiRuntime_DispatchWorldContextActionCallback;
+  (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = 8 * Q12_ONE;
+  (inGameRoot->worldRuntime).maximumCameraDistanceQ12 = 19 * Q12_ONE;
+  (inGameRoot->worldRuntime).motion.minimumPitchAngle = INGAME_CAMERA_MINIMUM_PITCH_ANGLE16;
+  (inGameRoot->worldRuntime).motion.maximumPitchAngle = INGAME_CAMERA_MAXIMUM_PITCH_ANGLE16;
+  (inGameRoot->worldRuntime).tickSpinLock = &g_InGameStateTickSpinLock;
+  (inGameRoot->worldRuntime).simulationAndNetworkTickCallback =
+       InGameRuntime_UpdateSimulationAndNetworkTick;
+  localPlayerBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
+  inGameRoot->localPlayerMarkedCellCount = 0;
+  inGameRoot->localPlayerMarkedCells = localPlayerBlock->markedCells;
+  UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
+  *outRoot = inGameRoot;
+  return true;
+}
+
+
+/* Opens the level movie that plays while loading and shows its first frames, attaches the world arrays with the
+   local player's faction, resets the game data defaults and loads the level resources, clears the notification
+   queue and creates the terrain texture. Returns true on success; on failure returns false with the error in
+   *outError.
+*/
+static bool InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+                                       InGameRuntimeRoot *inGameRoot,uint32_t *outError)
+
+{
+  WorldRuntimeContext *world;
+  uint16_t *loadingMoviePath;
+  MovieRuntime *firstFrameMovie;
+  uint32_t movieEndCode;
+  PlayerRuntimeId localPlayerId;
+  uint32_t localFactionIndex;
+  uint32_t resetDefaultsError;
+  uint32_t *clearCursor;
+  int remainingCount;
+  uint32_t stepError;
+
+  world = &inGameRoot->worldRuntime;
+  if (!LevelAsset_PrepareEndingMoviePath(levelMoviePath,&levelAsset->header,&loadingMoviePath,&stepError)) {
+    *outError = stepError;
+    return false;
+  }
+  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,NULL,&stepError)) {
+    *outError = stepError;
+    return false;
+  }
+  if (!Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode)) {
+    *outError = movieEndCode;
+    return false;
+  }
+  inGameRoot->levelMovieRuntime = firstFrameMovie;
+  g_MoviePlaybackBaseFrameGroup = 0;
+  g_MoviePlaybackScheduleCounter = 0;
+  g_MoviePlaybackScheduleSpan = 0;
+  g_MoviePlaybackCurrentFrame = 0;
+  MoviePlayback_AdvanceToFrameAndPresent(0);
+  MoviePlayback_AdvanceToFrameAndPresent(1);
+  RecentTextHistory_SortAndBuildPointerList(8,&inGameRoot->recentTextHistory);
+  WorldRuntime_AttachObjectArray(INGAME_WORLD_OBJECT_RECORD_COUNT,g_InGameWorldObjectRecords,world);
+  localPlayerId = g_LocalPlayerRuntimeId;
+  localFactionIndex = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->factionIndex;
+  levelAsset->playerSlots[6].aiClassOrMode = localFactionIndex;
+  world->activeFactionRuntimeIndex = localFactionIndex;
+  world->selection.activePlayerRuntimeId = localPlayerId;
+  WorldRuntime_AttachAndClearDwordArray
+            (INGAME_WORLD_DWORD_ARRAY_COUNT,(uint32_t *)&g_InGameWorldRuntimeDwordArray256,world);
+  resetDefaultsError = GameData_ResetDefaults();
+  if (resetDefaultsError != 0) {
+    *outError = resetDefaultsError;
+    return false;
+  }
+  if (!InGameLevelRuntime_LoadResourcesAfterDefaultReset(levelAsset,world,&stepError)) {
+    *outError = stepError;
+    return false;
+  }
+  /* clear the four notification queue records (0x80 bytes) */
+  clearCursor = (uint32_t *)inGameRoot->notificationQueue;
+  for (remainingCount = 32; remainingCount != 0; remainingCount--) {
+    *clearCursor = 0;
+    clearCursor++;
+  }
+  if (!TerrainCompositeTexture_Create(&stepError)) {
+    *outError = stepError;
+    return false;
+  }
+  return true;
+}
+
+
+/* Sets or clears flag in the world runtime flags. */
+static void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFlags flag,bool enabled)
+
+{
+  if (enabled) {
+    world->runtimeFlags = world->runtimeFlags | flag;
   }
   else {
-    g_RuntimeObjectRebaseBaseMinusOne = (uint8_t *)rootCursorOrError - 1;
-    g_InGameWorldObjectRecords = (WorldObjectRecord *)rootCursorOrError;
-    for (countOrPlayerId = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; countOrPlayerId != 0; countOrPlayerId--) {
-      (rootCursorOrError->rootUi).base.nextSibling = NULL;
-      rootCursorOrError = (InGameRuntimeRoot *)&(rootCursorOrError->rootUi).base.firstChild;
-    }
-    if (!SelectionInfoPanel_InitResources
-                       ((SelectionInfoEntitySlots *)
-                        g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId],&stepError)) {
-      rootCursorOrError = (InGameRuntimeRoot *)stepError;
-    }
-    else {
-      allocationError = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot),(void **)&inGameRoot);
-      if (allocationError != 0) {
-        rootCursorOrError = (InGameRuntimeRoot *)allocationError;
-      }
-      else {
-        rootCursorOrError = inGameRoot;
-        templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
-        g_InGameRuntimeRoot = inGameRoot;
-        /* copy the in-game root template (sizeof(InGameRuntimeRoot) / 4 dwords) */
-        for (countOrPlayerId = sizeof(InGameRuntimeRoot) / 4; countOrPlayerId != 0; countOrPlayerId--) {
-          (rootCursorOrError->rootUi).base.nextSibling = (UiNodeBase *)*templateCursor;
-          templateCursor++;
-          rootCursorOrError = (InGameRuntimeRoot *)&(rootCursorOrError->rootUi).base.firstChild;
-        }
-        world = &inGameRoot->worldRuntime;
-        if (!InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot,&stepError)) {
-          rootCursorOrError = (InGameRuntimeRoot *)stepError;
-        }
-        else {
-          /* world input and command callbacks, camera limits, and the step hook for the world runtime */
-          inGameRoot->worldOverlayCallback =
-               InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
-          (inGameRoot->worldRuntime).selection.dispatchCommandCallback =
-               InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
-          (inGameRoot->worldRuntime).selection.resolveContextActionPrimaryCallback =
-               InGameWorldInput_ResolveContextActionAndCursor;
-          (inGameRoot->worldRuntime).selection.resolveContextActionSecondaryCallback =
-               InGameWorldInput_ResolveContextActionAndCursor;
-          (inGameRoot->worldRuntime).selection.beginPointerCaptureCallback =
-               InGameWorldInput_BeginPointerCapture;
-          (inGameRoot->worldRuntime).selection.updateDragSelectionCallback =
-               InGameWorldInput_UpdateDragSelectionAndCamera;
-          (inGameRoot->worldRuntime).selection.commitPointerActionCallback =
-               InGameWorldInput_CommitPointerAction;
-          (inGameRoot->worldRuntime).fieldRegion.clearTransientStateCallback =
-               InGameUiRuntime_ResetNotificationButtonCursor;
-          (inGameRoot->worldRuntime).selection.dispatchWorldContextActionCallback =
-               InGameUiRuntime_DispatchWorldContextActionCallback;
-          (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = 8 * Q12_ONE;
-          (inGameRoot->worldRuntime).maximumCameraDistanceQ12 = 19 * Q12_ONE;
-          (inGameRoot->worldRuntime).motion.minimumPitchAngle = INGAME_CAMERA_MINIMUM_PITCH_ANGLE16;
-          (inGameRoot->worldRuntime).motion.maximumPitchAngle = INGAME_CAMERA_MAXIMUM_PITCH_ANGLE16;
-          (inGameRoot->worldRuntime).tickSpinLock = &g_InGameStateTickSpinLock;
-          (inGameRoot->worldRuntime).simulationAndNetworkTickCallback =
-               InGameRuntime_UpdateSimulationAndNetworkTick;
-          selectionBlockCursor = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
-          inGameRoot->localPlayerMarkedCellCount = 0;
-          inGameRoot->localPlayerMarkedCells = selectionBlockCursor->markedCells;
-          UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
-          if (!LevelAsset_PrepareEndingMoviePath(levelMoviePath,&levelAsset->header,&loadingMoviePath,&stepError)) {
-            rootCursorOrError = (InGameRuntimeRoot *)stepError;
-          }
-          else {
-            if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,NULL,&stepError)) {
-              rootCursorOrError = (InGameRuntimeRoot *)stepError;
-            }
-            else {
-              firstFrameDecoded = Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode);
-              rootCursorOrError = firstFrameDecoded ? (InGameRuntimeRoot *)firstFrameMovie :
-                                                      (InGameRuntimeRoot *)movieEndCode;
-              if (firstFrameDecoded) {
-                inGameRoot->levelMovieRuntime = (MovieRuntime *)rootCursorOrError;
-                g_MoviePlaybackBaseFrameGroup = 0;
-                g_MoviePlaybackScheduleCounter = 0;
-                g_MoviePlaybackScheduleSpan = 0;
-                g_MoviePlaybackCurrentFrame = 0;
-                MoviePlayback_AdvanceToFrameAndPresent(0);
-                MoviePlayback_AdvanceToFrameAndPresent(1);
-                RecentTextHistory_SortAndBuildPointerList(8,&inGameRoot->recentTextHistory);
-                WorldRuntime_AttachObjectArray(INGAME_WORLD_OBJECT_RECORD_COUNT,g_InGameWorldObjectRecords,world);
-                localPlayerId = g_LocalPlayerRuntimeId;
-                settingOrFactionToken = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->
-                        factionIndex;
-                levelAsset->playerSlots[6].aiClassOrMode = settingOrFactionToken;
-                (inGameRoot->worldRuntime).activeFactionRuntimeIndex = settingOrFactionToken;
-                (inGameRoot->worldRuntime).selection.activePlayerRuntimeId = localPlayerId;
-                WorldRuntime_AttachAndClearDwordArray
-                          (INGAME_WORLD_DWORD_ARRAY_COUNT,(uint32_t *)&g_InGameWorldRuntimeDwordArray256,world);
-                resetDefaultsError = GameData_ResetDefaults();
-                rootCursorOrError = (InGameRuntimeRoot *)resetDefaultsError;
-                if (resetDefaultsError == 0) {
-                  if (!InGameLevelRuntime_LoadResourcesAfterDefaultReset(levelAsset,world,&stepError)) {
-                    rootCursorOrError = (InGameRuntimeRoot *)stepError;
-                  }
-                  else {
-                    queueRecord = inGameRoot->notificationQueue;
-                    for (countOrPlayerId = 32; countOrPlayerId != 0; countOrPlayerId--) {
-                      queueRecord->movieId = 0;
-                      queueRecord = (InGameNotificationQueueRecord *)&queueRecord->priority;
-                    }
-                    if (!TerrainCompositeTexture_Create(&stepError)) {
-                      rootCursorOrError = (InGameRuntimeRoot *)stepError;
-                    }
-                    else {
-                      /* hold the step off while the world is finished */
-                      g_SpinLockAcquire(&g_InGameStateTickSpinLock);
-                      g_InGameSimulationStepTicks = 1;
-                      settingOrFactionToken =
-                           PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_TEXTURE_DIMENSION,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
-                      gridHalfSize = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_GRID_HALF_SIZE,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
-                      subresourceCount =
-                           PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
-                      GraphicsShadingRuntime_InitializeGeneratedTexture
-                                (subresourceCount,gridHalfSize,settingOrFactionToken);
-                      /* mirror the shading and mouse/panel options into the world runtime flags */
-                      settingOrFactionToken = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
-                      if (settingOrFactionToken == 0) {
-                        worldRuntimeFlags = &(inGameRoot->worldRuntime).runtimeFlags;
-                        *worldRuntimeFlags = *worldRuntimeFlags & ~WORLD_RUNTIME_FLAG_SHADING_ENABLED;
-                      }
-                      else {
-                        worldRuntimeFlags = &(inGameRoot->worldRuntime).runtimeFlags;
-                        *worldRuntimeFlags = *worldRuntimeFlags | WORLD_RUNTIME_FLAG_SHADING_ENABLED;
-                      }
-                      settingOrFactionToken =
-                           PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-                      if ((settingOrFactionToken & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) == 0) {
-                        worldRuntimeFlags = &(inGameRoot->worldRuntime).runtimeFlags;
-                        *worldRuntimeFlags = *worldRuntimeFlags & ~WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM;
-                      }
-                      else {
-                        worldRuntimeFlags = &(inGameRoot->worldRuntime).runtimeFlags;
-                        *worldRuntimeFlags = *worldRuntimeFlags | WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM;
-                      }
-                      if ((settingOrFactionToken & PERSISTENT_LINK_OPTION_ROTATION_TILT) == 0) {
-                        worldRuntimeFlags = &(inGameRoot->worldRuntime).runtimeFlags;
-                        *worldRuntimeFlags = *worldRuntimeFlags & ~WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT;
-                      }
-                      else {
-                        worldRuntimeFlags = &(inGameRoot->worldRuntime).runtimeFlags;
-                        *worldRuntimeFlags = *worldRuntimeFlags | WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT;
-                      }
-                      if ((settingOrFactionToken & PERSISTENT_LINK_OPTION_HIDE_PANEL) == 0) {
-                        worldRuntimeFlags = &(inGameRoot->worldRuntime).runtimeFlags;
-                        *worldRuntimeFlags = *worldRuntimeFlags & ~WORLD_RUNTIME_FLAG_HIDE_PANEL;
-                      }
-                      else {
-                        worldRuntimeFlags = &(inGameRoot->worldRuntime).runtimeFlags;
-                        *worldRuntimeFlags = *worldRuntimeFlags | WORLD_RUNTIME_FLAG_HIDE_PANEL;
-                      }
-                      rootCursorOrError = (InGameRuntimeRoot *)
-                                     PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-                      if (((uint32_t)rootCursorOrError & 4) != 0) {
-                        UiPageStack_SetActiveIndex(1,&inGameRoot->sidePanelPageStack);
-                        rootCursorOrError = (InGameRuntimeRoot *)
-                                       &inGameRoot->resourceBarModePageStack;
-                        UiPageStack_SetActiveIndex(0,(UiPageStackControl *)rootCursorOrError);
-                        UiPageStack_SetActiveIndex(0,&inGameRoot->gamePanelsModePageStack);
-                        inGameRoot->worldViewAreaRightOffset = 0;
-                        UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
-                      }
-                      subsystemFailed = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess
-                                               ((uint32_t)(inGameRoot->worldRuntime).fieldGrid);
-                      if (!subsystemFailed) {
-                        /* a campaign carries units over from the previous level */
-                        if (g_FrontendLoadedCampaignAsset == 0) {
-                          OldUnitRuntime_ResetPendingTables();
-                        }
-                        else {
-#ifdef THANDOR_TEST_AIDS
-                          DebugCampaign_LogCarryOver(0);
-#endif
-                          OldUnitRuntime_MergeMasksAndReplayRecords();
-#ifdef THANDOR_TEST_AIDS
-                          DebugCampaign_LogCarryOver(1);
-#endif
-                        }
-                        gridScratchAllocated = GridScratch_AllocateForFieldGrid
-                                           ((inGameRoot->worldRuntime).fieldGrid,&gridScratchError);
-                        if (!gridScratchAllocated) {
-                          rootCursorOrError = (InGameRuntimeRoot *)gridScratchError;
-                        }
-                        if (gridScratchAllocated) {
-                          GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
-                          GridInfluence_ClearDistanceBandsAndRefreshEntities
-                                    ((inGameRoot->worldRuntime).ownerListHead);
-                          TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks();
-                          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-                              SESSION_NETWORK_ROLE_LOCAL) {
-                            inGameRoot->worldViewWrappedTextNodeFlags =
-                                 inGameRoot->worldViewWrappedTextNodeFlags | 8;
-                          }
-                          else {
-                            inGameRoot->worldViewWrappedTextNodeFlags =
-                                 inGameRoot->worldViewWrappedTextNodeFlags & ~8u;
-                          }
-                          InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
-                          InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
-                          InGameArmyStock_RebuildGrid((UiNodeBase *)inGameRoot);
-                          InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
-                          WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
-                          /* report this player as loaded */
-                          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-                              SESSION_NETWORK_ROLE_LOCAL) {
-                            FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
-                                      (g_LocalPlayerRuntimeId,0,0,0);
-                          }
-                          else {
-                            InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
-                          }
-                          g_SpinLockRelease(&g_InGameStateTickSpinLock);
-                          UiFrame_FlushInputAndResetPendingTicks();
-                          g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-                          g_CursorVisibilityToken++;
-                          /* show the player-status screen and keep the lockstep running until all are ready */
-                          InGamePanel_RebuildPlayerStatusRows(inGameRoot);
-                          do {
-                            UiNode_InvalidateRoot(&inGameRoot->playerStatusNode);
-                            InGamePanel_RebuildPlayerStatusRows(inGameRoot);
-                            UiFrame_Update(0);
-                            UiFrame_Draw();
-                            g_GraphicsFramebufferPresent(g_FramebufferAccess);
-                            InGameRuntime_UpdateSimulationAndNetworkTick();
-                          } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
-                          inGameRoot->levelMovieRuntime = NULL;
-                          inGameRoot->playerStatusLineCount = 0;
-                          UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack);
-                          Movie_Close();
-                          g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
-                          /* Lost load: the original reads the first of five level intro
-                             notification movies from the level image. */
-                          notificationMovieId =
-                               g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-                               introNotificationMovieId;
-                          g_TimerRegisterPeriodic
-                                    (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
-                          if (notificationMovieId != 0) {
-                            InGameNotificationQueue_InsertPriorityRecord
-                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId);
-                            InGameNotificationQueue_InsertPriorityRecord
-                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 1);
-                            InGameNotificationQueue_InsertPriorityRecord
-                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 2);
-                            InGameNotificationQueue_InsertPriorityRecord
-                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 3);
-                            InGameNotificationQueue_InsertPriorityRecord
-                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 4);
-                          }
-                          return true;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    world->runtimeFlags = world->runtimeFlags & ~flag;
   }
+}
+
+
+/* Takes the step spin lock and finishes the world while the step is held off: sets up the shading texture,
+   mirrors the shading and mouse/panel options into the world runtime flags and the panel layout, carries campaign
+   units over (or resets the pending unit tables), allocates the grid scratch and rebuilds the derived terrain,
+   influence, technology, build/army/command grid and lighting data. Returns true on success with the lock still
+   held; on failure returns false with the error in *outError.
+   Original quirk: the spin lock is not released on failure.
+*/
+static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
+
+{
+  WorldRuntimeContext *world;
+  uint32_t textureDimension;
+  uint32_t gridHalfSize;
+  uint32_t subresourceCount;
+  uint32_t linkOptionFlags;
+  uint32_t mapMouseOptionFlags;
+  uint32_t subsystemFailureError;
+  uint32_t gridScratchError;
+
+  world = &inGameRoot->worldRuntime;
+  g_SpinLockAcquire(&g_InGameStateTickSpinLock);
+  g_InGameSimulationStepTicks = 1;
+  textureDimension =
+       PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_TEXTURE_DIMENSION,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
+  gridHalfSize = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_GRID_HALF_SIZE,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
+  subresourceCount =
+       PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
+  GraphicsShadingRuntime_InitializeGeneratedTexture(subresourceCount,gridHalfSize,textureDimension);
+  /* mirror the shading and mouse/panel options into the world runtime flags */
+  InGameSession_SetWorldRuntimeFlag
+            (world,WORLD_RUNTIME_FLAG_SHADING_ENABLED,PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED) != 0);
+  linkOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
+  InGameSession_SetWorldRuntimeFlag
+            (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0);
+  InGameSession_SetWorldRuntimeFlag
+            (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0);
+  InGameSession_SetWorldRuntimeFlag
+            (world,WORLD_RUNTIME_FLAG_HIDE_PANEL,(linkOptionFlags & PERSISTENT_LINK_OPTION_HIDE_PANEL) != 0);
+  mapMouseOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+  /* Original quirk: the (unreachable) failure of the optional subsystem below reports the map/mouse option flags
+     as its error code, or the address of the resource bar page stack when bit 2 of them is set (the values left in
+     the error register). */
+  subsystemFailureError = mapMouseOptionFlags;
+  if ((mapMouseOptionFlags & 4) != 0) {
+    UiPageStack_SetActiveIndex(1,&inGameRoot->sidePanelPageStack);
+    subsystemFailureError = (uint32_t)&inGameRoot->resourceBarModePageStack;
+    UiPageStack_SetActiveIndex(0,&inGameRoot->resourceBarModePageStack);
+    UiPageStack_SetActiveIndex(0,&inGameRoot->gamePanelsModePageStack);
+    inGameRoot->worldViewAreaRightOffset = 0;
+    UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
+  }
+  if (InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess((uint32_t)world->fieldGrid) != 0) {
+    *outError = subsystemFailureError;
+    return false;
+  }
+  /* a campaign carries units over from the previous level */
+  if (g_FrontendLoadedCampaignAsset == 0) {
+    OldUnitRuntime_ResetPendingTables();
+  }
+  else {
+#ifdef THANDOR_TEST_AIDS
+    DebugCampaign_LogCarryOver(0);
+#endif
+    OldUnitRuntime_MergeMasksAndReplayRecords();
+#ifdef THANDOR_TEST_AIDS
+    DebugCampaign_LogCarryOver(1);
+#endif
+  }
+  if (!GridScratch_AllocateForFieldGrid(world->fieldGrid,&gridScratchError)) {
+    *outError = gridScratchError;
+    return false;
+  }
+  GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
+  GridInfluence_ClearDistanceBandsAndRefreshEntities(world->ownerListHead);
+  TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks();
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags | 8;
+  }
+  else {
+    inGameRoot->worldViewWrappedTextNodeFlags = inGameRoot->worldViewWrappedTextNodeFlags & ~8u;
+  }
+  InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
+  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
+  InGameArmyStock_RebuildGrid((UiNodeBase *)inGameRoot);
+  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
+  WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
+  return true;
+}
+
+
+/* Reports this player as loaded, releases the step spin lock taken by InGameNewSession_FinishWorldUnderTickLock and
+   shows the player-status screen while keeping the lockstep running until every player is ready; then closes the
+   level movie and switches to the game page.
+*/
+static void InGameNewSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inGameRoot)
+
+{
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
+  }
+  else {
+    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
+  }
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
+  UiFrame_FlushInputAndResetPendingTicks();
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
+  g_CursorVisibilityToken++;
+  InGamePanel_RebuildPlayerStatusRows(inGameRoot);
+  do {
+    UiNode_InvalidateRoot(&inGameRoot->playerStatusNode);
+    InGamePanel_RebuildPlayerStatusRows(inGameRoot);
+    UiFrame_Update(0);
+    UiFrame_Draw();
+    g_GraphicsFramebufferPresent(g_FramebufferAccess);
+    InGameRuntime_UpdateSimulationAndNetworkTick();
+  } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
+  inGameRoot->levelMovieRuntime = NULL;
+  inGameRoot->playerStatusLineCount = 0;
+  UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack);
   Movie_Close();
-  *outError = (uint32_t)rootCursorOrError;
-  return false;
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
+}
+
+
+/* Starts the session notification timer and queues the level's five intro notification movies (consecutive ids
+   from the first one; none when it is 0). */
+static void InGameNewSession_QueueIntroNotifications(void)
+
+{
+  InGameNotificationMovieId firstMovieId;
+  uint32_t introIndex;
+
+  /* Lost load: the original reads the first of five level intro notification movies from the level image. */
+  firstMovieId = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.introNotificationMovieId;
+  g_TimerRegisterPeriodic(10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
+  if (firstMovieId == 0) {
+    return;
+  }
+  for (introIndex = 0; introIndex < 5; introIndex++) {
+    InGameNotificationQueue_InsertPriorityRecord
+              (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,firstMovieId + introIndex);
+  }
+}
+
+
+/* Address: 0x005641D0.
+   Starts a new game on a level: resets the session counters and the per-player blocks, installs the step timer
+   and InGameRuntime_UpdateSimulationAndNetworkTick as the UI synchronization hook, builds the in-game UI root from
+   its template, opens the level movie that plays while loading and loads the level (world, terrain, shading,
+   technologies, units). It then reports itself ready to the other players and keeps drawing the player-status
+   screen while stepping until every player is ready, and finally queues the level's five intro notifications.
+   Returns true on success; on failure returns false and stores the error of the failing step in *outError.
+*/
+bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+                                        uint32_t *outError)
+
+{
+  InGameRuntimeRoot *inGameRoot;
+  uint32_t stepError;
+
+  InGameNewSession_ResetSessionState();
+  InGameNewSession_BuildSessionName((levelAsset->header).titleTextResourceIndex);
+  if (!InGameNewSession_CreateRoot(&inGameRoot,&stepError)) {
+    return InGameNewSession_Fail(stepError,outError);
+  }
+  if (!InGameNewSession_LoadWorld(levelAsset,levelMoviePath,inGameRoot,&stepError)) {
+    return InGameNewSession_Fail(stepError,outError);
+  }
+  if (!InGameNewSession_FinishWorldUnderTickLock(inGameRoot,&stepError)) {
+    return InGameNewSession_Fail(stepError,outError);
+  }
+  InGameNewSession_ReportReadyAndWaitForPlayers(inGameRoot);
+  InGameNewSession_QueueIntroNotifications();
+  return true;
 }
 
 
@@ -1623,19 +1723,6 @@ static bool InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoad
 }
 
 
-/* Sets or clears flag in the world runtime flags. */
-static void InGameLoadedSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFlags flag,bool enabled)
-
-{
-  if (enabled) {
-    world->runtimeFlags = world->runtimeFlags | flag;
-  }
-  else {
-    world->runtimeFlags = world->runtimeFlags & ~flag;
-  }
-}
-
-
 /* Takes the step spin lock and finishes the world while the step is held off: rebuilds the build/army/command
    grids, sets up the shading texture, mirrors the shading and mouse/panel options into the world runtime flags,
    allocates the grid scratch and rebuilds the derived terrain, influence, technology and lighting data. Returns
@@ -1667,14 +1754,14 @@ static bool InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGa
        PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   GraphicsShadingRuntime_InitializeGeneratedTexture(subresourceCount,gridHalfSize,textureDimension);
   /* mirror the shading and mouse/panel options into the world runtime flags */
-  InGameLoadedSession_SetWorldRuntimeFlag
+  InGameSession_SetWorldRuntimeFlag
             (world,WORLD_RUNTIME_FLAG_SHADING_ENABLED,PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED) != 0);
   linkOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  InGameLoadedSession_SetWorldRuntimeFlag
+  InGameSession_SetWorldRuntimeFlag
             (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_ZOOM,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0);
-  InGameLoadedSession_SetWorldRuntimeFlag
+  InGameSession_SetWorldRuntimeFlag
             (world,WORLD_RUNTIME_FLAG_LINK_ROTATION_TILT,(linkOptionFlags & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0);
-  InGameLoadedSession_SetWorldRuntimeFlag
+  InGameSession_SetWorldRuntimeFlag
             (world,WORLD_RUNTIME_FLAG_HIDE_PANEL,(linkOptionFlags & PERSISTENT_LINK_OPTION_HIDE_PANEL) != 0);
   if (InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess((uint32_t)world->fieldGrid) != 0) {
     /* Original quirk: this (unreachable) failure reports the mouse/panel option flags as its error code. */
