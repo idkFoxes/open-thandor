@@ -1209,145 +1209,100 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
 bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError)
 
 {
-  int placementOffsetOrModelRuntime;
+  uint32_t placementTableOffset;
+  ArmyRuntimeSlot *armyRuntime;
   FactionRuntimeIndex activeFactionIndex;
   WorldOwnerListNode *ownerListNode;
-  AngleTurn32 modelRotationAngle;
   uint8_t *levelImageBytes;
   LevelAssetRuntimePrefix *levelImage;
-  uint32_t bookmarkZ;
-  uint32_t bookmarkMagnitude;
-  uint32_t bookmarkPackedHeadingPitch;
-  uint32_t statusOrFieldValue;
+  uint32_t loadError;
+  uint32_t writeError;
   LevelInitialArmyPlacementRecord20 *placementRecordCursor;
   bool imageLoaded;
 
   imageLoaded = Package_LoadEntryIntoBuffer(PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
-                                            g_LevelEndingMovieSourcePath,&statusOrFieldValue);
+                                            g_LevelEndingMovieSourcePath,&loadError);
   levelImageBytes = g_PackageScratchBuffer;
   levelImage = (LevelAssetRuntimePrefix *)levelImageBytes;
-  if (imageLoaded) {
-    /* the placement table is the last part of the image: the file is cut there and regrown per record */
-    placementOffsetOrModelRuntime =
-         (int)levelImage->header.resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset;
-    activeFactionIndex = (saveWorldView->worldRuntime).activeFactionRuntimeIndex;
-    levelImage->header.common.allocationSizeBytes = placementOffsetOrModelRuntime;
-    /* header.initialArmyPlacementRecordCount = 0, byte by byte */
-    ((uint8_t *)&levelImage->header.initialArmyPlacementRecordCount)[0] = 0;
-    ((uint8_t *)&levelImage->header.initialArmyPlacementRecordCount)[1] = 0;
-    ((uint8_t *)&levelImage->header.initialArmyPlacementRecordCount)[2] = 0;
-    ((uint8_t *)&levelImage->header.initialArmyPlacementRecordCount)[3] = 0;
-    /* the loader adds 7 to this value for faction 7's class/mode, yet the editor stores the index of the
-       faction it plays here */
-    levelImage->playerSlots[6].aiClassOrMode = activeFactionIndex;
-    placementRecordCursor = (LevelInitialArmyPlacementRecord20 *)(levelImageBytes + placementOffsetOrModelRuntime);
-    for (ownerListNode = (saveWorldView->worldRuntime).ownerListHead;
-        ownerListNode != NULL; ownerListNode = ownerListNode->nextNode) {
-      if (ownerListNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        levelImage->header.initialArmyPlacementRecordCount++;
-        levelImage->header.common.allocationSizeBytes = levelImage->header.common.allocationSizeBytes + sizeof(LevelInitialArmyPlacementRecord20);
-        placementOffsetOrModelRuntime =
-             (int)((ModelRuntimeSlot *)ownerListNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-        /* +0x08 receives the node's world X and +0x0C its world Y, the reverse of the placement record's field
-           names (which follow the parameters the loader passes them to, ArmyRuntime_CreateInstanceFromAsset) */
-        placementRecordCursor->worldYQ12 = ownerListNode->worldXQ12;
-        statusOrFieldValue = ((ArmyRuntimeSlot *)placementOffsetOrModelRuntime)->armyAssetId;
-        placementRecordCursor->factionIndex = ((ArmyRuntimeSlot *)placementOffsetOrModelRuntime)->factionIndex;
-        placementRecordCursor->armyAssetId = statusOrFieldValue;
-        modelRotationAngle = ownerListNode->modelLocalRotationAngle2;
-        placementRecordCursor->worldXQ12 = ownerListNode->worldYQ12;
-        placementRecordCursor->orientationAngle = modelRotationAngle;
-        placementRecordCursor->zeroPadding[0] = 0;
-        placementRecordCursor->zeroPadding[1] = 0;
-        placementRecordCursor->zeroPadding[2] = 0;
-        placementRecordCursor->zeroPadding[3] = 0;
-        placementRecordCursor->zeroPadding[4] = 0;
-        placementRecordCursor->zeroPadding[5] = 0;
-        placementRecordCursor->zeroPadding[6] = 0;
-        placementRecordCursor->zeroPadding[7] = 0;
-        placementRecordCursor->zeroPadding[8] = 0;
-        placementRecordCursor->zeroPadding[9] = 0;
-        placementRecordCursor->zeroPadding[10] = 0;
-        placementRecordCursor->zeroPadding[11] = 0;
-        placementRecordCursor++;
-      }
-    }
-    levelImage->worldSettings.packedFieldRegionOriginYHigh16XLow16 =
-         saveWorldView->lightAzimuthAngle & 0xffffU |
-         saveWorldView->lightElevationAngle << 16;
-    levelImage->worldSettings.packedFieldRegionHeightHigh16WidthLow16 =
-         (saveWorldView->worldRuntime).fieldRegion.auxiliaryAzimuthAngle & 0xffff |
-         (saveWorldView->worldRuntime).fieldRegion.auxiliaryElevationAngle << 16;
-    bookmarkPackedHeadingPitch = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
-    bookmarkMagnitude = g_LevelCameraBookmark1PositionMagnitudeQ12;
-    bookmarkZ = g_LevelCameraBookmark1PositionZQ12;
-    statusOrFieldValue = g_LevelCameraBookmark1PositionYQ12;
-    levelImage->playerSlots[0].startCameraXQ12 = g_LevelCameraBookmark1PositionXQ12;
-    levelImage->playerSlots[0].startCameraYQ12 = statusOrFieldValue;
-    levelImage->playerSlots[0].startCameraZQ12 = bookmarkZ;
-    levelImage->playerSlots[0].startCameraMagnitudeQ12 = bookmarkMagnitude;
-    levelImage->playerSlots[0].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
-    bookmarkPackedHeadingPitch = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
-    bookmarkMagnitude = g_LevelCameraBookmark2PositionMagnitudeQ12;
-    bookmarkZ = g_LevelCameraBookmark2PositionZQ12;
-    statusOrFieldValue = g_LevelCameraBookmark2PositionYQ12;
-    levelImage->playerSlots[1].startCameraXQ12 = g_LevelCameraBookmark2PositionXQ12;
-    levelImage->playerSlots[1].startCameraYQ12 = statusOrFieldValue;
-    levelImage->playerSlots[1].startCameraZQ12 = bookmarkZ;
-    levelImage->playerSlots[1].startCameraMagnitudeQ12 = bookmarkMagnitude;
-    levelImage->playerSlots[1].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
-    bookmarkPackedHeadingPitch = g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
-    bookmarkMagnitude = g_LevelCameraBookmark3PositionMagnitudeQ12;
-    bookmarkZ = g_LevelCameraBookmark3PositionZQ12;
-    statusOrFieldValue = g_LevelCameraBookmark3PositionYQ12;
-    levelImage->playerSlots[2].startCameraXQ12 = g_LevelCameraBookmark3PositionXQ12;
-    levelImage->playerSlots[2].startCameraYQ12 = statusOrFieldValue;
-    levelImage->playerSlots[2].startCameraZQ12 = bookmarkZ;
-    levelImage->playerSlots[2].startCameraMagnitudeQ12 = bookmarkMagnitude;
-    levelImage->playerSlots[2].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
-    bookmarkPackedHeadingPitch = g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16;
-    bookmarkMagnitude = g_LevelCameraBookmark4PositionMagnitudeQ12;
-    bookmarkZ = g_LevelCameraBookmark4PositionZQ12;
-    statusOrFieldValue = g_LevelCameraBookmark4PositionYQ12;
-    levelImage->playerSlots[3].startCameraXQ12 = g_LevelCameraBookmark4PositionXQ12;
-    levelImage->playerSlots[3].startCameraYQ12 = statusOrFieldValue;
-    levelImage->playerSlots[3].startCameraZQ12 = bookmarkZ;
-    levelImage->playerSlots[3].startCameraMagnitudeQ12 = bookmarkMagnitude;
-    levelImage->playerSlots[3].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
-    bookmarkPackedHeadingPitch = g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16;
-    bookmarkMagnitude = g_LevelCameraBookmark5PositionMagnitudeQ12;
-    bookmarkZ = g_LevelCameraBookmark5PositionZQ12;
-    statusOrFieldValue = g_LevelCameraBookmark5PositionYQ12;
-    levelImage->playerSlots[4].startCameraXQ12 = g_LevelCameraBookmark5PositionXQ12;
-    levelImage->playerSlots[4].startCameraYQ12 = statusOrFieldValue;
-    levelImage->playerSlots[4].startCameraZQ12 = bookmarkZ;
-    levelImage->playerSlots[4].startCameraMagnitudeQ12 = bookmarkMagnitude;
-    levelImage->playerSlots[4].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
-    bookmarkPackedHeadingPitch = g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
-    bookmarkMagnitude = g_LevelCameraBookmark6PositionMagnitudeQ12;
-    bookmarkZ = g_LevelCameraBookmark6PositionZQ12;
-    statusOrFieldValue = g_LevelCameraBookmark6PositionYQ12;
-    levelImage->playerSlots[5].startCameraXQ12 = g_LevelCameraBookmark6PositionXQ12;
-    levelImage->playerSlots[5].startCameraYQ12 = statusOrFieldValue;
-    levelImage->playerSlots[5].startCameraZQ12 = bookmarkZ;
-    levelImage->playerSlots[5].startCameraMagnitudeQ12 = bookmarkMagnitude;
-    levelImage->playerSlots[5].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
-    bookmarkPackedHeadingPitch = g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
-    bookmarkMagnitude = g_LevelCameraBookmark7PositionMagnitudeQ12;
-    bookmarkZ = g_LevelCameraBookmark7PositionZQ12;
-    statusOrFieldValue = g_LevelCameraBookmark7PositionYQ12;
-    levelImage->playerSlots[6].startCameraXQ12 = g_LevelCameraBookmark7PositionXQ12;
-    levelImage->playerSlots[6].startCameraYQ12 = statusOrFieldValue;
-    levelImage->playerSlots[6].startCameraZQ12 = bookmarkZ;
-    levelImage->playerSlots[6].startCameraMagnitudeQ12 = bookmarkMagnitude;
-    levelImage->playerSlots[6].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
-    statusOrFieldValue = FileSystem_WriteBufferToPath
-                      (levelImage->header.common.allocationSizeBytes,levelImageBytes,g_LevelEndingMovieSourcePath);
-    if (statusOrFieldValue == 0) {
-      return true;
-    }
+  if (!imageLoaded) {
+    *outError = loadError;
+    return false;
   }
-  *outError = statusOrFieldValue;
-  return false;
+  /* the placement table is the last part of the image: the file is cut there and regrown per record */
+  placementTableOffset = levelImage->header.resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset;
+  activeFactionIndex = (saveWorldView->worldRuntime).activeFactionRuntimeIndex;
+  levelImage->header.common.allocationSizeBytes = placementTableOffset;
+  levelImage->header.initialArmyPlacementRecordCount = 0;
+  /* the loader adds 7 to this value for faction 7's class/mode, yet the editor stores the index of the
+     faction it plays here */
+  levelImage->playerSlots[6].aiClassOrMode = activeFactionIndex;
+  placementRecordCursor = (LevelInitialArmyPlacementRecord20 *)(levelImageBytes + placementTableOffset);
+  for (ownerListNode = (saveWorldView->worldRuntime).ownerListHead;
+      ownerListNode != NULL; ownerListNode = ownerListNode->nextNode) {
+    if (ownerListNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    levelImage->header.initialArmyPlacementRecordCount++;
+    levelImage->header.common.allocationSizeBytes += sizeof(LevelInitialArmyPlacementRecord20);
+    armyRuntime = ((ModelRuntimeSlot *)ownerListNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    /* +0x08 receives the node's world X and +0x0C its world Y, the reverse of the placement record's field
+       names (which follow the parameters the loader passes them to, ArmyRuntime_CreateInstanceFromAsset) */
+    placementRecordCursor->worldYQ12 = ownerListNode->worldXQ12;
+    placementRecordCursor->factionIndex = armyRuntime->factionIndex;
+    placementRecordCursor->armyAssetId = armyRuntime->armyAssetId;
+    placementRecordCursor->worldXQ12 = ownerListNode->worldYQ12;
+    placementRecordCursor->orientationAngle = ownerListNode->modelLocalRotationAngle2;
+    memset(placementRecordCursor->zeroPadding,0,sizeof(placementRecordCursor->zeroPadding));
+    placementRecordCursor++;
+  }
+  levelImage->worldSettings.packedFieldRegionOriginYHigh16XLow16 =
+       saveWorldView->lightAzimuthAngle & 0xffffU |
+       saveWorldView->lightElevationAngle << 16;
+  levelImage->worldSettings.packedFieldRegionHeightHigh16WidthLow16 =
+       (saveWorldView->worldRuntime).fieldRegion.auxiliaryAzimuthAngle & 0xffff |
+       (saveWorldView->worldRuntime).fieldRegion.auxiliaryElevationAngle << 16;
+  /* camera bookmarks 1..7 become the start cameras of player slots 0..6 */
+  levelImage->playerSlots[0].startCameraXQ12 = g_LevelCameraBookmark1PositionXQ12;
+  levelImage->playerSlots[0].startCameraYQ12 = g_LevelCameraBookmark1PositionYQ12;
+  levelImage->playerSlots[0].startCameraZQ12 = g_LevelCameraBookmark1PositionZQ12;
+  levelImage->playerSlots[0].startCameraMagnitudeQ12 = g_LevelCameraBookmark1PositionMagnitudeQ12;
+  levelImage->playerSlots[0].packedHeadingLow16PitchHigh16 = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
+  levelImage->playerSlots[1].startCameraXQ12 = g_LevelCameraBookmark2PositionXQ12;
+  levelImage->playerSlots[1].startCameraYQ12 = g_LevelCameraBookmark2PositionYQ12;
+  levelImage->playerSlots[1].startCameraZQ12 = g_LevelCameraBookmark2PositionZQ12;
+  levelImage->playerSlots[1].startCameraMagnitudeQ12 = g_LevelCameraBookmark2PositionMagnitudeQ12;
+  levelImage->playerSlots[1].packedHeadingLow16PitchHigh16 = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
+  levelImage->playerSlots[2].startCameraXQ12 = g_LevelCameraBookmark3PositionXQ12;
+  levelImage->playerSlots[2].startCameraYQ12 = g_LevelCameraBookmark3PositionYQ12;
+  levelImage->playerSlots[2].startCameraZQ12 = g_LevelCameraBookmark3PositionZQ12;
+  levelImage->playerSlots[2].startCameraMagnitudeQ12 = g_LevelCameraBookmark3PositionMagnitudeQ12;
+  levelImage->playerSlots[2].packedHeadingLow16PitchHigh16 = g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
+  levelImage->playerSlots[3].startCameraXQ12 = g_LevelCameraBookmark4PositionXQ12;
+  levelImage->playerSlots[3].startCameraYQ12 = g_LevelCameraBookmark4PositionYQ12;
+  levelImage->playerSlots[3].startCameraZQ12 = g_LevelCameraBookmark4PositionZQ12;
+  levelImage->playerSlots[3].startCameraMagnitudeQ12 = g_LevelCameraBookmark4PositionMagnitudeQ12;
+  levelImage->playerSlots[3].packedHeadingLow16PitchHigh16 = g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16;
+  levelImage->playerSlots[4].startCameraXQ12 = g_LevelCameraBookmark5PositionXQ12;
+  levelImage->playerSlots[4].startCameraYQ12 = g_LevelCameraBookmark5PositionYQ12;
+  levelImage->playerSlots[4].startCameraZQ12 = g_LevelCameraBookmark5PositionZQ12;
+  levelImage->playerSlots[4].startCameraMagnitudeQ12 = g_LevelCameraBookmark5PositionMagnitudeQ12;
+  levelImage->playerSlots[4].packedHeadingLow16PitchHigh16 = g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16;
+  levelImage->playerSlots[5].startCameraXQ12 = g_LevelCameraBookmark6PositionXQ12;
+  levelImage->playerSlots[5].startCameraYQ12 = g_LevelCameraBookmark6PositionYQ12;
+  levelImage->playerSlots[5].startCameraZQ12 = g_LevelCameraBookmark6PositionZQ12;
+  levelImage->playerSlots[5].startCameraMagnitudeQ12 = g_LevelCameraBookmark6PositionMagnitudeQ12;
+  levelImage->playerSlots[5].packedHeadingLow16PitchHigh16 = g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
+  levelImage->playerSlots[6].startCameraXQ12 = g_LevelCameraBookmark7PositionXQ12;
+  levelImage->playerSlots[6].startCameraYQ12 = g_LevelCameraBookmark7PositionYQ12;
+  levelImage->playerSlots[6].startCameraZQ12 = g_LevelCameraBookmark7PositionZQ12;
+  levelImage->playerSlots[6].startCameraMagnitudeQ12 = g_LevelCameraBookmark7PositionMagnitudeQ12;
+  levelImage->playerSlots[6].packedHeadingLow16PitchHigh16 = g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
+  writeError = FileSystem_WriteBufferToPath
+                 (levelImage->header.common.allocationSizeBytes,levelImageBytes,g_LevelEndingMovieSourcePath);
+  if (writeError != 0) {
+    *outError = writeError;
+    return false;
+  }
+  return true;
 }
 

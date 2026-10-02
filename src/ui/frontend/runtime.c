@@ -1330,22 +1330,18 @@ void FrontendModelPointerContext_PointerWheel
 
 /* Address: 0x0050CF50.
    Keyboard handler of the model pointer context (keyboardEvent of g_FrontendModelPointerContextVtable): offers
-   the key to the view's keyboardFallback first; when there is none or it returns CF set, the default handling
-   (UiNode_DefaultKeyboardEventMoveFocusNext) decides. Returns CF.
+   the key to the view's keyboardFallback first; when there is none or it returns true, the default handling
+   (UiNode_DefaultKeyboardEventMoveFocusNext) decides and its result is returned.
 */
 bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerHitContext *control)
 
 {
-  bool keyboardEventCarry;
-  
-  if ((control->keyboardFallback != NULL) &&
-     (keyboardEventCarry = control->keyboardFallback(keyboardStateMask,keyCode,(UiRootNode *)control),
-     !keyboardEventCarry)) {
-    return keyboardEventCarry;
+  if (control->keyboardFallback != NULL &&
+      !control->keyboardFallback(keyboardStateMask,keyCode,(UiRootNode *)control)) {
+    return false;
   }
-  keyboardEventCarry = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-  return keyboardEventCarry;
+  return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
 }
 
 
@@ -2114,21 +2110,26 @@ void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode)
 
 {
   int controlOffsetFromParent;
+  FrontendDisplayAdapterIndex adapterIndex;
 
-  /* the index is stored before each comparison, as in the original */
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  adapterIndex = 0;
   controlOffsetFromParent = (int)sourceNode - (int)sourceNode->parent;
-  if ((((controlOffsetFromParent != FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption1)) &&
-       (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-        adapterIndex = 1, controlOffsetFromParent != FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption2))) &&
-      (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-       adapterIndex = 2, controlOffsetFromParent != FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption3))) &&
-     (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-      adapterIndex = 3, controlOffsetFromParent != FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption4))) {
-    g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
+  /* any button other than options 1..4 selects adapter 4 */
+  if (controlOffsetFromParent == FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption1)) {
+    adapterIndex = 0;
+  }
+  else if (controlOffsetFromParent == FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption2)) {
+    adapterIndex = 1;
+  }
+  else if (controlOffsetFromParent == FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption3)) {
+    adapterIndex = 2;
+  }
+  else if (controlOffsetFromParent == FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption4)) {
+    adapterIndex = 3;
+  }
+  else {
     adapterIndex = 4;
   }
+  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex = adapterIndex;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(sourceNode->parent);
   return;
 }
@@ -3030,7 +3031,7 @@ void FrontendFactionSetup_CycleFactionColour
   uint32_t nextSelectionTextId;
   uint32_t playerRecordsRemaining;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
-  int selectionControlAddress;
+  UiFramedTextButtonControl *selectionControl;
   int selectionTextCycleLength;
   int *selectionCycleCounterField;
   
@@ -3044,10 +3045,9 @@ void FrontendFactionSetup_CycleFactionColour
         selectionTextCycleLength = 8;
       }
       playerSlotOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowIndex];
-      selectionControlAddress =
-           g_FrontendRootNode +
-           g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex];
-      nextSelectionTextId = ((UiFramedTextButtonControl *)selectionControlAddress)->textResourceId + 1;
+      selectionControl = (UiFramedTextButtonControl *)
+           (g_FrontendRootNode + g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex]);
+      nextSelectionTextId = selectionControl->textResourceId + 1;
       selectionCycleCounterField =
            (int *)&((LevelPlayerSlotRecord *)((uint8_t *)g_FrontendLoadedLevelAsset->playerSlots + playerSlotOffset))->aiClassOrMode;
       *selectionCycleCounterField = *selectionCycleCounterField + 1;
@@ -3056,7 +3056,7 @@ void FrontendFactionSetup_CycleFactionColour
         levelCycleCounterField = (int *)&((LevelPlayerSlotRecord *)((uint8_t *)loadedLevelAsset->playerSlots + playerSlotOffset))->aiClassOrMode;
         *levelCycleCounterField = *levelCycleCounterField - selectionTextCycleLength;
       }
-      ((UiFramedTextButtonControl *)selectionControlAddress)->textResourceId = nextSelectionTextId;
+      selectionControl->textResourceId = nextSelectionTextId;
       return;
     }
     playerRecordCursor++;
@@ -3298,7 +3298,7 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
    hit-tests every candidate model node with flag 2 that is a runtime model (and has flag 0x20 unless the
    context allows models without it). The winner is the nearest hit, or, unless the context compares by metric
    only, the hit whose model class has the highest priority, the nearer one on equal priority. Returns the
-   node in EDX and its hit metric in EAX (NULL and WORLD_POINTER_NO_HIT without a hit).
+   node in the high 32 bits and its hit metric in the low 32 bits (NULL and WORLD_POINTER_NO_HIT without a hit).
 */
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
                 (int pointerY,int pointerX,FrontendModelPointerHitContext *context)
@@ -3339,7 +3339,6 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
       bestModelNode = modelNode;
     }
   }
-  /* EDX:EAX = best node : its hit metric. */
   return ((uint64_t)(uintptr_t)bestModelNode << 32) | (uint64_t)bestHitMetric;
 }
 

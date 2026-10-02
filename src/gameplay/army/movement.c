@@ -2759,6 +2759,81 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
 }
 
 
+/* Places one foot of the articulated walker along its step: position = current + (target - current) *
+   progress (Q12); the target height is raised by (1.0 - progress) * lift * 4, which gives the arc. All
+   differences are taken in 32-bit unsigned arithmetic and then read as signed, as in the original. */
+static void ArticulatedWalker_PlaceFootAlongStep
+          (ModelRuntimeNode *footNode,uint32_t blendQ12,int liftHeight,uint32_t currentX,uint32_t targetX,
+          uint32_t currentY,uint32_t targetY,uint32_t currentZ,uint32_t targetGroundZ)
+
+{
+  int64_t blendProduct;
+  uint32_t targetZ;
+
+  blendProduct = (int64_t)(int)(targetX - currentX) * (int64_t)(int)blendQ12;
+  (footNode->worldTransform).translation.x = FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) + currentX;
+  blendProduct = (int64_t)(int)(targetY - currentY) * (int64_t)(int)blendQ12;
+  (footNode->worldTransform).translation.y = FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) + currentY;
+  targetZ = ((int)((Q12_ONE - blendQ12) * (uint32_t)liftHeight) >> 10) + targetGroundZ;
+  blendProduct = (int64_t)(int)(targetZ - currentZ) * (int64_t)(int)blendQ12;
+  (footNode->worldTransform).translation.z = FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) + currentZ;
+}
+
+/* Foot tilt: blends the target ground normal (packed elevation << 16 | azimuth) by progress with the current
+   ground normal by (1.0 - progress) in the g_ArmySuspensionBlendVector* scratch vectors and returns the
+   angles of the blended normal. */
+static FixedElevationAzimuth ArticulatedWalker_BlendGroundNormal
+          (int targetNormalAngles,int currentNormalAngles,int blendQ12,int inverseBlendQ12)
+
+{
+  FixedMath_WriteDirectionQ28
+            ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12,
+             targetNormalAngles >> 16,targetNormalAngles & FIXED_ANGLE16_MASK);
+  FixedMath_WriteDirectionQ28
+            ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorBXQ12,
+             currentNormalAngles >> 16,currentNormalAngles & FIXED_ANGLE16_MASK);
+  g_ArmySuspensionBlendVectorAXQ12 =
+       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAXQ12,blendQ12,Q12_SHIFT) +
+       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBXQ12,inverseBlendQ12,Q12_SHIFT);
+  g_ArmySuspensionBlendVectorAYQ12 =
+       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAYQ12,blendQ12,Q12_SHIFT) +
+       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBYQ12,inverseBlendQ12,Q12_SHIFT);
+  g_ArmySuspensionBlendVectorAZQ12 =
+       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAZQ12,blendQ12,Q12_SHIFT) +
+       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBZQ12,inverseBlendQ12,Q12_SHIFT);
+  return FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12);
+}
+
+/* Foot orientation: world rotation (footHeading, blended normal angles) times the inverse of the foot's
+   current world rotation, stored as the foot's local angles (g_ArmySuspensionRotationMatrix* scratch). */
+static void ArticulatedWalker_SetFootLocalOrientation
+          (ModelRuntimeNode *footNode,AngleTurn32 footHeading,FixedElevationAzimuth groundNormalAngles)
+
+{
+  FixedRollAzimuthElevation extractedAngles;
+
+  FixedTransform_BuildRotationBasis
+            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
+             (footNode->modelPayload).worldRotationAngle2,
+             (footNode->modelPayload).worldRotationAngle1,
+             (footNode->modelPayload).worldRotationAngle0);
+  FixedTransform_InvertRigidQ28
+            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA,
+             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB);
+  FixedTransform_BuildRotationBasis
+            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,footHeading,
+             groundNormalAngles.elevationAngle,groundNormalAngles.azimuthAngle);
+  FixedTransform_Compose
+            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch,
+             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
+             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA);
+  extractedAngles = FixedTransform_ExtractEulerAngles
+                     ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch);
+  (footNode->modelPayload).localRotationAngle0 = extractedAngles.azimuthAngle;
+  (footNode->modelPayload).localRotationAngle1 = extractedAngles.elevationAngle;
+  (footNode->modelPayload).localRotationAngle2 = extractedAngles.rollAngle;
+}
+
 /* Address: 0x005217A0.
    Poses the two-legged articulated walker from its foot state (layout at
    ArmyArticulatedRuntime_InitializeTerrainContactGeometry). Each foot node (four levels below root child 0 =
@@ -2778,34 +2853,50 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   GraphicsWorldCoordinateQ12 *nodeTranslationZ;
   uint32_t leftBlendQ12;
   int leftHeading;
-  int leftPreviousHeading;
-  int leftHeadingBase;
-  ArmyTerrainContactDispatchMode rightBlendQ12;
-  int rightPreviousHeading;
-  int rightHeadingBase;
+  int leftStartHeading;
+  int rightBlendQ12;
+  int rightHeading;
+  int rightStartHeading;
   void *movementDefinition;
-  int rightNodeY;
-  int rightNodeZ;
+  int liftHeight;
+  int footHeightOffset;
+  int leftFootX;
+  int leftFootY;
+  int leftFootZ;
+  int rightFootX;
+  int rightFootY;
+  int rightFootZ;
   AngleTurn32 rootHeading;
-  int64_t blendProduct;
-  uint32_t leftYOrSideLength;
-  uint32_t sideLength0Q12;
-  short leftRelativeAngle;
-  int inverseBlendOrRightHeading;
-  int leftXOrAngle;
-  uint32_t leftYawOffset;
+  uint32_t leftHipDistance;
+  uint32_t rightHipDistance;
+  uint32_t leftRelativeRaw;
   uint32_t leftRelativeMasked;
-  short rightRelativeAngle;
   uint32_t rightRelativeRaw;
-  uint32_t rightLengthOrAngle;
-  int leftYOrElevation;
+  uint32_t rightRelativeMasked;
+  short leftRelativeAngle;
+  short rightRelativeAngle;
+  uint32_t leftHipYawOffset;
+  int rightHipYawOffset;
+  uint32_t rightHipYaw;
+  uint32_t rightAnkleAngle;
+  int leftAnkleX;
+  int leftAnkleY;
+  int rightAnkleX;
+  int rightAnkleY;
+  uint32_t leftLegRelativeAzimuth;
+  uint32_t rightLegRelativeAzimuth;
+  int leftLegElevation;
+  int rightLegElevation;
+  uint32_t thighLengthQ12;
+  uint32_t shinLengthQ12;
+  int leftThighBend;
+  int rightThighBend;
   FixedLengthAngle leftPlanarVector;
   FixedLengthAngle rightPlanarVector;
   FixedSinCos contactOffset;
   FixedTriangleJointAngles jointAngles;
   FixedLengthAzimuthElevation leftLegVector;
   FixedLengthAzimuthElevation rightLegVector;
-  FixedRollAzimuthElevation extractedAngles;
   FixedElevationAzimuth leftBlendAngles;
   FixedElevationAzimuth rightBlendAngles;
   UQ12 scale;
@@ -2813,99 +2904,44 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   GraphicsWorldCoordinateQ12 leftContactY;
   GraphicsWorldCoordinateQ12 leftContactZ;
   GraphicsWorldCoordinateQ12 rightContactX;
-  int heightOrRightTargetX;
   GraphicsWorldCoordinateQ12 rightContactY;
-  int rightXOrTargetY;
   GraphicsWorldCoordinateQ12 rightContactZ;
   ArmyArticulatedRuntimeSlotView *articulatedRuntime;
   ArmyRuntimeSlot *walkerRuntime;
   ModelRuntimeNode *rightNode;
   ModelRuntimeNode *leftNode;
-  
+
   articulatedRuntime = (ArmyArticulatedRuntimeSlotView *)(modelNodeRuntime->runtimePayload).armyRuntime;
-  /* left foot: position = current + (target - current) * progress (Q12); the target height is raised by
-     (1.0 - progress) * lift * 4, which gives the arc */
+  /* left foot position along its step (progress in runtimeStateA8) */
   leftNode = modelNodeRuntime->childNodes[0]->childNodes[0]->childNodes[0]->childNodes[0];
   leftBlendQ12 = articulatedRuntime->runtimeStateA8;
-  blendProduct = (int64_t)(int)(articulatedRuntime->runtimeState90 - articulatedRuntime->movementTarget0Q12) *
-           (int64_t)(int)leftBlendQ12;
-  leftYOrSideLength = articulatedRuntime->runtimeState98;
-  (leftNode->worldTransform).translation.x =
-       FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) + articulatedRuntime->movementTarget0Q12
-  ;
-  blendProduct = (int64_t)(int)(leftYOrSideLength - articulatedRuntime->definitionClassValue80) * (int64_t)(int)leftBlendQ12;
-  (leftNode->worldTransform).translation.y =
-       FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) +
-       articulatedRuntime->definitionClassValue80;
-  blendProduct = (int64_t)
-           (int)((((int)((Q12_ONE - leftBlendQ12) * ((ModelDefinition *)articulatedRuntime->definitionOrAsset)->classParameterC4) >> 10)
-                 + articulatedRuntime->articulatedHeightOrStateA0) - articulatedRuntime->definitionClassValue88) *
-           (int64_t)(int)leftBlendQ12;
-  (leftNode->worldTransform).translation.z =
-       FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) +
-       articulatedRuntime->definitionClassValue88;
+  liftHeight = ((ModelDefinition *)articulatedRuntime->definitionOrAsset)->classParameterC4;
+  ArticulatedWalker_PlaceFootAlongStep
+            (leftNode,leftBlendQ12,liftHeight,
+             articulatedRuntime->movementTarget0Q12,articulatedRuntime->runtimeState90,
+             articulatedRuntime->definitionClassValue80,articulatedRuntime->runtimeState98,
+             articulatedRuntime->definitionClassValue88,articulatedRuntime->articulatedHeightOrStateA0);
   /* left foot tilt: target normal * progress + current normal * (1.0 - progress) */
   leftHeading = (articulatedRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue.signedValue;
-  leftPreviousHeading = (articulatedRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.signedValue;
-  leftHeadingBase = (articulatedRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.signedValue;
-  FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12,
-             articulatedRuntime->fallbackWorldYQ12 >> 16,articulatedRuntime->fallbackWorldYQ12 & FIXED_ANGLE16_MASK);
-  FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorBXQ12,
-             (int)articulatedRuntime->ownerValue68 >> 16,articulatedRuntime->ownerValue68 & FIXED_ANGLE16_MASK);
-  inverseBlendOrRightHeading = Q12_ONE - articulatedRuntime->runtimeStateA8;
-  g_ArmySuspensionBlendVectorAXQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAXQ12,(int)leftBlendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBXQ12,inverseBlendOrRightHeading,Q12_SHIFT);
-  g_ArmySuspensionBlendVectorAYQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAYQ12,(int)leftBlendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBYQ12,inverseBlendOrRightHeading,Q12_SHIFT);
-  g_ArmySuspensionBlendVectorAZQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAZQ12,(int)leftBlendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBZQ12,inverseBlendOrRightHeading,Q12_SHIFT);
-  leftBlendAngles = FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12);
+  leftStartHeading = (articulatedRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.signedValue;
+  leftBlendAngles = ArticulatedWalker_BlendGroundNormal
+                      (articulatedRuntime->fallbackWorldYQ12,(int)articulatedRuntime->ownerValue68,
+                       (int)leftBlendQ12,Q12_ONE - articulatedRuntime->runtimeStateA8);
   /* the same for the right foot (progress in terrainContactMode) */
   rightNode = modelNodeRuntime->childNodes[1]->childNodes[0]->childNodes[0]->childNodes[0];
   rightBlendQ12 = (articulatedRuntime->articulatedContact).terrainContactMode;
-  blendProduct = (int64_t)(int)(articulatedRuntime->runtimeState94 - articulatedRuntime->movementTarget1Q12) *
-           (int64_t)(int)rightBlendQ12;
-  inverseBlendOrRightHeading = articulatedRuntime->articulatedCoordinateOrState9C;
-  (rightNode->worldTransform).translation.x =
-       FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) + articulatedRuntime->movementTarget1Q12
-  ;
-  blendProduct = (int64_t)(int)(inverseBlendOrRightHeading - articulatedRuntime->definitionClassValue84) * (int64_t)(int)rightBlendQ12;
-  (rightNode->worldTransform).translation.y =
-       FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) +
-       articulatedRuntime->definitionClassValue84;
-  blendProduct = (int64_t)
-           (int)((((int)((Q12_ONE - rightBlendQ12) * ((ModelDefinition *)articulatedRuntime->definitionOrAsset)->classParameterC4) >> 10)
-                 + articulatedRuntime->runtimeStateA4) - articulatedRuntime->runtimeState8C) * (int64_t)(int)rightBlendQ12;
-  (rightNode->worldTransform).translation.z =
-       FIXED_PRODUCT_SHR(blendProduct,Q12_SHIFT) + articulatedRuntime->runtimeState8C;
-  inverseBlendOrRightHeading = (articulatedRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.signedValue;
-  rightPreviousHeading = (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.signedValue;
-  rightHeadingBase = (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.signedValue;
-  FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12,
-             articulatedRuntime->fallbackWorldXQ12 >> 16,articulatedRuntime->fallbackWorldXQ12 & FIXED_ANGLE16_MASK);
-  FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorBXQ12,
-             (int)articulatedRuntime->linkedArmyRuntimeOrSavedOffset >> 16,
-             (uint32_t)articulatedRuntime->linkedArmyRuntimeOrSavedOffset & FIXED_ANGLE16_MASK);
-  leftXOrAngle = Q12_ONE - (articulatedRuntime->articulatedContact).terrainContactMode;
-  g_ArmySuspensionBlendVectorAXQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAXQ12,(int)rightBlendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBXQ12,leftXOrAngle,Q12_SHIFT);
-  g_ArmySuspensionBlendVectorAYQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAYQ12,(int)rightBlendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBYQ12,leftXOrAngle,Q12_SHIFT);
-  g_ArmySuspensionBlendVectorAZQ12 =
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorAZQ12,(int)rightBlendQ12,Q12_SHIFT) +
-       FIXED_MUL_SHR((int)g_ArmySuspensionBlendVectorBZQ12,leftXOrAngle,Q12_SHIFT);
-  rightBlendAngles = FixedMath_VectorToAnglesVec3((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12);
+  liftHeight = ((ModelDefinition *)articulatedRuntime->definitionOrAsset)->classParameterC4;
+  ArticulatedWalker_PlaceFootAlongStep
+            (rightNode,rightBlendQ12,liftHeight,
+             articulatedRuntime->movementTarget1Q12,articulatedRuntime->runtimeState94,
+             articulatedRuntime->definitionClassValue84,articulatedRuntime->articulatedCoordinateOrState9C,
+             articulatedRuntime->runtimeState8C,articulatedRuntime->runtimeStateA4);
+  rightHeading = (articulatedRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.signedValue;
+  rightStartHeading = (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.signedValue;
+  rightBlendAngles = ArticulatedWalker_BlendGroundNormal
+                       (articulatedRuntime->fallbackWorldXQ12,(int)articulatedRuntime->linkedArmyRuntimeOrSavedOffset,
+                        rightBlendQ12,Q12_ONE - (articulatedRuntime->articulatedContact).terrainContactMode);
   movementDefinition = articulatedRuntime->definitionOrAsset;
-  /* the original swaps EBX with a stack slot here (XCHG [ESP],EBX at 0x00521A9D); no C equivalent */
   /* body heading = start heading + (end - start) * (left progress + right progress) */
   walkerRuntime = (modelNodeRuntime->runtimePayload).armyRuntime;
   (modelNodeRuntime->modelPayload).worldRotationAngle2 =
@@ -2913,21 +2949,21 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
         (walkerRuntime->runtimeStateA8 + (walkerRuntime->articulatedContact).terrainContactMode) >> Q12_SHIFT) +
        walkerRuntime->classState60 & FIXED_ANGLE16_MASK;
   /* raise both feet by the foot model's height offset; the root goes midway between them at hip height */
-  leftXOrAngle = (leftNode->worldTransform).translation.x;
-  leftYOrElevation = (leftNode->worldTransform).translation.y;
-  heightOrRightTargetX = ((rightNode->modelPayload).modelResource)->placementHeightOffsetQ12;
-  rightXOrTargetY = (rightNode->worldTransform).translation.x;
-  rightNodeY = (rightNode->worldTransform).translation.y;
+  leftFootX = (leftNode->worldTransform).translation.x;
+  leftFootY = (leftNode->worldTransform).translation.y;
+  footHeightOffset = ((rightNode->modelPayload).modelResource)->placementHeightOffsetQ12;
+  rightFootX = (rightNode->worldTransform).translation.x;
+  rightFootY = (rightNode->worldTransform).translation.y;
   nodeTranslationZ = &(leftNode->worldTransform).translation.z;
-  *nodeTranslationZ = *nodeTranslationZ + heightOrRightTargetX;
+  *nodeTranslationZ = *nodeTranslationZ + footHeightOffset;
   nodeTranslationZ = &(rightNode->worldTransform).translation.z;
-  *nodeTranslationZ = *nodeTranslationZ + heightOrRightTargetX;
-  heightOrRightTargetX = (leftNode->worldTransform).translation.z;
-  rightNodeZ = (rightNode->worldTransform).translation.z;
-  (modelNodeRuntime->worldTransform).translation.x = leftXOrAngle + rightXOrTargetY >> 1;
-  (modelNodeRuntime->worldTransform).translation.y = leftYOrElevation + rightNodeY >> 1;
+  *nodeTranslationZ = *nodeTranslationZ + footHeightOffset;
+  leftFootZ = (leftNode->worldTransform).translation.z;
+  rightFootZ = (rightNode->worldTransform).translation.z;
+  (modelNodeRuntime->worldTransform).translation.x = (leftFootX + rightFootX) >> 1;
+  (modelNodeRuntime->worldTransform).translation.y = (leftFootY + rightFootY) >> 1;
   (modelNodeRuntime->worldTransform).translation.z =
-       (heightOrRightTargetX + rightNodeZ >> 1) + ((ModelDefinition *)movementDefinition)->placementHeightOffsetQ12;
+       ((leftFootZ + rightFootZ) >> 1) + ((ModelDefinition *)movementDefinition)->placementHeightOffsetQ12;
   rightContactZ = (rightNode->worldTransform).translation.z;
   rightContactY = (rightNode->worldTransform).translation.y;
   rightContactX = (rightNode->worldTransform).translation.x;
@@ -2942,58 +2978,58 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   leftPlanarVector = FixedMath_Vector2AngleAndLength
                      (leftContactY - (leftNode->worldTransform).translation.y,
                       leftContactX - (leftNode->worldTransform).translation.x);
-  leftYOrSideLength = leftPlanarVector.length;
+  leftHipDistance = leftPlanarVector.length;
   rightPlanarVector = FixedMath_Vector2AngleAndLength
                      (rightContactY - (rightNode->worldTransform).translation.y,
                       rightContactX - (rightNode->worldTransform).translation.x);
-  rightLengthOrAngle = rightPlanarVector.length;
+  rightHipDistance = rightPlanarVector.length;
   rootHeading = (modelNodeRuntime->modelPayload).worldRotationAngle2;
-  leftYawOffset = leftPlanarVector.angle - rootHeading;
+  leftRelativeRaw = leftPlanarVector.angle - rootHeading;
   rightRelativeRaw = rightPlanarVector.angle - rootHeading;
-  leftRelativeMasked = leftYawOffset & FIXED_ANGLE16_MASK;
-  leftRelativeAngle = (short)leftYawOffset;
-  leftYawOffset = rightRelativeRaw & FIXED_ANGLE16_MASK;
+  leftRelativeMasked = leftRelativeRaw & FIXED_ANGLE16_MASK;
+  leftRelativeAngle = (short)leftRelativeRaw;
+  rightRelativeMasked = rightRelativeRaw & FIXED_ANGLE16_MASK;
   rightRelativeAngle = (short)rightRelativeRaw;
   if ((FIXED_ANGLE16_QUARTER_TURN - 1 < leftRelativeMasked) && (leftRelativeMasked < FIXED_ANGLE16_THREE_QUARTER_TURN + 1)) {
     leftRelativeAngle = leftRelativeAngle + -FIXED_ANGLE16_HALF_TURN;
   }
-  if ((FIXED_ANGLE16_QUARTER_TURN - 1 < leftYawOffset) && (leftYawOffset < FIXED_ANGLE16_THREE_QUARTER_TURN + 1)) {
+  if ((FIXED_ANGLE16_QUARTER_TURN - 1 < rightRelativeMasked) && (rightRelativeMasked < FIXED_ANGLE16_THREE_QUARTER_TURN + 1)) {
     rightRelativeAngle = rightRelativeAngle + -FIXED_ANGLE16_HALF_TURN;
   }
-  leftYawOffset = (uint32_t)leftRelativeAngle;
-  leftXOrAngle = (int)rightRelativeAngle;
-  if (rightLengthOrAngle < 320) {
-    if (rightLengthOrAngle < 64) {
-      leftXOrAngle = 0;
+  leftHipYawOffset = (uint32_t)leftRelativeAngle;
+  rightHipYawOffset = (int)rightRelativeAngle;
+  if (rightHipDistance < 320) {
+    if (rightHipDistance < 64) {
+      rightHipYawOffset = 0;
     }
     else {
-      leftXOrAngle = (int)(leftXOrAngle * (rightLengthOrAngle - 64)) >> 8;
+      rightHipYawOffset = (int)(rightHipYawOffset * (rightHipDistance - 64)) >> 8;
     }
   }
-  if (leftYOrSideLength < 320) {
-    if (leftYOrSideLength < 64) {
-      leftYawOffset = 0;
+  if (leftHipDistance < 320) {
+    if (leftHipDistance < 64) {
+      leftHipYawOffset = 0;
     }
     else {
-      leftYawOffset = (int)(leftYawOffset * (leftYOrSideLength - 64)) >> 8;
+      leftHipYawOffset = (int)(leftHipYawOffset * (leftHipDistance - 64)) >> 8;
     }
   }
   rootHeading = (modelNodeRuntime->modelPayload).worldRotationAngle2;
-  rightLengthOrAngle = leftXOrAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
-  (leftNode->modelPayload).localRotationAngle2 = leftYawOffset & FIXED_ANGLE16_MASK;
-  (rightNode->modelPayload).localRotationAngle2 = rightLengthOrAngle;
-  rightLengthOrAngle = (rootHeading - FIXED_ANGLE16_QUARTER_TURN) + rightLengthOrAngle & FIXED_ANGLE16_MASK;
+  rightHipYaw = rightHipYawOffset + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
+  (leftNode->modelPayload).localRotationAngle2 = leftHipYawOffset & FIXED_ANGLE16_MASK;
+  (rightNode->modelPayload).localRotationAngle2 = rightHipYaw;
+  rightAnkleAngle = (rootHeading - FIXED_ANGLE16_QUARTER_TURN) + rightHipYaw & FIXED_ANGLE16_MASK;
   scale = (((modelNodeRuntime->runtimePayload).armyRuntime)->articulatedContact).
           contactRadiusOrLinkedSlotMask.contactRadiusQ12;
   contactOffset = FixedMath_SinCosScaled
-                     (rootHeading + FIXED_ANGLE16_QUARTER_TURN + (leftYawOffset & FIXED_ANGLE16_MASK) & FIXED_ANGLE16_MASK,
+                     (rootHeading + FIXED_ANGLE16_QUARTER_TURN + (leftHipYawOffset & FIXED_ANGLE16_MASK) & FIXED_ANGLE16_MASK,
                       (((modelNodeRuntime->runtimePayload).armyRuntime)->articulatedContact).
                       contactRadiusOrLinkedSlotMask.contactRadiusQ12);
-  leftXOrAngle = leftContactX + contactOffset.cosValue;
-  leftYOrElevation = leftContactY + contactOffset.sinValue;
-  contactOffset = FixedMath_SinCosScaled(rightLengthOrAngle,scale);
-  heightOrRightTargetX = rightContactX - contactOffset.cosValue;
-  rightXOrTargetY = rightContactY - contactOffset.sinValue;
+  leftAnkleX = leftContactX + contactOffset.cosValue;
+  leftAnkleY = leftContactY + contactOffset.sinValue;
+  contactOffset = FixedMath_SinCosScaled(rightAnkleAngle,scale);
+  rightAnkleX = rightContactX - contactOffset.cosValue;
+  rightAnkleY = rightContactY - contactOffset.sinValue;
   /* two-bone leg: aim thigh and shin at the ankle points (contactRadius beside each foot) */
   ModelNodeRuntime_RebuildTransformsFromRoot(leftNode);
   ModelNodeRuntime_RebuildTransformsFromRoot(rightNode);
@@ -3001,52 +3037,53 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   rightNode = rightNode->childNodes[0];
   leftLegVector = FixedMath_VectorToAnglesAndLength
                      (leftContactZ - (leftNode->worldTransform).translation.z,
-                      leftYOrElevation - (leftNode->worldTransform).translation.y,
-                      leftXOrAngle - (leftNode->worldTransform).translation.x);
-  rightLengthOrAngle = leftLegVector.azimuthAngle - (modelNodeRuntime->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
-  leftXOrAngle = leftLegVector.elevationAngle + FIXED_ANGLE16_QUARTER_TURN;
-  if ((FIXED_ANGLE16_QUARTER_TURN - 1 < rightLengthOrAngle) && (rightLengthOrAngle < FIXED_ANGLE16_THREE_QUARTER_TURN + 1)) {
-    leftXOrAngle = -leftXOrAngle;
+                      leftAnkleY - (leftNode->worldTransform).translation.y,
+                      leftAnkleX - (leftNode->worldTransform).translation.x);
+  leftLegRelativeAzimuth = leftLegVector.azimuthAngle - (modelNodeRuntime->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
+  leftLegElevation = leftLegVector.elevationAngle + FIXED_ANGLE16_QUARTER_TURN;
+  if ((FIXED_ANGLE16_QUARTER_TURN - 1 < leftLegRelativeAzimuth) && (leftLegRelativeAzimuth < FIXED_ANGLE16_THREE_QUARTER_TURN + 1)) {
+    leftLegElevation = -leftLegElevation;
   }
   rightLegVector = FixedMath_VectorToAnglesAndLength
                      (rightContactZ - (rightNode->worldTransform).translation.z,
-                      rightXOrTargetY - (rightNode->worldTransform).translation.y,
-                      heightOrRightTargetX - (rightNode->worldTransform).translation.x);
-  rightLengthOrAngle = rightLegVector.azimuthAngle - (modelNodeRuntime->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
-  leftYOrElevation = rightLegVector.elevationAngle + FIXED_ANGLE16_QUARTER_TURN;
-  if ((FIXED_ANGLE16_QUARTER_TURN - 1 < rightLengthOrAngle) && (rightLengthOrAngle < FIXED_ANGLE16_THREE_QUARTER_TURN + 1)) {
-    leftYOrElevation = -leftYOrElevation;
+                      rightAnkleY - (rightNode->worldTransform).translation.y,
+                      rightAnkleX - (rightNode->worldTransform).translation.x);
+  rightLegRelativeAzimuth = rightLegVector.azimuthAngle - (modelNodeRuntime->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
+  rightLegElevation = rightLegVector.elevationAngle + FIXED_ANGLE16_QUARTER_TURN;
+  if ((FIXED_ANGLE16_QUARTER_TURN - 1 < rightLegRelativeAzimuth) && (rightLegRelativeAzimuth < FIXED_ANGLE16_THREE_QUARTER_TURN + 1)) {
+    rightLegElevation = -rightLegElevation;
   }
+  /* bone lengths from the left leg (knee and ankle joint offsets), used for both legs */
   leftNode = leftNode->childNodes[0];
-  leftYOrSideLength = FixedMath_LengthVec3
+  thighLengthQ12 = FixedMath_LengthVec3
                      ((GraphicsFixedVec3 *)&(leftNode->modelPayload).localTranslationXQ12);
-  sideLength0Q12 =
+  shinLengthQ12 =
        FixedMath_LengthVec3
                  ((GraphicsFixedVec3 *)
                   &(leftNode->childNodes[0]->modelPayload).localTranslationXQ12);
   leftNode = modelNodeRuntime->childNodes[0]->childNodes[0];
   rightNode = modelNodeRuntime->childNodes[1]->childNodes[0];
-  jointAngles = FixedGeometry_SolveTriangleJointAngles(sideLength0Q12,leftYOrSideLength,leftLegVector.lengthQ12);
-  leftXOrAngle = jointAngles.jointAngle0 - leftXOrAngle;
-  if (leftXOrAngle < 0) {
+  jointAngles = FixedGeometry_SolveTriangleJointAngles(shinLengthQ12,thighLengthQ12,leftLegVector.lengthQ12);
+  leftThighBend = jointAngles.jointAngle0 - leftLegElevation;
+  if (leftThighBend < 0) {
     (leftNode->modelPayload).localRotationAngle0 = FIXED_ANGLE16_HALF_TURN;
-    (leftNode->modelPayload).localRotationAngle1 = leftXOrAngle + FIXED_ANGLE16_QUARTER_TURN;
+    (leftNode->modelPayload).localRotationAngle1 = leftThighBend + FIXED_ANGLE16_QUARTER_TURN;
   }
   else {
     (leftNode->modelPayload).localRotationAngle0 = 0;
-    (leftNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - leftXOrAngle;
+    (leftNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - leftThighBend;
   }
   leftNode = leftNode->childNodes[0];
   (leftNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - jointAngles.jointAngle1;
-  jointAngles = FixedGeometry_SolveTriangleJointAngles(sideLength0Q12,leftYOrSideLength,rightLegVector.lengthQ12);
-  leftYOrElevation = jointAngles.jointAngle0 - leftYOrElevation;
-  if (leftYOrElevation < 0) {
+  jointAngles = FixedGeometry_SolveTriangleJointAngles(shinLengthQ12,thighLengthQ12,rightLegVector.lengthQ12);
+  rightThighBend = jointAngles.jointAngle0 - rightLegElevation;
+  if (rightThighBend < 0) {
     (rightNode->modelPayload).localRotationAngle0 = 0;
-    (rightNode->modelPayload).localRotationAngle1 = leftYOrElevation + FIXED_ANGLE16_QUARTER_TURN;
+    (rightNode->modelPayload).localRotationAngle1 = rightThighBend + FIXED_ANGLE16_QUARTER_TURN;
   }
   else {
     (rightNode->modelPayload).localRotationAngle0 = FIXED_ANGLE16_HALF_TURN;
-    (rightNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - leftYOrElevation;
+    (rightNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - rightThighBend;
   }
   rightNode = rightNode->childNodes[0];
   (rightNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - jointAngles.jointAngle1;
@@ -3060,50 +3097,16 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   (rightNode->modelPayload).localRotationAngle2 = 0;
   modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
-  /* foot orientation: world rotation (foot heading interpolated by progress, blended normal angles) times
-     the inverse of the foot's current world rotation, stored as its local angles */
-  FixedTransform_BuildRotationBasis
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (leftNode->modelPayload).worldRotationAngle2,
-             (leftNode->modelPayload).worldRotationAngle1,
-             (leftNode->modelPayload).worldRotationAngle0);
-  FixedTransform_InvertRigidQ28
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB);
-  FixedTransform_BuildRotationBasis
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (((leftHeading - leftPreviousHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * leftBlendQ12 >> Q12_SHIFT) + leftHeadingBase & FIXED_ANGLE16_MASK,
-             leftBlendAngles.elevationAngle,leftBlendAngles.azimuthAngle);
-  FixedTransform_Compose
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA);
-  extractedAngles = FixedTransform_ExtractEulerAngles
-                     ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch);
-  (leftNode->modelPayload).localRotationAngle0 = extractedAngles.azimuthAngle;
-  (leftNode->modelPayload).localRotationAngle1 = extractedAngles.elevationAngle;
-  (leftNode->modelPayload).localRotationAngle2 = extractedAngles.rollAngle;
-  FixedTransform_BuildRotationBasis
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (rightNode->modelPayload).worldRotationAngle2,
-             (rightNode->modelPayload).worldRotationAngle1,
-             (rightNode->modelPayload).worldRotationAngle0);
-  FixedTransform_InvertRigidQ28
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB);
-  FixedTransform_BuildRotationBasis
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (((inverseBlendOrRightHeading - rightPreviousHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * rightBlendQ12 >> Q12_SHIFT) + rightHeadingBase & FIXED_ANGLE16_MASK,
-             rightBlendAngles.elevationAngle,rightBlendAngles.azimuthAngle);
-  FixedTransform_Compose
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA);
-  extractedAngles = FixedTransform_ExtractEulerAngles
-                     ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch);
-  (rightNode->modelPayload).localRotationAngle0 = extractedAngles.azimuthAngle;
-  (rightNode->modelPayload).localRotationAngle1 = extractedAngles.elevationAngle;
-  (rightNode->modelPayload).localRotationAngle2 = extractedAngles.rollAngle;
+  /* foot orientation: foot heading interpolated by progress (unsigned scaling for the left foot, signed for
+     the right, as in the original) with the blended normal angles */
+  ArticulatedWalker_SetFootLocalOrientation
+            (leftNode,
+             (((leftHeading - leftStartHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * leftBlendQ12 >> Q12_SHIFT) +
+             leftStartHeading & FIXED_ANGLE16_MASK,leftBlendAngles);
+  ArticulatedWalker_SetFootLocalOrientation
+            (rightNode,
+             (((rightHeading - rightStartHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * rightBlendQ12 >> Q12_SHIFT) +
+             rightStartHeading & FIXED_ANGLE16_MASK,rightBlendAngles);
   modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
   return;
 }

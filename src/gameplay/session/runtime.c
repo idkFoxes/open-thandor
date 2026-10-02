@@ -92,6 +92,312 @@ shutdown_and_fail:
 }
 
 
+/* Placement overlay: grey the field and mark where the pending army asset fits; refreshed every 8th simulation
+   tick, removed once the placement ends. */
+static void InGameUiRoot_UpdatePlacementOverlay(InGameRuntimeRootFrameView *inGameRoot)
+
+{
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN) == 0) {
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
+      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN;
+      FieldGrid_SetAllCellOverlayColors(INGAME_PLACEMENT_OVERLAY_ARGB,(inGameRoot->worldRuntime).fieldGrid);
+      WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
+                ((void *)g_InGamePendingPlacementArmyAsset,&inGameRoot->worldRuntime);
+    }
+  }
+  else if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
+    g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN;
+    FieldGrid_SetAllCellOverlayColors(ARGB8888_OPAQUE_WHITE,(inGameRoot->worldRuntime).fieldGrid);
+  }
+  else if ((g_GameFactionRuntimeImage.tail.simulationTick & 7) == 0) {
+    FieldGrid_SetAllCellOverlayColors(INGAME_PLACEMENT_OVERLAY_ARGB,(inGameRoot->worldRuntime).fieldGrid);
+    WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
+              ((void *)g_InGamePendingPlacementArmyAsset,&inGameRoot->worldRuntime);
+  }
+}
+
+
+/* Keeps the camera target within 16 cells of the field: clamps the grid position, converts it back to world
+   coordinates and moves target and camera by the difference. */
+static void InGameUiRoot_KeepCameraTargetNearField(InGameRuntimeRootFrameView *inGameRoot)
+
+{
+  WorldRuntimeContext *worldRuntime;
+  WorldMotionState *cameraMotion;
+  FieldGridAsset *cameraFieldGrid;
+  FieldGridCoordinates targetGridPosition;
+  int64_t projectedProduct;
+  int targetColumnQ12;
+  int targetRowQ12;
+  int gridColumn;
+  int gridRow;
+  int outOfBoundsAxisCount;
+  int deltaX;
+  int deltaY;
+
+  worldRuntime = &inGameRoot->worldRuntime;
+  cameraMotion = &worldRuntime->motion;
+  cameraFieldGrid = worldRuntime->fieldGrid;
+  outOfBoundsAxisCount = 0;
+  targetGridPosition = FieldGrid_WorldToGridQ12(cameraMotion->targetPositionYQ12,cameraMotion->targetPositionXQ12);
+  targetRowQ12 = targetGridPosition.rowQ12;
+  targetColumnQ12 = targetGridPosition.columnQ12;
+  gridColumn = (targetColumnQ12 >> Q12_SHIFT) - 8;
+  gridRow = (targetRowQ12 >> Q12_SHIFT) - 8;
+  if (gridColumn < -16) {
+    targetColumnQ12 = -8 * Q12_ONE;
+    outOfBoundsAxisCount = 1;
+  }
+  else if ((int)cameraFieldGrid->gridWidth < gridColumn) {
+    outOfBoundsAxisCount = 1;
+    targetColumnQ12 = (cameraFieldGrid->gridWidth + 8) * Q12_ONE;
+  }
+  if (gridRow < -16) {
+    targetRowQ12 = -8 * Q12_ONE;
+    outOfBoundsAxisCount++;
+  }
+  else if ((int)cameraFieldGrid->gridHeight < gridRow) {
+    outOfBoundsAxisCount++;
+    targetRowQ12 = (cameraFieldGrid->gridHeight + 8) * Q12_ONE;
+  }
+  if (outOfBoundsAxisCount != 0) {
+    projectedProduct = (int64_t)(targetRowQ12 + targetColumnQ12 * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
+    deltaX = FIXED_PRODUCT_SHR(projectedProduct,13) - cameraMotion->targetPositionXQ12;
+    deltaY = FIXED_PRODUCT_SHR(((int64_t)targetRowQ12 * -1999),Q12_SHIFT) - cameraMotion->targetPositionYQ12;
+    cameraMotion->targetPositionXQ12 = cameraMotion->targetPositionXQ12 + deltaX;
+    cameraMotion->targetPositionYQ12 = cameraMotion->targetPositionYQ12 + deltaY;
+    cameraMotion->positionXQ12 = cameraMotion->positionXQ12 + deltaX;
+    cameraMotion->positionYQ12 = cameraMotion->positionYQ12 + deltaY;
+    WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
+  }
+}
+
+
+/* Ambient effect sounds (only called with the effects sound option on). Every 8th frame the spatial sound gains of
+   all world objects are recomputed. g_InGameEffectsEnabled counts frames until the next ambient effect sound: at 0
+   it waits for the current one to end and starts a new delay of 1..64 frames; when it counts down to 0 one of the
+   four level effects plays. */
+static void InGameUiRoot_UpdateEffectSounds
+          (InGameRuntimeRootFrameView *inGameRoot,InGamePresentationTick currentPresentationTick)
+
+{
+  WorldRuntimeContext *worldRuntime;
+  WorldOwnerListNode *ownerNode;
+  uint32_t randomValue;
+  uint32_t effectsGain;
+  IDirectSoundBuffer *playedVoice;
+
+  worldRuntime = &inGameRoot->worldRuntime;
+  if ((currentPresentationTick & 7) == 0) {
+    SpatialSoundPool_ClearDesiredGains();
+    for (ownerNode = worldRuntime->ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+      /* the callback of the node's owner class (model, shot or effect) */
+      (*(&g_RuntimeMaintenanceCallbackPhases.audioRefresh.army)[ownerNode->ownerClassId])(worldRuntime,ownerNode);
+    }
+    SpatialSoundPool_ApplyDesiredGains();
+    InGameSelectionDetailPanel_Rebuild();
+  }
+  if (g_InGameEffectsEnabled == 0) {
+    if (g_SoundIsVoicePlaying(g_InGameActiveEffectVoice)) {
+      g_InGameActiveEffectVoice = NULL;
+      randomValue = Random_NextPrimary();
+      g_InGameEffectsEnabled = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
+    }
+  }
+  else {
+    g_InGameEffectsEnabled--;
+    if (g_InGameEffectsEnabled == 0) {
+      effectsGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
+      randomValue = Random_NextPrimary();
+      if (g_SoundPlayOneShot
+                    (effectsGain,effectsGain,
+                     (DirectSoundVoiceSet *)(&g_InGameLevelEffectVoiceSet0)[randomValue & 3],&playedVoice)) {
+        g_InGameActiveEffectVoice = playedVoice;
+      }
+    }
+  }
+}
+
+
+/* Music (with the music sound option on): same delay scheme as the ambient effect sounds, then the best-suited of
+   the four level tracks plays; nothing plays when no track scores above 0. */
+static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
+
+{
+  uint32_t soundOptionFlags;
+  InGameLevelConditionStorage *levelConditionStorage;
+  uint32_t randomValue;
+  uint32_t trackIndex;
+  uint32_t trackScore;
+  uint32_t bestTrackIndex;
+  uint32_t bestTrackScore;
+  uint32_t musicGain;
+  LevelMusicSampleNumber selectedMusicTrackId;
+  IDirectSoundBuffer *playedVoice;
+
+  soundOptionFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+  if ((soundOptionFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+    return;
+  }
+  if (g_InGameMusicNextTrackCountdown == 0) {
+    if (g_SoundIsVoicePlaying(g_InGameActiveMusicVoice)) {
+      g_InGameActiveMusicVoice = NULL;
+      randomValue = Random_NextPrimary();
+      g_InGameMusicNextTrackCountdown = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
+    }
+    return;
+  }
+  g_InGameMusicNextTrackCountdown--;
+  if (g_InGameMusicNextTrackCountdown != 0) {
+    return;
+  }
+  bestTrackScore = 0;
+  bestTrackIndex = 0;
+  for (trackIndex = 0; trackIndex < 4; trackIndex++) {
+    trackScore = InGameMusic_ComputeTrackSuitabilityScore
+                      ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[trackIndex],worldRuntime);
+    if ((int)bestTrackScore < (int)trackScore) {
+      bestTrackIndex = trackIndex;
+      bestTrackScore = trackScore;
+    }
+  }
+  if (bestTrackScore != 0) {
+    selectedMusicTrackId = (levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[bestTrackIndex];
+    musicGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
+    g_EndGameResultsCurrentMusicTrackId = selectedMusicTrackId;
+    if (g_SoundPlayOneShot
+                  (musicGain,musicGain,(DirectSoundVoiceSet *)(&g_InGameLevelMusicVoiceSet0)[bestTrackIndex],
+                   &playedVoice)) {
+      g_InGameActiveMusicVoice = playedVoice;
+    }
+  }
+}
+
+
+/* Camera keys: arrows scroll by the configured step, Page Up/Down tilt, Insert/Delete rotate, Home/End zoom
+   (0x400 = 1/64 turn, 0x800 = 0.5 in Q12). */
+static void InGameUiRoot_ApplyCameraKeys(InGameRuntimeRootFrameView *inGameRoot)
+
+{
+  WorldRuntimeContext *worldRuntime;
+  WorldMotionState *cameraMotion;
+  uint32_t scrollStep;
+  AngleTurn32 clampedPitchAngle;
+  UQ12 clampedTargetDistance;
+
+  worldRuntime = &inGameRoot->worldRuntime;
+  cameraMotion = &worldRuntime->motion;
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_LEFT] != 0) {
+    scrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+    WorldRuntime_TranslateCameraByScreenDelta(0,-scrollStep,worldRuntime);
+    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_RIGHT] != 0) {
+    scrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+    WorldRuntime_TranslateCameraByScreenDelta(0,scrollStep,worldRuntime);
+    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_UP] != 0) {
+    scrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+    WorldRuntime_TranslateCameraByScreenDelta(-scrollStep,0,worldRuntime);
+    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DOWN] != 0) {
+    scrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+    WorldRuntime_TranslateCameraByScreenDelta(scrollStep,0,worldRuntime);
+    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_PAGE_UP] != 0) {
+    clampedPitchAngle = cameraMotion->pitchAngle - INGAME_CAMERA_KEY_ANGLE_STEP;
+    if ((int)clampedPitchAngle < (int)cameraMotion->minimumPitchAngle) {
+      clampedPitchAngle = cameraMotion->minimumPitchAngle;
+    }
+    WorldRuntime_PointCameraAtTarget
+              (clampedPitchAngle,cameraMotion->headingAngle,cameraMotion->targetDistanceQ12,
+               cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,cameraMotion->targetPositionXQ12,
+               worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_PAGE_DOWN] != 0) {
+    clampedPitchAngle = cameraMotion->pitchAngle + INGAME_CAMERA_KEY_ANGLE_STEP;
+    if ((int)cameraMotion->maximumPitchAngle < (int)clampedPitchAngle) {
+      clampedPitchAngle = cameraMotion->maximumPitchAngle;
+    }
+    WorldRuntime_PointCameraAtTarget
+              (clampedPitchAngle,cameraMotion->headingAngle,cameraMotion->targetDistanceQ12,
+               cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,cameraMotion->targetPositionXQ12,
+               worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_INSERT] != 0) {
+    WorldRuntime_PointCameraAtTarget
+              (cameraMotion->pitchAngle,
+               (cameraMotion->headingAngle - INGAME_CAMERA_KEY_ANGLE_STEP) & FIXED_ANGLE16_MASK,
+               cameraMotion->targetDistanceQ12,cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,
+               cameraMotion->targetPositionXQ12,worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DELETE] != 0) {
+    WorldRuntime_PointCameraAtTarget
+              (cameraMotion->pitchAngle,
+               (cameraMotion->headingAngle + INGAME_CAMERA_KEY_ANGLE_STEP) & FIXED_ANGLE16_MASK,
+               cameraMotion->targetDistanceQ12,cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,
+               cameraMotion->targetPositionXQ12,worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_HOME] != 0) {
+    clampedTargetDistance = cameraMotion->targetDistanceQ12 - INGAME_CAMERA_KEY_DISTANCE_STEP_Q12;
+    if ((int)clampedTargetDistance < (int)worldRuntime->minimumCameraDistanceQ12) {
+      clampedTargetDistance = worldRuntime->minimumCameraDistanceQ12;
+    }
+    WorldRuntime_PointCameraAtTarget
+              (cameraMotion->pitchAngle,cameraMotion->headingAngle,clampedTargetDistance,
+               cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,cameraMotion->targetPositionXQ12,
+               worldRuntime);
+  }
+  if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_END] != 0) {
+    clampedTargetDistance = cameraMotion->targetDistanceQ12 + INGAME_CAMERA_KEY_DISTANCE_STEP_Q12;
+    if ((int)worldRuntime->maximumCameraDistanceQ12 < (int)clampedTargetDistance) {
+      clampedTargetDistance = worldRuntime->maximumCameraDistanceQ12;
+    }
+    WorldRuntime_PointCameraAtTarget
+              (cameraMotion->pitchAngle,cameraMotion->headingAngle,clampedTargetDistance,
+               cameraMotion->targetPositionZQ12,cameraMotion->targetPositionYQ12,cameraMotion->targetPositionXQ12,
+               worldRuntime);
+  }
+}
+
+
+/* Countdown text: the first of the 64 scheduled conditions that is a running countdown shows its remaining seconds
+   as minutes:seconds; without one the timer node stays hidden. */
+static void InGameUiRoot_UpdateCountdownText(InGameRuntimeRootFrameView *inGameRoot)
+
+{
+  InGameConditionSchedule *schedule;
+  uint8_t *countdownText;
+  uint32_t conditionIndex;
+  uint32_t secondsLeft;
+  uint32_t minutesByteLength;
+
+  schedule = &g_InGameLevelRuntimeGlobalBlock.conditionStorage->schedule;
+  countdownText = (uint8_t *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0);
+  inGameRoot->countdownPanelNodeFlags = inGameRoot->countdownPanelNodeFlags & ~UI_NODE_SUPPRESSED;
+  for (conditionIndex = 0; conditionIndex < INGAME_SCHEDULED_CONDITION_COUNT; conditionIndex++) {
+    if ((schedule->conditions[conditionIndex].statusAndKind.kind & INGAME_SCHEDULED_CONDITION_KIND_MASK) ==
+        INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED) {
+      secondsLeft = schedule->conditions[conditionIndex].payload.operands[1];
+      if (secondsLeft != 0) {
+        minutesByteLength = g_WideNumberFormatUtf16
+                           (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,secondsLeft / 60,(uint16_t *)countdownText);
+        *(uint16_t *)(countdownText + minutesByteLength) = ':';
+        g_WideNumberFormatUtf16
+                  (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,secondsLeft % 60,
+                   (uint16_t *)(countdownText + minutesByteLength + 2));
+        return;
+      }
+    }
+  }
+  inGameRoot->countdownPanelNodeFlags = inGameRoot->countdownPanelNodeFlags | UI_NODE_SUPPRESSED;
+}
+
+
 /* Address: 0x00566290.
    Frame update of the in-game UI root for the whole session: network session upkeep, the
    placement overlay, cursor frame and edge scrolling, keeping the camera target near the field, and, unless the
@@ -102,34 +408,14 @@ shutdown_and_fail:
 void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
 
 {
-  Q12 *motionCoordinate;
-  WorldMotionState *cameraMotion;
-  FieldGridAsset *cameraFieldGrid;
-  WorldOwnerListNode *ownerNode;
-  LevelMusicSampleNumber selectedMusicTrackId;
-  int64_t projectedProduct;
-  InGameLevelConditionStorage *levelConditionStorage;
-  UiNodeBase *hoveredNode;
-  uint32_t candidateFrameOrScore;
-  int columnDeltaOrCount;
-  AngleTurn32 clampedPitchAngle;
-  UQ12 clampedTargetDistance;
-  int gridRowOrDeltaY;
-  uint32_t bestTrackOrSecondsLeft;
-  InGamePresentationTick currentPresentationTick;
-  int targetRowQ12;
   WorldRuntimeContext *worldRuntime;
-  int gridColumn;
-  int outOfBoundsAxisCount;
-  uint32_t trackIndex;
-  uint32_t nextTrackIndex;
-  InGameConditionSchedule *scheduledCondition;
-  bool voicePlaying;
-  FieldGridCoordinates targetGridPosition;
+  UiNodeBase *hoveredNode;
+  uint32_t cursorFrame;
+  uint32_t edgeScrollCursorFrame;
+  uint32_t soundOptionFlags;
   uint32_t activePageIndex;
-  IDirectSoundBuffer *playedVoice;
-  uint32_t cursorFrameOrScratch;
-  
+  InGamePresentationTick currentPresentationTick;
+
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       FrontendHostSession_TickPeerTimeoutsAndDropPlayers();
@@ -139,35 +425,12 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     FrontendClientSession_TickHostTimeout();
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
-    /* placement overlay: grey the field and mark where the pending army asset fits; refreshed every 8th
-       simulation tick, removed once the placement ends */
-    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN) == 0) {
-      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN;
-        FieldGrid_SetAllCellOverlayColors
-                  (INGAME_PLACEMENT_OVERLAY_ARGB,(inGameRoot->worldRuntime).fieldGrid);
-        WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
-                  ((void *)g_InGamePendingPlacementArmyAsset,
-                   &inGameRoot->worldRuntime);
-      }
-    }
-    else if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
-      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN;
-      FieldGrid_SetAllCellOverlayColors
-                (ARGB8888_OPAQUE_WHITE,(inGameRoot->worldRuntime).fieldGrid);
-    }
-    else if ((g_GameFactionRuntimeImage.tail.simulationTick & 7) == 0) {
-      FieldGrid_SetAllCellOverlayColors
-                (INGAME_PLACEMENT_OVERLAY_ARGB,(inGameRoot->worldRuntime).fieldGrid);
-      WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
-                ((void *)g_InGamePendingPlacementArmyAsset,&inGameRoot->worldRuntime)
-      ;
-    }
-    cursorFrameOrScratch = 0;
+    InGameUiRoot_UpdatePlacementOverlay(inGameRoot);
+    cursorFrame = 0;
     hoveredNode = (*((inGameRoot->rootUi).base.vtable)->hitTest)
                        (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)inGameRoot);
     if (hoveredNode != UI_NODE_NONE) { /* hit test found a node */
-      cursorFrameOrScratch = hoveredNode->vtable->pointerMove(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
+      cursorFrame = hoveredNode->vtable->pointerMove(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
     }
     g_GameFactionRuntimeImage.tail.presentationTick++;
     RecentTextHistory_SortAndBuildPointerList(8,&inGameRoot->recentTextHistory);
@@ -175,145 +438,27 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
     worldRuntime = &inGameRoot->worldRuntime;
     InGameHud_UpdateStatusCountersAndSessionPrompts();
     activePageIndex = UiPageStack_ActivePageIndex(&inGameRoot->worldViewAreaPageStack);
-    if ((((((inGameRoot->worldRuntime).runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) == 0) &&
-         (activePageIndex == 0)) &&
-        (((inGameRoot->worldRuntime).interaction.nodeFlags & 8) == 0)) &&
-       (((g_CursorButtonState & 4) == 0 &&
-        (candidateFrameOrScore = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime),
-         candidateFrameOrScore != 0)))) {
-      cursorFrameOrScratch = candidateFrameOrScore;
+    /* edge scrolling only on the plain world view (no drag selection or notification jump, first page, no
+       interaction node flag 8) and while cursor button bit 2 is up; its scroll-arrow frame wins over the hovered
+       node's frame */
+    if (((worldRuntime->runtimeFlags & (WORLD_RUNTIME_FLAG_DRAG_SELECTING | WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO)) == 0) &&
+        (activePageIndex == 0) && ((worldRuntime->interaction.nodeFlags & 8) == 0) &&
+        ((g_CursorButtonState & 4) == 0)) {
+      edgeScrollCursorFrame = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime);
+      if (edgeScrollCursorFrame != 0) {
+        cursorFrame = edgeScrollCursorFrame;
+      }
     }
-    g_GraphicsCursorSetFrame(cursorFrameOrScratch);
-    /* keep the camera target within 16 cells of the field: clamp the grid position, convert it back to world
-       coordinates and move target and camera by the difference */
-    cameraFieldGrid = (inGameRoot->worldRuntime).fieldGrid;
-    outOfBoundsAxisCount = 0;
-    targetGridPosition = FieldGrid_WorldToGridQ12
-                       ((inGameRoot->worldRuntime).motion.targetPositionYQ12,
-                        (inGameRoot->worldRuntime).motion.targetPositionXQ12);
-    targetRowQ12 = targetGridPosition.rowQ12;
-    columnDeltaOrCount = targetGridPosition.columnQ12;
-    gridColumn = (columnDeltaOrCount >> Q12_SHIFT) - 8;
-    gridRowOrDeltaY = (targetRowQ12 >> Q12_SHIFT) - 8;
-    if (gridColumn < -16) {
-      columnDeltaOrCount = -8 * Q12_ONE;
-      outOfBoundsAxisCount = 1;
-    }
-    else if ((int)cameraFieldGrid->gridWidth < gridColumn) {
-      outOfBoundsAxisCount = 1;
-      columnDeltaOrCount = (cameraFieldGrid->gridWidth + 8) * Q12_ONE;
-    }
-    if (gridRowOrDeltaY < -16) {
-      targetRowQ12 = -8 * Q12_ONE;
-      outOfBoundsAxisCount++;
-    }
-    else if ((int)cameraFieldGrid->gridHeight < gridRowOrDeltaY) {
-      outOfBoundsAxisCount++;
-      targetRowQ12 = (cameraFieldGrid->gridHeight + 8) * Q12_ONE;
-    }
-    if (outOfBoundsAxisCount != 0) {
-      projectedProduct = (int64_t)(targetRowQ12 + columnDeltaOrCount * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
-      columnDeltaOrCount = FIXED_PRODUCT_SHR(projectedProduct,13) -
-              (inGameRoot->worldRuntime).motion.targetPositionXQ12;
-      gridRowOrDeltaY = FIXED_PRODUCT_SHR(((int64_t)targetRowQ12 * -1999),Q12_SHIFT) -
-               (inGameRoot->worldRuntime).motion.targetPositionYQ12;
-      motionCoordinate = &(inGameRoot->worldRuntime).motion.targetPositionXQ12;
-      *motionCoordinate = *motionCoordinate + columnDeltaOrCount;
-      motionCoordinate = &(inGameRoot->worldRuntime).motion.targetPositionYQ12;
-      *motionCoordinate = *motionCoordinate + gridRowOrDeltaY;
-      cameraMotion = &(inGameRoot->worldRuntime).motion;
-      cameraMotion->positionXQ12 = cameraMotion->positionXQ12 + columnDeltaOrCount;
-      motionCoordinate = &(inGameRoot->worldRuntime).motion.positionYQ12;
-      *motionCoordinate = *motionCoordinate + gridRowOrDeltaY;
-      WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
-    }
+    g_GraphicsCursorSetFrame(cursorFrame);
+    InGameUiRoot_KeepCameraTargetNearField(inGameRoot);
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
       TerrainDirectionTable_AdvanceAndRebuildVectors();
-      cursorFrameOrScratch =
+      soundOptionFlags =
            PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-      if ((cursorFrameOrScratch & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
-        /* every 8th frame: recompute the spatial sound gains of all world objects */
-        if ((currentPresentationTick & 7) == 0) {
-          SpatialSoundPool_ClearDesiredGains();
-          for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != NULL;
-              ownerNode = ownerNode->nextNode) {
-            /* the callback of the node's owner class (model, shot or effect) */
-            (*(&g_RuntimeMaintenanceCallbackPhases.audioRefresh.army)[ownerNode->ownerClassId])
-                      (worldRuntime,ownerNode);
-          }
-          SpatialSoundPool_ApplyDesiredGains();
-          InGameSelectionDetailPanel_Rebuild();
-        }
-        /* g_InGameEffectsEnabled counts frames until the next ambient effect sound: at 0 it waits for the current
-           one to end and starts a new delay of 1..64 frames; when it counts down to 0 one of the four level
-           effects plays */
-        if (g_InGameEffectsEnabled == 0) {
-          voicePlaying = g_SoundIsVoicePlaying(g_InGameActiveEffectVoice);
-          if (voicePlaying) {
-            g_InGameActiveEffectVoice = NULL;
-            cursorFrameOrScratch = Random_NextPrimary();
-            g_InGameEffectsEnabled = (cursorFrameOrScratch & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
-          }
-        }
-        else {
-          g_InGameEffectsEnabled--;
-          if (g_InGameEffectsEnabled == 0) {
-            cursorFrameOrScratch = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
-            candidateFrameOrScore = Random_NextPrimary();
-            if (g_SoundPlayOneShot
-                          (cursorFrameOrScratch,cursorFrameOrScratch,
-                           (DirectSoundVoiceSet *)(&g_InGameLevelEffectVoiceSet0)[candidateFrameOrScore & 3],
-                           &playedVoice)) {
-              g_InGameActiveEffectVoice = playedVoice;
-            }
-          }
-        }
+      if ((soundOptionFlags & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+        InGameUiRoot_UpdateEffectSounds(inGameRoot,currentPresentationTick);
       }
-      cursorFrameOrScratch =
-           PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-      levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-      /* music: same delay scheme, then the best-suited of the four tracks */
-      if ((cursorFrameOrScratch & PERSISTENT_SOUND_OPTION_MUSIC) != 0) {
-        if (g_InGameMusicNextTrackCountdown == 0) {
-          voicePlaying = g_SoundIsVoicePlaying(g_InGameActiveMusicVoice);
-          if (voicePlaying) {
-            g_InGameActiveMusicVoice = NULL;
-            cursorFrameOrScratch = Random_NextPrimary();
-            g_InGameMusicNextTrackCountdown = (cursorFrameOrScratch & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
-          }
-        }
-        else {
-          g_InGameMusicNextTrackCountdown--;
-          if (g_InGameMusicNextTrackCountdown == 0) {
-            cursorFrameOrScratch = 0;
-            bestTrackOrSecondsLeft = 0;
-            trackIndex = 0;
-            do {
-              candidateFrameOrScore = InGameMusic_ComputeTrackSuitabilityScore
-                                ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[trackIndex],
-                                 worldRuntime);
-              nextTrackIndex = trackIndex + 1;
-              if ((int)cursorFrameOrScratch < (int)candidateFrameOrScore) {
-                bestTrackOrSecondsLeft = trackIndex;
-                cursorFrameOrScratch = candidateFrameOrScore;
-              }
-              trackIndex = nextTrackIndex;
-            } while (nextTrackIndex < 4);
-            if (cursorFrameOrScratch != 0) {
-              selectedMusicTrackId =
-                   (levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[bestTrackOrSecondsLeft];
-              cursorFrameOrScratch = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
-              g_EndGameResultsCurrentMusicTrackId = selectedMusicTrackId;
-              if (g_SoundPlayOneShot
-                            (cursorFrameOrScratch,cursorFrameOrScratch,
-                             (DirectSoundVoiceSet *)(&g_InGameLevelMusicVoiceSet0)[bestTrackOrSecondsLeft],
-                             &playedVoice)) {
-                g_InGameActiveMusicVoice = playedVoice;
-              }
-            }
-          }
-        }
-      }
+      InGameUiRoot_UpdateMusic(worldRuntime);
       if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) {
         /* paused: no camera keys, countdown or terrain refresh */
         InGameRuntime_UpdateCursorGridAndViewScaleCache();
@@ -324,130 +469,10 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
         InGameTechnologyPanel_Rebuild(&inGameRoot->rootUi);
       }
       InterpolationStateTable_Advance256ByTicks(g_InGameSimulationStepTicks);
-      /* camera keys: arrows scroll by the configured step, Page Up/Down tilt, Insert/Delete rotate,
-         Home/End zoom (0x400 = 1/64 turn, 0x800 = 0.5 in Q12) */
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_LEFT] != 0) {
-        cursorFrameOrScratch = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-        WorldRuntime_TranslateCameraByScreenDelta(0,-cursorFrameOrScratch,worldRuntime);
-        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_RIGHT] != 0) {
-        cursorFrameOrScratch = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-        WorldRuntime_TranslateCameraByScreenDelta(0,cursorFrameOrScratch,worldRuntime);
-        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_UP] != 0) {
-        cursorFrameOrScratch = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-        WorldRuntime_TranslateCameraByScreenDelta(-cursorFrameOrScratch,0,worldRuntime);
-        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DOWN] != 0) {
-        cursorFrameOrScratch = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
-        WorldRuntime_TranslateCameraByScreenDelta(cursorFrameOrScratch,0,worldRuntime);
-        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_PAGE_UP] != 0) {
-        clampedPitchAngle = (inGameRoot->worldRuntime).motion.pitchAngle - INGAME_CAMERA_KEY_ANGLE_STEP;
-        if ((int)clampedPitchAngle < (int)(inGameRoot->worldRuntime).motion.minimumPitchAngle) {
-          clampedPitchAngle = (inGameRoot->worldRuntime).motion.minimumPitchAngle;
-        }
-        WorldRuntime_PointCameraAtTarget
-                  (clampedPitchAngle,(inGameRoot->worldRuntime).motion.headingAngle,
-                   (inGameRoot->worldRuntime).motion.targetDistanceQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionZQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionYQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionXQ12,worldRuntime)
-        ;
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_PAGE_DOWN] != 0) {
-        clampedPitchAngle = (inGameRoot->worldRuntime).motion.pitchAngle + INGAME_CAMERA_KEY_ANGLE_STEP;
-        if ((int)(inGameRoot->worldRuntime).motion.maximumPitchAngle < (int)clampedPitchAngle) {
-          clampedPitchAngle = (inGameRoot->worldRuntime).motion.maximumPitchAngle;
-        }
-        WorldRuntime_PointCameraAtTarget
-                  (clampedPitchAngle,(inGameRoot->worldRuntime).motion.headingAngle,
-                   (inGameRoot->worldRuntime).motion.targetDistanceQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionZQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionYQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionXQ12,worldRuntime)
-        ;
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_INSERT] != 0) {
-        WorldRuntime_PointCameraAtTarget
-                  ((inGameRoot->worldRuntime).motion.pitchAngle,
-                   (inGameRoot->worldRuntime).motion.headingAngle - INGAME_CAMERA_KEY_ANGLE_STEP & FIXED_ANGLE16_MASK,
-                   (inGameRoot->worldRuntime).motion.targetDistanceQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionZQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionYQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionXQ12,worldRuntime)
-        ;
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DELETE] != 0) {
-        WorldRuntime_PointCameraAtTarget
-                  ((inGameRoot->worldRuntime).motion.pitchAngle,
-                   (inGameRoot->worldRuntime).motion.headingAngle + INGAME_CAMERA_KEY_ANGLE_STEP & FIXED_ANGLE16_MASK,
-                   (inGameRoot->worldRuntime).motion.targetDistanceQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionZQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionYQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionXQ12,worldRuntime)
-        ;
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_HOME] != 0) {
-        clampedTargetDistance = (inGameRoot->worldRuntime).motion.targetDistanceQ12 - INGAME_CAMERA_KEY_DISTANCE_STEP_Q12;
-        if ((int)clampedTargetDistance < (int)(inGameRoot->worldRuntime).minimumCameraDistanceQ12) {
-          clampedTargetDistance = (inGameRoot->worldRuntime).minimumCameraDistanceQ12;
-        }
-        WorldRuntime_PointCameraAtTarget
-                  ((inGameRoot->worldRuntime).motion.pitchAngle,
-                   (inGameRoot->worldRuntime).motion.headingAngle,clampedTargetDistance,
-                   (inGameRoot->worldRuntime).motion.targetPositionZQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionYQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionXQ12,worldRuntime)
-        ;
-      }
-      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_END] != 0) {
-        clampedTargetDistance = (inGameRoot->worldRuntime).motion.targetDistanceQ12 + INGAME_CAMERA_KEY_DISTANCE_STEP_Q12;
-        if ((int)(inGameRoot->worldRuntime).maximumCameraDistanceQ12 < (int)clampedTargetDistance) {
-          clampedTargetDistance = (inGameRoot->worldRuntime).maximumCameraDistanceQ12;
-        }
-        WorldRuntime_PointCameraAtTarget
-                  ((inGameRoot->worldRuntime).motion.pitchAngle,
-                   (inGameRoot->worldRuntime).motion.headingAngle,clampedTargetDistance,
-                   (inGameRoot->worldRuntime).motion.targetPositionZQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionYQ12,
-                   (inGameRoot->worldRuntime).motion.targetPositionXQ12,worldRuntime)
-        ;
-      }
-      levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-      inGameRoot->countdownPanelNodeFlags =
-           inGameRoot->countdownPanelNodeFlags & ~UI_NODE_SUPPRESSED;
+      InGameUiRoot_ApplyCameraKeys(inGameRoot);
+      InGameUiRoot_UpdateCountdownText(inGameRoot);
       currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
-      /* countdown text: the first of the 64 scheduled conditions that is a running countdown shows its
-         remaining seconds as minutes:seconds; without one the timer node stays hidden */
-      columnDeltaOrCount = INGAME_SCHEDULED_CONDITION_COUNT;
-      scheduledCondition = &levelConditionStorage->schedule;
-      do {
-        if (((scheduledCondition->conditions[0].statusAndKind.kind & INGAME_SCHEDULED_CONDITION_KIND_MASK) ==
-             INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED) &&
-           (bestTrackOrSecondsLeft = scheduledCondition->conditions[0].payload.operands[1],
-            bestTrackOrSecondsLeft != 0)) {
-          cursorFrameOrScratch = g_WideNumberFormatUtf16
-                             (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,bestTrackOrSecondsLeft / 60,
-                              (uint16_t *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0));
-          *(uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = ':';
-          g_WideNumberFormatUtf16
-                    (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,bestTrackOrSecondsLeft % 60,
-                     (uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,2)));
-          currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
-          goto refresh_terrain_composite;
-        }
-        scheduledCondition = (InGameConditionSchedule *)(scheduledCondition->conditions + 1);
-        columnDeltaOrCount--;
-      } while (columnDeltaOrCount != 0);
-      inGameRoot->countdownPanelNodeFlags =
-           inGameRoot->countdownPanelNodeFlags | UI_NODE_SUPPRESSED;
     }
-refresh_terrain_composite:
     if ((currentPresentationTick & 31) == 0) {
       TerrainCompositeTexture_FillPlane1();
     }
@@ -456,7 +481,6 @@ refresh_terrain_composite:
     }
   }
   InGameRuntime_UpdateCursorGridAndViewScaleCache();
-  return;
 }
 
 

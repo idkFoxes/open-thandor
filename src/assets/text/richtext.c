@@ -314,17 +314,14 @@ bool RichTextCommandStream_SetNthInlineValuePayload
   uint16_t commandCodeUnit;
   int remainingCount;
   uint16_t *commandCursor;
-  
+
   remainingCount = commandOrdinal + 1;
-  do {
-    do {
-      commandCursor = commandStream;
-      commandCodeUnit = *commandCursor;
-      if (commandCodeUnit == 0) {
-        return true;
-      }
-      commandStream = commandCursor + 1;
-    } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
+  while ((commandCodeUnit = *commandStream) != 0) {
+    commandCursor = commandStream;
+    commandStream = commandCursor + 1;
+    if ((short)commandCodeUnit >= 0) {
+      continue; /* a glyph: skip up to the next RICHTEXT_COMMAND_FLAG unit */
+    }
     switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
     case RICHTEXT_OP_LITERAL_COLOR:
       commandStream = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
@@ -344,7 +341,8 @@ bool RichTextCommandStream_SetNthInlineValuePayload
     case RICHTEXT_OP_INLINE_IMAGE:
       commandStream = commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
     }
-  } while (true);
+  }
+  return true;
 }
 
 
@@ -483,44 +481,44 @@ void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inli
 bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream)
 
 {
-  uint32_t *streamCursor;
+  uint16_t *streamCursor;
   int remainingCount;
-  uint32_t *commandCursor;
+  uint16_t *commandCursor;
+  uint32_t *commandDword;
   uint16_t commandCodeUnit;
-  
+
   remainingCount = commandOrdinal + 1;
-  streamCursor = commandStream;
-  do {
-    do {
-      commandCursor = streamCursor;
-      commandCodeUnit = (uint16_t)*commandCursor;
-      if (commandCodeUnit == 0) {
-        return true;
-      }
-      streamCursor = (uint32_t *)((uint8_t *)commandCursor + 2);
-    } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
-    /* the cursors advance in bytes: record lengths are code units * 2 */
+  streamCursor = (uint16_t *)commandStream;
+  while ((commandCodeUnit = *streamCursor) != 0) {
+    commandCursor = streamCursor;
+    streamCursor = commandCursor + 1;
+    if ((short)commandCodeUnit >= 0) {
+      continue; /* a glyph: skip up to the next RICHTEXT_COMMAND_FLAG unit */
+    }
     switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
     case RICHTEXT_OP_LITERAL_COLOR:
-      streamCursor = (uint32_t *)((uint8_t *)commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * 2);
+      streamCursor = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       break;
     case RICHTEXT_OP_INLINE_VALUE_0:
     case RICHTEXT_OP_INLINE_VALUE_1:
     case RICHTEXT_OP_INLINE_VALUE_2:
       remainingCount--;
-      streamCursor = (uint32_t *)((uint8_t *)commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE * 2);
+      streamCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
       if (remainingCount == 0) {
-        *commandCursor = *commandCursor & (0xffff0000U | RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_INLINE_VALUE_0);
-        *commandCursor = *commandCursor | flagBits;
+        /* dword access: the command code unit plus the low half of the payload */
+        commandDword = (uint32_t *)commandCursor;
+        *commandDword = *commandDword & (0xffff0000U | RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_INLINE_VALUE_0);
+        *commandDword = *commandDword | flagBits;
         return false;
       }
       break;
     case RICHTEXT_OP_CALL_NESTED:
     case RICHTEXT_OP_JUMP_NESTED:
     case RICHTEXT_OP_INLINE_IMAGE:
-      streamCursor = (uint32_t *)((uint8_t *)commandCursor + RICHTEXT_RECORD_UNITS_NESTED * 2);
+      streamCursor = commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
     }
-  } while( true );
+  }
+  return true;
 }
 
 
@@ -536,40 +534,37 @@ bool RichTextCommandStream_QueryNthInlineValueVariant
 {
   uint16_t commandCodeUnit;
   int remainingCount;
-  uint32_t *commandCursor;
+  uint16_t *commandCursor;
 
   remainingCount = commandOrdinal + 1;
-  do {
-    do {
-      commandCursor = (uint32_t *)commandStream;
-      commandCodeUnit = (uint16_t)*commandCursor;
-      if (commandCodeUnit == 0) {
-        *commandVariant = 0;
-        return false;
-      }
-      commandStream = (uint16_t *)commandCursor + 1;
-    } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
-    /* the cursors advance in bytes: record lengths are code units * 2 */
+  while ((commandCodeUnit = *commandStream) != 0) {
+    commandCursor = commandStream;
+    commandStream = commandCursor + 1;
+    if ((short)commandCodeUnit >= 0) {
+      continue; /* a glyph: skip up to the next RICHTEXT_COMMAND_FLAG unit */
+    }
     switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
     case RICHTEXT_OP_LITERAL_COLOR:
-      commandStream = (uint16_t *)commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
+      commandStream = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       break;
     case RICHTEXT_OP_INLINE_VALUE_0:
     case RICHTEXT_OP_INLINE_VALUE_1:
     case RICHTEXT_OP_INLINE_VALUE_2:
       remainingCount--;
-      commandStream = (uint16_t *)commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
+      commandStream = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
       if (remainingCount == 0) {
-        *commandVariant = *commandCursor & 3;
+        *commandVariant = commandCodeUnit & 3;
         return true;
       }
       break;
     case RICHTEXT_OP_CALL_NESTED:
     case RICHTEXT_OP_JUMP_NESTED:
     case RICHTEXT_OP_INLINE_IMAGE:
-      commandStream = (uint16_t *)commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
+      commandStream = commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
     }
-  } while( true );
+  }
+  *commandVariant = 0;
+  return false;
 }
 
 
@@ -1069,103 +1064,86 @@ bool RichTextCommandStream_CopyExpanded
 
 {
   uint16_t commandCodeUnit;
-  int wordsRemaining;
+  uint32_t recordUnits;
+  uint32_t unitIndex;
   uint16_t *nextSource;
   uint16_t *destinationCursor;
-  bool capacityUnderflow;
   uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
-  
+
   nestedDepth = 0;
   destinationCursor = destination;
-  while( true ) {
-    while ((commandCodeUnit = *source) != 0) {
-      nextSource = source + 1;
-      if ((short)commandCodeUnit < 0) {
-        switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
-        default:
-          capacityUnderflow = capacityBytes < 2;
-          capacityBytes = capacityBytes - 2;
-          if (capacityUnderflow || capacityBytes == 0) {
-            destinationCursor[-1] = 0;
-            return false;
-          }
-          *destinationCursor = commandCodeUnit & RICHTEXT_OPCODE_MASK | RICHTEXT_COMMAND_FLAG;
-          destinationCursor++;
-          source = nextSource;
-          break;
-        case RICHTEXT_OP_LITERAL_COLOR:
-          capacityUnderflow = capacityBytes < RICHTEXT_RECORD_UNITS_LITERAL_COLOR * 2;
-          capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_LITERAL_COLOR * 2;
-          if (capacityUnderflow || capacityBytes == 0) {
-            destinationCursor[-1] = 0;
-            return false;
-          }
-          for (wordsRemaining = RICHTEXT_RECORD_UNITS_LITERAL_COLOR; wordsRemaining != 0; wordsRemaining--) {
-            *destinationCursor = *source;
-            source++;
-            destinationCursor++;
-          }
-          break;
-        case RICHTEXT_OP_INLINE_VALUE_0:
-        case RICHTEXT_OP_INLINE_VALUE_1:
-        case RICHTEXT_OP_INLINE_VALUE_2:
-          capacityUnderflow = capacityBytes < RICHTEXT_RECORD_UNITS_INLINE_VALUE * 2;
-          capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_INLINE_VALUE * 2;
-          if (capacityUnderflow || capacityBytes == 0) {
-            destinationCursor[-1] = 0;
-            return false;
-          }
-          for (wordsRemaining = RICHTEXT_RECORD_UNITS_INLINE_VALUE; wordsRemaining != 0; wordsRemaining--) {
-            *destinationCursor = *source;
-            source++;
-            destinationCursor++;
-          }
-          break;
-        case RICHTEXT_OP_CALL_NESTED:
-          if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
-            destinationCursor[-1] = 0;
-            return false;
-          }
-          nestedReturnStack[nestedDepth++] = nextSource;
-          source = *(uint16_t **)nextSource;
-          break;
-        case RICHTEXT_OP_JUMP_NESTED:
-          source = *(uint16_t **)nextSource;
-          break;
-        case RICHTEXT_OP_INLINE_IMAGE:
-          capacityUnderflow = capacityBytes < RICHTEXT_RECORD_UNITS_INLINE_IMAGE * 2;
-          capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_INLINE_IMAGE * 2;
-          if (capacityUnderflow || capacityBytes == 0) {
-            destinationCursor[-1] = 0;
-            return false;
-          }
-          for (wordsRemaining = RICHTEXT_RECORD_UNITS_INLINE_IMAGE; wordsRemaining != 0; wordsRemaining--) {
-            *destinationCursor = *source;
-            source++;
-            destinationCursor++;
-          }
-        }
-      }
-      else {
-        capacityUnderflow = capacityBytes < 2;
-        capacityBytes = capacityBytes - 2;
-        if (capacityUnderflow || capacityBytes == 0) {
-          destinationCursor[-1] = 0;
-          return false;
-        }
-        *destinationCursor = commandCodeUnit;
-        destinationCursor++;
-        source = nextSource;
-      }
+  /* Runs until the terminator of the outermost stream (the terminator of a nested stream returns to the
+     caller stream). On every overflow the last written code unit is replaced by the terminator. */
+  while ((*source != 0) || (nestedDepth != 0)) {
+    commandCodeUnit = *source;
+    if (commandCodeUnit == 0) {
+      source = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
+      continue;
     }
-    if (nestedDepth == 0) break;
-    source = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
+    nextSource = source + 1;
+    if ((short)commandCodeUnit >= 0) {
+      /* a glyph: copied as is (the capacity must stay above zero for the terminator) */
+      if (capacityBytes <= 2) {
+        destinationCursor[-1] = 0;
+        return false;
+      }
+      capacityBytes = capacityBytes - 2;
+      *destinationCursor = commandCodeUnit;
+      destinationCursor++;
+      source = nextSource;
+      continue;
+    }
+    switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+    default:
+      if (capacityBytes <= 2) {
+        destinationCursor[-1] = 0;
+        return false;
+      }
+      capacityBytes = capacityBytes - 2;
+      *destinationCursor = commandCodeUnit & RICHTEXT_OPCODE_MASK | RICHTEXT_COMMAND_FLAG;
+      destinationCursor++;
+      source = nextSource;
+      continue;
+    case RICHTEXT_OP_CALL_NESTED:
+      if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
+        destinationCursor[-1] = 0;
+        return false;
+      }
+      nestedReturnStack[nestedDepth++] = nextSource;
+      source = *(uint16_t **)nextSource;
+      continue;
+    case RICHTEXT_OP_JUMP_NESTED:
+      source = *(uint16_t **)nextSource;
+      continue;
+    case RICHTEXT_OP_LITERAL_COLOR:
+      recordUnits = RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
+      break;
+    case RICHTEXT_OP_INLINE_VALUE_0:
+    case RICHTEXT_OP_INLINE_VALUE_1:
+    case RICHTEXT_OP_INLINE_VALUE_2:
+      recordUnits = RICHTEXT_RECORD_UNITS_INLINE_VALUE;
+      break;
+    case RICHTEXT_OP_INLINE_IMAGE:
+      recordUnits = RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
+      break;
+    }
+    /* a command with payload: the whole record is copied unchanged */
+    if (capacityBytes <= recordUnits * 2) {
+      destinationCursor[-1] = 0;
+      return false;
+    }
+    capacityBytes = capacityBytes - recordUnits * 2;
+    for (unitIndex = 0; unitIndex < recordUnits; unitIndex++) {
+      destinationCursor[unitIndex] = source[unitIndex];
+    }
+    destinationCursor = destinationCursor + recordUnits;
+    source = source + recordUnits;
   }
   if (1 < (int)capacityBytes) {
     *destinationCursor = 0;
     if (outBytesWritten != NULL) {
-      *outBytesWritten = (int)destinationCursor - (int)destination;
+      *outBytesWritten = (uint32_t)((uint8_t *)destinationCursor - (uint8_t *)destination);
     }
     return true;
   }
@@ -1182,9 +1160,8 @@ bool RichTextCommandStream_CopyExpanded
 RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,uint16_t *commandStream)
 
 {
-  /* Rewritten from the assembly (0x0041CF30-0x0041D0E0). Command 0x18 enters a nested stream and pushes
-     the return position on the machine stack; its terminator pops it and resumes 8 bytes later.
-     Ghidra turned that stack into a counter, so nested text was measured forever. */
+  /* Command 0x18 enters a nested stream and remembers the return position (the original keeps it on the
+     machine stack); the nested stream's terminator resumes behind the command's payload (8 bytes later). */
   uint16_t *returnStack[RICHTEXT_NESTING_LIMIT];
   int nesting = 0;
   RichTextExtent extent;
@@ -1192,19 +1169,17 @@ RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,u
   uint32_t glyphLineHeight;
   GraphicsTextureLogicalSize textureSize;
   uint16_t *command;
-  int value;
+  int value; /* the code unit, sign-extended: negative for commands */
 
   extent.widthPixels = 0;
   extent.heightPixels = 0;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
-  for (;;) {
+  /* Runs until the terminator of the outermost stream or the first line break. */
+  while ((*commandStream != 0) || (nesting != 0)) {
     command = commandStream;
     value = (int)(short)*command;
     commandStream = command + 1;
     if (value == 0) {
-      if (nesting == 0) {
-        return extent;
-      }
       commandStream = (uint16_t *)((uint8_t *)returnStack[--nesting] + RICHTEXT_NESTED_PAYLOAD_BYTES);
       continue;
     }
@@ -1265,6 +1240,7 @@ RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,u
       break;
     }
   }
+  return extent;
 }
 
 
@@ -1558,16 +1534,13 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
   remainingWords = RICHTEXT_RUNTIME_BUFFER_UNITS;
   nestedDepth = 0;
   outputCursor = (uint16_t *)g_FontRuntimeBuffer;
-  for (;;) {
+  /* Runs until the terminator of the outermost stream (the terminator of a nested stream returns to the
+     caller stream). */
+  while ((*commandStream != 0) || (nestedDepth != 0)) {
     commandCursor = commandStream;
     commandCodeUnit = *commandCursor;
     commandStream = commandCursor + 1;
     if (commandCodeUnit == 0) {
-      if (nestedDepth == 0) {
-        *outputCursor = 0;
-        g_RichTextRuntimeBufferUsedWords = 0;
-        return;
-      }
       nestedDepth--;
       /* resume behind the nested-stream command's payload */
       commandStream = (uint16_t *)((uint8_t *)nestedReturnStack[nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
@@ -1630,5 +1603,7 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
       }
     }
   }
+  *outputCursor = 0;
+  g_RichTextRuntimeBufferUsedWords = 0;
 }
 

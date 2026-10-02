@@ -2885,36 +2885,40 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  uint32_t *classStateField;
+  ModelDefinition *definition;
   uint32_t previousHealth;
-  ModelRuntimeNode *rootNode;
-  int energyRequirement;
-  ModelRuntimeSlot *tickCursor;
+  uint32_t healthLimit;
   uint32_t clampedHealth;
-  ModelRuntimeSlot *tickCountOrChild;
-  int factionOrProgress;
-  uint32_t definitionOrCount;
-  uint32_t limitOrFlags;
-  
-  definitionOrCount = (modelRuntime->definitionOrSavedId).savedIdOrOffset;
-  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[((ModelDefinition *)definitionOrCount)->runtimeClassId]
+  uint32_t healthDrain;
+  uint32_t linkedAssetRefund;
+  ModelRuntimeNode *rootNode;
+  int factionIndex;
+  int researchProgress;
+  int researchEnergyLoad;
+  int energyRequirement;
+  uint32_t ticksRemaining;
+  uint32_t attachmentCount;
+  uint32_t attachmentIndex;
+  uint32_t parentStateFlags;
+  ModelRuntimeSlot *childModelRuntime;
+
+  definition = (ModelDefinition *)(modelRuntime->definitionOrSavedId).savedIdOrOffset;
+  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[definition->runtimeClassId]
             (worldRuntime,modelRuntime);
   /* every 4 ticks health (+0x3C) regenerates by healthRegenerationPerStep up to 3/4 of the definition's
      health (maximumHealth), or decays down to it while bit 0 is set */
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) == 0) {
-    classStateField = &(modelRuntime->classState).healthRegenerationDelayTicks;
-    *classStateField = *classStateField - g_InGameSimulationStepTicks;
-    if ((int)*classStateField < 0) {
+    (modelRuntime->classState).healthRegenerationDelayTicks -= g_InGameSimulationStepTicks;
+    if ((int)(modelRuntime->classState).healthRegenerationDelayTicks < 0) {
       (modelRuntime->classState).healthRegenerationDelayTicks = 4;
       previousHealth = modelRuntime->health;
-      limitOrFlags = ((ModelDefinition *)definitionOrCount)->maximumHealth * 3;
+      healthLimit = (definition->maximumHealth * 3) >> 2;
       if (previousHealth != 0) {
         if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
           if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_NO_REGENERATION) == 0) {
-            clampedHealth = previousHealth + ((ModelDefinition *)definitionOrCount)->healthRegenerationPerStep;
-            limitOrFlags = limitOrFlags >> 2;
-            if ((int)limitOrFlags < (int)clampedHealth) {
-              clampedHealth = limitOrFlags;
+            clampedHealth = previousHealth + definition->healthRegenerationPerStep;
+            if ((int)healthLimit < (int)clampedHealth) {
+              clampedHealth = healthLimit;
             }
             if ((int)modelRuntime->health < (int)clampedHealth) {
               modelRuntime->health = clampedHealth;
@@ -2922,10 +2926,9 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
           }
         }
         else {
-          clampedHealth = previousHealth - ((ModelDefinition *)definitionOrCount)->healthRegenerationPerStep;
-          limitOrFlags = limitOrFlags >> 2;
-          if ((int)clampedHealth < (int)limitOrFlags) {
-            clampedHealth = limitOrFlags;
+          clampedHealth = previousHealth - definition->healthRegenerationPerStep;
+          if ((int)clampedHealth < (int)healthLimit) {
+            clampedHealth = healthLimit;
           }
           if ((int)clampedHealth < (int)modelRuntime->health) {
             modelRuntime->health = clampedHealth;
@@ -2934,54 +2937,51 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
       }
     }
   }
-  classStateField = &(modelRuntime->classState).dismantleTickCountdown;
-  *classStateField = *classStateField - g_InGameSimulationStepTicks;
-  if (((((int)*classStateField < 0) &&
-       (classStateField = &(modelRuntime->classState).dismantleTickCountdown, *classStateField = *classStateField + 12,
-       ((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) != 0)) &&
-      (((ModelDefinition *)definitionOrCount)->xeniteValueQ4 != 0)) &&
-     ((((ModelDefinition *)definitionOrCount)->maximumHealth != 0 && (0 < (int)modelRuntime->health)))) {
-    /* dismantling, every 12 ticks: refund 1/32 of the Xenite value and drain 1/16 of the health */
-    factionOrProgress = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
-    g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 =
-         g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 +
-         (((ModelDefinition *)definitionOrCount)->xeniteValueQ4 >> 5);
-    limitOrFlags = ((ModelDefinition *)definitionOrCount)->maximumHealth;
-    if (((ModelDefinition *)definitionOrCount)->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-      /* a pad also refunds its unlaunched linked assets */
-      clampedHealth = ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
-                        ((ArmyRuntimeLinkedChildMaskSlotView *)modelRuntime);
-      g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 =
-           g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 + clampedHealth;
-    }
-    limitOrFlags = limitOrFlags >> 4;
-    classStateField = &modelRuntime->health;
-    previousHealth = *classStateField;
-    *classStateField = *classStateField - limitOrFlags;
-    if ((int)previousHealth <= (int)limitOrFlags) { /* SUB / JLE: signed compare of the old health */
-      modelRuntime->health = 0;
-      classStateField = &(modelRuntime->classState).stateFlags;
-      *classStateField = *classStateField ^ (ARMY_MODEL_STATE_DISMANTLING | ARMY_MODEL_STATE_DISMANTLED);
-      rootNode = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
-      EffectRuntimePool_CreateInstanceFromDefinition
-                (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-                 (EffectRuntimeOwnerReference){ .modelRuntime = modelRuntime },
-                 (rootNode->modelPayload).worldRotationAngle2,
-                 (rootNode->modelPayload).worldRotationAngle1,
-                 (rootNode->modelPayload).worldRotationAngle0,(rootNode->worldTransform).translation.z,
-                 (rootNode->worldTransform).translation.y,(rootNode->worldTransform).translation.x,
-                 ((ModelDefinition *)definitionOrCount)->removalEffectDefinitionReference.definition,worldRuntime);
-      /* Setting it also skips the attachment tick loop below (the original jumps past it). */
-      classStateField = &(modelRuntime->classState).stateFlags;
-      *classStateField = *classStateField | ARMY_MODEL_STATE_DESTRUCTION_STARTED;
+  (modelRuntime->classState).dismantleTickCountdown -= g_InGameSimulationStepTicks;
+  if ((int)(modelRuntime->classState).dismantleTickCountdown < 0) {
+    (modelRuntime->classState).dismantleTickCountdown += 12;
+    if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) &&
+        (definition->xeniteValueQ4 != 0) && (definition->maximumHealth != 0) &&
+        (0 < (int)modelRuntime->health)) {
+      /* dismantling, every 12 ticks: refund 1/32 of the Xenite value and drain 1/16 of the health */
+      factionIndex = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
+      g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
+           g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + (definition->xeniteValueQ4 >> 5);
+      healthDrain = definition->maximumHealth >> 4;
+      if (definition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
+        /* a pad also refunds its unlaunched linked assets */
+        linkedAssetRefund = ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
+                              ((ArmyRuntimeLinkedChildMaskSlotView *)modelRuntime);
+        g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
+             g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + linkedAssetRefund;
+      }
+      previousHealth = modelRuntime->health;
+      modelRuntime->health -= healthDrain;
+      if ((int)previousHealth <= (int)healthDrain) { /* signed compare of the old health */
+        modelRuntime->health = 0;
+        (modelRuntime->classState).stateFlags ^= (ARMY_MODEL_STATE_DISMANTLING | ARMY_MODEL_STATE_DISMANTLED);
+        rootNode = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
+        EffectRuntimePool_CreateInstanceFromDefinition
+                  (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
+                   (EffectRuntimeOwnerReference){ .modelRuntime = modelRuntime },
+                   (rootNode->modelPayload).worldRotationAngle2,
+                   (rootNode->modelPayload).worldRotationAngle1,
+                   (rootNode->modelPayload).worldRotationAngle0,(rootNode->worldTransform).translation.z,
+                   (rootNode->worldTransform).translation.y,(rootNode->worldTransform).translation.x,
+                   definition->removalEffectDefinitionReference.definition,worldRuntime);
+        /* Setting it also skips the attachment tick loop below (the original jumps past it). */
+        (modelRuntime->classState).stateFlags |= ARMY_MODEL_STATE_DESTRUCTION_STARTED;
+      }
     }
   }
-  /* health gone (and not already exploding): tick the attachment channels once per simulation tick */
+  /* health gone (and not already exploding): tick the attachment channels once per simulation tick
+     (only when a linked model runtime exists) */
   if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0) &&
-     ((int)modelRuntime->health < 1)) {
-    tickCountOrChild = (ModelRuntimeSlot *)g_InGameSimulationStepTicks;
-    tickCursor = (modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime;
-    while (tickCursor != NULL) {
+      ((int)modelRuntime->health < 1) &&
+      ((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime != NULL)) {
+    /* Original quirk: the body runs once before the counter is tested, so a step of 0 ticks wraps around. */
+    ticksRemaining = g_InGameSimulationStepTicks;
+    do {
       ArmyRuntime_ProcessReadyAttachmentChannels(worldRuntime,modelRuntime);
       modelRuntime->destructionEffectTimers[0] = modelRuntime->destructionEffectTimers[0] - 1;
       modelRuntime->destructionEffectTimers[1] = modelRuntime->destructionEffectTimers[1] - 1;
@@ -2991,63 +2991,51 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
       modelRuntime->destructionEffectTimers[5] = modelRuntime->destructionEffectTimers[5] - 1;
       modelRuntime->destructionEffectTimers[6] = modelRuntime->destructionEffectTimers[6] - 1;
       modelRuntime->destructionEffectTimers[7] = modelRuntime->destructionEffectTimers[7] - 1;
-      /* the pointer variable holds the tick counter here (DEC ECX in the original) */
-      tickCountOrChild = (ModelRuntimeSlot *)((uint8_t *)tickCountOrChild - 1);
-      tickCursor = tickCountOrChild;
-    }
+      ticksRemaining--;
+    } while (ticksRemaining != 0);
   }
   /* research progress */
   if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) &&
-     (factionOrProgress = modelRuntime->researchElapsedTicks + g_InGameSimulationStepTicks,
-     ((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0)) {
-    modelRuntime->researchElapsedTicks = factionOrProgress;
-    if (modelRuntime->researchDurationTicks <= factionOrProgress) {
+      (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0)) {
+    researchProgress = modelRuntime->researchElapsedTicks + g_InGameSimulationStepTicks;
+    modelRuntime->researchElapsedTicks = researchProgress;
+    if (modelRuntime->researchDurationTicks <= researchProgress) {
       Technology_UnlockForFaction
                 ((((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
                  translation.y,
                  (((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
                  translation.x,modelRuntime->researchTechnologyId,
                  ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex);
-      factionOrProgress = modelRuntime->researchEnergyLoadQ4;
-      classStateField = &(modelRuntime->classState).stateFlags;
-      *classStateField = *classStateField & ~ARMY_MODEL_STATE_RESEARCHING;
-      classStateField = &(modelRuntime->classState).energyLoadQ4;
-      *classStateField = *classStateField - factionOrProgress;
+      researchEnergyLoad = modelRuntime->researchEnergyLoadQ4;
+      (modelRuntime->classState).stateFlags &= ~ARMY_MODEL_STATE_RESEARCHING;
+      (modelRuntime->classState).energyLoadQ4 -= researchEnergyLoad;
     }
   }
   /* queued research starts once its Xenite cost can be paid */
   if ((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID) != 0) &&
      (((modelRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_PRODUCING)) == 0)) {
-    factionOrProgress = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
+    factionIndex = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
     energyRequirement = modelRuntime->researchEnergyLoadQ4;
     if (modelRuntime->researchXeniteCostQ4 <=
-        (int)g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4) {
-      g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 =
-           g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 -
+        (int)g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4) {
+      g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
+           g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 -
            modelRuntime->researchXeniteCostQ4;
-      modelRuntime->researchXeniteCostQ4 = 0; /* four byte stores in the decompile, one dword store */
-      classStateField = &(modelRuntime->classState).stateFlags;
-      *classStateField = *classStateField ^ (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID);
-      classStateField = &(modelRuntime->classState).energyLoadQ4;
-      *classStateField = *classStateField + energyRequirement;
+      modelRuntime->researchXeniteCostQ4 = 0;
+      (modelRuntime->classState).stateFlags ^= (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID);
+      (modelRuntime->classState).energyLoadQ4 += energyRequirement;
     }
   }
   /* recurse into the attached child models, passing bit 8 on to them */
-  definitionOrCount = modelRuntime->attachmentCount;
-  limitOrFlags = (modelRuntime->classState).stateFlags;
-  if (definitionOrCount != 0) {
-    do {
-      tickCountOrChild = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-      if (tickCountOrChild != NULL) {
-        classStateField = &(tickCountOrChild->classState).stateFlags;
-        *classStateField = *classStateField | limitOrFlags & 8;
-        ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive(worldRuntime,tickCountOrChild);
-      }
-      modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
-      definitionOrCount = definitionOrCount - 1;
-    } while (definitionOrCount != 0);
+  attachmentCount = modelRuntime->attachmentCount;
+  parentStateFlags = (modelRuntime->classState).stateFlags;
+  for (attachmentIndex = 0; attachmentIndex < attachmentCount; attachmentIndex++) {
+    childModelRuntime = modelRuntime->attachments[attachmentIndex].childModelRuntimeOrSavedOffset;
+    if (childModelRuntime != NULL) {
+      (childModelRuntime->classState).stateFlags |= parentStateFlags & 8;
+      ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive(worldRuntime,childModelRuntime);
+    }
   }
-  return;
 }
 
 
@@ -3720,6 +3708,59 @@ bool ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t w
 }
 
 
+/* The first free army slot (model node NULL), or NULL when there is no army pool or no free slot. */
+static ArmyRuntimeSlot *ArmyRuntimePool_FindFreeSlot(void)
+
+{
+  ArmyRuntimeSlot *armyRuntime;
+  uint32_t armySlotsRemaining;
+
+  armyRuntime = g_ArmyRuntimeSlots;
+  if (armyRuntime == NULL) {
+    return NULL;
+  }
+  for (armySlotsRemaining = ARMY_RUNTIME_SLOT_COUNT; armySlotsRemaining != 0; armySlotsRemaining--) {
+    if (armyRuntime->modelNodeRuntime == NULL) {
+      return armyRuntime;
+    }
+    armyRuntime++;
+  }
+  return NULL;
+}
+
+
+/* The registered army asset record with this id, or NULL when there is none. */
+static ArmyAssetRecordPrefix *ArmyAssetRegistry_FindRecordById(PckArmyAssetIdCatalog armyAssetId)
+
+{
+  ArmyAssetRecordPrefix **registryCursor;
+  int registrySlotsRemaining;
+  ArmyAssetRecordPrefix *armyAssetRecord;
+
+  registryCursor = g_ArmyAssetRecordRegistry;
+  for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
+    armyAssetRecord = *registryCursor;
+    if ((armyAssetRecord != NULL) && (armyAssetRecord->registryId == armyAssetId)) {
+      return armyAssetRecord;
+    }
+    registryCursor++;
+  }
+  return NULL;
+}
+
+
+/* Stores the error in *outError (when outError is not NULL) and returns the failure result NULL. */
+static ArmyRuntimeSlot *ArmyRuntime_FailCreateInstance(uint32_t error,uint32_t *outError)
+
+{
+  if (outError != NULL) {
+    *outError = error;
+  }
+  return NULL;
+}
+
+
 /* Address: 0x0051B8F0.
    Creates an army (unit or building) of an army asset for a faction at a world point: takes the first free
    army slot, creates the faction's model (and its linked child models) with the faction's army graphics, links
@@ -3727,8 +3768,8 @@ bool ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t w
    the army slot (never NULL), or NULL on failure with the error in *outError (when outError is not NULL):
    FATAL_ERROR_GENERAL_FAILURE (no army pool or no free slot), FATAL_ERROR_ARMY_ID_NOT_FOUND (the id is left in
    g_PackageLastErrorPath) or the model creation error.
-   Original quirk: when creating the linked child models fails, the error is worldYQ12 (the original left that
-   parameter in the result register); kept.
+   Original quirk: when creating the linked child models fails, the error is the value of worldYQ12 (a stale
+   value the original never replaced by an error code); kept.
 */
 ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
           (WorldObjectAllocationFlags creationFlags,AngleTurn32 orientationAngle,Q12 worldXQ12,
@@ -3736,164 +3777,131 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
           WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
+  ArmyRuntimeSlot *armyRuntime;
   ArmyAssetRecordPrefix *armyAssetRecord;
+  ModelDefinitionRecordPrefix *selectedDefinition;
   GraphicsTextureSet *textureSet;
   GraphicsPaletteAsset *paletteAsset;
-  uint32_t rootNodeOrClassValue;
-  PckArmyAssetIdCatalog classValue88;
+  uint32_t anchorScoreWeight;
+  PckArmyAssetIdCatalog secondaryWorkspaceScoreWeight;
   GameEntityRuntime *linkedEntity;
-  ModelRuntimeNode *modelNodeRuntime;
+  uint32_t rootNodeReference;
   PckModelDefinitionIdCatalog modelDefinitionId;
-  ModelRuntimeNode *resultOrModelNode;
-  uint32_t armySlotsRemaining;
-  int remainingOrDefinition;
-  ArmyAssetRecordPrefix **registryCursor;
-  ArmyRuntimeSlot *armyRuntime;
-  bool childCreateFailed;
-  ModelDefinitionRecordPrefix *selectedDefinition;
   uint32_t modelCreateError;
   ModelRuntimeSlot *createdModelRuntime;
-  uint32_t slotScanContinueValue;
-  ArmyAssetRecord *definitionNode;
-  
-  /* find a free army slot (model node NULL); slotScanContinueValue is first the pool pointer (no pool: fail) */
-  armySlotsRemaining = ARMY_RUNTIME_SLOT_COUNT;
-  armyRuntime = g_ArmyRuntimeSlots;
-  slotScanContinueValue = (uint32_t)g_ArmyRuntimeSlots;
-  while (resultOrModelNode = (ModelRuntimeNode *)FATAL_ERROR_GENERAL_FAILURE, slotScanContinueValue != 0) {
-    if (armyRuntime->modelNodeRuntime == NULL) {
-      /* free slot found: look up the army asset record with this id */
-      registryCursor = g_ArmyAssetRecordRegistry;
-      remainingOrDefinition = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-      do {
-        armyAssetRecord = *registryCursor;
-        if ((armyAssetRecord != NULL) &&
-           (armyAssetRecord->registryId == armyAssetId)) {
-          armyRuntime->armyAssetId = armyAssetId;
-          if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
-              (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
-            selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                              (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer);
-            ((ModelDefinition *)selectedDefinition)->builtCount++;
-          }
-          /* the graphics bindings exist for faction slots 0-7 only */
-          if (7 < (uint32_t)factionIndex) {
-            factionIndex = 7;
-          }
-          armyRuntime->factionIndex = factionIndex;
-          if ((creationFlags & ARMY_CREATE_UNLOCK_TECHNOLOGY) != 0) {
-            ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
-                      (factionIndex,(ModelDefinitionHierarchyNodeAddress32)armyAssetRecord);
-          }
-          textureSet = g_ArmyGraphicsBindings[factionIndex].textureSet;
-          paletteAsset = g_ArmyGraphicsBindings[factionIndex].paletteAsset;
-          rootNodeOrClassValue = armyAssetRecord[7].selectionDetailTemplateVariantIndex;
-          classValue88 = armyAssetRecord[7].registryId;
-          armyRuntime->aiSiteScoreWeight = armyAssetRecord[7].byteSize;
-          armyRuntime->aiFactionAnchorScoreWeight = rootNodeOrClassValue;
-          armyRuntime->aiSecondaryWorkspaceScoreWeight = classValue88;
-          linkedEntity = (GameEntityRuntime *)armyAssetRecord[1].byteSize;
-          armyRuntime->occupancyMarkRadius = 0;
-          armyRuntime->visibilityRadius = 0;
-          armyRuntime->visibilityHeightOffset = 0;
-          armyRuntime->aiUnitFlags = 0;
-          rootNodeOrClassValue = armyAssetRecord->rootNodeOffsetOrPointer;
-          (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
-          (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
-          armyRuntime->linkedEntityRuntime = linkedEntity;
-          (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = NULL;
-          armyRuntime->aiUnitState = 0;
-          modelDefinitionId = ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,rootNodeOrClassValue);
-          modelCreateError = ModelRuntimePool_CreateInstanceByDefinitionId
-                             (paletteAsset,textureSet,armyRuntime,modelDefinitionId,worldRuntime,
-                              &createdModelRuntime);
-          resultOrModelNode = (ModelRuntimeNode *)(uintptr_t)modelCreateError;
-          if (modelCreateError == 0) {
-            modelNodeRuntime = createdModelRuntime->rootModelNodeOrSavedOffset.modelNode;
-            (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = createdModelRuntime;
-            armyRuntime->modelNodeRuntime = modelNodeRuntime;
-            /* worldYQ12 goes to translation.x and worldXQ12 to translation.y throughout, as in the original; the
-               parameter names are swapped relative to the node fields */
-            (modelNodeRuntime->worldTransform).translation.x = worldYQ12;
-            (modelNodeRuntime->worldTransform).translation.y = worldXQ12;
-            (modelNodeRuntime->worldTransform).translation.z = 0;
-            armyRuntime->movementRetryCountdown = 0;
-            armyRuntime->fallbackWorldYQ12 = worldYQ12;
-            armyRuntime->fallbackWorldXQ12 = worldXQ12;
-            armyRuntime->movementTarget0Q12 = worldYQ12;
-            armyRuntime->movementTarget1Q12 = worldXQ12;
-            (modelNodeRuntime->modelPayload).worldRotationAngle0 = 0;
-            (modelNodeRuntime->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
-            (modelNodeRuntime->modelPayload).worldRotationAngle2 = orientationAngle;
-            armyRuntime->commandTargetArmyRuntime = NULL;
-            armyRuntime->assignedTargetArmyRuntime = 0;
-            armyRuntime->commandCoordinate0Q12 = 0;
-            armyRuntime->commandCoordinate1Q12 = 0;
-            armyRuntime->commandCoordinate2Q12 = 0;
-            armyRuntime->commandModeFlags = 0;
-            armyRuntime->commandGeneration = 0;
-            (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
-            (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
-            (armyRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.
-            coordinateOrTargetQ12 = worldYQ12;
-            (armyRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.
-            coordinateOrTargetQ12 = worldXQ12;
-            armyRuntime->movementPosition0Q12 = worldYQ12;
-            armyRuntime->movementPosition1Q12 = worldXQ12;
-            armyRuntime->movementStateFlags = 0;
-            armyRuntime->actionVector1Q12 = 0;
-            armyRuntime->terrainOccupancyMask0 = 0;
-            armyRuntime->terrainOccupancyMask1 = 0;
-            armyRuntime->runtimeState40 = 0;
-            childCreateFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursive
-                              (factionIndex,paletteAsset,textureSet,
-                               (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime,rootNodeOrClassValue,worldRuntime)
-            ;
-            resultOrModelNode = (ModelRuntimeNode *)worldYQ12;
-            if (!childCreateFailed) {
-              WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
-              ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
-              /* remainingOrDefinition: the model runtime's definition (its first dword). Terrain contact by the
-                 definition's contact kind; depth class by its model class; depth radius from the definition. */
-              remainingOrDefinition =
-                   (int)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime->definitionOrSavedId.runtimeDefinition;
-              g_ArmyPlacementContactKindDispatchTable.callbacks[((ModelDefinition *)remainingOrDefinition)->placementContactKindIndex]
-                        (((ModelDefinition *)remainingOrDefinition)->placementHeightOffsetQ12,
-                         (modelNodeRuntime->worldTransform).translation.y,
-                         (modelNodeRuntime->worldTransform).translation.x,modelNodeRuntime,worldRuntime)
-              ;
-              ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
-              armyRuntime->depthBinClass =
-                   (ModelRuntimeClassId)
-                    g_ArmyRuntimeDepthBinClassByModelClass[((ModelDefinition *)remainingOrDefinition)->runtimeClassId];
-              ModelNodeRuntime_UpdateDepthBinMasks
-                        (((ModelDefinition *)remainingOrDefinition)->footprintRadius,modelNodeRuntime);
-              ArmyRuntime_InitializeTerrainOccupancyFlags(worldRuntime,armyRuntime);
-              ModelNodeRuntime_RefreshStateTint(modelNodeRuntime);
-              ArmyRuntime_RebuildDerivedSelectionMetrics(armyRuntime);
-              return armyRuntime;
-            }
-          }
-          /* creating the model or its children failed */
-          goto ReturnFailure;
-        }
-        registryCursor++;
-        remainingOrDefinition--;
-      } while (remainingOrDefinition != 0);
-      /* the asset id as decimal text (base 10, at least one digit) for the error message */
-      g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath);
-      resultOrModelNode = (ModelRuntimeNode *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
-      break;
-    }
-    armyRuntime++;
-    armySlotsRemaining--;
-    slotScanContinueValue = armySlotsRemaining;
+  ModelRuntimeNode *modelNodeRuntime;
+  bool childCreateFailed;
+  ModelDefinition *definition;
+
+  armyRuntime = ArmyRuntimePool_FindFreeSlot();
+  if (armyRuntime == NULL) {
+    return ArmyRuntime_FailCreateInstance(FATAL_ERROR_GENERAL_FAILURE,outError);
   }
-ReturnFailure:
-  if (outError != NULL) {
-    *outError = (uint32_t)resultOrModelNode;
+  armyAssetRecord = ArmyAssetRegistry_FindRecordById(armyAssetId);
+  if (armyAssetRecord == NULL) {
+    /* the asset id as decimal text (base 10, at least one digit) for the error message */
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath);
+    return ArmyRuntime_FailCreateInstance(FATAL_ERROR_ARMY_ID_NOT_FOUND,outError);
   }
-  return NULL;
+  armyRuntime->armyAssetId = armyAssetId;
+  if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
+      (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
+    selectedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                      (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer);
+    ((ModelDefinition *)selectedDefinition)->builtCount++;
+  }
+  /* the graphics bindings exist for faction slots 0-7 only */
+  if (7 < (uint32_t)factionIndex) {
+    factionIndex = 7;
+  }
+  armyRuntime->factionIndex = factionIndex;
+  if ((creationFlags & ARMY_CREATE_UNLOCK_TECHNOLOGY) != 0) {
+    ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
+              (factionIndex,(ModelDefinitionHierarchyNodeAddress32)armyAssetRecord);
+  }
+  textureSet = g_ArmyGraphicsBindings[factionIndex].textureSet;
+  paletteAsset = g_ArmyGraphicsBindings[factionIndex].paletteAsset;
+  anchorScoreWeight = armyAssetRecord[7].selectionDetailTemplateVariantIndex;
+  secondaryWorkspaceScoreWeight = armyAssetRecord[7].registryId;
+  armyRuntime->aiSiteScoreWeight = armyAssetRecord[7].byteSize;
+  armyRuntime->aiFactionAnchorScoreWeight = anchorScoreWeight;
+  armyRuntime->aiSecondaryWorkspaceScoreWeight = secondaryWorkspaceScoreWeight;
+  linkedEntity = (GameEntityRuntime *)armyAssetRecord[1].byteSize;
+  armyRuntime->occupancyMarkRadius = 0;
+  armyRuntime->visibilityRadius = 0;
+  armyRuntime->visibilityHeightOffset = 0;
+  armyRuntime->aiUnitFlags = 0;
+  rootNodeReference = armyAssetRecord->rootNodeOffsetOrPointer;
+  (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
+  (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
+  armyRuntime->linkedEntityRuntime = linkedEntity;
+  (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = NULL;
+  armyRuntime->aiUnitState = 0;
+  modelDefinitionId = ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,rootNodeReference);
+  modelCreateError = ModelRuntimePool_CreateInstanceByDefinitionId
+                     (paletteAsset,textureSet,armyRuntime,modelDefinitionId,worldRuntime,
+                      &createdModelRuntime);
+  if (modelCreateError != 0) {
+    return ArmyRuntime_FailCreateInstance(modelCreateError,outError);
+  }
+  modelNodeRuntime = createdModelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = createdModelRuntime;
+  armyRuntime->modelNodeRuntime = modelNodeRuntime;
+  /* worldYQ12 goes to translation.x and worldXQ12 to translation.y throughout, as in the original; the
+     parameter names are swapped relative to the node fields */
+  (modelNodeRuntime->worldTransform).translation.x = worldYQ12;
+  (modelNodeRuntime->worldTransform).translation.y = worldXQ12;
+  (modelNodeRuntime->worldTransform).translation.z = 0;
+  armyRuntime->movementRetryCountdown = 0;
+  armyRuntime->fallbackWorldYQ12 = worldYQ12;
+  armyRuntime->fallbackWorldXQ12 = worldXQ12;
+  armyRuntime->movementTarget0Q12 = worldYQ12;
+  armyRuntime->movementTarget1Q12 = worldXQ12;
+  (modelNodeRuntime->modelPayload).worldRotationAngle0 = 0;
+  (modelNodeRuntime->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
+  (modelNodeRuntime->modelPayload).worldRotationAngle2 = orientationAngle;
+  armyRuntime->commandTargetArmyRuntime = NULL;
+  armyRuntime->assignedTargetArmyRuntime = 0;
+  armyRuntime->commandCoordinate0Q12 = 0;
+  armyRuntime->commandCoordinate1Q12 = 0;
+  armyRuntime->commandCoordinate2Q12 = 0;
+  armyRuntime->commandModeFlags = 0;
+  armyRuntime->commandGeneration = 0;
+  (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
+  (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
+  (armyRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.coordinateOrTargetQ12 = worldYQ12;
+  (armyRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.coordinateOrTargetQ12 = worldXQ12;
+  armyRuntime->movementPosition0Q12 = worldYQ12;
+  armyRuntime->movementPosition1Q12 = worldXQ12;
+  armyRuntime->movementStateFlags = 0;
+  armyRuntime->actionVector1Q12 = 0;
+  armyRuntime->terrainOccupancyMask0 = 0;
+  armyRuntime->terrainOccupancyMask1 = 0;
+  armyRuntime->runtimeState40 = 0;
+  childCreateFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursive
+                    (factionIndex,paletteAsset,textureSet,
+                     (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime,rootNodeReference,worldRuntime);
+  if (childCreateFailed) {
+    /* Original quirk: the error is worldYQ12 (see above). */
+    return ArmyRuntime_FailCreateInstance((uint32_t)worldYQ12,outError);
+  }
+  WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
+  ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
+  /* terrain contact by the definition's contact kind; depth class by its model class; depth radius from the
+     definition */
+  definition = (ModelDefinition *)
+               (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime->definitionOrSavedId.runtimeDefinition;
+  g_ArmyPlacementContactKindDispatchTable.callbacks[definition->placementContactKindIndex]
+            (definition->placementHeightOffsetQ12,(modelNodeRuntime->worldTransform).translation.y,
+             (modelNodeRuntime->worldTransform).translation.x,modelNodeRuntime,worldRuntime);
+  ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+  armyRuntime->depthBinClass =
+       (ModelRuntimeClassId)g_ArmyRuntimeDepthBinClassByModelClass[definition->runtimeClassId];
+  ModelNodeRuntime_UpdateDepthBinMasks(definition->footprintRadius,modelNodeRuntime);
+  ArmyRuntime_InitializeTerrainOccupancyFlags(worldRuntime,armyRuntime);
+  ModelNodeRuntime_RefreshStateTint(modelNodeRuntime);
+  ArmyRuntime_RebuildDerivedSelectionMetrics(armyRuntime);
+  return armyRuntime;
 }
 
 

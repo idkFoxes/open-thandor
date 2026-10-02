@@ -27,39 +27,36 @@ bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
   uint32_t levelTitleTextId;
   EngineFileHandle fileHandle;
   int *levelAsset;
-  bool failed;
   uint32_t matchCount;
 
   /* on failure fileHandle holds the error code but is not used */
-  failed = !Package_Mount(levelPathUtf16,&fileHandle);
-  if (!failed) {
-    if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
-                          (uint16_t *)u_level___lev_005460a6,fileHandle,&matchCount) &&
-        matchCount != 0) {
-      levelAsset = Package_LoadEntry((uint16_t *)LEVEL_PACKAGE_FOUND_ENTRY,NULL);
-      if (levelAsset != NULL) {
-        /* dword 0: asset magic, dword 3: converter version */
-        if (*levelAsset == ASSET_MAGIC_LEV && levelAsset[3] == PCK_CONVERTER_LEV_00070001) {
-          levelTitleTextId = levelAsset[92]; /* LEV +0x170 */
-          Resource_Release(levelAsset);
-          if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
-                                (uint16_t *)u_level___str_005460be,fileHandle,&matchCount) &&
-              matchCount != 0 &&
-              (failed = TextResourcePage_LoadCompatibilityAliases
-                                 (levelTitleTextId,(uint16_t *)LEVEL_PACKAGE_FOUND_ENTRY),
-               !failed)) {
-            return failed;
-          }
-        }
-        else {
-          Resource_Release(levelAsset);
+  if (!Package_Mount(levelPathUtf16,&fileHandle)) {
+    return true; /* nothing mounted, nothing to unmount */
+  }
+  if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
+                        (uint16_t *)u_level___lev_005460a6,fileHandle,&matchCount) &&
+      matchCount != 0) {
+    levelAsset = Package_LoadEntry((uint16_t *)LEVEL_PACKAGE_FOUND_ENTRY,NULL);
+    if (levelAsset != NULL) {
+      /* dword 0: asset magic, dword 3: converter version */
+      if (*levelAsset == ASSET_MAGIC_LEV && levelAsset[3] == PCK_CONVERTER_LEV_00070001) {
+        levelTitleTextId = levelAsset[92]; /* LEV +0x170 */
+        Resource_Release(levelAsset);
+        if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
+                              (uint16_t *)u_level___str_005460be,fileHandle,&matchCount) &&
+            matchCount != 0 &&
+            !TextResourcePage_LoadCompatibilityAliases(levelTitleTextId,
+                                                        (uint16_t *)LEVEL_PACKAGE_FOUND_ENTRY)) {
+          return false; /* valid level: the package stays mounted */
         }
       }
+      else {
+        Resource_Release(levelAsset);
+      }
     }
-    Package_Unmount(fileHandle);
-    failed = true;
   }
-  return failed;
+  Package_Unmount(fileHandle);
+  return true;
 }
 
 
@@ -745,10 +742,12 @@ bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
   uint16_t patternCodeUnit;
 
   do {
-    while (patternCodeUnit = *pattern, pattern++, patternCodeUnit == '*') {
+    patternCodeUnit = *pattern++;
+    while (patternCodeUnit == '*') {
       while (*candidate != '.' && *candidate != 0) {
         candidate++;
       }
+      patternCodeUnit = *pattern++;
     }
     if (patternCodeUnit != '?' && patternCodeUnit != *candidate) {
       return true; /* mismatch */
@@ -908,7 +907,7 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
 
 {
   uint32_t codeUnit;
-  int remainingOrLength;
+  int pathLength;
   int compareRemaining;
   int slotsRemaining;
   PckEntryCount entriesRemaining;
@@ -918,31 +917,27 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
   bool matched;
   PckEntryHeader *currentEntry;
 
-  remainingOrLength = PCK_ENTRY_PATH_UNITS;
-  pathCursor = path;
+  /* Lowercase the path in place and count its code units, terminator included. A path that reaches
+     PCK_ENTRY_PATH_UNITS code units (terminator included) is rejected after its last unit was written. */
+  pathLength = 0;
   do {
-    compareRemaining = remainingOrLength;
-    codeUnit = *pathCursor;
+    codeUnit = path[pathLength];
     if ('A' - 1 < codeUnit && codeUnit < 'Z' + 1) {
       codeUnit = codeUnit + ('a' - 'A');
     }
-    *pathCursor = (uint16_t)codeUnit;
-    remainingOrLength = compareRemaining - 1;
-    if (remainingOrLength == 0) return NULL; /* path too long */
-    pathCursor = pathCursor + 1;
+    path[pathLength] = (uint16_t)codeUnit;
+    pathLength++;
+    if (pathLength == PCK_ENTRY_PATH_UNITS) return NULL; /* path too long */
   } while (codeUnit != 0);
   mountSlot = g_PackageMountSlots;
-  slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
-  /* the path length in code units, terminator included */
-  remainingOrLength = -(compareRemaining + -(PCK_ENTRY_PATH_UNITS + 1));
-  do {
+  for (slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     currentEntry = mountSlot->entryHeaders;
-    entriesRemaining = mountSlot->entryCount;
-    if ((currentEntry != NULL) && (entriesRemaining != 0)) {
-      do {
-        /* REPE CMPSW over the lowercased path length including its terminator. */
+    if (currentEntry != NULL) {
+      for (entriesRemaining = mountSlot->entryCount; entriesRemaining != 0;
+           entriesRemaining = entriesRemaining - 1) {
+        /* compare the lowercased path, terminator included, with the entry's path */
         matched = false;
-        compareRemaining = remainingOrLength;
+        compareRemaining = pathLength;
         pathCursor = path;
         nameCursor = currentEntry->path;
         while (compareRemaining != 0) {
@@ -957,12 +952,10 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
           return currentEntry;
         }
         currentEntry++;
-        entriesRemaining = entriesRemaining - 1;
-      } while (entriesRemaining != 0);
+      }
     }
     mountSlot++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   return NULL;
 }
 

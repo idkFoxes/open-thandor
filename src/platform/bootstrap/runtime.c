@@ -212,71 +212,72 @@ uint32_t GameData_ResetDefaults(void)
 /* Address: 0x00512F60.
    Loads the game data of a level or savegame from the mounted packages: daten.hex is the faction image,
    stat.hex replaces the stat table and oldunit.hex (record count, primary table, secondary table) fills the
-   old-unit tables; without oldunit.hex both tables and the count are cleared. CF is set when daten.hex or
-   stat.hex cannot be loaded.
+   old-unit tables; without oldunit.hex both tables and the count are cleared. Returns true (failure) when
+   daten.hex or stat.hex cannot be loaded, false otherwise.
 */
 bool GameData_LoadExternalTables(void)
 
 {
   void *previousStatTable;
-  uint32_t *oldUnitBufferOrCursor;
+  uint32_t *oldUnitBuffer;
+  uint32_t *clearCursor;
   int remainingCount;
   uint32_t *sourceCursor;
   uint32_t *destinationCursor;
   void *statTable;
 
-  remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4;
-  oldUnitBufferOrCursor = g_GameDataAuxState.pairPressureMatrix8x8;
-  for (; remainingCount != 0; remainingCount--) {
-    *oldUnitBufferOrCursor = 0;
-    oldUnitBufferOrCursor++;
+  clearCursor = g_GameDataAuxState.pairPressureMatrix8x8;
+  for (remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4; remainingCount != 0;
+      remainingCount--) {
+    *clearCursor = 0;
+    clearCursor++;
   }
-  if (Package_LoadEntryIntoBuffer
+  if (!Package_LoadEntryIntoBuffer
                     (GAME_FACTION_IMAGE_BYTES,(uint8_t *)&g_GameFactionRuntimeImage,
                      (uint16_t *)u_daten_hex_0050e054,NULL)) {
-    statTable = Package_LoadEntry((uint16_t *)u_stat_hex_0050e082,NULL);
-    previousStatTable = g_GameStatTableImage;
-    if (statTable != NULL) {
-      LOCK();
-      UNLOCK();
-      g_GameStatTableImage = statTable;
-      g_MemoryApi.free(previousStatTable);
-      oldUnitBufferOrCursor = Package_LoadEntry((uint16_t *)u_oldunit_hex_0050e094,NULL);
-      if (oldUnitBufferOrCursor == NULL) {
-        oldUnitBufferOrCursor = g_OldUnitPrimaryTable;
-        for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-          *oldUnitBufferOrCursor = 0;
-          oldUnitBufferOrCursor++;
-        }
-        oldUnitBufferOrCursor = g_OldUnitSecondaryTable;
-        for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-          *oldUnitBufferOrCursor = 0;
-          oldUnitBufferOrCursor++;
-        }
-        g_OldUnitRecordCount = 0;
-      }
-      else {
-        g_OldUnitRecordCount = *oldUnitBufferOrCursor;
-        destinationCursor = g_OldUnitPrimaryTable;
-        sourceCursor = oldUnitBufferOrCursor;
-        /* the source advances before each copy, so the first dword (the count) is skipped */
-        for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; sourceCursor++, remainingCount != 0;
-            remainingCount--) {
-          *destinationCursor = *sourceCursor;
-          destinationCursor++;
-        }
-        destinationCursor = g_OldUnitSecondaryTable;
-        for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-          *destinationCursor = *sourceCursor;
-          sourceCursor++;
-          destinationCursor++;
-        }
-        Resource_Release(oldUnitBufferOrCursor);
-      }
-      return false;
-    }
+    return true;
   }
-  return true;
+  statTable = Package_LoadEntry((uint16_t *)u_stat_hex_0050e082,NULL);
+  previousStatTable = g_GameStatTableImage;
+  if (statTable == NULL) {
+    return true;
+  }
+  LOCK();
+  UNLOCK();
+  g_GameStatTableImage = statTable;
+  g_MemoryApi.free(previousStatTable);
+  oldUnitBuffer = Package_LoadEntry((uint16_t *)u_oldunit_hex_0050e094,NULL);
+  if (oldUnitBuffer == NULL) {
+    clearCursor = g_OldUnitPrimaryTable;
+    for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
+      *clearCursor = 0;
+      clearCursor++;
+    }
+    clearCursor = g_OldUnitSecondaryTable;
+    for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
+      *clearCursor = 0;
+      clearCursor++;
+    }
+    g_OldUnitRecordCount = 0;
+    return false;
+  }
+  /* oldunit.hex: the record count, then the primary and the secondary table */
+  g_OldUnitRecordCount = *oldUnitBuffer;
+  sourceCursor = oldUnitBuffer + 1;
+  destinationCursor = g_OldUnitPrimaryTable;
+  for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
+    *destinationCursor = *sourceCursor;
+    sourceCursor++;
+    destinationCursor++;
+  }
+  destinationCursor = g_OldUnitSecondaryTable;
+  for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
+    *destinationCursor = *sourceCursor;
+    sourceCursor++;
+    destinationCursor++;
+  }
+  Resource_Release(oldUnitBuffer);
+  return false;
 }
 
 
@@ -357,16 +358,16 @@ HINSTANCE DynDLL_Load(char *moduleName)
 uint32_t DynDLL_Unload(char *moduleName)
 
 {
-  uint32_t modulesRemainingOrResult; /* one register in the original: the loop count, then FreeLibrary's result */
+  uint32_t modulesRemaining;
+  uint32_t freeResult;
   DynamicModuleEntry *moduleEntryCursor;
 
   moduleEntryCursor = g_DynamicModules;
-  modulesRemainingOrResult = g_DynamicModuleCount;
-  for (; modulesRemainingOrResult != 0; modulesRemainingOrResult--) {
+  for (modulesRemaining = g_DynamicModuleCount; modulesRemaining != 0; modulesRemaining--) {
     if (moduleName == moduleEntryCursor->name) {
-      modulesRemainingOrResult = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[BOOTSTRAP_API_FREE_LIBRARY].destination)(moduleEntryCursor->module);
-      if (modulesRemainingOrResult != 0) {
-        return modulesRemainingOrResult;
+      freeResult = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[BOOTSTRAP_API_FREE_LIBRARY].destination)(moduleEntryCursor->module);
+      if (freeResult != 0) {
+        return freeResult;
       }
       break;
     }
@@ -552,7 +553,8 @@ void __cdecl Game_Run(void)
 
 {
   uint32_t renderingInitError;
-  uint32_t loadResultOrWidth; /* Game_LoadCoreAssets result, later the saved display width */
+  uint32_t loadResult;
+  uint32_t displayWidth;
   uint32_t displayHeight;
   uint32_t bitsPerPixel;
   uint32_t adapterIndex;
@@ -566,25 +568,25 @@ void __cdecl Game_Run(void)
   FatalError_ExitIfFailed(FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE,!cursorFrameSet);
   renderingInitError = GameRuntime_InitializeSpatialAudioAndRendering();
   FatalError_ExitIfFailed(renderingInitError,renderingInitError != 0);
-  loadResultOrWidth = Game_LoadCoreAssets();
-  Thandor_Log("Game_LoadCoreAssets -> 0x%08X", loadResultOrWidth);
-  /* 0 with CF clear on success, an error code with CF set otherwise */
-  checkedValue = FatalError_ExitIfFailed(loadResultOrWidth,loadResultOrWidth != 0);
-  /* keeps EAX: a movie that cannot start is reported with the previous value */
+  loadResult = Game_LoadCoreAssets();
+  Thandor_Log("Game_LoadCoreAssets -> 0x%08X", loadResult);
+  /* 0 on success, an error code otherwise */
+  checkedValue = FatalError_ExitIfFailed(loadResult,loadResult != 0);
+  /* a movie that cannot start is reported with the previous checked value */
   introMoviesFailed = Game_PlayIntroMovies();
   FatalError_ExitIfFailed(checkedValue,introMoviesFailed);
   PersistentSettings_Load();
   /* ProcessEntry started in 640x480x16; switch only when the saved mode differs */
-  loadResultOrWidth = PersistentSettings_Read(GAME_START_DISPLAY_WIDTH,PERSISTENT_SETTING_DISPLAY_WIDTH);
+  displayWidth = PersistentSettings_Read(GAME_START_DISPLAY_WIDTH,PERSISTENT_SETTING_DISPLAY_WIDTH);
   displayHeight = PersistentSettings_Read(GAME_START_DISPLAY_HEIGHT,PERSISTENT_SETTING_DISPLAY_HEIGHT);
   bitsPerPixel = PersistentSettings_Read(PERSISTENT_DEFAULT_BITS_PER_PIXEL,PERSISTENT_SETTING_BITS_PER_PIXEL);
-  if (loadResultOrWidth != GAME_START_DISPLAY_WIDTH || displayHeight != GAME_START_DISPLAY_HEIGHT ||
+  if (displayWidth != GAME_START_DISPLAY_WIDTH || displayHeight != GAME_START_DISPLAY_HEIGHT ||
       bitsPerPixel != PERSISTENT_DEFAULT_BITS_PER_PIXEL) {
     adapterIndex = PersistentSettings_Read(PERSISTENT_DEFAULT_ADAPTER_INDEX,PERSISTENT_SETTING_ADAPTER_INDEX);
     if (g_GraphicsAdapterCount <= adapterIndex) {
       adapterIndex = 0;
     }
-    if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,loadResultOrWidth,&displayModeError)) {
+    if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
       FatalError_ExitIfFailed(displayModeError,true);
     }
     PersistentSettings_Write(g_ActiveGraphicsAdapterIndex,PERSISTENT_SETTING_ADAPTER_INDEX);
@@ -628,85 +630,70 @@ uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 }
 
 
-/* Address: 0x00573140.
-   Loads everything the frontend needs once at startup: takes the CD path from the registry, mounts the patch,
-   level and core packages, creates the seven UI button sounds, moves the screenshot name past the existing
-   screen??.pcx files, loads the text pages, applies the sound settings and allocates the fixed runtime
-   buffers. (The original also loaded and bound the PCX codec module engine\pcx.fnc here; open-thandor
-   reads and writes PCX in C instead.) Returns 0, or the error code of the first failing step (the caller
-   treats non-zero as failure).
-*/
-uint32_t __cdecl Game_LoadCoreAssets(void)
+/* HKLM\Software\Planet4\Thandor "CD": movies are looked up under <CD>\Thandor first. Only done with the
+   arena heap allocator. */
+static void CoreAssets_ReadCdPathFromRegistry(void)
 
 {
-  wchar_t screenshotTensDigit;
-  int statusOrCount;
-  SoundSampleAsset *loadedResource; /* a button sample */
-  FncModuleHeader *module; /* a button voice set; the error code on the failure paths */
-  uint16_t *textBuffer;
-  uint32_t soundOptionsOrBufferBase;
-  AudioMixerGainQ15 uiSoundGain;
-  MovieAudioGainQ15 movieGain;
-  MovieAudioGainQ15 alternateMovieGain;
-  float *splineBuffer;
-  FrontendPlayerRuntimeRecord *playerRecordCursor;
-  uint8_t *scratchCursor;
-  TextResourceId resourceId;
-  FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
-  uint32_t aiInitError;
-  uint32_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
-  uint32_t voiceSetError;
-  DirectSoundVoiceSet *buttonVoiceSet;
-  void *screenshotFile;
-  uint16_t *resolvedText;
-  uint32_t textPageError; /* the failing text page's error code */
-  GraphicsTextureSourceAsset *panelTexture;
-  uint32_t panelTextureError;
-  uint32_t allocError;
-  void *allocPayload;
-  uint32_t loadErrorCode;
-  
-  /* HKLM\Software\Planet4\Thandor "CD": movies are looked up under <CD>\Thandor first */
-  if ((g_MemoryApi.alloc == ArenaHeap_Alloc) &&
-     (statusOrCount = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_OPEN_KEY_EX_A].destination)
-                        (HKEY_LOCAL_MACHINE,s_Software_Planet4_Thandor_00572e20,0,KEY_READ,
-                         &g_InstallRegistryKeyHandle), statusOrCount == ERROR_SUCCESS)) {
-    statusOrCount = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_QUERY_VALUE_EX_A].destination)
-                      (g_InstallRegistryKeyHandle,&s_InstallRegistryValueNameCD,0,
-                       &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
-                       &g_InstallRegistryValueDataCapacityBytes);
-    if ((statusOrCount == ERROR_SUCCESS) && (g_InstallRegistryValueType == REG_SZ)) {
-      Text_CopyNarrowToUtf16
-                (sizeof g_InstallDirectoryScratchUtf16,g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
-      WidePath_CombineDirectoryAndLeaf
-                (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)u_Thandor_00572e10,g_InstallDirectoryScratchUtf16);
-    }
-    ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_CLOSE_KEY].destination)(g_InstallRegistryKeyHandle);
+  int status;
+
+  if (g_MemoryApi.alloc != ArenaHeap_Alloc) {
+    return;
   }
-  {
-    /* open-thandor: the full-length movies from the CD (Ende*.flm, Intro2.flm) live in the
-       flm folder of the game directory, so the CD is no longer needed. Movie_Open looks under
-       g_LooseMoviePathPrefix before the packages, which only hold still-image stand-ins for
-       these movies; point the prefix at the game directory when that folder exists. */
-    static const uint16_t flmLeaf[4] = {'f','l','m',0};
-    static uint16_t localFlmPath[256];
-    char narrow[256];
-    int k;
+  status = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_OPEN_KEY_EX_A].destination)
+             (HKEY_LOCAL_MACHINE,s_Software_Planet4_Thandor_00572e20,0,KEY_READ,&g_InstallRegistryKeyHandle);
+  if (status != ERROR_SUCCESS) {
+    return;
+  }
+  status = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_QUERY_VALUE_EX_A].destination)
+             (g_InstallRegistryKeyHandle,&s_InstallRegistryValueNameCD,0,
+              &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
+              &g_InstallRegistryValueDataCapacityBytes);
+  if ((status == ERROR_SUCCESS) && (g_InstallRegistryValueType == REG_SZ)) {
+    Text_CopyNarrowToUtf16
+              (sizeof g_InstallDirectoryScratchUtf16,g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
     WidePath_CombineDirectoryAndLeaf
-              (localFlmPath,(uint16_t *)flmLeaf,g_ExecutableDirectoryUtf16);
-    if (Thandor_DirectoryExistsW(localFlmPath)) {
-      uint16_t *directory = g_ExecutableDirectoryUtf16;
-      for (k = 0; (k < 255) && (directory[k] != 0); k++) {
-        g_LooseMoviePathPrefix.codeUnits[k] = directory[k];
-      }
-      g_LooseMoviePathPrefix.codeUnits[k] = 0;
-    }
-    for (k = 0; (k < 255) && (g_LooseMoviePathPrefix.codeUnits[k] != 0); k++) {
-      narrow[k] = (char)g_LooseMoviePathPrefix.codeUnits[k];
-    }
-    narrow[k] = 0;
-    Thandor_Log("movie CD path: \"%s\"", narrow);
+              (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)u_Thandor_00572e10,g_InstallDirectoryScratchUtf16);
   }
+  ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_CLOSE_KEY].destination)(g_InstallRegistryKeyHandle);
+}
+
+
+/* open-thandor: the full-length movies from the CD (Ende*.flm, Intro2.flm) live in the flm folder of the
+   game directory, so the CD is no longer needed. Movie_Open looks under g_LooseMoviePathPrefix before the
+   packages, which only hold still-image stand-ins for these movies; point the prefix at the game directory
+   when that folder exists. */
+static void CoreAssets_UseLocalMovieFolder(void)
+
+{
+  static const uint16_t flmLeaf[4] = {'f','l','m',0};
+  static uint16_t localFlmPath[256];
+  char narrow[256];
+  int k;
+
+  WidePath_CombineDirectoryAndLeaf
+            (localFlmPath,(uint16_t *)flmLeaf,g_ExecutableDirectoryUtf16);
+  if (Thandor_DirectoryExistsW(localFlmPath)) {
+    uint16_t *directory = g_ExecutableDirectoryUtf16;
+    for (k = 0; (k < 255) && (directory[k] != 0); k++) {
+      g_LooseMoviePathPrefix.codeUnits[k] = directory[k];
+    }
+    g_LooseMoviePathPrefix.codeUnits[k] = 0;
+  }
+  for (k = 0; (k < 255) && (g_LooseMoviePathPrefix.codeUnits[k] != 0); k++) {
+    narrow[k] = (char)g_LooseMoviePathPrefix.codeUnits[k];
+  }
+  narrow[k] = 0;
+  Thandor_Log("movie CD path: \"%s\"", narrow);
+}
+
+
+/* Mounts patchNN.pck, levelNN.pck and the fixed core packages, keeping the core package handles. */
+static void CoreAssets_MountPackages(void)
+
+{
+  uint32_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
+
   /* patchNN.pck and then levelNN.pck, NN counting down to "00". decimalDigits.codeUnits[0] is the tens
      digit, [1] the ones digit; adding UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP to the packed pair decrements the
      tens digit and turns the ones digit from '0' - 1 back into '9'. The patch count starts at "00", so only
@@ -749,349 +736,437 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   if (Package_Mount((uint16_t *)u_level_pck_00572ec2,&packageHandle)) {
     g_LevelPackageHandle = packageHandle;
   }
-  if (!Resource_Load((uint16_t *)u_sound_button0_sam_00572f06,(void **)&loadedResource,NULL,&loadErrorCode)) {
-    return loadErrorCode;
+}
+
+
+/* Loads one UI button sample and creates its voice set in *voiceSetSlot; the sample is released again
+   either way once loaded. Returns false with the error code in *error when the sample cannot be loaded or
+   the voice set cannot be created. */
+static bool CoreAssets_LoadButtonSound(uint16_t *samplePath,DirectSoundVoiceSet **voiceSetSlot,uint32_t *error)
+
+{
+  SoundSampleAsset *sample;
+  DirectSoundVoiceSet *voiceSet;
+  uint32_t voiceSetError;
+
+  if (!Resource_Load(samplePath,(void **)&sample,NULL,error)) {
+    return false;
   }
-  voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
-  module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
-  if (voiceSetError == 0) {
-    Resource_Release(loadedResource);
-    g_UiButtonSoundVoiceSets7[0] = (DirectSoundVoiceSet *)module;
-    if (!Resource_Load((uint16_t *)u_sound_button1_sam_00572f2a,(void **)&loadedResource,NULL,&loadErrorCode)) {
-      return loadErrorCode;
-    }
-    voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
-    module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
-    if (voiceSetError == 0) {
-      Resource_Release(loadedResource);
-      g_UiButtonSoundVoiceSets7[1] = (DirectSoundVoiceSet *)module;
-      if (!Resource_Load((uint16_t *)u_sound_button2_sam_00572f4e,(void **)&loadedResource,NULL,&loadErrorCode)) {
-        return loadErrorCode;
-      }
-      voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
-      module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
-      if (voiceSetError == 0) {
-        Resource_Release(loadedResource);
-        g_UiButtonSoundVoiceSets7[2] = (DirectSoundVoiceSet *)module;
-        if (!Resource_Load((uint16_t *)u_sound_button3_sam_00572f72,(void **)&loadedResource,NULL,&loadErrorCode)) {
-          return loadErrorCode;
-        }
-        voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
-        module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
-        if (voiceSetError == 0) {
-          Resource_Release(loadedResource);
-          g_UiButtonSoundVoiceSets7[3] = (DirectSoundVoiceSet *)module;
-          if (!Resource_Load((uint16_t *)u_sound_button4_sam_00572f96,(void **)&loadedResource,NULL,&loadErrorCode)) {
-            return loadErrorCode;
-          }
-          voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
-          module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
-          if (voiceSetError == 0) {
-            Resource_Release(loadedResource);
-            g_UiButtonSoundVoiceSets7[4] = (DirectSoundVoiceSet *)module;
-            if (!Resource_Load((uint16_t *)u_sound_button5_sam_00572fba,(void **)&loadedResource,NULL,&loadErrorCode)) {
-              return loadErrorCode;
-            }
-            voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
-            module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
-            if (voiceSetError == 0) {
-              Resource_Release(loadedResource);
-              g_UiButtonSoundVoiceSets7[5] = (DirectSoundVoiceSet *)module;
-              if (!Resource_Load((uint16_t *)u_sound_button6_sam_00572fde,(void **)&loadedResource,NULL,&loadErrorCode)) {
-                return loadErrorCode;
-              }
-              voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
-              module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
-              if (voiceSetError == 0) {
-                Resource_Release(loadedResource);
-                g_UiButtonSoundVoiceSets7[6] = (DirectSoundVoiceSet *)module;
-                /* u_Dscreen00_pcx_00572e3a + 1 is "screen00.pcx" ([7] tens digit, [8] ones digit): count up
-                   to the first screenshot file that does not exist yet */
-                do {
-                  do {
-                    if (g_FileSystemOpen(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1),&screenshotFile) != 0)
-                      goto bindDebugOverlayTexts;
-                    u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + 1;
-                    g_FileSystemClose(screenshotFile);
-                    screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
-                  } while ((uint16_t)u_Dscreen00_pcx_00572e3a[8] < '9' + 1);
-                  u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + 1;
-                  u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] - 10;
-                } while ((uint16_t)u_Dscreen00_pcx_00572e3a[7] < '9' + 1);
-                /* all 100 names exist: the tens digit goes back to '0' (the last seen '9' - 9) */
-                u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit - 9;
-bindDebugOverlayTexts:
-                /* bind placeholders 0..13 of the world view info texts to the debug-overlay text slots */
-                resourceId = TEXT_ID_WORLD_VIEW_INFO_FIRST;
-                do {
-                  resolvedText = TextResource_Resolve(resourceId);
-                  textBuffer = resolvedText;
-                  resourceId = resourceId + 1;
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (0,g_FrontendDebugOverlayTextSlot00Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (1,g_FrontendDebugOverlayTextSlot01Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (2,g_FrontendDebugOverlayTextSlot02Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (3,g_FrontendDebugOverlayTextSlot03Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (4,g_FrontendDebugOverlayTextSlot04Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (5,g_FrontendDebugOverlayTextSlot05Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (6,g_FrontendDebugOverlayTextSlot06Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (7,g_FrontendDebugOverlayTextSlot07Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (8,g_FrontendDebugOverlayTextSlot08Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (9,g_FrontendDebugOverlayTextSlot09Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (10,g_FrontendDebugOverlayTextSlot10Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (11,g_FrontendDebugOverlayTextSlot11Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (12,g_FrontendDebugOverlayTextSlot12Utf16,textBuffer);
-                  RichTextCommandStream_PatchPayloadBySelector
-                            (13,g_FrontendDebugOverlayTextSlot13Utf16,textBuffer);
-                } while (resourceId < TEXT_ID_WORLD_VIEW_INFO_LAST + 1);
-                UiActionHandlers_SetPage
-                          (UI_ACTION_PAGE_INGAME,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
-                UiActionHandlers_SetPage
-                          (UI_ACTION_PAGE_INGAME_COMMAND_MODE,
-                           (UiActionHandlerPage *)&g_InGameUiActionHandlersPage11);
-                UiActionHandlers_SetPage
-                          (UI_ACTION_PAGE_INGAME_MENU,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
-                UiActionHandlers_SetPage
-                          (UI_ACTION_PAGE_FRONTEND,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
-                if (!TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)u_texte_neterror_str_0050f104,&textPageError)) {
-                  return textPageError;
-                }
-                if (!TextResourcePage_Load(GAME_TEXT_PAGE_HELP,(uint16_t *)u_texte_help_str_00563170,&textPageError)) {
-                  return textPageError;
-                }
-                if (!TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,(uint16_t *)u_texte_hilfe_str_00545b34,&textPageError)) {
-                  return textPageError;
-                }
-                if (!TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,(uint16_t *)u_texte_menue_str_00545ba0,&textPageError)) {
-                  return textPageError;
-                }
-                if (!TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,(uint16_t *)u_texte_techno_str_0050dec4,&textPageError)) {
-                  return textPageError;
-                }
-                if (!TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,(uint16_t *)u_texte_level_str_00545bc0,&textPageError)) {
-                  return textPageError;
-                }
-                if (!TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,(uint16_t *)u_texte_inhalt_str_00545be0,&textPageError)) {
-                  return textPageError;
-                }
-                if (!TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,(uint16_t *)u_texte_tastatur_str_005631b8,&textPageError)) {
-                  return textPageError;
-                }
-                resolvedText = TextResource_Resolve(TEXT_ID_MOUSE_HELP);
-                RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,resolvedText);
-                /* sound effects off: every gain is 0 */
-                soundOptionsOrBufferBase =
-                     PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-                uiSoundGain = 0;
-                if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
-                  uiSoundGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
-                }
-                movieGain = 0;
-                g_UiSoundGainQ15 = uiSoundGain;
-                g_SoundEffectsGainQ15 = uiSoundGain;
-                if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
-                  movieGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
-                }
-                alternateMovieGain = 0;
-                g_MovieDefaultAudioGainQ15 = movieGain;
-                if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
-                  alternateMovieGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
-                }
-                g_ReverseStereoMask = 0;
-                if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_REVERSE_STEREO) != 0) {
-                  g_ReverseStereoMask = 0xffffffff;
-                }
-                g_MovieAlternateAudioGainQ15 = alternateMovieGain;
-                /* the original passes the reverse-stereo mask (0 or 0xFFFFFFFF) as the default here, still in
-                   EAX from the store above (PUSH EAX at 0x00573674) */
-                g_ModelLodDepthThresholdQ8 =
-                     PersistentSettings_Read(g_ReverseStereoMask,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
-                if (!AiRuntime_InitWorkspace(&aiInitError)) {
-                  return aiInitError;
-                }
-                /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
-                   written in C, graphics/resources/pcx_read.c and pcx_write.c. */
-                panelTexture = g_GraphicsTextureSourceLoadPackageAsset
-                                   ((uint16_t *)u_gfx_panel_stat_gfx_00573002,&panelTextureError);
-                if (panelTexture == NULL) {
-                  return panelTextureError;
-                }
-                g_InGameStatusPanelTextureSource = panelTexture;
-                allocError = g_MemoryApi.alloc
-                                 (RECENT_TEXT_HISTORY_SLOT_COUNT * sizeof(RecentTextHistorySlot),
-                                  (void **)&g_RecentTextSlotStorage);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                allocError = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&g_OldUnitSecondaryTable);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                allocError = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES,(void **)&g_OldUnitPrimaryTable);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                allocError = g_MemoryApi.alloc
-                                 (FRONTEND_PLAYER_LIST_ROW_COUNT * FRONTEND_PLAYER_LIST_ROW_BYTES,&allocPayload);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                soundOptionsOrBufferBase = (uint32_t)allocPayload;
-                g_FrontendPlayerListRow1 = soundOptionsOrBufferBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                g_FrontendPlayerListRow2 = soundOptionsOrBufferBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                g_FrontendPlayerListRow3 = soundOptionsOrBufferBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                g_FrontendPlayerListRow4 = soundOptionsOrBufferBase + 4 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                g_FrontendPlayerListRow5 = soundOptionsOrBufferBase + 5 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                g_FrontendPlayerListRow6 = soundOptionsOrBufferBase + 6 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                g_FrontendPlayerListRow7 = soundOptionsOrBufferBase + 7 * FRONTEND_PLAYER_LIST_ROW_BYTES;
-                g_FrontendPlayerListRows = soundOptionsOrBufferBase;
-                allocError = g_MemoryApi.alloc
-                                 (ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot),
-                                  (void **)&g_RomRegistrySlots);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                allocError = g_MemoryApi.alloc
-                                 (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord *),
-                                  (void **)&g_FrontendSessionListRows);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                allocError = g_MemoryApi.alloc
-                                 (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord),
-                                  (void **)&g_FrontendSessionDiscoveryRecords);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                allocError = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES,(void **)&textBuffer);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                g_InGameFactionStatusTextScratchUtf16 = textBuffer;
-                g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
-                allocError = g_MemoryApi.alloc
-                                 (INGAME_PLAYER_LIST_TEXT_BYTES,(void **)&g_InGamePlayerListTextScratchUtf16);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
-                                               CUBIC_SPLINE_MATRIX_FLOATS * sizeof(float),
-                                               (void **)&splineBuffer);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_FLOATS;
-                g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_FLOATS;
-                g_WorldMotionSplineMatrixWorkspaces[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_FLOATS;
-                g_WorldMotionSplineMatrixWorkspaces[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_FLOATS;
-                g_WorldMotionSplineMatrixWorkspaces[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_FLOATS;
-                g_WorldMotionSplineMatrixWorkspaces[0] = splineBuffer;
-                /* one coefficient vector of CUBIC_SPLINE_MATRIX_ORDER floats per channel */
-                allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
-                                               CUBIC_SPLINE_MATRIX_ORDER * sizeof(float),
-                                               (void **)&splineBuffer);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_ORDER;
-                g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_ORDER;
-                g_WorldMotionSplineCoefficientTables[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_ORDER;
-                g_WorldMotionSplineCoefficientTables[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_ORDER;
-                g_WorldMotionSplineCoefficientTables[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_ORDER;
-                g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
-                allocError = g_MemoryApi.alloc
-                                 (SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock),
-                                  (void **)&g_SelectionPlayerBlocks);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                allocError = g_MemoryApi.alloc(FRONTEND_SNAPSHOT_PAYLOAD_BYTES,&allocPayload);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                g_FrontendLocalPlayerPcxPreview = (uint32_t)allocPayload;
-                allocError = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8,&allocPayload); /* 8-byte records */
-                if (allocError != 0) {
-                  return allocError;
-                }
-                g_TerrainRegionCollectionEntries = (uint32_t)allocPayload;
-                allocError = g_MemoryApi.alloc(800,&allocPayload);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                g_FrontendPlayerMessageBuffers = (uint32_t)allocPayload;
-                allocError = g_MemoryApi.alloc
-                                 (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord),
-                                  (void **)&playerRecordCursor);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                playerRuntimePointerTableWriteCursor =
-                     g_FrontendPlayerRuntimeRecordPointers32;
-                g_FrontendPlayerRuntimeBlockCount = 1;
-                g_LocalPlayerRuntimeId = 0;
-                g_FrontendPlayerRuntimeBlocks = playerRecordCursor;
-                (playerRecordCursor->playerName).textUtf16[0] = 0;
-                (playerRecordCursor->playerName).textUtf16[1] = 0;
-                playerRecordCursor->playerRuntimeId = 0;
-                (playerRecordCursor->factionAssignment).roleStateFlags = 0;
-                playerRecordCursor->snapshotTransferFlags = 0;
-                /* pointers to 32 consecutive records, although only the first
-                   FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT are allocated.
-                   Original quirk: entries 8..31 point past the buffer (the original
-                   also allocates 0x9D80 and loops 0x20 times with stride 0x13B0). Harmless:
-                   the table is only the hostLobbyPlayerList row table, whose rowCount is
-                   capped by maxPlayersSlider (range 2..8), so only rows 0..7 are used. */
-                statusOrCount = 32;
-                do {
-                  *playerRuntimePointerTableWriteCursor = playerRecordCursor;
-                  playerRuntimePointerTableWriteCursor++;
-                  playerRecordCursor++;
-                  statusOrCount--;
-                } while (statusOrCount != 0);
-                allocError = g_MemoryApi.alloc
-                                 (CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES,
-                                  (void **)&scratchCursor);
-                if (allocError != 0) {
-                  return allocError;
-                }
-                g_CoreAssetScratchSlice1 = scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                g_CoreAssetScratchSlice2 = scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                g_CoreAssetScratchSlice3 = scratchCursor + 3 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                g_CoreAssetScratchSlice4 = scratchCursor + 4 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                g_CoreAssetScratchSlice5 = scratchCursor + 5 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                g_CoreAssetScratchSlice6 = scratchCursor + 6 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-                g_CoreAssetScratchSlice0 = scratchCursor;
-                for (statusOrCount = CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES / 4;
-                     statusOrCount != 0; statusOrCount--) {
-                  scratchCursor[0] = 0;
-                  scratchCursor[1] = 0;
-                  scratchCursor[2] = 0;
-                  scratchCursor[3] = 0;
-                  scratchCursor += 4;
-                }
-                return 0;
-              }
-            }
-          }
-        }
-      }
-    }
+  voiceSetError = g_SoundCreateSampleVoiceSet(sample,&voiceSet);
+  Resource_Release(sample);
+  if (voiceSetError != 0) {
+    *error = voiceSetError;
+    return false;
   }
-  Resource_Release(loadedResource);
-  return (uint32_t)module;
+  *voiceSetSlot = voiceSet;
+  return true;
+}
+
+
+/* u_Dscreen00_pcx_00572e3a + 1 is "screen00.pcx" ([7] tens digit, [8] ones digit): counts up to the first
+   screenshot file that does not exist yet. */
+static void CoreAssets_AdvanceScreenshotName(void)
+
+{
+  wchar_t screenshotTensDigit;
+  void *screenshotFile;
+
+  do {
+    do {
+      if (g_FileSystemOpen(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1),&screenshotFile) != 0) {
+        return;
+      }
+      u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + 1;
+      g_FileSystemClose(screenshotFile);
+      screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
+    } while ((uint16_t)u_Dscreen00_pcx_00572e3a[8] < '9' + 1);
+    u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + 1;
+    u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] - 10;
+  } while ((uint16_t)u_Dscreen00_pcx_00572e3a[7] < '9' + 1);
+  /* all 100 names exist: the tens digit goes back to '0' (the last seen '9' - 9) */
+  u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit - 9;
+}
+
+
+/* Binds placeholders 0..13 of the world view info texts to the debug-overlay text slots and installs the
+   in-game and frontend UI action handler pages. */
+static void CoreAssets_BindDebugOverlayTextsAndUiPages(void)
+
+{
+  TextResourceId resourceId;
+  uint16_t *resolvedText;
+
+  for (resourceId = TEXT_ID_WORLD_VIEW_INFO_FIRST; resourceId < TEXT_ID_WORLD_VIEW_INFO_LAST + 1;
+      resourceId = resourceId + 1) {
+    resolvedText = TextResource_Resolve(resourceId);
+    RichTextCommandStream_PatchPayloadBySelector(0,g_FrontendDebugOverlayTextSlot00Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendDebugOverlayTextSlot01Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(2,g_FrontendDebugOverlayTextSlot02Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(3,g_FrontendDebugOverlayTextSlot03Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(4,g_FrontendDebugOverlayTextSlot04Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(5,g_FrontendDebugOverlayTextSlot05Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(6,g_FrontendDebugOverlayTextSlot06Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(7,g_FrontendDebugOverlayTextSlot07Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(8,g_FrontendDebugOverlayTextSlot08Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(9,g_FrontendDebugOverlayTextSlot09Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(10,g_FrontendDebugOverlayTextSlot10Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(11,g_FrontendDebugOverlayTextSlot11Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(12,g_FrontendDebugOverlayTextSlot12Utf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(13,g_FrontendDebugOverlayTextSlot13Utf16,resolvedText);
+  }
+  UiActionHandlers_SetPage
+            (UI_ACTION_PAGE_INGAME,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
+  UiActionHandlers_SetPage
+            (UI_ACTION_PAGE_INGAME_COMMAND_MODE,
+             (UiActionHandlerPage *)&g_InGameUiActionHandlersPage11);
+  UiActionHandlers_SetPage
+            (UI_ACTION_PAGE_INGAME_MENU,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
+  UiActionHandlers_SetPage
+            (UI_ACTION_PAGE_FRONTEND,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
+}
+
+
+/* Loads the eight text pages; returns false with the failing page's error code in *error. */
+static bool CoreAssets_LoadTextPages(uint32_t *error)
+
+{
+  return TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)u_texte_neterror_str_0050f104,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_HELP,(uint16_t *)u_texte_help_str_00563170,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,(uint16_t *)u_texte_hilfe_str_00545b34,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,(uint16_t *)u_texte_menue_str_00545ba0,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,(uint16_t *)u_texte_techno_str_0050dec4,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,(uint16_t *)u_texte_level_str_00545bc0,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,(uint16_t *)u_texte_inhalt_str_00545be0,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,(uint16_t *)u_texte_tastatur_str_005631b8,error);
+}
+
+
+/* Applies the saved sound options: the effect and movie gains (all 0 with sound effects off), the
+   reverse-stereo mask and the model LOD depth threshold. */
+static void CoreAssets_ApplySoundSettings(void)
+
+{
+  uint32_t soundOptions;
+  AudioMixerGainQ15 uiSoundGain;
+  MovieAudioGainQ15 movieGain;
+  MovieAudioGainQ15 alternateMovieGain;
+
+  soundOptions = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  uiSoundGain = 0;
+  if ((soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+    uiSoundGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
+  }
+  movieGain = 0;
+  g_UiSoundGainQ15 = uiSoundGain;
+  g_SoundEffectsGainQ15 = uiSoundGain;
+  if ((soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+    movieGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
+  }
+  alternateMovieGain = 0;
+  g_MovieDefaultAudioGainQ15 = movieGain;
+  if ((soundOptions & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+    alternateMovieGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
+  }
+  g_ReverseStereoMask = 0;
+  if ((soundOptions & PERSISTENT_SOUND_OPTION_REVERSE_STEREO) != 0) {
+    g_ReverseStereoMask = 0xffffffff;
+  }
+  g_MovieAlternateAudioGainQ15 = alternateMovieGain;
+  /* the original passes the reverse-stereo mask (0 or 0xFFFFFFFF) as the default here, still in
+     EAX from the store above (PUSH EAX at 0x00573674) */
+  g_ModelLodDepthThresholdQ8 =
+       PersistentSettings_Read(g_ReverseStereoMask,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
+}
+
+
+/* Allocates the fixed runtime buffers (text history, old-unit tables, frontend lists, spline workspaces,
+   player records, scratch slices) and sets up the pointers into them. Returns 0, or the error code of the
+   first failing allocation. */
+static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
+
+{
+  uint16_t *textBuffer;
+  uint32_t playerListBase;
+  float *splineBuffer;
+  FrontendPlayerRuntimeRecord *playerRecordCursor;
+  FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
+  uint8_t *scratchCursor;
+  int remainingCount;
+  uint32_t allocError;
+  void *allocPayload;
+
+  allocError = g_MemoryApi.alloc
+                   (RECENT_TEXT_HISTORY_SLOT_COUNT * sizeof(RecentTextHistorySlot),
+                    (void **)&g_RecentTextSlotStorage);
+  if (allocError != 0) {
+    return allocError;
+  }
+  allocError = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&g_OldUnitSecondaryTable);
+  if (allocError != 0) {
+    return allocError;
+  }
+  allocError = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES,(void **)&g_OldUnitPrimaryTable);
+  if (allocError != 0) {
+    return allocError;
+  }
+  allocError = g_MemoryApi.alloc
+                   (FRONTEND_PLAYER_LIST_ROW_COUNT * FRONTEND_PLAYER_LIST_ROW_BYTES,&allocPayload);
+  if (allocError != 0) {
+    return allocError;
+  }
+  playerListBase = (uint32_t)allocPayload;
+  g_FrontendPlayerListRow1 = playerListBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRow2 = playerListBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRow3 = playerListBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRow4 = playerListBase + 4 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRow5 = playerListBase + 5 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRow6 = playerListBase + 6 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRow7 = playerListBase + 7 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+  g_FrontendPlayerListRows = playerListBase;
+  allocError = g_MemoryApi.alloc
+                   (ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot),
+                    (void **)&g_RomRegistrySlots);
+  if (allocError != 0) {
+    return allocError;
+  }
+  allocError = g_MemoryApi.alloc
+                   (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord *),
+                    (void **)&g_FrontendSessionListRows);
+  if (allocError != 0) {
+    return allocError;
+  }
+  allocError = g_MemoryApi.alloc
+                   (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord),
+                    (void **)&g_FrontendSessionDiscoveryRecords);
+  if (allocError != 0) {
+    return allocError;
+  }
+  allocError = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES,(void **)&textBuffer);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_InGameFactionStatusTextScratchUtf16 = textBuffer;
+  g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
+  allocError = g_MemoryApi.alloc
+                   (INGAME_PLAYER_LIST_TEXT_BYTES,(void **)&g_InGamePlayerListTextScratchUtf16);
+  if (allocError != 0) {
+    return allocError;
+  }
+  allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
+                                 CUBIC_SPLINE_MATRIX_FLOATS * sizeof(float),
+                                 (void **)&splineBuffer);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_FLOATS;
+  g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_FLOATS;
+  g_WorldMotionSplineMatrixWorkspaces[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_FLOATS;
+  g_WorldMotionSplineMatrixWorkspaces[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_FLOATS;
+  g_WorldMotionSplineMatrixWorkspaces[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_FLOATS;
+  g_WorldMotionSplineMatrixWorkspaces[0] = splineBuffer;
+  /* one coefficient vector of CUBIC_SPLINE_MATRIX_ORDER floats per channel */
+  allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
+                                 CUBIC_SPLINE_MATRIX_ORDER * sizeof(float),
+                                 (void **)&splineBuffer);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_ORDER;
+  g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_ORDER;
+  g_WorldMotionSplineCoefficientTables[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_ORDER;
+  g_WorldMotionSplineCoefficientTables[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_ORDER;
+  g_WorldMotionSplineCoefficientTables[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_ORDER;
+  g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
+  allocError = g_MemoryApi.alloc
+                   (SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock),
+                    (void **)&g_SelectionPlayerBlocks);
+  if (allocError != 0) {
+    return allocError;
+  }
+  allocError = g_MemoryApi.alloc(FRONTEND_SNAPSHOT_PAYLOAD_BYTES,&allocPayload);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_FrontendLocalPlayerPcxPreview = (uint32_t)allocPayload;
+  allocError = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8,&allocPayload); /* 8-byte records */
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_TerrainRegionCollectionEntries = (uint32_t)allocPayload;
+  allocError = g_MemoryApi.alloc(800,&allocPayload);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_FrontendPlayerMessageBuffers = (uint32_t)allocPayload;
+  allocError = g_MemoryApi.alloc
+                   (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord),
+                    (void **)&playerRecordCursor);
+  if (allocError != 0) {
+    return allocError;
+  }
+  playerRuntimePointerTableWriteCursor =
+       g_FrontendPlayerRuntimeRecordPointers32;
+  g_FrontendPlayerRuntimeBlockCount = 1;
+  g_LocalPlayerRuntimeId = 0;
+  g_FrontendPlayerRuntimeBlocks = playerRecordCursor;
+  (playerRecordCursor->playerName).textUtf16[0] = 0;
+  (playerRecordCursor->playerName).textUtf16[1] = 0;
+  playerRecordCursor->playerRuntimeId = 0;
+  (playerRecordCursor->factionAssignment).roleStateFlags = 0;
+  playerRecordCursor->snapshotTransferFlags = 0;
+  /* pointers to 32 consecutive records, although only the first
+     FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT are allocated.
+     Original quirk: entries 8..31 point past the buffer (the original
+     also allocates 0x9D80 and loops 0x20 times with stride 0x13B0). Harmless:
+     the table is only the hostLobbyPlayerList row table, whose rowCount is
+     capped by maxPlayersSlider (range 2..8), so only rows 0..7 are used. */
+  for (remainingCount = 32; remainingCount != 0; remainingCount--) {
+    *playerRuntimePointerTableWriteCursor = playerRecordCursor;
+    playerRuntimePointerTableWriteCursor++;
+    playerRecordCursor++;
+  }
+  allocError = g_MemoryApi.alloc
+                   (CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES,
+                    (void **)&scratchCursor);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_CoreAssetScratchSlice1 = scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+  g_CoreAssetScratchSlice2 = scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+  g_CoreAssetScratchSlice3 = scratchCursor + 3 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+  g_CoreAssetScratchSlice4 = scratchCursor + 4 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+  g_CoreAssetScratchSlice5 = scratchCursor + 5 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+  g_CoreAssetScratchSlice6 = scratchCursor + 6 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+  g_CoreAssetScratchSlice0 = scratchCursor;
+  for (remainingCount = CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES / 4;
+       remainingCount != 0; remainingCount--) {
+    scratchCursor[0] = 0;
+    scratchCursor[1] = 0;
+    scratchCursor[2] = 0;
+    scratchCursor[3] = 0;
+    scratchCursor += 4;
+  }
+  return 0;
+}
+
+
+/* Address: 0x00573140.
+   Loads everything the frontend needs once at startup: takes the CD path from the registry, mounts the patch,
+   level and core packages, creates the seven UI button sounds, moves the screenshot name past the existing
+   screen??.pcx files, loads the text pages, applies the sound settings and allocates the fixed runtime
+   buffers. (The original also loaded and bound the PCX codec module engine\pcx.fnc here; open-thandor
+   reads and writes PCX in C instead.) Returns 0, or the error code of the first failing step (the caller
+   treats non-zero as failure).
+*/
+uint32_t __cdecl Game_LoadCoreAssets(void)
+
+{
+  uint32_t aiInitError;
+  uint32_t buttonSoundError;
+  uint32_t textPageError; /* the failing text page's error code */
+  GraphicsTextureSourceAsset *panelTexture;
+  uint32_t panelTextureError;
+
+  CoreAssets_ReadCdPathFromRegistry();
+  CoreAssets_UseLocalMovieFolder();
+  CoreAssets_MountPackages();
+  if (!CoreAssets_LoadButtonSound
+         ((uint16_t *)u_sound_button0_sam_00572f06,&g_UiButtonSoundVoiceSets7[0],&buttonSoundError) ||
+      !CoreAssets_LoadButtonSound
+         ((uint16_t *)u_sound_button1_sam_00572f2a,&g_UiButtonSoundVoiceSets7[1],&buttonSoundError) ||
+      !CoreAssets_LoadButtonSound
+         ((uint16_t *)u_sound_button2_sam_00572f4e,&g_UiButtonSoundVoiceSets7[2],&buttonSoundError) ||
+      !CoreAssets_LoadButtonSound
+         ((uint16_t *)u_sound_button3_sam_00572f72,&g_UiButtonSoundVoiceSets7[3],&buttonSoundError) ||
+      !CoreAssets_LoadButtonSound
+         ((uint16_t *)u_sound_button4_sam_00572f96,&g_UiButtonSoundVoiceSets7[4],&buttonSoundError) ||
+      !CoreAssets_LoadButtonSound
+         ((uint16_t *)u_sound_button5_sam_00572fba,&g_UiButtonSoundVoiceSets7[5],&buttonSoundError) ||
+      !CoreAssets_LoadButtonSound
+         ((uint16_t *)u_sound_button6_sam_00572fde,&g_UiButtonSoundVoiceSets7[6],&buttonSoundError)) {
+    return buttonSoundError;
+  }
+  CoreAssets_AdvanceScreenshotName();
+  CoreAssets_BindDebugOverlayTextsAndUiPages();
+  if (!CoreAssets_LoadTextPages(&textPageError)) {
+    return textPageError;
+  }
+  RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,TextResource_Resolve(TEXT_ID_MOUSE_HELP));
+  CoreAssets_ApplySoundSettings();
+  if (!AiRuntime_InitWorkspace(&aiInitError)) {
+    return aiInitError;
+  }
+  /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
+     written in C, graphics/resources/pcx_read.c and pcx_write.c. */
+  panelTexture = g_GraphicsTextureSourceLoadPackageAsset
+                     ((uint16_t *)u_gfx_panel_stat_gfx_00573002,&panelTextureError);
+  if (panelTexture == NULL) {
+    return panelTextureError;
+  }
+  g_InGameStatusPanelTextureSource = panelTexture;
+  return CoreAssets_AllocateRuntimeBuffers();
+}
+
+
+/* Pumps the window messages and checks for a skip request: a key press (Escape also moves the movie number
+   to 8, so the caller's increment reaches intro9, normally absent, which ends the intros) or a mouse-button
+   release. The mouse event is only read when no key event was pending. */
+static bool IntroMovie_PollSkipRequest(void)
+
+{
+  uint32_t keyCode;
+  uint32_t keyStateMask;
+  CursorPointerEvent cursorEvent;
+
+  g_Win32PumpMessages();
+  if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) {
+    /* [9] is the digit of "flm\intro0.flm" */
+    if (keyCode == KEYBOARD_KEY_CODE_ESCAPE) {
+      u_flm_intro0_flm_00573046[9] = L'8';
+    }
+    return true;
+  }
+  /* event types above RIGHT_PRESS are the button releases */
+  return g_GraphicsCursorConsumeEvent(&cursorEvent) && (RIGHT_PRESS < cursorEvent.eventType);
+}
+
+
+/* Decodes up to three pending movie frames (one per pending timer tick) and blits the current frame
+   centred into the framebuffer. Returns false when a frame cannot be decoded (the movie ended) or the
+   framebuffer cannot be accessed, which stops playback. */
+static bool IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
+
+{
+  uint32_t frameHeightSnapshot;
+  uint32_t quarterFrameHeight;
+  int frameAdvanceBudget;
+  MovieFrameDimensions frameDimensions;
+
+  /* catch up at most three frames per pass */
+  for (frameAdvanceBudget = 3; frameAdvanceBudget != 0; frameAdvanceBudget--) {
+    if (!Movie_AdvanceFrame(NULL,NULL)) {
+      return false;
+    }
+    frameHeightSnapshot = g_FramebufferHeight;
+    g_IntroMoviePendingTicks--;
+    if (g_IntroMoviePendingTicks == 0) break;
+  }
+  quarterFrameHeight = g_FramebufferHeight >> 2;
+  if (g_GraphicsFramebufferBeginAccess()) {
+    return false;
+  }
+  frameDimensions = Movie_GetFrameDimensions();
+  /* y = (H - H/4 - frameHeight) / 2 + H/8, i.e. vertically centred; the source is the movie
+     returned by the first Movie_AdvanceFrame */
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (g_FramebufferHeight,g_FramebufferWidth,0,0,
+             ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)frameDimensions.height) >> 1) +
+             (frameHeightSnapshot >> 3),
+             (int)(g_FramebufferWidth - (int)frameDimensions.width) >> 1,0,
+             (GraphicsTextureSourceAsset *)introMovie,g_FramebufferAccess);
+  g_GraphicsFramebufferEndAccess();
+  g_GraphicsFramebufferPresent(g_FramebufferAccess);
+  return true;
 }
 
 
@@ -1104,18 +1179,10 @@ bindDebugOverlayTexts:
 bool Game_PlayIntroMovies(void)
 
 {
-  uint32_t frameHeightSnapshot;
   uint32_t playbackRateHz;
-  uint32_t quarterFrameHeight;
-  int frameAdvanceBudget;
   bool accessFailed;
-  MovieFrameDimensions frameDimensions;
   MovieRuntime *introMovie;
-  bool frameDecoded;
-  uint32_t keyCode;
-  uint32_t keyStateMask;
-  CursorPointerEvent cursorEvent;
-  
+
     {
     const char *exportMovies = getenv("OPEN_THANDOR_MOVIEEXPORT");
     const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
@@ -1159,43 +1226,8 @@ bool Game_PlayIntroMovies(void)
       g_IntroMoviePendingTicks = 0;
       UiFrame_FlushInputAndResetPendingTicks();
       g_TimerRegisterPeriodic(playbackRateHz,IntroMovie_TimerTick);
-      while( true ) {
-        g_Win32PumpMessages();
-        if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) {
-          /* [9] is the digit of "flm\intro0.flm"; Escape moves on to intro9 (normally absent, which ends the
-             intros) */
-          if (keyCode == KEYBOARD_KEY_CODE_ESCAPE) {
-            u_flm_intro0_flm_00573046[9] = L'8';
-          }
-          break;
-        }
-        /* event types above RIGHT_PRESS are the button releases */
-        if (g_GraphicsCursorConsumeEvent(&cursorEvent) && RIGHT_PRESS < cursorEvent.eventType) break;
-        if (g_IntroMoviePendingTicks != 0) {
-          /* catch up at most three frames per pass */
-          frameAdvanceBudget = 3;
-          do {
-            frameDecoded = Movie_AdvanceFrame(NULL,NULL);
-            frameHeightSnapshot = g_FramebufferHeight;
-            if (!frameDecoded) break;
-            g_IntroMoviePendingTicks--;
-          } while ((g_IntroMoviePendingTicks != 0) && (--frameAdvanceBudget != 0));
-          if (!frameDecoded) break;
-          quarterFrameHeight = g_FramebufferHeight >> 2;
-          accessFailed = g_GraphicsFramebufferBeginAccess();
-          if (accessFailed) break;
-          frameDimensions = Movie_GetFrameDimensions();
-          /* y = (H - H/4 - frameHeight) / 2 + H/8, i.e. vertically centred; the source is the movie
-             returned by the first Movie_AdvanceFrame */
-          g_GraphicsTextureSourceBlitSourceAlpha
-                    (g_FramebufferHeight,g_FramebufferWidth,0,0,
-                     ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)frameDimensions.height) >> 1) +
-                     (frameHeightSnapshot >> 3),
-                     (int)(g_FramebufferWidth - (int)frameDimensions.width) >> 1,0,
-                     (GraphicsTextureSourceAsset *)introMovie,g_FramebufferAccess);
-          g_GraphicsFramebufferEndAccess();
-          g_GraphicsFramebufferPresent(g_FramebufferAccess);
-        }
+      while (!IntroMovie_PollSkipRequest()) {
+        if ((g_IntroMoviePendingTicks != 0) && !IntroMovie_PresentPendingFrames(introMovie)) break;
       }
       /* stop playback: key, mouse button release, movie end or framebuffer loss */
       g_TimerUnregisterPeriodic(IntroMovie_TimerTick);
@@ -1270,7 +1302,8 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
 {
   uint32_t compareBytesRemaining;
   int bytesToBufferEnd;
-  char *compareOrScanCursor; /* the REPE CMPSB source, then the REPNE SCASB cursor */
+  char *optionCompareCursor;
+  char *scanCursor;
   char *storedOption;
   char *storedOptionCompareCursor;
   bool comparedBytesEqual;
@@ -1278,33 +1311,30 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
 
   storedOption = g_CommandLine.optionBuffer;
   while (*storedOption != '\0') {
-    /* REPE CMPSB: with length 0 ZF stays as left by the compare with 0 above, i.e. clear */
+    /* compare up to length bytes, stopping at the first difference; length 0 never matches */
     comparedBytesEqual = false;
-    compareBytesRemaining = length;
-    compareOrScanCursor = option;
+    optionCompareCursor = option;
     storedOptionCompareCursor = storedOption;
-    do {
-      if (compareBytesRemaining == 0) break;
-      compareBytesRemaining--;
-      comparedBytesEqual = *compareOrScanCursor == *storedOptionCompareCursor;
-      compareOrScanCursor++;
+    for (compareBytesRemaining = length; compareBytesRemaining != 0; compareBytesRemaining--) {
+      comparedBytesEqual = *optionCompareCursor == *storedOptionCompareCursor;
+      optionCompareCursor++;
       storedOptionCompareCursor++;
-    } while (comparedBytesEqual);
+      if (!comparedBytesEqual) break;
+    }
     if (comparedBytesEqual) {
       return (uint8_t *)storedOption;
     }
-    /* REPNE SCASB to the byte after the NUL; sz_MainWindowTitle directly follows optionBuffer and so
+    /* skip to the byte after the NUL; sz_MainWindowTitle directly follows optionBuffer and so
        marks the end of the buffer */
     bytesToBufferEnd = sz_MainWindowTitle - storedOption;
-    compareOrScanCursor = storedOption;
-    do {
-      storedOption = compareOrScanCursor;
-      if (bytesToBufferEnd == 0) break;
+    scanCursor = storedOption;
+    while (bytesToBufferEnd != 0) {
       bytesToBufferEnd--;
-      storedOption = compareOrScanCursor + 1;
-      scannedByte = *compareOrScanCursor;
-      compareOrScanCursor = storedOption;
-    } while (scannedByte != '\0');
+      scannedByte = *scanCursor;
+      scanCursor++;
+      if (scannedByte == '\0') break;
+    }
+    storedOption = scanCursor;
   }
   return NULL;
 }

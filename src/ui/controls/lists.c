@@ -32,6 +32,7 @@ bool UiTimedListControl_HandleKeyboardNavigation
   uint32_t nestedRecordCount;
   UiTimedListTreeRecord *lastRecord;
   uint32_t siblingIndex;
+  int visibleRows;
   int rowAccumulator;
   int rowIndex;
   int stepCounter;
@@ -66,9 +67,9 @@ bool UiTimedListControl_HandleKeyboardNavigation
       /* Page: one step less than the rows visible in the viewport (unsigned 32-bit DIV).
          NOTE: exactly one visible row gives 0 steps, which the do/while wraps like the original. */
       viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-      rowAccumulator = (int)(viewportSize.height / control->rowHeight);
-      stepCounter = rowAccumulator - 1;
-      if (rowAccumulator < 1) {
+      visibleRows = (int)(viewportSize.height / control->rowHeight);
+      stepCounter = visibleRows - 1;
+      if (visibleRows < 1) {
         stepCounter = 1;
       }
     }
@@ -79,11 +80,11 @@ bool UiTimedListControl_HandleKeyboardNavigation
       recordCursor = stepRecord - 1;
       control->selectedRecord = recordCursor;
       if ((stepRecord[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) {
-        while ((((recordCursor->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0 &&
-                 ((recordCursor->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0)) &&
-               (recordCursor = recordCursor->childBlockOrParentRecord,
-               recordCursor != NULL))) {
-          recordCursor = recordCursor + (int)recordCursor->countOrLabelText;
+        while ((recordCursor->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0 &&
+               (recordCursor->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0 &&
+               recordCursor->childBlockOrParentRecord != NULL) {
+          childBlock = recordCursor->childBlockOrParentRecord;
+          recordCursor = childBlock + (int)childBlock->countOrLabelText;
           control->selectedRecord = recordCursor;
         }
       }
@@ -101,9 +102,9 @@ bool UiTimedListControl_HandleKeyboardNavigation
   case KEYBOARD_KEY_CODE_DOWN:
     if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
       viewportSize = UiScrollableControl_GetViewportSize((UiScrollableControl *)(control->base).parent);
-      rowAccumulator = (int)(viewportSize.height / control->rowHeight);
-      stepCounter = rowAccumulator - 1;
-      if (rowAccumulator < 1) {
+      visibleRows = (int)(viewportSize.height / control->rowHeight);
+      stepCounter = visibleRows - 1;
+      if (visibleRows < 1) {
         stepCounter = 1;
       }
     }
@@ -113,10 +114,15 @@ bool UiTimedListControl_HandleKeyboardNavigation
       startRecord = control->selectedRecord;
       siblingIndex = 0;
       scanRecord = startRecord;
-      if ((((startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) == 0) ||
-           ((startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDED) == 0)) ||
-         ((recordCursor = startRecord->childBlockOrParentRecord,
-          recordCursor == NULL || (recordCursor->countOrLabelText == 0)))) {
+      childBlock = NULL;
+      if ((startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0 &&
+          (startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
+        childBlock = startRecord->childBlockOrParentRecord;
+      }
+      if (childBlock != NULL && childBlock->countOrLabelText != 0) {
+        control->selectedRecord = childBlock + 1;
+      }
+      else {
         do {
           do {
             stepRecord = scanRecord;
@@ -132,9 +138,6 @@ bool UiTimedListControl_HandleKeyboardNavigation
             control->selectedRecord = startRecord;
           }
         } while (scanRecord != NULL);
-      }
-      else {
-        control->selectedRecord = recordCursor + 1;
       }
       stepCounter--;
     } while (stepCounter != 0);
@@ -172,19 +175,21 @@ bool UiTimedListControl_HandleKeyboardNavigation
   countRecord = control->selectedRecord;
   rowAccumulator = 0;
   if (countRecord != previousSelection) {
+    /* Row index of the new selection: walk back over the rows above it (adding the rows of expanded
+       blocks) and up through the parent rows until the root header. */
     do {
-      previousSelection = countRecord - 1;
       rowIndex = rowAccumulator;
       if ((countRecord[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
         nestedRecordCount = UiTimedListTree_CountRecordArrayAndNestedChildren
                           (countRecord[-1].childBlockOrParentRecord);
         rowIndex = rowAccumulator + nestedRecordCount;
       }
-      countRecord = previousSelection;
+      countRecord = countRecord - 1;
       rowAccumulator = rowIndex + 1;
-    } while (((countRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
-            (countRecord = countRecord->childBlockOrParentRecord,
-            countRecord != NULL));
+      if ((countRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) != 0) {
+        countRecord = countRecord->childBlockOrParentRecord;
+      }
+    } while (countRecord != NULL);
     rowIndex = rowIndex * (int)control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
               ((int)control->rowHeight + rowIndex + 1,(control->base).rightOffset,rowIndex,0,
@@ -505,8 +510,10 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
           UiScrollableControl *control)
 
 {
-  int thumbOffsetOrLocalX;
-  int anchorOrLocalY;
+  int thumbOffset;
+  int pointerAnchor;
+  int localX;
+  int localY;
   uint32_t arrowSize;
   int trackLength;
   uint32_t arrowStart;
@@ -522,65 +529,63 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     return;
   }
   if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) != 0) {
-    thumbOffsetOrLocalX = (control->base).left;
-    anchorOrLocalY = control->pointerAnchorX;
+    pointerAnchor = control->pointerAnchorX;
     trackLength = (control->base).layoutWidth;
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
-    thumbOffsetOrLocalX = ((pointerX - thumbOffsetOrLocalX) - anchorOrLocalY) - textureSize.logicalWidthPixels;
+    thumbOffset = ((pointerX - (control->base).left) - pointerAnchor) - textureSize.logicalWidthPixels;
     trackLength = trackLength + textureSize.logicalWidthPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        thumbOffsetOrLocalX = thumbOffsetOrLocalX - textureSize.logicalWidthPixels;
+        thumbOffset = thumbOffset - textureSize.logicalWidthPixels;
       }
       trackLength = trackLength - textureSize.logicalWidthPixels;
     }
     control->scrollOffsetX =
          (UiPixelOffset)
-         (((int64_t)(int)(control->contentWidth - control->viewportWidth) * (int64_t)thumbOffsetOrLocalX) /
+         (((int64_t)(int)(control->contentWidth - control->viewportWidth) * (int64_t)thumbOffset) /
          (int64_t)-((trackLength - control->horizontalThumbRight) + control->horizontalThumbLeft));
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
     UiNode_InvalidateRoot(&control->base);
     return;
   }
   if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) != 0) {
-    thumbOffsetOrLocalX = (control->base).top;
-    anchorOrLocalY = control->pointerAnchorY;
+    pointerAnchor = control->pointerAnchorY;
     trackLength = (control->base).layoutHeight;
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
-    thumbOffsetOrLocalX = ((pointerY - thumbOffsetOrLocalX) - anchorOrLocalY) - textureSize.logicalHeightPixels;
+    thumbOffset = ((pointerY - (control->base).top) - pointerAnchor) - textureSize.logicalHeightPixels;
     trackLength = trackLength + textureSize.logicalHeightPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                                                           g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-        thumbOffsetOrLocalX = thumbOffsetOrLocalX - textureSize.logicalHeightPixels;
+        thumbOffset = thumbOffset - textureSize.logicalHeightPixels;
       }
       trackLength = trackLength - textureSize.logicalHeightPixels;
     }
     control->scrollOffsetY =
          (UiPixelOffset)
-         (((int64_t)(int)(control->contentHeight - control->viewportHeight) * (int64_t)thumbOffsetOrLocalX) /
+         (((int64_t)(int)(control->contentHeight - control->viewportHeight) * (int64_t)thumbOffset) /
          (int64_t)-((trackLength - control->verticalThumbBottom) + control->verticalThumbTop));
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
     UiNode_InvalidateRoot(&control->base);
     return;
   }
   /* A held arrow button: repeat (PRIMARY_INTERACTION_ACTIVE) only while the pointer stays on it. */
-  anchorOrLocalY = pointerY - (control->base).top;
-  thumbOffsetOrLocalX = pointerX - (control->base).left;
+  localY = pointerY - (control->base).top;
+  localX = pointerX - (control->base).left;
   arrowHovered = false;
   if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) != 0) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalWidthPixels;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
-      inArrowBar = (anchorOrLocalY < (control->base).layoutHeight) &&
-                   ((int)((control->base).layoutHeight - textureSize.logicalHeightPixels) <= anchorOrLocalY);
+      inArrowBar = (localY < (control->base).layoutHeight) &&
+                   ((int)((control->base).layoutHeight - textureSize.logicalHeightPixels) <= localY);
     }
     else {
-      inArrowBar = (-1 < anchorOrLocalY) && (anchorOrLocalY < (int)textureSize.logicalHeightPixels);
+      inArrowBar = (-1 < localY) && (localY < (int)textureSize.logicalHeightPixels);
     }
     if (inArrowBar) {
       arrowStart = 0;
@@ -589,19 +594,19 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
                                                             g_UiWindowTextureSource);
         arrowStart = textureSize.logicalWidthPixels;
       }
-      arrowHovered = ((int)arrowStart <= thumbOffsetOrLocalX) &&
-                     (thumbOffsetOrLocalX < (int)(arrowStart + arrowSize));
+      arrowHovered = ((int)arrowStart <= localX) &&
+                     (localX < (int)(arrowStart + arrowSize));
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) != 0) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalWidthPixels;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
-      inArrowBar = (anchorOrLocalY < (control->base).layoutHeight) &&
-                   ((int)((control->base).layoutHeight - textureSize.logicalHeightPixels) <= anchorOrLocalY);
+      inArrowBar = (localY < (control->base).layoutHeight) &&
+                   ((int)((control->base).layoutHeight - textureSize.logicalHeightPixels) <= localY);
     }
     else {
-      inArrowBar = (-1 < anchorOrLocalY) && (anchorOrLocalY < (int)textureSize.logicalHeightPixels);
+      inArrowBar = (-1 < localY) && (localY < (int)textureSize.logicalHeightPixels);
     }
     if (inArrowBar) {
       arrowEnd = (control->base).layoutWidth;
@@ -610,18 +615,18 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
                                                             g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalWidthPixels;
       }
-      arrowHovered = (thumbOffsetOrLocalX < arrowEnd) && ((int)(arrowEnd - arrowSize) <= thumbOffsetOrLocalX);
+      arrowHovered = (localX < arrowEnd) && ((int)(arrowEnd - arrowSize) <= localX);
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) != 0) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalHeightPixels;
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
-      inArrowBar = (thumbOffsetOrLocalX < (control->base).layoutWidth) &&
-                   ((int)((control->base).layoutWidth - textureSize.logicalWidthPixels) <= thumbOffsetOrLocalX);
+      inArrowBar = (localX < (control->base).layoutWidth) &&
+                   ((int)((control->base).layoutWidth - textureSize.logicalWidthPixels) <= localX);
     }
     else {
-      inArrowBar = (-1 < thumbOffsetOrLocalX) && (thumbOffsetOrLocalX < (int)textureSize.logicalWidthPixels);
+      inArrowBar = (-1 < localX) && (localX < (int)textureSize.logicalWidthPixels);
     }
     if (inArrowBar) {
       arrowStart = 0;
@@ -630,18 +635,18 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
                                                             g_UiWindowTextureSource);
         arrowStart = textureSize.logicalHeightPixels;
       }
-      arrowHovered = ((int)arrowStart <= anchorOrLocalY) && (anchorOrLocalY < (int)(arrowStart + arrowSize));
+      arrowHovered = ((int)arrowStart <= localY) && (localY < (int)(arrowStart + arrowSize));
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) != 0) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalHeightPixels;
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
-      inArrowBar = (thumbOffsetOrLocalX < (control->base).layoutWidth) &&
-                   ((int)((control->base).layoutWidth - textureSize.logicalWidthPixels) <= thumbOffsetOrLocalX);
+      inArrowBar = (localX < (control->base).layoutWidth) &&
+                   ((int)((control->base).layoutWidth - textureSize.logicalWidthPixels) <= localX);
     }
     else {
-      inArrowBar = (-1 < thumbOffsetOrLocalX) && (thumbOffsetOrLocalX < (int)textureSize.logicalWidthPixels);
+      inArrowBar = (-1 < localX) && (localX < (int)textureSize.logicalWidthPixels);
     }
     if (inArrowBar) {
       arrowEnd = (control->base).layoutHeight;
@@ -650,7 +655,7 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
                                                             g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalHeightPixels;
       }
-      arrowHovered = (anchorOrLocalY < arrowEnd) && ((int)(arrowEnd - arrowSize) <= anchorOrLocalY);
+      arrowHovered = (localY < arrowEnd) && ((int)(arrowEnd - arrowSize) <= localY);
     }
   }
   else {
@@ -1002,7 +1007,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
   record = header + 1;
   depth = 0;
   /* Walk the visible rows until the pointer row is reached. */
-  while ((y = y - (int)list->base.rowHeight) > 0) {
+  for (y = y - (int)list->base.rowHeight; y > 0; y = y - (int)list->base.rowHeight) {
     record++;
     remaining--;
     if ((((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
@@ -1043,7 +1048,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
     RichTextExtent extent =
          RichTextCommandStream_MeasureLine(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
     x = x - (int)extent.widthPixels;
-    if ((x > 0) && (x > 6)) {
+    if (x > 6) {
       return;
     }
   }
@@ -1116,16 +1121,19 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
 {
   UiTimedListTreeRecord *recordCursor;
   uint32_t leafCodeUnitPair;
+  uint32_t labelCodeUnitPair;
   uint32_t entryStride;
   uint32_t *scanCursor;
   uint32_t *outputRecords;
   UiTimedListTreeRecord *driveRow;
   uint32_t driveLetter;
   EngineDriveTypeCode driveType;
-  uint32_t *remainingBytes;
+  uint32_t remainingBytes;
+  uint32_t labelBytes;
+  uint32_t copyDwords;
+  int recordCount;
   int scanRemaining;
-  uint32_t *bytesAfterLabel;
-  uint32_t scanValue;
+  uint32_t bytesAfterLabel;
   uint32_t directoryEntryCount;
   uint8_t *driveLetterCursor;
   uint32_t *leaf;
@@ -1169,7 +1177,6 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
       do {
         driveLetter = (uint32_t)*driveLetterCursor;
         driveRow->countOrLabelText = (uint32_t)labelCursor;
-        scanValue = driveLetter;
         driveType = g_FileSystemGetDriveTypeCode(driveLetter);
         driveRow->parentBlockOrIcon = (uint32_t)driveType;
         driveRow->childBlockOrParentRecord = NULL;
@@ -1181,7 +1188,7 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
         ((uint16_t *)labelCursor)[3] = ']';
         ((uint16_t *)labelCursor)[4] = 0;
         /* Label "X:[<volume label>]"; a drive whose media check reports true is closed as "X:[]". */
-        if (g_FileSystemCheckDriveMediaReady(scanValue)) {
+        if (g_FileSystemCheckDriveMediaReady(driveLetter)) {
           ((uint16_t *)labelCursor)[3] = ']';
           ((uint16_t *)labelCursor)[4] = 0;
         }
@@ -1200,9 +1207,9 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
               if (scanRemaining == 0) break;
               scanRemaining--;
               nextScanPointer = (uint32_t *)((uint16_t *)scanPointer + 1);
-              scanValue = *scanPointer;
+              labelCodeUnitPair = *scanPointer;
               scanPointer = nextScanPointer;
-            } while ((uint16_t)scanValue != 0);
+            } while ((uint16_t)labelCodeUnitPair != 0);
             ((uint16_t *)nextScanPointer)[-1] = ']';
             ((uint16_t *)nextScanPointer)[0] = 0;
           }
@@ -1236,16 +1243,15 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
       entryStride = FILESYSTEM_ENUMERATION_RECORD_BYTES;
       if (g_MemoryApi.shrinkInPlace(entryStride * directoryEntryCount,outputRecords) == 0) {
         if (g_MemoryApi.allocLargestFreeBlock(&recordBlock,&largestBlockSize) == 0) {
-          scanRemaining = directoryEntryCount + 1;
-          remainingBytes =
-               (uint32_t *)(largestBlockSize + scanRemaining * -(int)sizeof(UiTimedListTreeRecord));
-          if ((uint32_t)(scanRemaining * sizeof(UiTimedListTreeRecord)) <= largestBlockSize &&
-              remainingBytes != NULL) {
+          recordCount = directoryEntryCount + 1; /* header and rows */
+          remainingBytes = largestBlockSize - (uint32_t)recordCount * sizeof(UiTimedListTreeRecord);
+          if ((uint32_t)(recordCount * sizeof(UiTimedListTreeRecord)) <= largestBlockSize &&
+              remainingBytes != 0) {
             *(uint32_t *)recordBlock = directoryEntryCount;
             ((uint32_t *)recordBlock)[1] = 0;
             ((uint32_t *)recordBlock)[2] = 0;
             ((uint32_t *)recordBlock)[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
-            labelWriteCursor = ((uint32_t *)recordBlock) + scanRemaining * 4;
+            labelWriteCursor = ((uint32_t *)recordBlock) + recordCount * 4;
             leaf = outputRecords;
             recordCursor = recordBlock;
             for (; directoryEntryCount != 0; directoryEntryCount--) {
@@ -1274,13 +1280,15 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
                 leafCodeUnitPair = *scanCursor;
                 scanCursor = (uint32_t *)((uint16_t *)scanCursor + 1);
               } while ((uint16_t)leafCodeUnitPair != 0);
-              scanCursor = (uint32_t *)(258U - scanRemaining & ~1U);
-              bytesAfterLabel = (uint32_t *)((int)remainingBytes - (int)scanCursor);
-              if ((remainingBytes < scanCursor || bytesAfterLabel == NULL) ||
-                 (remainingBytes = (uint32_t *)((int)bytesAfterLabel - (int)scanCursor),
-                 bytesAfterLabel < scanCursor || remainingBytes == NULL)) break;
+              /* Stop when the label no longer fits; the label size is taken off the remaining bytes
+                 twice, as in the original. */
+              labelBytes = (258U - scanRemaining) & ~1U;
+              bytesAfterLabel = remainingBytes - labelBytes;
+              if (remainingBytes < labelBytes || bytesAfterLabel == 0) break;
+              remainingBytes = bytesAfterLabel - labelBytes;
+              if (bytesAfterLabel < labelBytes || remainingBytes == 0) break;
               scanCursor = leaf;
-              for (scanValue = 258U - scanRemaining >> 1; scanValue != 0; scanValue--) {
+              for (copyDwords = (258U - scanRemaining) >> 1; copyDwords != 0; copyDwords--) {
                 *labelWriteCursor = *scanCursor;
                 scanCursor++;
                 labelWriteCursor++;
@@ -1461,11 +1469,13 @@ bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
       if (recordCursor + 1 == targetRecord) {
         containsCount++;
       }
-      if ((((recordCursor[1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
-          ((recordCursor[1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0)) &&
-         (childContains = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
-                            (targetRecord,recordCursor[1].childBlockOrParentRecord), childContains)) {
-        containsCount++;
+      if (((recordCursor[1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
+          ((recordCursor[1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0)) {
+        childContains = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
+                          (targetRecord,recordCursor[1].childBlockOrParentRecord);
+        if (childContains) {
+          containsCount++;
+        }
       }
       recordCursor++;
     }
@@ -1611,64 +1621,43 @@ bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeR
 
 {
   uint32_t *directory;
-  int copyRemaining;
-  UiTimedListTreeRecord *scanRecord;
-  uint32_t *recordPathSourceDwords;
-  uint32_t *combinedPathSourceDwords;
-  uint32_t *recordPathScratchDestDwords;
-  uint32_t *combinedPathScratchDestDwords;
-  
-  recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-  recordPathSourceDwords = (uint32_t *)record->countOrLabelText;
-  copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2;
+  UiTimedListTreeRecord *ancestorRecord;
+  const uint32_t *recordPathSourceDwords;
+
+  recordPathSourceDwords = (const uint32_t *)record->countOrLabelText;
   if (((record[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
      (record[-1].parentBlockOrIcon != 0)) {
-    for (; copyRemaining != 0; copyRemaining--) {
-      *recordPathScratchDestDwords = *recordPathSourceDwords;
-      recordPathSourceDwords++;
-      recordPathScratchDestDwords++;
-    }
+    /* Copies the full path buffer size from the label, also past its terminator. */
+    UiTimedListTree_CopyPathDwords((uint32_t *)&g_UiTimedListRecordPathScratch,recordPathSourceDwords);
     if (g_UiTimedListRecordPathScratch.codeUnits[1] == ':') {
       g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
-      recordPathSourceDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
+      recordPathSourceDwords = (const uint32_t *)&g_UiTimedListRecordPathScratch;
     }
     else {
-      while( true ) {
-        do {
-          scanRecord = record;
-          record = scanRecord - 1;
-        } while ((scanRecord[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
-        record = scanRecord[-1].childBlockOrParentRecord;
-        if (record == NULL) {
-          return true;
-        }
-        directory = (uint32_t *)record->countOrLabelText;
-        if (((uint16_t *)directory)[1] == ':') break;
+      /* Prepend the labels of the ancestor rows up to (not including) the drive row. */
+      ancestorRecord = UiTimedListTree_FindBlockHeader(record)->childBlockOrParentRecord;
+      while ((ancestorRecord != NULL) && (((uint16_t *)ancestorRecord->countOrLabelText)[1] != ':')) {
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
-                   g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
-        combinedPathSourceDwords = (uint32_t *)&g_UiTimedListCombinedPathScratch;
-        combinedPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-        for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
-          *combinedPathScratchDestDwords = *combinedPathSourceDwords;
-          combinedPathSourceDwords++;
-          combinedPathScratchDestDwords++;
-        }
+                   g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)ancestorRecord->countOrLabelText);
+        UiTimedListTree_CopyPathDwords
+                  ((uint32_t *)&g_UiTimedListRecordPathScratch,(const uint32_t *)&g_UiTimedListCombinedPathScratch);
+        ancestorRecord = UiTimedListTree_FindBlockHeader(ancestorRecord)->childBlockOrParentRecord;
       }
+      if (ancestorRecord == NULL) {
+        return true;
+      }
+      directory = (uint32_t *)ancestorRecord->countOrLabelText;
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
       g_UiTimedListCombinedPathScratch.codeUnits[2] = 0; /* terminator (and one spare zero) after "x:" */
       g_UiTimedListCombinedPathScratch.codeUnits[3] = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
                  g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits);
-      recordPathSourceDwords = (uint32_t *)&g_UiTimedListSecondaryPathScratch;
+      recordPathSourceDwords = (const uint32_t *)&g_UiTimedListSecondaryPathScratch;
     }
   }
-  for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
-    *outputPathDwords = *recordPathSourceDwords;
-    recordPathSourceDwords++;
-    outputPathDwords++;
-  }
+  UiTimedListTree_CopyPathDwords(outputPathDwords,recordPathSourceDwords);
   return false;
 }
 
@@ -3472,23 +3461,25 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
   uint32_t nestedRecordCount;
   int rowAccumulator;
   int rowIndex;
-  UiTimedListTreeRecord *previousRecord;
-  
+  UiTimedListTreeRecord *countRecord;
+
   rowAccumulator = 0;
   (control->base).selectedRecord = selectedRecord;
+  countRecord = selectedRecord;
   do {
-    previousRecord = selectedRecord - 1;
     rowIndex = rowAccumulator;
-    if ((selectedRecord[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
+    if ((countRecord[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
       nestedRecordCount = UiTimedListTree_CountRecordArrayAndNestedChildren
-                        (selectedRecord[-1].childBlockOrParentRecord);
+                        (countRecord[-1].childBlockOrParentRecord);
       rowIndex = rowAccumulator + nestedRecordCount;
     }
-    selectedRecord = previousRecord;
+    countRecord = countRecord - 1;
     rowAccumulator = rowIndex + 1;
-  } while (((selectedRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
-          (selectedRecord = selectedRecord->childBlockOrParentRecord,
-          selectedRecord != NULL));
+    if ((countRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) != 0) {
+      /* block header: continue above the parent row (NULL at the root block) */
+      countRecord = countRecord->childBlockOrParentRecord;
+    }
+  } while (countRecord != NULL);
   rowIndex = rowIndex * (control->base).rowHeight;
   UiScrollableControl_ClampOffsetsToViewport
             (rowIndex + 1 + (control->base).rowHeight,(control->base).base.rightOffset,rowIndex,0,

@@ -4900,6 +4900,298 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
 }
 
 
+/* Copies a 64-character name text into one of the selection detail text slots. */
+static void InGameSelectionDetailPanel_CopyName(uint16_t *destination,const uint16_t *source)
+{
+  int remaining;
+
+  for (remaining = 64; remaining != 0; remaining--) {
+    *destination = *source;
+    source++;
+    destination++;
+  }
+}
+
+/* Shared tail of pages 1 and 3: copies nameSource into nameDestination, resets the three weapon names to the
+   "no weapon" text and then names the faction-unlocked definitions of up to three child lists of
+   linkedDefinitionListView. */
+static void InGameSelectionDetailPanel_FillLinkedDefinitionNames
+          (InGameRuntimeRoot *root,uint16_t *nameDestination,const uint16_t *nameSource,
+           ArmyModelTreeNodeAddressView *linkedDefinitionListView)
+{
+  uint16_t *noWeaponText;
+  ModelDefinitionRecordPrefix *unlockedDefinition;
+
+  InGameSelectionDetailPanel_CopyName(nameDestination,nameSource);
+  noWeaponText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,noWeaponText,NULL);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,noWeaponText,NULL);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,noWeaponText,NULL);
+  if (linkedDefinitionListView->childListCount == 0) {
+    return;
+  }
+  unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                     (root->worldRuntime.activeFactionRuntimeIndex,linkedDefinitionListView->childList0Address);
+  InGameSelectionDetailPanel_CopyName
+            (g_InGameSelectionDetailWeaponName0TextUtf16,
+             TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE));
+  if (linkedDefinitionListView->childListCount <= 1) {
+    return;
+  }
+  unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                     (root->worldRuntime.activeFactionRuntimeIndex,linkedDefinitionListView->childList1Address);
+  InGameSelectionDetailPanel_CopyName
+            (g_InGameSelectionDetailWeaponName1TextUtf16,
+             TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE));
+  if (linkedDefinitionListView->childListCount <= 2) {
+    return;
+  }
+  unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                     (root->worldRuntime.activeFactionRuntimeIndex,linkedDefinitionListView->childList2Address);
+  InGameSelectionDetailPanel_CopyName
+            (g_InGameSelectionDetailWeaponName2TextUtf16,
+             TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE));
+}
+
+/* Page 1: one selected entity of the active faction. */
+static void InGameSelectionDetailPanel_ShowSingleEntity
+          (InGameRuntimeRoot *root,UiPageStackControl *stack,GameEntityRuntime *entity)
+{
+  int *classRecordWords;
+  ModelDefinition *entityDefinition;
+  int technologySlot;
+  uint32_t armyLookupError;
+  ArmyAssetRecordPrefix *foundArmyAsset;
+  ArmyAssetRecord *armyAsset;
+  uint32_t selectionDetailValue;
+  int armour;
+  uint32_t activeMetric;
+  uint16_t *noWeaponText;
+  ModelRuntimeSlot *modelRuntime;
+  ModelRuntimeSlot *attachedModelRuntime;
+  uint32_t researchTechnologyId;
+  int runtimeClassId;
+  ArmyAssetRecordPrefix *linkedArmyAsset;
+  ArmyModelTreeNodeAddressView *linkedDefinitionListView;
+  ModelDefinitionRecordPrefix *unlockedDefinition;
+
+  classRecordWords = entity->common.ownership.definitionOrClassRecord;
+  entityDefinition = (ModelDefinition *)*classRecordWords;
+  if (!FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
+         ((RuntimeToken)classRecordWords,g_InGameRuntimeRoot->worldRuntime.selection.activePlayerRuntimeId)) {
+    /* The technology button stays available when any of the 28 technology slots is available. */
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)root);
+    for (technologySlot = 28; technologySlot != 0; technologySlot--) {
+      if (Technology_IsAvailableForFaction
+            ((PckTechnologyIdCatalog)entityDefinition->researchTechnologyIds[technologySlot],
+             entity->common.ownership.ownerIndex)) {
+        break;
+      }
+    }
+    if (technologySlot == 0) {
+      UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)root);
+    }
+  }
+  else {
+    UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)root);
+  }
+  armyLookupError = ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);
+  armyAsset = (ArmyAssetRecord *)FatalError_ExitIfFailed
+                (armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,armyLookupError != 0);
+  UiPageStack_SetActiveIndex(1,stack);
+  selectionDetailValue = armyAsset->selectionDetailValue;
+  armour = ModelRuntimeHierarchy_SumArmour((int *)entity);
+  root->selectionDetailArmyAssetValue = selectionDetailValue;
+  root->selectionDetailEntity = entity;
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armour,g_InGameSelectionDetailArmourTextUtf16);
+  activeMetric = ModelRuntime_QueryActiveHierarchyMetric((ArmyRuntimeSlot *)entity);
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,activeMetric >> 4,g_InGameSelectionDetailEnergyTextUtf16);
+  ((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text =
+       (uint16_t *)(armyAsset->selectionDetailTemplateVariantIndex + TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE);
+  InGameSelectionDetailPanel_CopyName
+            (g_InGameSelectionDetailNameTextUtf16,
+             TextResource_Resolve(((ModelDefinition *)*(int *)entity->common.ownership.definitionOrClassRecord)->
+                                  nameTextIndex + TEXT_ID_MODEL_NAME_BASE));
+  /* text 0x18004E fills unused weapon slots; name texts are 0x18004F + the definition's name index */
+  noWeaponText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,noWeaponText,NULL);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,noWeaponText,NULL);
+  RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,noWeaponText,NULL);
+  g_InGameSelectionDetailTextSlot05Utf16[0] = L'-';
+  g_InGameSelectionDetailTextSlot05Utf16[1] = 0;
+  g_InGameSelectionDetailTextSlot09Utf16[0] = L'-';
+  g_InGameSelectionDetailTextSlot09Utf16[1] = 0;
+  modelRuntime = entity->common.ownership.definitionOrClassRecord;
+  if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
+    /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
+       foundArmyAsset) */
+    ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);
+    researchTechnologyId = modelRuntime->researchTechnologyId;
+    ((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text =
+         (uint16_t *)(foundArmyAsset->selectionDetailTemplateVariantIndex +
+                      TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE);
+    RichTextCommandStream_CopyExpanded
+              (128,g_InGameSelectionDetailTextSlot09Utf16,
+               TextResource_Resolve(researchTechnologyId * 2 + TECHNOLOGY_TEXT_ID_BASE),NULL);
+  }
+  /* Weapon names: the attached models of the first three attachment slots (the model runtime is re-read from
+     the entity before each further slot). */
+  if (modelRuntime->attachmentCount != 0) {
+    attachedModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
+    if (attachedModelRuntime != NULL) {
+      InGameSelectionDetailPanel_CopyName
+                (g_InGameSelectionDetailWeaponName0TextUtf16,
+                 TextResource_Resolve(attachedModelRuntime->definitionOrSavedId.definition->nameTextIndex +
+                                      TEXT_ID_MODEL_NAME_BASE));
+    }
+    modelRuntime = entity->common.ownership.definitionOrClassRecord;
+    if (1 < modelRuntime->attachmentCount) {
+      attachedModelRuntime = modelRuntime->attachments[1].childModelRuntimeOrSavedOffset;
+      if (attachedModelRuntime != NULL) {
+        InGameSelectionDetailPanel_CopyName
+                  (g_InGameSelectionDetailWeaponName1TextUtf16,
+                   TextResource_Resolve(attachedModelRuntime->definitionOrSavedId.definition->nameTextIndex +
+                                        TEXT_ID_MODEL_NAME_BASE));
+      }
+      modelRuntime = entity->common.ownership.definitionOrClassRecord;
+      if (2 < modelRuntime->attachmentCount) {
+        attachedModelRuntime = modelRuntime->attachments[2].childModelRuntimeOrSavedOffset;
+        if (attachedModelRuntime != NULL) {
+          InGameSelectionDetailPanel_CopyName
+                    (g_InGameSelectionDetailWeaponName2TextUtf16,
+                     TextResource_Resolve(attachedModelRuntime->definitionOrSavedId.definition->nameTextIndex +
+                                          TEXT_ID_MODEL_NAME_BASE));
+        }
+      }
+    }
+  }
+  /* Linked army asset: class 0x16 checks word 43, classes 0x0B/0x0D check word 46 of the class record; class
+     0x0E only prints word 24 as a number. */
+  classRecordWords = entity->common.ownership.definitionOrClassRecord;
+  runtimeClassId = ((ModelDefinition *)*classRecordWords)->runtimeClassId;
+  if (runtimeClassId == MODEL_RUNTIME_CLASS_22) {
+    if (classRecordWords[43] != 1) {
+      return;
+    }
+  }
+  else if ((runtimeClassId == MODEL_RUNTIME_CLASS_11) || (runtimeClassId == MODEL_RUNTIME_CLASS_13)) {
+    if (classRecordWords[46] != 1) {
+      return;
+    }
+  }
+  else {
+    if (runtimeClassId == MODEL_RUNTIME_CLASS_14) {
+      g_WideNumberFormatUtf16
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,classRecordWords[24],
+                 g_InGameSelectionDetailWeaponName0TextUtf16);
+    }
+    return;
+  }
+  /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
+     linkedArmyAsset) */
+  ArmyAssetRegistry_FindById(classRecordWords[24],&linkedArmyAsset);
+  linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)linkedArmyAsset->rootNodeOffsetOrPointer;
+  if (linkedArmyAsset->selectionDetailTemplateVariantIndex < 8) {
+    ((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text =
+         (uint16_t *)((int)((UiWrappedTextControl *)INGAME_UI(root,singleSelectionStatsText))->text +
+                      linkedArmyAsset->selectionDetailTemplateVariantIndex);
+  }
+  unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                     (root->worldRuntime.activeFactionRuntimeIndex,
+                      (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
+  InGameSelectionDetailPanel_FillLinkedDefinitionNames
+            (root,g_InGameSelectionDetailTextSlot05Utf16,
+             TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE),
+             linkedDefinitionListView);
+}
+
+/* Page 2: fills up to 12 UiArmyMetricsPanel grid cells (entity, and the army asset's dword into textureSource)
+   from the selection slots, then clears the remaining cells. */
+static void InGameSelectionDetailPanel_ShowEntityGrid(InGameRuntimeRoot *root,UiPageStackControl *stack)
+{
+  int *gridCellOffset;
+  int remainingCells;
+  int slotIndex;
+  int cellOffset;
+  GameEntityRuntime **entitySlots;
+  GameEntityRuntime *entity;
+  ArmyAssetRecordPrefix *foundArmyAsset;
+  uint8_t *clearedControlBytes;
+
+  UiPageStack_SetActiveIndex(2,stack);
+  gridCellOffset = g_InGameSelectionDetailGridCellOffsets;
+  remainingCells = 12;
+  entitySlots = g_SelectionInfoEntitySlots->entries;
+  for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
+    entity = entitySlots[slotIndex];
+    if ((entity != NULL) && (remainingCells != 0)) {
+      cellOffset = *gridCellOffset;
+      ((UiArmyMetricsPanel *)THANDOR_UI_AT(root,cellOffset))->entity = (RuntimeModelFactionPrefix *)entity;
+      /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
+         foundArmyAsset) */
+      ArmyAssetRegistry_FindById(entity->common.runtimeIdentityOrArmyAssetId,&foundArmyAsset);
+      ((UiArmyMetricsPanel *)THANDOR_UI_AT(root,cellOffset))->base.textureSource =
+           (GraphicsTextureSourceAsset *)foundArmyAsset[1].registryId;
+      remainingCells--;
+      gridCellOffset++;
+    }
+  }
+  for (; remainingCells != 0; remainingCells--) {
+    clearedControlBytes = (uint8_t *)&((UiArmyMetricsPanel *)THANDOR_UI_AT(root,*gridCellOffset))->base.textureSource;
+    clearedControlBytes[0] = 0;
+    clearedControlBytes[1] = 0;
+    clearedControlBytes[2] = 0;
+    clearedControlBytes[3] = 0;
+    gridCellOffset++;
+  }
+  /* (Text slots 05/09 are not touched on this page.) */
+}
+
+/* Page 3: the hovered stock/build record. */
+static void InGameSelectionDetailPanel_ShowHoverRecord
+          (InGameRuntimeRoot *root,UiPageStackControl *stack,UiCommandRuntimeRecordPrefix *hoverRecord)
+{
+  GraphicsTextureSourceAsset *hoverTextureSource;
+  uint32_t armour;
+  uint32_t buildXeniteCostQ4;
+  uint32_t buildDurationQ5;
+  EnergyDemandQ4 displayedEnergy;
+  int statsTemplateTextId;
+  ArmyModelTreeNodeAddressView *linkedDefinitionListView;
+  ModelDefinitionRecordPrefix *unlockedDefinition;
+
+  UiPageStack_SetActiveIndex(3,stack);
+  hoverTextureSource = hoverRecord->textureSource;
+  armour = ArmyAssetHierarchy_SumFactionUnlockedArmour
+             (root->worldRuntime.activeFactionRuntimeIndex,(ModelDefinitionHierarchyNodeAddress32)hoverRecord);
+  ((UiImagePanelControl *)INGAME_UI(root,hoverItemIcon))->textureSource = hoverTextureSource;
+  buildXeniteCostQ4 = hoverRecord->buildXeniteCostQ4;
+  buildDurationQ5 = hoverRecord->buildDurationQ5;
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armour,g_InGameSelectionDetailArmourTextUtf16);
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,buildXeniteCostQ4 >> 4,
+             g_InGameSelectionDetailBuildXeniteCostTextUtf16);
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,buildDurationQ5 >> 5,g_InGameSelectionDetailBuildTimeTextUtf16);
+  displayedEnergy = ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
+                      (root->worldRuntime.activeFactionRuntimeIndex,
+                       (ModelDefinitionHierarchyNodeAddress32)hoverRecord);
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,displayedEnergy >> 4,g_InGameSelectionDetailEnergyTextUtf16);
+  statsTemplateTextId = hoverRecord->selectionDetailTemplateVariantIndex + TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE;
+  ((UiWrappedTextControl *)INGAME_UI(root,hoverItemStatsText))->text = (uint16_t *)statsTemplateTextId;
+  ((UiWrappedTextControl *)INGAME_UI(root,unitPlacementStatsText))->text = (uint16_t *)statsTemplateTextId;
+  linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)hoverRecord->rootNodeOffsetOrPointer;
+  unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                     (root->worldRuntime.activeFactionRuntimeIndex,
+                      (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
+  InGameSelectionDetailPanel_FillLinkedDefinitionNames
+            (root,g_InGameSelectionDetailNameTextUtf16,
+             TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE),
+             linkedDefinitionListView);
+}
+
 /* Address: 0x005669B0.
    Rebuilds the selection detail panel (page stack: 0 empty, 1 one own entity, 2 grid of up to 12 own entities,
    3 the hovered stock/build record). Page 1 shows armour, energy, name and up to three weapon names of the
@@ -4909,349 +5201,43 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
 void InGameSelectionDetailPanel_Rebuild(void)
 
 {
-  UiPageStackControl *stack;
-  uint8_t *clearedControlBytes;
-  GraphicsTextureSourceAsset *hoverTextureSource;
-  uint32_t buildDuration;
-  ModelRuntimeSlot *attachedModelRuntime;
-  UiCommandRuntimeRecordPrefix *definitionNode;
-  int selectedCountOrCounter;
-  uint32_t detailValue;
-  EnergyDemandQ4 displayedEnergy;
-  uint16_t *sourceText;
-  uint32_t metricValue;
-  ArmyAssetRecordPrefix *linkedArmyAsset;
-  int slotCounterOrOffset;
-  int workValue;
-  ModelDefinitionHierarchyNodeAddress32 hierarchyNodeAddress;
-  ArmyModelTreeNodeAddressView *linkedDefinitionListView;
-  InGameRuntimeRoot *rootCursor;
+  UiCommandRuntimeRecordPrefix *hoverRecord;
+  InGameRuntimeRoot *root;
+  int activeFactionIndex;
+  int selectedCount;
+  int slotIndex;
+  GameEntityRuntime **entitySlots;
   GameEntityRuntime *lastSelectedEntity;
-  int *recordCursor;
-  GameEntityRuntime **entitySlot;
-  uint16_t *destinationText;
-  bool conditionResult;
-  uint32_t armyLookupError;
-  ArmyAssetRecordPrefix *foundArmyAsset;
-  uint32_t armyAssetValue;
-  uint16_t *resolvedText;
-  ModelDefinitionRecordPrefix *unlockedDefinition;
-  ModelRuntimeSlot *selectedModelRuntime;
-  ModelRuntimeSlot *selectedModelRuntimeTail;
-  ModelRuntimeSlot *selectedModelRuntimeTail2;
-  
-  definitionNode = g_UiHoverSelectionRecord;
-  rootCursor = g_InGameRuntimeRoot;
-  if (g_InGameRuntimeRoot == NULL) {
+  UiPageStackControl *stack;
+
+  hoverRecord = g_UiHoverSelectionRecord;
+  root = g_InGameRuntimeRoot;
+  if (root == NULL) {
     return;
   }
-  slotCounterOrOffset = SELECTION_ENTRY_CAPACITY;
-  workValue = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
-  selectedCountOrCounter = 0;
+  activeFactionIndex = root->worldRuntime.activeFactionRuntimeIndex;
+  selectedCount = 0;
   lastSelectedEntity = NULL;
-  entitySlot = g_SelectionInfoEntitySlots->entries;
-  do {
-    if (*entitySlot != NULL) {
-      selectedCountOrCounter++;
-      lastSelectedEntity = *entitySlot;
-    }
-    entitySlot++;
-    slotCounterOrOffset--;
-  } while (slotCounterOrOffset != 0);
-  stack = &g_InGameRuntimeRoot->selectionDetailPageStack;
-  if (g_UiHoverSelectionRecord == NULL) {
-    if (selectedCountOrCounter == 1) {
-      if (workValue == (lastSelectedEntity->common).ownership.ownerIndex) {
-        recordCursor = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
-        workValue = *recordCursor;
-        conditionResult = FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
-                           ((RuntimeToken)recordCursor,
-                            (g_InGameRuntimeRoot->worldRuntime).selection.activePlayerRuntimeId)
-        ;
-        if (!conditionResult) {
-          /* The technology button stays available when any of the 28 technology slots is available. */
-          UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)rootCursor);
-          selectedCountOrCounter = 28;
-          do {
-            conditionResult = Technology_IsAvailableForFaction
-                               ((PckTechnologyIdCatalog)((ModelDefinition *)workValue)->researchTechnologyIds[selectedCountOrCounter],
-                                (lastSelectedEntity->common).ownership.ownerIndex);
-            if (conditionResult) break;
-            selectedCountOrCounter--;
-          } while (selectedCountOrCounter != 0);
-          if (!conditionResult) {
-            UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)rootCursor);
-          }
-        }
-        else {
-          UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)rootCursor);
-        }
-        armyLookupError = ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId,
-                                                     &foundArmyAsset);
-        armyAssetValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
-                                                  armyLookupError != 0);
-        UiPageStack_SetActiveIndex(1,stack);
-        detailValue = ((ArmyAssetRecord *)armyAssetValue)->selectionDetailValue;
-        workValue = ModelRuntimeHierarchy_SumArmour((int *)lastSelectedEntity);
-        rootCursor->selectionDetailArmyAssetValue = detailValue;
-        rootCursor->selectionDetailEntity = lastSelectedEntity;
-        g_WideNumberFormatUtf16
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,workValue,g_InGameSelectionDetailArmourTextUtf16
-                  );
-        metricValue = ModelRuntime_QueryActiveHierarchyMetric((ArmyRuntimeSlot *)lastSelectedEntity);
-        g_WideNumberFormatUtf16
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,metricValue >> 4,
-                   g_InGameSelectionDetailEnergyTextUtf16);
-        ((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text = (uint16_t *)(((ArmyAssetRecord *)armyAssetValue)->selectionDetailTemplateVariantIndex +
-                                  TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE);
-        resolvedText = TextResource_Resolve
-                           (((ModelDefinition *)*(int *)(lastSelectedEntity->common).ownership.
-                                             definitionOrClassRecord)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-        sourceText = resolvedText;
-        destinationText = g_InGameSelectionDetailNameTextUtf16;
-        for (workValue = 64; workValue != 0; workValue--) {
-          *destinationText = *sourceText;
-          sourceText++;
-          destinationText++;
-        }
-        /* text 0x18004E fills unused weapon slots; name texts are 0x18004F + the definition's name index */
-        resolvedText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
-        sourceText = resolvedText;
-        RichTextCommandStream_CopyExpanded
-                  (128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText,NULL);
-        RichTextCommandStream_CopyExpanded
-                  (128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText,NULL);
-        RichTextCommandStream_CopyExpanded
-                  (128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText,NULL);
-        g_InGameSelectionDetailTextSlot05Utf16[0] = L'-';
-        g_InGameSelectionDetailTextSlot05Utf16[1] = 0;
-        g_InGameSelectionDetailTextSlot09Utf16[0] = L'-';
-        g_InGameSelectionDetailTextSlot09Utf16[1] = 0;
-        selectedModelRuntime = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
-        if (((selectedModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
-          /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
-             foundArmyAsset) */
-          ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId,&foundArmyAsset);
-          workValue = selectedModelRuntime->researchTechnologyId;
-          ((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text =
-               (uint16_t *)(foundArmyAsset->selectionDetailTemplateVariantIndex +
-                              TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE);
-          resolvedText = TextResource_Resolve(workValue * 2 + TECHNOLOGY_TEXT_ID_BASE);
-          RichTextCommandStream_CopyExpanded
-                    (128,g_InGameSelectionDetailTextSlot09Utf16,resolvedText,NULL);
-        }
-        if (selectedModelRuntime->attachmentCount != 0) {
-          attachedModelRuntime = selectedModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
-          if (attachedModelRuntime != NULL) {
-            resolvedText = TextResource_Resolve
-                               (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-            sourceText = resolvedText;
-            destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
-            for (workValue = 64; workValue != 0; workValue--) {
-              *destinationText = *sourceText;
-              sourceText++;
-              destinationText++;
-            }
-          }
-          selectedModelRuntimeTail = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
-          if (1 < selectedModelRuntimeTail->attachmentCount) {
-            attachedModelRuntime = selectedModelRuntimeTail->attachments[1].childModelRuntimeOrSavedOffset;
-            if (attachedModelRuntime != NULL) {
-              resolvedText = TextResource_Resolve
-                                 (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-              sourceText = resolvedText;
-              destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
-              for (workValue = 64; workValue != 0; workValue--) {
-                *destinationText = *sourceText;
-                sourceText++;
-                destinationText++;
-              }
-            }
-            selectedModelRuntimeTail2 = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
-            if ((2 < selectedModelRuntimeTail2->attachmentCount) &&
-               (attachedModelRuntime = selectedModelRuntimeTail2->attachments[2].
-                         childModelRuntimeOrSavedOffset, attachedModelRuntime != NULL)) {
-              resolvedText = TextResource_Resolve
-                                 (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-              sourceText = resolvedText;
-              destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
-              for (workValue = 64; workValue != 0; workValue--) {
-                *destinationText = *sourceText;
-                sourceText++;
-                destinationText++;
-              }
-            }
-          }
-        }
-        recordCursor = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
-        workValue = ((ModelDefinition *)*recordCursor)->runtimeClassId;
-        if (workValue == MODEL_RUNTIME_CLASS_22) {
-          if (recordCursor[43] != 1) {
-            return;
-          }
-          ArmyAssetRegistry_FindById(recordCursor[24],&linkedArmyAsset);
-        }
-        else if (workValue == MODEL_RUNTIME_CLASS_11) {
-          if (recordCursor[46] != 1) {
-            return;
-          }
-          ArmyAssetRegistry_FindById(recordCursor[24],&linkedArmyAsset);
-        }
-        else {
-          if (workValue != MODEL_RUNTIME_CLASS_13) {
-            if (workValue != MODEL_RUNTIME_CLASS_14) {
-              return;
-            }
-            g_WideNumberFormatUtf16
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordCursor[24],
-                       g_InGameSelectionDetailWeaponName0TextUtf16);
-            return;
-          }
-          if (recordCursor[46] != 1) {
-            return;
-          }
-          ArmyAssetRegistry_FindById(recordCursor[24],&linkedArmyAsset);
-        }
-        /* Original quirk: none of the three lookups above checks its status (an unknown id leaves the error
-           code in linkedArmyAsset) */
-        linkedDefinitionListView =
-             (ArmyModelTreeNodeAddressView *)linkedArmyAsset->rootNodeOffsetOrPointer;
-        if (linkedArmyAsset->selectionDetailTemplateVariantIndex < 8) {
-          ((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text =
-               (uint16_t *)((int)((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text +
-               linkedArmyAsset->selectionDetailTemplateVariantIndex);
-        }
-        unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                           ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
-                            (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
-        resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-        sourceText = resolvedText;
-        destinationText = g_InGameSelectionDetailTextSlot05Utf16;
-        goto copyDefinitionNames;
-      }
-    }
-    else if ((selectedCountOrCounter != 0) && (workValue == (lastSelectedEntity->common).ownership.ownerIndex)) {
-      UiPageStack_SetActiveIndex(2,stack);
-      /* fill up to 12 UiArmyMetricsPanel grid cells (entity, and the army asset's dword into textureSource), then clear the rest */
-      selectedCountOrCounter = SELECTION_ENTRY_CAPACITY;
-      recordCursor = g_InGameSelectionDetailGridCellOffsets;
-      workValue = 12;
-      entitySlot = g_SelectionInfoEntitySlots->entries;
-      do {
-        lastSelectedEntity = *entitySlot;
-        if ((lastSelectedEntity != NULL) && (workValue != 0)) {
-          slotCounterOrOffset = *recordCursor;
-          ((UiArmyMetricsPanel *)THANDOR_UI_AT(rootCursor,slotCounterOrOffset))->entity = (RuntimeModelFactionPrefix *)lastSelectedEntity;
-          /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
-             foundArmyAsset) */
-          ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId,&foundArmyAsset);
-          ((UiArmyMetricsPanel *)THANDOR_UI_AT(rootCursor,slotCounterOrOffset))->base.textureSource =
-               (GraphicsTextureSourceAsset *)foundArmyAsset[1].registryId;
-          /* adds 0: slotCounterOrOffset was just loaded from *recordCursor */
-          rootCursor = (InGameRuntimeRoot *)((int)rootCursor + (slotCounterOrOffset - *recordCursor));
-          workValue--;
-          recordCursor++;
-        }
-        entitySlot++;
-        selectedCountOrCounter--;
-      } while (selectedCountOrCounter != 0);
-      for (; workValue != 0; workValue--) {
-        clearedControlBytes = (uint8_t *)&((UiArmyMetricsPanel *)THANDOR_UI_AT(rootCursor,*recordCursor))->base.textureSource;
-        clearedControlBytes[0] = 0;
-        clearedControlBytes[1] = 0;
-        clearedControlBytes[2] = 0;
-        clearedControlBytes[3] = 0;
-        recordCursor++;
-      }
-      /* (The decompile rewrote text slots 05/09 with their own contents here; the asm does not touch them.) */
-      return;
-    }
-    UiPageStack_SetActiveIndex(0,stack);
-  }
-  else {
-    UiPageStack_SetActiveIndex(3,stack);
-    hoverTextureSource = definitionNode->textureSource;
-    detailValue = ArmyAssetHierarchy_SumFactionUnlockedArmour
-                      ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
-                       (ModelDefinitionHierarchyNodeAddress32)definitionNode);
-    ((UiImagePanelControl *)INGAME_UI(rootCursor,hoverItemIcon))->textureSource = hoverTextureSource;
-    metricValue = definitionNode->buildXeniteCostQ4;
-    buildDuration = definitionNode->buildDurationQ5;
-    g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,detailValue,g_InGameSelectionDetailArmourTextUtf16);
-    g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,metricValue >> 4,
-               g_InGameSelectionDetailBuildXeniteCostTextUtf16);
-    g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,buildDuration >> 5,
-               g_InGameSelectionDetailBuildTimeTextUtf16);
-    displayedEnergy = ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
-                      ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
-                       (ModelDefinitionHierarchyNodeAddress32)definitionNode);
-    g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,displayedEnergy >> 4,g_InGameSelectionDetailEnergyTextUtf16
-              );
-    workValue = definitionNode->selectionDetailTemplateVariantIndex + TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE;
-    ((UiWrappedTextControl *)INGAME_UI(rootCursor,hoverItemStatsText))->text = (uint16_t *)workValue;
-    ((UiWrappedTextControl *)INGAME_UI(rootCursor,unitPlacementStatsText))->text = (uint16_t *)workValue;
-    linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)definitionNode->rootNodeOffsetOrPointer;
-    unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                       ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
-                        (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
-    resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-    sourceText = resolvedText;
-    destinationText = g_InGameSelectionDetailNameTextUtf16;
-copyDefinitionNames:
-    for (workValue = 64; workValue != 0; workValue--) {
-      *destinationText = *sourceText;
-      sourceText++;
-      destinationText++;
-    }
-    resolvedText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
-    sourceText = resolvedText;
-    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText,NULL);
-    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText,NULL);
-    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText,NULL);
-    if (linkedDefinitionListView->childListCount != 0) {
-      unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                         ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
-                          linkedDefinitionListView->childList0Address);
-      resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-      sourceText = resolvedText;
-      destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
-      for (workValue = 64; workValue != 0; workValue--) {
-        *destinationText = *sourceText;
-        sourceText++;
-        destinationText++;
-      }
-      if (1 < linkedDefinitionListView->childListCount) {
-        unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                           ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
-                            linkedDefinitionListView->childList1Address);
-        resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-        sourceText = resolvedText;
-        destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
-        for (workValue = 64; workValue != 0; workValue--) {
-          *destinationText = *sourceText;
-          sourceText++;
-          destinationText++;
-        }
-        if (2 < linkedDefinitionListView->childListCount) {
-          unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                             ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
-                              linkedDefinitionListView->childList2Address);
-          resolvedText = TextResource_Resolve(unlockedDefinition->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
-          sourceText = resolvedText;
-          destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
-          for (workValue = 64; workValue != 0; workValue--) {
-            *destinationText = *sourceText;
-            sourceText++;
-            destinationText++;
-          }
-        }
-      }
+  entitySlots = g_SelectionInfoEntitySlots->entries;
+  for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
+    if (entitySlots[slotIndex] != NULL) {
+      selectedCount++;
+      lastSelectedEntity = entitySlots[slotIndex];
     }
   }
-  return;
+  stack = &root->selectionDetailPageStack;
+  if (hoverRecord != NULL) {
+    InGameSelectionDetailPanel_ShowHoverRecord(root,stack,hoverRecord);
+    return;
+  }
+  if ((selectedCount == 1) && (activeFactionIndex == lastSelectedEntity->common.ownership.ownerIndex)) {
+    InGameSelectionDetailPanel_ShowSingleEntity(root,stack,lastSelectedEntity);
+    return;
+  }
+  if ((selectedCount > 1) && (activeFactionIndex == lastSelectedEntity->common.ownership.ownerIndex)) {
+    InGameSelectionDetailPanel_ShowEntityGrid(root,stack);
+    return;
+  }
+  UiPageStack_SetActiveIndex(0,stack);
 }
 

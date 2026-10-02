@@ -227,127 +227,128 @@ bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKe
 bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12)
 
 {
-  int edge1Z;
-  int negVertex0XOrEdge2X;
-  int negVertex0YOrEdge2Y;
-  int negVertex0ZOrEdge2Z;
-  GraphicsFixedVec3 *vertexA;
-  GraphicsFixedVec3 *vertexB;
-  GraphicsFixedVec3 *vertexC;
-  uint64_t planeOffsetDot;
-  int64_t productScratch;
-  int64_t edge2Dot;
-  int64_t hitCrossXOrEdge2HitDot;
-  int64_t hitCrossY;
-  int64_t hitCrossZ;
+  GraphicsFixedVec3 *vertex0;
+  GraphicsFixedVec3 *vertex1;
+  GraphicsFixedVec3 *vertex2;
   int normalX;
-  uint32_t distanceOrCrossX;
   int normalY;
-  uint32_t directionDotOrCrossY;
   int normalZ;
-  int scaledHighOrEdge1X;
+  int64_t planeOffsetDot;
+  int planeOffsetHigh;
+  int halfPlaneOffsetHigh;
+  int64_t directionProduct;
+  int directionDot;
+  int maximumDistanceHigh;
+  bool planeOutOfRange;
+  Q12 hitDistanceQ12;
+  int negVertex0X;
+  int negVertex0Y;
+  int negVertex0Z;
   int hitRelativeX;
   int hitRelativeY;
   int hitRelativeZ;
-  uint32_t offsetHighOrCrossZ;
-  int halfOffsetOrEdge1Y;
-  Q12 hitDistanceQ12;
+  int edge1X;
+  int edge1Y;
+  int edge1Z;
+  int edge2X;
+  int edge2Y;
+  int edge2Z;
+  int normalCrossEdge1X;
+  int normalCrossEdge1Y;
+  int normalCrossEdge1Z;
+  int64_t hitDotNormalCrossEdge1;
+  int64_t edge2DotNormalCrossEdge1;
+  int64_t normalCrossHitX;
+  int64_t normalCrossHitY;
+  int64_t normalCrossHitZ;
+  int64_t edge2DotNormalCrossHit;
+  int64_t insideRemainder;
   bool hitFound;
-  bool planeOutOfRange;
 
   normalX = triangle->planeNormalX << (Q28_SHIFT - Q12_SHIFT);
   normalY = triangle->planeNormalY << (Q28_SHIFT - Q12_SHIFT);
   normalZ = triangle->planeNormalZ << (Q28_SHIFT - Q12_SHIFT);
-  vertexA = triangle->vertex0;
-  vertexB = triangle->vertex1;
-  vertexC = triangle->vertex2;
+  vertex0 = triangle->vertex0;
+  vertex1 = triangle->vertex1;
+  vertex2 = triangle->vertex2;
   planeOffsetDot = (int64_t)normalY *
-          (int64_t)((vertexA->y * 2 + vertexB->y + vertexC->y >> 2) - g_ModelRaycastLocalOriginY) +
-          (int64_t)((vertexA->x * 2 + vertexB->x + vertexC->x >> 2) - g_ModelRaycastLocalOriginX) *
+          (int64_t)(((vertex0->y * 2 + vertex1->y + vertex2->y) >> 2) - g_ModelRaycastLocalOriginY) +
+          (int64_t)(((vertex0->x * 2 + vertex1->x + vertex2->x) >> 2) - g_ModelRaycastLocalOriginX) *
           (int64_t)normalX +
-          (int64_t)((vertexA->z * 2 + vertexB->z + vertexC->z >> 2) - g_ModelRaycastLocalOriginZ) *
+          (int64_t)(((vertex0->z * 2 + vertex1->z + vertex2->z) >> 2) - g_ModelRaycastLocalOriginZ) *
           (int64_t)normalZ;
-  offsetHighOrCrossZ = (uint32_t)(planeOffsetDot >> 32);
-  productScratch = (int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)normalY +
+  planeOffsetHigh = (int)((uint64_t)planeOffsetDot >> 32);
+  directionProduct = (int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)normalY +
           (int64_t)(int)g_ModelRaycastLocalDirectionXQ28 * (int64_t)normalX +
           (int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)normalZ;
-  directionDotOrCrossY = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
-  if (directionDotOrCrossY != 0) {
-    scaledHighOrEdge1X =
-         FIXED_MUL_HIGH((int)g_ModelRaycastMaximumDistance,(int)directionDotOrCrossY);
-    halfOffsetOrEdge1Y = (int)offsetHighOrCrossZ >> 1;
-    /* Range test: the plane distance must lie within the maximum distance on the ray's side. */
-    if ((int64_t)planeOffsetDot < 0) {
-      planeOutOfRange = (int)offsetHighOrCrossZ < scaledHighOrEdge1X ||
-          (halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY && halfOffsetOrEdge1Y <= (int)directionDotOrCrossY);
-    }
-    else {
-      planeOutOfRange = scaledHighOrEdge1X < (int)offsetHighOrCrossZ ||
-             ((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y && (int)directionDotOrCrossY <= halfOffsetOrEdge1Y);
-    }
-    if (planeOutOfRange) {
-      return false;
-    }
-    hitDistanceQ12 =
-         (int)((int64_t)planeOffsetDot / (int64_t)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
-    vertexA = triangle->vertex0;
-    negVertex0XOrEdge2X = -vertexA->x;
-    hitRelativeX = FIXED_MUL_SHR(hitDistanceQ12,(int)g_ModelRaycastLocalDirectionXQ28,Q28_SHIFT) + g_ModelRaycastLocalOriginX + negVertex0XOrEdge2X;
-    negVertex0YOrEdge2Y = -vertexA->y;
-    hitRelativeY = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionYQ28,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginY + negVertex0YOrEdge2Y;
-    negVertex0ZOrEdge2Z = -vertexA->z;
-    hitRelativeZ = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionZQ28,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginZ + negVertex0ZOrEdge2Z;
-    vertexA = triangle->vertex1;
-    vertexB = triangle->vertex2;
-    scaledHighOrEdge1X = negVertex0XOrEdge2X + vertexA->x;
-    halfOffsetOrEdge1Y = negVertex0YOrEdge2Y + vertexA->y;
-    edge1Z = negVertex0ZOrEdge2Z + vertexA->z;
-    negVertex0XOrEdge2X = negVertex0XOrEdge2X + vertexB->x;
-    negVertex0YOrEdge2Y = negVertex0YOrEdge2Y + vertexB->y;
-    negVertex0ZOrEdge2Z = negVertex0ZOrEdge2Z + vertexB->z;
-    productScratch = (int64_t)normalY * (int64_t)edge1Z - (int64_t)normalZ * (int64_t)halfOffsetOrEdge1Y;
-    distanceOrCrossX = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
-    productScratch = (int64_t)normalZ * (int64_t)scaledHighOrEdge1X - (int64_t)normalX * (int64_t)edge1Z;
-    directionDotOrCrossY = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
-    productScratch =
-         (int64_t)normalX * (int64_t)halfOffsetOrEdge1Y - (int64_t)normalY * (int64_t)scaledHighOrEdge1X;
-    offsetHighOrCrossZ = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
-    productScratch = (int64_t)hitRelativeY * (int64_t)(int)directionDotOrCrossY +
-                     (int64_t)hitRelativeX * (int64_t)(int)distanceOrCrossX +
-                     (int64_t)hitRelativeZ * (int64_t)(int)offsetHighOrCrossZ;
-    edge2Dot = (int64_t)negVertex0YOrEdge2Y * (int64_t)(int)directionDotOrCrossY +
-               (int64_t)(int)distanceOrCrossX * (int64_t)negVertex0XOrEdge2X +
-               (int64_t)negVertex0ZOrEdge2Z * (int64_t)(int)offsetHighOrCrossZ;
-    scaledHighOrEdge1X = (int)((uint64_t)edge2Dot >> 32);
-    hitCrossXOrEdge2HitDot = (int64_t)normalY * (int64_t)hitRelativeZ - (int64_t)normalZ * (int64_t)hitRelativeY;
-    hitCrossY = (int64_t)normalZ * (int64_t)hitRelativeX - (int64_t)normalX * (int64_t)hitRelativeZ;
-    hitCrossZ = (int64_t)normalX * (int64_t)hitRelativeY - (int64_t)normalY * (int64_t)hitRelativeX;
-    hitCrossXOrEdge2HitDot = (int64_t)negVertex0YOrEdge2Y *
-             (int64_t)(int)FIXED_PRODUCT_SHR(hitCrossY,Q28_SHIFT) +
-             (int64_t)negVertex0XOrEdge2X *
-             (int64_t)(int)FIXED_PRODUCT_SHR(hitCrossXOrEdge2HitDot,Q28_SHIFT) +
-             (int64_t)negVertex0ZOrEdge2Z *
-             (int64_t)(int)FIXED_PRODUCT_SHR(hitCrossZ,Q28_SHIFT);
-    distanceOrCrossX = (uint32_t)hitCrossXOrEdge2HitDot;
-    /* Inside test: both barycentric dots and their sum's difference to edge2Dot carry edge2Dot's sign. */
-    if (edge2Dot < 0) {
-      hitFound = ((hitCrossXOrEdge2HitDot < 0) && (productScratch < 0)) &&
-         (distanceOrCrossX = (uint32_t)(hitCrossXOrEdge2HitDot + productScratch),
-         (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 32)) -
-               (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)) < 0);
-    }
-    else {
-      hitFound = ((-1 < hitCrossXOrEdge2HitDot) && (-1 < productScratch)) &&
-            (distanceOrCrossX = (uint32_t)(hitCrossXOrEdge2HitDot + productScratch),
-            -1 < (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 32)) -
-                      (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)));
-    }
-    if (hitFound) {
-      *outDistanceQ12 = hitDistanceQ12;
-      return true;
-    }
+  directionDot = (int)FIXED_PRODUCT_SHR(directionProduct,Q28_SHIFT);
+  if (directionDot == 0) {
+    return false;
   }
-  return false;
+  maximumDistanceHigh = FIXED_MUL_HIGH((int)g_ModelRaycastMaximumDistance,directionDot);
+  halfPlaneOffsetHigh = planeOffsetHigh >> 1;
+  /* Range test: the plane distance must lie within the maximum distance on the ray's side. */
+  if (planeOffsetDot < 0) {
+    planeOutOfRange = planeOffsetHigh < maximumDistanceHigh ||
+        (halfPlaneOffsetHigh <= -directionDot && halfPlaneOffsetHigh <= directionDot);
+  }
+  else {
+    planeOutOfRange = maximumDistanceHigh < planeOffsetHigh ||
+        (-directionDot <= halfPlaneOffsetHigh && directionDot <= halfPlaneOffsetHigh);
+  }
+  if (planeOutOfRange) {
+    return false;
+  }
+  hitDistanceQ12 = (int)(planeOffsetDot / (int64_t)directionDot); /* 64-by-32-bit signed division */
+
+  /* hit point relative to vertex 0 */
+  negVertex0X = -vertex0->x;
+  hitRelativeX = FIXED_MUL_SHR(hitDistanceQ12,(int)g_ModelRaycastLocalDirectionXQ28,Q28_SHIFT) + g_ModelRaycastLocalOriginX + negVertex0X;
+  negVertex0Y = -vertex0->y;
+  hitRelativeY = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionYQ28,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginY + negVertex0Y;
+  negVertex0Z = -vertex0->z;
+  hitRelativeZ = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionZQ28,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginZ + negVertex0Z;
+  edge1X = negVertex0X + vertex1->x;
+  edge1Y = negVertex0Y + vertex1->y;
+  edge1Z = negVertex0Z + vertex1->z;
+  edge2X = negVertex0X + vertex2->x;
+  edge2Y = negVertex0Y + vertex2->y;
+  edge2Z = negVertex0Z + vertex2->z;
+
+  /* normal x edge1 (Q28 normal, so shifted back by 28) */
+  normalCrossEdge1X = (int)FIXED_PRODUCT_SHR((int64_t)normalY * (int64_t)edge1Z - (int64_t)normalZ * (int64_t)edge1Y,Q28_SHIFT);
+  normalCrossEdge1Y = (int)FIXED_PRODUCT_SHR((int64_t)normalZ * (int64_t)edge1X - (int64_t)normalX * (int64_t)edge1Z,Q28_SHIFT);
+  normalCrossEdge1Z = (int)FIXED_PRODUCT_SHR((int64_t)normalX * (int64_t)edge1Y - (int64_t)normalY * (int64_t)edge1X,Q28_SHIFT);
+  hitDotNormalCrossEdge1 = (int64_t)hitRelativeY * (int64_t)normalCrossEdge1Y +
+                           (int64_t)hitRelativeX * (int64_t)normalCrossEdge1X +
+                           (int64_t)hitRelativeZ * (int64_t)normalCrossEdge1Z;
+  edge2DotNormalCrossEdge1 = (int64_t)edge2Y * (int64_t)normalCrossEdge1Y +
+                             (int64_t)normalCrossEdge1X * (int64_t)edge2X +
+                             (int64_t)edge2Z * (int64_t)normalCrossEdge1Z;
+
+  /* normal x hit point, dotted with edge2 */
+  normalCrossHitX = (int64_t)normalY * (int64_t)hitRelativeZ - (int64_t)normalZ * (int64_t)hitRelativeY;
+  normalCrossHitY = (int64_t)normalZ * (int64_t)hitRelativeX - (int64_t)normalX * (int64_t)hitRelativeZ;
+  normalCrossHitZ = (int64_t)normalX * (int64_t)hitRelativeY - (int64_t)normalY * (int64_t)hitRelativeX;
+  edge2DotNormalCrossHit = (int64_t)edge2Y * (int64_t)(int)FIXED_PRODUCT_SHR(normalCrossHitY,Q28_SHIFT) +
+                           (int64_t)edge2X * (int64_t)(int)FIXED_PRODUCT_SHR(normalCrossHitX,Q28_SHIFT) +
+                           (int64_t)edge2Z * (int64_t)(int)FIXED_PRODUCT_SHR(normalCrossHitZ,Q28_SHIFT);
+
+  /* Inside test: both barycentric dots and the remainder edge2DotNormalCrossEdge1 - (their sum) carry the sign
+     of edge2DotNormalCrossEdge1 (the 64-bit subtraction wraps like the original SUB/SBB pair). */
+  insideRemainder = (int64_t)((uint64_t)edge2DotNormalCrossEdge1 -
+                              (uint64_t)(edge2DotNormalCrossHit + hitDotNormalCrossEdge1));
+  if (edge2DotNormalCrossEdge1 < 0) {
+    hitFound = edge2DotNormalCrossHit < 0 && hitDotNormalCrossEdge1 < 0 && insideRemainder < 0;
+  }
+  else {
+    hitFound = edge2DotNormalCrossHit >= 0 && hitDotNormalCrossEdge1 >= 0 && insideRemainder >= 0;
+  }
+  if (!hitFound) {
+    return false;
+  }
+  *outDistanceQ12 = hitDistanceQ12;
+  return true;
 }
 
 
@@ -369,19 +370,19 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
 
   registryCursor = g_ModelDefinitionRegistry;
   registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
-  while (registeredDefinition = *registryCursor, registeredDefinition == NULL || definitionId != registeredDefinition->definitionId) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
-      return FATAL_ERROR_MODEL_DEFINITION_MISSING;
+  for (; registrySlotsRemaining != 0; registrySlotsRemaining--) {
+    registeredDefinition = *registryCursor;
+    if (registeredDefinition != NULL && registeredDefinition->definitionId == definitionId) {
+      *outBuildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks;
+      *outEnergyLoadQ4 = ((ModelDefinition *)registeredDefinition)->buildEnergyLoadQ4;
+      *outXeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4;
+      return 0;
     }
+    registryCursor++;
   }
-  *outBuildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks;
-  *outEnergyLoadQ4 = ((ModelDefinition *)registeredDefinition)->buildEnergyLoadQ4;
-  *outXeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4;
-  return 0;
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
+  return FATAL_ERROR_MODEL_DEFINITION_MISSING;
 }
 
 
@@ -669,12 +670,11 @@ bool ModelDefinition_IsFactionTechnologyLocked
   ModelDefinitionRecordPrefix *modelDefinition;
 
   modelDefinition = ModelDefinitionRegistry_FindById(modelDefinitionId);
-  if ((modelDefinition != NULL) &&
-     (technologyBitIndex = ((ModelDefinition *)modelDefinition)->requiredTechnologyBit,
-     (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 31)) != 0)) {
-    return false;
+  if (modelDefinition == NULL) {
+    return true;
   }
-  return true;
+  technologyBitIndex = ((ModelDefinition *)modelDefinition)->requiredTechnologyBit;
+  return (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 31)) == 0;
 }
 
 
@@ -693,16 +693,18 @@ ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinition
 
   registryCursor = g_ModelDefinitionRegistry;
   registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
-  while (registeredDefinition = *registryCursor, registeredDefinition == NULL || registeredDefinition->definitionId != definitionId) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      /* the original formats EAX, i.e. the last registry slot, not the missing id (PUSH EAX at 0x00528E59) */
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
-      return NULL;
+  registeredDefinition = NULL;
+  for (; registrySlotsRemaining != 0; registrySlotsRemaining--) {
+    registeredDefinition = *registryCursor;
+    if (registeredDefinition != NULL && registeredDefinition->definitionId == definitionId) {
+      return registeredDefinition;
     }
+    registryCursor++;
   }
-  return registeredDefinition;
+  /* Original quirk: the number formatted is the last registry slot's content, not the missing id
+     (PUSH EAX at 0x00528E59) */
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
+  return NULL;
 }
 
