@@ -20,6 +20,11 @@
      <ms> move <x> <y>      pointer motion
      <ms> drag <x> <y> <x2> <y2>  left press at x,y, motion to x2,y2 with the button held, release there
      <ms> key <vk>          key press and release (Windows virtual-key code, decimal)
+     <ms> keydown <vk> / keyup <vk>  press or release only (held modifiers: keydown 17, key 37, keyup 17)
+     <ms> type <text>       types the rest of the line (ASCII), one character per tick, as the window procedure
+                            delivers it: space as VK_SPACE key-down/up (it gets no WM_CHAR), letters and digits
+                            as key-down (swallowed by text edits), Keyboard_OnChar (the WM_CHAR) and key-up,
+                            other characters as Keyboard_OnChar only
      <ms> shot              save the framebuffer now (shots\script_NNNN.bmp, needs AUTOSHOT's folder)
      <ms> quit              end the process
      <ms> layout <w> <h>    the following coordinates are for a w x h screen; they are moved by half
@@ -74,6 +79,8 @@ void DebugScript_Tick(void)
   static int releaseY;
   static int layoutWidth;
   static int layoutHeight;
+  static char typeText[128];
+  static int typePosition = -1;
   char line[128];
   unsigned now;
   /* state: -1 not started, 0 no (more) script, 1 read the next line, 2 a line waits for its time */
@@ -107,6 +114,37 @@ void DebugScript_Tick(void)
     DebugScript_PushCursorEvent(releaseButton == 1 ? LEFT_RELEASE : RIGHT_RELEASE, 0, releaseX, releaseY);
     pendingRelease = 0;
   }
+  if (typePosition >= 0) {
+    /* one character of a "type" line per tick, so the 64-entry keyboard ring cannot overflow */
+    int character = (unsigned char)typeText[typePosition];
+    if (character == 0) {
+      typePosition = -1;
+    }
+    else {
+      typePosition++;
+      if (character == ' ') {
+        Keyboard_OnKeyDown(VK_SPACE);
+        Keyboard_OnKeyUp(VK_SPACE);
+      }
+      else {
+        int virtualKey = 0;
+        if ((character >= '0' && character <= '9') || (character >= 'A' && character <= 'Z')) {
+          virtualKey = character;
+        }
+        else if (character >= 'a' && character <= 'z') {
+          virtualKey = character - ('a' - 'A');
+        }
+        if (virtualKey != 0) {
+          Keyboard_OnKeyDown(virtualKey);
+        }
+        Keyboard_OnChar(character);
+        if (virtualKey != 0) {
+          Keyboard_OnKeyUp(virtualKey);
+        }
+      }
+      return;
+    }
+  }
   if (state == 0) {
     return;
   }
@@ -122,9 +160,23 @@ void DebugScript_Tick(void)
       if (sscanf(line, "%u %31s %d %d %d %d", &due, command, &x, &y, &hold, &extra) < 2) {
         continue;
       }
+      if (strcmp(command, "type") == 0) {
+        /* the text is the rest of the line after "type " (without the line end) */
+        const char *text = strstr(line, "type") + 4;
+        size_t length;
+        if (*text == ' ' || *text == '\t') {
+          text++;
+        }
+        length = strcspn(text, "\r\n");
+        if (length >= sizeof typeText) {
+          length = sizeof typeText - 1;
+        }
+        memcpy(typeText, text, length);
+        typeText[length] = 0;
+      }
       state = 2;
     }
-    if (now < due || pendingRelease) {
+    if (now < due || pendingRelease || typePosition >= 0) {
       return;
     }
     if (strcmp(command, "ingame") == 0) {
@@ -234,6 +286,11 @@ void DebugScript_Tick(void)
     }
     else if (strcmp(command, "keyup") == 0) {
       Keyboard_OnKeyUp(x);
+    }
+    else if (strcmp(command, "type") == 0) {
+      Thandor_Log("script: type \"%s\"", typeText);
+      typePosition = 0;
+      return;
     }
     else if (strcmp(command, "quit") == 0) {
       ExitProcess(0);

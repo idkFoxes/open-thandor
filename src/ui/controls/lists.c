@@ -1474,35 +1474,49 @@ bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
   return containsCount != 0;
 }
 
+/* Copies a whole wide path buffer (WIDE_PATH_MAX_CODE_UNITS code units) two code units at a time. */
+static void UiTimedListTree_CopyPathDwords(uint32_t *destDwords,const uint32_t *sourceDwords)
+{
+  int copyRemaining;
+
+  for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
+    *destDwords = *sourceDwords;
+    sourceDwords++;
+    destDwords++;
+  }
+}
+
+/* Returns the block header of the record block that contains row: the nearest record before it that carries
+   the ancestor-boundary flag. */
+static UiTimedListTreeRecord *UiTimedListTree_FindBlockHeader(UiTimedListTreeRecord *row)
+{
+  UiTimedListTreeRecord *header;
+
+  header = row - 1;
+  while ((header->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) {
+    header--;
+  }
+  return header;
+}
+
 /* Address: 0x00410520.
    Expands a directory row of the tree: builds the full path of the row (its label joined to the labels of
    its ancestor rows, a drive row gives "X:"), enumerates its subdirectories into a new record block and
    links the block below the row (the block header points back to the row and to the row's own block).
-   The root "computer" row lists the drives. CF set when the path or the block cannot be built.
+   The root "computer" row lists the drives. Returns true when the path or the block cannot be built.
 */
 bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
 
 {
-  uint32_t *directory;
-  UiTimedListTreeRecord *linkedRecord;
-  int copyRemaining;
-  UiTimedListTreeRecord *scanRecord;
-  UiTimedListTreeRecord *previousRecord;
-  uint32_t *recordPathSourceDwords;
-  uint32_t *combinedPathSourceDwords;
-  uint32_t *recordPathScratchDestDwords;
-  uint32_t *combinedPathScratchDestDwords;
+  UiTimedListTreeRecord *ancestorRecord;
+  UiTimedListTreeRecord *childBlock;
+  const uint16_t *ancestorLabel;
 
-  recordPathSourceDwords = (uint32_t *)record->countOrLabelText;
-  recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-  for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
-    *recordPathScratchDestDwords = *recordPathSourceDwords;
-    recordPathSourceDwords++;
-    recordPathScratchDestDwords++;
-  }
+  /* Copies the full path buffer size from the label, also past its terminator. */
+  UiTimedListTree_CopyPathDwords
+            ((uint32_t *)&g_UiTimedListRecordPathScratch,(const uint32_t *)record->countOrLabelText);
   if (((record[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
      (record[-1].parentBlockOrIcon != 0)) {
-    linkedRecord = record;
     if (g_UiTimedListRecordPathScratch.codeUnits[1] == ':') {
       g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
       WidePath_CombineDirectoryAndLeaf
@@ -1510,29 +1524,21 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
                  g_UiTimedListRecordPathScratch.codeUnits);
     }
     else {
-      while( true ) {
-        do {
-          scanRecord = linkedRecord;
-          linkedRecord = scanRecord - 1;
-        } while ((scanRecord[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
-        linkedRecord = scanRecord[-1].childBlockOrParentRecord;
-        if (linkedRecord == NULL) {
-          return true;
-        }
-        directory = (uint32_t *)linkedRecord->countOrLabelText;
-        if (((uint16_t *)directory)[1] == ':') break;
+      /* Prepend the labels of the ancestor rows up to (not including) the drive row. */
+      ancestorRecord = UiTimedListTree_FindBlockHeader(record)->childBlockOrParentRecord;
+      while ((ancestorRecord != NULL) && (((uint16_t *)ancestorRecord->countOrLabelText)[1] != ':')) {
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
-                   g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
-        combinedPathSourceDwords = (uint32_t *)&g_UiTimedListCombinedPathScratch;
-        combinedPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-        for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
-          *combinedPathScratchDestDwords = *combinedPathSourceDwords;
-          combinedPathSourceDwords++;
-          combinedPathScratchDestDwords++;
-        }
+                   g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)ancestorRecord->countOrLabelText);
+        UiTimedListTree_CopyPathDwords
+                  ((uint32_t *)&g_UiTimedListRecordPathScratch,(const uint32_t *)&g_UiTimedListCombinedPathScratch);
+        ancestorRecord = UiTimedListTree_FindBlockHeader(ancestorRecord)->childBlockOrParentRecord;
       }
-      g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
+      if (ancestorRecord == NULL) {
+        return true;
+      }
+      ancestorLabel = (const uint16_t *)ancestorRecord->countOrLabelText;
+      g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *(const uint32_t *)ancestorLabel;
       g_UiTimedListCombinedPathScratch.codeUnits[2] = 0; /* terminator (and one spare zero) after "x:" */
       g_UiTimedListCombinedPathScratch.codeUnits[3] = 0;
       WidePath_CombineDirectoryAndLeaf
@@ -1549,17 +1555,12 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
     g_UiTimedListHierarchyParentPathScratch.codeUnits[3] = 0;
   }
   if (!UiTimedListTree_BuildDirectoryRecordBlock
-                    (g_UiTimedListHierarchyParentPathScratch.codeUnits,&linkedRecord)) {
+                    (g_UiTimedListHierarchyParentPathScratch.codeUnits,&childBlock)) {
     return true;
   }
-  record->childBlockOrParentRecord = linkedRecord;
-  linkedRecord->childBlockOrParentRecord = record;
-  do {
-    previousRecord = record - 1;
-    scanRecord = record - 1;
-    record = previousRecord;
-  } while ((scanRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
-  linkedRecord->parentBlockOrIcon = (uint32_t)previousRecord;
+  record->childBlockOrParentRecord = childBlock;
+  childBlock->childBlockOrParentRecord = record;
+  childBlock->parentBlockOrIcon = (uint32_t)UiTimedListTree_FindBlockHeader(record);
   return false;
 }
 
@@ -1980,6 +1981,279 @@ void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocation
 }
 
 
+/* The part of a scroll frame not yet taken by bars and frame pieces, relative to the control. */
+typedef struct UiScrollFrameContentRect {
+  uint32_t left;
+  int top;
+  int right;
+  int bottom;
+} UiScrollFrameContentRect;
+
+/* An arrow piece shows pressed while its active flag and the primary interaction flag are both set. */
+static bool UiScrollableControl_IsArrowPressed(const UiScrollableControl *control,uint32_t arrowActiveFlag)
+{
+  return ((control->scrollStateFlags & arrowActiveFlag) != 0) &&
+         ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) != 0);
+}
+
+/* Draws the horizontal scroll bar (at the top or bottom) and takes its height from the content rect. */
+static void UiScrollableControl_DrawHorizontalScrollbar
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiScrollableControl *control,UiScrollFrameContentRect *content)
+{
+  GraphicsTextureLogicalSize textureSize;
+  uint32_t arrowLength;
+  uint32_t barLeft;
+  uint32_t thumbCapWidth;
+  int barTop;
+  int barRight;
+  int trackStart;
+  int trackEnd;
+  int trackAfterThumbClipLeft;
+  int thumbLeft;
+  int thumbEndLeft;
+  GraphicsSubresourceIndex subresource;
+
+  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
+    barTop = 0;
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                        g_UiWindowTextureSource);
+    arrowLength = textureSize.logicalWidthPixels;
+    content->top = content->top + textureSize.logicalHeightPixels;
+  }
+  else {
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                        g_UiWindowTextureSource);
+    arrowLength = textureSize.logicalWidthPixels;
+    barTop = content->bottom - textureSize.logicalHeightPixels;
+    content->bottom = content->bottom - textureSize.logicalHeightPixels;
+  }
+  /* The bar leaves room for a vertical bar on either side. */
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
+  barLeft = content->left;
+  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
+    barLeft = textureSize.logicalWidthPixels;
+  }
+  barRight = content->right;
+  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
+    barRight = content->right - textureSize.logicalWidthPixels;
+  }
+
+  subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW;
+  if (UiScrollableControl_IsArrowPressed(control,UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE)) {
+    subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
+  }
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clipBottom,clipRight,clipTop,clipLeft,barTop + (control->base).top,barLeft + (control->base).left,
+             subresource,g_UiWindowTextureSource,g_FramebufferAccess);
+  trackStart = barLeft + arrowLength;
+  trackEnd = barRight - arrowLength;
+  subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT;
+  if (UiScrollableControl_IsArrowPressed(control,UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE)) {
+    subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
+  }
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clipBottom,clipRight,clipTop,clipLeft,barTop + (control->base).top,trackEnd + (control->base).left,
+             subresource,g_UiWindowTextureSource,g_FramebufferAccess);
+
+  /* Track before and after the thumb; both are tiled from the track start. */
+  subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK;
+  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
+    subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
+  }
+  UiWindow_BlitTiledHorizontalEdge
+            (clipBottom,clipRight,clipTop,clipLeft,subresource,control->horizontalThumbLeft,barTop,trackStart,control);
+  trackAfterThumbClipLeft = control->horizontalThumbRight;
+  if (trackAfterThumbClipLeft < clipLeft) {
+    trackAfterThumbClipLeft = clipLeft;
+  }
+  subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK;
+  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
+    subresource = UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
+  }
+  UiWindow_BlitTiledHorizontalEdge
+            (clipBottom,clipRight,clipTop,trackAfterThumbClipLeft,subresource,trackEnd,barTop,trackStart,control);
+
+  /* Thumb: start cap, end cap, tiled middle. */
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,
+                                                      g_UiWindowTextureSource);
+  thumbCapWidth = textureSize.logicalWidthPixels;
+  thumbLeft = control->horizontalThumbLeft;
+  thumbEndLeft = control->horizontalThumbRight - thumbCapWidth;
+  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) == 0) {
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,barTop + (control->base).top,
+               thumbLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource,
+               g_FramebufferAccess);
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,barTop + (control->base).top,
+               thumbEndLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END,g_UiWindowTextureSource,
+               g_FramebufferAccess);
+    UiWindow_BlitTiledHorizontalEdge
+              (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE,thumbEndLeft,
+               barTop,thumbLeft + thumbCapWidth,control);
+  }
+  else {
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,barTop + (control->base).top,
+               thumbLeft + (control->base).left,
+               UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
+               g_UiWindowTextureSource,g_FramebufferAccess);
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,barTop + (control->base).top,
+               thumbEndLeft + (control->base).left,
+               UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
+               g_UiWindowTextureSource,g_FramebufferAccess);
+    UiWindow_BlitTiledHorizontalEdge
+              (clipBottom,clipRight,clipTop,clipLeft,
+               UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,thumbEndLeft,
+               barTop,thumbLeft + thumbCapWidth,control);
+  }
+}
+
+/* Draws the vertical scroll bar (at the left or right) and takes its width from the content rect. */
+static void UiScrollableControl_DrawVerticalScrollbar
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiScrollableControl *control,UiScrollFrameContentRect *content)
+{
+  GraphicsTextureLogicalSize textureSize;
+  uint32_t arrowLength;
+  uint32_t barLeft;
+  uint32_t thumbCapHeight;
+  int trackStart;
+  int trackEnd;
+  int trackAfterThumbClipTop;
+  int thumbTop;
+  int thumbEndTop;
+  GraphicsSubresourceIndex subresource;
+
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
+  arrowLength = textureSize.logicalHeightPixels;
+  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
+    barLeft = content->left;
+    content->left = content->left + textureSize.logicalWidthPixels;
+  }
+  else {
+    barLeft = content->right - textureSize.logicalWidthPixels;
+    content->right = content->right - textureSize.logicalWidthPixels;
+  }
+
+  subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW;
+  if (UiScrollableControl_IsArrowPressed(control,UI_SCROLL_VERTICAL_DECREMENT_ACTIVE)) {
+    subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
+  }
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clipBottom,clipRight,clipTop,clipLeft,content->top + (control->base).top,barLeft + (control->base).left,
+             subresource,g_UiWindowTextureSource,g_FramebufferAccess);
+  trackStart = content->top + arrowLength;
+  trackEnd = content->bottom - arrowLength;
+  subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN;
+  if (UiScrollableControl_IsArrowPressed(control,UI_SCROLL_VERTICAL_INCREMENT_ACTIVE)) {
+    subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
+  }
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clipBottom,clipRight,clipTop,clipLeft,trackEnd + (control->base).top,barLeft + (control->base).left,
+             subresource,g_UiWindowTextureSource,g_FramebufferAccess);
+
+  /* Track before and after the thumb; both are tiled from the track start. */
+  subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK;
+  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
+    subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
+  }
+  UiWindow_BlitTiledVerticalEdge
+            (clipBottom,clipRight,clipTop,clipLeft,subresource,control->verticalThumbTop,trackStart,barLeft,control);
+  trackAfterThumbClipTop = control->verticalThumbBottom;
+  if (trackAfterThumbClipTop < clipTop) {
+    trackAfterThumbClipTop = clipTop;
+  }
+  subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK;
+  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
+    subresource = UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET;
+  }
+  UiWindow_BlitTiledVerticalEdge
+            (clipBottom,clipRight,trackAfterThumbClipTop,clipLeft,subresource,trackEnd,trackStart,barLeft,control);
+
+  /* Thumb: start cap, end cap, tiled middle. */
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
+  thumbCapHeight = textureSize.logicalHeightPixels;
+  thumbTop = control->verticalThumbTop;
+  thumbEndTop = control->verticalThumbBottom - thumbCapHeight;
+  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) == 0) {
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,thumbTop + (control->base).top,
+               barLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource,
+               g_FramebufferAccess);
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,thumbEndTop + (control->base).top,
+               barLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END,g_UiWindowTextureSource,
+               g_FramebufferAccess);
+    UiWindow_BlitTiledVerticalEdge
+              (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE,thumbEndTop,
+               thumbTop + thumbCapHeight,barLeft,control);
+  }
+  else {
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,thumbTop + (control->base).top,
+               barLeft + (control->base).left,
+               UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
+               g_UiWindowTextureSource,g_FramebufferAccess);
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipBottom,clipRight,clipTop,clipLeft,thumbEndTop + (control->base).top,
+               barLeft + (control->base).left,
+               UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
+               g_UiWindowTextureSource,g_FramebufferAccess);
+    UiWindow_BlitTiledVerticalEdge
+              (clipBottom,clipRight,clipTop,clipLeft,
+               UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,thumbEndTop,
+               thumbTop + thumbCapHeight,barLeft,control);
+  }
+}
+
+/* Draws one frame style around the content rect (four corners, then top, left, right and bottom edges, all
+   pieces relative to firstSubresource) and shrinks the rect by the frame. */
+static void UiScrollableControl_DrawFrameStyle
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiScrollableControl *control,GraphicsSubresourceIndex firstSubresource,
+          UiScrollFrameContentRect *content)
+{
+  GraphicsTextureLogicalSize textureSize;
+  uint32_t cornerWidth;
+
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(firstSubresource,g_UiWindowTextureSource);
+  cornerWidth = textureSize.logicalWidthPixels;
+  content->bottom = content->bottom - textureSize.logicalHeightPixels;
+  content->right = content->right - cornerWidth;
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clipBottom,clipRight,clipTop,clipLeft,content->top + (control->base).top,
+             content->left + (control->base).left,firstSubresource,g_UiWindowTextureSource,g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clipBottom,clipRight,clipTop,clipLeft,content->top + (control->base).top,
+             content->right + (control->base).left,firstSubresource + UI_WINDOW_FRAME_TOP_RIGHT,
+             g_UiWindowTextureSource,g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clipBottom,clipRight,clipTop,clipLeft,content->bottom + (control->base).top,
+             content->left + (control->base).left,firstSubresource + UI_WINDOW_FRAME_BOTTOM_LEFT,
+             g_UiWindowTextureSource,g_FramebufferAccess);
+  g_GraphicsTextureSourceBlitSourceAlpha
+            (clipBottom,clipRight,clipTop,clipLeft,content->bottom + (control->base).top,
+             content->right + (control->base).left,firstSubresource + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+             g_UiWindowTextureSource,g_FramebufferAccess);
+  UiWindow_BlitTiledHorizontalEdge
+            (clipBottom,clipRight,clipTop,clipLeft,firstSubresource + UI_WINDOW_FRAME_TOP,
+             content->right,content->top,content->left + cornerWidth,control);
+  content->top = content->top + textureSize.logicalHeightPixels;
+  UiWindow_BlitTiledVerticalEdge
+            (clipBottom,clipRight,clipTop,clipLeft,firstSubresource + UI_WINDOW_FRAME_LEFT,
+             content->bottom,content->top,content->left,control);
+  UiWindow_BlitTiledVerticalEdge
+            (clipBottom,clipRight,clipTop,clipLeft,firstSubresource + UI_WINDOW_FRAME_RIGHT,
+             content->bottom,content->top,content->right,control);
+  content->left = content->left + cornerWidth;
+  UiWindow_BlitTiledHorizontalEdge
+            (clipBottom,clipRight,clipTop,clipLeft,firstSubresource + UI_WINDOW_FRAME_BOTTOM,
+             content->right,content->bottom,content->left,control);
+}
+
 /* Address: 0x004B79D0.
    Draws a scroll frame (g_UiScrollableControlVtable drawClipped) from g_UiWindowTextureSource pieces: the
    horizontal and vertical bars (arrows, track and thumb, pressed/active pieces while held), the optional
@@ -1990,384 +2264,63 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
           UiPixelCoordinate clipLeft,UiScrollableControl *control)
 
 {
-  uint32_t arrowLength;
   GraphicsSubresourceIndex subresource;
-  uint32_t tileEnd;
-  uint32_t horizontalBarLeft;
-  int trackStart;
-  int edgeScratch;
-  int contentTop;
-  int barOffset;
-  int contentBottom;
-  int contentRight;
-  int trackEnd;
-  bool accessFailed;
-  GraphicsTextureLogicalSize textureSize;
-  uint32_t capSize;
-  
-  accessFailed = g_GraphicsFramebufferBeginAccess();
-  if (!accessFailed) {
-    tileEnd = 0;
-    contentTop = 0;
-    contentRight = (control->base).layoutWidth;
-    contentBottom = (control->base).layoutHeight;
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      capSize = 0;
-      contentTop = 0;
-      edgeScratch = contentRight;
-      if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
-        barOffset = 0;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
-                                                            g_UiWindowTextureSource);
-        arrowLength = textureSize.logicalWidthPixels;
-        contentTop = contentTop + textureSize.logicalHeightPixels;
-      }
-      else {
-        trackStart = contentBottom;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
-                                                            g_UiWindowTextureSource);
-        arrowLength = textureSize.logicalWidthPixels;
-        barOffset = contentBottom - textureSize.logicalHeightPixels;
-        contentBottom = trackStart - textureSize.logicalHeightPixels;
-      }
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
-      horizontalBarLeft = tileEnd;
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        horizontalBarLeft = textureSize.logicalWidthPixels;
-      }
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
-        contentRight = contentRight - textureSize.logicalWidthPixels;
-      }
-      if (((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) == 0) ||
-         ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   horizontalBarLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        tileEnd = capSize;
-      }
-      else {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   horizontalBarLeft + (control->base).left,
-                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        tileEnd = capSize;
-      }
-      trackStart = horizontalBarLeft + arrowLength;
-      trackEnd = contentRight - arrowLength;
-      if (((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) == 0) ||
-         ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   trackEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-        contentRight = edgeScratch;
-      }
-      else {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   trackEnd + (control->base).left,
-                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        contentRight = edgeScratch;
-      }
-      if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
-        UiWindow_BlitTiledHorizontalEdge
-                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,
-                   control->horizontalThumbLeft,barOffset,
-                   trackStart,control);
-      }
-      else {
-        UiWindow_BlitTiledHorizontalEdge
-                  (clipBottom,clipRight,clipTop,clipLeft,
-                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
-                   control->horizontalThumbLeft,barOffset,
-                   trackStart,control);
-      }
-      edgeScratch = control->horizontalThumbRight;
-      if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE) == 0) {
-        if (edgeScratch < clipLeft) {
-          edgeScratch = clipLeft;
-        }
-        UiWindow_BlitTiledHorizontalEdge
-                  (clipBottom,clipRight,clipTop,edgeScratch,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,trackEnd,barOffset,
-                   trackStart,control);
-      }
-      else {
-        if (edgeScratch < clipLeft) {
-          edgeScratch = clipLeft;
-        }
-        UiWindow_BlitTiledHorizontalEdge
-                  (clipBottom,clipRight,clipTop,edgeScratch,
-                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,barOffset,
-                   trackStart,control);
-      }
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,
-                                                          g_UiWindowTextureSource);
-      capSize = textureSize.logicalWidthPixels;
-      edgeScratch = control->horizontalThumbLeft;
-      trackStart = control->horizontalThumbRight;
-      if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) == 0) {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   edgeScratch + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-        trackStart = trackStart - capSize;
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   trackStart + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-        UiWindow_BlitTiledHorizontalEdge
-                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE,trackStart,
-                   barOffset,edgeScratch + capSize,control);
-      }
-      else {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   edgeScratch + (control->base).left,
-                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        trackStart = trackStart - capSize;
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   trackStart + (control->base).left,
-                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        UiWindow_BlitTiledHorizontalEdge
-                  (clipBottom,clipRight,clipTop,clipLeft,
-                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackStart,
-                   barOffset,edgeScratch + capSize,control);
-      }
-    }
-    if ((control->scrollStateFlags &
-        (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      edgeScratch = contentBottom;
-      barOffset = contentTop;
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
-        capSize = tileEnd;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
-                                                            g_UiWindowTextureSource);
-        arrowLength = textureSize.logicalHeightPixels;
-        capSize = capSize + textureSize.logicalWidthPixels;
-      }
-      else {
-        trackStart = contentRight;
-        capSize = tileEnd;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
-                                                            g_UiWindowTextureSource);
-        arrowLength = textureSize.logicalHeightPixels;
-        tileEnd = contentRight - textureSize.logicalWidthPixels;
-        contentRight = trackStart - textureSize.logicalWidthPixels;
-      }
-      if (((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) == 0) ||
-         ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-      }
-      else {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
-                   tileEnd + (control->base).left,
-                   UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-      }
-      trackStart = contentTop + arrowLength;
-      trackEnd = contentBottom - arrowLength;
-      if (((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) == 0) ||
-         ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,trackEnd + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-        contentBottom = edgeScratch;
-        contentTop = barOffset;
-      }
-      else {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,trackEnd + (control->base).top,
-                   tileEnd + (control->base).left,
-                   UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        contentBottom = edgeScratch;
-        contentTop = barOffset;
-      }
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
-        UiWindow_BlitTiledVerticalEdge
-                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,control->verticalThumbTop,
-                   trackStart,
-                   tileEnd,control);
-      }
-      else {
-        UiWindow_BlitTiledVerticalEdge
-                  (clipBottom,clipRight,clipTop,clipLeft,
-                   UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
-                   control->verticalThumbTop,trackStart,
-                   tileEnd,control);
-      }
-      edgeScratch = control->verticalThumbBottom;
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE) == 0) {
-        if (edgeScratch < clipTop) {
-          edgeScratch = clipTop;
-        }
-        UiWindow_BlitTiledVerticalEdge
-                  (clipBottom,clipRight,edgeScratch,clipLeft,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,trackEnd,trackStart,
-                   tileEnd,control);
-      }
-      else {
-        if (edgeScratch < clipTop) {
-          edgeScratch = clipTop;
-        }
-        UiWindow_BlitTiledVerticalEdge
-                  (clipBottom,clipRight,edgeScratch,clipLeft,
-                   UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,trackStart,
-                   tileEnd,control);
-      }
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
-      arrowLength = textureSize.logicalHeightPixels;
-      edgeScratch = control->verticalThumbTop;
-      barOffset = control->verticalThumbBottom;
-      if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) == 0) {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,edgeScratch + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-        barOffset = barOffset - arrowLength;
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END,g_UiWindowTextureSource,
-                   g_FramebufferAccess);
-        UiWindow_BlitTiledVerticalEdge
-                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE,barOffset,
-                   edgeScratch + arrowLength,tileEnd,control);
-        tileEnd = capSize;
-      }
-      else {
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,edgeScratch + (control->base).top,
-                   tileEnd + (control->base).left,
-                   UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        barOffset = barOffset - arrowLength;
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
-                   tileEnd + (control->base).left,
-                   UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
-        UiWindow_BlitTiledVerticalEdge
-                  (clipBottom,clipRight,clipTop,clipLeft,
-                   UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,barOffset,
-                   edgeScratch + arrowLength,tileEnd,control);
-        tileEnd = capSize;
-      }
-    }
-    if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_A) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource);
-      capSize = textureSize.logicalWidthPixels;
-      contentBottom = contentBottom - textureSize.logicalHeightPixels;
-      contentRight = contentRight - capSize;
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
-                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource,
-                 g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
-                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_TOP_RIGHT,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,contentBottom + (control->base).top,
-                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM_LEFT,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,contentBottom + (control->base).top,
-                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM_RIGHT,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
-      UiWindow_BlitTiledHorizontalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_TOP,
-                 contentRight,contentTop,tileEnd + capSize,control);
-      contentTop = contentTop + textureSize.logicalHeightPixels;
-      edgeScratch = (tileEnd + capSize) - capSize;
-      UiWindow_BlitTiledVerticalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_LEFT,
-                 contentBottom,contentTop,edgeScratch,control);
-      UiWindow_BlitTiledVerticalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_RIGHT,
-                 contentBottom,contentTop,contentRight,control);
-      tileEnd = edgeScratch + capSize;
-      UiWindow_BlitTiledHorizontalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM,
-                 contentRight,contentBottom,tileEnd,control);
-    }
-    if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource);
-      capSize = textureSize.logicalWidthPixels;
-      contentBottom = contentBottom - textureSize.logicalHeightPixels;
-      contentRight = contentRight - capSize;
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
-                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource,
-                 g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
-                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_TOP_RIGHT,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,contentBottom + (control->base).top,
-                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM_LEFT,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,contentBottom + (control->base).top,
-                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM_RIGHT,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
-      UiWindow_BlitTiledHorizontalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_TOP,
-                 contentRight,contentTop,tileEnd + capSize,control);
-      contentTop = contentTop + textureSize.logicalHeightPixels;
-      edgeScratch = (tileEnd + capSize) - capSize;
-      UiWindow_BlitTiledVerticalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_LEFT,
-                 contentBottom,contentTop,edgeScratch,control);
-      UiWindow_BlitTiledVerticalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_RIGHT,
-                 contentBottom,contentTop,contentRight,control);
-      tileEnd = edgeScratch + capSize;
-      UiWindow_BlitTiledHorizontalEdge
-                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM,
-                 contentRight,contentBottom,tileEnd,control);
-    }
-    if ((control->scrollStateFlags & (UI_SCROLL_FILL_INTERIOR|UI_SCROLL_FILL_INTERIOR_TEXTURED)) != 0) {
-      subresource = 0;
-      if ((control->scrollStateFlags & UI_SCROLL_FILL_INTERIOR_TEXTURED) != 0) {
-        subresource = UI_WINDOW_SUBRESOURCE_INTERIOR;
-      }
-      UiWindow_BlitTiledInterior
-                (clipBottom,clipRight,clipTop,clipLeft,subresource,contentBottom,contentRight,contentTop,tileEnd,
-                 control);
-    }
-    g_GraphicsFramebufferEndAccess();
-    edgeScratch = tileEnd + (control->base).left;
-    contentTop = contentTop + (control->base).top;
-    contentRight = contentRight + (control->base).left;
-    contentBottom = contentBottom + (control->base).top;
-    if (edgeScratch < clipLeft) {
-      edgeScratch = clipLeft;
-    }
-    if (contentTop < clipTop) {
-      contentTop = clipTop;
-    }
-    if (clipRight < contentRight) {
-      contentRight = clipRight;
-    }
-    if (clipBottom < contentBottom) {
-      contentBottom = clipBottom;
-    }
-    UiContainer_DrawIntersectingChildren(contentBottom,contentRight,contentTop,edgeScratch,&control->base);
+  UiScrollFrameContentRect content;
+  int viewLeft;
+  int viewTop;
+  int viewRight;
+  int viewBottom;
+
+  if (g_GraphicsFramebufferBeginAccess()) {
+    return;
   }
-  return;
+  content.left = 0;
+  content.top = 0;
+  content.right = (control->base).layoutWidth;
+  content.bottom = (control->base).layoutHeight;
+  if ((control->scrollStateFlags & (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
+    UiScrollableControl_DrawHorizontalScrollbar(clipBottom,clipRight,clipTop,clipLeft,control,&content);
+  }
+  if ((control->scrollStateFlags & (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
+    UiScrollableControl_DrawVerticalScrollbar(clipBottom,clipRight,clipTop,clipLeft,control,&content);
+  }
+  if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_A) != 0) {
+    UiScrollableControl_DrawFrameStyle
+              (clipBottom,clipRight,clipTop,clipLeft,control,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,&content);
+  }
+  if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B) != 0) {
+    UiScrollableControl_DrawFrameStyle
+              (clipBottom,clipRight,clipTop,clipLeft,control,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,&content);
+  }
+  if ((control->scrollStateFlags & (UI_SCROLL_FILL_INTERIOR|UI_SCROLL_FILL_INTERIOR_TEXTURED)) != 0) {
+    subresource = 0;
+    if ((control->scrollStateFlags & UI_SCROLL_FILL_INTERIOR_TEXTURED) != 0) {
+      subresource = UI_WINDOW_SUBRESOURCE_INTERIOR;
+    }
+    UiWindow_BlitTiledInterior
+              (clipBottom,clipRight,clipTop,clipLeft,subresource,content.bottom,content.right,content.top,
+               content.left,control);
+  }
+  g_GraphicsFramebufferEndAccess();
+  viewLeft = content.left + (control->base).left;
+  viewTop = content.top + (control->base).top;
+  viewRight = content.right + (control->base).left;
+  viewBottom = content.bottom + (control->base).top;
+  if (viewLeft < clipLeft) {
+    viewLeft = clipLeft;
+  }
+  if (viewTop < clipTop) {
+    viewTop = clipTop;
+  }
+  if (clipRight < viewRight) {
+    viewRight = clipRight;
+  }
+  if (clipBottom < viewBottom) {
+    viewBottom = clipBottom;
+  }
+  UiContainer_DrawIntersectingChildren(viewBottom,viewRight,viewTop,viewLeft,&control->base);
 }
+
 
 
 /* Address: 0x004B8310.
@@ -3165,6 +3118,154 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
 }
 
 
+/* How many entries of the faction's secondary army-asset list are the given catalog record. */
+static int UiCatalogEntryControl_CountOwnedAssets(int factionIndex,const UiCommandRuntimeRecordPrefix *catalogRecord)
+{
+  FactionArmyAssetCount assetSlotIndex;
+  int assetCount;
+
+  assetCount = 0;
+  for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
+       assetSlotIndex != 0; assetSlotIndex--) {
+    if (catalogRecord ==
+        *(UiCommandRuntimeRecordPrefix **)
+         (factionIndex * sizeof(GameFactionRuntimeRecord) +
+          THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,secondaryArmyAssetPointersOrIds) - 4) +
+          assetSlotIndex * 4)) {
+      assetCount++;
+    }
+  }
+  return assetCount;
+}
+
+/* Draws the owned count " n " at the top left of the entry when it is not zero. */
+static void UiCatalogEntryControl_DrawOwnedCount
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiCatalogEntryControl *control,UiPackedTextStyle textStyle,int assetCount)
+{
+  uint32_t textLength;
+  int entryTop;
+
+  if (assetCount == 0) {
+    return;
+  }
+  g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
+  textLength = g_WideNumberFormatUtf16
+                    (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCount,g_UiCatalogEntryRichTextScratchUtf16 + 1);
+  entryTop = (control->command).sprite.selectable.base.top;
+  /* ' ' and the terminator */
+  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = ' ';
+  RichTextCommandStream_DrawSingleLine
+            (clipBottom,clipRight,clipTop,clipLeft,textStyle,g_UiCatalogEntryRichTextScratchUtf16,entryTop + 2,
+             (control->command).sprite.selectable.base.left);
+}
+
+/* Takes a building model's progress (elapsed * 100 / required ticks) when it is at least the best so far;
+   the text style then follows that model (alert colour when it is switched off). */
+static void UiCatalogEntryControl_TakeBuildProgress
+          (const ModelRuntimeSlot *model,int *bestPercent,UiPackedTextStyle *textStyle)
+{
+  int percent;
+
+  percent = (int)(((int64_t)(int)(model->classLinkState).classState64 * 100) /
+                  (int64_t)(int)(model->classLinkState).classState68);
+  if (*bestPercent <= percent) {
+    *textStyle = UI_CATALOG_TEXT_STYLE_NORMAL;
+    *bestPercent = percent;
+    if (((model->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0) {
+      *textStyle = UI_CATALOG_TEXT_STYLE_ALERT;
+    }
+  }
+}
+
+/* Highest build progress of this group-42 asset among the active faction's class-11 factories, -1 when none
+   builds it. */
+static int UiCatalogEntryControl_FindGroup42BuildPercent
+          (PckArmyAssetIdCatalog catalogArmyAssetId,UiPackedTextStyle *textStyle)
+{
+  ModelRuntimeNode *modelNode;
+  ModelRuntimeSlot *factoryModelRuntime;
+  int bestPercent;
+
+  bestPercent = -1;
+  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != NULL;
+      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+    if (modelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    factoryModelRuntime = (modelNode->runtimePayload).modelRuntime;
+    if ((factoryModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) &&
+        ((factoryModelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING) &&
+        ((g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex ==
+         factoryModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
+        (catalogArmyAssetId == (factoryModelRuntime->classLinkState).modelLinkOrState.classState)) {
+      UiCatalogEntryControl_TakeBuildProgress(factoryModelRuntime,&bestPercent,textStyle);
+    }
+  }
+  return bestPercent;
+}
+
+/* Highest build progress of this group-48 asset among the active faction's class-22 pads and class-13
+   factories, -1 when none builds it. */
+static int UiCatalogEntryControl_FindGroup48BuildPercent
+          (PckArmyAssetIdCatalog catalogArmyAssetId,UiPackedTextStyle *textStyle)
+{
+  ModelRuntimeNode *modelNode;
+  ModelRuntimeSlot *slotModelRuntime;
+  int factionIndex;
+  int bestPercent;
+
+  factionIndex = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
+  bestPercent = -1;
+  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead; modelNode != NULL;
+      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+    if (modelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    slotModelRuntime = (modelNode->runtimePayload).modelRuntime;
+    if (slotModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
+      /* class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView): +0xAC == 1 while it builds, +0x60/+0x64/+0x68
+         the selected secondary asset and its elapsed / required build ticks */
+      if (((slotModelRuntime->classState).classStateAC == 1) &&
+          (factionIndex == slotModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
+          (catalogArmyAssetId == (slotModelRuntime->classLinkState).modelLinkOrState.classState)) {
+        UiCatalogEntryControl_TakeBuildProgress(slotModelRuntime,&bestPercent,textStyle);
+      }
+    }
+    else if ((slotModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
+             ((slotModelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING) &&
+             (factionIndex == slotModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
+             (catalogArmyAssetId == (slotModelRuntime->classLinkState).modelLinkOrState.classState)) {
+      UiCatalogEntryControl_TakeBuildProgress(slotModelRuntime,&bestPercent,textStyle);
+    }
+  }
+  return bestPercent;
+}
+
+/* Draws the build progress " n% " at the top right of the entry when some model builds the asset. */
+static void UiCatalogEntryControl_DrawBuildPercent
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiCatalogEntryControl *control,UiPackedTextStyle textStyle,int percent)
+{
+  uint32_t textLength;
+  RichTextExtent textExtent;
+
+  if (percent <= -1) {
+    return;
+  }
+  g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
+  textLength = g_WideNumberFormatUtf16
+                    (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,percent,g_UiCatalogEntryRichTextScratchUtf16 + 1);
+  *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = '%';
+  /* ' ' and the terminator */
+  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 4) = ' ';
+  textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
+  RichTextCommandStream_DrawSingleLine
+            (clipBottom,clipRight,clipTop,clipLeft,textStyle,g_UiCatalogEntryRichTextScratchUtf16,
+             (control->command).sprite.selectable.base.top + 2,
+             (control->command).sprite.selectable.base.right - textExtent.widthPixels);
+}
+
 /* Address: 0x00516580.
    Draws a build catalog entry of the in-game command panel (g_UiNodeVtable_00516530 drawClipped): the
    sprite button, its price (runtimeDisplayValueQ4 in whole units, in the alert colour when the active
@@ -3179,40 +3280,39 @@ void UiCatalogEntryControl_DrawClipped
           UiPixelCoordinate clipLeft,UiCatalogEntryControl *control)
 
 {
-  ModelRuntimeSlot *slotModelRuntime;
-  uint32_t subresourceOrTextLength;
-  int recordIndexOrPercent;
-  int assetCountOrPercent;
-  FactionArmyAssetCount assetSlotIndex;
-  int factionIndexOrPercent;
-  bool accessFailed;
+  uint32_t spriteSubresource;
+  uint32_t textLength;
+  int recordIndex;
+  int factionIndex;
+  int buildPercent;
+  PckArmyAssetIdCatalog catalogArmyAssetId;
   RichTextExtent textExtent;
   uint32_t backgroundSubresource;
   GraphicsTextureSourceAsset *spriteTextureSource;
   SoftwareFramebufferAccess *framebuffer;
-  PckArmyAssetIdCatalog catalogArmyAssetId;
   UiPackedTextStyle overlayTextStyle;
-  ModelRuntimeNode *modelNode;
-  ModelRuntimeSlot *factoryModelRuntime;
-  ModelRuntimeNode *modelNodePrimary;
-  
-  if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
-     (((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0
-       && (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) != 0)) ||
-      (accessFailed = g_GraphicsFramebufferBeginAccess(), accessFailed)))) {
+
+  if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+    return;
+  }
+  if ((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) &&
+      (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) != 0)) {
+    return;
+  }
+  if (g_GraphicsFramebufferBeginAccess()) {
     return;
   }
   spriteTextureSource = (control->command).sprite.primaryTextureSource;
   framebuffer = g_FramebufferAccess;
   if (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-    subresourceOrTextLength = (control->command).sprite.normalSubresourceStartOrDescriptor;
+    spriteSubresource = (control->command).sprite.normalSubresourceStartOrDescriptor;
   }
   else {
     if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
        (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE) != 0)) {
       spriteTextureSource = (control->command).sprite.alternateTextureSource;
     }
-    subresourceOrTextLength = (control->command).sprite.selectedSubresourceStart;
+    spriteSubresource = (control->command).sprite.selectedSubresourceStart;
     if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED) != 0) {
       backgroundSubresource = (control->command).sprite.normalSubresourceStartOrDescriptor;
       if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
@@ -3225,13 +3325,13 @@ void UiCatalogEntryControl_DrawClipped
     }
   }
   if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
-    subresourceOrTextLength = subresourceOrTextLength + (control->command).sprite.animationFrameOffset;
+    spriteSubresource = spriteSubresource + (control->command).sprite.animationFrameOffset;
   }
   g_GraphicsTextureSourceBlitSourceAlpha
             (clipBottom,clipRight,clipTop,clipLeft,(control->command).sprite.selectable.base.top,
-             (control->command).sprite.selectable.base.left,subresourceOrTextLength,spriteTextureSource,framebuffer);
-  factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
-  if ((int)g_GameFactionRuntimeImage.records[factionIndexOrPercent].xeniteCurrentQ4 <
+             (control->command).sprite.selectable.base.left,spriteSubresource,spriteTextureSource,framebuffer);
+  factionIndex = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
+  if ((int)g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 <
       (int)control->runtimeDisplayValueQ4) {
     overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
   }
@@ -3240,174 +3340,46 @@ void UiCatalogEntryControl_DrawClipped
   }
   g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
   g_UiCatalogEntryRichTextScratchUtf16[1] = 0;
-  subresourceOrTextLength = g_WideNumberFormatUtf16
+  textLength = g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
                      g_UiCatalogEntryRichTextScratchUtf16 + 1);
   /* ' ' and the terminator */
-  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
+  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + textLength + 2) = ' ';
   textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
              ((control->command).sprite.selectable.base.bottom - textExtent.heightPixels) - 2,
              ((int)((control->command).sprite.selectable.base.layoutWidth - textExtent.widthPixels) >> 1)
              + (control->command).sprite.selectable.base.left);
-  recordIndexOrPercent = 42 - 1; /* the last group-42 record */
-  do {
+  for (recordIndex = 42 - 1; recordIndex >= 0; recordIndex--) {
     if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
-        g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndexOrPercent]) {
-      assetCountOrPercent = 0;
-      catalogArmyAssetId = g_UiCatalogGroup42Records[recordIndexOrPercent]->armyAssetId;
-      for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndexOrPercent].secondaryArmyAssetCount;
-           assetSlotIndex != 0; assetSlotIndex--) {
-        if (g_UiCatalogGroup42Records[recordIndexOrPercent] ==
-            *(UiCommandRuntimeRecordPrefix **)
-             (factionIndexOrPercent * sizeof(GameFactionRuntimeRecord) +
-              THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,secondaryArmyAssetPointersOrIds) - 4) +
-              assetSlotIndex * 4)) {
-          assetCountOrPercent++;
-        }
-      }
-      if (assetCountOrPercent != 0) {
-        g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
-        subresourceOrTextLength = g_WideNumberFormatUtf16
-                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
-                           g_UiCatalogEntryRichTextScratchUtf16 + 1);
-        factionIndexOrPercent = (control->command).sprite.selectable.base.top;
-        /* ' ' and the terminator */
-        *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
-        RichTextCommandStream_DrawSingleLine
-                  (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,
-                   g_UiCatalogEntryRichTextScratchUtf16,factionIndexOrPercent + 2,
-                   (control->command).sprite.selectable.base.left);
-      }
-      factionIndexOrPercent = -1;
-      for (modelNodePrimary =
-                (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-          modelNodePrimary != NULL;
-          modelNodePrimary = (ModelRuntimeNode *)(modelNodePrimary->common).nextNode) {
-        if (((modelNodePrimary->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (factoryModelRuntime = (modelNodePrimary->runtimePayload).modelRuntime,
-            factoryModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11))
-           && (((factoryModelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING &&
-               (((((g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex ==
-                   factoryModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex &&
-                  (catalogArmyAssetId == (factoryModelRuntime->classLinkState).modelLinkOrState.classState)) &&
-                 (recordIndexOrPercent =
-                       (int)(((int64_t)(int)(factoryModelRuntime->classLinkState).classState64 * 100) /
-                             (int64_t)(int)(factoryModelRuntime->classLinkState).classState68),
-                  factionIndexOrPercent <= recordIndexOrPercent)) &&
-                (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, factionIndexOrPercent = recordIndexOrPercent,
-                 ((factoryModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0)))))) {
-          overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
-        }
-      }
-      if (-1 < factionIndexOrPercent) {
-        g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
-        subresourceOrTextLength = g_WideNumberFormatUtf16
-                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,factionIndexOrPercent,
-                           g_UiCatalogEntryRichTextScratchUtf16 + 1);
-        *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
-        /* ' ' and the terminator */
-        *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' ';
-        textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,
-                                                       g_UiCatalogEntryRichTextScratchUtf16);
-        RichTextCommandStream_DrawSingleLine
-                  (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,
-                   g_UiCatalogEntryRichTextScratchUtf16,
-                   (control->command).sprite.selectable.base.top + 2,
-                   (control->command).sprite.selectable.base.right - textExtent.widthPixels);
-      }
-      g_GraphicsFramebufferEndAccess();
-      return;
-    }
-    recordIndexOrPercent--;
-  } while (-1 < recordIndexOrPercent);
-  recordIndexOrPercent = 48 - 1; /* the last group-48 record */
-  while ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot !=
-         g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][recordIndexOrPercent]) {
-    recordIndexOrPercent--;
-    if (recordIndexOrPercent < 0) {
+        g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndex]) {
+      catalogArmyAssetId = g_UiCatalogGroup42Records[recordIndex]->armyAssetId;
+      UiCatalogEntryControl_DrawOwnedCount
+                (clipBottom,clipRight,clipTop,clipLeft,control,overlayTextStyle,
+                 UiCatalogEntryControl_CountOwnedAssets(factionIndex,g_UiCatalogGroup42Records[recordIndex]));
+      buildPercent = UiCatalogEntryControl_FindGroup42BuildPercent(catalogArmyAssetId,&overlayTextStyle);
+      UiCatalogEntryControl_DrawBuildPercent
+                (clipBottom,clipRight,clipTop,clipLeft,control,overlayTextStyle,buildPercent);
       g_GraphicsFramebufferEndAccess();
       return;
     }
   }
-  assetCountOrPercent = 0;
-  catalogArmyAssetId = g_UiCatalogGroup48Records[recordIndexOrPercent]->armyAssetId;
-  for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndexOrPercent].secondaryArmyAssetCount;
-       assetSlotIndex != 0; assetSlotIndex--) {
-    if (g_UiCatalogGroup48Records[recordIndexOrPercent] ==
-        *(UiCommandRuntimeRecordPrefix **)
-         (factionIndexOrPercent * sizeof(GameFactionRuntimeRecord) +
-              THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,secondaryArmyAssetPointersOrIds) - 4) +
-              assetSlotIndex * 4)) {
-      assetCountOrPercent++;
+  for (recordIndex = 48 - 1; recordIndex >= 0; recordIndex--) {
+    if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
+        g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][recordIndex]) {
+      catalogArmyAssetId = g_UiCatalogGroup48Records[recordIndex]->armyAssetId;
+      UiCatalogEntryControl_DrawOwnedCount
+                (clipBottom,clipRight,clipTop,clipLeft,control,overlayTextStyle,
+                 UiCatalogEntryControl_CountOwnedAssets(factionIndex,g_UiCatalogGroup48Records[recordIndex]));
+      buildPercent = UiCatalogEntryControl_FindGroup48BuildPercent(catalogArmyAssetId,&overlayTextStyle);
+      UiCatalogEntryControl_DrawBuildPercent
+                (clipBottom,clipRight,clipTop,clipLeft,control,overlayTextStyle,buildPercent);
+      g_GraphicsFramebufferEndAccess();
+      return;
     }
-  }
-  if (assetCountOrPercent != 0) {
-    g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
-    subresourceOrTextLength = g_WideNumberFormatUtf16
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
-                       g_UiCatalogEntryRichTextScratchUtf16 + 1);
-    factionIndexOrPercent = (control->command).sprite.selectable.base.top;
-    /* ' ' and the terminator */
-    *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
-    RichTextCommandStream_DrawSingleLine
-              (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
-               factionIndexOrPercent + 2,(control->command).sprite.selectable.base.left);
-  }
-  factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
-  recordIndexOrPercent = -1;
-  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead;
-      modelNode != NULL;
-      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-    if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      slotModelRuntime = (modelNode->runtimePayload).modelRuntime;
-      if (slotModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-        /* class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView): +0xAC == 1 while it builds, +0x60/+0x64/+0x68
-           the selected secondary asset and its elapsed / required build ticks */
-        if ((((slotModelRuntime->classState).classStateAC == 1) &&
-            (factionIndexOrPercent == slotModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) &&
-           ((catalogArmyAssetId == (slotModelRuntime->classLinkState).modelLinkOrState.classState &&
-            ((assetCountOrPercent =
-                   (int)(((int64_t)(int)(slotModelRuntime->classLinkState).classState64 * 100) /
-                         (int64_t)(int)(slotModelRuntime->classLinkState).classState68),
-              recordIndexOrPercent <= assetCountOrPercent &&
-             (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent,
-              ((slotModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0)))))) {
-          overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
-        }
-      }
-      else if ((((slotModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
-                  MODEL_RUNTIME_CLASS_13)
-                && ((slotModelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING)) &&
-               (factionIndexOrPercent == slotModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) &&
-              (((catalogArmyAssetId == (slotModelRuntime->classLinkState).modelLinkOrState.classState &&
-                (assetCountOrPercent =
-                      (int)(((int64_t)(int)(slotModelRuntime->classLinkState).classState64 * 100) /
-                            (int64_t)(int)(slotModelRuntime->classLinkState).classState68),
-                 recordIndexOrPercent <= assetCountOrPercent)) &&
-               (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent,
-                ((slotModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0)))) {
-        overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
-      }
-    }
-  }
-  if (-1 < recordIndexOrPercent) {
-    g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
-    subresourceOrTextLength = g_WideNumberFormatUtf16
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordIndexOrPercent,
-                       g_UiCatalogEntryRichTextScratchUtf16 + 1);
-    *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
-    /* ' ' and the terminator */
-    *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' ';
-    textExtent = RichTextCommandStream_MeasureLine(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
-    RichTextCommandStream_DrawSingleLine
-              (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
-               (control->command).sprite.selectable.base.top + 2,
-               (control->command).sprite.selectable.base.right - textExtent.widthPixels);
   }
   g_GraphicsFramebufferEndAccess();
-  return;
 }
 
 

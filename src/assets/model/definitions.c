@@ -491,6 +491,111 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uin
   return false;
 }
 
+/* Puts the definition into the first free slot of the model registry. Returns 0, or the fatal error code
+   for a duplicate id (the id is left in g_PackageLastErrorPath) or a full registry (the slot count is
+   left there). */
+static uint32_t ModelDefinition_ClaimRegistrySlot(ModelDefinitionResolveView *definition)
+{
+  int slotIndex;
+
+  if (ModelDefinitionRegistry_FindById(definition->definitionId) != NULL) {
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
+    return FATAL_ERROR_MODEL_ID_DUPLICATE;
+  }
+  for (slotIndex = 0; slotIndex < MODEL_DEFINITION_REGISTRY_SLOT_COUNT; slotIndex++) {
+    if (g_ModelDefinitionRegistry[slotIndex] == NULL) {
+      g_ModelDefinitionRegistry[slotIndex] = (ModelDefinitionRecordPrefix *)definition;
+      return 0;
+    }
+  }
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,MODEL_DEFINITION_REGISTRY_SLOT_COUNT,g_PackageLastErrorPath);
+  return FATAL_ERROR_MODEL_REGISTRY_FULL;
+}
+
+/* Replaces the serialized shot and effect ids of the definition by the registered definitions, in record
+   order. Returns 0, or the error code of the first failed lookup (later fields keep their ids). */
+static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveView *definition)
+{
+  /* each effect field holds its serialized id until the lookup replaces it by the definition */
+  EffectDefinition **const destructionEffects[] = {
+    &definition->destructionEffect0,&definition->destructionEffect1,
+    &definition->destructionEffect2,&definition->destructionEffect3,
+    &definition->destructionEffect4,&definition->destructionEffect5,
+    &definition->destructionEffect6,&definition->destructionEffect7
+  };
+  EffectDefinition **const emitterAndRemovalEffects[] = {
+    &definition->emitterEffectDefinitionReference,&definition->waterEmitterEffectDefinitionReference,
+    &definition->removalEffectDefinitionReference,&definition->damageEffectDefinitionReference
+  };
+  uint32_t status;
+  uint32_t fieldIndex;
+  ShotDefinition *resolvedShot;
+  ShotDefinition *resolvedEmitterShot;
+
+  status = ShotDefinitionRegistry_FindByIdWithError
+                     ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference,&resolvedShot);
+  if (status != 0) return status;
+  definition->shotDefinitionReference = resolvedShot;
+  for (fieldIndex = 0; fieldIndex < 8; fieldIndex++) {
+    status = EffectDefinitionRegistry_FindById
+                       ((PckEffectDefinitionIdCatalog)*destructionEffects[fieldIndex],destructionEffects[fieldIndex]);
+    if (status != 0) return status;
+  }
+  /* -1: the definition has no shot at +0x168 */
+  if (definition->emitterShotDefinitionReference != (ShotDefinition *)0xffffffff) {
+    status = ShotDefinitionRegistry_FindByIdWithError
+                       ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference,&resolvedEmitterShot);
+    if (status != 0) return status;
+    definition->emitterShotDefinitionReference = resolvedEmitterShot;
+  }
+  for (fieldIndex = 0; fieldIndex < 4; fieldIndex++) {
+    status = EffectDefinitionRegistry_FindById
+                       ((PckEffectDefinitionIdCatalog)*emitterAndRemovalEffects[fieldIndex],
+                        emitterAndRemovalEffects[fieldIndex]);
+    if (status != 0) return status;
+  }
+  return 0;
+}
+
+/* Copies the terrain-class dependent placement values from the grid tables. Negative classes keep the
+   serialized values; the contact kind at +0x278 selects which grid tables the class at +0x264 indexes
+   (kind 4 from class 1, the fallback tables from class 4). */
+static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *definition)
+{
+  uint32_t terrainClass;
+  uint32_t footprintRadius;
+
+  terrainClass = definition->terrainTraversalClass;
+  if (-1 < (int)definition->footprintRadiusClass) {
+    footprintRadius = (&g_GridInfluenceRadiusOffset0)[definition->footprintRadiusClass];
+    definition->footprintRadius = footprintRadius;
+    definition->footprintRadiusCopy = footprintRadius;
+  }
+  if ((int)terrainClass < 0) return;
+  if (definition->placementContactKindIndex == 1) {
+    uint32_t maxWaterSurfaceDelta = (&g_GridTerrainClassBit24MaxWaterSurfaceDelta)[terrainClass];
+    uint32_t maxNormalAngle = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[terrainClass];
+    ((ModelDefinition *)definition)->classParameterCC = maxWaterSurfaceDelta;
+    definition->runtimeValue24 = maxNormalAngle;
+  }
+  else if (definition->placementContactKindIndex == 4) {
+    uint32_t secondaryThreshold = g_ModelTraversalClass4SecondaryThresholdTable3[terrainClass - 1];
+    definition->runtimeValue24 = (&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)[terrainClass - 1];
+    definition->traversalSecondaryThreshold = secondaryThreshold;
+  }
+  else {
+    int fallbackIndex = terrainClass - 4;
+    uint32_t minWaterSurfaceDelta = (&g_GridTerrainClassBit28MinWaterSurfaceDelta)[fallbackIndex];
+    uint32_t maxNormalAngle = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[fallbackIndex];
+    uint32_t secondaryThreshold = g_ModelTraversalFallbackSecondaryThresholdTable3[fallbackIndex];
+    definition->waterDamageThreshold = minWaterSurfaceDelta;
+    definition->runtimeValue24 = maxNormalAngle;
+    definition->traversalSecondaryThreshold = secondaryThreshold;
+  }
+}
+
 /* Address: 0x00528600.
    Registers one MDL model definition in the first free slot of the 768-slot registry and turns its
    serialized references into runtime pointers: the node tree is relocated by the asset base and its
@@ -503,137 +608,33 @@ bool ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError)
 
 {
-  uint32_t nodeOffsetOrGridClass;
-  uint32_t secondaryThreshold;
-  uint32_t resolverStatusOrSentinel;
-  ShotDefinition *resolvedShot;
-  ShotDefinition *resolvedEmitterShot;
-  int slotsRemainingOrClassIndex;
-  ModelDefinitionRecordPrefix **registrySlotCursor;
-  MdlSerializedNodeHeader *serializedNodeCursor;
+  uint32_t status;
+  uint32_t rootNodeOffset;
 
-  registrySlotCursor = g_ModelDefinitionRegistry;
-  slotsRemainingOrClassIndex = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
-  if (ModelDefinitionRegistry_FindById(definition->definitionId) != NULL) {
-    /* duplicate id: the id is left in g_PackageLastErrorPath */
-    g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
-    resolverStatusOrSentinel = FATAL_ERROR_MODEL_ID_DUPLICATE;
-    goto ReturnFailure;
+  status = ModelDefinition_ClaimRegistrySlot(definition);
+  if (status != 0) {
+    *outError = status;
+    return false;
   }
-  while (*registrySlotCursor != NULL) {
-    registrySlotCursor++;
-    slotsRemainingOrClassIndex--;
-    if (slotsRemainingOrClassIndex == 0) {
-      /* registry full: the slot count is left in g_PackageLastErrorPath */
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,MODEL_DEFINITION_REGISTRY_SLOT_COUNT,g_PackageLastErrorPath);
-      resolverStatusOrSentinel = FATAL_ERROR_MODEL_REGISTRY_FULL;
-      goto ReturnFailure;
-    }
-  }
-  nodeOffsetOrGridClass = definition->rootNodeOffsetOrPointer;
-  *registrySlotCursor = (ModelDefinitionRecordPrefix *)definition;
-  if (nodeOffsetOrGridClass != 0) {
+  rootNodeOffset = definition->rootNodeOffsetOrPointer;
+  if (rootNodeOffset != 0) {
     /* asset start + serialized offset */
-    definition->rootNodeOffsetOrPointer =
-         (uint32_t)((uint8_t *)asset + definition->rootNodeOffsetOrPointer);
-    serializedNodeCursor = (MdlSerializedNodeHeader *)((uint8_t *)asset + nodeOffsetOrGridClass);
+    definition->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)asset + rootNodeOffset);
     /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
        {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
-    if (ModelDefinition_ResolveNodeSprites(serializedNodeCursor,(uint8_t *)asset,&resolverStatusOrSentinel)) {
-      goto ReturnFailure;
+    if (ModelDefinition_ResolveNodeSprites
+                  ((MdlSerializedNodeHeader *)((uint8_t *)asset + rootNodeOffset),(uint8_t *)asset,&status)) {
+      *outError = status;
+      return false;
     }
   }
-  resolverStatusOrSentinel = ShotDefinitionRegistry_FindByIdWithError
-                     ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference,&resolvedShot);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  definition->shotDefinitionReference = resolvedShot;
-  /* each effect field holds its serialized id until the lookup replaces it by the definition */
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect0,&definition->destructionEffect0);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect1,&definition->destructionEffect1);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect2,&definition->destructionEffect2);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect3,&definition->destructionEffect3);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect4,&definition->destructionEffect4);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect5,&definition->destructionEffect5);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect6,&definition->destructionEffect6);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect7,&definition->destructionEffect7);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  /* -1: the definition has no shot at +0x168 */
-  if (definition->emitterShotDefinitionReference != (ShotDefinition *)0xffffffff) {
-    resolverStatusOrSentinel = ShotDefinitionRegistry_FindByIdWithError
-                       ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference,&resolvedEmitterShot);
-    if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-    definition->emitterShotDefinitionReference = resolvedEmitterShot;
+  status = ModelDefinition_ResolveShotAndEffectIds(definition);
+  if (status != 0) {
+    *outError = status;
+    return false;
   }
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->emitterEffectDefinitionReference,
-                      &definition->emitterEffectDefinitionReference);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->waterEmitterEffectDefinitionReference,
-                      &definition->waterEmitterEffectDefinitionReference);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->removalEffectDefinitionReference,
-                      &definition->removalEffectDefinitionReference);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  resolverStatusOrSentinel = EffectDefinitionRegistry_FindById
-                     ((PckEffectDefinitionIdCatalog)definition->damageEffectDefinitionReference,
-                      &definition->damageEffectDefinitionReference);
-  if (resolverStatusOrSentinel != 0) goto ReturnFailure;
-  /* negative grid classes keep the serialized values; the contact kind at +0x278 selects which grid tables
-     the class at +0x264 indexes (kind 4 from class 1, the fallback tables from class 4) */
-  nodeOffsetOrGridClass = definition->terrainTraversalClass;
-  if (-1 < (int)definition->footprintRadiusClass) {
-    resolverStatusOrSentinel = (&g_GridInfluenceRadiusOffset0)[definition->footprintRadiusClass];
-    definition->footprintRadius = resolverStatusOrSentinel;
-    definition->footprintRadiusCopy = resolverStatusOrSentinel;
-  }
-  if (-1 < (int)nodeOffsetOrGridClass) {
-    if (definition->placementContactKindIndex == 1) {
-      resolverStatusOrSentinel = (&g_GridTerrainClassBit24MaxWaterSurfaceDelta)[nodeOffsetOrGridClass];
-      nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[nodeOffsetOrGridClass];
-      ((ModelDefinition *)definition)->classParameterCC = resolverStatusOrSentinel;
-      definition->runtimeValue24 = nodeOffsetOrGridClass;
-    }
-    else if (definition->placementContactKindIndex == 4) {
-      resolverStatusOrSentinel =
-           g_ModelTraversalClass4SecondaryThresholdTable3[nodeOffsetOrGridClass - 1];
-      definition->runtimeValue24 =
-           (&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)[nodeOffsetOrGridClass - 1];
-      definition->traversalSecondaryThreshold = resolverStatusOrSentinel;
-    }
-    else {
-      slotsRemainingOrClassIndex = nodeOffsetOrGridClass - 4;
-      resolverStatusOrSentinel = (&g_GridTerrainClassBit28MinWaterSurfaceDelta)[slotsRemainingOrClassIndex];
-      nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[slotsRemainingOrClassIndex];
-      secondaryThreshold =
-           g_ModelTraversalFallbackSecondaryThresholdTable3[slotsRemainingOrClassIndex];
-      definition->waterDamageThreshold = resolverStatusOrSentinel;
-      definition->runtimeValue24 = nodeOffsetOrGridClass;
-      definition->traversalSecondaryThreshold = secondaryThreshold;
-    }
-  }
+  ModelDefinition_CopyTerrainClassValues(definition);
   return true;
-ReturnFailure:
-  *outError = resolverStatusOrSentinel;
-  return false;
 }
 
 

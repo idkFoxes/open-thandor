@@ -695,37 +695,243 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
 }
 
 
+/* Creates the save package at savePath; when that fails, creates the package's directory and tries once more.
+   Returns true when the package is open in *packageHandle. */
+static bool InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)
+
+{
+  if (InGameSaveGame_CreatePackage(savePath,packageHandle)) {
+    return true;
+  }
+  WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),savePath);
+  if (g_FileSystemCreateDirectoryRecursive
+          (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0)) != 0) {
+    return false;
+  }
+  return InGameSaveGame_CreatePackage(savePath,packageHandle);
+}
+
+
+/* Writes the runtime segments army, modul, shot, effect, widget, light, field, level and daten and the campagne
+   entry (deleted without a campaign). Pointer-holding images are converted to offsets for writing and rebased
+   afterwards, also when the write failed. Returns true on success; stops at the first failed write. */
+static bool InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle packageHandle)
+
+{
+  InGameLevelConditionStorage *levelStorage;
+  ResourceRegistrationImagePair domainImagePair;
+  RuntimeHexSegmentImage segmentImage;
+  bool upsertOk;
+
+  ArmyRuntimePool_ConvertPointersToOffsetsForSave();
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+                              (PckDecodedByteCount)(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot)),
+                              (uint32_t *)g_ArmyRuntimeSlots,(uint16_t *)u_army_hex_0050dfb4,packageHandle);
+  ArmyRuntimePool_RebaseAfterLoad();
+  if (!upsertOk) {
+    return false;
+  }
+  /* the whole model runtime slot image (0x400000 bytes) */
+  ModelRuntimePool_UnrebaseBeforeSave();
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+                              (PckDecodedByteCount)(MODEL_RUNTIME_SLOT_COUNT * sizeof(ModelRuntimeSlot)),
+                              (uint32_t *)g_ModelRuntimeSlots,(uint16_t *)u_modul_hex_0050dfee,packageHandle);
+  ModelRuntimePool_RebaseAfterLoad();
+  if (!upsertOk) {
+    return false;
+  }
+  domainImagePair = InGameSaveGame_PrepareShotSlots();
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_shot_hex_0050dfdc,packageHandle);
+  ShotRuntime_RebaseSlotsAfterLoad();
+  if (!upsertOk) {
+    return false;
+  }
+  domainImagePair = InGameSaveGame_PrepareEffectSlots();
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_effect_hex_0050dfc6,packageHandle);
+  EffectRuntime_RebaseSlotsAfterLoad();
+  if (!upsertOk) {
+    return false;
+  }
+  domainImagePair = InGameSaveGame_PrepareRegistrationRecords(worldView);
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_widget_hex_0050e02a,packageHandle);
+  ResourceRegistrationRuntime_RebaseLoadedRecords(worldView);
+  if (!upsertOk) {
+    return false;
+  }
+  segmentImage = RuntimeHexSegment_GetLightImageAndToggleFlag();
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
+                              segmentImage.image,(uint16_t *)u_light_hex_0050e016,packageHandle);
+  RuntimeHexSegment_ToggleLightImageFlag();
+  if (!upsertOk) {
+    return false;
+  }
+  segmentImage = RuntimeHexSegment_GetFieldImage(worldView);
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
+                              segmentImage.image,(uint16_t *)u_field_hex_0050e002,packageHandle);
+  RuntimeHexSegment_AfterFieldImageNoOp(worldView);
+  levelStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+  if (!upsertOk) {
+    return false;
+  }
+  InGameSaveGame_StoreCameraAsPlayerStart(worldView);
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+                              (levelStorage->levelImage).header.resourceTables.
+                              runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)levelStorage,
+                              (uint16_t *)u_level_hex_0050e040,packageHandle);
+  if (!upsertOk) {
+    return false;
+  }
+  domainImagePair = InGameSaveGame_PrepareFactionImage();
+  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_daten_hex_0050e054,packageHandle);
+  GameFactionRuntime_RebaseLoadedArmyReferences();
+  if (!upsertOk) {
+    return false;
+  }
+  if (g_FrontendLoadedCampaignAsset == 0) {
+    Package_DeleteEntry((uint16_t *)u_campagne_hex_0050e068,packageHandle,NULL);
+    return true;
+  }
+  return Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
+                             (uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset,
+                             (uint16_t *)u_campagne_hex_0050e068,packageHandle);
+}
+
+
+/* True when there is nothing to store in the oldunit entry: no old-unit records and every secondary-table
+   dword zero. */
+static bool InGameSaveGame_OldUnitTablesAreEmpty(void)
+
+{
+  int index;
+
+  if (g_OldUnitRecordCount != 0) {
+    return false;
+  }
+  for (index = 0; index < OLD_UNIT_SECONDARY_TABLE_BYTES / 4; index++) {
+    if (g_OldUnitSecondaryTable[index] != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+/* Writes the oldunit entry: the record count followed by the primary and the secondary table, packed into a
+   temporary allocation. Returns false only when that allocation fails. */
+static bool InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
+
+{
+  uint32_t *oldUnitImage;
+  uint32_t *destinationCursor;
+  int index;
+
+  if (g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&oldUnitImage) != 0) {
+    return false;
+  }
+  oldUnitImage[0] = g_OldUnitRecordCount;
+  destinationCursor = oldUnitImage + 1;
+  for (index = 0; index < OLD_UNIT_PRIMARY_TABLE_BYTES / 4; index++) {
+    *destinationCursor = g_OldUnitPrimaryTable[index];
+    destinationCursor++;
+  }
+  for (index = 0; index < OLD_UNIT_SECONDARY_TABLE_BYTES / 4; index++) {
+    *destinationCursor = g_OldUnitSecondaryTable[index];
+    destinationCursor++;
+  }
+  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+                      (PckDecodedByteCount)((uint8_t *)destinationCursor - (uint8_t *)oldUnitImage),oldUnitImage,
+                      (uint16_t *)u_oldunit_hex_0050e094,packageHandle);
+  g_MemoryApi.free(oldUnitImage);
+  return true;
+}
+
+
+/* Reads the 0x200-byte package header into g_PackageScratchBuffer, fills in the save name (file name of savePath;
+   the directory lands behind the header), the packed date and time, the "date, time" text, the level title text
+   id and the campaign index, and writes it back. Returns true on success. */
+static bool InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
+
+{
+  void *handle = (void *)(uintptr_t)packageHandle;
+  InGameSavePackageHeader *header = (InGameSavePackageHeader *)g_PackageScratchBuffer;
+  uint32_t dateTextByteLength;
+  uint16_t *timeText;
+  uint32_t campaignIndex;
+
+  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle) != 0 ||
+      g_FileSystemReadExact(sizeof(InGameSavePackageHeader),header,handle) != 0) {
+    return false;
+  }
+  WidePath_SplitParentAndLeaf(header->saveNameUtf16,(uint16_t *)(header + 1),savePath);
+  header->packedDate = g_LocaleGetPackedCurrentDate();
+  header->packedTime = g_LocaleGetPackedCurrentTime();
+  dateTextByteLength = g_LocaleFormatCurrentDateUtf16(header->dateTimeTextUtf16);
+  timeText = (uint16_t *)((uint8_t *)header->dateTimeTextUtf16 + dateTextByteLength + 4);
+  timeText[-2] = L','; /* ", " between date and time */
+  timeText[-1] = L' ';
+  g_LocaleFormatCurrentTimeUtf16(timeText);
+  if (g_FrontendLoadedCampaignAsset == 0) {
+    campaignIndex = INGAME_SAVE_NO_CAMPAIGN;
+  }
+  else {
+    campaignIndex = g_InGameLevelCampaignAssociationIndex;
+  }
+  header->levelTitleTextId = g_InGameLevelTitleTextResourceIndex;
+  header->campaignIndex = campaignIndex;
+  return g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle) == 0 &&
+         g_FileSystemWriteExactOrFlush(sizeof(InGameSavePackageHeader),header,handle) == 0;
+}
+
+
+/* Creates the package and writes every entry and the header; on success the package is unmounted.
+   Returns true on success; on failure the package stays as it is. */
+static bool InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
+
+{
+  EngineFileHandle packageHandle;
+
+  if (!InGameSaveGame_OpenNewPackage(savePath,&packageHandle)) {
+    return false;
+  }
+  if (!InGameSaveGame_WriteRuntimeEntries(worldView,packageHandle)) {
+    return false;
+  }
+  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,g_GameStatTableImage,
+                      (uint16_t *)u_stat_hex_0050e082,packageHandle);
+  /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
+  if (InGameSaveGame_OldUnitTablesAreEmpty()) {
+    Package_DeleteEntry((uint16_t *)u_oldunit_hex_0050e094,packageHandle,NULL);
+  }
+  else if (!InGameSaveGame_WriteOldUnitEntry(packageHandle)) {
+    return false;
+  }
+  if (!InGameSaveGame_WritePackageHeader(savePath,packageHandle)) {
+    return false;
+  }
+  Package_Unmount(packageHandle);
+  return true;
+}
+
+
 /* Address: 0x0050ECE0.
    Writes a save game (called by InGameSaveGame_SaveSelectedOrTypedName with the world view): opens or creates
    the package at savePath (creating its directory if needed) and stores every runtime segment as a
    Huffman/RLE entry - army, modul, shot, effect, widget, light, field, level, daten, campagne (deleted without
    a campaign), stat and oldunit (deleted when empty). Pointer-holding images are converted to offsets for
    writing and rebased afterwards. Finally the 0x200-byte package header gets the save name, date and time
-   and the level title and campaign index. Returns true (CF set) on failure; the busy count is raised meanwhile.
+   and the level title and campaign index. Returns true on failure (an opened package is then not unmounted); the busy
+   count is raised meanwhile.
 */
 bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
 
 {
-  uint16_t *timeTextDestination;
-  uint8_t *destination;
-  InGameLevelConditionStorage *sourceData;
-  void *handle;
-  uint32_t *modelSlotImage;
-  uint32_t *oldUnitImage;
-  uint32_t localeValue;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
-  int remainingCount;
-  PckDecodedByteCount unpackedSize;
-  uint32_t *headerDwords;
   FrontendPlayerRuntimeRecord *playerBlock;
-  uint32_t *sourceCursor;
-  uint32_t *destinationCursor;
-  bool allZero;
-  EngineFileHandle packageHandle;
-  uint32_t oldUnitAllocationError;
-  ResourceRegistrationImagePair domainImagePair;
-  RuntimeHexSegmentImage segmentImage;
-  bool upsertOk;
+  bool written;
 
   g_InGameResourceRegistrationBusyCount++;
   /* first hand every player's pending army asset back to its faction */
@@ -736,155 +942,9 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
               (playerBlock->playerRuntimeId,0,0,(playerBlock->factionAssignment).factionAssignmentIndex);
     playerBlock++;
   }
-  if (!InGameSaveGame_CreatePackage(savePath,&packageHandle)) {
-    WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),savePath);
-    if (g_FileSystemCreateDirectoryRecursive
-            (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0)) != 0)
-      goto failed;
-    if (!InGameSaveGame_CreatePackage(savePath,&packageHandle)) goto failed;
-  }
-  handle = (void *)(uintptr_t)packageHandle;
-  ArmyRuntimePool_ConvertPointersToOffsetsForSave();
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
-                              (PckDecodedByteCount)(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot)),
-                              (uint32_t *)g_ArmyRuntimeSlots,(uint16_t *)u_army_hex_0050dfb4,
-                              (EngineFileHandle)handle);
-  ArmyRuntimePool_RebaseAfterLoad();
-  if (!upsertOk) goto failed;
-  ModelRuntimePool_UnrebaseBeforeSave();
-  /* The unrebase returns the model runtime slot image in EAX and its size (0x400000) in EDX;
-     the decompiler lost both. */
-  modelSlotImage = (uint32_t *)g_ModelRuntimeSlots;
-  unpackedSize = MODEL_RUNTIME_SLOT_COUNT * sizeof(ModelRuntimeSlot);
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,unpackedSize,modelSlotImage,
-                              (uint16_t *)u_modul_hex_0050dfee,(EngineFileHandle)handle);
-  ModelRuntimePool_RebaseAfterLoad();
-  if (!upsertOk) goto failed;
-  domainImagePair = InGameSaveGame_PrepareShotSlots();
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_shot_hex_0050dfdc,
-                              (EngineFileHandle)handle);
-  ShotRuntime_RebaseSlotsAfterLoad();
-  if (!upsertOk) goto failed;
-  domainImagePair = InGameSaveGame_PrepareEffectSlots();
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_effect_hex_0050dfc6,
-                              (EngineFileHandle)handle);
-  EffectRuntime_RebaseSlotsAfterLoad();
-  if (!upsertOk) goto failed;
-  domainImagePair = InGameSaveGame_PrepareRegistrationRecords(worldView);
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_widget_hex_0050e02a,
-                              (EngineFileHandle)handle);
-  ResourceRegistrationRuntime_RebaseLoadedRecords(worldView);
-  if (!upsertOk) goto failed;
-  segmentImage = RuntimeHexSegment_GetLightImageAndToggleFlag();
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
-                              segmentImage.image,(uint16_t *)u_light_hex_0050e016,(EngineFileHandle)handle);
-  RuntimeHexSegment_ToggleLightImageFlag();
-  if (!upsertOk) goto failed;
-  segmentImage = RuntimeHexSegment_GetFieldImage(worldView);
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
-                              segmentImage.image,(uint16_t *)u_field_hex_0050e002,
-                              (EngineFileHandle)handle);
-  RuntimeHexSegment_AfterFieldImageNoOp(worldView);
-  sourceData = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  if (!upsertOk) goto failed;
-  InGameSaveGame_StoreCameraAsPlayerStart(worldView);
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
-                              (sourceData->levelImage).header.resourceTables.
-                              runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)sourceData
-                              ,(uint16_t *)u_level_hex_0050e040,(EngineFileHandle)handle);
-  if (!upsertOk) goto failed;
-  domainImagePair = InGameSaveGame_PrepareFactionImage();
-  upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_daten_hex_0050e054,
-                              (EngineFileHandle)handle);
-  GameFactionRuntime_RebaseLoadedArmyReferences();
-  if (!upsertOk) goto failed;
-  if (g_FrontendLoadedCampaignAsset == 0) {
-    Package_DeleteEntry((uint16_t *)u_campagne_hex_0050e068,(EngineFileHandle)handle,NULL);
-  }
-  else {
-    upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
-                                g_FrontendLoadedCampaignAsset,(uint16_t *)u_campagne_hex_0050e068,
-                                (EngineFileHandle)handle);
-    if (!upsertOk) goto failed;
-  }
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,g_GameStatTableImage,
-                      (uint16_t *)u_stat_hex_0050e082,(EngineFileHandle)handle);
-  /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
-  allZero = false;
-  if (g_OldUnitRecordCount == 0) {
-    remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4;
-    allZero = true;
-    sourceCursor = g_OldUnitSecondaryTable;
-    do {
-      if (remainingCount == 0) break;
-      remainingCount--;
-      allZero = *sourceCursor == 0;
-      sourceCursor++;
-    } while (allZero);
-  }
-  if (allZero) {
-    Package_DeleteEntry((uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle,NULL);
-  }
-  else {
-    oldUnitAllocationError =
-         g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&oldUnitImage);
-    sourceCursor = g_OldUnitPrimaryTable;
-    if (oldUnitAllocationError != 0) goto failed;
-    *oldUnitImage = g_OldUnitRecordCount;
-    destinationCursor = oldUnitImage;
-    for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; destinationCursor++, remainingCount != 0;
-         remainingCount--) {
-      *destinationCursor = *sourceCursor;
-      sourceCursor++;
-    }
-    sourceCursor = g_OldUnitSecondaryTable;
-    for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
-      *destinationCursor = *sourceCursor;
-      sourceCursor++;
-      destinationCursor++;
-    }
-    Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(int)destinationCursor - (int)oldUnitImage,oldUnitImage,
-                        (uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
-    g_MemoryApi.free(oldUnitImage);
-  }
-  destination = g_PackageScratchBuffer;
-  headerDwords = (uint32_t *)destination; /* EDX: the 0x200-byte package header just read */
-  if ((g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle) == 0) &&
-     (g_FileSystemReadExact(sizeof(InGameSavePackageHeader),destination,handle) == 0)){
-    /* InGameSavePackageHeader: save name (file name of savePath; the directory lands behind the header),
-       level title text id, campaign index, "date, time" text, packed date and time. */
-    WidePath_SplitParentAndLeaf
-              (((InGameSavePackageHeader *)destination)->saveNameUtf16,(uint16_t *)(destination + sizeof(InGameSavePackageHeader)),savePath);
-    localeValue = g_LocaleGetPackedCurrentDate();
-    ((InGameSavePackageHeader *)destination)->packedDate = localeValue;
-    localeValue = g_LocaleGetPackedCurrentTime();
-    ((InGameSavePackageHeader *)destination)->packedTime = localeValue;
-    localeValue = g_LocaleFormatCurrentDateUtf16(((InGameSavePackageHeader *)destination)->dateTimeTextUtf16);
-    timeTextDestination =
-         (uint16_t *)((uint8_t *)((InGameSavePackageHeader *)destination)->dateTimeTextUtf16 + localeValue + 4);
-    timeTextDestination[-2] = L','; /* ", " between date and time */
-    timeTextDestination[-1] = L' ';
-    g_LocaleFormatCurrentTimeUtf16(timeTextDestination);
-    localeValue = g_InGameLevelCampaignAssociationIndex;
-    if (g_FrontendLoadedCampaignAsset == 0) {
-      localeValue = INGAME_SAVE_NO_CAMPAIGN;
-    }
-    ((InGameSavePackageHeader *)headerDwords)->levelTitleTextId = g_InGameLevelTitleTextResourceIndex;
-    ((InGameSavePackageHeader *)headerDwords)->campaignIndex = localeValue;
-    if ((g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle) == 0) &&
-       (g_FileSystemWriteExactOrFlush(sizeof(InGameSavePackageHeader),headerDwords,handle) == 0)){
-      Package_Unmount((EngineFileHandle)handle);
-      g_InGameResourceRegistrationBusyCount--;
-      return false;
-    }
-  }
-failed:
+  written = InGameSaveGame_WritePackageContents(worldView,savePath);
   g_InGameResourceRegistrationBusyCount--;
-  return true;
+  return !written;
 }
 
 

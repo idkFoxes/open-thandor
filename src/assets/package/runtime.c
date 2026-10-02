@@ -63,6 +63,21 @@ bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 }
 
 
+/* Package_UpsertEntry: copies the PCK_ENTRY_PATH_UNITS code units of path (PckEntryHeader.path) to
+   nameDestination, two code units per dword. */
+static void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
+
+{
+  int dwordsRemaining;
+
+  for (dwordsRemaining = PCK_ENTRY_PATH_UNITS / 2; dwordsRemaining != 0; dwordsRemaining--) {
+    *(uint32_t *)nameDestination = *(uint32_t *)path;
+    path = path + 2;
+    nameDestination = nameDestination + 4;
+  }
+}
+
+
 /* Address: 0x0040E840.
    Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the
    archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry header and
@@ -81,8 +96,6 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
   uint32_t packedByteCount;
   FileIoByteCount byteCount;
   uint32_t alignedByteCount;
-  int dwordsRemaining;
-  uint8_t *nameDestination;
 
   destination = g_PackageScratchBuffer;
   if (Package_FindEntryInMount(path,fileHandle) != NULL) {
@@ -90,89 +103,78 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
       return false;
     }
   }
-  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle) == 0) {
-    if (g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) == 0) {
-      if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle) == 0) {
-        ((PckArchiveHeader *)destination)->entryCount++;
-        if (compressionMethod == PCK_COMPRESSION_STORED) {
-          alignedByteCount = unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK;
-          *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = alignedByteCount;
-          /* compressionMethod = PCK_COMPRESSION_STORED and runtimePayloadOffset = 0, byte by byte (a dword
-             store schedules differently) */
-          destination[PCK_NEW_ENTRY_COMPRESSION_METHOD] = PCK_COMPRESSION_STORED;
-          destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 1] = 0;
-          destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 2] = 0;
-          destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 3] = 0;
-          *(uint32_t *)(destination + PCK_ARCHIVE_SIZE) =
-               *(int *)(destination + PCK_ARCHIVE_SIZE) + alignedByteCount + PCK_ENTRY_HEADER_BYTES;
-          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
-          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
-          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
-          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
-          *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
-          *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
-          if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) != 0) {
-            return false;
-          }
-          /* PckEntryHeader.path, two code units per dword */
-          nameDestination = destination + PCK_ENTRY_HEADER_BYTES;
-          for (dwordsRemaining = PCK_ENTRY_PATH_UNITS / 2; dwordsRemaining != 0; dwordsRemaining--) {
-            *(uint32_t *)nameDestination = *(uint32_t *)path;
-            path = path + 2;
-            nameDestination = nameDestination + 4;
-          }
-          if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,(void *)fileHandle) != 0) {
-            return false;
-          }
-          if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination + PCK_ENTRY_HEADER_BYTES,
-                                            (void *)fileHandle) != 0) {
-            return false;
-          }
-          if (g_FileSystemWriteExactOrFlush(alignedByteCount,sourceData,(void *)fileHandle) != 0) {
-            return false;
-          }
-        }
-        else {
-          /* encode straight behind the new entry header, so both are written in one go */
-          if (!g_PckEncoderTable[compressionMethod]
-                  (PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES,
-                   destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,(uint8_t *)sourceData,&packedByteCount,NULL)) {
-            return false;
-          }
-          *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = packedByteCount;
-          byteCount = packedByteCount + PCK_ENTRY_HEADER_BYTES;
-          *(PckCompressionMethod *)(destination + PCK_NEW_ENTRY_COMPRESSION_METHOD) = compressionMethod;
-          *(FileIoByteCount *)(destination + PCK_ARCHIVE_SIZE) = *(int *)(destination + PCK_ARCHIVE_SIZE) + byteCount;
-          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
-          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
-          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
-          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
-          *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
-          *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
-          if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) != 0) {
-            return false;
-          }
-          nameDestination = destination + PCK_ENTRY_HEADER_BYTES;
-          for (dwordsRemaining = PCK_ENTRY_PATH_UNITS / 2; dwordsRemaining != 0; dwordsRemaining--) {
-            *(uint32_t *)nameDestination = *(uint32_t *)path;
-            path = path + 2;
-            nameDestination = nameDestination + 4;
-          }
-          if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,(void *)fileHandle) != 0) {
-            return false;
-          }
-          if (g_FileSystemWriteExactOrFlush
-                (byteCount,destination + PCK_ENTRY_HEADER_BYTES,(void *)fileHandle) != 0) {
-            return false;
-          }
-        }
-        if (Package_ReadDirectory(fileHandle,NULL)) {
-          return true;
-        }
-      }
+  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle) != 0) {
+    return false;
+  }
+  if (g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) != 0) {
+    return false;
+  }
+  if (g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle) != 0) {
+    return false;
+  }
+  ((PckArchiveHeader *)destination)->entryCount++;
+  if (compressionMethod == PCK_COMPRESSION_STORED) {
+    alignedByteCount = unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK;
+    *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = alignedByteCount;
+    /* compressionMethod = PCK_COMPRESSION_STORED and runtimePayloadOffset = 0, byte by byte (a dword
+       store schedules differently) */
+    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD] = PCK_COMPRESSION_STORED;
+    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 1] = 0;
+    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 2] = 0;
+    destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 3] = 0;
+    *(uint32_t *)(destination + PCK_ARCHIVE_SIZE) =
+         *(int *)(destination + PCK_ARCHIVE_SIZE) + alignedByteCount + PCK_ENTRY_HEADER_BYTES;
+    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
+    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
+    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
+    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
+    *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
+    *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
+    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) != 0) {
+      return false;
+    }
+    Package_CopyEntryPathDwords(destination + PCK_ENTRY_HEADER_BYTES,path);
+    if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,(void *)fileHandle) != 0) {
+      return false;
+    }
+    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination + PCK_ENTRY_HEADER_BYTES,
+                                      (void *)fileHandle) != 0) {
+      return false;
+    }
+    if (g_FileSystemWriteExactOrFlush(alignedByteCount,sourceData,(void *)fileHandle) != 0) {
+      return false;
     }
   }
-  return false;
+  else {
+    /* encode straight behind the new entry header, so both are written in one go */
+    if (!g_PckEncoderTable[compressionMethod]
+            (PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES,
+             destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,(uint8_t *)sourceData,&packedByteCount,NULL)) {
+      return false;
+    }
+    *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = packedByteCount;
+    byteCount = packedByteCount + PCK_ENTRY_HEADER_BYTES;
+    *(PckCompressionMethod *)(destination + PCK_NEW_ENTRY_COMPRESSION_METHOD) = compressionMethod;
+    *(FileIoByteCount *)(destination + PCK_ARCHIVE_SIZE) = *(int *)(destination + PCK_ARCHIVE_SIZE) + byteCount;
+    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
+    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
+    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
+    destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
+    *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
+    *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
+    if (g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle) != 0) {
+      return false;
+    }
+    Package_CopyEntryPathDwords(destination + PCK_ENTRY_HEADER_BYTES,path);
+    if (g_FileSystemSeek(FILESYSTEM_SEEK_END,0,(void *)fileHandle) != 0) {
+      return false;
+    }
+    if (g_FileSystemWriteExactOrFlush
+          (byteCount,destination + PCK_ENTRY_HEADER_BYTES,(void *)fileHandle) != 0) {
+      return false;
+    }
+  }
+  return Package_ReadDirectory(fileHandle,NULL);
 }
 
 
@@ -188,23 +190,25 @@ bool Package_LoadEntryIntoBuffer
            uint32_t *outByteCountOrError)
 
 {
-  void *bufferCapacity;
+  uint32_t bufferCapacity;
   PckEntryHeader *entry;
   EngineFileHandle entryFileHandle;
   void *handle;
-  void *byteCount;
+  uint32_t byteCount;
   uint32_t decodedByteCount;
   uint32_t decodeErrorCode;
   bool decoded;
   uint32_t statusCode;
+  uint32_t errorCode;
 
-  bufferCapacity = (void *)(bufferCapacityAndLoadFlags & PACKAGE_LOAD_CAPACITY_MASK);
-  if ((bufferCapacityAndLoadFlags & PACKAGE_LOAD_SKIP_PACKAGES) == 0 &&
-      (entry = Package_FindEntryAcrossMounts(path,&entryFileHandle), entry != NULL)) {
-    handle = (void *)FATAL_ERROR_OUT_OF_MEMORY;
-    if ((((void *)entry->unpackedSize <= bufferCapacity) &&
-         (entry->packedSize < PACKAGE_SCRATCH_BUFFER_BYTES + 1)) &&
-       (destination != g_PackageScratchBuffer)) {
+  bufferCapacity = bufferCapacityAndLoadFlags & PACKAGE_LOAD_CAPACITY_MASK;
+  entry = NULL;
+  if ((bufferCapacityAndLoadFlags & PACKAGE_LOAD_SKIP_PACKAGES) == 0) {
+    entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
+  }
+  if (entry != NULL) {
+    if (entry->unpackedSize <= bufferCapacity && entry->packedSize < PACKAGE_SCRATCH_BUFFER_BYTES + 1 &&
+        destination != g_PackageScratchBuffer) {
       decoded = Package_DecodeEntryInto(destination,entry,entryFileHandle,&decodedByteCount,&decodeErrorCode);
       if (outByteCountOrError != NULL) {
         *outByteCountOrError = decoded ? decodedByteCount : decodeErrorCode;
@@ -212,6 +216,7 @@ bool Package_LoadEntryIntoBuffer
       return decoded;
     }
     Package_SetLastErrorPath(path);
+    errorCode = FATAL_ERROR_OUT_OF_MEMORY;
   }
   else {
     /* not in a mounted package (or packages skipped): load the loose file */
@@ -228,34 +233,81 @@ bool Package_LoadEntryIntoBuffer
       }
     }
     if (statusCode != 0) {
-      handle = (void *)statusCode; /* the open error code */
+      errorCode = statusCode; /* the open error code */
     }
     else {
-      /* a failed size query leaves 0 in byteCount, which becomes the error code */
-      if (g_FileSystemGetSize(handle,(uint32_t *)&byteCount)) {
-        /* a file larger than the buffer is truncated to the capacity, unless that exceeds 8 MiB */
-        if ((bufferCapacity < byteCount) &&
-            (byteCount = bufferCapacity, (void *)(PACKAGE_SCRATCH_BUFFER_BYTES - 1) < bufferCapacity)) {
-          byteCount = (void *)FATAL_ERROR_OUT_OF_MEMORY;
+      if (!g_FileSystemGetSize(handle,&byteCount)) {
+        errorCode = byteCount; /* a failed size query leaves 0 in byteCount, which becomes the error code */
+      }
+      /* a file larger than the buffer is truncated to the capacity, unless that exceeds 8 MiB */
+      else if (bufferCapacity < byteCount && PACKAGE_SCRATCH_BUFFER_BYTES - 1 < bufferCapacity) {
+        errorCode = FATAL_ERROR_OUT_OF_MEMORY;
+      }
+      else {
+        if (bufferCapacity < byteCount) {
+          byteCount = bufferCapacity;
         }
-        else {
-          statusCode = g_FileSystemReadExact((FileIoByteCount)byteCount,destination,handle);
-          if (statusCode == 0) {
-            g_FileSystemClose(handle);
-            if (outByteCountOrError != NULL) {
-              *outByteCountOrError = (uint32_t)byteCount;
-            }
-            return true;
+        statusCode = g_FileSystemReadExact((FileIoByteCount)byteCount,destination,handle);
+        if (statusCode == 0) {
+          g_FileSystemClose(handle);
+          if (outByteCountOrError != NULL) {
+            *outByteCountOrError = byteCount;
           }
-          byteCount = (void *)statusCode;
+          return true;
         }
+        errorCode = statusCode;
       }
       g_FileSystemClose(handle);
-      handle = byteCount;
     }
   }
   if (outByteCountOrError != NULL) {
-    *outByteCountOrError = (uint32_t)handle;
+    *outByteCountOrError = errorCode;
+  }
+  return false;
+}
+
+
+/* Package_Mount and Package_MountLowPriority, once a free slot is chosen: opens path for writing (next to the
+   executable first, then as given), allocates the entry-header array and reads the directory into
+   mountSlot. Stores the file handle or the open/allocation error code in *outFileHandleOrError (may be
+   NULL); returns true on success. */
+static bool Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uint32_t *outFileHandleOrError)
+
+{
+  void *handle;
+  PckEntryHeader *allocatedEntryHeaders;
+  uint32_t openError;
+  uint32_t allocError;
+  uint32_t errorCode;
+
+  WidePath_CombineDirectoryAndLeaf
+            ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
+             (uint16_t *)&g_ExecutableDirectoryUtf16);
+  openError = g_FileSystemOpen
+                    (FILESYSTEM_OPEN_WRITE_ACCESS,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
+  if (openError != 0) {
+    openError = g_FileSystemOpen(FILESYSTEM_OPEN_WRITE_ACCESS,path,&handle);
+  }
+  if (openError != 0) {
+    errorCode = openError;
+  }
+  else {
+    allocError = g_MemoryApi.alloc(PACKAGE_DIRECTORY_BYTES,(void **)&allocatedEntryHeaders);
+    if (allocError == 0) {
+      mountSlot->fileHandle = (EngineFileHandle)handle;
+      mountSlot->entryHeaders = allocatedEntryHeaders;
+      mountSlot->entryCount = 0;
+      Package_ReadDirectory((EngineFileHandle)handle,NULL); /* its result is ignored */
+      if (outFileHandleOrError != NULL) {
+        *outFileHandleOrError = (uint32_t)handle;
+      }
+      return true;
+    }
+    g_FileSystemClose(handle);
+    errorCode = allocError;
+  }
+  if (outFileHandleOrError != NULL) {
+    *outFileHandleOrError = errorCode;
   }
   return false;
 }
@@ -269,12 +321,8 @@ bool Package_LoadEntryIntoBuffer
 bool Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError)
 
 {
-  PckEntryHeader *handle;
-  PckEntryHeader *allocatedEntryHeaders;
   int slotsRemaining;
   PckMountSlot *mountSlot;
-  uint32_t openError;
-  uint32_t allocError;
 
   mountSlot = g_PackageMountSlots + (PACKAGE_MOUNT_SLOT_COUNT - 1);
   slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
@@ -283,44 +331,12 @@ bool Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError)
     slotsRemaining--;
   }
   if (slotsRemaining == 0) {
-    handle = (PckEntryHeader *)FATAL_ERROR_GENERAL_FAILURE; /* no free slot */
-  }
-  else {
-    WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
-               (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openError = g_FileSystemOpen
-                      (FILESYSTEM_OPEN_WRITE_ACCESS,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,
-                       (void **)&handle);
-    if (openError != 0) {
-      openError = g_FileSystemOpen(FILESYSTEM_OPEN_WRITE_ACCESS,path,(void **)&handle);
+    if (outFileHandleOrError != NULL) {
+      *outFileHandleOrError = FATAL_ERROR_GENERAL_FAILURE; /* no free slot */
     }
-    if (openError != 0) {
-      handle = (PckEntryHeader *)openError; /* the open error code */
-    }
-    else {
-      allocError = g_MemoryApi.alloc(PACKAGE_DIRECTORY_BYTES,(void **)&allocatedEntryHeaders);
-      if (allocError != 0) {
-        allocatedEntryHeaders = (PckEntryHeader *)allocError;
-      }
-      else {
-        mountSlot->fileHandle = (EngineFileHandle)handle;
-        mountSlot->entryHeaders = allocatedEntryHeaders;
-        mountSlot->entryCount = 0;
-        Package_ReadDirectory((EngineFileHandle)handle,NULL); /* its result is ignored */
-        if (outFileHandleOrError != NULL) {
-          *outFileHandleOrError = (uint32_t)handle;
-        }
-        return true;
-      }
-      g_FileSystemClose(handle);
-      handle = allocatedEntryHeaders;
-    }
+    return false;
   }
-  if (outFileHandleOrError != NULL) {
-    *outFileHandleOrError = (uint32_t)handle;
-  }
-  return false;
+  return Package_MountIntoSlot(mountSlot,path,outFileHandleOrError);
 }
 
 
@@ -439,6 +455,54 @@ bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *ou
 }
 
 
+/* Package_LoadEntry for a path in no mounted package: opens the loose file (relative to the executable
+   directory first, then as given) and reads it whole into a newly allocated buffer. Returns the buffer, or
+   NULL with the open, size, allocation or read error code in *outErrorCode. */
+static void *Package_LoadLooseFile(uint16_t *path,uint32_t *outErrorCode)
+
+{
+  void *handle;
+  void *fileBuffer;
+  uint32_t byteCount;
+  uint32_t openError;
+  uint32_t readError;
+  uint32_t errorCode;
+
+  WidePath_CombineDirectoryAndLeaf
+            ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
+             (uint16_t *)&g_ExecutableDirectoryUtf16);
+  openError = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
+  if (openError != 0) {
+    openError = g_FileSystemOpen(0,path,&handle);
+    if (openError != 0) {
+      *outErrorCode = openError;
+      return NULL;
+    }
+  }
+  if (!g_FileSystemGetSize(handle,&byteCount)) {
+    errorCode = byteCount; /* a failed size query leaves 0 in byteCount, which becomes the error code */
+  }
+  else if (g_MemoryApi.alloc(byteCount,&fileBuffer) != 0) {
+    /* the requested size becomes the detail of the out-of-memory message */
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)byteCount,g_FatalErrorDetail1Utf16);
+    errorCode = FATAL_ERROR_OUT_OF_MEMORY;
+  }
+  else {
+    readError = g_FileSystemReadExact((FileIoByteCount)byteCount,fileBuffer,handle);
+    if (readError == 0) {
+      g_FileSystemClose(handle);
+      return fileBuffer;
+    }
+    g_MemoryApi.free(fileBuffer);
+    errorCode = readError;
+  }
+  g_FileSystemClose(handle);
+  *outErrorCode = errorCode;
+  return NULL;
+}
+
+
 /* Address: 0x0040EE30.
    Loads an asset into a newly allocated buffer: from the first mounted package that has the path, otherwise as
    a loose file (first relative to the executable directory, then as given). The buffer is untyped here;
@@ -448,82 +512,44 @@ bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *ou
 void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
 
 {
+  static int loggedFailures; /* open-thandor diagnostics: first failed loads with their caller stack */
   PckEntryHeader *entry;
-  /* the loose file's handle or the package entry's buffer; on failure the error code */
-  uint8_t *handleBufferOrError;
-  /* the loose file's size, then the error code of the failed step */
-  uint8_t *byteCountOrError;
-  uint32_t allocError;
-  void *fileBuffer;
-  uint32_t decodeErrorCode;
-  uint32_t openError;
-  uint32_t readError;
   EngineFileHandle entryFileHandle;
+  void *buffer;
+  uint32_t allocError;
+  uint32_t decodeErrorCode;
+  uint32_t errorCode;
 
   entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);
   if (entry == NULL) {
-    WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
-               (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openError = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,
-                                 (void **)&handleBufferOrError);
-    if (openError != 0) {
-      openError = g_FileSystemOpen(0,path,(void **)&handleBufferOrError);
-      if (openError != 0) {
-        handleBufferOrError = (uint8_t *)openError;
-        goto fail;
-      }
+    buffer = Package_LoadLooseFile(path,&errorCode);
+    if (buffer != NULL) {
+      return buffer;
     }
-    /* a failed size query leaves 0 in byteCountOrError, which becomes the error code */
-    if (g_FileSystemGetSize(handleBufferOrError,(uint32_t *)&byteCountOrError)) {
-      if (g_MemoryApi.alloc((uint32_t)byteCountOrError,&fileBuffer) != 0) {
-        /* the requested size becomes the detail of the out-of-memory message */
-        g_WideNumberFormatUtf16
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)byteCountOrError,g_FatalErrorDetail1Utf16);
-        byteCountOrError = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
-      }
-      else {
-        readError = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,fileBuffer,handleBufferOrError);
-        byteCountOrError = (uint8_t *)readError;
-        if (readError == 0) {
-          g_FileSystemClose(handleBufferOrError);
-          return (uint8_t *)fileBuffer;
-        }
-        g_MemoryApi.free(fileBuffer);
-      }
-    }
-    g_FileSystemClose(handleBufferOrError);
-    handleBufferOrError = byteCountOrError;
   }
   else {
-    handleBufferOrError = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
+    errorCode = FATAL_ERROR_OUT_OF_MEMORY;
     /* the packed data is staged in the package scratch buffer, so it must fit there */
     if (entry->packedSize < PACKAGE_SCRATCH_BUFFER_BYTES + 1) {
-      allocError = g_MemoryApi.alloc(entry->unpackedSize,(void **)&handleBufferOrError);
+      allocError = g_MemoryApi.alloc(entry->unpackedSize,&buffer);
       if (allocError != 0) {
-        handleBufferOrError = (uint8_t *)allocError;
+        errorCode = allocError;
       }
       else {
-        if (Package_DecodeEntryInto(handleBufferOrError,entry,entryFileHandle,NULL,&decodeErrorCode)) {
-          return handleBufferOrError;
+        if (Package_DecodeEntryInto((uint8_t *)buffer,entry,entryFileHandle,NULL,&decodeErrorCode)) {
+          return buffer;
         }
-        byteCountOrError = (uint8_t *)decodeErrorCode;
-        g_MemoryApi.free(handleBufferOrError);
-        handleBufferOrError = byteCountOrError;
+        errorCode = decodeErrorCode;
+        g_MemoryApi.free(buffer);
       }
     }
   }
-fail:
-  {
-    /* open-thandor diagnostics: first failed loads with their caller stack */
-    static int loggedFailures;
-    if (loggedFailures++ < 8) {
-      Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", (wchar_t *)path, (uint32_t)handleBufferOrError);
-      Thandor_LogStack("  load failure stack", (uint32_t)handleBufferOrError);
-    }
+  if (loggedFailures++ < 8) {
+    Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", (wchar_t *)path, errorCode);
+    Thandor_LogStack("  load failure stack", errorCode);
   }
   if (outErrorCode != NULL) {
-    *outErrorCode = (uint32_t)handleBufferOrError;
+    *outErrorCode = errorCode;
   }
   return NULL;
 }
@@ -539,12 +565,8 @@ fail:
 bool Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError)
 
 {
-  PckEntryHeader *handle;
-  PckEntryHeader *allocatedEntryHeaders;
   int slotsRemaining;
   PckMountSlot *mountSlot;
-  uint32_t openError;
-  uint32_t allocError;
 
   mountSlot = g_PackageMountSlots;
   slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
@@ -553,44 +575,92 @@ bool Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError)
     slotsRemaining--;
   }
   if (slotsRemaining == 0) {
-    handle = (PckEntryHeader *)FATAL_ERROR_GENERAL_FAILURE; /* no free slot */
+    if (outFileHandleOrError != NULL) {
+      *outFileHandleOrError = FATAL_ERROR_GENERAL_FAILURE; /* no free slot */
+    }
+    return false;
   }
-  else {
-    WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
-               (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openError = g_FileSystemOpen
-                      (FILESYSTEM_OPEN_WRITE_ACCESS,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,
-                       (void **)&handle);
-    if (openError != 0) {
-      openError = g_FileSystemOpen(FILESYSTEM_OPEN_WRITE_ACCESS,path,(void **)&handle);
-    }
-    if (openError != 0) {
-      handle = (PckEntryHeader *)openError; /* the open error code */
-    }
-    else {
-      allocError = g_MemoryApi.alloc(PACKAGE_DIRECTORY_BYTES,(void **)&allocatedEntryHeaders);
-      if (allocError != 0) {
-        allocatedEntryHeaders = (PckEntryHeader *)allocError;
-      }
-      else {
-        mountSlot->fileHandle = (EngineFileHandle)handle;
-        mountSlot->entryHeaders = allocatedEntryHeaders;
-        mountSlot->entryCount = 0;
-        Package_ReadDirectory((EngineFileHandle)handle,NULL); /* its result is ignored */
-        if (outFileHandleOrError != NULL) {
-          *outFileHandleOrError = (uint32_t)handle;
-        }
-        return true;
-      }
-      g_FileSystemClose(handle);
-      handle = allocatedEntryHeaders;
-    }
+  return Package_MountIntoSlot(mountSlot,path,outFileHandleOrError);
+}
+
+
+/* The mount slot holding fileHandle, or NULL when it is not mounted. A zero handle is never found (it would
+   otherwise match a free slot). Used by Package_FindEntry and Package_Unmount. */
+static PckMountSlot *Package_FindMountSlot(EngineFileHandle fileHandle)
+
+{
+  PckMountSlot *mountSlot;
+  int slotsRemaining;
+
+  if (fileHandle == 0) {
+    return NULL;
   }
-  if (outFileHandleOrError != NULL) {
-    *outFileHandleOrError = (uint32_t)handle;
+  mountSlot = g_PackageMountSlots;
+  for (slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
+    if (fileHandle == mountSlot->fileHandle) {
+      return mountSlot;
+    }
+    mountSlot++;
+  }
+  return NULL;
+}
+
+
+/* Package_FindEntry sort order: true when record later is smaller than record front, comparing the whole
+   PCK_ENTRY_HEADER_BYTES record as unsigned UTF-16 code units (the path first, then whatever the output
+   record held behind it). Equal records are not smaller. */
+static bool Package_FoundEntryIsSmaller(const PckEntryHeader *later,const PckEntryHeader *front)
+
+{
+  const uint16_t *laterUnits;
+  const uint16_t *frontUnits;
+  int unitIndex;
+
+  laterUnits = (const uint16_t *)later;
+  frontUnits = (const uint16_t *)front;
+  for (unitIndex = 0; unitIndex < PCK_ENTRY_HEADER_BYTES / 2; unitIndex++) {
+    if (laterUnits[unitIndex] != frontUnits[unitIndex]) {
+      return laterUnits[unitIndex] < frontUnits[unitIndex];
+    }
   }
   return false;
+}
+
+
+/* Exchanges two whole PCK_ENTRY_HEADER_BYTES records, dword by dword. */
+static void Package_SwapFoundEntries(PckEntryHeader *first,PckEntryHeader *second)
+
+{
+  uint32_t *firstDwords;
+  uint32_t *secondDwords;
+  uint32_t swappedDword;
+  int dwordIndex;
+
+  firstDwords = (uint32_t *)first;
+  secondDwords = (uint32_t *)second;
+  for (dwordIndex = 0; dwordIndex < PCK_ENTRY_HEADER_BYTES / 4; dwordIndex++) {
+    swappedDword = firstDwords[dwordIndex];
+    firstDwords[dwordIndex] = secondDwords[dwordIndex];
+    secondDwords[dwordIndex] = swappedDword;
+  }
+}
+
+
+/* Package_FindEntry, final step: exchange sort of the entryCount found records. Every record is compared
+   with each later one and the two are swapped when the later one is smaller. */
+static void Package_SortFoundEntries(PckEntryHeader *entries,int entryCount)
+
+{
+  int frontIndex;
+  int laterIndex;
+
+  for (frontIndex = 0; frontIndex + 1 < entryCount; frontIndex++) {
+    for (laterIndex = frontIndex + 1; laterIndex < entryCount; laterIndex++) {
+      if (Package_FoundEntryIsSmaller(&entries[laterIndex],&entries[frontIndex])) {
+        Package_SwapFoundEntries(&entries[frontIndex],&entries[laterIndex]);
+      }
+    }
+  }
 }
 
 
@@ -605,115 +675,39 @@ bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader
                        uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount)
 
 {
-  EngineFileHandle handleOrRemaining;
-  uint16_t *firstPathCursor;
-  uint16_t *secondPathCursor;
-  int matchedCount;
-  int remainingCount;
-  int unitsRemaining;
-  EngineFileHandle slotsRemaining;
-  PckEntryCount entriesRemaining;
-  int unsortedCount;
   PckMountSlot *mountSlot;
-  PckEntryHeader *sourceCursor;
-  PckEntryHeader *targetCursor;
-  PckEntryHeader *entryCursor;
-  PckEntryHeader *copyDestination;
-  bool carryFlag;
-  uint32_t swappedDword;
-  
-  mountSlot = g_PackageMountSlots;
-  slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
-  handleOrRemaining = fileHandle; /* a zero handle fails at once, like running out of slots */
-  while (handleOrRemaining != 0) {
-    if (fileHandle == mountSlot->fileHandle) break;
-    mountSlot++;
-    slotsRemaining = slotsRemaining - 1;
-    handleOrRemaining = slotsRemaining;
-  }
-  if (handleOrRemaining == 0) {
+  PckEntryHeader *entry;
+  PckEntryHeader *outputEntry;
+  PckEntryCount entriesRemaining;
+  int matchedCount;
+  int unitIndex;
+
+  mountSlot = Package_FindMountSlot(fileHandle);
+  if (mountSlot == NULL) {
     return false;
   }
-  entriesRemaining = mountSlot->entryCount;
-  entryCursor = mountSlot->entryHeaders;
   matchedCount = 0;
-  targetCursor = outputEntries;
-  if (entriesRemaining != 0) {
-    do {
-      carryFlag = Package_WildcardPathMatches(pattern,entryCursor->path);
-      if (!carryFlag) {
-        /* output full: stop with the matches so far */
-        carryFlag = outputCapacityBytes < PCK_ENTRY_HEADER_BYTES;
-        outputCapacityBytes = outputCapacityBytes - PCK_ENTRY_HEADER_BYTES;
-        if (carryFlag) goto returnMatches; /* Original quirk: these matches are returned unsorted */
-        /* only the path is copied; the rest of the output record is left as it was */
-        sourceCursor = entryCursor;
-        copyDestination = targetCursor;
-        for (remainingCount = PCK_ENTRY_PATH_UNITS; remainingCount != 0; remainingCount--) {
-          copyDestination->path[0] = sourceCursor->path[0];
-          sourceCursor = (PckEntryHeader *)(sourceCursor->path + 1);
-          copyDestination = (PckEntryHeader *)(copyDestination->path + 1);
-        }
-        targetCursor++;
-        matchedCount++;
+  outputEntry = outputEntries;
+  entry = mountSlot->entryHeaders;
+  for (entriesRemaining = mountSlot->entryCount; entriesRemaining != 0; entriesRemaining--) {
+    if (!Package_WildcardPathMatches(pattern,entry->path)) { /* false (CF clear) means match */
+      if (outputCapacityBytes < PCK_ENTRY_HEADER_BYTES) {
+        /* output full: stop with the matches so far.
+           Original quirk: these matches are returned unsorted */
+        *outMatchCount = matchedCount;
+        return true;
       }
-      entryCursor++;
-      entriesRemaining = entriesRemaining - 1;
-    } while (entriesRemaining != 0);
-    /* exchange sort: every record is compared with each later one and swapped (0x80 dwords) when the later
-       path is smaller; outputEntries walks down the list as the front becomes sorted */
-    if (matchedCount != 0) {
-      remainingCount = matchedCount - 1;
-      carryFlag = false;
-      if (remainingCount != 0) {
-        entryCursor = outputEntries + 1;
-        unsortedCount = matchedCount;
-        do {
-          do {
-            unitsRemaining = PCK_ENTRY_HEADER_BYTES / 2; /* REPE CMPSW over the whole record */
-            targetCursor = entryCursor;
-            sourceCursor = outputEntries;
-            do {
-              if (unitsRemaining == 0) break;
-              unitsRemaining--;
-              firstPathCursor = sourceCursor->path;
-              secondPathCursor = targetCursor->path;
-              carryFlag = *secondPathCursor < *firstPathCursor;
-              targetCursor = (PckEntryHeader *)(targetCursor->path + 1);
-              sourceCursor = (PckEntryHeader *)(sourceCursor->path + 1);
-            } while (*secondPathCursor == *firstPathCursor);
-            if (carryFlag) {
-              unitsRemaining = PCK_ENTRY_HEADER_BYTES / 4;
-              do {
-                sourceCursor = outputEntries;
-                targetCursor = entryCursor;
-                LOCK();
-                swappedDword = *(uint32_t *)sourceCursor->path;
-                *(uint32_t *)sourceCursor->path = *(uint32_t *)targetCursor->path;
-                UNLOCK();
-                *(uint32_t *)targetCursor->path = swappedDword;
-                unitsRemaining--;
-                entryCursor = (PckEntryHeader *)(targetCursor->path + 2);
-                outputEntries = (PckEntryHeader *)(sourceCursor->path + 2);
-              } while (unitsRemaining != 0);
-              entryCursor = (PckEntryHeader *)(targetCursor[-1].path + 2);
-              outputEntries = (PckEntryHeader *)(sourceCursor[-1].path + 2);
-            }
-            /* carry of entryCursor + sizeof(PckEntryHeader) */
-            carryFlag = (PckEntryHeader *)(0xffffffffU - PCK_ENTRY_HEADER_BYTES) < entryCursor;
-            entryCursor++;
-            remainingCount--;
-          } while (remainingCount != 0);
-          remainingCount = unsortedCount - 2;
-          unsortedCount--;
-          entryCursor = outputEntries + 2;
-          carryFlag = false;
-          outputEntries = outputEntries + 1;
-        } while (remainingCount != 0);
+      outputCapacityBytes = outputCapacityBytes - PCK_ENTRY_HEADER_BYTES;
+      /* only the path is copied; the rest of the output record is left as it was */
+      for (unitIndex = 0; unitIndex < PCK_ENTRY_PATH_UNITS; unitIndex++) {
+        outputEntry->path[unitIndex] = entry->path[unitIndex];
       }
+      outputEntry++;
+      matchedCount++;
     }
+    entry++;
   }
-returnMatches:
+  Package_SortFoundEntries(outputEntries,matchedCount);
   *outMatchCount = matchedCount;
   return true;
 }
@@ -726,28 +720,17 @@ returnMatches:
 void Package_Unmount(EngineFileHandle fileHandle)
 
 {
-  EngineFileHandle handleOrRemaining;
-  EngineFileHandle mountSlotsRemaining;
-  PckMountSlot *mountSlotCursor;
-  
-  mountSlotCursor = g_PackageMountSlots;
-  mountSlotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
-  handleOrRemaining = fileHandle; /* a zero handle returns at once, like running out of slots */
-  for (;;) {
-    if (handleOrRemaining == 0) {
-      return;
-    }
-    if (fileHandle == mountSlotCursor->fileHandle) break;
-    mountSlotCursor++;
-    mountSlotsRemaining = mountSlotsRemaining - 1;
-    handleOrRemaining = mountSlotsRemaining;
+  PckMountSlot *mountSlot;
+
+  mountSlot = Package_FindMountSlot(fileHandle);
+  if (mountSlot == NULL) {
+    return;
   }
-  g_MemoryApi.free(mountSlotCursor->entryHeaders);
+  g_MemoryApi.free(mountSlot->entryHeaders);
   g_FileSystemClose((void *)fileHandle);
-  mountSlotCursor->fileHandle = 0;
-  mountSlotCursor->entryHeaders = NULL;
-  mountSlotCursor->entryCount = 0;
-  return;
+  mountSlot->fileHandle = 0;
+  mountSlot->entryHeaders = NULL;
+  mountSlot->entryCount = 0;
 }
 
 
@@ -984,6 +967,46 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
 }
 
 
+/* Package_ReadDirectory, once the slot is found: reads the archive header and every entry header of
+   fileHandle into mountSlot. Returns 0 or the file-system error code of the failed seek/read. */
+static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFileHandle fileHandle)
+
+{
+  uint32_t statusCode;
+  PckEntryCount entriesRemaining;
+  FileSystemFilePosition entryHeaderOffset;
+  PckEntryHeader *entryHeader;
+
+  entryHeader = mountSlot->entryHeaders;
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,g_PackageScratchBuffer,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  entriesRemaining = ((PckArchiveHeader *)g_PackageScratchBuffer)->entryCount;
+  mountSlot->entryCount = entriesRemaining;
+  /* each entry is its header followed directly by its packed payload */
+  entryHeaderOffset = PCK_ENTRY_HEADER_BYTES;
+  for (; entriesRemaining != 0; entriesRemaining--) {
+    statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,entryHeader,(void *)fileHandle);
+    if (statusCode != 0) {
+      return statusCode;
+    }
+    entryHeader->runtimePayloadOffset = entryHeaderOffset;
+    entryHeaderOffset = entryHeaderOffset + entryHeader->packedSize + PCK_ENTRY_HEADER_BYTES;
+    entryHeader++;
+    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryHeaderOffset,(void *)fileHandle);
+    if (statusCode != 0) {
+      return statusCode;
+    }
+  }
+  return 0;
+}
+
+
 /* Address: 0x0040E570.
    Loads the directory of the mounted package fileHandle into its mount slot: reads the archive header for the
    entry count, then every entry header, recording the file offset of the entry (its header; the packed
@@ -994,46 +1017,26 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
 bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode)
 
 {
-  PckStoredByteCount *packedSizeField;
-  uint8_t *archiveHeader;
   uint32_t statusCode;
-  PckEntryCount entriesRemaining;
   int slotsRemaining;
-  FileSystemFilePosition entryHeaderOffset;
   PckMountSlot *mountSlot;
-  PckEntryHeader *entryHeader;
 
+  /* no zero-handle check here: a zero handle matches the first free slot */
   mountSlot = g_PackageMountSlots;
   slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
-  do {
-    if (fileHandle == mountSlot->fileHandle) {
-      entryHeader = mountSlot->entryHeaders;
-      statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
-      archiveHeader = g_PackageScratchBuffer;
-      if (statusCode != 0) goto fail;
-      statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,g_PackageScratchBuffer,(void *)fileHandle);
-      if (statusCode != 0) goto fail;
-      entriesRemaining = ((PckArchiveHeader *)archiveHeader)->entryCount;
-      mountSlot->entryCount = entriesRemaining;
-      /* each entry is its header followed directly by its packed payload */
-      entryHeaderOffset = PCK_ENTRY_HEADER_BYTES;
-      for (; entriesRemaining != 0; entriesRemaining = entriesRemaining - 1) {
-        statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,entryHeader,(void *)fileHandle);
-        if (statusCode != 0) goto fail;
-        packedSizeField = &entryHeader->packedSize;
-        entryHeader->runtimePayloadOffset = entryHeaderOffset;
-        entryHeader++;
-        entryHeaderOffset = entryHeaderOffset + *packedSizeField + PCK_ENTRY_HEADER_BYTES;
-        statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryHeaderOffset,(void *)fileHandle);
-        if (statusCode != 0) goto fail;
-      }
-      return true;
-    }
+  while (slotsRemaining != 0 && fileHandle != mountSlot->fileHandle) {
     mountSlot++;
     slotsRemaining--;
-  } while (slotsRemaining != 0);
-  statusCode = FATAL_ERROR_GENERAL_FAILURE;
-fail:
+  }
+  if (slotsRemaining == 0) {
+    statusCode = FATAL_ERROR_GENERAL_FAILURE; /* not mounted */
+  }
+  else {
+    statusCode = Package_ReadDirectoryIntoSlot(mountSlot,fileHandle);
+    if (statusCode == 0) {
+      return true;
+    }
+  }
   if (outErrorCode != NULL) {
     *outErrorCode = statusCode;
   }

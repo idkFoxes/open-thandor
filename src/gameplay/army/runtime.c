@@ -11,6 +11,323 @@
 
 /* Implementation ownership: gameplay/army/runtime. */
 
+/* Poses the aircraft body (the root's first child) on its vertical arc: the arc position at +0x7C gives the
+   height above heightBaseQ12 (arcCoefficient * ticks * position^2) and the pitch, then the arc position advances
+   by one movement step for this batch of ticks. Returns that step. */
+static int ArmyAircraft_PoseOnVerticalArc(ModelRuntimeClass21UpdateView *modelRuntime,
+          ArmyRuntimeClassUpdate21DefinitionView *definition,int arcCoefficient,Q12 heightBaseQ12)
+{
+  ModelRuntimeNode *bodyNode;
+  uint32_t arcPosition;
+  int64_t product64;
+  uint32_t pitchAngle;
+  int stepQ12;
+
+  arcPosition = (modelRuntime->classLinkState).classState7C;
+  product64 = (int64_t)(int)arcPosition * (int64_t)(int)arcPosition;
+  bodyNode = modelRuntime->rootModelNode->childNodes[0];
+  product64 = (int64_t)(int)(arcCoefficient * g_InGameSimulationStepTicks) *
+           (int64_t)(int)FIXED_PRODUCT_SHR(product64,Q12_SHIFT);
+  (bodyNode->modelPayload).localRotationAngle0 = FIXED_ANGLE16_HALF_TURN;
+  (bodyNode->modelPayload).localTranslationZQ12 = FIXED_PRODUCT_SHR(product64,Q12_SHIFT) + heightBaseQ12;
+  product64 = (int64_t)(int)(arcPosition * g_InGameSimulationStepTicks) * (int64_t)arcCoefficient;
+  pitchAngle = FixedMath_Atan2Angle16(FIXED_PRODUCT_SHR(product64,11),Q12_ONE);
+  stepQ12 = definition->movementStepQ12 * g_InGameSimulationStepTicks;
+  (modelRuntime->classLinkState).classState7C = (modelRuntime->classLinkState).classState7C + stepQ12;
+  (bodyNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - pitchAngle & FIXED_ANGLE16_MASK;
+  return stepQ12;
+}
+
+/* One tick batch of the take-off or landing arc over the home pad: the body follows the vertical arc above the
+   parked height (+0x80) and the aircraft moves one step along its heading. */
+static void ArmyAircraft_FlyPadArc(ModelRuntimeClass21UpdateView *modelRuntime,
+          ArmyRuntimeClassUpdate21DefinitionView *definition)
+{
+  int stepQ12;
+  ModelRuntimeNode *rootNode;
+  FixedSinCos sinCosStep;
+
+  stepQ12 = ArmyAircraft_PoseOnVerticalArc
+                      (modelRuntime,definition,definition->arcCoefficient,
+                       (Q12)(modelRuntime->classLinkState).classState80);
+  rootNode = modelRuntime->rootModelNode;
+  sinCosStep = FixedMath_SinCosScaled((rootNode->modelPayload).worldRotationAngle2,stepQ12);
+  (rootNode->worldTransform).translation.x = (rootNode->worldTransform).translation.x + sinCosStep.cosValue;
+  (rootNode->worldTransform).translation.y = (rootNode->worldTransform).translation.y + sinCosStep.sinValue;
+}
+
+/* Parked on the pad: takes off once the hangar is ready (or there is no pad), is removed when the hangar is idle
+   or closed, otherwise rides on the pad's lift (copies its height). */
+static void ArmyAircraft_UpdateParked(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
+          ModelRuntimeSlot *homeModelRuntime)
+{
+  ArmyRuntimeClassUpdate21DefinitionView *definition;
+  ModelRuntimeNode *rootNode;
+  Q12 padDeckHeightQ12;
+
+  definition = modelRuntime->modelDefinition;
+  rootNode = modelRuntime->rootModelNode;
+  if ((homeModelRuntime == NULL) || ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_READY)) {
+    (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_TAKING_OFF;
+    (modelRuntime->classLinkState).classState7C = 0;
+    (modelRuntime->classLinkState).classState64 = definition->phaseInitial;
+    (modelRuntime->classLinkState).classState68 = definition->phaseDuration;
+  }
+  else if (((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_IDLE) ||
+          ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_CLOSED)) {
+    EffectRuntimePool_CreateInstanceFromDefinition
+              (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
+               (EffectRuntimeOwnerReference){ .modelRuntime = (ModelRuntimeSlot *)modelRuntime },
+               (rootNode->modelPayload).worldRotationAngle2,
+               (rootNode->modelPayload).worldRotationAngle1,
+               (rootNode->modelPayload).worldRotationAngle0,
+               (rootNode->worldTransform).translation.z,
+               (rootNode->worldTransform).translation.y,
+               (rootNode->worldTransform).translation.x,definition->removalEffect,worldRuntime);
+    (modelRuntime->class21State).stateFlags =
+         (modelRuntime->class21State).stateFlags | ARMY_MODEL_STATE_DESTRUCTION_STARTED;
+  }
+  else {
+    padDeckHeightQ12 = (((homeModelRuntime->rootModelNodeOrSavedOffset).modelNode)->childNodes[0]->modelPayload).
+                       localTranslationZQ12;
+    (rootNode->childNodes[0]->modelPayload).localTranslationZQ12 = padDeckHeightQ12;
+    (modelRuntime->classLinkState).classState80 = padDeckHeightQ12;
+  }
+}
+
+/* Touch-down on the home pad: the hangar starts lowering (with its sound). The pad's health, scaled to the
+   aircraft's maximum health, is compared with the aircraft's health: when the aircraft has less, the pad takes
+   half the difference as damage. */
+static void ArmyAircraft_TouchDownOnPad(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
+          ModelRuntimeSlot *homeModelRuntime)
+{
+  ArmyRuntimeClassUpdate21DefinitionView *definition;
+  ModelRuntimeSlot *homeDefinitionSlot;
+  int scaledPadHealth;
+  uint32_t healthDifference;
+
+  definition = modelRuntime->modelDefinition;
+  homeDefinitionSlot = (ModelRuntimeSlot *)(homeModelRuntime->definitionOrSavedId).savedIdOrOffset;
+  (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
+  ModelRuntime_PlayDefinitionSecondaryOneShotSound(homeModelRuntime,worldRuntime);
+  scaledPadHealth = (int)(((int64_t)(int)homeModelRuntime->health * (int64_t)definition->maximumHealth) /
+                          (int64_t)(homeDefinitionSlot->classLinkState).modelLinkOrState.signedScalarState);
+  healthDifference = scaledPadHealth - modelRuntime->health;
+  if (healthDifference != 0 && (int)modelRuntime->health <= scaledPadHealth) {
+    ArmyRuntime_ApplyDamageAndPropagateToParent(healthDifference >> 1,homeModelRuntime);
+  }
+}
+
+/* Landing arc onto the pad; when the landing countdown (+0x68) runs out the aircraft is parked again. */
+static void ArmyAircraft_UpdateLanding(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
+          ModelRuntimeSlot *homeModelRuntime)
+{
+  ArmyAircraft_FlyPadArc(modelRuntime,modelRuntime->modelDefinition);
+  (modelRuntime->classLinkState).classState68 = (modelRuntime->classLinkState).classState68 - 1;
+  if ((int)(modelRuntime->classLinkState).classState68 < 0) {
+    (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_PARKED;
+    if (homeModelRuntime != NULL) {
+      ArmyAircraft_TouchDownOnPad(worldRuntime,modelRuntime,homeModelRuntime);
+    }
+  }
+}
+
+/* Take-off arc from the pad: the hangar starts lowering when the countdown at +0x64 reaches 0; when the
+   countdown at +0x68 runs out the aircraft leaves the map and starts its approach. */
+static void ArmyAircraft_UpdateTakingOff(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
+          ModelRuntimeSlot *homeModelRuntime)
+{
+  ModelRuntimeNode *rootNode;
+
+  ArmyAircraft_FlyPadArc(modelRuntime,modelRuntime->modelDefinition);
+  rootNode = modelRuntime->rootModelNode;
+  (modelRuntime->classLinkState).classState64 = (modelRuntime->classLinkState).classState64 - 1;
+  if (((modelRuntime->classLinkState).classState64 == 0) && (homeModelRuntime != NULL)) {
+    (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
+    ModelRuntime_PlayDefinitionSecondaryOneShotSound(homeModelRuntime,worldRuntime);
+  }
+  (modelRuntime->classLinkState).classState68 = (modelRuntime->classLinkState).classState68 - 1;
+  if ((int)(modelRuntime->classLinkState).classState68 < 0) {
+    (rootNode->worldTransform).translation.x = ARMY_AIRCRAFT_OFF_MAP_X_Q12;
+    (rootNode->worldTransform).translation.y = ARMY_AIRCRAFT_OFF_MAP_Y_Q12;
+    (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_APPROACH;
+  }
+}
+
+/* Approach: as soon as ArmyRuntime_TestWorldPointAllowedDefault rejects the target point (+0x70/+0x74), the
+   aircraft is placed travelStepCount movement steps behind it on the attack heading (+0x78) and starts the
+   attack run (drop countdown +0x6C = travelStepCount, run length +0x68 = twice that). The run height is the
+   highest terrain sampled every 10 movement steps along the run, plus half a unit and twice the parked
+   height (+0x80). */
+static void ArmyAircraft_UpdateApproach(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime)
+{
+  ArmyRuntimeClassUpdate21DefinitionView *definition;
+  ModelRuntimeNode *rootNode;
+  bool pointAllowed;
+  AngleTurn32 attackHeading;
+  FixedSinCos sinCosStep;
+  uint32_t travelSteps;
+  uint32_t sampleCountdown;
+  Q12 sampleXQ12;
+  Q12 sampleYQ12;
+  int maxTerrainHeightQ12;
+  Q12 terrainHeightQ12;
+  uint32_t parkedHeightQ12;
+
+  definition = modelRuntime->modelDefinition;
+  rootNode = modelRuntime->rootModelNode;
+  pointAllowed = ArmyRuntime_TestWorldPointAllowedDefault
+                     (definition->worldPointAllowedContext,
+                      (modelRuntime->classLinkState).classState74,
+                      (modelRuntime->classLinkState).classState70);
+  if (pointAllowed) {
+    return;
+  }
+  attackHeading = (modelRuntime->classLinkState).classState78;
+  sinCosStep = FixedMath_SinCosScaled
+                     (attackHeading ^ FIXED_ANGLE16_HALF_TURN,definition->movementStepQ12 * definition->travelStepCount);
+  (rootNode->worldTransform).translation.x = sinCosStep.cosValue + (modelRuntime->classLinkState).classState70;
+  (rootNode->worldTransform).translation.y = sinCosStep.sinValue + (modelRuntime->classLinkState).classState74;
+  (rootNode->modelPayload).worldRotationAngle2 = attackHeading;
+  travelSteps = definition->travelStepCount;
+  (modelRuntime->classLinkState).armyLinkOrState.classState = travelSteps;
+  sampleCountdown = travelSteps * 2;
+  (modelRuntime->classLinkState).classState68 = sampleCountdown;
+  (modelRuntime->classLinkState).classState7C = (0 - travelSteps) * definition->movementStepQ12;
+  (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_ATTACK_RUN;
+  sinCosStep = FixedMath_SinCosScaled(attackHeading,definition->movementStepQ12 * 10);
+  sampleXQ12 = (rootNode->worldTransform).translation.x;
+  sampleYQ12 = (rootNode->worldTransform).translation.y;
+  maxTerrainHeightQ12 = 0;
+  parkedHeightQ12 = (modelRuntime->classLinkState).classState80;
+  do {
+    FieldGrid_InterpolateTopSurfaceHeight(sampleYQ12,sampleXQ12,worldRuntime->fieldGrid,&terrainHeightQ12);
+    if (maxTerrainHeightQ12 < terrainHeightQ12) {
+      maxTerrainHeightQ12 = terrainHeightQ12;
+    }
+    sampleXQ12 = sampleXQ12 + sinCosStep.cosValue;
+    sampleYQ12 = sampleYQ12 + sinCosStep.sinValue;
+    sampleCountdown = sampleCountdown - 10;
+  } while ((int)sampleCountdown >= 0);
+  (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12 =
+       maxTerrainHeightQ12 + Q12_ONE / 2 + parkedHeightQ12 * 2;
+}
+
+/* Releases one model-point effect of the attack run when the drop countdown (+0x6C) sits on a mark: the marks
+   are modelPointStep apart from three steps before the target point (model point 7) to three steps after it
+   (model point 1). Nothing is dropped when modelPointStep is 0. */
+static void ArmyAircraft_DropModelPointEffectAtMark(WorldRuntimeContext *worldRuntime,
+          ModelRuntimeClass21UpdateView *modelRuntime,ArmyRuntimeClassUpdate21DefinitionView *definition)
+{
+  ModelRuntimeNode *bodyNode;
+  Q12 dropZQ12;
+  void *modelPointTable;
+  uint32_t countdownMark;
+  ModelAttachmentOrdinal modelPointOrdinal;
+
+  bodyNode = modelRuntime->rootModelNode->childNodes[0];
+  countdownMark = definition->modelPointStep * -3;
+  dropZQ12 = (bodyNode->worldTransform).translation.z - 2 * Q12_ONE;
+  if (definition->modelPointStep == 0) {
+    return;
+  }
+  modelPointTable = (void *)((MdlSerializedNodeHeader *)definition->rootNode)->childSerializedOffsets[0];
+  for (modelPointOrdinal = 7; modelPointOrdinal != 0; modelPointOrdinal = modelPointOrdinal - 1) {
+    if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
+      ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
+                (0,dropZQ12,(bodyNode->worldTransform).translation.y,(bodyNode->worldTransform).translation.x,
+                 modelPointOrdinal,definition->modelPointEffectId,bodyNode,modelPointTable,worldRuntime);
+      return;
+    }
+    countdownMark = countdownMark + definition->modelPointStep;
+  }
+}
+
+/* Attack run: flies along the heading at the run height (+0xA4, measured from the terrain below), then per tick
+   counts down the drop countdown (+0x6C) and the run (+0x68, leaving the map when it runs out), plays the
+   mapped terrain sound and drops the model-point effects at their marks. */
+static void ArmyAircraft_UpdateAttackRun(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime)
+{
+  ArmyRuntimeClassUpdate21DefinitionView *definition;
+  ModelRuntimeNode *rootNode;
+  FixedSinCos sinCosStep;
+  Q12 terrainHeightQ12;
+  InGameSimulationStepBatchTicks remainingTicks;
+
+  definition = modelRuntime->modelDefinition;
+  rootNode = modelRuntime->rootModelNode;
+  sinCosStep = FixedMath_SinCosScaled
+                     ((rootNode->modelPayload).worldRotationAngle2,
+                      g_InGameSimulationStepTicks * definition->movementStepQ12);
+  (rootNode->worldTransform).translation.x = (rootNode->worldTransform).translation.x + sinCosStep.cosValue;
+  (rootNode->worldTransform).translation.y = (rootNode->worldTransform).translation.y + sinCosStep.sinValue;
+  FieldGrid_InterpolateTopSurfaceHeight
+            ((rootNode->worldTransform).translation.y,
+             (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid,&terrainHeightQ12);
+  ArmyAircraft_PoseOnVerticalArc
+            (modelRuntime,definition,definition->verticalArcCoefficient,
+             (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12 - terrainHeightQ12);
+  remainingTicks = g_InGameSimulationStepTicks;
+  do {
+    (modelRuntime->classLinkState).armyLinkOrState.classState =
+         (modelRuntime->classLinkState).armyLinkOrState.classState - 1; /* the drop countdown */
+    (modelRuntime->classLinkState).classState68 = (modelRuntime->classLinkState).classState68 - 1;
+    if ((int)(modelRuntime->classLinkState).classState68 < 0) {
+      (rootNode->worldTransform).translation.x = ARMY_AIRCRAFT_OFF_MAP_X_Q12;
+      (rootNode->worldTransform).translation.y = ARMY_AIRCRAFT_OFF_MAP_Y_Q12;
+      (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_RETURNING;
+    }
+    ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
+              (modelRuntime->ownerArmyRuntime->factionIndex,
+               (rootNode->worldTransform).translation.y,
+               (rootNode->worldTransform).translation.x,
+               definition->terrainSoundAssetIndex,worldRuntime);
+    ArmyAircraft_DropModelPointEffectAtMark(worldRuntime,modelRuntime,definition);
+    remainingTicks = remainingTicks - 1;
+  } while (remainingTicks != 0);
+}
+
+/* Returning (off the map): once the home pad's hangar is idle and ArmyRuntime_TestWorldPointAllowedDefault
+   rejects the pad position, the hangar starts opening (with its sound) and the aircraft is placed phaseDuration
+   movement steps behind the pad on the pad's heading to fly its landing arc. */
+static void ArmyAircraft_TryStartLanding(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
+          ModelRuntimeSlot *homeModelRuntime)
+{
+  ArmyRuntimeClassUpdate21DefinitionView *definition;
+  ModelRuntimeNode *padNode;
+  ModelRuntimeNode *aircraftNode;
+  bool pointAllowed;
+  AngleTurn32 padHeading;
+  FixedSinCos sinCosStep;
+  uint32_t landingSteps;
+
+  definition = modelRuntime->modelDefinition;
+  padNode = (homeModelRuntime->rootModelNodeOrSavedOffset).modelNode;
+  if ((homeModelRuntime->classState).classStateB0 != ARMY_PAD_HANGAR_IDLE) {
+    return;
+  }
+  pointAllowed = ArmyRuntime_TestWorldPointAllowedDefault
+                     (definition->worldPointAllowedContext,
+                      (padNode->worldTransform).translation.y,
+                      (padNode->worldTransform).translation.x);
+  if (pointAllowed) {
+    return;
+  }
+  (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_OPENING;
+  ModelRuntime_PlayDefinitionPrimaryOneShotSound(homeModelRuntime,worldRuntime);
+  padHeading = (padNode->modelPayload).worldRotationAngle2;
+  sinCosStep = FixedMath_SinCosScaled
+                     (padHeading ^ FIXED_ANGLE16_HALF_TURN,definition->movementStepQ12 * definition->phaseDuration);
+  aircraftNode = modelRuntime->rootModelNode;
+  (aircraftNode->worldTransform).translation.x = sinCosStep.cosValue + (padNode->worldTransform).translation.x;
+  (aircraftNode->worldTransform).translation.y = sinCosStep.sinValue + (padNode->worldTransform).translation.y;
+  (aircraftNode->modelPayload).worldRotationAngle2 = padHeading;
+  landingSteps = definition->phaseDuration;
+  (modelRuntime->classLinkState).classState68 = landingSteps;
+  (modelRuntime->classLinkState).classState7C = (0 - landingSteps) * definition->movementStepQ12;
+  (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_LANDING;
+}
+
 /* Address: 0x00525A60.
    Runtime update of the aircraft class (MODEL_RUNTIME_CLASS_21_AIRCRAFT), reached only through
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[21] (called by
@@ -25,350 +342,35 @@ void ArmyRuntimeClass_UpdateAircraft
           (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime)
 
 {
-  uint32_t *stateField;
-  GraphicsFixedVec3 *translationVec;
-  GraphicsWorldCoordinateQ12 *translationY;
-  ModelRuntimeArmyLinkOrState *armyLinkState;
-  ArmyRuntimeClassUpdate21DefinitionView *currentDefinition;
   ModelRuntimeSlot *homeModelRuntime;
-  uint32_t durationValue;
-  void *modelPointSource;
-  ModelRuntimeNode *childNode;
-  ModelRuntimeSlot *homeDefinitionSlot;
-  ModelDefinition *semanticDefinition;
-  int64_t product64;
-  uint32_t stateValue;
-  int stepValue;
-  uint32_t countdownMark;
-  uint32_t headingOrDelta;
-  int maxTerrainHeight;
-  int sampleCoord;
-  Q12 childHeightZ;
-  ArmyRuntimeClassUpdate21DefinitionView *classUpdate21Definition;
   ModelRuntimeNode *modelNode;
-  bool pointAllowed;
-  FixedSinCos sinCosStep;
-  Q12 terrainHeightQ12;
-  AngleTurn32 savedAngle1;
-  InGameSimulationStepBatchTicks remainingTicks;
+  Q12 childHeightZ;
+  ModelDefinition *semanticDefinition;
+  uint32_t behaviorState;
   AngleTurn32 savedAngle0;
-  ArmyRuntimeClassUpdate21DefinitionView *savedClassUpdate21Definition;
-  ModelRuntimeClass21UpdateView *savedModelRuntime;
-  ModelRuntimeNode *savedModelNode;
-  
-  currentDefinition = modelRuntime->modelDefinition;
+  AngleTurn32 savedAngle1;
+
   homeModelRuntime = (modelRuntime->classLinkState).modelLinkOrState.modelRuntime;
   modelNode = modelRuntime->rootModelNode;
   switch((modelRuntime->class21State).behaviorState) {
   case ARMY_AIRCRAFT_STATE_PARKED:
-    if ((homeModelRuntime == NULL) || ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_READY)) {
-      stateValue = currentDefinition->phaseInitial;
-      durationValue = currentDefinition->phaseDuration;
-      (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_TAKING_OFF;
-      (modelRuntime->classLinkState).classState7C = 0;
-      (modelRuntime->classLinkState).classState64 = stateValue;
-      (modelRuntime->classLinkState).classState68 = durationValue;
-    }
-    else if (((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_IDLE) ||
-            ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_CLOSED)) {
-      EffectRuntimePool_CreateInstanceFromDefinition
-                (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-                 (EffectRuntimeOwnerReference){ .modelRuntime = (ModelRuntimeSlot *)modelRuntime },
-                 (modelNode->modelPayload).worldRotationAngle2,
-                 (modelNode->modelPayload).worldRotationAngle1,
-                 (modelNode->modelPayload).worldRotationAngle0,
-                 (modelNode->worldTransform).translation.z,
-                 (modelNode->worldTransform).translation.y,
-                 (modelNode->worldTransform).translation.x,currentDefinition->removalEffect,worldRuntime
-                );
-      stateField = &(modelRuntime->class21State).stateFlags;
-      *stateField = *stateField | ARMY_MODEL_STATE_DESTRUCTION_STARTED;
-    }
-    else {
-      stateValue = (((homeModelRuntime->rootModelNodeOrSavedOffset).modelNode)->childNodes[0]->modelPayload).
-               localTranslationZQ12;
-      (modelNode->childNodes[0]->modelPayload).localTranslationZQ12 = stateValue;
-      (modelRuntime->classLinkState).classState80 = stateValue;
-    }
+    ArmyAircraft_UpdateParked(worldRuntime,modelRuntime,homeModelRuntime);
     break;
   case ARMY_AIRCRAFT_STATE_LANDING:
-    stateValue = (modelRuntime->classLinkState).classState7C;
-    product64 = (int64_t)(int)stateValue * (int64_t)(int)stateValue;
-    modelNode = modelNode->childNodes[0];
-    product64 = (int64_t)(int)(currentDefinition->arcCoefficient * g_InGameSimulationStepTicks) *
-             (int64_t)(int)FIXED_PRODUCT_SHR(product64,Q12_SHIFT);
-    (modelNode->modelPayload).localRotationAngle0 = FIXED_ANGLE16_HALF_TURN;
-    stateValue = (modelRuntime->classLinkState).classState7C;
-    (modelNode->modelPayload).localTranslationZQ12 =
-         FIXED_PRODUCT_SHR(product64,Q12_SHIFT) +
-         (modelRuntime->classLinkState).classState80;
-    product64 = (int64_t)(int)(stateValue * g_InGameSimulationStepTicks) *
-             (int64_t)currentDefinition->arcCoefficient;
-    stateValue = FixedMath_Atan2Angle16
-                       (FIXED_PRODUCT_SHR(product64,11),Q12_ONE);
-    stepValue = currentDefinition->movementStepQ12 * g_InGameSimulationStepTicks;
-    stateField = &(modelRuntime->classLinkState).classState7C;
-    *stateField = *stateField + stepValue;
-    (modelNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - stateValue & FIXED_ANGLE16_MASK;
-    modelNode = modelRuntime->rootModelNode;
-    sinCosStep = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,stepValue);
-    translationVec = &(modelNode->worldTransform).translation;
-    translationVec->x = translationVec->x + sinCosStep.cosValue;
-    translationY = &(modelNode->worldTransform).translation.y;
-    *translationY = *translationY + sinCosStep.sinValue;
-    stateField = &(modelRuntime->classLinkState).classState68;
-    *stateField = *stateField - 1;
-    if (((int)*stateField < 0) &&
-       ((modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_PARKED, homeModelRuntime != NULL)) {
-      currentDefinition = modelRuntime->modelDefinition;
-      homeDefinitionSlot = (ModelRuntimeSlot *)(homeModelRuntime->definitionOrSavedId).savedIdOrOffset;
-      (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
-      ModelRuntime_PlayDefinitionSecondaryOneShotSound(homeModelRuntime,worldRuntime);
-      stepValue = (int)(((int64_t)(int)homeModelRuntime->health *
-                     (int64_t)currentDefinition->maximumHealth) /
-                    (int64_t)(homeDefinitionSlot->classLinkState).modelLinkOrState.signedScalarState);
-      headingOrDelta = stepValue - modelRuntime->health;
-      if (headingOrDelta != 0 && (int)modelRuntime->health <= stepValue) {
-        ArmyRuntime_ApplyDamageAndPropagateToParent(headingOrDelta >> 1,homeModelRuntime);
-      }
-    }
+    ArmyAircraft_UpdateLanding(worldRuntime,modelRuntime,homeModelRuntime);
     break;
   case ARMY_AIRCRAFT_STATE_TAKING_OFF:
-    stateValue = (modelRuntime->classLinkState).classState7C;
-    product64 = (int64_t)(int)stateValue * (int64_t)(int)stateValue;
-    modelNode = modelNode->childNodes[0];
-    product64 = (int64_t)(int)(currentDefinition->arcCoefficient * g_InGameSimulationStepTicks) *
-             (int64_t)(int)FIXED_PRODUCT_SHR(product64,Q12_SHIFT);
-    (modelNode->modelPayload).localRotationAngle0 = FIXED_ANGLE16_HALF_TURN;
-    stateValue = (modelRuntime->classLinkState).classState7C;
-    (modelNode->modelPayload).localTranslationZQ12 =
-         FIXED_PRODUCT_SHR(product64,Q12_SHIFT) +
-         (modelRuntime->classLinkState).classState80;
-    product64 = (int64_t)(int)(stateValue * g_InGameSimulationStepTicks) *
-             (int64_t)currentDefinition->arcCoefficient;
-    stateValue = FixedMath_Atan2Angle16
-                       (FIXED_PRODUCT_SHR(product64,11),Q12_ONE);
-    stepValue = currentDefinition->movementStepQ12 * g_InGameSimulationStepTicks;
-    stateField = &(modelRuntime->classLinkState).classState7C;
-    *stateField = *stateField + stepValue;
-    (modelNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - stateValue & FIXED_ANGLE16_MASK;
-    modelNode = modelRuntime->rootModelNode;
-    sinCosStep = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,stepValue);
-    translationVec = &(modelNode->worldTransform).translation;
-    translationVec->x = translationVec->x + sinCosStep.cosValue;
-    translationY = &(modelNode->worldTransform).translation.y;
-    *translationY = *translationY + sinCosStep.sinValue;
-    stateField = &(modelRuntime->classLinkState).classState64;
-    *stateField = *stateField - 1;
-    if ((*stateField == 0) && (homeModelRuntime != NULL)) {
-      (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
-      ModelRuntime_PlayDefinitionSecondaryOneShotSound(homeModelRuntime,worldRuntime);
-    }
-    stateField = &(modelRuntime->classLinkState).classState68;
-    *stateField = *stateField - 1;
-    if ((int)*stateField < 0) {
-      (modelNode->worldTransform).translation.x = ARMY_AIRCRAFT_OFF_MAP_X_Q12;
-      (modelNode->worldTransform).translation.y = ARMY_AIRCRAFT_OFF_MAP_Y_Q12;
-      (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_APPROACH;
-    }
+    ArmyAircraft_UpdateTakingOff(worldRuntime,modelRuntime,homeModelRuntime);
     break;
   case ARMY_AIRCRAFT_STATE_APPROACH: /* line up behind the target point (+0x70/+0x74) on heading +0x78 */
-    pointAllowed = ArmyRuntime_TestWorldPointAllowedDefault
-                       (currentDefinition->worldPointAllowedContext,
-                        (modelRuntime->classLinkState).classState74,
-                        (modelRuntime->classLinkState).classState70);
-    if (!pointAllowed) {
-      headingOrDelta = (modelRuntime->classLinkState).classState78;
-      sinCosStep = FixedMath_SinCosScaled
-                         (headingOrDelta ^ FIXED_ANGLE16_HALF_TURN,currentDefinition->movementStepQ12 * currentDefinition->travelStepCount);
-      stateValue = (modelRuntime->classLinkState).classState74;
-      (modelNode->worldTransform).translation.x =
-           sinCosStep.cosValue + (modelRuntime->classLinkState).classState70;
-      (modelNode->worldTransform).translation.y = sinCosStep.sinValue + stateValue;
-      (modelNode->modelPayload).worldRotationAngle2 = headingOrDelta;
-      durationValue = currentDefinition->travelStepCount;
-      (modelRuntime->classLinkState).armyLinkOrState.classState = durationValue;
-      stateValue = durationValue * 2;
-      stepValue = currentDefinition->movementStepQ12;
-      (modelRuntime->classLinkState).classState68 = stateValue;
-      (modelRuntime->classLinkState).classState7C = -durationValue * stepValue;
-      (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_ATTACK_RUN;
-      sinCosStep = FixedMath_SinCosScaled(headingOrDelta,currentDefinition->movementStepQ12 * 10);
-      stepValue = (modelNode->worldTransform).translation.x;
-      sampleCoord = (modelNode->worldTransform).translation.y;
-      maxTerrainHeight = 0;
-      durationValue = (modelRuntime->classLinkState).classState80;
-      do {
-        FieldGrid_InterpolateTopSurfaceHeight(sampleCoord,stepValue,worldRuntime->fieldGrid,&terrainHeightQ12);
-        if (maxTerrainHeight < terrainHeightQ12) {
-          maxTerrainHeight = terrainHeightQ12;
-        }
-        stepValue = stepValue + sinCosStep.cosValue;
-        sampleCoord = sampleCoord + sinCosStep.sinValue;
-        stateValue = stateValue - 10;
-      } while (-1 < (int)stateValue);
-      (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12 =
-           maxTerrainHeight + Q12_ONE / 2 + durationValue * 2;
-    }
+    ArmyAircraft_UpdateApproach(worldRuntime,modelRuntime);
     break;
   case ARMY_AIRCRAFT_STATE_ATTACK_RUN: /* releases the model-point effects when the countdown at +0x6C hits a mark */
-    sinCosStep = FixedMath_SinCosScaled
-                       ((modelNode->modelPayload).worldRotationAngle2,
-                        g_InGameSimulationStepTicks * currentDefinition->movementStepQ12);
-    translationVec = &(modelNode->worldTransform).translation;
-    translationVec->x = translationVec->x + sinCosStep.cosValue;
-    translationY = &(modelNode->worldTransform).translation.y;
-    *translationY = *translationY + sinCosStep.sinValue;
-    FieldGrid_InterpolateTopSurfaceHeight
-              ((modelNode->worldTransform).translation.y,
-               (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid,&terrainHeightQ12);
-    classUpdate21Definition = modelRuntime->modelDefinition;
-    stateValue = (modelRuntime->classLinkState).classState7C;
-    product64 = (int64_t)(int)stateValue * (int64_t)(int)stateValue;
-    modelNode = modelNode->childNodes[0];
-    product64 = (int64_t)
-             (int)(classUpdate21Definition->verticalArcCoefficient * g_InGameSimulationStepTicks)
-             * (int64_t)(int)FIXED_PRODUCT_SHR(product64,Q12_SHIFT);
-    (modelNode->modelPayload).localRotationAngle0 = FIXED_ANGLE16_HALF_TURN;
-    stateValue = (modelRuntime->classLinkState).classState7C;
-    (modelNode->modelPayload).localTranslationZQ12 =
-         (FIXED_PRODUCT_SHR(product64,Q12_SHIFT) +
-         (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12) - terrainHeightQ12;
-    product64 = (int64_t)(int)(stateValue * g_InGameSimulationStepTicks) *
-             (int64_t)classUpdate21Definition->verticalArcCoefficient;
-    stateValue = FixedMath_Atan2Angle16
-                       (FIXED_PRODUCT_SHR(product64,11),Q12_ONE);
-    stateField = &(modelRuntime->classLinkState).classState7C;
-    *stateField = *stateField + classUpdate21Definition->movementStepQ12 * g_InGameSimulationStepTicks;
-    (modelNode->modelPayload).localRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN - stateValue & FIXED_ANGLE16_MASK;
-    modelNode = modelRuntime->rootModelNode;
-    remainingTicks = g_InGameSimulationStepTicks;
-    do {
-      armyLinkState = &(modelRuntime->classLinkState).armyLinkOrState;
-      armyLinkState->classState = armyLinkState->classState - 1; /* the drop countdown */
-      stateField = &(modelRuntime->classLinkState).classState68;
-      *stateField = *stateField - 1;
-      if ((int)*stateField < 0) {
-        (modelNode->worldTransform).translation.x = ARMY_AIRCRAFT_OFF_MAP_X_Q12;
-        (modelNode->worldTransform).translation.y = ARMY_AIRCRAFT_OFF_MAP_Y_Q12;
-        ((ModelRuntimeSlotClassState *)&modelRuntime->class21State)->behaviorState = ARMY_AIRCRAFT_STATE_RETURNING;
-      }
-      modelPointSource = classUpdate21Definition->rootNode;
-      savedClassUpdate21Definition = classUpdate21Definition;
-      savedModelNode = modelNode;
-      savedModelRuntime = modelRuntime;
-      ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
-                (modelRuntime->ownerArmyRuntime->factionIndex,
-                 (modelNode->worldTransform).translation.y,
-                 (modelNode->worldTransform).translation.x,
-                 classUpdate21Definition->terrainSoundAssetIndex,worldRuntime);
-      childNode = modelNode->childNodes[0];
-      stepValue = classUpdate21Definition->modelPointStep * -3;
-      sampleCoord = (childNode->worldTransform).translation.z - 2 * Q12_ONE;
-      modelNode = savedModelNode;
-      if (classUpdate21Definition->modelPointStep != 0) {
-        modelPointSource = (void *)((MdlSerializedNodeHeader *)modelPointSource)->childSerializedOffsets[0];
-        if (stepValue - (modelRuntime->classLinkState).armyLinkOrState.classState == 0) {
-          ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-                    (0,sampleCoord,(childNode->worldTransform).translation.y,
-                     (childNode->worldTransform).translation.x,7,
-                     classUpdate21Definition->modelPointEffectId,childNode,modelPointSource,worldRuntime);
-          modelNode = savedModelNode;
-        }
-        else {
-          countdownMark = stepValue + classUpdate21Definition->modelPointStep;
-          if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
-            ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-                      (0,sampleCoord,(childNode->worldTransform).translation.y,
-                       (childNode->worldTransform).translation.x,6,
-                       classUpdate21Definition->modelPointEffectId,childNode,modelPointSource,worldRuntime);
-            modelNode = savedModelNode;
-          }
-          else {
-            countdownMark = countdownMark + classUpdate21Definition->modelPointStep;
-            if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
-              ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-                        (0,sampleCoord,(childNode->worldTransform).translation.y,
-                         (childNode->worldTransform).translation.x,5,
-                         classUpdate21Definition->modelPointEffectId,childNode,modelPointSource,worldRuntime);
-              modelNode = savedModelNode;
-            }
-            else {
-              countdownMark = countdownMark + classUpdate21Definition->modelPointStep;
-              if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
-                ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-                          (0,sampleCoord,(childNode->worldTransform).translation.y,
-                           (childNode->worldTransform).translation.x,4,
-                           classUpdate21Definition->modelPointEffectId,childNode,modelPointSource,worldRuntime)
-                ;
-                modelNode = savedModelNode;
-              }
-              else {
-                countdownMark = countdownMark + classUpdate21Definition->modelPointStep;
-                if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
-                  ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-                            (0,sampleCoord,(childNode->worldTransform).translation.y,
-                             (childNode->worldTransform).translation.x,3,
-                             classUpdate21Definition->modelPointEffectId,childNode,modelPointSource,
-                             worldRuntime);
-                  modelNode = savedModelNode;
-                }
-                else {
-                  countdownMark = countdownMark + classUpdate21Definition->modelPointStep;
-                  if (countdownMark == (modelRuntime->classLinkState).armyLinkOrState.classState) {
-                    ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-                              (0,sampleCoord,(childNode->worldTransform).translation.y,
-                               (childNode->worldTransform).translation.x,2,
-                               classUpdate21Definition->modelPointEffectId,childNode,modelPointSource,
-                               worldRuntime);
-                    modelNode = savedModelNode;
-                  }
-                  else if (countdownMark + classUpdate21Definition->modelPointStep ==
-                           (modelRuntime->classLinkState).armyLinkOrState.classState) {
-                    ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
-                              (0,sampleCoord,(childNode->worldTransform).translation.y,
-                               (childNode->worldTransform).translation.x,1,
-                               classUpdate21Definition->modelPointEffectId,childNode,modelPointSource,
-                               worldRuntime);
-                    modelNode = savedModelNode;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      modelRuntime = savedModelRuntime;
-      classUpdate21Definition = savedClassUpdate21Definition;
-      remainingTicks = remainingTicks - 1;
-    } while (remainingTicks != 0);
+    ArmyAircraft_UpdateAttackRun(worldRuntime,modelRuntime);
     break;
   case ARMY_AIRCRAFT_STATE_RETURNING:
     if (homeModelRuntime != NULL) {
-      modelNode = (homeModelRuntime->rootModelNodeOrSavedOffset).modelNode;
-      if (((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_IDLE) &&
-         (pointAllowed = ArmyRuntime_TestWorldPointAllowedDefault
-                             (currentDefinition->worldPointAllowedContext,
-                              (modelNode->worldTransform).translation.y,
-                              (modelNode->worldTransform).translation.x), !pointAllowed)) {
-        (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_OPENING;
-        ModelRuntime_PlayDefinitionPrimaryOneShotSound
-                  (homeModelRuntime,worldRuntime);
-        headingOrDelta = (modelNode->modelPayload).worldRotationAngle2;
-        sinCosStep = FixedMath_SinCosScaled
-                           (headingOrDelta ^ FIXED_ANGLE16_HALF_TURN,currentDefinition->movementStepQ12 * currentDefinition->phaseDuration);
-        stepValue = (modelNode->worldTransform).translation.y;
-        childNode = modelRuntime->rootModelNode;
-        (childNode->worldTransform).translation.x =
-             sinCosStep.cosValue + (modelNode->worldTransform).translation.x;
-        (childNode->worldTransform).translation.y = sinCosStep.sinValue + stepValue;
-        (childNode->modelPayload).worldRotationAngle2 = headingOrDelta;
-        stateValue = currentDefinition->phaseDuration;
-        stepValue = currentDefinition->movementStepQ12;
-        (modelRuntime->classLinkState).classState68 = stateValue;
-        (modelRuntime->classLinkState).classState7C = -stateValue * stepValue;
-        (modelRuntime->class21State).behaviorState = ARMY_AIRCRAFT_STATE_LANDING;
-      }
+      ArmyAircraft_TryStartLanding(worldRuntime,modelRuntime,homeModelRuntime);
       break;
     }
     ModelRuntimeHierarchy_MarkDestroyedRecursive(worldRuntime,modelRuntime->ownerArmyRuntime);
@@ -392,10 +394,10 @@ void ArmyRuntimeClass_UpdateAircraft
             (((ModelDefinition *)modelRuntime->modelDefinition)->
              placementHeightOffsetQ12,(modelNode->worldTransform).translation.y,
              (modelNode->worldTransform).translation.x,modelNode,worldRuntime);
-  stateValue = ((ModelRuntimeSlotClassState *)&modelRuntime->class21State)->behaviorState;
+  behaviorState = (modelRuntime->class21State).behaviorState;
   (modelNode->modelPayload).worldRotationAngle1 = savedAngle1;
   (modelNode->modelPayload).worldRotationAngle0 = savedAngle0;
-  if ((stateValue != ARMY_AIRCRAFT_STATE_NO_PAD) && (stateValue != ARMY_AIRCRAFT_STATE_PARKED)) {
+  if ((behaviorState != ARMY_AIRCRAFT_STATE_NO_PAD) && (behaviorState != ARMY_AIRCRAFT_STATE_PARKED)) {
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
               (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
   }

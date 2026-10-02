@@ -872,6 +872,32 @@ void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
 }
 
 
+/* Hierarchy renderer for the model passes of FrontendModelPointerContext_RenderWorldViewQueuesClipped. */
+static void (*FrontendModelPointerContext_SelectRenderHierarchyProc(const FrontendModelPointerContext *control))
+          (ModelRuntimeNode *)
+{
+  if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
+    return ModelRuntime_RenderHierarchyRecursiveAlternatePath;
+  }
+  return ModelRuntime_CullAndRenderHierarchyRecursive;
+}
+
+/* End of one render pass: sorts and draws the active primitive queue into the clip rectangle and adds its
+   primitive count to renderedPrimitiveCount. */
+static void FrontendModelPointerContext_DrawActiveQueue
+          (FrontendModelPointerContext *control,UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,
+          UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft)
+{
+  uint32_t queuedPrimitiveCount;
+
+  PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
+            (control->base.nodeFlags & 8,control->activePrimitiveQueue);
+  g_GraphicsDrawPrimitiveQueue
+            (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
+  queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
+  control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
+}
+
 /* Address: 0x0050BC60.
    Draw method of the model pointer context (drawClipped of g_FrontendModelPointerContextVtable), the 3D view of
    the menu room and of the in-game world: clamps the clip rectangle to the control, sets up camera, projection
@@ -888,20 +914,14 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
 {
   UiPixelCoordinate cursorOverrideX;
   UiPixelCoordinate cursorOverrideY;
-  uint32_t queuedPrimitiveCount;
-  UiPixelCoordinate overlayClipRight; /* ECX; also the listener Y (Q12) on the sound path */
+  GraphicsWorldCoordinateQ12 listenerY;
+  GraphicsWorldCoordinateQ12 listenerZ;
   void (*renderHierarchyProc)(ModelRuntimeNode *);
   ModelRuntimeNode *modelNode;
-  /* The selection overlays after the scene take their rectangle from EDX/ECX/EDI/ESI (bottom/right/top/left).
-     The original would jump straight to the end when a primitive-queue reset failed, handing the overlays
-     whatever those registers held; GraphicsPrimitiveQueue_ResetGlobal never fails, so the overlays always get
-     the clipped rectangle reloaded after the last pass. The overlay* variables still mirror the register
-     contents along the way (and carry the listener position on the sound path). */
-  UiPixelCoordinate overlayClipBottom;
-  UiPixelCoordinate overlayClipTop;
-  UiPixelCoordinate overlayClipLeft;
-  bool entryFound;
   GraphicsPrimitiveQueue *frameQueue;
+  /* The original would jump straight to the end when a primitive-queue reset failed, handing the selection
+     overlays a stale rectangle; GraphicsPrimitiveQueue_ResetGlobal never fails, so the overlays always get the
+     clipped rectangle. */
 
   if ((control->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
     return;
@@ -927,21 +947,19 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   control->surfaceHitWorldX = WORLD_POINTER_NO_HIT;
   control->surfaceHitWorldY = WORLD_POINTER_NO_HIT;
   control->surfaceHitDepth = WORLD_POINTER_NO_HIT;
-  overlayClipBottom = cursorOverrideY << 12;
   control->cursorWorldXQ12 = cursorOverrideX << 12;
-  control->cursorWorldYQ12 = overlayClipBottom;
+  control->cursorWorldYQ12 = cursorOverrideY << 12;
   control->renderedPrimitiveCount = 0;
   Graphics_SetProjectionClipRect(clipBottom,clipRight,clipTop,clipLeft);
   Graphics_SetViewProjectionParameters
             (control->projectionShift,control->viewAngle1,control->viewAngle0,
              control->projectionScale,control->hitReferenceWorldZQ12,control->hitReferenceWorldYQ12,
              control->hitReferenceWorldXQ12);
-  overlayClipRight = clipRight;
   if ((control->contextFlags & WORLD_RUNTIME_FLAG_SOUND_LISTENER) != 0) {
-    overlayClipRight = control->targetPositionYQ12;
-    overlayClipBottom = ((int)control->committedDistanceOrSoundZOffset >> 2) + control->targetPositionZQ12;
+    listenerY = control->targetPositionYQ12;
+    listenerZ = ((int)control->committedDistanceOrSoundZOffset >> 2) + control->targetPositionZQ12;
     SpatialSound_RebuildListenerTransformFromPose
-              (control->viewAngle1,control->viewAngle0,overlayClipBottom,overlayClipRight,control->targetPositionXQ12);
+              (control->viewAngle1,control->viewAngle0,listenerZ,listenerY,control->targetPositionXQ12);
   }
   Graphics_SetProjectionViewport
             (control->base.bottom,control->base.right,control->base.top,control->base.left);
@@ -958,77 +976,55 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
   frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
-  overlayClipLeft = clipBottom;
-  overlayClipTop = clipTop;
   Graphics_SetActivePrimitiveQueue(frameQueue);
   control->activePrimitiveQueue = frameQueue;
   if (control->renderPhaseCallback != NULL) {
     control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
   }
-  renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
-  if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
-    renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
-  }
-  overlayClipBottom = (UiPixelCoordinate)(uintptr_t)renderHierarchyProc;
+  renderHierarchyProc = FrontendModelPointerContext_SelectRenderHierarchyProc(control);
   for (modelNode = control->candidateModelListHead; modelNode != NULL;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-    if ((((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) && ((modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN) != 0)) &&
-       (modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED,
-       (modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
-      renderHierarchyProc(modelNode);
+    if (((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) &&
+        ((modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN) != 0)) {
+      modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
+      if ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0) {
+        renderHierarchyProc(modelNode);
+      }
     }
   }
   if (control->renderPhaseCallback != NULL) {
     control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
   }
-  PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
-            (control->base.nodeFlags & 8,control->activePrimitiveQueue);
-  g_GraphicsDrawPrimitiveQueue
-            (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
-  queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
-  control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
+  FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
-  overlayClipTop = 0; /* EDI: the model loop ran to its NULL terminator */
   if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL)) {
     frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
     Graphics_SetActivePrimitiveQueue(frameQueue);
     control->activePrimitiveQueue = frameQueue;
     TerrainProjectedGrid_TransformShadeAndQueue(control->fieldGrid,control);
-    PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
-              (control->base.nodeFlags & 8,control->activePrimitiveQueue);
-    g_GraphicsDrawPrimitiveQueue
-              (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
-    queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
-    control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
+    FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
   }
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
   if ((control->contextFlags & WORLD_RUNTIME_FLAG_SHADING_ENABLED) != 0) {
     modelNode = control->candidateModelListHead;
-    overlayClipTop = (UiPixelCoordinate)(uintptr_t)modelNode; /* EDI */
     frameQueue = GraphicsPrimitiveQueue_ResetGlobal();
     Graphics_SetActivePrimitiveQueue(frameQueue);
     control->activePrimitiveQueue = frameQueue;
     if (modelNode != NULL) {
       GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
-      do {
-        if ((((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) && ((modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS) != 0)) &&
-           ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
+      for (; modelNode != NULL; modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+        if (((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) &&
+            ((modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS) != 0) &&
+            ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
           GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                     (modelNode,(GeneratedTextureRenderContextView *)control);
         }
-        modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
-      } while (modelNode != NULL);
+      }
       GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources();
-      overlayClipTop = 0;
     }
-    PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
-              (control->base.nodeFlags & 8,control->activePrimitiveQueue);
-    g_GraphicsDrawPrimitiveQueue
-              (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
-    queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
-    control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
+    FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
   }
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
@@ -1038,33 +1034,22 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   if (control->renderPhaseCallback != NULL) {
     control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
   }
-  renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
-  if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
-    renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
-  }
+  renderHierarchyProc = FrontendModelPointerContext_SelectRenderHierarchyProc(control);
   for (modelNode = control->candidateModelListHead; modelNode != NULL;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-    if (((modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN)) == 0) &&
-       (modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED,
-       (modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
-      renderHierarchyProc(modelNode);
+    if ((modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN)) == 0) {
+      modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
+      if ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0) {
+        renderHierarchyProc(modelNode);
+      }
     }
   }
   if (control->renderPhaseCallback != NULL) {
     control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
   }
-  PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
-            (control->base.nodeFlags & 8,control->activePrimitiveQueue);
-  g_GraphicsDrawPrimitiveQueue
-            (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
-  queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
-  control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
+  FrontendModelPointerContext_DrawActiveQueue(control,clipBottom,clipRight,clipTop,clipLeft);
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
-  overlayClipRight = clipRight;
-  overlayClipBottom = clipBottom;
-  overlayClipLeft = clipLeft;
-  overlayClipTop = clipTop;
   if ((((clipLeft == control->base.left) && (clipRight == control->base.right)) &&
       (clipTop == control->base.top)) && (clipBottom == control->base.bottom)) {
     /* the whole view was drawn: the next terrain pass may reuse this projection */
@@ -1081,57 +1066,45 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS) == 0) {
-    if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) &&
-        (SelectionOverlay_RenderSelectedArmyMetrics
-                   (overlayClipBottom,overlayClipRight,overlayClipTop,
-                    overlayClipLeft),
-        control->selectedOverlayEntity != NULL)) &&
-       (entryFound = SelectionInfo_IsEntryAbsent(control->selectedOverlayEntity), entryFound)) {
-      SelectionOverlay_RenderArmyMetricsForEntity
-                (overlayClipBottom,overlayClipRight,overlayClipTop,
-                 overlayClipLeft,control->selectedOverlayEntity);
+    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) {
+      SelectionOverlay_RenderSelectedArmyMetrics(clipBottom,clipRight,clipTop,clipLeft);
+      if ((control->selectedOverlayEntity != NULL) &&
+          SelectionInfo_IsEntryAbsent(control->selectedOverlayEntity)) {
+        SelectionOverlay_RenderArmyMetricsForEntity
+                  (clipBottom,clipRight,clipTop,clipLeft,control->selectedOverlayEntity);
+      }
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
       SelectionOverlay_DrawBoundsFrame
-                (overlayClipBottom,overlayClipRight,overlayClipTop,
-                 overlayClipLeft,control->dragFrameEndY,
+                (clipBottom,clipRight,clipTop,clipLeft,control->dragFrameEndY,
                  control->dragFrameEndX,control->dragFrameStartY,
                  control->dragFrameStartX);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS) != 0) {
       SelectionOverlay_DrawTerrainPointMarkers
-                (overlayClipBottom,overlayClipRight,overlayClipTop,
-                 overlayClipLeft,control->terrainMarkerPointCount,
+                (clipBottom,clipRight,clipTop,clipLeft,control->terrainMarkerPointCount,
                  control->terrainMarkerCoordinatePairs,control->fieldGrid);
     }
     if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER) != 0) && (control->surfaceHitDepth != WORLD_POINTER_NO_HIT)) {
       SelectionOverlay_DrawWorldPointMarker
-                (overlayClipBottom,overlayClipRight,overlayClipTop,
-                 overlayClipLeft,
+                (clipBottom,clipRight,clipTop,clipLeft,
                  (uint32_t)((g_UiCommandModeGColorVariantLimit & ARGB8888_ALPHA_MASK) != 0),
                  control->surfaceHitWorldY,control->surfaceHitWorldX,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS) != 0) {
-      SelectionOverlay_DrawGridVertexMarkers
-                (overlayClipBottom,overlayClipRight,overlayClipTop,
-                 overlayClipLeft,control->fieldGrid);
+      SelectionOverlay_DrawGridVertexMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) != 0) {
-      SelectionOverlay_DrawFluidExclusionMarkers
-                (overlayClipBottom,overlayClipRight,overlayClipTop,
-                 overlayClipLeft,control->fieldGrid);
+      SelectionOverlay_DrawFluidExclusionMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS) != 0) {
       SelectionOverlay_DrawResourceCellMarkers
-                (overlayClipBottom,overlayClipRight,overlayClipTop,
-                 overlayClipLeft,(uint8_t)control->selectedResourceMarkerIndex,
+                (clipBottom,clipRight,clipTop,clipLeft,(uint8_t)control->selectedResourceMarkerIndex,
                  control->fieldGrid);
     }
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL))
        && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS) != 0)) {
-      SelectionOverlay_DrawDebugMarkedCellMarkers
-                (overlayClipBottom,overlayClipRight,overlayClipTop,
-                 overlayClipLeft,control->fieldGrid);
+      SelectionOverlay_DrawDebugMarkedCellMarkers(clipBottom,clipRight,clipTop,clipLeft,control->fieldGrid);
     }
   }
   g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitSourceAlpha;
@@ -1657,28 +1630,27 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
           void *pointedModelNode,FrontendPointerSceneRuntimeView *frontendRuntime)
 
 {
-  int32_t *hintEdgeField;
   uint16_t *previousCommandStream;
   UiNodeBase *control;
-  UiNodeVtable *controlVtable;
   RomAssetRecordPrefix *pointedRomRecord;
   int *transitionRecord; /* keyframe channels 0..5, [6] hint text, [8] FRONTEND_PAGE_ACTION_* */
   uint32_t resultCode;
   uint16_t *commandStream;
   RomRecordId recordId;
-  int channel3OrHintValue;
+  int hintValue;
+  int keyframeChannel3;
+  int keyframeChannel4;
   int keyframeChannel5;
-  int channel4OrHalfHeight;
+  int halfWidth;
+  int halfHeight;
+  int frameWidth;
   RichTextExtent textExtent;
-  uint32_t activePageIndex;
-  uint16_t *hintTextResult;
   GraphicsTextureLogicalSize windowTextureSize;
 
   resultCode = 0;
-  channel3OrHintValue = 0;
+  hintValue = 0;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
-     (activePageIndex = UiPageStack_ActivePageIndex(&frontendRuntime->activePageStack),
-     activePageIndex == 0)) {
+     (UiPageStack_ActivePageIndex(&frontendRuntime->activePageStack) == 0)) {
     pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedModelNode);
     recordId = FRONTEND_ROM_RECORD_ID_NONE;
     if (pointedRomRecord != NULL) {
@@ -1694,16 +1666,16 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
          (transitionRecord[8] >= 0)) ||
         ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL)) &&
        ((transitionRecord[8] != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) || (g_NetworkBackendInstanceCount != 0))) {
-      channel3OrHintValue = transitionRecord[3];
-      channel4OrHalfHeight = transitionRecord[4];
+      keyframeChannel3 = transitionRecord[3];
+      keyframeChannel4 = transitionRecord[4];
       keyframeChannel5 = transitionRecord[5];
       /* Rebuild the camera spline only when the target keyframe changed. (When channels 0-2 already match
          the original skips storing them; storing the equal values here is equivalent.) */
       if ((((*transitionRecord != g_FrontendRomTransitionKeyframe1Channel0Q12) ||
            (transitionRecord[1] != g_FrontendRomTransitionKeyframe1Channel1Q12)) ||
           (transitionRecord[2] != g_FrontendRomTransitionKeyframe1Channel2Q12)) ||
-         (((channel3OrHintValue != g_FrontendRomTransitionKeyframe1Channel3Q12) ||
-          (channel4OrHalfHeight != g_FrontendRomTransitionKeyframe1Channel4Q12)) ||
+         (((keyframeChannel3 != g_FrontendRomTransitionKeyframe1Channel3Q12) ||
+          (keyframeChannel4 != g_FrontendRomTransitionKeyframe1Channel4Q12)) ||
           (keyframeChannel5 != g_FrontendRomTransitionKeyframe1Channel5Q12))) {
         /* fly from the current camera (keyframe 0) to the record's camera (keyframe 1) in 192 ticks of
            FrontendRomTransition_AdvanceElapsedTicks; pending -1 = no record to activate at the end */
@@ -1722,51 +1694,47 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
         g_FrontendRomTransitionTargetRecordId = FRONTEND_ROM_TRANSITION_NO_TARGET;
         g_FrontendRomTransitionSplineKeyframeCount = 2;
         g_FrontendRomTransitionSplineKeyframes = &g_FrontendRomTransitionKeyframe0Channel0Q12;
-        g_FrontendRomTransitionKeyframe1Channel3Q12 = channel3OrHintValue;
-        g_FrontendRomTransitionKeyframe1Channel4Q12 = channel4OrHalfHeight;
+        g_FrontendRomTransitionKeyframe1Channel3Q12 = keyframeChannel3;
+        g_FrontendRomTransitionKeyframe1Channel4Q12 = keyframeChannel4;
         g_FrontendRomTransitionKeyframe1Channel5Q12 = keyframeChannel5;
         WorldMotionSpline_BuildSixChannelCurves
                   (2,(WorldMotionSplineKeyframe *)&g_FrontendRomTransitionKeyframe0Channel0Q12);
       }
-      channel3OrHintValue = transitionRecord[6];
+      hintValue = transitionRecord[6];
       resultCode = 7;
     }
   }
-  if (channel3OrHintValue == 0) {
+  if (hintValue == 0) {
     if (g_FrontendPendingPageActionDepth == 0) {
       frontendRuntime->hintBox.hintActive = 0;
       frontendRuntime->hintBox.commandStream = NULL;
       return resultCode;
     }
-    channel3OrHintValue = 1;
+    hintValue = 1;
   }
   /* only when the text changed: size the hint box around it plus the window frame (texture frame UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT) */
   previousCommandStream = frontendRuntime->hintBox.commandStream;
-  hintTextResult = TextResource_Resolve(channel3OrHintValue + TEXT_ID_MENU_HINT_BASE);
-  commandStream = hintTextResult;
+  commandStream = TextResource_Resolve(hintValue + TEXT_ID_MENU_HINT_BASE);
   if (commandStream != previousCommandStream) {
     frontendRuntime->hintBox.commandStream = commandStream;
     textExtent = RichTextCommandStream_MeasureLine(g_UiTextStyleNormal,commandStream);
-    channel3OrHintValue = (int)(textExtent.widthPixels + 1) >> 1;
-    channel4OrHalfHeight = (int)(textExtent.heightPixels + 1) >> 1;
-    frontendRuntime->hintBox.base.leftOffset = channel3OrHintValue;
-    frontendRuntime->hintBox.base.topOffset = channel4OrHalfHeight;
-    frontendRuntime->hintBox.base.right = -channel3OrHintValue;
-    frontendRuntime->hintBox.base.bottom = -channel4OrHalfHeight;
+    halfWidth = (int)(textExtent.widthPixels + 1) >> 1;
+    halfHeight = (int)(textExtent.heightPixels + 1) >> 1;
+    frontendRuntime->hintBox.base.leftOffset = halfWidth;
+    frontendRuntime->hintBox.base.topOffset = halfHeight;
+    frontendRuntime->hintBox.base.right = -halfWidth;
+    frontendRuntime->hintBox.base.bottom = -halfHeight;
     windowTextureSize = g_GraphicsTextureSourceGetLogicalSize(UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT,g_UiWindowTextureSource);
-    channel3OrHintValue = windowTextureSize.logicalWidthPixels + 3;
+    frameWidth = windowTextureSize.logicalWidthPixels + 3;
     control = frontendRuntime->hintBox.base.nextSibling;
     frontendRuntime->hintBox.hintActive = 1;
-    hintEdgeField = &frontendRuntime->hintBox.base.leftOffset;
-    *hintEdgeField = *hintEdgeField + channel3OrHintValue;
-    hintEdgeField = &frontendRuntime->hintBox.base.topOffset;
-    *hintEdgeField = *hintEdgeField + windowTextureSize.logicalHeightPixels;
-    controlVtable = control->vtable;
-    hintEdgeField = &frontendRuntime->hintBox.base.right;
-    *hintEdgeField = *hintEdgeField - channel3OrHintValue;
-    hintEdgeField = &frontendRuntime->hintBox.base.bottom;
-    *hintEdgeField = *hintEdgeField - windowTextureSize.logicalHeightPixels;
-    controlVtable->layout(control);
+    frontendRuntime->hintBox.base.leftOffset = frontendRuntime->hintBox.base.leftOffset + frameWidth;
+    frontendRuntime->hintBox.base.topOffset =
+         frontendRuntime->hintBox.base.topOffset + windowTextureSize.logicalHeightPixels;
+    frontendRuntime->hintBox.base.right = frontendRuntime->hintBox.base.right - frameWidth;
+    frontendRuntime->hintBox.base.bottom =
+         frontendRuntime->hintBox.base.bottom - windowTextureSize.logicalHeightPixels;
+    control->vtable->layout(control);
   }
   return resultCode;
 }
@@ -2021,6 +1989,44 @@ void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
 }
 
 
+/* Inserts value into the ascending list candidates[0..candidateCount-1] (UI_DISPLAY_MODE_NONE marks empty
+   slots) unless it is already listed; the largest entry falls off the end. */
+static void FrontendDisplayModeCandidates_InsertSortedUnique
+          (uint32_t *candidates,uint32_t candidateCount,uint32_t value)
+{
+  uint32_t candidateIndex;
+  uint32_t displacedValue;
+
+  for (candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++) {
+    if (value == candidates[candidateIndex]) {
+      return;
+    }
+  }
+  for (candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++) {
+    if (value < candidates[candidateIndex]) {
+      displacedValue = candidates[candidateIndex];
+      candidates[candidateIndex] = value;
+      value = displacedValue;
+    }
+  }
+}
+
+/* Adapter row adapterIndex of the display settings page: driver description and device name (the software
+   device gets its text resource name). */
+static void FrontendDisplaySettingsPage_FillAdapterRow
+          (FrontendDisplaySettingsPageOptionState *source,uint32_t adapterIndex)
+{
+  source->adapterRows.rows[adapterIndex].adapterDescriptionUtf16 =
+       g_GraphicsAdapters[adapterIndex].driverDescriptionUtf16;
+  if (g_GraphicsAdapters[adapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+    source->adapterRows.rows[adapterIndex].deviceNameUtf16 =
+         TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
+  }
+  else {
+    source->adapterRows.rows[adapterIndex].deviceNameUtf16 = g_GraphicsAdapters[adapterIndex].deviceNameUtf16;
+  }
+}
+
 /* Address: 0x0054AB70.
    Handler of action 0x2011 (slot 17 of g_FrontendUiActionHandlersPage20.handlers00_54), the options page's
    "Graphics" button: opens the display settings page and fills its choices: the four smallest distinct colour
@@ -2032,15 +2038,13 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
 
 {
   FrontendModelPointerContextFlags *menuRoomContextFlags;
-  GraphicsAdapterRecord *adapters;
-  uint16_t *deviceNameText;
-  uint32_t modeValue;
-  uint32_t displacedValueA;
-  uint32_t displacedValueB;
+  uint32_t *candidates;
+  uint32_t adapterIndex;
+  uint32_t rowIndex;
   GraphicsDisplayModeCount remainingModes;
   GraphicsDisplayMode *displayMode;
-  uint16_t *fallbackNameResult;
-  
+
+  candidates = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues;
   /* source is the frontend template's graphicsSettingsButton */
   UiPageStack_SetActiveIndex
             (FRONTEND_PAGE_DISPLAY_SETTINGS,
@@ -2053,334 +2057,41 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
          contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[0] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3] =
-       UI_DISPLAY_MODE_NONE;
-  /* LOCK/UNLOCK mark the XCHG swaps of the original insertion (no other thread uses this scratch) */
+  /* the four smallest distinct colour depths */
+  for (rowIndex = 0; rowIndex < 4; rowIndex++) {
+    candidates[rowIndex] = UI_DISPLAY_MODE_NONE;
+  }
   remainingModes = g_GraphicsDisplayModeCount;
   displayMode = g_GraphicsDisplayModes;
   do {
-    modeValue = displayMode->bitsPerPixel;
-    if ((((modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                    candidateValues[0]) &&
-         (modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                   candidateValues[1])) &&
-        (modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                  candidateValues[2])) &&
-       (modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                 candidateValues[3])) {
-      displacedValueB = modeValue;
-      if (modeValue < g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                  candidateValues[0]) {
-        LOCK();
-        UNLOCK();
-        displacedValueB = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [0];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[0] =
-             modeValue;
-      }
-      displacedValueA = displacedValueB;
-      if ((uint32_t)displacedValueB <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1]) {
-        LOCK();
-        UNLOCK();
-        displacedValueA = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [1];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1] =
-             displacedValueB;
-      }
-      displacedValueB = displacedValueA;
-      if ((uint32_t)displacedValueA <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2]) {
-        LOCK();
-        UNLOCK();
-        displacedValueB = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [2];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2] =
-             displacedValueA;
-      }
-      if ((uint32_t)displacedValueB <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3]) {
-        LOCK();
-        UNLOCK();
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3] =
-             displacedValueB;
-      }
-    }
+    FrontendDisplayModeCandidates_InsertSortedUnique(candidates,4,displayMode->bitsPerPixel);
     displayMode++;
     remainingModes--;
   } while (remainingModes != 0);
-  source->colorDepthRows.rows[0].bitsPerPixel =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[0];
-  source->colorDepthRows.rows[1].bitsPerPixel =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1];
-  source->colorDepthRows.rows[2].bitsPerPixel =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2];
-  source->colorDepthRows.rows[3].bitsPerPixel =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3];
-  adapters = g_GraphicsAdapters;
-  source->adapterRows.rows[0].adapterDescriptionUtf16 = g_GraphicsAdapters->driverDescriptionUtf16
-  ;
-  if (adapters->deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
-    fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-    deviceNameText = fallbackNameResult;
+  for (rowIndex = 0; rowIndex < 4; rowIndex++) {
+    source->colorDepthRows.rows[rowIndex].bitsPerPixel = candidates[rowIndex];
   }
-  else {
-    deviceNameText = adapters->deviceNameUtf16;
+  /* name and device of up to five adapters (the first one is always listed) */
+  FrontendDisplaySettingsPage_FillAdapterRow(source,0);
+  for (adapterIndex = 1; (adapterIndex < 5) && (adapterIndex < g_GraphicsAdapterCount); adapterIndex++) {
+    FrontendDisplaySettingsPage_FillAdapterRow(source,adapterIndex);
   }
-  source->adapterRows.rows[0].deviceNameUtf16 = deviceNameText;
-  adapters = g_GraphicsAdapters;
-  if (1 < g_GraphicsAdapterCount) {
-    source->adapterRows.rows[1].adapterDescriptionUtf16 =
-         g_GraphicsAdapters[1].driverDescriptionUtf16;
-    if (adapters[1].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
-      fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-      deviceNameText = fallbackNameResult;
-    }
-    else {
-      deviceNameText = adapters[1].deviceNameUtf16;
-    }
-    source->adapterRows.rows[1].deviceNameUtf16 = deviceNameText;
+  /* the ten smallest distinct resolutions */
+  for (rowIndex = 0; rowIndex < 10; rowIndex++) {
+    candidates[rowIndex] = UI_DISPLAY_MODE_NONE;
   }
-  adapters = g_GraphicsAdapters;
-  if (2 < g_GraphicsAdapterCount) {
-    source->adapterRows.rows[2].adapterDescriptionUtf16 =
-         g_GraphicsAdapters[2].driverDescriptionUtf16;
-    if (adapters[2].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
-      fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-      deviceNameText = fallbackNameResult;
-    }
-    else {
-      deviceNameText = adapters[2].deviceNameUtf16;
-    }
-    source->adapterRows.rows[2].deviceNameUtf16 = deviceNameText;
-  }
-  adapters = g_GraphicsAdapters;
-  if (3 < g_GraphicsAdapterCount) {
-    source->adapterRows.rows[3].adapterDescriptionUtf16 =
-         g_GraphicsAdapters[3].driverDescriptionUtf16;
-    if (adapters[3].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
-      fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-      deviceNameText = fallbackNameResult;
-    }
-    else {
-      deviceNameText = adapters[3].deviceNameUtf16;
-    }
-    source->adapterRows.rows[3].deviceNameUtf16 = deviceNameText;
-  }
-  adapters = g_GraphicsAdapters;
-  if (4 < g_GraphicsAdapterCount) {
-    source->adapterRows.rows[4].adapterDescriptionUtf16 =
-         g_GraphicsAdapters[4].driverDescriptionUtf16;
-    if (adapters[4].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
-      fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-      deviceNameText = fallbackNameResult;
-    }
-    else {
-      deviceNameText = adapters[4].deviceNameUtf16;
-    }
-    source->adapterRows.rows[4].deviceNameUtf16 = deviceNameText;
-  }
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[0] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[4] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[5] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[6] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[7] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[8] =
-       UI_DISPLAY_MODE_NONE;
-  g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[9] =
-       UI_DISPLAY_MODE_NONE;
   remainingModes = g_GraphicsDisplayModeCount;
   displayMode = g_GraphicsDisplayModes;
   do {
-    modeValue = displayMode->width * UI_DISPLAY_MODE_WIDTH_SCALE + displayMode->height;
-    if ((((modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                    candidateValues[0]) &&
-         (modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                   candidateValues[1])) &&
-        ((modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                   candidateValues[2] &&
-         ((modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                    candidateValues[3] &&
-          (modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                    candidateValues[4])))))) &&
-       ((modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                  candidateValues[5] &&
-        ((((modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                     candidateValues[6] &&
-           (modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                     candidateValues[7])) &&
-          (modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                    candidateValues[8])) &&
-         (modeValue != g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                   candidateValues[9])))))) {
-      displacedValueB = modeValue;
-      if (modeValue < g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.
-                  candidateValues[0]) {
-        LOCK();
-        UNLOCK();
-        displacedValueB = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [0];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[0] =
-             modeValue;
-      }
-      displacedValueA = displacedValueB;
-      if ((uint32_t)displacedValueB <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1]) {
-        LOCK();
-        UNLOCK();
-        displacedValueA = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [1];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1] =
-             displacedValueB;
-      }
-      displacedValueB = displacedValueA;
-      if ((uint32_t)displacedValueA <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2]) {
-        LOCK();
-        UNLOCK();
-        displacedValueB = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [2];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2] =
-             displacedValueA;
-      }
-      displacedValueA = displacedValueB;
-      if ((uint32_t)displacedValueB <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3]) {
-        LOCK();
-        UNLOCK();
-        displacedValueA = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [3];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3] =
-             displacedValueB;
-      }
-      displacedValueB = displacedValueA;
-      if ((uint32_t)displacedValueA <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[4]) {
-        LOCK();
-        UNLOCK();
-        displacedValueB = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [4];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[4] =
-             displacedValueA;
-      }
-      displacedValueA = displacedValueB;
-      if ((uint32_t)displacedValueB <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[5]) {
-        LOCK();
-        UNLOCK();
-        displacedValueA = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [5];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[5] =
-             displacedValueB;
-      }
-      displacedValueB = displacedValueA;
-      if ((uint32_t)displacedValueA <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[6]) {
-        LOCK();
-        UNLOCK();
-        displacedValueB = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [6];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[6] =
-             displacedValueA;
-      }
-      displacedValueA = displacedValueB;
-      if ((uint32_t)displacedValueB <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[7]) {
-        LOCK();
-        UNLOCK();
-        displacedValueA = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [7];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[7] =
-             displacedValueB;
-      }
-      displacedValueB = displacedValueA;
-      if ((uint32_t)displacedValueA <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[8]) {
-        LOCK();
-        UNLOCK();
-        displacedValueB = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues
-                [8];
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[8] =
-             displacedValueA;
-      }
-      if ((uint32_t)displacedValueB <
-          g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[9]) {
-        LOCK();
-        UNLOCK();
-        g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[9] =
-             displacedValueB;
-      }
-    }
+    FrontendDisplayModeCandidates_InsertSortedUnique
+              (candidates,10,displayMode->width * UI_DISPLAY_MODE_WIDTH_SCALE + displayMode->height);
     displayMode++;
     remainingModes--;
   } while (remainingModes != 0);
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[0] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[0].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[0] >> 16;
-  source->resolutionRows.rows[0].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[1].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[1] >> 16;
-  source->resolutionRows.rows[1].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[2].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[2] >> 16;
-  source->resolutionRows.rows[2].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[3].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[3] >> 16;
-  source->resolutionRows.rows[3].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[4] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[4].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[4] >> 16;
-  source->resolutionRows.rows[4].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[5] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[5].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[5] >> 16;
-  source->resolutionRows.rows[5].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[6] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[6].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[6] >> 16;
-  source->resolutionRows.rows[6].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[7] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[7].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[7] >> 16;
-  source->resolutionRows.rows[7].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[8] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[8].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[8] >> 16;
-  source->resolutionRows.rows[8].height = modeValue;
-  modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[9] &
-          UI_DISPLAY_MODE_HEIGHT_MASK;
-  source->resolutionRows.rows[9].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues[9] >> 16;
-  source->resolutionRows.rows[9].height = modeValue;
+  for (rowIndex = 0; rowIndex < 10; rowIndex++) {
+    source->resolutionRows.rows[rowIndex].width = candidates[rowIndex] >> 16;
+    source->resolutionRows.rows[rowIndex].height = candidates[rowIndex] & UI_DISPLAY_MODE_HEIGHT_MASK;
+  }
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
   adapterIndex = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
@@ -2535,6 +2246,133 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
 }
 
 
+/* Campaign level records (CampaignLevelRecord) as in OldUnitRuntime_RebuildScenarioReplayTables: finds the
+   current level's record and points g_EndMoviePath at flm\endeNNNN.flm with its end movie number for the
+   outcome g_EndMovieSelectionIndex (separate numbers for a nonzero / zero variant index). */
+static void FrontendEndMovie_SelectCampaignMoviePath(CampaignAsset *campaign)
+{
+  int remainingRecords;
+  CampaignLevelRecord *levelRecord;
+  int32_t endMovieNumber;
+
+  remainingRecords = campaign->levelRecordCount;
+  levelRecord = campaign->levels;
+  do {
+    if (campaign->currentLevelId == levelRecord->levelId) {
+      if (g_EndMovieVariantIndex == 0) {
+        endMovieNumber = levelRecord->endMovieNumbers[g_EndMovieSelectionIndex];
+      }
+      else {
+        endMovieNumber = levelRecord->endMovieNumbersVariant[g_EndMovieSelectionIndex];
+      }
+      /* four zero-padded digits over the "0000" of flm\ende0000.flm */
+      g_WideNumberFormatUtf16
+                (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,endMovieNumber,(uint16_t *)(u_flm_ende0000_flm_0050df4a + 8));
+      g_EndMoviePath = (uint16_t *)u_flm_ende0000_flm_0050df4a;
+      return;
+    }
+    levelRecord++;
+    remainingRecords--;
+  } while (remainingRecords != 0);
+}
+
+/* Fills the whole framebuffer with opaque black and presents it (skipped when the buffer cannot be
+   accessed). */
+static void FrontendEndMovie_ClearAndPresentBlackFrame(void)
+{
+  if (!g_GraphicsFramebufferBeginAccess()) {
+    g_GraphicsFramebufferFillRectArgb
+              (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0
+               ,0,UI_ARGB_OPAQUE_BLACK,g_FramebufferAccess);
+    g_GraphicsFramebufferEndAccess();
+    g_GraphicsFramebufferPresent(g_FramebufferAccess);
+  }
+}
+
+/* Results page after the end movie: scores of every faction that took part, elapsed time and level title;
+   then draws frames until a results button sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED. Nothing is shown
+   when no faction took part. */
+static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
+{
+  int activeFactionCount;
+  int factionIndex;
+  uint64_t elapsedTimeUnits;
+  uint16_t *resultsText;
+  TextResourceId levelTitleResourceId;
+  FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  FrontendResultsEightColumnTemplate *firstChart;
+  uint32_t previousColumnCount;
+  int remainingColumns;
+  uint32_t *copySource;
+  uint32_t *copyDestination;
+
+  /* scores of every faction 1..7 that took part (lifecycle state not 0) */
+  activeFactionCount = 0;
+  for (factionIndex = 1; factionIndex < 8; factionIndex++) {
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
+      activeFactionCount++;
+      GameFactionRuntime_RecomputeProgressAndScoreMetrics(factionIndex,&runtimeRoot->worldRuntime);
+    }
+  }
+  if (activeFactionCount == 0) {
+    return;
+  }
+  /* row counts of the three results lists */
+  firstChart = (FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1);
+  firstChart->rowCount = activeFactionCount;
+  ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart2))->rowCount = activeFactionCount;
+  ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart3))->rowCount = activeFactionCount;
+  /* elapsed minutes of the 80 Hz clock, rounded up, shown as hours and minutes */
+  elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
+  g_LocaleFormatTimeFieldsUtf16
+            ((uint32_t)(elapsedTimeUnits / 60),(uint32_t)(elapsedTimeUnits % 60),
+             (uint16_t *)&g_EndGameElapsedTimeScratchUtf16);
+  resultsText = TextResource_Resolve(TEXT_ID_RESULTS_TITLE_TEMPLATE);
+  levelTitleResourceId = g_InGameLevelTitleTextResourceIndex + TEXT_ID_LEVEL_TITLE_BASE;
+  RichTextCommandStream_PatchPayloadBySelector(1,&g_EndGameElapsedTimeScratchUtf16,resultsText);
+  RichTextCommandStream_PatchPayloadBySelector(0,TextResource_Resolve(levelTitleResourceId),resultsText);
+  /* the continue button; 0x1025 is the second results button, local games hide it */
+  UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)runtimeRoot);
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_SECONDARY_EXIT,(UiNodeBase *)runtimeRoot);
+  }
+  /* a host with other players waits for them instead of offering continue */
+  if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL)
+     && (1 < g_FrontendPlayerRuntimeBlockCount)) {
+    UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)runtimeRoot);
+  }
+  remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  do {
+    playerBlock->factionAssignment.readyOrWaitState = 0;
+    remainingPlayerBlocks--;
+    playerBlock++;
+  } while (remainingPlayerBlocks != 0);
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    /* local game: remove column 2 (the third) of resultsChart1; the shift copies the count - 3 later ones */
+    previousColumnCount = firstChart->columnTypeCount;
+    firstChart->columnTypeCount = firstChart->columnTypeCount - 1;
+    remainingColumns = previousColumnCount - 3;
+    if (2 < previousColumnCount && remainingColumns != 0) {
+      copySource = &firstChart->columnTypes[3];
+      copyDestination = &firstChart->columnTypes[2];
+      for (; remainingColumns != 0; remainingColumns--) {
+        *copyDestination = *copySource;
+        copySource++;
+        copyDestination++;
+      }
+    }
+  }
+  do {
+    UiRootStack_InvalidateAll();
+    UiFrame_ProcessAndPresent();
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
+      FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(0xffffffff);
+    }
+  } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED) == 0);
+}
+
 /* Address: 0x00565A30.
    End of a mission: plays the end movie chosen by the current scenario's record in the loaded campaign
    (flm\endeNNNN.flm for the outcome g_EndMovieSelectionIndex and variant g_EndMovieVariantIndex) on the
@@ -2546,86 +2384,30 @@ void Frontend_PlaySelectedEndMovie(void)
 
 {
   UiRootCallbacks *rootCallbacks;
-  uint32_t previousResultCount;
-  uint64_t elapsedTimeUnits;
   InGameRuntimeRoot *runtimeRoot;
-  int32_t endMovieNumber;
-  int countOrActiveFactions;
   uint32_t playbackRateHz;
-  TextResourceId resourceId;
-  FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
-  UiPageStackControl *stack;
-  WorldRuntimeContext *worldRuntime;
-  int recordCursorOrRemaining;
-  int factionIndex;
-  uint8_t *copySource;
-  FactionRuntimeLifecycleObservedState *factionLifecycleState;
-  FrontendPlayerRuntimeRecord *playerBlock;
-  uint8_t *copyDestination;
-  bool framebufferAccessFailed;
   bool movieOpened;
-  uint16_t *resultsTextResult;
-  uint16_t *levelTitleResult;
-  
+
   runtimeRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(0);
   g_CursorVisibilityToken--;
-  if ((runtimeRoot != NULL) &&
-     (rootCallbacks = runtimeRoot->rootUi.callbacks, g_EndMoviePath != NULL)) {
+  if ((runtimeRoot != NULL) && (g_EndMoviePath != NULL)) {
+    rootCallbacks = runtimeRoot->rootUi.callbacks;
     rootCallbacks->keyboardFallback = EndMovieUiRuntime_DispatchCommandByFlags;
     rootCallbacks->frameUpdate = EndMovieUiRuntime_HandleModeTransition;
-    /* Campaign level records (CampaignLevelRecord) as in OldUnitRuntime_RebuildScenarioReplayTables: the end
-       movie number per outcome for a nonzero / zero variant index. */
     if (g_FrontendLoadedCampaignAsset != 0) {
-      countOrActiveFactions = ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->levelRecordCount;
-      recordCursorOrRemaining = (int)((CampaignAsset *)g_FrontendLoadedCampaignAsset)->levels;
-      do {
-        if (((CampaignAsset *)g_FrontendLoadedCampaignAsset)->currentLevelId == ((CampaignLevelRecord *)recordCursorOrRemaining)->levelId) {
-          if (g_EndMovieVariantIndex == 0) {
-            endMovieNumber = *(int32_t *)(recordCursorOrRemaining + offsetof(CampaignLevelRecord,endMovieNumbers) +
-                                         g_EndMovieSelectionIndex * 4);
-          }
-          else {
-            endMovieNumber = *(int32_t *)(recordCursorOrRemaining + offsetof(CampaignLevelRecord,endMovieNumbersVariant) +
-                                         g_EndMovieSelectionIndex * 4);
-          }
-          /* four zero-padded digits over the "0000" of flm\ende0000.flm */
-          g_WideNumberFormatUtf16
-                    (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,endMovieNumber,(uint16_t *)(u_flm_ende0000_flm_0050df4a + 8))
-          ;
-          g_EndMoviePath = (uint16_t *)u_flm_ende0000_flm_0050df4a;
-          break;
-        }
-        recordCursorOrRemaining = (int)((CampaignLevelRecord *)recordCursorOrRemaining + 1);
-        countOrActiveFactions--;
-      } while (countOrActiveFactions != 0);
+      FrontendEndMovie_SelectCampaignMoviePath((CampaignAsset *)g_FrontendLoadedCampaignAsset);
     }
     Movie_Close();
     /* clear both buffers to black */
-    framebufferAccessFailed = g_GraphicsFramebufferBeginAccess();
-    if (!framebufferAccessFailed) {
-      g_GraphicsFramebufferFillRectArgb
-                (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0
-                 ,0,UI_ARGB_OPAQUE_BLACK,g_FramebufferAccess);
-      g_GraphicsFramebufferEndAccess();
-      g_GraphicsFramebufferPresent(g_FramebufferAccess);
-    }
-    framebufferAccessFailed = g_GraphicsFramebufferBeginAccess();
-    if (!framebufferAccessFailed) {
-      g_GraphicsFramebufferFillRectArgb
-                (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0
-                 ,0,UI_ARGB_OPAQUE_BLACK,g_FramebufferAccess);
-      g_GraphicsFramebufferEndAccess();
-      g_GraphicsFramebufferPresent(g_FramebufferAccess);
-    }
-    movieOpened = Movie_Open(1,g_EndMoviePath,&playbackRateHz,NULL); /* rate: ECX left by Movie_Open */
+    FrontendEndMovie_ClearAndPresentBlackFrame();
+    FrontendEndMovie_ClearAndPresentBlackFrame();
+    movieOpened = Movie_Open(1,g_EndMoviePath,&playbackRateHz,NULL);
     runtimeRoot = g_InGameRuntimeRoot;
     if (movieOpened) {
       g_EndMoviePendingTicks = 0;
       g_TimerRegisterPeriodic(playbackRateHz,FrontendSession_PeriodicTick);
-      /* EDX = g_InGameRuntimeRoot + 0x17C in the original; the decompiler lost it. */
-      stack = (UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack);
-      UiPageStack_SetActiveIndex(1,stack);
+      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack));
       if (Movie_AdvanceFrame(&runtimeRoot->activeEndMovieRuntime,NULL)) {
         runtimeRoot->endMoviePlaybackState = 0;
         g_EndMoviePendingTicks = 0;
@@ -2643,91 +2425,7 @@ void Frontend_PlaySelectedEndMovie(void)
       }
       g_CursorVisibilityToken++;
       UiPageStack_SetActiveIndex(1,&runtimeRoot->endMoviePageStack);
-      recordCursorOrRemaining = 7;
-      factionLifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
-      countOrActiveFactions = 0;
-      factionIndex = 1;
-      /* scores of every faction 1..7 that took part (lifecycle state not 0) */
-      do {
-        factionLifecycleState++;
-        if (*factionLifecycleState != 0) {
-          countOrActiveFactions++;
-          GameFactionRuntime_RecomputeProgressAndScoreMetrics
-                    (factionIndex,&runtimeRoot->worldRuntime);
-        }
-        factionIndex++;
-        recordCursorOrRemaining--;
-      } while (recordCursorOrRemaining != 0);
-      if (countOrActiveFactions != 0) {
-        /* row counts of the three results lists */
-        ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->rowCount =
-             countOrActiveFactions;
-        ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart2))->rowCount =
-             countOrActiveFactions;
-        ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart3))->rowCount =
-             countOrActiveFactions;
-        /* elapsed minutes of the 80 Hz clock, rounded up, shown as hours and minutes */
-        elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
-        g_LocaleFormatTimeFieldsUtf16
-                  ((uint32_t)(elapsedTimeUnits / 60),(uint32_t)(elapsedTimeUnits % 60),
-                   (uint16_t *)&g_EndGameElapsedTimeScratchUtf16);
-        resultsTextResult = TextResource_Resolve(TEXT_ID_RESULTS_TITLE_TEMPLATE);
-        resourceId = g_InGameLevelTitleTextResourceIndex + TEXT_ID_LEVEL_TITLE_BASE;
-        RichTextCommandStream_PatchPayloadBySelector(1,&g_EndGameElapsedTimeScratchUtf16,resultsTextResult)
-        ;
-        levelTitleResult = TextResource_Resolve(resourceId);
-        RichTextCommandStream_PatchPayloadBySelector(0,levelTitleResult,resultsTextResult);
-        /* the continue button; 0x1025 is the second results button, local games hide it */
-        UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)runtimeRoot);
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_SECONDARY_EXIT,(UiNodeBase *)runtimeRoot);
-        }
-        remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-        playerBlock = g_FrontendPlayerRuntimeBlocks;
-        /* a host with other players waits for them instead of offering continue */
-        if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL)
-           && (1 < g_FrontendPlayerRuntimeBlockCount)) {
-          UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)runtimeRoot);
-          remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-          playerBlock = g_FrontendPlayerRuntimeBlocks;
-        }
-        do {
-          playerBlock->factionAssignment.readyOrWaitState = 0;
-          remainingPlayerBlocks--;
-          playerBlock++;
-        } while (remainingPlayerBlocks != 0);
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          /* local game: remove column 2 (the third) of resultsChart1; the shift copies the count - 3 later ones */
-          previousResultCount =
-               ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount;
-          ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount =
-               ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount - 1;
-          countOrActiveFactions = previousResultCount - 3;
-          if (2 < previousResultCount && countOrActiveFactions != 0) {
-            copySource =
-                 (uint8_t *)&((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->
-                 columnTypes[3];
-            copyDestination =
-                 (uint8_t *)&((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->
-                 columnTypes[2];
-            for (; countOrActiveFactions != 0; countOrActiveFactions--) {
-              *(uint32_t *)copyDestination = *(uint32_t *)copySource;
-              copySource = copySource + 4;
-              copyDestination = copyDestination + 4;
-            }
-          }
-        }
-        do {
-          UiRootStack_InvalidateAll();
-          UiFrame_ProcessAndPresent();
-          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL)
-          {
-            FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(0xffffffff);
-          }
-        } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED) == 0);
-      }
+      FrontendEndMovie_ShowResultsPage(runtimeRoot);
       g_TimerUnregisterPeriodic(FrontendSession_PeriodicTick);
       Movie_Close();
     }
@@ -2745,6 +2443,135 @@ void Frontend_PlaySelectedEndMovie(void)
 }
 
 
+/* Menu sounds of Frontend_Init: counts the two digits of "sound\menue01.sam" from 01 up to 99 into the
+   voice-set table slots 1..99 and stops at the first file that does not exist. Returns 0, or the voice-set
+   creation error. */
+static uint32_t FrontendInit_LoadMenuSounds(void)
+{
+  uint32_t *voiceSetSlot;
+  SoundSampleAsset *loadedSample;
+  DirectSoundVoiceSet *menuVoiceSet;
+  uint32_t voiceSetError;
+
+  u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] = L'0';
+  u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'1';
+  voiceSetSlot = &g_FrontendMenuSoundVoiceSetLoadBaseEntry1;
+  while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1) {
+    while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1) {
+      if (!Resource_Load((uint16_t *)u_sound_menue01_sam_00545b54,(void **)&loadedSample,NULL,NULL)) {
+        return 0;
+      }
+      voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,&menuVoiceSet);
+      if (voiceSetError != 0) {
+        Resource_Release(loadedSample);
+        return voiceSetError;
+      }
+      *voiceSetSlot = (uint32_t)menuVoiceSet;
+      Resource_Release(loadedSample);
+      u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] =
+           u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] + 1;
+      voiceSetSlot++;
+    }
+    u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] =
+         u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] + 1;
+    u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'0';
+  }
+  return 0;
+}
+
+/* Menu music of Frontend_Init: when music is enabled, loads sound\music00.sam and plays it looping at the
+   saved music gain (g_FrontendMusicVoiceSet / g_FrontendMusicActiveBuffer). Failures leave the menu silent. */
+static void FrontendInit_StartMenuMusic(void)
+{
+  uint32_t soundOptions;
+  uint32_t musicGain;
+  SoundSampleAsset *loadedSample;
+  DirectSoundVoiceSet *musicVoiceSet;
+  IDirectSoundBuffer *musicBuffer;
+
+  soundOptions = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  musicBuffer = (IDirectSoundBuffer *)g_FrontendMusicActiveBuffer;
+  if (((soundOptions & PERSISTENT_SOUND_OPTION_MUSIC) != 0) &&
+      Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e,(void **)&loadedSample,NULL,NULL)) {
+    if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
+      Resource_Release(loadedSample);
+    }
+    else {
+      g_FrontendMusicVoiceSet = (uint32_t)musicVoiceSet;
+      Resource_Release(loadedSample);
+      musicGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
+      if (!g_SoundPlayLooping(musicGain,musicGain,musicVoiceSet,&musicBuffer)) {
+        g_SoundReleaseSampleVoiceSet(musicVoiceSet);
+        g_FrontendMusicVoiceSet = 0;
+        musicBuffer = (IDirectSoundBuffer *)g_FrontendMusicActiveBuffer;
+      }
+    }
+  }
+  g_FrontendMusicActiveBuffer = (uint32_t)musicBuffer;
+}
+
+/* Fills the frontend's network-backend list with the backends' display names (0x100 bytes apart); the row
+   pointer table is networkBackendNameRows (0x005434EC), right after the control offset tables. */
+static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *frontendUiState)
+{
+  uint32_t backendCount;
+  uint32_t backendIndex;
+  uint16_t *backendDisplayName;
+
+  backendCount = g_NetworkBackendInstanceCount;
+  if (g_NetworkBackendInstanceCount == 0) {
+    return;
+  }
+  backendDisplayName = g_NetworkBackendInstanceTable->displayNameUtf16;
+  for (backendIndex = 0; backendIndex < backendCount; backendIndex++) {
+    g_FrontendTaskAssignmentControlOffsets.networkBackendNameRows[backendIndex] = (uint32_t)backendDisplayName;
+    backendDisplayName = backendDisplayName + 128; /* 0x100 bytes */
+  }
+  UiPointerList_InitializeMeasuredTextRows
+            (backendCount,(void **)g_FrontendTaskAssignmentControlOffsets.networkBackendNameRows,
+             (UiPointerListControl *)FRONTEND_UI(frontendUiState,networkProtocolList));
+}
+
+/* Installs the menu room's handlers on its 3D pointer-context control (root+0x368); they do not all match the
+   generic callback field types, hence the casts. */
+static void FrontendInit_InstallMenuRoomPointerCallbacks(FrontendModelPointerContext *pointerContext)
+{
+  typedef uint32_t FrontendModelPointerResolvedActionProc
+          (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerHitContext *);
+
+  pointerContext->keyboardFallback =
+       (bool (*)(UiKeyboardStateMask,UiActionId,struct UiRootNode *))
+       FrontendRuntime_DispatchCommandByCodeAndModifierFlags;
+  pointerContext->hoverCursorCallback =
+       (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
+  pointerContext->heldButtonCursorCallback =
+       (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
+  pointerContext->buttonPressCallback =
+       (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_PressNoOp;
+  pointerContext->buttonDragCallback =
+       (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_DragNoOp;
+  pointerContext->buttonReleaseCallback =
+       (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_ExecuteClickedRomAction;
+  pointerContext->clearTransientStateCallback = 0;
+  pointerContext->rightClickCallback =
+       (void (*)(FrontendModelPointerContext *))FrontendMenuRoom_StopCameraFlight;
+  pointerContext->renderSpinLock = (RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock;
+  pointerContext->renderSpinLockReleaseCallback = Frontend_StateTick;
+}
+
+/* Copies one saved name (PERSISTENT_SETTINGS_NAME_BYTES, 10 dwords) dword by dword. */
+static void FrontendInit_CopyNameDwords(uint32_t *destination,const uint32_t *source)
+{
+  int remainingDwords;
+
+  for (remainingDwords = PERSISTENT_SETTINGS_NAME_BYTES / sizeof(uint32_t); remainingDwords != 0;
+       remainingDwords--) {
+    *destination = *source;
+    source++;
+    destination++;
+  }
+}
+
 /* Address: 0x00546700.
    Builds the frontend (menu) at the ROM record initialRomRecordId: clears the screen, loads the central
    texture set, palette, menu sounds (sound\menueNN.sam until the first missing one), engine\zentrale.rom and
@@ -2757,58 +2584,38 @@ void Frontend_PlaySelectedEndMovie(void)
 bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
 
 {
-  SessionNetworkRoleFlags pendingBlockCountOrRoleMask;
-  IDirectSoundBuffer *musicBuffer;
   uint32_t settingValue;
-  SoundSampleAsset *loadedSample;
-  FrontendRootResourceSlots *fillCursorOrResult;
-  FrontendRootResourceSlots *frontendUiState;
-  DirectSoundVoiceSet *musicVoiceSet;
-  uint32_t *nameSlotOrSourceDwords;
-  uint32_t *settingsCopySourceDwordsB;
-  SessionNetworkRoleFlags remainingBlockCount;
-  int remainingDwords;
-  uint32_t remainingBackends;
-  uint32_t *frontendInitTemplateDwords;
-  uint16_t *backendDisplayName;
-  uint32_t *settingsCopySourceDwordsA;
   FrontendPlayerRuntimeRecord *playerBlock;
-  uint32_t *menuSoundVoiceSetSlotDwords;
-  uint32_t *settingsCopyDestDwordsA;
-  uint32_t *playerNameDestDwords;
-  uint32_t *settingsCopyDestDwordsB;
-  bool callFailed;
+  FrontendPlayerRuntimeBlockCount remainingBlockCount;
   GraphicsTextureSet *centralTextureSet;
   GraphicsPaletteAsset *centralPaletteAsset;
   uint32_t centralResourceErrorCode;
-  uint16_t *endpointTextResult;
-  uint32_t voiceSetError;
-  DirectSoundVoiceSet *menuVoiceSet;
+  uint32_t error;
+  void *centralRomAsset;
   uint32_t romLoadErrorCode;
-  uint32_t romError;
-  uint32_t allocError;
   void *allocPayload;
-  bool sampleLoaded;
+  uint32_t *zeroCursor;
+  uint32_t *templateDwords;
+  uint32_t *rootDwords;
+  int remainingDwords;
+  FrontendRootResourceSlots *frontendUiState;
   WorldRuntimeContext *worldRuntime;
-  FrontendModelPointerContext *pointerContext;
-  typedef uint32_t FrontendModelPointerResolvedActionProc
-          (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerHitContext *);
+  uint32_t *savedPlayerName;
 
   settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = settingValue >> 1;
-  /* network session (the mask test is the first loop condition): every player starts not ready */
-  playerBlock = g_FrontendPlayerRuntimeBlocks;
-  remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
-  pendingBlockCountOrRoleMask = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
-  while (pendingBlockCountOrRoleMask != SESSION_NETWORK_ROLE_LOCAL) {
-    playerBlock->factionAssignment.readyOrWaitState = 0;
-    playerBlock->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
-    playerBlock++;
-    remainingBlockCount--;
-    pendingBlockCountOrRoleMask = remainingBlockCount;
+  /* network session: every player starts not ready */
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
+    playerBlock = g_FrontendPlayerRuntimeBlocks;
+    remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
+    do {
+      playerBlock->factionAssignment.readyOrWaitState = 0;
+      playerBlock->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
+      playerBlock++;
+      remainingBlockCount--;
+    } while (remainingBlockCount != 0);
   }
-  callFailed = g_GraphicsFramebufferBeginAccess();
-  if (!callFailed) {
+  if (!g_GraphicsFramebufferBeginAccess()) {
     g_GraphicsFramebufferFillRectArgb
               (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
                ,UI_ARGB_OPAQUE_BLACK,g_FramebufferAccess); /* opaque black */
@@ -2827,229 +2634,122 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   centralTextureSet = g_GraphicsTextureSetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_gfx_00545acc,
                                                       &centralResourceErrorCode);
   if (centralTextureSet == NULL) {
-    fillCursorOrResult = (FrontendRootResourceSlots *)centralResourceErrorCode;
+    *outError = centralResourceErrorCode;
+    return false;
+  }
+  g_FrontendCentralTextureSet = (uint32_t)centralTextureSet;
+  centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_pal_00545b00,
+                                                          &centralResourceErrorCode);
+  if (centralPaletteAsset == NULL) {
+    *outError = centralResourceErrorCode;
+    return false;
+  }
+  g_FrontendCentralPaletteAsset = (uint32_t)centralPaletteAsset;
+  RichTextCommandStream_PatchPayloadBySelector
+            (0,&g_FrontendNetworkEndpointTextUtf16,TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE));
+  error = FrontendInit_LoadMenuSounds();
+  if (error != 0) {
+    *outError = error;
+    return false;
+  }
+  centralRomAsset = Package_LoadEntry((uint16_t *)u_engine_zentrale_rom_00545aa4,&romLoadErrorCode);
+  if (centralRomAsset == NULL) {
+    *outError = romLoadErrorCode;
+    return false;
+  }
+  g_FrontendCentralRomAsset = (uint32_t)centralRomAsset;
+  error = RomAsset_PrepareRecords((RomAssetHeader *)centralRomAsset);
+  if (error != 0) {
+    *outError = error;
+    return false;
+  }
+  error = g_MemoryApi.alloc(FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),&allocPayload);
+  if (error != 0) {
+    *outError = error;
+    return false;
+  }
+  /* the world object records of the 3D menu room, zeroed */
+  g_FrontendWorldObjectRecords = (WorldObjectRecord *)allocPayload;
+  zeroCursor = (uint32_t *)allocPayload;
+  for (remainingDwords = FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingDwords != 0;
+       remainingDwords--) {
+    *zeroCursor = 0;
+    zeroCursor++;
+  }
+  error = g_MemoryApi.alloc(sizeof(FrontendUiImage),&allocPayload);
+  if (error != 0) {
+    *outError = error;
+    return false;
+  }
+  frontendUiState = (FrontendRootResourceSlots *)allocPayload;
+  worldRuntime = (WorldRuntimeContext *)FRONTEND_UI(frontendUiState,menuRoomModelView);
+  templateDwords = (uint32_t *)&g_FrontendRootInitializationTemplate;
+  g_FrontendRootNode = (uint32_t)frontendUiState;
+  rootDwords = (uint32_t *)frontendUiState;
+  for (remainingDwords = sizeof(FrontendUiImage) / 4; remainingDwords != 0; remainingDwords--) {
+    *rootDwords = *templateDwords;
+    templateDwords++;
+    rootDwords++;
+  }
+  FrontendMenu_BindSharedResources(frontendUiState);
+  UiRootStack_Push(&g_UiRootCallbacks_0053DA70,(UiRootNode *)frontendUiState);
+  FrontendInit_StartMenuMusic();
+  FrontendInit_FillNetworkBackendList(frontendUiState);
+  /* the 3D pointer-context control of the menu room is the world runtime at root+0x368 */
+  FrontendInit_InstallMenuRoomPointerCallbacks((FrontendModelPointerContext *)worldRuntime);
+  RecentTextHistory_SortAndBuildPointerList
+            (5,(RecentTextHistoryPointerList *)
+               &((UiConditionalActionControl *)FRONTEND_UI(frontendUiState,chatMessageHistory))->lineCount);
+  WorldRuntime_SetTerrainLightingConfiguration(0,0,0xffffffff,0,0,0,0,0,worldRuntime);
+  WorldRuntime_AttachObjectArray(FRONTEND_WORLD_OBJECT_RECORD_COUNT,g_FrontendWorldObjectRecords,worldRuntime);
+  if (RomRuntime_BuildAllRegistryNodeTrees(worldRuntime)) {
+    /* The only failure source of RomRuntime_BuildAllRegistryNodeTrees is WorldObjectArray_AllocateFreeRecord's
+       FATAL_ERROR_GENERAL_FAILURE (object array full), passed up unchanged through
+       RomRuntime_BuildNodeTreeRecursive. */
+    *outError = FATAL_ERROR_GENERAL_FAILURE;
+    return false;
+  }
+  error = FrontendRomTransition_ActivateRecordById(initialRomRecordId,worldRuntime);
+  if (error != 0) {
+    *outError = error;
+    return false;
+  }
+  /* Saved player name into the name field and g_FrontendLocalPlayerNameUtf16 (which is also the fallback),
+     saved game name into the game-name field (10 dwords = 0x28 bytes each). */
+  savedPlayerName = PersistentSettings_GetRegionOrFallback
+                      (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_PLAYER_NAME);
+  FrontendInit_CopyNameDwords
+            ((uint32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(frontendUiState,playerNameEdit))->textBuffer,
+             savedPlayerName);
+  FrontendInit_CopyNameDwords((uint32_t *)(void *)g_FrontendLocalPlayerNameUtf16,savedPlayerName);
+  FrontendInit_CopyNameDwords
+            ((uint32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(frontendUiState,gameNameEdit))->textBuffer,
+             PersistentSettings_GetRegionOrFallback
+                       (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_GAME_NAME));
+  settingValue = PersistentSettings_Read(4,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
+  ((UiRangeSliderControl *)FRONTEND_UI(frontendUiState,maxPlayersSlider))->value = settingValue;
+  UiFrame_FlushInputAndResetPendingTicks();
+  g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
+  WorldMotionSpline_ClearCachedDerivatives();
+  g_TimerRegisterPeriodic(FRONTEND_ROM_TRANSITION_TIMER_HZ,FrontendRomTransition_AdvanceElapsedTicks);
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    fillCursorOrResult = (FrontendRootResourceSlots *)centralTextureSet;
-    g_FrontendCentralTextureSet = (FrontendRootResourceSlots *)centralTextureSet;
-    centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_pal_00545b00,
-                                                            &centralResourceErrorCode);
-    if (centralPaletteAsset == NULL) {
-      fillCursorOrResult = (FrontendRootResourceSlots *)centralResourceErrorCode;
-    }
-    else {
-      fillCursorOrResult = (FrontendRootResourceSlots *)centralPaletteAsset;
-      g_FrontendCentralPaletteAsset = (FrontendRootResourceSlots *)centralPaletteAsset;
-      endpointTextResult = TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkEndpointTextUtf16,endpointTextResult)
-      ;
-      /* Menu sounds: count the two digits of "sound\menue01.sam" from 01 up to 99 into the voice-set table
-         slots 1..99 and stop at the first file that does not exist. */
-      u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] = L'0';
-      u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'1';
-      menuSoundVoiceSetSlotDwords = &g_FrontendMenuSoundVoiceSetLoadBaseEntry1;
-      do {
-        do {
-          if (!Resource_Load((uint16_t *)u_sound_menue01_sam_00545b54,(void **)&loadedSample,NULL,NULL))
-            goto loadCentralRom;
-          voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,&menuVoiceSet);
-          fillCursorOrResult = (FrontendRootResourceSlots *)(voiceSetError != 0 ? voiceSetError
-                                                                                : (uint32_t)menuVoiceSet);
-          if (voiceSetError != 0) {
-            /* the asm swaps the stacked sample with the error (XCHG [ESP],EAX) to release it */
-            Resource_Release(loadedSample);
-            goto fail;
-          }
-          *menuSoundVoiceSetSlotDwords = (uint32_t)fillCursorOrResult;
-          Resource_Release(loadedSample);
-          u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] + 1;
-          menuSoundVoiceSetSlotDwords++;
-        } while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1);
-        u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] = u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] + 1;
-        u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'0';
-      } while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1);
-loadCentralRom:
-      fillCursorOrResult = Package_LoadEntry((uint16_t *)u_engine_zentrale_rom_00545aa4,&romLoadErrorCode);
-      if (fillCursorOrResult == NULL) {
-        fillCursorOrResult = (FrontendRootResourceSlots *)romLoadErrorCode;
-      }
-      else {
-        g_FrontendCentralRomAsset = fillCursorOrResult;
-        romError = RomAsset_PrepareRecords((RomAssetHeader *)fillCursorOrResult);
-        fillCursorOrResult = (FrontendRootResourceSlots *)romError;
-        if (romError == 0) {
-          allocError = g_MemoryApi.alloc(FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),
-                                         &allocPayload);
-          fillCursorOrResult = (FrontendRootResourceSlots *)(allocError != 0 ? allocError : (uint32_t)allocPayload);
-          if (allocError == 0) {
-            /* the world object records of the 3D menu room, zeroed */
-            g_FrontendWorldObjectRecords = (WorldObjectRecord *)fillCursorOrResult;
-            for (remainingDwords = FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingDwords != 0; remainingDwords--) {
-              ((uint8_t *)fillCursorOrResult)[0] = 0;
-              ((uint8_t *)fillCursorOrResult)[1] = 0;
-              ((uint8_t *)fillCursorOrResult)[2] = 0;
-              ((uint8_t *)fillCursorOrResult)[3] = 0;
-              fillCursorOrResult = (FrontendRootResourceSlots *)((uint8_t *)fillCursorOrResult + 4);
-            }
-            allocError = g_MemoryApi.alloc(sizeof(FrontendUiImage),&allocPayload);
-            frontendUiState = (FrontendRootResourceSlots *)(allocError != 0 ? allocError : (uint32_t)allocPayload);
-            fillCursorOrResult = frontendUiState;
-            if (allocError == 0) {
-              worldRuntime = (WorldRuntimeContext *)FRONTEND_UI(frontendUiState,menuRoomModelView);
-              frontendInitTemplateDwords = (uint32_t *)&g_FrontendRootInitializationTemplate;
-              g_FrontendRootNode = frontendUiState;
-              for (remainingDwords = sizeof(FrontendUiImage) / 4; remainingDwords != 0; remainingDwords--) {
-                *(uint32_t *)fillCursorOrResult = *frontendInitTemplateDwords;
-                frontendInitTemplateDwords = frontendInitTemplateDwords + 1;
-                fillCursorOrResult = (FrontendRootResourceSlots *)((uint32_t *)fillCursorOrResult + 1);
-              }
-              FrontendMenu_BindSharedResources(frontendUiState);
-              UiRootStack_Push(&g_UiRootCallbacks_0053DA70,(UiRootNode *)frontendUiState);
-              settingValue = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-              musicBuffer = g_FrontendMusicActiveBuffer;
-              if ((settingValue & PERSISTENT_SOUND_OPTION_MUSIC) != 0) {
-                sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e,(void **)&loadedSample,
-                                             NULL,NULL);
-                musicBuffer = g_FrontendMusicActiveBuffer;
-                if (sampleLoaded) {
-                  if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
-                    Resource_Release(loadedSample);
-                    musicBuffer = g_FrontendMusicActiveBuffer;
-                  }
-                  else {
-                    g_FrontendMusicVoiceSet = musicVoiceSet;
-                    Resource_Release(loadedSample);
-                    settingValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
-                    if (!g_SoundPlayLooping(settingValue,settingValue,musicVoiceSet,&musicBuffer)) {
-                      g_SoundReleaseSampleVoiceSet(musicVoiceSet);
-                      g_FrontendMusicVoiceSet = NULL;
-                      musicBuffer = g_FrontendMusicActiveBuffer;
-                    }
-                  }
-                }
-              }
-              g_FrontendMusicActiveBuffer = musicBuffer;
-              /* Fill the network-backend list with the backends' display names (0x100 bytes apart). The row
-                 pointer table is networkBackendNameRows (0x005434EC), right after the control offset tables;
-                 the cursor starts one slot before it and is advanced before each store. */
-              settingValue = g_NetworkBackendInstanceCount;
-              nameSlotOrSourceDwords = g_FrontendTaskAssignmentControlOffsets.networkBackendNameRows - 1;
-              if (g_NetworkBackendInstanceCount != 0) {
-                backendDisplayName = g_NetworkBackendInstanceTable->displayNameUtf16;
-                remainingBackends = g_NetworkBackendInstanceCount;
-                do {
-                  nameSlotOrSourceDwords = nameSlotOrSourceDwords + 1;
-                  *nameSlotOrSourceDwords = (uint32_t)backendDisplayName;
-                  backendDisplayName = backendDisplayName + 128; /* 0x100 bytes */
-                  remainingBackends--;
-                } while (remainingBackends != 0);
-                UiPointerList_InitializeMeasuredTextRows
-                          (settingValue,(void **)g_FrontendTaskAssignmentControlOffsets.networkBackendNameRows,
-                           (UiPointerListControl *)FRONTEND_UI(frontendUiState,networkProtocolList));
-              }
-              /* The 3D pointer-context control lives at root+0x368 (EBX = EDI+0x368 in the asm); the installed
-                 handlers do not all match the generic callback field types, hence the casts. */
-              pointerContext = (FrontendModelPointerContext *)worldRuntime;
-              pointerContext->keyboardFallback =
-                   (bool (*)(UiKeyboardStateMask,UiActionId,struct UiRootNode *))
-                   FrontendRuntime_DispatchCommandByCodeAndModifierFlags;
-              pointerContext->hoverCursorCallback =
-                   (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
-              pointerContext->heldButtonCursorCallback =
-                   (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
-              pointerContext->buttonPressCallback =
-                   (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_PressNoOp;
-              pointerContext->buttonDragCallback =
-                   (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_DragNoOp;
-              pointerContext->buttonReleaseCallback =
-                   (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_ExecuteClickedRomAction;
-              pointerContext->clearTransientStateCallback = 0;
-              pointerContext->rightClickCallback =
-                   (void (*)(FrontendModelPointerContext *))FrontendMenuRoom_StopCameraFlight;
-              pointerContext->renderSpinLock = (RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock;
-              pointerContext->renderSpinLockReleaseCallback = Frontend_StateTick;
-              RecentTextHistory_SortAndBuildPointerList
-                        (5,(RecentTextHistoryPointerList *)
-                           &((UiConditionalActionControl *)FRONTEND_UI(frontendUiState,chatMessageHistory))->lineCount);
-              WorldRuntime_SetTerrainLightingConfiguration(0,0,0xffffffff,0,0,0,0,0,worldRuntime);
-              WorldRuntime_AttachObjectArray(FRONTEND_WORLD_OBJECT_RECORD_COUNT,g_FrontendWorldObjectRecords,worldRuntime);
-              callFailed = RomRuntime_BuildAllRegistryNodeTrees(worldRuntime);
-              /* EAX when RomRuntime_BuildAllRegistryNodeTrees fails: its only failure source is
-                 WorldObjectArray_AllocateFreeRecord's FATAL_ERROR_GENERAL_FAILURE (object array full), passed up unchanged through
-                 RomRuntime_BuildNodeTreeRecursive. */
-              fillCursorOrResult = (FrontendRootResourceSlots *)FATAL_ERROR_GENERAL_FAILURE;
-              if (!callFailed) {
-                romError = FrontendRomTransition_ActivateRecordById(initialRomRecordId,worldRuntime);
-                fillCursorOrResult = (FrontendRootResourceSlots *)romError;
-                if (romError == 0) {
-                  /* Saved player name into the name field and g_FrontendLocalPlayerNameUtf16 (which is also
-                     the fallback), saved game name into the game-name field (10 dwords = 0x28 bytes each). */
-                  nameSlotOrSourceDwords = PersistentSettings_GetRegionOrFallback
-                                     (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,
-                                      PERSISTENT_SETTING_PLAYER_NAME);
-                  settingsCopySourceDwordsA = nameSlotOrSourceDwords;
-                  settingsCopyDestDwordsA = (uint32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(frontendUiState,playerNameEdit))->textBuffer;
-                  for (remainingDwords = PERSISTENT_SETTINGS_NAME_BYTES / sizeof(uint32_t); remainingDwords != 0;
-                       remainingDwords--) {
-                    *settingsCopyDestDwordsA = *settingsCopySourceDwordsA;
-                    settingsCopySourceDwordsA++;
-                    settingsCopyDestDwordsA++;
-                  }
-                  playerNameDestDwords = (void *)g_FrontendLocalPlayerNameUtf16;
-                  for (remainingDwords = PERSISTENT_SETTINGS_NAME_BYTES / sizeof(uint32_t); remainingDwords != 0;
-                       remainingDwords--) {
-                    *playerNameDestDwords = *nameSlotOrSourceDwords;
-                    nameSlotOrSourceDwords++;
-                    playerNameDestDwords++;
-                  }
-                  settingsCopySourceDwordsB =
-                       PersistentSettings_GetRegionOrFallback
-                                 (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,
-                                  PERSISTENT_SETTING_GAME_NAME);
-                  settingsCopyDestDwordsB = (uint32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(frontendUiState,gameNameEdit))->textBuffer;
-                  for (remainingDwords = PERSISTENT_SETTINGS_NAME_BYTES / sizeof(uint32_t); remainingDwords != 0;
-                       remainingDwords--) {
-                    *settingsCopyDestDwordsB = *settingsCopySourceDwordsB;
-                    settingsCopySourceDwordsB++;
-                    settingsCopyDestDwordsB++;
-                  }
-                  settingValue = PersistentSettings_Read(4,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
-                  ((UiRangeSliderControl *)FRONTEND_UI(frontendUiState,maxPlayersSlider))->value = settingValue;
-                  UiFrame_FlushInputAndResetPendingTicks();
-                  g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
-                  WorldMotionSpline_ClearCachedDerivatives();
-                  g_TimerRegisterPeriodic(FRONTEND_ROM_TRANSITION_TIMER_HZ,FrontendRomTransition_AdvanceElapsedTicks);
-                  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-                      SESSION_NETWORK_ROLE_LOCAL) {
-                    FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
-                              (g_LocalPlayerRuntimeId,0,0,0);
-                  }
-                  else {
-                    /* the same "ready" report, sent through the network command queue */
-                    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
-                  }
-                  g_SpinLockRelease(&g_FrontendStateTickSpinLock);
-                  do {
-                    UiNode_InvalidateRoot((UiNodeBase *)frontendUiState);
-                    UiFrame_Update(0);
-                    UiFrame_Draw();
-                    g_GraphicsFramebufferPresent(g_FramebufferAccess);
-                    Frontend_StateTick();
-                  } while ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
-                  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
-                  UiFrame_FlushInputAndResetPendingTicks();
-                  return true;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    /* the same "ready" report, sent through the network command queue */
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
   }
-fail:
-  *outError = (uint32_t)fillCursorOrResult;
-  return false;
+  g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+  do {
+    UiNode_InvalidateRoot((UiNodeBase *)frontendUiState);
+    UiFrame_Update(0);
+    UiFrame_Draw();
+    g_GraphicsFramebufferPresent(g_FramebufferAccess);
+    Frontend_StateTick();
+  } while ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
+  UiFrame_FlushInputAndResetPendingTicks();
+  return true;
 }
 
 
@@ -3409,24 +3109,17 @@ void FrontendFactionSetup_ChooseFaction
           FrontendFactionAssignmentIndex rowIndex)
 
 {
-  SessionNetworkRoleFlags remainingBlockCount;
-  SessionNetworkRoleFlags pendingBlockCountOrRoleMask;
+  FrontendPlayerRuntimeBlockCount remainingBlockCount;
   uint32_t readyStateGeneration;
-  SessionNetworkRoleFlags generationCursor;
   UiNodeBase *selectedControl;
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   FrontendPlayerRuntimeRecord *matchedPlayerBlock;
-  
+
   selectedControl =
        THANDOR_UI_AT(g_FrontendRootNode,
                      g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex]);
-  generationCursor = 7;
   if ((((UiSelectableControl *)selectedControl)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
     if (playerRuntimeId == g_LocalPlayerRuntimeId) {
-      /* an empty count-down from 7, kept from the original */
-      do {
-        generationCursor--;
-      } while (generationCursor != 0);
       UiSelectableGroup_SelectExclusive(7,selectedControl,
           THANDOR_UI_AT(g_FrontendRootNode,
                         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[0]),
@@ -3442,19 +3135,22 @@ void FrontendFactionSetup_ChooseFaction
                         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[5]),
           THANDOR_UI_AT(g_FrontendRootNode,
                         g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[6]));
-      generationCursor = 0;
     }
     readyStateGeneration = g_FrontendFactionAssignmentReadyStateGeneration;
-    remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
-    /* network game: search the player's record; when the count runs out first, the first record is used */
-    pendingBlockCountOrRoleMask = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
-    for (playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
-        (matchedPlayerBlock = g_FrontendPlayerRuntimeBlocks, pendingBlockCountOrRoleMask != SESSION_NETWORK_ROLE_LOCAL &&
-        (generationCursor = remainingBlockCount, matchedPlayerBlock = playerBlockCursor, playerRuntimeId != playerBlockCursor->playerRuntimeId));
-        playerBlockCursor++) {
-      generationCursor = remainingBlockCount - 1;
-      remainingBlockCount = generationCursor;
-      pendingBlockCountOrRoleMask = generationCursor;
+    /* network game: search the player's record; when the count runs out first, the first record is used
+       (as it is in a local game) */
+    matchedPlayerBlock = g_FrontendPlayerRuntimeBlocks;
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
+      remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
+      playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+      do {
+        if (playerRuntimeId == playerBlockCursor->playerRuntimeId) {
+          matchedPlayerBlock = playerBlockCursor;
+          break;
+        }
+        remainingBlockCount--;
+        playerBlockCursor++;
+      } while (remainingBlockCount != 0);
     }
     matchedPlayerBlock->factionAssignment.factionAssignmentIndex = rowIndex + 1;
     matchedPlayerBlock->factionAssignment.readyOrWaitState = readyStateGeneration;

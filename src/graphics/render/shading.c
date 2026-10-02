@@ -614,49 +614,33 @@ MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
 
 {
   PackedRgb24 packedColor;
-  int64_t axisDeltaSquared;
-  int remainingHigh;
-  uint32_t remainingLowOrSquareLow;
   int axisDelta;
-  uint32_t squareLow;
+  int64_t remainingQ24;
+  uint32_t radiusScale;
   GraphicsShadingRecordCount recordsRemaining;
-  uint32_t remainingLowOrRadiusScale;
   GraphicsShadingRuntimeRecord *shadingRecord;
   uint64_t scaledLight;
-  
+
   shadingRecord = g_GraphicsShadingCompactRecords;
   for (recordsRemaining = g_GraphicsShadingCompactRecordCount; recordsRemaining != 0; recordsRemaining--) {
     if (shadingRecord->targetRadiusQ12 != 0) {
-      /* 64-bit radius^2 - dx^2 - dy^2 - dz^2, giving up as soon as it turns negative */
-      squareLow = (uint32_t)shadingRecord->squaredRadiusQ24;
-      remainingHigh = worldPointQ12->x - shadingRecord->worldXQ12;
-      axisDeltaSquared = (int64_t)remainingHigh * (int64_t)remainingHigh;
-      remainingLowOrSquareLow = (uint32_t)axisDeltaSquared;
-      remainingLowOrRadiusScale = squareLow - remainingLowOrSquareLow;
-      remainingHigh = (((int *)&shadingRecord->squaredRadiusQ24)[1] -
-              (int)((uint64_t)axisDeltaSquared >> 32)) - (uint32_t)(squareLow < remainingLowOrSquareLow);
-      if (-1 < remainingHigh) {
+      /* 64-bit radius^2 - dx^2 - dy^2 - dz^2 (two's complement), giving up as soon as it turns negative */
+      axisDelta = worldPointQ12->x - shadingRecord->worldXQ12;
+      remainingQ24 = (int64_t)(shadingRecord->squaredRadiusQ24 - (uint64_t)((int64_t)axisDelta * (int64_t)axisDelta));
+      if (remainingQ24 >= 0) {
         axisDelta = worldPointQ12->y - shadingRecord->worldYQ12;
-        axisDeltaSquared = (int64_t)axisDelta * (int64_t)axisDelta;
-        squareLow = (uint32_t)axisDeltaSquared;
-        remainingLowOrSquareLow = remainingLowOrRadiusScale - squareLow;
-        remainingHigh = (remainingHigh - (int)((uint64_t)axisDeltaSquared >> 32)) -
-                        (uint32_t)(remainingLowOrRadiusScale < squareLow);
-        if (-1 < remainingHigh) {
+        remainingQ24 = remainingQ24 - (int64_t)axisDelta * (int64_t)axisDelta;
+        if (remainingQ24 >= 0) {
           axisDelta = worldPointQ12->z - shadingRecord->worldZQ12;
-          axisDeltaSquared = (int64_t)axisDelta * (int64_t)axisDelta;
-          squareLow = (uint32_t)axisDeltaSquared;
-          remainingHigh = (remainingHigh - (int)((uint64_t)axisDeltaSquared >> 32)) -
-                          (uint32_t)(remainingLowOrSquareLow < squareLow);
-          if (-1 < remainingHigh) {
+          remainingQ24 = remainingQ24 - (int64_t)axisDelta * (int64_t)axisDelta;
+          if (remainingQ24 >= 0) {
             packedColor = shadingRecord->packedColorRgbActive;
-            remainingLowOrRadiusScale = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
-                    (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
-            if (remainingLowOrRadiusScale != 0) {
+            /* bits 12..43 of radius^2 */
+            radiusScale = (uint32_t)((uint64_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT);
+            if (radiusScale != 0) {
+              /* bits 5..36 of the remainder, divided unsigned */
               scaledLight = pmulhw(Shading_DuplicateBytesToWordLanes(packedColor,2),
-                              g_PackedLightingLookupTable[(remainingHigh * (1 << 27) |
-                                                           remainingLowOrSquareLow - squareLow >> 5) /
-                                                          remainingLowOrRadiusScale]);
+                              g_PackedLightingLookupTable[(uint32_t)(remainingQ24 >> 5) / radiusScale]);
               packedLightAccumulator = paddusw(packedLightAccumulator,scaledLight);
             }
           }
@@ -782,44 +766,37 @@ void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ1
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12)
 
 {
-  int deltaXRadiusOrCounter;
+  int deltaXQ12;
   int deltaYQ12;
   int deltaZQ12;
+  int combinedRadiusQ12;
   uint32_t sourceRecordsRemaining;
   GraphicsShadingRuntimeRecord *sourceRecordCursor;
   GraphicsShadingRuntimeRecord *destinationRecordCursor;
-  int64_t combinedRadiusSquaredQ24;
-  int64_t distanceSquaredQ24;
-  
+  uint64_t combinedRadiusSquaredQ24;
+  uint64_t distanceSquaredQ24;
+
   sourceRecordCursor = g_GraphicsShadingCompactRecords;
   destinationRecordCursor = g_GraphicsShadingNearbyRecords;
   g_GraphicsShadingNearbyRecordCount = 0;
   for (sourceRecordsRemaining = g_GraphicsShadingCompactRecordCount; sourceRecordsRemaining != 0;
       sourceRecordsRemaining--) {
-    deltaXRadiusOrCounter = worldXQ12 - sourceRecordCursor->worldXQ12;
+    deltaXQ12 = worldXQ12 - sourceRecordCursor->worldXQ12;
     deltaYQ12 = worldYQ12 - sourceRecordCursor->worldYQ12;
     deltaZQ12 = worldZQ12 - sourceRecordCursor->worldZQ12;
-    distanceSquaredQ24 =
-         (int64_t)deltaYQ12 * (int64_t)deltaYQ12 + (int64_t)deltaXRadiusOrCounter * (int64_t)deltaXRadiusOrCounter +
-         (int64_t)deltaZQ12 * (int64_t)deltaZQ12;
-    deltaXRadiusOrCounter = queryRadiusQ12 + sourceRecordCursor->targetRadiusQ12;
-    combinedRadiusSquaredQ24 = (int64_t)deltaXRadiusOrCounter * (int64_t)deltaXRadiusOrCounter;
-    if ((int)(((int)((uint64_t)combinedRadiusSquaredQ24 >> 32) -
-              (int)((uint64_t)distanceSquaredQ24 >> 32)) -
-             (uint32_t)((uint32_t)combinedRadiusSquaredQ24 < (uint32_t)distanceSquaredQ24)) < 0) {
-      sourceRecordCursor++;
-    }
-    else {
+    /* sums wrap modulo 2^64 */
+    distanceSquaredQ24 = (uint64_t)((int64_t)deltaYQ12 * (int64_t)deltaYQ12) +
+                         (uint64_t)((int64_t)deltaXQ12 * (int64_t)deltaXQ12) +
+                         (uint64_t)((int64_t)deltaZQ12 * (int64_t)deltaZQ12);
+    combinedRadiusQ12 = queryRadiusQ12 + sourceRecordCursor->targetRadiusQ12;
+    combinedRadiusSquaredQ24 = (uint64_t)((int64_t)combinedRadiusQ12 * (int64_t)combinedRadiusQ12);
+    /* signed 64-bit test of combinedRadius^2 - distance^2 >= 0 */
+    if ((int64_t)(combinedRadiusSquaredQ24 - distanceSquaredQ24) >= 0) {
       g_GraphicsShadingNearbyRecordCount++;
-      /* copy the whole 0x40-byte record dword by dword (REP MOVSD); the source cursor advances with it */
-      for (deltaXRadiusOrCounter = sizeof(GraphicsShadingRuntimeRecord) / 4; deltaXRadiusOrCounter != 0;
-           deltaXRadiusOrCounter--) {
-        destinationRecordCursor->worldXQ12 = sourceRecordCursor->worldXQ12;
-        sourceRecordCursor = (GraphicsShadingRuntimeRecord *)&sourceRecordCursor->worldYQ12;
-        destinationRecordCursor =
-             (GraphicsShadingRuntimeRecord *)&destinationRecordCursor->worldYQ12;
-      }
+      *destinationRecordCursor = *sourceRecordCursor;
+      destinationRecordCursor++;
     }
+    sourceRecordCursor++;
   }
   return;
 }
@@ -837,98 +814,99 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
           GraphicsPixelDimension textureDimension)
 
 {
-  GraphicsGeneratedTextureAssetOrEntry *allocationCursor;
-  AssetMagic paletteEntry;
-  uint32_t allocationSize;
+  void *gridScratch;
+  GraphicsTextureSourceAsset *asset;
+  uint32_t *dwordCursor;
+  uint32_t gridByteCount;
+  uint32_t gridDwordCount;
+  uint32_t assetByteCount;
   uint32_t dwordsRemaining;
-  int counterOrGridOrigin;
+  PackedArgb32 paletteArgb;
+  GraphicsTexturePaletteEntry *paletteEntry;
+  int paletteEntriesRemaining;
+  GraphicsTextureSourceEntry *sourceEntry;
   AssetRelativeOffset pixelDataOffset;
-  GraphicsGeneratedTextureAssetOrEntry *entryCursor;
+  int gridOriginCells;
   uint32_t allocError;
   GraphicsTextureSet *createdTextureSet;
   uint32_t textureSetError;
 
-  allocationSize = gridHalfSize * 2 * gridHalfSize * 2;
-  allocError = g_MemoryApi.alloc(allocationSize,(void **)&allocationCursor);
+  gridByteCount = gridHalfSize * 2 * gridHalfSize * 2;
+  allocError = g_MemoryApi.alloc(gridByteCount,&gridScratch);
   if (allocError != 0) {
-    allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)allocError;
+    return allocError;
   }
-  else {
-    allocationSize = allocationSize >> 2;
-    g_GraphicsShadingGridScratchInterior = (pointer)((int)allocationCursor + allocationSize + (gridHalfSize >> 1));
-    g_GraphicsShadingGridScratch = allocationCursor;
-    for (; allocationSize != 0; allocationSize--) {
-      (allocationCursor->asset).common.magic = 0;
-      allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)
-               &(allocationCursor->asset).common.allocationSizeBytes;
-    }
-    /* gfx layout: header and palette up to 0xA00, then one 0x20-byte source entry per image, then the pixels */
-    allocationSize = (textureDimension * textureDimension + GFX_SUBRESOURCE_RECORD_SIZE) * subresourceCount +
-                     GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
-    allocError = g_MemoryApi.alloc(allocationSize,(void **)&allocationCursor);
-    if (allocError != 0) {
-      allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)allocError;
-    }
-    else {
-      entryCursor = allocationCursor;
-      g_GraphicsShadingGeneratedAsset = (GraphicsTextureSourceAsset *)allocationCursor;
-      for (dwordsRemaining = allocationSize >> 2; dwordsRemaining != 0; dwordsRemaining--) {
-        (entryCursor->asset).common.magic = 0;
-        entryCursor = (GraphicsGeneratedTextureAssetOrEntry *)
-                 &(entryCursor->asset).common.allocationSizeBytes;
-      }
-      (allocationCursor->asset).common.magic = ASSET_MAGIC_GFX;
-      (allocationCursor->asset).common.allocationSizeBytes = allocationSize;
-      (allocationCursor->asset).tableDescriptor.subresourceCount = subresourceCount;
-      (allocationCursor->asset).tableDescriptor.paletteBankCount = 1;
-      (allocationCursor->asset).tableDescriptor.subresourceTableOffset = GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
-      /* palette at +0x200: 256 ARGB entries 8 bytes apart (up to 0xA00), white with alpha = index */
-      paletteEntry = ARGB8888_RGB_MASK;
-      entryCursor = allocationCursor + 1;
-      counterOrGridOrigin = GRAPHICS_PALETTE_BANK_ENTRIES;
-      do {
-        (entryCursor->asset).common.magic = paletteEntry;
-        paletteEntry = paletteEntry + ARGB8888_ALPHA_ONE;
-        entryCursor = (GraphicsGeneratedTextureAssetOrEntry *)
-                 &(entryCursor->asset).common.formatVersion;
-        counterOrGridOrigin--;
-      } while (counterOrGridOrigin != 0);
-      g_GraphicsShadingSubresourceCount = subresourceCount;
-      entryCursor = allocationCursor + 5; /* source entry table at 0xA00 */
-      pixelDataOffset = subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE + GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
-      do {
-        (entryCursor->asset).common.magic = textureDimension;
-        (entryCursor->asset).common.allocationSizeBytes = textureDimension;
-        (entryCursor->asset).common.formatVersion = 0;
-        (entryCursor->sourceEntry).dataOffset = pixelDataOffset;
-        (entryCursor->asset).common.buildMetadata.timestamps.timeValue0 = 0;
-        (entryCursor->asset).common.buildMetadata.timestamps.dateValue0 = 0;
-        (entryCursor->asset).common.buildMetadata.timestamps.timeValue1 = textureDimension;
-        (entryCursor->asset).common.buildMetadata.timestamps.dateValue1 = textureDimension;
-        pixelDataOffset = pixelDataOffset + textureDimension * textureDimension;
-        entryCursor = (GraphicsGeneratedTextureAssetOrEntry *)
-                 &(entryCursor->asset).common.buildMetadata.timestamps.timeValue2;
-        subresourceCount--;
-      } while (subresourceCount != 0);
-      g_GraphicsShadingTextureDimension = textureDimension;
-      g_GraphicsShadingGridHalfSize = gridHalfSize;
-      /* grid cells per texture pixel in Q20, and the grid origin (gridHalfSize / 2 - 1 cells) in Q12 */
-      g_GraphicsShadingGridStepQ20 =
-           (uint32_t)(((uint64_t)gridHalfSize * (1 << Q20_SHIFT)) / (uint64_t)textureDimension);
-      counterOrGridOrigin = ((int)gridHalfSize >> 1) - 1;
-      g_GraphicsShadingPositiveGridOriginQ12 = counterOrGridOrigin * Q12_ONE;
-      g_GraphicsShadingNegativeGridOriginQ12 = counterOrGridOrigin * -Q12_ONE;
-      g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
-      createdTextureSet = g_GraphicsCreateTextureSet(g_GraphicsShadingGeneratedAsset,&textureSetError);
-      if (createdTextureSet != NULL) {
-        g_GraphicsShadingTextureSet = createdTextureSet;
-        return 0;
-      }
-      g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
-      allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)textureSetError;
-    }
+  gridDwordCount = gridByteCount >> 2;
+  /* interior: gridDwordCount = gridHalfSize^2 bytes = gridHalfSize / 2 rows of 2 * gridHalfSize bytes, then
+     gridHalfSize / 2 columns in */
+  g_GraphicsShadingGridScratchInterior = (pointer)((uint8_t *)gridScratch + gridDwordCount + (gridHalfSize >> 1));
+  g_GraphicsShadingGridScratch = gridScratch;
+  dwordCursor = (uint32_t *)gridScratch;
+  for (dwordsRemaining = gridDwordCount; dwordsRemaining != 0; dwordsRemaining--) {
+    *dwordCursor = 0;
+    dwordCursor++;
   }
-  return (uint32_t)allocationCursor;
+  /* gfx layout: header and palette up to 0xA00, then one 0x20-byte source entry per image, then the pixels */
+  assetByteCount = (textureDimension * textureDimension + GFX_SUBRESOURCE_RECORD_SIZE) * subresourceCount +
+                   GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
+  allocError = g_MemoryApi.alloc(assetByteCount,(void **)&asset);
+  if (allocError != 0) {
+    return allocError;
+  }
+  g_GraphicsShadingGeneratedAsset = asset;
+  dwordCursor = (uint32_t *)asset;
+  for (dwordsRemaining = assetByteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
+    *dwordCursor = 0;
+    dwordCursor++;
+  }
+  asset->common.magic = ASSET_MAGIC_GFX;
+  asset->common.allocationSizeBytes = assetByteCount;
+  asset->tableDescriptor.subresourceCount = subresourceCount;
+  asset->tableDescriptor.paletteBankCount = 1;
+  asset->tableDescriptor.subresourceTableOffset = GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
+  /* palette at +0x200: 256 ARGB entries 8 bytes apart (up to 0xA00), white with alpha = index */
+  paletteArgb = ARGB8888_RGB_MASK;
+  paletteEntry = (GraphicsTexturePaletteEntry *)((uint8_t *)asset + GFX_ASSET_HEADER_SIZE);
+  for (paletteEntriesRemaining = GRAPHICS_PALETTE_BANK_ENTRIES; paletteEntriesRemaining != 0;
+       paletteEntriesRemaining--) {
+    paletteEntry->argb8888 = paletteArgb;
+    paletteArgb = paletteArgb + ARGB8888_ALPHA_ONE;
+    paletteEntry++;
+  }
+  g_GraphicsShadingSubresourceCount = subresourceCount;
+  /* source entry table at 0xA00 */
+  sourceEntry = (GraphicsTextureSourceEntry *)((uint8_t *)asset + GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
+  pixelDataOffset = subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE + GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
+  /* Original quirk: the count is tested at the end, so subresourceCount 0 would wrap around */
+  do {
+    sourceEntry->logicalWidth = textureDimension;
+    sourceEntry->logicalHeight = textureDimension;
+    sourceEntry->paletteIndex = 0;
+    sourceEntry->dataOffset = pixelDataOffset;
+    sourceEntry->originX = 0;
+    sourceEntry->originY = 0;
+    sourceEntry->pixelWidth = textureDimension;
+    sourceEntry->pixelHeight = textureDimension;
+    pixelDataOffset = pixelDataOffset + textureDimension * textureDimension;
+    sourceEntry++;
+    subresourceCount--;
+  } while (subresourceCount != 0);
+  g_GraphicsShadingTextureDimension = textureDimension;
+  g_GraphicsShadingGridHalfSize = gridHalfSize;
+  /* grid cells per texture pixel in Q20, and the grid origin (gridHalfSize / 2 - 1 cells) in Q12 */
+  g_GraphicsShadingGridStepQ20 =
+       (uint32_t)(((uint64_t)gridHalfSize * (1 << Q20_SHIFT)) / (uint64_t)textureDimension);
+  gridOriginCells = ((int)gridHalfSize >> 1) - 1;
+  g_GraphicsShadingPositiveGridOriginQ12 = gridOriginCells * Q12_ONE;
+  g_GraphicsShadingNegativeGridOriginQ12 = gridOriginCells * -Q12_ONE;
+  g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
+  createdTextureSet = g_GraphicsCreateTextureSet(g_GraphicsShadingGeneratedAsset,&textureSetError);
+  if (createdTextureSet == NULL) {
+    g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
+    return textureSetError;
+  }
+  g_GraphicsShadingTextureSet = createdTextureSet;
+  return 0;
 }
 
 
@@ -1058,26 +1036,29 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddre
 {
   int vertexCount;
   int triangleCount;
-  GraphicsFixedVec3 *recordCursor;
+  uint8_t *recordCursor;
+  GraphicsTriangleInput *triangle;
 
   vertexCount = ((ModelMeshHeader *)meshRecord)->vertexCount;
   triangleCount = ((ModelMeshHeader *)meshRecord)->triangleCount;
-  if (((((ModelMeshHeader *)meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) == 0) &&
-     (recordCursor = (GraphicsFixedVec3 *)(meshRecord + sizeof(ModelMeshHeader)), vertexCount != 0)) {
-    do {
-      GraphicsShadingGeneratedTexture_TransformPointXYQuantized
-                ((GraphicsFixedVec2 *)&recordCursor[2].z,recordCursor,
-                 &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
-      recordCursor = (GraphicsFixedVec3 *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
-      vertexCount--;
-    } while (vertexCount != 0);
-    for (; triangleCount != 0; triangleCount--) {
-      GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-                ((GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
-                 (GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex1 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
-                 (GraphicsFixedVec2 *)(recordCursor->x + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET));
-      recordCursor = (GraphicsFixedVec3 *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
-    }
+  if ((((ModelMeshHeader *)meshRecord)->flags & MODEL_MESH_SOFT_SHADOW) != 0 || vertexCount == 0) {
+    return;
+  }
+  recordCursor = (uint8_t *)meshRecord + sizeof(ModelMeshHeader);
+  for (; vertexCount != 0; vertexCount--) {
+    GraphicsShadingGeneratedTexture_TransformPointXYQuantized
+              ((GraphicsFixedVec2 *)(recordCursor + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+               (GraphicsFixedVec3 *)recordCursor,
+               &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
+    recordCursor = recordCursor + MODEL_MESH_RECORD_SIZE;
+  }
+  for (; triangleCount != 0; triangleCount--) {
+    triangle = (GraphicsTriangleInput *)recordCursor;
+    GraphicsShadingGeneratedTexture_RasterizeTriangleMask
+              ((GraphicsFixedVec2 *)((uint8_t *)triangle->vertex2 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+               (GraphicsFixedVec2 *)((uint8_t *)triangle->vertex1 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET),
+               (GraphicsFixedVec2 *)((uint8_t *)triangle->vertex0 + MODEL_MESH_VERTEX_SHADOW_XY_OFFSET));
+    recordCursor = recordCursor + MODEL_MESH_RECORD_SIZE;
   }
   return;
 }
@@ -1093,12 +1074,13 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNo
 
 {
   GraphicsFixedVec3 *nodeTranslation;
-  GraphicsWorldCoordinateQ12 *translationComponent;
   ModelResource *resourceView;
   GraphicsWorldCoordinateQ12 originX;
   GraphicsWorldCoordinateQ12 originY;
   GraphicsWorldCoordinateQ12 originZ;
-  int offsetCountOrChildIndex;
+  int meshGroupOffset;
+  int meshesRemaining;
+  int childIndex;
   uint32_t childrenRemaining;
   uint8_t *meshRecord;
 
@@ -1107,41 +1089,35 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNo
   originX = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
   /* the node translation is made relative to the shadow origin only for the compose, then restored */
   nodeTranslation = &(modelNode->worldTransform).translation;
-  nodeTranslation->x = nodeTranslation->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  translationComponent = &(modelNode->worldTransform).translation.y;
-  *translationComponent = *translationComponent - originY;
-  translationComponent = &(modelNode->worldTransform).translation.z;
-  *translationComponent = *translationComponent - originZ;
+  nodeTranslation->x = nodeTranslation->x - originX;
+  nodeTranslation->y = nodeTranslation->y - originY;
+  nodeTranslation->z = nodeTranslation->z - originZ;
   GraphicsShadingGeneratedTexture_ComposeTransform
             (&g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform,
              &modelNode->worldTransform,
              &g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform);
-  nodeTranslation = &(modelNode->worldTransform).translation;
   nodeTranslation->x = nodeTranslation->x + originX;
-  translationComponent = &(modelNode->worldTransform).translation.y;
-  *translationComponent = *translationComponent + originY;
-  translationComponent = &(modelNode->worldTransform).translation.z;
-  *translationComponent = *translationComponent + originZ;
+  nodeTranslation->y = nodeTranslation->y + originY;
+  nodeTranslation->z = nodeTranslation->z + originZ;
   resourceView = (modelNode->modelPayload).modelResource;
   /* the shadow mesh group: a ModelMeshGroupHeader, then the mesh records from +0x20, each starting with its
      own size */
-  offsetCountOrChildIndex = resourceView->shadowMeshGroupOffset;
-  if (offsetCountOrChildIndex != 0) {
-    meshRecord = (uint8_t *)resourceView + offsetCountOrChildIndex + sizeof(ModelMeshGroupHeader);
-    for (offsetCountOrChildIndex = ((ModelMeshGroupHeader *)((uint8_t *)resourceView +
-                                                             offsetCountOrChildIndex))->meshCount;
-         offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
+  meshGroupOffset = resourceView->shadowMeshGroupOffset;
+  if (meshGroupOffset != 0) {
+    meshRecord = (uint8_t *)resourceView + meshGroupOffset + sizeof(ModelMeshGroupHeader);
+    for (meshesRemaining = ((ModelMeshGroupHeader *)((uint8_t *)resourceView + meshGroupOffset))->meshCount;
+         meshesRemaining != 0; meshesRemaining--) {
       GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh
                 ((ModelMeshGroupAddress32)meshRecord);
       meshRecord = meshRecord + ((ModelMeshHeader *)meshRecord)->byteSize;
     }
   }
-  offsetCountOrChildIndex = 0;
+  childIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNode->childNodes[offsetCountOrChildIndex] != NULL) {
-      GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(modelNode->childNodes[offsetCountOrChildIndex]);
+    if (modelNode->childNodes[childIndex] != NULL) {
+      GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(modelNode->childNodes[childIndex]);
     }
-    offsetCountOrChildIndex++;
+    childIndex++;
   }
   return;
 }
@@ -1310,12 +1286,13 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBoun
 
 {
   GraphicsFixedVec3 *nodeTranslation;
-  GraphicsWorldCoordinateQ12 *translationComponent;
   ModelResource *resourceView;
   GraphicsWorldCoordinateQ12 originX;
   GraphicsWorldCoordinateQ12 originY;
   GraphicsWorldCoordinateQ12 originZ;
-  int offsetCountOrChildIndex;
+  int meshGroupOffset;
+  int meshesRemaining;
+  int childIndex;
   uint32_t childrenRemaining;
   uint8_t *meshRecord;
 
@@ -1324,39 +1301,33 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBoun
   originX = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
   /* the node translation is made relative to the shadow origin only for the compose, then restored */
   nodeTranslation = &(modelNode->worldTransform).translation;
-  nodeTranslation->x = nodeTranslation->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  translationComponent = &(modelNode->worldTransform).translation.y;
-  *translationComponent = *translationComponent - originY;
-  translationComponent = &(modelNode->worldTransform).translation.z;
-  *translationComponent = *translationComponent - originZ;
+  nodeTranslation->x = nodeTranslation->x - originX;
+  nodeTranslation->y = nodeTranslation->y - originY;
+  nodeTranslation->z = nodeTranslation->z - originZ;
   FixedTransform_Compose
             (&g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform,
              &modelNode->worldTransform,&g_AuxiliaryRotationMatrixFixed);
-  nodeTranslation = &(modelNode->worldTransform).translation;
   nodeTranslation->x = nodeTranslation->x + originX;
-  translationComponent = &(modelNode->worldTransform).translation.y;
-  *translationComponent = *translationComponent + originY;
-  translationComponent = &(modelNode->worldTransform).translation.z;
-  *translationComponent = *translationComponent + originZ;
+  nodeTranslation->y = nodeTranslation->y + originY;
+  nodeTranslation->z = nodeTranslation->z + originZ;
   resourceView = (modelNode->modelPayload).modelResource;
-  offsetCountOrChildIndex = resourceView->shadowMeshGroupOffset;
-  if (offsetCountOrChildIndex != 0) {
-    meshRecord = (uint8_t *)resourceView + offsetCountOrChildIndex + sizeof(ModelMeshGroupHeader);
-    for (offsetCountOrChildIndex = ((ModelMeshGroupHeader *)((uint8_t *)resourceView +
-                                                             offsetCountOrChildIndex))->meshCount;
-         offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
+  meshGroupOffset = resourceView->shadowMeshGroupOffset;
+  if (meshGroupOffset != 0) {
+    meshRecord = (uint8_t *)resourceView + meshGroupOffset + sizeof(ModelMeshGroupHeader);
+    for (meshesRemaining = ((ModelMeshGroupHeader *)((uint8_t *)resourceView + meshGroupOffset))->meshCount;
+         meshesRemaining != 0; meshesRemaining--) {
       GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
                 ((ModelMeshGroupAddress32)meshRecord);
       meshRecord = meshRecord + ((ModelMeshHeader *)meshRecord)->byteSize;
     }
   }
-  offsetCountOrChildIndex = 0;
+  childIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNode->childNodes[offsetCountOrChildIndex] != NULL) {
+    if (modelNode->childNodes[childIndex] != NULL) {
       GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds
-                (modelNode->childNodes[offsetCountOrChildIndex]);
+                (modelNode->childNodes[childIndex]);
     }
-    offsetCountOrChildIndex++;
+    childIndex++;
   }
   return;
 }
@@ -1428,6 +1399,48 @@ void GraphicsShadingGeneratedTexture_AdvanceTileCursor(void)
 }
 
 
+/* The 8 bytes at byteOffset from a scratch grid position. */
+static uint64_t ShadingFilter_LoadQuad(const uint8_t *scratchPosition,int byteOffset)
+{
+  return *(const uint64_t *)(scratchPosition + byteOffset);
+}
+
+/* Filter value of the 8 scratch texels at center (each 0..7), byte-saturated: centre x4, the four direct taps
+   (left/right tapStep texels, up/down tapRowStride bytes) x3 through one cross sum added three times, and the
+   outer taps x1. The additions keep the original order. */
+static uint64_t ShadingFilter_WeightedNeighbourhoodSum(const uint8_t *center,int tapStep,int tapRowStride)
+{
+  uint64_t sum;
+  uint64_t crossSum;
+
+  sum = paddusb(ShadingFilter_LoadQuad(center,0) << 2,ShadingFilter_LoadQuad(center,tapStep * 2));
+  crossSum = paddusb(ShadingFilter_LoadQuad(center,tapStep),ShadingFilter_LoadQuad(center,-tapStep));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapStep * 2));
+  /* row above */
+  crossSum = paddusb(crossSum,ShadingFilter_LoadQuad(center,-tapRowStride));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride + tapStep));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride + tapStep * 2));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride - tapStep));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride - tapStep * 2));
+  /* row below */
+  crossSum = paddusb(crossSum,ShadingFilter_LoadQuad(center,tapRowStride));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride + tapStep));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride + tapStep * 2));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride - tapStep));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride - tapStep * 2));
+  sum = paddusb(sum,crossSum);
+  sum = paddusb(sum,crossSum);
+  sum = paddusb(sum,crossSum);
+  /* two rows above and below */
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride * 2));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride * 2 + tapStep));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride * 2));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,-tapRowStride * 2 - tapStep));
+  sum = paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride * 2 - tapStep));
+  return paddusb(sum,ShadingFilter_LoadQuad(center,tapRowStride * 2 + tapStep));
+}
+
+
 /* Address: 0x004CD3D0.
    Softens the shadow in the current tile (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy calls it
    after the soft-shadow silhouette pass drew something): copies the tile's texels, reduced to 0..7 (>> 5), into
@@ -1437,193 +1450,66 @@ void GraphicsShadingGeneratedTexture_AdvanceTileCursor(void)
 void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
 
 {
-  int backtrackOffset;
   uint64_t threeBitMask;
-  int scratchBlockStride;
-  uint32_t rowBytesRemaining;
+  int tapStep;
+  int tapRowStride;
+  uint32_t blocksPerRow;
+  uint32_t blocksRemaining;
   uint32_t rowsRemaining;
-  uint64_t *scratchWriteCursor;
-  uint64_t *neighborCursor;
-  int64_t *scratchCursor;
-  uint64_t *textureWriteCursor;
-  uint64_t *textureReadCursor;
-  uint32_t neighborStep;
-  bool rowContinues;
-  uint64_t weightedSum0;
-  uint64_t quad1OrResult0;
-  uint64_t weightedSum1;
-  uint64_t quad2OrResult1;
-  uint64_t weightedSum2;
-  uint64_t quad3OrResult2;
-  uint64_t weightedSum3;
-  uint64_t result3;
-  uint64_t crossSum0;
-  uint64_t crossSum1;
-  uint64_t crossSum2;
-  uint64_t crossSum3;
-  
+  int quadIndex;
+  uint8_t *tileTopLeft;
+  uint8_t *textureCursor;
+  uint8_t *scratchCursor;
+
   threeBitMask = g_GraphicsShadingMmxPacked3BitPerByteMask;
-  neighborStep = g_GraphicsShadingGridHalfSize >> 4;
+  /* horizontal tap distance in texels; tapRowStride is the same distance vertically (scratch rows are
+     2 * gridHalfSize bytes apart) */
+  tapStep = (int)(g_GraphicsShadingGridHalfSize >> 4);
+  /* 32 texels per step; a row always takes at least one step, and a partial last step is done whole */
+  if (g_GraphicsShadingGridHalfSize == 0) {
+    blocksPerRow = 1;
+  }
+  else {
+    blocksPerRow = (g_GraphicsShadingGridHalfSize - 1) / 32 + 1;
+  }
   /* top-left texel of the tile (the pixel cursor points at its centre) */
-  textureWriteCursor = (uint64_t *)
-           (g_GraphicsShadingGeneratedTexturePixelCursor +
-           (-(g_GraphicsShadingGridHalfSize >> 1) -
-           g_GraphicsShadingTextureDimension * (g_GraphicsShadingGridHalfSize >> 1)));
-  rowBytesRemaining = g_GraphicsShadingGridHalfSize;
-  rowsRemaining = g_GraphicsShadingGridHalfSize;
-  scratchWriteCursor = (uint64_t *)g_GraphicsShadingGridScratchInterior;
-  textureReadCursor = textureWriteCursor;
+  tileTopLeft = g_GraphicsShadingGeneratedTexturePixelCursor +
+                (-(g_GraphicsShadingGridHalfSize >> 1) -
+                 g_GraphicsShadingTextureDimension * (g_GraphicsShadingGridHalfSize >> 1));
   /* pass 1: tile -> scratch, each texel reduced to 3 bits */
-  do {
-    do {
-      quad1OrResult0 = textureReadCursor[1];
-      quad2OrResult1 = textureReadCursor[2];
-      quad3OrResult2 = textureReadCursor[3];
-      *scratchWriteCursor = *textureReadCursor >> 5 & threeBitMask;
-      scratchWriteCursor[1] = quad1OrResult0 >> 5 & threeBitMask;
-      scratchWriteCursor[2] = quad2OrResult1 >> 5 & threeBitMask;
-      scratchWriteCursor[3] = quad3OrResult2 >> 5 & threeBitMask;
-      textureReadCursor = textureReadCursor + 4;
-      scratchWriteCursor = scratchWriteCursor + 4;
-      rowContinues = 31 < rowBytesRemaining;
-      rowBytesRemaining = rowBytesRemaining - 32;
-    } while (rowContinues && rowBytesRemaining != 0);
-    scratchWriteCursor = (uint64_t *)((int)scratchWriteCursor + g_GraphicsShadingGridHalfSize);
-    textureReadCursor = (uint64_t *)
-              ((int)textureReadCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize));
-    rowsRemaining--;
-    rowBytesRemaining = g_GraphicsShadingGridHalfSize;
-  } while (rowsRemaining != 0);
-  /* pass 2: weighted neighbourhood sums from the scratch grid (rows 2 * gridHalfSize bytes apart) back into
-     the tile; scratchBlockStride is one vertical tap */
-  scratchBlockStride = g_GraphicsShadingGridHalfSize * 2 * neighborStep;
+  textureCursor = tileTopLeft;
+  scratchCursor = (uint8_t *)g_GraphicsShadingGridScratchInterior;
+  /* Original quirk: both passes test the row count at the end, so gridHalfSize 0 would wrap around */
   rowsRemaining = g_GraphicsShadingGridHalfSize;
-  scratchCursor = (int64_t *)g_GraphicsShadingGridScratchInterior;
   do {
-    do {
-      weightedSum0 = paddusb(*scratchCursor << 2,*(uint64_t *)((int)scratchCursor + neighborStep * 2));
-      weightedSum1 = paddusb(scratchCursor[1] << 2,*(uint64_t *)((int)scratchCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(scratchCursor[2] << 2,*(uint64_t *)((int)scratchCursor + neighborStep * 2 + 16));
-      weightedSum3 = paddusb(scratchCursor[3] << 2,*(uint64_t *)((int)scratchCursor + neighborStep * 2 + 24));
-      neighborCursor = (uint64_t *)((int)scratchCursor - neighborStep);
-      crossSum0 = paddusb(*(uint64_t *)((int)scratchCursor + neighborStep),*neighborCursor);
-      crossSum1 = paddusb(*(uint64_t *)((int)scratchCursor + neighborStep + 8),neighborCursor[1]);
-      crossSum2 = paddusb(*(uint64_t *)((int)scratchCursor + neighborStep + 16),neighborCursor[2]);
-      crossSum3 = paddusb(*(uint64_t *)((int)scratchCursor + neighborStep + 24),neighborCursor[3]);
-      neighborCursor = (uint64_t *)((int)neighborCursor - neighborStep);
-      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
-      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
-      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
-      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (uint64_t *)((int)neighborCursor + (neighborStep * 2 - scratchBlockStride));
-      crossSum0 = paddusb(crossSum0,*neighborCursor);
-      crossSum1 = paddusb(crossSum1,neighborCursor[1]);
-      crossSum2 = paddusb(crossSum2,neighborCursor[2]);
-      crossSum3 = paddusb(crossSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep + 16));
-      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep + 24));
-      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep * 2));
-      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 16));
-      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 24));
-      neighborCursor = (uint64_t *)((int)neighborCursor - neighborStep);
-      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
-      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
-      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
-      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (uint64_t *)((int)neighborCursor - neighborStep);
-      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
-      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
-      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
-      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep * 2);
-      crossSum0 = paddusb(crossSum0,*neighborCursor);
-      crossSum1 = paddusb(crossSum1,neighborCursor[1]);
-      crossSum2 = paddusb(crossSum2,neighborCursor[2]);
-      crossSum3 = paddusb(crossSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep + 16));
-      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep + 24));
-      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep * 2));
-      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 16));
-      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 24));
-      backtrackOffset = -scratchBlockStride - neighborStep;
-      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + scratchBlockStride + backtrackOffset));
-      weightedSum1 = paddusb(weightedSum1,
-                             *(uint64_t *)((int)neighborCursor + scratchBlockStride + 8 + backtrackOffset));
-      weightedSum2 = paddusb(weightedSum2,
-                             *(uint64_t *)((int)neighborCursor + scratchBlockStride + 16 + backtrackOffset));
-      weightedSum3 = paddusb(weightedSum3,
-                             *(uint64_t *)((int)neighborCursor + scratchBlockStride + 24 + backtrackOffset));
-      backtrackOffset = (backtrackOffset - neighborStep) - scratchBlockStride;
-      weightedSum0 = paddusb(weightedSum0,
-                             *(uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset));
-      weightedSum1 = paddusb(weightedSum1,
-                             *(uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 8));
-      weightedSum2 = paddusb(weightedSum2,
-                             *(uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 16));
-      weightedSum3 = paddusb(weightedSum3,
-                             *(uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 24));
-      weightedSum0 = paddusb(weightedSum0,crossSum0);
-      weightedSum1 = paddusb(weightedSum1,crossSum1);
-      weightedSum2 = paddusb(weightedSum2,crossSum2);
-      weightedSum3 = paddusb(weightedSum3,crossSum3);
-      weightedSum0 = paddusb(weightedSum0,crossSum0);
-      weightedSum1 = paddusb(weightedSum1,crossSum1);
-      weightedSum2 = paddusb(weightedSum2,crossSum2);
-      weightedSum3 = paddusb(weightedSum3,crossSum3);
-      neighborCursor = (uint64_t *)((int)neighborCursor + neighborStep * 2 + (backtrackOffset - scratchBlockStride));
-      weightedSum0 = paddusb(weightedSum0,crossSum0);
-      weightedSum1 = paddusb(weightedSum1,crossSum1);
-      weightedSum2 = paddusb(weightedSum2,crossSum2);
-      weightedSum3 = paddusb(weightedSum3,crossSum3);
-      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
-      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
-      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
-      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep + 16));
-      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep + 24));
-      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4));
-      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 16));
-      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 24));
-      neighborCursor = (uint64_t *)((int)neighborCursor - neighborStep);
-      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
-      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
-      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
-      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4));
-      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 16));
-      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 24));
-      quad1OrResult0 = paddusb(weightedSum0,
-                               *(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2));
-      quad2OrResult1 = paddusb(weightedSum1,
-                               *(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 8));
-      quad3OrResult2 = paddusb(weightedSum2,
-                               *(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 16));
-      result3 = paddusb(weightedSum3,
-                        *(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 24));
-      *textureWriteCursor = quad1OrResult0;
-      textureWriteCursor[1] = quad2OrResult1;
-      textureWriteCursor[2] = quad3OrResult2;
-      textureWriteCursor[3] = result3;
-      scratchCursor = (int64_t *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep + 32);
-      textureWriteCursor = textureWriteCursor + 4;
-      rowContinues = 31 < rowBytesRemaining;
-      rowBytesRemaining = rowBytesRemaining - 32;
-    } while (rowContinues && rowBytesRemaining != 0);
-    scratchCursor = (int64_t *)((int)scratchCursor + g_GraphicsShadingGridHalfSize);
-    textureWriteCursor = (uint64_t *)
-             ((int)textureWriteCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize));
+    for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
+      for (quadIndex = 0; quadIndex < 4; quadIndex++) {
+        ((uint64_t *)scratchCursor)[quadIndex] = ((uint64_t *)textureCursor)[quadIndex] >> 5 & threeBitMask;
+      }
+      textureCursor = textureCursor + 32;
+      scratchCursor = scratchCursor + 32;
+    }
+    scratchCursor = scratchCursor + g_GraphicsShadingGridHalfSize;
+    textureCursor = textureCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize);
     rowsRemaining--;
-    rowBytesRemaining = g_GraphicsShadingGridHalfSize;
+  } while (rowsRemaining != 0);
+  /* pass 2: weighted neighbourhood sums from the scratch grid back into the tile */
+  tapRowStride = (int)(g_GraphicsShadingGridHalfSize * 2 * (uint32_t)tapStep);
+  textureCursor = tileTopLeft;
+  scratchCursor = (uint8_t *)g_GraphicsShadingGridScratchInterior;
+  rowsRemaining = g_GraphicsShadingGridHalfSize;
+  do {
+    for (blocksRemaining = blocksPerRow; blocksRemaining != 0; blocksRemaining--) {
+      for (quadIndex = 0; quadIndex < 4; quadIndex++) {
+        ((uint64_t *)textureCursor)[quadIndex] =
+             ShadingFilter_WeightedNeighbourhoodSum(scratchCursor + quadIndex * 8,tapStep,tapRowStride);
+      }
+      textureCursor = textureCursor + 32;
+      scratchCursor = scratchCursor + 32;
+    }
+    scratchCursor = scratchCursor + g_GraphicsShadingGridHalfSize;
+    textureCursor = textureCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize);
+    rowsRemaining--;
   } while (rowsRemaining != 0);
   return;
 }
@@ -1637,25 +1523,19 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
 bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
 
 {
-  uint32_t decrementedCount;
-  uint32_t childrenRemaining;
   int childIndex;
-  bool childLacksGeometry;
-  
-  if (((modelNode->modelPayload).modelResource)->shadowMeshGroupOffset == 0) {
-    childrenRemaining = modelNode->childCount;
-    do {
-      decrementedCount = childrenRemaining - 1;
-      if ((int)decrementedCount < 0) {
-        return true;
-      }
-      childIndex = childrenRemaining - 1;
-      childrenRemaining = decrementedCount;
-    } while ((modelNode->childNodes[childIndex] == NULL) ||
-            (childLacksGeometry = GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry
-                               (modelNode->childNodes[childIndex]), childLacksGeometry));
+
+  if (((modelNode->modelPayload).modelResource)->shadowMeshGroupOffset != 0) {
+    return false;
   }
-  return false;
+  /* the count is taken as signed, so a count of 0x80000001 or more probes no child */
+  for (childIndex = (int)(modelNode->childCount - 1); childIndex >= 0; childIndex--) {
+    if (modelNode->childNodes[childIndex] != NULL &&
+        !GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(modelNode->childNodes[childIndex])) {
+      return false;
+    }
+  }
+  return true;
 }
 
 
@@ -1830,6 +1710,42 @@ void GraphicsShadingGeneratedTexture_ComposeTransform
 }
 
 
+/* x (Q12 texels) clamped to the current shadow tile, +/- the grid origin. */
+static int32_t ShadingRaster_ClampToTile(int32_t x)
+{
+  if (x < g_GraphicsShadingNegativeGridOriginQ12) {
+    return g_GraphicsShadingNegativeGridOriginQ12;
+  }
+  if (g_GraphicsShadingPositiveGridOriginQ12 < x) {
+    return g_GraphicsShadingPositiveGridOriginQ12;
+  }
+  return x;
+}
+
+/* Sets the texels of one row between edgeX and otherEdgeX (whole texels; the lower end included, the higher
+   end excluded) to 0xFF. */
+static void ShadingRaster_FillSpan(uint8_t *rowPixels,int32_t edgeX,int otherEdgeX)
+{
+  uint8_t *spanPixel;
+  int spanDelta;
+  int spanRemaining;
+
+  spanPixel = rowPixels + (edgeX >> Q12_SHIFT);
+  spanDelta = (otherEdgeX >> Q12_SHIFT) - (edgeX >> Q12_SHIFT);
+  if (spanDelta == 0) {
+    return;
+  }
+  spanRemaining = spanDelta;
+  if (spanDelta < 0) {
+    spanRemaining = -spanDelta;
+    spanPixel = spanPixel + spanDelta;
+  }
+  for (; spanRemaining != 0; spanRemaining--) {
+    *spanPixel = ARGB8888_CHANNEL_MAX;
+    spanPixel++;
+  }
+}
+
 /* Address: 0x004CD690.
    Fills one projected triangle (tile-relative Q12 texel coordinates, from
    GraphicsShadingGeneratedTexture_TransformPointXYQuantized) with 0xFF in the current shadow tile: sorts the
@@ -1841,142 +1757,111 @@ void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
           (GraphicsFixedVec2 *vertexA,GraphicsFixedVec2 *vertexB,GraphicsFixedVec2 *vertexC)
 
 {
-  int upperEdgeStep;
-  int upperRowsOrSpanCount;
-  int yOrShortEdgeDelta;
-  int spanDelta;
-  int spanRemaining;
-  int yOrLongEdgeStep;
-  int yOrRowsRemaining;
-  int32_t bottomXClamped;
-  int xDeltaOrSpan;
-  GraphicsFixedVec2 *otherVertex;
-  GraphicsFixedVec2 *bottomVertex;
+  GraphicsFixedVec2 *topVertex;
   GraphicsFixedVec2 *middleVertex;
-  uint8_t *rowPixels;
-  uint8_t *spanPixel;
+  GraphicsFixedVec2 *bottomVertex;
+  GraphicsFixedVec2 *swapVertex;
+  int topY;
+  int middleY;
+  int bottomY;
+  int swapY;
+  int rowsRemaining;
+  int upperRowsRemaining;
+  int32_t topXClamped;
+  int32_t middleXClamped;
+  int32_t bottomXClamped;
+  int upperDeltaX;
+  int longDeltaX;
+  int longEdgeStep;
+  int upperEdgeStep;
+  int lowerEdgeStep;
+  int longEdgeX;
   int32_t upperEdgeX;
-  int topYOrLongEdgeX;
   int32_t lowerEdgeX;
-  
-  /* sort by Y: vertexC ends up as the top vertex, then middleVertex, then bottomVertex */
-  topYOrLongEdgeX = vertexC->component1;
-  yOrRowsRemaining = vertexB->component1;
-  yOrLongEdgeStep = vertexA->component1;
-  yOrShortEdgeDelta = topYOrLongEdgeX;
+  uint8_t *rowPixels;
+
+  /* sort by Y (ties keep the earlier order): topVertex, middleVertex, bottomVertex */
+  topVertex = vertexC;
+  topY = vertexC->component1;
   middleVertex = vertexB;
-  if (yOrRowsRemaining < topYOrLongEdgeX) {
-    yOrShortEdgeDelta = yOrRowsRemaining;
-    yOrRowsRemaining = topYOrLongEdgeX;
+  middleY = vertexB->component1;
+  bottomVertex = vertexA;
+  bottomY = vertexA->component1;
+  if (middleY < topY) {
+    swapY = topY;
+    topY = middleY;
+    middleY = swapY;
+    topVertex = vertexB;
     middleVertex = vertexC;
-    vertexC = vertexB;
   }
-  topYOrLongEdgeX = yOrShortEdgeDelta;
-  otherVertex = vertexA;
-  if (yOrLongEdgeStep < yOrShortEdgeDelta) {
-    topYOrLongEdgeX = yOrLongEdgeStep;
-    yOrLongEdgeStep = yOrShortEdgeDelta;
-    otherVertex = vertexC;
-    vertexC = vertexA;
+  if (bottomY < topY) {
+    swapY = topY;
+    topY = bottomY;
+    bottomY = swapY;
+    bottomVertex = topVertex;
+    topVertex = vertexA;
   }
-  yOrShortEdgeDelta = yOrRowsRemaining;
-  bottomVertex = otherVertex;
-  if (yOrLongEdgeStep < yOrRowsRemaining) {
-    yOrShortEdgeDelta = yOrLongEdgeStep;
-    yOrLongEdgeStep = yOrRowsRemaining;
-    bottomVertex = middleVertex;
-    middleVertex = otherVertex;
+  if (bottomY < middleY) {
+    swapY = middleY;
+    middleY = bottomY;
+    bottomY = swapY;
+    swapVertex = middleVertex;
+    middleVertex = bottomVertex;
+    bottomVertex = swapVertex;
   }
-  if (topYOrLongEdgeX < g_GraphicsShadingNegativeGridOriginQ12) {
-    if (yOrShortEdgeDelta < g_GraphicsShadingNegativeGridOriginQ12) {
-      yOrShortEdgeDelta = g_GraphicsShadingNegativeGridOriginQ12;
+  /* clamp Y to the tile; triangles completely above or below it are dropped */
+  if (topY < g_GraphicsShadingNegativeGridOriginQ12) {
+    if (middleY < g_GraphicsShadingNegativeGridOriginQ12) {
+      middleY = g_GraphicsShadingNegativeGridOriginQ12;
     }
-    topYOrLongEdgeX = g_GraphicsShadingNegativeGridOriginQ12;
-    if (yOrLongEdgeStep < g_GraphicsShadingNegativeGridOriginQ12) {
+    topY = g_GraphicsShadingNegativeGridOriginQ12;
+    if (bottomY < g_GraphicsShadingNegativeGridOriginQ12) {
       return;
     }
   }
-  if (g_GraphicsShadingPositiveGridOriginQ12 < yOrLongEdgeStep) {
-    if (g_GraphicsShadingPositiveGridOriginQ12 < yOrShortEdgeDelta) {
-      yOrShortEdgeDelta = g_GraphicsShadingPositiveGridOriginQ12;
+  if (g_GraphicsShadingPositiveGridOriginQ12 < bottomY) {
+    if (g_GraphicsShadingPositiveGridOriginQ12 < middleY) {
+      middleY = g_GraphicsShadingPositiveGridOriginQ12;
     }
-    yOrLongEdgeStep = g_GraphicsShadingPositiveGridOriginQ12;
-    if (g_GraphicsShadingPositiveGridOriginQ12 < topYOrLongEdgeX) {
+    bottomY = g_GraphicsShadingPositiveGridOriginQ12;
+    if (g_GraphicsShadingPositiveGridOriginQ12 < topY) {
       return;
     }
   }
-  yOrRowsRemaining = yOrLongEdgeStep - topYOrLongEdgeX >> Q12_SHIFT;
-  if (yOrRowsRemaining != 0) {
-    upperRowsOrSpanCount = yOrShortEdgeDelta - topYOrLongEdgeX >> Q12_SHIFT;
-    yOrLongEdgeStep = vertexC->component0;
-    yOrShortEdgeDelta = middleVertex->component0;
-    xDeltaOrSpan = bottomVertex->component0;
-    upperEdgeX = g_GraphicsShadingNegativeGridOriginQ12;
-    if ((g_GraphicsShadingNegativeGridOriginQ12 <= yOrLongEdgeStep) &&
-       (upperEdgeX = yOrLongEdgeStep, g_GraphicsShadingPositiveGridOriginQ12 < yOrLongEdgeStep)) {
-      upperEdgeX = g_GraphicsShadingPositiveGridOriginQ12;
+  rowsRemaining = (bottomY - topY) >> Q12_SHIFT;
+  if (rowsRemaining == 0) {
+    return;
+  }
+  upperRowsRemaining = (middleY - topY) >> Q12_SHIFT;
+  topXClamped = ShadingRaster_ClampToTile(topVertex->component0);
+  middleXClamped = ShadingRaster_ClampToTile(middleVertex->component0);
+  bottomXClamped = ShadingRaster_ClampToTile(bottomVertex->component0);
+  upperDeltaX = middleXClamped - topXClamped;
+  longDeltaX = bottomXClamped - topXClamped;
+  rowPixels = g_GraphicsShadingGeneratedTexturePixelCursor + (topY >> Q12_SHIFT) * g_GraphicsShadingTextureDimension;
+  /* the long edge runs from the top to the bottom vertex over all rows */
+  longEdgeStep = longDeltaX / rowsRemaining;
+  longEdgeX = topXClamped;
+  upperEdgeX = topXClamped;
+  lowerEdgeX = middleXClamped;
+  if (upperRowsRemaining != 0) {
+    upperEdgeStep = upperDeltaX / upperRowsRemaining;
+    for (; upperRowsRemaining != 0; upperRowsRemaining--) {
+      ShadingRaster_FillSpan(rowPixels,upperEdgeX,longEdgeX);
+      rowPixels = rowPixels + g_GraphicsShadingTextureDimension;
+      upperEdgeX = upperEdgeX + upperEdgeStep;
+      longEdgeX = longEdgeX + longEdgeStep;
+      /* the original keeps the total row count in MM2 and decrements it with PSUBD by this {1, 0} constant */
+      rowsRemaining = rowsRemaining - (int)g_GraphicsShadingRasterizeMmxPackedDwordOneZero;
     }
-    lowerEdgeX = g_GraphicsShadingNegativeGridOriginQ12;
-    if ((g_GraphicsShadingNegativeGridOriginQ12 <= yOrShortEdgeDelta) &&
-       (lowerEdgeX = yOrShortEdgeDelta, g_GraphicsShadingPositiveGridOriginQ12 < yOrShortEdgeDelta)) {
-      lowerEdgeX = g_GraphicsShadingPositiveGridOriginQ12;
-    }
-    bottomXClamped = g_GraphicsShadingNegativeGridOriginQ12;
-    if ((g_GraphicsShadingNegativeGridOriginQ12 <= xDeltaOrSpan) &&
-       (bottomXClamped = xDeltaOrSpan, g_GraphicsShadingPositiveGridOriginQ12 < xDeltaOrSpan)) {
-      bottomXClamped = g_GraphicsShadingPositiveGridOriginQ12;
-    }
-    yOrShortEdgeDelta = lowerEdgeX - upperEdgeX;
-    xDeltaOrSpan = bottomXClamped - upperEdgeX;
-    rowPixels = g_GraphicsShadingGeneratedTexturePixelCursor +
-              (topYOrLongEdgeX >> Q12_SHIFT) * g_GraphicsShadingTextureDimension;
-    yOrLongEdgeStep = xDeltaOrSpan / yOrRowsRemaining;
-    topYOrLongEdgeX = upperEdgeX;
-    if (upperRowsOrSpanCount != 0) {
-      upperEdgeStep = yOrShortEdgeDelta / upperRowsOrSpanCount;
-      do {
-        spanPixel = rowPixels + (upperEdgeX >> Q12_SHIFT);
-        spanDelta = (topYOrLongEdgeX >> Q12_SHIFT) - (upperEdgeX >> Q12_SHIFT);
-        if (spanDelta != 0) {
-          spanRemaining = spanDelta;
-          if (spanDelta < 0) {
-            spanRemaining = -spanDelta;
-            spanPixel = spanPixel + spanDelta;
-          }
-          for (; spanRemaining != 0; spanRemaining--) {
-            *spanPixel = ARGB8888_CHANNEL_MAX;
-            spanPixel++;
-          }
-        }
-        rowPixels = rowPixels + g_GraphicsShadingTextureDimension;
-        upperEdgeX = upperEdgeX + upperEdgeStep;
-        topYOrLongEdgeX = topYOrLongEdgeX + yOrLongEdgeStep;
-        /* the original keeps the total row count in MM2 and decrements it with PSUBD by this {1, 0} constant */
-        yOrRowsRemaining = yOrRowsRemaining - (int)g_GraphicsShadingRasterizeMmxPackedDwordOneZero;
-        upperRowsOrSpanCount--;
-      } while (upperRowsOrSpanCount != 0);
-    }
-    if (yOrRowsRemaining != 0) {
-      yOrShortEdgeDelta = (xDeltaOrSpan - yOrShortEdgeDelta) / yOrRowsRemaining;
-      do {
-        spanPixel = rowPixels + (lowerEdgeX >> Q12_SHIFT);
-        xDeltaOrSpan = (topYOrLongEdgeX >> Q12_SHIFT) - (lowerEdgeX >> Q12_SHIFT);
-        if (xDeltaOrSpan != 0) {
-          upperRowsOrSpanCount = xDeltaOrSpan;
-          if (xDeltaOrSpan < 0) {
-            upperRowsOrSpanCount = -xDeltaOrSpan;
-            spanPixel = spanPixel + xDeltaOrSpan;
-          }
-          for (; upperRowsOrSpanCount != 0; upperRowsOrSpanCount--) {
-            *spanPixel = ARGB8888_CHANNEL_MAX;
-            spanPixel++;
-          }
-        }
-        rowPixels = rowPixels + g_GraphicsShadingTextureDimension;
-        lowerEdgeX = lowerEdgeX + yOrShortEdgeDelta;
-        topYOrLongEdgeX = topYOrLongEdgeX + yOrLongEdgeStep;
-        yOrRowsRemaining--;
-      } while (yOrRowsRemaining != 0);
+  }
+  if (rowsRemaining != 0) {
+    lowerEdgeStep = (longDeltaX - upperDeltaX) / rowsRemaining;
+    for (; rowsRemaining != 0; rowsRemaining--) {
+      ShadingRaster_FillSpan(rowPixels,lowerEdgeX,longEdgeX);
+      rowPixels = rowPixels + g_GraphicsShadingTextureDimension;
+      lowerEdgeX = lowerEdgeX + lowerEdgeStep;
+      longEdgeX = longEdgeX + longEdgeStep;
     }
   }
   return;

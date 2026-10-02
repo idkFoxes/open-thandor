@@ -8,8 +8,10 @@ places them), OPEN_THANDOR_AUTOWIN_LEVELS, OPEN_THANDOR_WINDOWED / _MULTI_INSTAN
 script (clickuntilnextlevel).
 
 usage:
-  run_campaign_chain.py GAME_DIR pairs     [--jobs 10] [--win-after 30] [--minutes 1]
+  run_campaign_chain.py GAME_DIR pairs     [--jobs 10] [--win-after 30] [--minutes 1] [--port-base 940]
   run_campaign_chain.py GAME_DIR campaigns [--jobs 4]  [--win-after 40] [--only tutorial,luke]
+
+Worker k plays in its own linked copy GAME_DIR_w<k> with UDP port --port-base + k.
 
 pairs:     for each level that needs the previous level's units (tutorial 2/3, hansolo 9/13/23) start early enough
            (tutorial 3 from tutorial 1), win the levels before it, then let the target level run --minutes. OK when the target level received units and
@@ -42,6 +44,7 @@ parser.add_argument('--jobs', type=int, default=10)
 parser.add_argument('--win-after', type=int, default=30)
 parser.add_argument('--minutes', type=float, default=1)
 parser.add_argument('--shots', default='5000')
+parser.add_argument('--port-base', type=int, default=940, help='UDP port of worker 0 (worker k: + k)')
 parser.add_argument('--only', help='comma-separated campaign names, e.g. tutorial,luke')
 args = parser.parse_args()
 
@@ -109,7 +112,7 @@ def run_one(k, folder, number, label, campaign, level, levels, final_seconds):
         f.write(script_for(levels, args.win_after, last_ms))
     env = dict(os.environ, OPEN_THANDOR_SCRIPT=script, OPEN_THANDOR_AUTOSHOT=args.shots, OPEN_THANDOR_WINDOWED='1',
                OPEN_THANDOR_WINDOW_X=str((k % 5) * 250), OPEN_THANDOR_WINDOW_Y=str((k // 5 % 2) * 350),
-               OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(940 + k),
+               OPEN_THANDOR_MULTI_INSTANCE='1', OPEN_THANDOR_NET_PORT=str(args.port_base + k),
                OPEN_THANDOR_CAMPAIGN=campaign, OPEN_THANDOR_CAMPAIGN_LEVEL=str(level),
                OPEN_THANDOR_AUTOWIN=str(args.win_after))
     if final_seconds:

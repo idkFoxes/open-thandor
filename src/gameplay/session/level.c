@@ -809,6 +809,252 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
 }
 
 
+/* Loading stages 1 to 5 of a saved game: as NewLevel_InitTerrainAndGraphics, but the terrain loader also clears
+   the cell overlay flags, and the army references of the saved faction image are rebased before the terrain
+   lighting is set. */
+static bool SavedLevel_InitTerrainAndGraphics
+          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
+
+{
+  uint16_t *armyTextureBasePath;
+  uint16_t *effectTextureBasePath;
+  uint32_t stepError;
+
+  g_MoviePlaybackBaseFrameGroup = 1;
+  g_MoviePlaybackScheduleCounter = 0;
+  g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
+  if (!TerrainVisualResources_LoadAndClearCellOverlayFlags
+         ((uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
+          (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.groundTextureBasePathOffset),
+          (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,&stepError)) {
+    return NewLevel_Fail(outError,stepError);
+  }
+  stepError = ShotDefinitions_ValidateTerrainMaterialReferences();
+  if (stepError != 0) {
+    return NewLevel_Fail(outError,stepError);
+  }
+  g_MoviePlaybackBaseFrameGroup = 2;
+  g_MoviePlaybackScheduleCounter = 0;
+  g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
+  stepError = ModelRuntimePool_Init();
+  if (stepError != 0) {
+    return NewLevel_Fail(outError,stepError);
+  }
+  armyTextureBasePath =
+       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.armyTextureBasePathOffset);
+  effectTextureBasePath =
+       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.effectTextureBasePathOffset);
+  if (!ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath,&stepError)) {
+    return NewLevel_Fail(outError,stepError);
+  }
+  g_MoviePlaybackBaseFrameGroup = 3;
+  g_MoviePlaybackScheduleCounter = 0;
+  g_MoviePlaybackScheduleSpan = 4;
+  if (!ShotRuntime_InitGraphicsResources
+         ((uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.shotTextureBasePathOffset),
+          &stepError)) {
+    return NewLevel_Fail(outError,stepError);
+  }
+  g_MoviePlaybackBaseFrameGroup = 4;
+  g_MoviePlaybackScheduleCounter = 0;
+  g_MoviePlaybackScheduleSpan = 4;
+  if (!EffectRuntime_InitGraphicsResources(effectTextureBasePath,&stepError)) {
+    return NewLevel_Fail(outError,stepError);
+  }
+  g_MoviePlaybackBaseFrameGroup = 5;
+  g_MoviePlaybackScheduleCounter = 0;
+  g_MoviePlaybackScheduleSpan = 6;
+  GameFactionRuntime_RebaseLoadedArmyReferences();
+  WorldRuntime_SetTerrainLightingConfiguration
+            ((levelImage->worldSettings).terrainLightingColor13CArgb,
+             (levelImage->worldSettings).terrainLightingColor138Argb,
+             (levelImage->worldSettings).terrainLightingColor134Argb,
+             (levelImage->worldSettings).terrainLightingColor130Argb,
+             (levelImage->worldSettings).terrainSecondaryColorArgb,
+             (levelImage->worldSettings).terrainLightingColor128Argb,
+             (levelImage->worldSettings).terrainBaseColorArgb,
+             (levelImage->worldSettings).terrainRampStepColorArgb,worldRuntime);
+  return true;
+}
+
+
+/* As NewLevel_PlaceStartCameraAndLightFieldRegion, with one more loading-movie step before the field region is
+   lit. */
+static void SavedLevel_PlaceStartCameraAndLightFieldRegion
+          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime)
+
+{
+  int localFactionIndex;
+  LevelPlayerSlotByteOffset32 playerSlotByteOffset;
+  struct LevelPlayerSlotRecord *startSlot;
+  uint32_t packedHeadingLow16PitchHigh16;
+  uint32_t packedRegionOriginYHigh16XLow16;
+  uint32_t packedRegionHeightHigh16WidthLow16;
+
+  localFactionIndex = worldRuntime->activeFactionRuntimeIndex;
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[localFactionIndex - 1];
+  WorldRuntime_AttachFieldGridAsset
+            ((FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,worldRuntime);
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  startSlot = (struct LevelPlayerSlotRecord *)((uint8_t *)&levelImage->playerSlots[0] + playerSlotByteOffset);
+  packedHeadingLow16PitchHigh16 = startSlot->packedHeadingLow16PitchHigh16;
+  WorldRuntime_SetCameraPositionKeepingTarget
+            (startSlot->startCameraZQ12,startSlot->startCameraYQ12,startSlot->startCameraXQ12,worldRuntime);
+  WorldRuntime_SetCameraAnglesAndMagnitudeClamped
+            (2,(int)packedHeadingLow16PitchHigh16 >> 16,packedHeadingLow16PitchHigh16 & 0xffff,
+             startSlot->startCameraMagnitudeQ12,worldRuntime);
+  packedRegionOriginYHigh16XLow16 = (levelImage->worldSettings).packedFieldRegionOriginYHigh16XLow16;
+  WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+  WorldRuntime_CommitCameraTargetDistance(worldRuntime);
+  packedRegionHeightHigh16WidthLow16 = (levelImage->worldSettings).packedFieldRegionHeightHigh16WidthLow16;
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+            ((int)packedRegionHeightHigh16WidthLow16 >> 16,packedRegionHeightHigh16WidthLow16 & 0xffff,
+             (int)packedRegionOriginYHigh16XLow16 >> 16,packedRegionOriginYHigh16XLow16 & 0xffff,worldRuntime);
+}
+
+
+/* Loads one saved runtime pool (a .hex entry of the save package) into its buffer; false with the load error in
+   *outError, which stays unchanged on success. */
+static bool SavedLevel_LoadRuntimePool
+          (PckLoadCapacityFlags bufferCapacity,uint8_t *destination,uint16_t *path,uint32_t *outError)
+
+{
+  uint32_t loadResult; /* Package_LoadEntryIntoBuffer: byte count on success, error code on failure */
+
+  if (!Package_LoadEntryIntoBuffer(bufferCapacity,destination,path,&loadResult)) {
+    return NewLevel_Fail(outError,loadResult);
+  }
+  return true;
+}
+
+
+/* Loads the saved runtime pools (widget.hex, army.hex, modul.hex, effect.hex, shot.hex, light.hex) over the
+   freshly initialised ones and rebases their pointers. */
+static bool SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint32_t *outError)
+
+{
+  if (!SavedLevel_LoadRuntimePool(worldRuntime->objectCount * sizeof(WorldObjectRecord),
+                                  (uint8_t *)worldRuntime->objectArray,(uint16_t *)u_widget_hex_0050e02a,
+                                  outError) ||
+      !SavedLevel_LoadRuntimePool(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),(uint8_t *)g_ArmyRuntimeSlots,
+                                  (uint16_t *)u_army_hex_0050dfb4,outError) ||
+      !SavedLevel_LoadRuntimePool(MODEL_RUNTIME_POOL_BYTES,(uint8_t *)g_ModelRuntimeSlots,
+                                  (uint16_t *)u_modul_hex_0050dfee,outError) ||
+      !SavedLevel_LoadRuntimePool(EFFECT_RUNTIME_POOL_BYTES,(uint8_t *)g_EffectRuntimeSlots,
+                                  (uint16_t *)u_effect_hex_0050dfc6,outError) ||
+      !SavedLevel_LoadRuntimePool(SHOT_RUNTIME_POOL_BYTES,(uint8_t *)g_ShotRuntimeSlots,
+                                  (uint16_t *)u_shot_hex_0050dfdc,outError) ||
+      !SavedLevel_LoadRuntimePool(sizeof(g_GraphicsShadingRuntimeRecords),
+                                  (uint8_t *)g_GraphicsShadingRuntimeRecords,(uint16_t *)u_light_hex_0050e016,
+                                  outError)) {
+    return false;
+  }
+  ArmyRuntimePool_RebaseAfterLoad();
+  ModelRuntimePool_RebaseAfterLoad();
+  ShotRuntime_RebaseSlotsAfterLoad();
+  EffectRuntime_RebaseSlotsAfterLoad();
+  ResourceRegistrationRuntime_RebaseLoadedRecords((ResourceRegistrationRuntimeImage *)worldRuntime);
+  RuntimeHexSegment_ToggleLightImageFlag();
+  return true;
+}
+
+
+/* Spatial sound slots of a saved game (loading stage 6): as NewLevel_LoadSpatialSounds, with one more
+   loading-movie step after the sound directory's extension is set. */
+static bool SavedLevel_LoadSpatialSounds
+          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
+
+{
+  uint32_t *soundSlotCursor;
+  WorldWorkspaceElementCount remainingSoundSlotCount;
+  uint16_t *soundDirectoryPath;
+  void *directoryListing;
+  PckOutputCapacityBytes listingCapacityBytes;
+  bool soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
+  uint32_t listedSoundCount;
+  uint32_t soundDirectoryRecordSizeBytes;
+  uint32_t allocError;
+  uint32_t shrinkError;
+  uint16_t *listedSoundPath;
+  uint32_t soundIndex;
+  bool sampleLoaded;
+  void *loadedSample;
+  uint32_t loadErrorCode;
+  SpatialSoundSlot *soundSlot;
+
+  soundSlotCursor = worldRuntime->dwordArray;
+  for (remainingSoundSlotCount = worldRuntime->dwordArrayCount; remainingSoundSlotCount != 0;
+      remainingSoundSlotCount--) {
+    *soundSlotCursor = 0;
+    soundSlotCursor++;
+  }
+  soundDirectoryPath =
+       (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.soundBasePathOffset);
+  WidePath_SetExtensionCode(ASSET_MAGIC_SAM,soundDirectoryPath);
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  WidePath_SplitParentAndLeaf
+            ((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+             (uint16_t *)&g_InGameLevelSoundParentDirectoryScratchUtf16,soundDirectoryPath);
+  allocError = g_MemoryApi.allocLargestFreeBlock(&directoryListing,&listingCapacityBytes);
+  if (allocError != 0) {
+    return NewLevel_Fail(outError,allocError);
+  }
+  soundsInPackage = Package_FindEntry(listingCapacityBytes,directoryListing,soundDirectoryPath,
+                                      g_SoundPackageHandle,&listedSoundCount);
+  soundDirectoryRecordSizeBytes = PCK_ENTRY_HEADER_BYTES;
+  if (!soundsInPackage) {
+    listedSoundCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
+                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,directoryListing,
+                          (uint8_t *)soundDirectoryPath);
+    soundDirectoryRecordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
+  }
+  g_MoviePlaybackBaseFrameGroup = 6;
+  g_MoviePlaybackScheduleCounter = 0;
+  g_MoviePlaybackScheduleSpan = listedSoundCount;
+  shrinkError = g_MemoryApi.shrinkInPlace(soundDirectoryRecordSizeBytes * listedSoundCount,directoryListing);
+  if (shrinkError != 0) {
+    g_MemoryApi.free(directoryListing);
+    return NewLevel_Fail(outError,shrinkError);
+  }
+  if (worldRuntime->dwordArrayCount < listedSoundCount) {
+    listedSoundCount = worldRuntime->dwordArrayCount;
+  }
+  listedSoundPath = directoryListing;
+  for (; listedSoundCount != 0; listedSoundCount--) {
+    soundSlotCursor = worldRuntime->dwordArray;
+    soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
+    if (soundIndex < worldRuntime->dwordArrayCount) {
+      if (soundsInPackage) {
+        sampleLoaded = Resource_Load(listedSoundPath,&loadedSample,NULL,&loadErrorCode);
+      }
+      else {
+        WidePath_CombineDirectoryAndLeaf
+                  ((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
+                   (uint16_t *)&g_InGameLevelSoundParentDirectoryScratchUtf16);
+        sampleLoaded = Resource_Load((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+                                     &loadedSample,NULL,&loadErrorCode);
+      }
+      if (!sampleLoaded) {
+        g_MemoryApi.free(directoryListing);
+        return NewLevel_Fail(outError,loadErrorCode);
+      }
+      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(loadedSample);
+      if (soundSlot != NULL) {
+        soundSlotCursor[soundIndex] = (uint32_t)soundSlot;
+      }
+      Resource_Release(loadedSample);
+      MoviePlayback_AdvanceScheduledFrameAndTick();
+    }
+    /* advance by one directory record */
+    listedSoundPath = (uint16_t *)((uint8_t *)listedSoundPath + soundDirectoryRecordSizeBytes);
+  }
+  g_MemoryApi.free(directoryListing);
+  return true;
+}
+
+
 /* Address: 0x00532020.
    Loads the level of a saved game (after GameData_LoadExternalTables): the same LEV steps as
    InGameLevelRuntime_LoadResourcesAfterDefaultReset (see the layout above it) up to the camera, but instead of
@@ -821,644 +1067,78 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
           (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
 {
-  LevelPlayerSlotByteOffset32 playerSlotByteOffset;
-  InGameLevelConditionStorage *levelConditionStorage;
-  void **loadedResourcePointerArray;
-  void *resultOrPointer;
-  TechnologyAsset *loadedTechnologyAsset;
-  uint32_t soundDirectoryRecordSizeBytes;
-  void *shrinkResultOrError;
-  SoundSampleAsset *loadedSampleAsset;
-  SoundSampleAsset *sampleOrVoiceSet;
-  uint32_t countOrPackedValue;
-  WorldWorkspaceElementCount remainingSoundSlotCount;
-  PckOutputCapacityBytes outputCapacityBytes;
-  uint32_t soundSlotIndex;
-  LevelAssetRecordCount remainingPathCount;
-  uint16_t *armyTextureBasePath;
-  uint16_t *effectTextureBasePath;
-  uint32_t packedRegionValue;
-  int factionIndexOrOriginY;
-  FieldGridDimensionCells gridHeight;
-  uint32_t *copySourceCursor;
-  uint8_t *assetPath;
-  uint16_t *pathTableCursor;
-  uint32_t *soundSlotCursor;
+  LevelAssetRuntimePrefix *levelPrefix;
+  void **loadedResourceCursor;
   uint32_t allocError;
-  uint32_t terrainLoadError;
-  uint32_t assetError;
-  bool armyRuntimeInitialized;
-  uint32_t armyInitError;
-  bool shotsInitialized;
-  uint32_t shotInitError;
-  bool effectsInitialized;
-  uint32_t effectInitError;
-  uint32_t shrinkError;
-  SpatialSoundSlot *soundSlot;
-  uint32_t voiceSetError;
-  DirectSoundVoiceSet *createdVoiceSet;
-  bool soundsInPackage; /* the sounds are listed from g_SoundPackageHandle, not a directory */
-  bool sampleLoaded;
-  uint32_t loadErrorCode;
-  uint16_t *soundDirectoryPathCursor;
-  WorldRuntimeContext *soundLoopWorldRuntime;
-  bool poolLoaded;
-  uint32_t poolByteCountOrError; /* the saved pool's byte count, or the load error code */
+  uint32_t stepError;
 
-  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * 4,(void **)&loadedResourcePointerArray);
+  /* the same LEV image, viewed through the type the shared NewLevel_ steps take (identical layout) */
+  levelPrefix = (LevelAssetRuntimePrefix *)levelImage;
+  allocError = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * 4,(void **)&loadedResourceCursor);
   if (allocError != 0) {
-    resultOrPointer = (void *)allocError;
+    return NewLevel_Fail(outError,allocError);
   }
-  else {
-    g_InGameLoadedResourcePointerCount = 0;
-    resultOrPointer = (void *)FATAL_ERROR_LEVEL_ASSET_INVALID;
-    g_InGameLoadedResourcePointers = loadedResourcePointerArray;
-    Package_SetLastErrorPath(g_LevelEndingMovieSourcePath);
-    if (((levelImage->header).common.magic == ASSET_MAGIC_LEV) &&
-       ((levelImage->header).common.converterVersion == PCK_CONVERTER_LEV_00070001)) {
-      countOrPackedValue = (levelImage->header).resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset
-      ;
-      allocError = g_MemoryApi.alloc(countOrPackedValue,&resultOrPointer);
-      if (allocError != 0) {
-        resultOrPointer = (void *)allocError;
-      }
-      else {
-        /* copy the level prefix (LEV +0xDC bytes) dword by dword into the condition storage */
-        copySourceCursor = (uint32_t *)levelImage;
-        g_InGameLevelRuntimeGlobalBlock.conditionStorage = resultOrPointer;
-        for (countOrPackedValue = countOrPackedValue >> 2; countOrPackedValue != 0; countOrPackedValue--) {
-          *(uint32_t *)resultOrPointer = *copySourceCursor;
-          copySourceCursor++;
-          resultOrPointer = (uint32_t *)resultOrPointer + 1;
-        }
-        g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
-        g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
-        assetPath = (uint8_t *)levelImage + (levelImage->header).pathState.technologyPathOffset;
-        WidePath_SetExtensionCode(ASSET_MAGIC_TEC,(uint16_t *)assetPath);
-        loadedTechnologyAsset = Package_LoadEntry((uint16_t *)assetPath,&loadErrorCode);
-        resultOrPointer = loadedTechnologyAsset != NULL ? (void *)loadedTechnologyAsset : (void *)loadErrorCode;
-        if (((loadedTechnologyAsset != NULL) &&
-            (resultOrPointer = (void *)FATAL_ERROR_TECHNOLOGY_ASSET_INVALID,
-            g_TechnologyAsset = loadedTechnologyAsset,
-            (loadedTechnologyAsset->header).common.magic == ASSET_MAGIC_TEC)) &&
-           ((loadedTechnologyAsset->header).common.converterVersion == PCK_CONVERTER_TEC_00020000))
-        {
-          /* loading stage 0: one movie step per EFF, SHT, MDL and ARM file */
-          g_MoviePlaybackScheduleSpan =
-               (levelImage->header).resourceTables.effectAssetPathCount +
-               (levelImage->header).resourceTables.shotAssetPathCount +
-               (levelImage->header).resourceTables.modelAssetPathCount +
-               (levelImage->header).resourceTables.armyAssetPathCount;
-          g_MoviePlaybackBaseFrameGroup = 0;
-          g_MoviePlaybackScheduleCounter = 0;
-          pathTableCursor = (uint16_t *)((uint8_t *)levelImage +
-                                         (levelImage->header).resourceTables.effectAssetPathTableOffset);
-          for (remainingPathCount = (levelImage->header).resourceTables.effectAssetPathCount; remainingPathCount != 0;
-              remainingPathCount--) {
-            WidePath_SetExtensionCode(ASSET_MAGIC_EFF,pathTableCursor);
-            resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
-            resultOrPointer = Package_LoadEntry(pathTableCursor,&loadErrorCode);
-            if (resultOrPointer == NULL) {
-              resultOrPointer = (void *)loadErrorCode;
-              goto load_failed;
-            }
-            *loadedResourcePointerArray = resultOrPointer;
-            g_InGameLoadedResourcePointerCount++;
-            loadedResourcePointerArray++;
-            if (!EffectAsset_PrepareEntries(resultOrPointer,&assetError)) {
-              resultOrPointer = (void *)assetError;
-              goto load_failed;
-            }
-            MoviePlayback_AdvanceScheduledFrameAndTick();
-            pathTableCursor =pathTableCursor + LEVEL_ASSET_PATH_RECORD_UNITS; /* next path record */
-          }
-          pathTableCursor = (uint16_t *)((uint8_t *)levelImage +
-                                         (levelImage->header).resourceTables.shotAssetPathTableOffset);
-          for (remainingPathCount = (levelImage->header).resourceTables.shotAssetPathCount; remainingPathCount != 0;
-              remainingPathCount--) {
-            WidePath_SetExtensionCode(ASSET_MAGIC_SHT,pathTableCursor);
-            resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
-            resultOrPointer = Package_LoadEntry(pathTableCursor,&loadErrorCode);
-            if (resultOrPointer == NULL) {
-              resultOrPointer = (void *)loadErrorCode;
-              goto load_failed;
-            }
-            *loadedResourcePointerArray = resultOrPointer;
-            g_InGameLoadedResourcePointerCount++;
-            loadedResourcePointerArray++;
-            assetError = ShotAsset_PrepareEntries(resultOrPointer);
-            resultOrPointer = (void *)assetError;
-            if (assetError != 0) goto load_failed;
-            MoviePlayback_AdvanceScheduledFrameAndTick();
-            pathTableCursor = pathTableCursor + LEVEL_ASSET_PATH_RECORD_UNITS; /* next path record */
-          }
-          assetError = EffectDefinitions_ResolveCrossReferences();
-          resultOrPointer = (void *)assetError;
-          if (assetError == 0) {
-            pathTableCursor =(uint16_t *)((uint8_t *)levelImage +
-                                           (levelImage->header).resourceTables.modelAssetPathTableOffset);
-            for (remainingPathCount = (levelImage->header).resourceTables.modelAssetPathCount; remainingPathCount != 0;
-                remainingPathCount--) {
-              WidePath_SetExtensionCode(ASSET_MAGIC_MDL,pathTableCursor);
-              resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-              if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
-              resultOrPointer = Package_LoadEntry(pathTableCursor,&loadErrorCode);
-              if (resultOrPointer == NULL) {
-                resultOrPointer = (void *)loadErrorCode;
-                goto load_failed;
-              }
-              *loadedResourcePointerArray = resultOrPointer;
-              g_InGameLoadedResourcePointerCount++;
-              loadedResourcePointerArray++;
-              if (!ModelAsset_PrepareRecords(resultOrPointer,&assetError)) {
-                resultOrPointer = (void *)assetError;
-                goto load_failed;
-              }
-              MoviePlayback_AdvanceScheduledFrameAndTick();
-              pathTableCursor = pathTableCursor + LEVEL_ASSET_PATH_RECORD_UNITS; /* next path record */
-            }
-            pathTableCursor = (uint16_t *)((uint8_t *)levelImage +
-                                           (levelImage->header).resourceTables.armyAssetPathTableOffset);
-            for (remainingPathCount = (levelImage->header).resourceTables.armyAssetPathCount; remainingPathCount != 0;
-                remainingPathCount--) {
-              WidePath_SetExtensionCode(ASSET_MAGIC_ARM,pathTableCursor);
-              resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-              if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
-              resultOrPointer = Package_LoadEntry(pathTableCursor,&loadErrorCode);
-              if (resultOrPointer == NULL) {
-                resultOrPointer = (void *)loadErrorCode;
-                goto load_failed;
-              }
-              *loadedResourcePointerArray = resultOrPointer;
-              g_InGameLoadedResourcePointerCount++;
-              loadedResourcePointerArray++;
-              assetError = ArmyAsset_PrepareRecords(resultOrPointer);
-              resultOrPointer = (void *)assetError;
-              if (assetError != 0) goto load_failed;
-              MoviePlayback_AdvanceScheduledFrameAndTick();
-              pathTableCursor =pathTableCursor + LEVEL_ASSET_PATH_RECORD_UNITS; /* next path record */
-            }
-            resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (g_InGameLoadedResourcePointerCount < INGAME_LOADED_RESOURCE_CAPACITY) {
-              g_MoviePlaybackBaseFrameGroup = 1;
-              g_MoviePlaybackScheduleCounter = 0;
-              g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
-              /* stage 1: terrain textures (surface, ground) and the field grid */
-              if (!TerrainVisualResources_LoadAndClearCellOverlayFlags
-                     ((uint16_t *)((uint8_t *)levelImage +
-                                   (levelImage->header).pathState.surfaceTextureBasePathOffset),
-                      (uint16_t *)((uint8_t *)levelImage +
-                                   (levelImage->header).pathState.groundTextureBasePathOffset),
-                      (FieldGridAsset *)(levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid,
-                      &terrainLoadError)) {
-                resultOrPointer = (void *)terrainLoadError;
-              }
-              else {
-                assetError = ShotDefinitions_ValidateTerrainMaterialReferences();
-                resultOrPointer = (void *)assetError;
-                if (assetError == 0) {
-                  g_MoviePlaybackBaseFrameGroup = 2;
-                  g_MoviePlaybackScheduleCounter = 0;
-                  g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
-                  assetError = ModelRuntimePool_Init();
-                  resultOrPointer = (void *)assetError;
-                  if (assetError == 0) {
-                    /* The decompiler lost these two locals; the original reads them from the level header
-                       (+0xC0 army and +0xC8 effect texture base paths). */
-                    armyTextureBasePath =
-                         (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathState.armyTextureBasePathOffset);
-                    effectTextureBasePath =
-                         (uint16_t *)((uint8_t *)levelImage +
-                                      (levelImage->header).pathState.effectTextureBasePathOffset);
-                    armyRuntimeInitialized =
-                         ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath,&armyInitError);
-                    resultOrPointer = (void *)armyInitError;
-                    if (armyRuntimeInitialized) {
-                      g_MoviePlaybackBaseFrameGroup = 3;
-                      g_MoviePlaybackScheduleCounter = 0;
-                      g_MoviePlaybackScheduleSpan = 4;
-                      shotsInitialized = ShotRuntime_InitGraphicsResources
-                                         ((uint16_t *)((uint8_t *)levelImage +
-                                                       (levelImage->header).pathState.shotTextureBasePathOffset),
-                                          &shotInitError);
-                      resultOrPointer = (void *)shotInitError;
-                      if (shotsInitialized) {
-                        g_MoviePlaybackBaseFrameGroup = 4;
-                        g_MoviePlaybackScheduleCounter = 0;
-                        g_MoviePlaybackScheduleSpan = 4;
-                        effectsInitialized =
-                             EffectRuntime_InitGraphicsResources(effectTextureBasePath,&effectInitError);
-                        resultOrPointer = (void *)effectInitError;
-                        if (effectsInitialized) {
-                          g_MoviePlaybackBaseFrameGroup = 5;
-                          g_MoviePlaybackScheduleCounter = 0;
-                          g_MoviePlaybackScheduleSpan = 6;
-                          GameFactionRuntime_RebaseLoadedArmyReferences();
-                          WorldRuntime_SetTerrainLightingConfiguration
-                                    ((levelImage->worldSettings).terrainLightingColor13CArgb,
-                                     (levelImage->worldSettings).terrainLightingColor138Argb,
-                                     (levelImage->worldSettings).terrainLightingColor134Argb,
-                                     (levelImage->worldSettings).terrainLightingColor130Argb,
-                                     (levelImage->worldSettings).terrainSecondaryColorArgb,
-                                     (levelImage->worldSettings).terrainLightingColor128Argb,
-                                     (levelImage->worldSettings).terrainBaseColorArgb,
-                                     (levelImage->worldSettings).terrainRampStepColorArgb,worldRuntime)
-                          ;
-                          /* start camera from the local faction's player slot, then the lit field region
-                             from the tail */
-                          factionIndexOrOriginY = worldRuntime->activeFactionRuntimeIndex;
-                          MoviePlayback_AdvanceScheduledFrameAndTick();
-                          playerSlotByteOffset =
-                               g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[factionIndexOrOriginY - 1];
-                          WorldRuntime_AttachFieldGridAsset
-                                    ((FieldGridAsset *)
-                                     (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid
-                                     ,worldRuntime);
-                          MoviePlayback_AdvanceScheduledFrameAndTick();
-                          countOrPackedValue = *(uint32_t *)((uint8_t *)&levelImage->playerSlots[0].
-                                                  packedHeadingLow16PitchHigh16 + playerSlotByteOffset);
-                          WorldRuntime_SetCameraPositionKeepingTarget
-                                    (*(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraZQ12 +
-                                             playerSlotByteOffset),
-                                     *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraYQ12 +
-                                             playerSlotByteOffset),
-                                     *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraXQ12 +
-                                             playerSlotByteOffset),worldRuntime);
-                          WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                                    (2,(int)countOrPackedValue >> 16,countOrPackedValue & 0xffff,
-                                     *(UQ12 *)((uint8_t *)&levelImage->playerSlots[0].
-                                                     startCameraMagnitudeQ12 + playerSlotByteOffset),worldRuntime);
-                          countOrPackedValue = (levelImage->worldSettings).packedFieldRegionOriginYHigh16XLow16;
-                          WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-                          packedRegionValue = countOrPackedValue;
-                          WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-                          countOrPackedValue = countOrPackedValue & 0xffff;
-                          factionIndexOrOriginY = (int)packedRegionValue >> 16;
-                          packedRegionValue = (levelImage->worldSettings).
-                                  packedFieldRegionHeightHigh16WidthLow16;
-                          soundLoopWorldRuntime = worldRuntime;
-                          MoviePlayback_AdvanceScheduledFrameAndTick();
-                          WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-                                    ((int)packedRegionValue >> 16,packedRegionValue & 0xffff,factionIndexOrOriginY,
-                                     countOrPackedValue,soundLoopWorldRuntime);
-                          /* the saved runtime pools, loaded over the freshly initialised ones and rebased */
-                          poolLoaded = Package_LoadEntryIntoBuffer
-                                             (worldRuntime->objectCount * sizeof(WorldObjectRecord),
-                                              (uint8_t *)worldRuntime->objectArray,
-                                              (uint16_t *)u_widget_hex_0050e02a,&poolByteCountOrError);
-                          resultOrPointer = (void *)poolByteCountOrError;
-                          if (poolLoaded) {
-                            poolLoaded = Package_LoadEntryIntoBuffer
-                                               (ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),(uint8_t *)g_ArmyRuntimeSlots,
-                                                (uint16_t *)u_army_hex_0050dfb4,&poolByteCountOrError);
-                            resultOrPointer = (void *)poolByteCountOrError;
-                            if (poolLoaded) {
-                              poolLoaded = Package_LoadEntryIntoBuffer
-                                                 (MODEL_RUNTIME_POOL_BYTES,(uint8_t *)g_ModelRuntimeSlots,
-                                                  (uint16_t *)u_modul_hex_0050dfee,&poolByteCountOrError);
-                              resultOrPointer = (void *)poolByteCountOrError;
-                              if (poolLoaded) {
-                                poolLoaded = Package_LoadEntryIntoBuffer
-                                                   (EFFECT_RUNTIME_POOL_BYTES,(uint8_t *)g_EffectRuntimeSlots,
-                                                    (uint16_t *)u_effect_hex_0050dfc6,&poolByteCountOrError);
-                                resultOrPointer = (void *)poolByteCountOrError;
-                                if (poolLoaded) {
-                                  poolLoaded = Package_LoadEntryIntoBuffer
-                                                     (SHOT_RUNTIME_POOL_BYTES,(uint8_t *)g_ShotRuntimeSlots,
-                                                      (uint16_t *)u_shot_hex_0050dfdc,&poolByteCountOrError);
-                                  resultOrPointer = (void *)poolByteCountOrError;
-                                  if (poolLoaded) {
-                                    poolLoaded = Package_LoadEntryIntoBuffer
-                                                       (sizeof(g_GraphicsShadingRuntimeRecords),(uint8_t *)
-                                                  g_GraphicsShadingRuntimeRecords,
-                                                  (uint16_t *)u_light_hex_0050e016,&poolByteCountOrError);
-                                    resultOrPointer = (void *)poolByteCountOrError;
-                                    if (poolLoaded) {
-                                      ArmyRuntimePool_RebaseAfterLoad();
-                                      ModelRuntimePool_RebaseAfterLoad();
-                                      ShotRuntime_RebaseSlotsAfterLoad();
-                                      EffectRuntime_RebaseSlotsAfterLoad();
-                                      ResourceRegistrationRuntime_RebaseLoadedRecords
-                                                ((ResourceRegistrationRuntimeImage *)worldRuntime);
-                                      RuntimeHexSegment_ToggleLightImageFlag();
-                                      MoviePlayback_AdvanceScheduledFrameAndTick();
-                                      /* spatial sound slots: cleared, then filled from the level's sound
-                                         directory, listed from the sound package or, failing that, from disk */
-                                      soundSlotCursor = worldRuntime->dwordArray;
-                                      for (remainingSoundSlotCount =
-                                           worldRuntime->dwordArrayCount; remainingSoundSlotCount != 0;
-                                          remainingSoundSlotCount--) {
-                                        *soundSlotCursor = 0;
-                                        soundSlotCursor++;
-                                      }
-                                      assetPath = (uint8_t *)levelImage +
-                                                  (levelImage->header).pathState.soundBasePathOffset;
-                                      WidePath_SetExtensionCode(ASSET_MAGIC_SAM,(uint16_t *)assetPath);
-                                      MoviePlayback_AdvanceScheduledFrameAndTick();
-                                      WidePath_SplitParentAndLeaf
-                                                ((uint16_t *)&
-                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                                                 (uint16_t *)&
-                                                  g_InGameLevelSoundParentDirectoryScratchUtf16,
-                                                 (uint16_t *)assetPath);
-                                      allocError = g_MemoryApi.allocLargestFreeBlock(&resultOrPointer,
-                                                                                     &outputCapacityBytes);
-                                      if (allocError != 0) {
-                                        resultOrPointer = (void *)allocError;
-                                      }
-                                      else {
-                                        soundsInPackage = Package_FindEntry(outputCapacityBytes,
-                                                                   resultOrPointer,(uint16_t *)assetPath,
-                                                                   g_SoundPackageHandle,&countOrPackedValue);
-                                        soundDirectoryRecordSizeBytes = PCK_ENTRY_HEADER_BYTES;
-                                        if (!soundsInPackage) {
-                                          countOrPackedValue = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                                                   (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,
-                                                    outputCapacityBytes,resultOrPointer,assetPath);
-                                          soundDirectoryRecordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
-                                        }
-                                        shrinkResultOrError = (void *)soundDirectoryRecordSizeBytes;
-                                        if (1 /* Ghidra stack-probe artifact: &stack0x.. < 0xfffffffc always holds */) {
-                                          g_MoviePlaybackBaseFrameGroup = 6;
-                                          g_MoviePlaybackScheduleCounter = 0;
-                                          g_MoviePlaybackScheduleSpan = countOrPackedValue;
-                                          shrinkError = g_MemoryApi.shrinkInPlace
-                                                             (soundDirectoryRecordSizeBytes * countOrPackedValue,
-                                                              resultOrPointer);
-                                          shrinkResultOrError = (void *)shrinkError;
-                                          if (shrinkError == 0) {
-                                            soundDirectoryPathCursor = resultOrPointer;
-                                            levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.
-                                                     conditionStorage;
-                                            if (worldRuntime->dwordArrayCount < countOrPackedValue) {
-                                              countOrPackedValue = worldRuntime->dwordArrayCount;
-                                            }
-                                            do {
-                                              g_InGameLevelRuntimeGlobalBlock.conditionStorage =
-                                                   levelConditionStorage;
-                                              if (countOrPackedValue == 0) {
-                                                g_MemoryApi.free(resultOrPointer);
-                                                g_InGameLevelEffectVoiceSet0 = NULL;
-                                                g_InGameLevelEffectVoiceSet1 = NULL;
-                                                g_InGameLevelEffectVoiceSet2 = NULL;
-                                                g_InGameLevelEffectVoiceSet3 = NULL;
-                                                g_InGameActiveEffectVoice = 0;
-                                                g_InGameEffectsEnabled = 1;
-                                                g_InGameActiveMusicVoice = 0;
-                                                g_InGameMusicNextTrackCountdown = 1;
-                                                g_InGameLevelMusicVoiceSet0 = NULL;
-                                                g_InGameLevelMusicVoiceSet1 = NULL;
-                                                g_InGameLevelMusicVoiceSet2 = NULL;
-                                                g_InGameLevelMusicVoiceSet3 = NULL;
-                                                /* the four level effect and four music samples of the tail */
-                                                if ((levelConditionStorage->levelImage).worldSettings.
-                                                    effectSampleNumbers[0] != 0) {
-                                                  g_WideNumberFormatUtf16
-                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).worldSettings.
-                                                             effectSampleNumbers[0],
-                                                             (uint16_t *)(u_sound_level00_sam_0050df6c +
-                                                                     11));
-                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,(void **)&loadedSampleAsset,NULL,
-                                                                                &loadErrorCode);
-                                                  /* Original quirk: a failed load leaves its error code as this function's success value
-                                                     (unless a later sample overwrites it) */
-                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
-                                                  if (sampleLoaded) {
-                                                    voiceSetError = g_SoundCreateSampleVoiceSet(loadedSampleAsset,&createdVoiceSet);
-                                                    sampleOrVoiceSet = (SoundSampleAsset *)(voiceSetError != 0 ? voiceSetError : (uint32_t)createdVoiceSet);
-                                                    if (voiceSetError == 0) {
-                                                      g_InGameLevelEffectVoiceSet0 = sampleOrVoiceSet;
-                                                    }
-                                                    Resource_Release(loadedSampleAsset);
-                                                  }
-                                                }
-                                                if ((levelConditionStorage->levelImage).worldSettings.
-                                                    effectSampleNumbers[1] != 0) {
-                                                  g_WideNumberFormatUtf16
-                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).worldSettings.
-                                                             effectSampleNumbers[1],
-                                                             (uint16_t *)(u_sound_level00_sam_0050df6c +
-                                                                     11));
-                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,(void **)&loadedSampleAsset,NULL,
-                                                                                &loadErrorCode);
-                                                  /* Original quirk: a failed load leaves its error code as this function's success value
-                                                     (unless a later sample overwrites it) */
-                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
-                                                  if (sampleLoaded) {
-                                                    voiceSetError = g_SoundCreateSampleVoiceSet(loadedSampleAsset,&createdVoiceSet);
-                                                    sampleOrVoiceSet = (SoundSampleAsset *)(voiceSetError != 0 ? voiceSetError : (uint32_t)createdVoiceSet);
-                                                    if (voiceSetError == 0) {
-                                                      g_InGameLevelEffectVoiceSet1 = sampleOrVoiceSet;
-                                                    }
-                                                    Resource_Release(loadedSampleAsset);
-                                                  }
-                                                }
-                                                if ((levelConditionStorage->levelImage).worldSettings.
-                                                    effectSampleNumbers[2] != 0) {
-                                                  g_WideNumberFormatUtf16
-                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).worldSettings.
-                                                             effectSampleNumbers[2],
-                                                             (uint16_t *)(u_sound_level00_sam_0050df6c +
-                                                                     11));
-                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,(void **)&loadedSampleAsset,NULL,
-                                                                                &loadErrorCode);
-                                                  /* Original quirk: a failed load leaves its error code as this function's success value
-                                                     (unless a later sample overwrites it) */
-                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
-                                                  if (sampleLoaded) {
-                                                    voiceSetError = g_SoundCreateSampleVoiceSet(loadedSampleAsset,&createdVoiceSet);
-                                                    sampleOrVoiceSet = (SoundSampleAsset *)(voiceSetError != 0 ? voiceSetError : (uint32_t)createdVoiceSet);
-                                                    if (voiceSetError == 0) {
-                                                      g_InGameLevelEffectVoiceSet2 = sampleOrVoiceSet;
-                                                    }
-                                                    Resource_Release(loadedSampleAsset);
-                                                  }
-                                                }
-                                                if ((levelConditionStorage->levelImage).worldSettings.
-                                                    effectSampleNumbers[3] != 0) {
-                                                  g_WideNumberFormatUtf16
-                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).worldSettings.
-                                                             effectSampleNumbers[3],
-                                                             (uint16_t *)(u_sound_level00_sam_0050df6c +
-                                                                     11));
-                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c,(void **)&loadedSampleAsset,NULL,
-                                                                                &loadErrorCode);
-                                                  /* Original quirk: a failed load leaves its error code as this function's success value
-                                                     (unless a later sample overwrites it) */
-                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
-                                                  if (sampleLoaded) {
-                                                    voiceSetError = g_SoundCreateSampleVoiceSet(loadedSampleAsset,&createdVoiceSet);
-                                                    sampleOrVoiceSet = (SoundSampleAsset *)(voiceSetError != 0 ? voiceSetError : (uint32_t)createdVoiceSet);
-                                                    if (voiceSetError == 0) {
-                                                      g_InGameLevelEffectVoiceSet3 = sampleOrVoiceSet;
-                                                    }
-                                                    Resource_Release(loadedSampleAsset);
-                                                  }
-                                                }
-                                                if ((levelConditionStorage->levelImage).worldSettings.
-                                                    musicSampleNumbers[0] != 0) {
-                                                  g_WideNumberFormatUtf16
-                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).worldSettings.
-                                                             musicSampleNumbers[0],
-                                                             (uint16_t *)(u_sound_music00_sam_0050df90 +
-                                                                     11));
-                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,(void **)&loadedSampleAsset,NULL,
-                                                                                &loadErrorCode);
-                                                  /* Original quirk: a failed load leaves its error code as this function's success value
-                                                     (unless a later sample overwrites it) */
-                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
-                                                  if (sampleLoaded) {
-                                                    voiceSetError = g_SoundCreateSampleVoiceSet(loadedSampleAsset,&createdVoiceSet);
-                                                    sampleOrVoiceSet = (SoundSampleAsset *)(voiceSetError != 0 ? voiceSetError : (uint32_t)createdVoiceSet);
-                                                    if (voiceSetError == 0) {
-                                                      g_InGameLevelMusicVoiceSet0 = sampleOrVoiceSet;
-                                                    }
-                                                    Resource_Release(loadedSampleAsset);
-                                                  }
-                                                }
-                                                if ((levelConditionStorage->levelImage).worldSettings.
-                                                    musicSampleNumbers[1] != 0) {
-                                                  g_WideNumberFormatUtf16
-                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).worldSettings.
-                                                             musicSampleNumbers[1],
-                                                             (uint16_t *)(u_sound_music00_sam_0050df90 +
-                                                                     11));
-                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,(void **)&loadedSampleAsset,NULL,
-                                                                                &loadErrorCode);
-                                                  /* Original quirk: a failed load leaves its error code as this function's success value
-                                                     (unless a later sample overwrites it) */
-                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
-                                                  if (sampleLoaded) {
-                                                    voiceSetError = g_SoundCreateSampleVoiceSet(loadedSampleAsset,&createdVoiceSet);
-                                                    sampleOrVoiceSet = (SoundSampleAsset *)(voiceSetError != 0 ? voiceSetError : (uint32_t)createdVoiceSet);
-                                                    if (voiceSetError == 0) {
-                                                      g_InGameLevelMusicVoiceSet1 = sampleOrVoiceSet;
-                                                    }
-                                                    Resource_Release(loadedSampleAsset);
-                                                  }
-                                                }
-                                                if ((levelConditionStorage->levelImage).worldSettings.
-                                                    musicSampleNumbers[2] != 0) {
-                                                  g_WideNumberFormatUtf16
-                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).worldSettings.
-                                                             musicSampleNumbers[2],
-                                                             (uint16_t *)(u_sound_music00_sam_0050df90 +
-                                                                     11));
-                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,(void **)&loadedSampleAsset,NULL,
-                                                                                &loadErrorCode);
-                                                  /* Original quirk: a failed load leaves its error code as this function's success value
-                                                     (unless a later sample overwrites it) */
-                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
-                                                  if (sampleLoaded) {
-                                                    voiceSetError = g_SoundCreateSampleVoiceSet(loadedSampleAsset,&createdVoiceSet);
-                                                    sampleOrVoiceSet = (SoundSampleAsset *)(voiceSetError != 0 ? voiceSetError : (uint32_t)createdVoiceSet);
-                                                    if (voiceSetError == 0) {
-                                                      g_InGameLevelMusicVoiceSet2 = sampleOrVoiceSet;
-                                                    }
-                                                    Resource_Release(loadedSampleAsset);
-                                                  }
-                                                }
-                                                if ((levelConditionStorage->levelImage).worldSettings.
-                                                    musicSampleNumbers[3] != 0) {
-                                                  g_WideNumberFormatUtf16
-                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).worldSettings.
-                                                             musicSampleNumbers[3],
-                                                             (uint16_t *)(u_sound_music00_sam_0050df90 +
-                                                                     11));
-                                                  sampleLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90,(void **)&loadedSampleAsset,NULL,
-                                                                                &loadErrorCode);
-                                                  /* Original quirk: a failed load leaves its error code as this function's success value
-                                                     (unless a later sample overwrites it) */
-                                                  sampleOrVoiceSet = sampleLoaded ? loadedSampleAsset : (SoundSampleAsset *)loadErrorCode;
-                                                  if (sampleLoaded) {
-                                                    voiceSetError = g_SoundCreateSampleVoiceSet(loadedSampleAsset,&createdVoiceSet);
-                                                    sampleOrVoiceSet = (SoundSampleAsset *)(voiceSetError != 0 ? voiceSetError : (uint32_t)createdVoiceSet);
-                                                    if (voiceSetError == 0) {
-                                                      g_InGameLevelMusicVoiceSet3 = sampleOrVoiceSet;
-                                                    }
-                                                    Resource_Release(loadedSampleAsset);
-                                                  }
-                                                }
-                                                return true;
-                                              }
-                                              soundSlotCursor = worldRuntime->dwordArray;
-                                              soundLoopWorldRuntime = worldRuntime;
-                                              soundSlotIndex = 
-                                                  WidePath_ParseTrailingNumberBeforeExtension
-                                                            (soundDirectoryPathCursor);
-                                              if (soundSlotIndex < worldRuntime->dwordArrayCount) {
-                                                if (soundsInPackage) {
-                                                  if (!Resource_Load(soundDirectoryPathCursor,&shrinkResultOrError,NULL,&loadErrorCode)) {
-                                                    shrinkResultOrError = (void *)loadErrorCode; /* passed on as this function's error */
-                                                    break;
-                                                  }
-                                                }
-                                                else {
-                                                  WidePath_CombineDirectoryAndLeaf
-                                                            ((uint16_t *)&
-                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                                                  soundDirectoryPathCursor,
-                                                  (uint16_t *)&
-                                                  g_InGameLevelSoundParentDirectoryScratchUtf16);
-                                                  if (!Resource_Load((uint16_t *)&
-                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,&shrinkResultOrError,NULL,&loadErrorCode)) {
-                                                    shrinkResultOrError = (void *)loadErrorCode; /* passed on as this function's error */
-                                                    break;
-                                                  }
-                                                }
-                                                soundSlot = SpatialSoundSlot_CreateFromSampleAsset
-                                                                   (shrinkResultOrError);
-                                                if (soundSlot != NULL) {
-                                                  soundSlotCursor[soundSlotIndex] = (uint32_t)soundSlot;
-                                                }
-                                                Resource_Release(shrinkResultOrError);
-                                                MoviePlayback_AdvanceScheduledFrameAndTick();
-                                              }
-                                              countOrPackedValue--;
-                                              worldRuntime = soundLoopWorldRuntime;
-                                              /* advance by one directory record (soundDirectoryRecordSizeBytes) */
-                                              soundDirectoryPathCursor =
-                                                   (uint16_t *)((int)soundDirectoryPathCursor +
-                                                                (int)soundDirectoryRecordSizeBytes);
-                                              levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.
-                                                       conditionStorage;
-                                            } while( true );
-                                          }
-                                        }
-                                        g_MemoryApi.free(resultOrPointer);
-                                        resultOrPointer = shrinkResultOrError;
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+  g_InGameLoadedResourcePointerCount = 0;
+  g_InGameLoadedResourcePointers = loadedResourceCursor;
+  Package_SetLastErrorPath(g_LevelEndingMovieSourcePath);
+  if (((levelImage->header).common.magic != ASSET_MAGIC_LEV) ||
+      ((levelImage->header).common.converterVersion != PCK_CONVERTER_LEV_00070001)) {
+    return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_ASSET_INVALID);
   }
-load_failed:
-  *outError = (uint32_t)resultOrPointer;
-  return false;
+  if (!NewLevel_CopyRuntimePrefix(levelPrefix,outError)) {
+    return false;
+  }
+  g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
+  g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
+  if (!NewLevel_LoadTechnology(levelPrefix,outError)) {
+    return false;
+  }
+  /* loading stage 0: one movie step per EFF, SHT, MDL and ARM file */
+  g_MoviePlaybackScheduleSpan =
+       (levelImage->header).resourceTables.effectAssetPathCount +
+       (levelImage->header).resourceTables.shotAssetPathCount +
+       (levelImage->header).resourceTables.modelAssetPathCount +
+       (levelImage->header).resourceTables.armyAssetPathCount;
+  g_MoviePlaybackBaseFrameGroup = 0;
+  g_MoviePlaybackScheduleCounter = 0;
+  if (!NewLevel_LoadAssetList(levelPrefix,(levelImage->header).resourceTables.effectAssetPathTableOffset,
+                              (levelImage->header).resourceTables.effectAssetPathCount,ASSET_MAGIC_EFF,
+                              NewLevel_PrepareEffectAsset,&loadedResourceCursor,outError) ||
+      !NewLevel_LoadAssetList(levelPrefix,(levelImage->header).resourceTables.shotAssetPathTableOffset,
+                              (levelImage->header).resourceTables.shotAssetPathCount,ASSET_MAGIC_SHT,
+                              NewLevel_PrepareShotAsset,&loadedResourceCursor,outError)) {
+    return false;
+  }
+  stepError = EffectDefinitions_ResolveCrossReferences();
+  if (stepError != 0) {
+    return NewLevel_Fail(outError,stepError);
+  }
+  if (!NewLevel_LoadAssetList(levelPrefix,(levelImage->header).resourceTables.modelAssetPathTableOffset,
+                              (levelImage->header).resourceTables.modelAssetPathCount,ASSET_MAGIC_MDL,
+                              NewLevel_PrepareModelAsset,&loadedResourceCursor,outError) ||
+      !NewLevel_LoadAssetList(levelPrefix,(levelImage->header).resourceTables.armyAssetPathTableOffset,
+                              (levelImage->header).resourceTables.armyAssetPathCount,ASSET_MAGIC_ARM,
+                              NewLevel_PrepareArmyAsset,&loadedResourceCursor,outError)) {
+    return false;
+  }
+  if (g_InGameLoadedResourcePointerCount >= INGAME_LOADED_RESOURCE_CAPACITY) {
+    return NewLevel_Fail(outError,FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES);
+  }
+  if (!SavedLevel_InitTerrainAndGraphics(levelPrefix,worldRuntime,outError)) {
+    return false;
+  }
+  SavedLevel_PlaceStartCameraAndLightFieldRegion(levelPrefix,worldRuntime);
+  if (!SavedLevel_LoadRuntimePools(worldRuntime,outError)) {
+    return false;
+  }
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  if (!SavedLevel_LoadSpatialSounds(levelPrefix,worldRuntime,outError)) {
+    return false;
+  }
+  /* Original quirk: a failed level sample is ignored; the original even left its error code as this function's
+     (nonzero, so successful) result unless a later sample overwrote it. */
+  NewLevel_LoadLevelSamples();
+  return true;
 }
 
 

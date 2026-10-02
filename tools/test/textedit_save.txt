@@ -1,0 +1,49 @@
+# Check script (run_checks.py textedit): start with -NOINTRO -KARTE="mittelpunkt"; skirmish, Esc menu, "Speichern"; in the
+# save dialog the required text edit saveNameEdit ("Multi Ahaggar") is edited into "Test Edit 42", then "Speichern" ->
+# save\Test Edit 42.sve; quit. Every step changes the result when cursor, selection or deletion go wrong:
+#   End, Ctrl+Left       cursor 13 -> 5 (original word jump: lands before the space)
+#   Shift+Home, "Test"   selection 0..5 "Multi" replaced -> "Test Ahaggar"
+#   Ctrl+Right           cursor on the space 4 -> 5
+#   Shift+End, Delete    selection 5..end "Ahaggar" removed -> "Test "
+#   "Edits", Backspace   -> "Test Edit"
+#   Home, Delete, "T"    "T" removed and typed again -> "Test Edit"
+#   End, " 4x2", Left, Left, Delete  -> "Test Edit 42"
+# Keys (decimal VK): 8 Backspace, 16 Shift, 17 Ctrl, 35 End, 36 Home, 37 Left, 39 Right, 46 Delete.
+# Lines that do not start with a number are ignored (comments). Layout 1280x720 in an 800-high window: y = screen y - 40.
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+4000 key 27
+6000 move 406 298
+6500 click 406 298
+# file name field (saveNameEdit, 17 px high, 36 px above the centre of the dialog's "Speichern" button at 710 499)
+9000 move 558 462
+9200 click 558 462
+9600 key 35
+10000 keydown 17
+10100 key 37
+10200 keyup 17
+10600 keydown 16
+10700 key 36
+10800 keyup 16
+11200 type Test
+12000 keydown 17
+12100 key 39
+12200 keyup 17
+12600 keydown 16
+12700 key 35
+12800 keyup 16
+13200 key 46
+13600 type Edits
+14400 key 8
+14800 key 36
+15200 key 46
+15600 type T
+16000 key 35
+16400 type  4x2
+17200 key 37
+17400 key 37
+17800 key 46
+19000 move 710 499
+19500 click 710 499
+27000 quit

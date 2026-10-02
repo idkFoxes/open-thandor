@@ -804,6 +804,116 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
 }
 
 
+/* Ctrl+Left target from cursorIndex != 0. After a space: back over the spaces, stopping just after the
+   previous word. Otherwise: back to the start of the current word; when that start lies after a single
+   space (the code unit before the space is not a space), the target is that space instead. */
+static UiTextCodeUnitIndex UiRequiredTextEdit_FindPreviousWordStop(const uint16_t *textBuffer,
+          UiTextCodeUnitIndex cursorIndex)
+
+{
+  UiTextCodeUnitIndex wordStop;
+
+  wordStop = cursorIndex - 1;
+  if (textBuffer[cursorIndex - 1] == ' ') {
+    while ((wordStop != 0) && (textBuffer[wordStop - 1] == ' ')) {
+      wordStop--;
+    }
+    return wordStop;
+  }
+  while ((wordStop != 0) && (textBuffer[wordStop - 1] != ' ')) {
+    wordStop--;
+  }
+  if ((1 < (int)wordStop) && (textBuffer[wordStop - 2] != ' ')) {
+    wordStop--;
+  }
+  return wordStop;
+}
+
+
+/* Ctrl+Right target. With skipSpaces: forward over the spaces at the cursor. Otherwise: just past the next
+   space, or back onto that space when another space follows it; the end of the text when no space follows. */
+static UiTextCodeUnitIndex UiRequiredTextEdit_FindNextWordStop(const uint16_t *textBuffer,
+          UiTextCodeUnitIndex cursorIndex,bool skipSpaces)
+
+{
+  UiTextCodeUnitIndex wordStop;
+
+  wordStop = cursorIndex;
+  if (skipSpaces) {
+    while (textBuffer[wordStop] == ' ') {
+      wordStop++;
+    }
+    return wordStop;
+  }
+  while (textBuffer[wordStop] != 0) {
+    wordStop++;
+    if (textBuffer[wordStop - 1] == ' ') {
+      if (textBuffer[wordStop] == ' ') {
+        wordStop--;
+      }
+      return wordStop;
+    }
+  }
+  return wordStop;
+}
+
+
+/* Ctrl+Left/Right: moves the cursor to the previous/next word stop. Without Shift the selection collapses
+   there; with Shift the selection end at the cursor moves along and the selection is reordered. Ctrl+Left at
+   the text start does nothing. */
+static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,bool towardsStart,
+          bool extendSelection)
+
+{
+  UiTextCodeUnitIndex formerCursorIndex;
+  UiTextCodeUnitIndex wordStop;
+  UiTextCodeUnitIndex *selectionBoundary;
+  bool skipSpaces;
+
+  formerCursorIndex = control->cursorIndex;
+  if (towardsStart && (formerCursorIndex == 0)) {
+    return;
+  }
+  /* The selection end at the cursor moves. */
+  selectionBoundary = &control->selectionStart;
+  if (formerCursorIndex != control->selectionStart) {
+    selectionBoundary = &control->selectionEnd;
+  }
+  if (towardsStart) {
+    wordStop = UiRequiredTextEdit_FindPreviousWordStop(control->textBuffer,formerCursorIndex);
+  }
+  else {
+    /* NOTE: as in the original, with Shift and the cursor at selectionStart the space-skipping case is
+       not taken even if the cursor is on a space. */
+    skipSpaces = control->textBuffer[formerCursorIndex] == ' ';
+    if (extendSelection && (formerCursorIndex == control->selectionStart)) {
+      skipSpaces = false;
+    }
+    wordStop = UiRequiredTextEdit_FindNextWordStop(control->textBuffer,formerCursorIndex,skipSpaces);
+  }
+  control->cursorIndex = wordStop;
+  if (extendSelection) {
+    *selectionBoundary = wordStop;
+    UiTextEdit_OrderSelection((UiTextEditControl *)control);
+  }
+  else {
+    control->selectionStart = wordStop;
+    control->selectionEnd = wordStop;
+  }
+}
+
+
+/* Plays the activation sound when the control has UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND and a sound. */
+static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *control)
+
+{
+  if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
+     (control->activationSound != NULL)) {
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
+  }
+}
+
+
 /* Address: 0x004B7110.
    Keyboard handler of the free-text edit that must not stay empty (keyboardEvent slot of
    g_UiRequiredTextEditControlVtable): inserts any character, edits and moves the cursor and Shift selection,
@@ -816,423 +926,99 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           UiRequiredTextEditControl *control)
 
 {
-  UiTextCodeUnitIndex *selectionBoundary;
-  uint16_t displacedCodeUnit;
-  UiTextCodeUnitIndex codeUnitIndex;
-  UiTextCodeUnitIndex wordBoundaryIndex;
-  UiTextCodeUnitIndex scanIndex;
-  UiTextCodeUnitCount remainingCodeUnits;
-  int countOrIndex;
-  int shiftCountOrScanIndex;
-  uint32_t insertLimit;
-  uint32_t insertIndex;
-  uint16_t *sourceCursor;
-  uint16_t *destinationCursor;
+  UiTextEditControl *edit;
+  UiTextCodeUnitIndex clearIndex;
   bool isAltGrCharacter;
   bool recomputeLayout;
-  bool normalizeSelection;
-  bool delegatedResult;
 
-  insertIndex = control->cursorIndex;
+  edit = (UiTextEditControl *)control;
   if (((control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) != 0) ||
      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    return delegatedResult;
+    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
-  /* Characters typed with AltGr (Ctrl+Alt, see the path edit above) are inserted without the modifier
-     checks. */
-  isAltGrCharacter =
-       (((keyCode == '@') ||
-        ((((keyCode == '|' || (keyCode == '~')) || (keyCode == CP1252_SUPERSCRIPT_TWO)) ||
-         ((keyCode == CP1252_SUPERSCRIPT_THREE || (keyCode == '{')))))) || (keyCode == '[')) ||
-       (((keyCode == ']' || (keyCode == '}')) ||
-        ((keyCode == '\\' || ((keyCode == CP1252_MICRO_SIGN || (keyCode == CP1252_EURO_SIGN)))))));
-  /* Letters typed with Ctrl or Alt are shortcuts, not text. */
-  if (!isAltGrCharacter &&
-      ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0 ||
-       ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0 &&
-        (keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0 &&
-        '@' < keyCode && (keyCode < '[' || ('`' < keyCode && keyCode < '{'))))) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    return delegatedResult;
+  /* Characters typed with AltGr are inserted without the modifier checks. */
+  isAltGrCharacter = UiTextEdit_IsAltGrCharacter(keyCode);
+  if (!isAltGrCharacter && UiTextEdit_IsModifierShortcut(keyboardStateMask,keyCode)) {
+    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
-  /* Handled keys end in the shared tail: optional selection normalization and layout recompute,
-     then validity update, action, invalidate and the interaction sound. */
+  /* Handled keys end in the shared tail: optional layout recompute, then validity update, action,
+     invalidate and the interaction sound. */
   recomputeLayout = true;
-  normalizeSelection = false;
   if ((isAltGrCharacter) || ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0)) {
     /* Insert the character, replacing a selection. */
-    insertLimit = control->bufferCapacityCodeUnits - 1;
-    if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
-      codeUnitIndex = control->selectionEnd;
-      countOrIndex = codeUnitIndex - control->selectionStart;
-      sourceCursor = control->textBuffer + codeUnitIndex;
-      destinationCursor = control->textBuffer + control->selectionStart;
-      for (shiftCountOrScanIndex = control->bufferCapacityCodeUnits - codeUnitIndex; shiftCountOrScanIndex != 0;
-           shiftCountOrScanIndex--) {
-        *destinationCursor = *sourceCursor;
-        sourceCursor++;
-        destinationCursor++;
-      }
-      for (; countOrIndex != 0; countOrIndex--) {
-        *destinationCursor = 0;
-        destinationCursor++;
-      }
-      insertIndex = control->selectionStart;
-      control->cursorIndex = insertIndex;
-      control->selectionEnd = insertIndex;
-    }
-    if (insertIndex < insertLimit) {
-      control->cursorIndex++;
-      control->selectionStart++;
-      control->selectionEnd++;
-      if ((control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE) == 0) {
-        do {
-          LOCK();
-          displacedCodeUnit = control->textBuffer[insertIndex];
-          control->textBuffer[insertIndex] = (uint16_t)keyCode;
-          keyCode = (UiKeyboardEventCode)displacedCodeUnit;
-          UNLOCK();
-          insertIndex++;
-        } while (insertIndex < insertLimit);
-      }
-      else {
-        control->textBuffer[insertIndex] = (uint16_t)keyCode;
-      }
-    }
+    UiTextEdit_InsertCodeUnit(edit,control->textBuffer,control->bufferCapacityCodeUnits,
+                              control->bufferCapacityCodeUnits - 1,
+                              (control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE) != 0,(uint16_t)keyCode);
   }
-  else if ((keyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
-    if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) == 0) {
-      switch (keyCode) {
-      case KEYBOARD_KEY_CODE_BACKSPACE:
-      case KEYBOARD_KEY_CODE_DELETE:
-        codeUnitIndex = control->cursorIndex;
-        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd)) {
-          /* Backspace/Delete with a selection: remove the selected range, zero-fill the tail. */
-          codeUnitIndex = control->selectionEnd;
-          countOrIndex = codeUnitIndex - control->selectionStart;
-          sourceCursor = control->textBuffer + codeUnitIndex;
-          destinationCursor = control->textBuffer + control->selectionStart;
-          for (shiftCountOrScanIndex = control->bufferCapacityCodeUnits - codeUnitIndex; shiftCountOrScanIndex != 0;
-               shiftCountOrScanIndex--) {
-            *destinationCursor = *sourceCursor;
-            sourceCursor++;
-            destinationCursor++;
-          }
-          for (; countOrIndex != 0; countOrIndex--) {
-            *destinationCursor = 0;
-            destinationCursor++;
-          }
-          control->cursorIndex = control->selectionStart;
-          control->selectionEnd = control->selectionStart;
-        }
-        else if (keyCode == KEYBOARD_KEY_CODE_BACKSPACE) {
-          /* Backspace: remove the code unit before the cursor. */
-          if (control->cursorIndex == 0) {
-            recomputeLayout = false;
-            break;
-          }
-          sourceCursor = control->textBuffer + codeUnitIndex;
-          destinationCursor = control->textBuffer + (codeUnitIndex - 1);
-          for (countOrIndex = control->bufferCapacityCodeUnits - codeUnitIndex; countOrIndex != 0; countOrIndex--) {
-            *destinationCursor = *sourceCursor;
-            sourceCursor++;
-            destinationCursor++;
-          }
-          control->cursorIndex--;
-          control->selectionStart = control->cursorIndex;
-          control->selectionEnd = control->cursorIndex;
-        }
-        else {
-          /* Delete: remove the code unit at the cursor. */
-          if (control->textBuffer[codeUnitIndex] == 0) {
-            recomputeLayout = false;
-            break;
-          }
-          countOrIndex = control->bufferCapacityCodeUnits - codeUnitIndex;
-          sourceCursor = control->textBuffer + codeUnitIndex + 1;
-          destinationCursor = control->textBuffer + codeUnitIndex;
-          while (--countOrIndex != 0) {
-            *destinationCursor = *sourceCursor;
-            sourceCursor++;
-            destinationCursor++;
-          }
-        }
-        break;
-      case KEYBOARD_KEY_CODE_INSERT:
-        control->editStateFlags = control->editStateFlags ^ UI_REQUIRED_TEXT_OVERWRITE_MODE;
-        recomputeLayout = false;
-        break;
-      case KEYBOARD_KEY_CODE_HOME:
-      case KEYBOARD_KEY_CODE_END:
-      case KEYBOARD_KEY_CODE_LEFT:
-      case KEYBOARD_KEY_CODE_RIGHT:
-        /* Cursor movement (Home/End/Left/Right) collapses the selection at the cursor. */
-        if (keyCode == KEYBOARD_KEY_CODE_HOME) {
-          control->cursorIndex = 0;
-        }
-        else if (keyCode == KEYBOARD_KEY_CODE_END) {
-          while (control->textBuffer[control->cursorIndex] != 0) {
-            control->cursorIndex++;
-          }
-        }
-        else if (keyCode == KEYBOARD_KEY_CODE_LEFT) {
-          if (control->cursorIndex != 0) {
-            control->cursorIndex--;
-          }
-        }
-        else if (control->textBuffer[control->cursorIndex] != 0) {
-          control->cursorIndex++;
-        }
-        control->selectionStart = control->cursorIndex;
-        control->selectionEnd = control->cursorIndex;
-        break;
-      case KEYBOARD_KEY_CODE_ENTER:
-        if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
-          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-          return delegatedResult;
-        }
-        UiActionQueue_Enqueue(control->actionId,control);
-        if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-           (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
-        }
-        return false;
-      case KEYBOARD_KEY_CODE_ESCAPE:
-        if ((control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION) == 0) {
-          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-          return delegatedResult;
-        }
-        sourceCursor = control->textBuffer;
-        for (remainingCodeUnits = control->bufferCapacityCodeUnits; remainingCodeUnits != 0; remainingCodeUnits--) {
-          *sourceCursor = 0;
-          sourceCursor++;
-        }
-        control->cursorIndex = 0;
-        control->selectionStart = 0;
-        control->selectionEnd = 0;
-        UiActionQueue_Enqueue(control->actionId,control);
-        if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-           (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
-        }
-        return false;
-      default:
-        /* Raw letter/digit key codes (KEYBOARD_KEY_CODE_CHAR) are swallowed; the characters arrive separately. */
-        if ((keyCode & KEYBOARD_KEY_CODE_CHAR(0)) == KEYBOARD_KEY_CODE_CHAR(0)) {
-          return false;
-        }
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-        return delegatedResult;
-      }
-    }
-    else {
-      /* Shift: extend the selection from the cursor. */
-      switch (keyCode) {
-      case KEYBOARD_KEY_CODE_HOME:
-        codeUnitIndex = control->cursorIndex;
-        if (codeUnitIndex == 0) {
-          recomputeLayout = false;
-          break;
-        }
-        control->cursorIndex = 0;
-        if (codeUnitIndex == control->selectionStart) {
-          control->selectionStart = 0;
-        }
-        else {
-          control->selectionEnd = 0;
-        }
-        normalizeSelection = true;
-        break;
-      case KEYBOARD_KEY_CODE_END:
-        codeUnitIndex = control->cursorIndex;
-        if (control->textBuffer[codeUnitIndex] == 0) {
-          recomputeLayout = false;
-          break;
-        }
-        /* NOTE: as in the original, the cursor restarts at 0 and ends at the number of code units
-           that followed it, not at the end of the text. */
-        control->cursorIndex = 0;
-        selectionBoundary = &control->selectionStart;
-        if (codeUnitIndex == control->selectionEnd) {
-          selectionBoundary = &control->selectionEnd;
-        }
-        do {
-          *selectionBoundary = *selectionBoundary + 1;
-          control->cursorIndex++;
-          shiftCountOrScanIndex = codeUnitIndex + 1;
-          codeUnitIndex++;
-        } while (control->textBuffer[shiftCountOrScanIndex] != 0);
-        normalizeSelection = true;
-        break;
-      case KEYBOARD_KEY_CODE_LEFT:
-        codeUnitIndex = control->cursorIndex;
-        if (codeUnitIndex == 0) {
-          recomputeLayout = false;
-          break;
-        }
-        control->cursorIndex--;
-        if (codeUnitIndex == control->selectionStart) {
-          control->selectionStart--;
-        }
-        else {
-          control->selectionEnd--;
-        }
-        break;
-      case KEYBOARD_KEY_CODE_RIGHT:
-        codeUnitIndex = control->cursorIndex;
-        if (control->textBuffer[codeUnitIndex] == 0) {
-          recomputeLayout = false;
-          break;
-        }
-        control->cursorIndex++;
-        if (codeUnitIndex == control->selectionEnd) {
-          control->selectionEnd++;
-        }
-        else {
-          control->selectionStart++;
-        }
-        break;
-      default:
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-        return delegatedResult;
-      }
-    }
-  }
-  else {
+  else if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
     /* Ctrl+Left/Right: jump between space-separated words, Shift extends the selection. */
     if ((keyCode != KEYBOARD_KEY_CODE_LEFT) && (keyCode != KEYBOARD_KEY_CODE_RIGHT)) {
-      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-      return delegatedResult;
+      return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     }
-    codeUnitIndex = control->cursorIndex;
-    if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) == 0) {
-      if (keyCode == KEYBOARD_KEY_CODE_LEFT) {
-        if (codeUnitIndex != 0) {
-          if (control->textBuffer[codeUnitIndex - 1] == ' ') {
-            do {
-              wordBoundaryIndex = codeUnitIndex - 1;
-              if (wordBoundaryIndex == 0) break;
-              countOrIndex = codeUnitIndex - 2;
-              codeUnitIndex = wordBoundaryIndex;
-            } while (control->textBuffer[countOrIndex] == ' ');
-          }
-          else {
-            do {
-              scanIndex = codeUnitIndex;
-              wordBoundaryIndex = scanIndex - 1;
-              if (wordBoundaryIndex == 0) break;
-              codeUnitIndex = wordBoundaryIndex;
-            } while (control->textBuffer[scanIndex - 2] != ' ');
-            if ((1 < (int)wordBoundaryIndex) && (control->textBuffer[scanIndex - 3] != ' ')) {
-              wordBoundaryIndex = scanIndex - 2;
-            }
-          }
-          control->cursorIndex = wordBoundaryIndex;
-          control->selectionStart = wordBoundaryIndex;
-          control->selectionEnd = wordBoundaryIndex;
-        }
-      }
-      else {
-        if (control->textBuffer[codeUnitIndex] == ' ') {
-          for (; (control->textBuffer[codeUnitIndex] != 0 && (control->textBuffer[codeUnitIndex] == ' '));
-              codeUnitIndex++) {
-          }
-        }
-        else {
-          /* Past the next space; back onto it when another space follows. */
-          while (control->textBuffer[codeUnitIndex] != 0) {
-            codeUnitIndex++;
-            if (control->textBuffer[codeUnitIndex - 1] == ' ') {
-              if (control->textBuffer[codeUnitIndex] == ' ') {
-                codeUnitIndex--;
-              }
-              break;
-            }
-          }
-        }
-        control->cursorIndex = codeUnitIndex;
-        control->selectionStart = codeUnitIndex;
-        control->selectionEnd = codeUnitIndex;
-      }
-    }
-    else if (keyCode == KEYBOARD_KEY_CODE_LEFT) {
-      if (codeUnitIndex != 0) {
-        /* The selection end at the cursor moves. */
-        selectionBoundary = &control->selectionStart;
-        if (codeUnitIndex != control->selectionStart) {
-          selectionBoundary = &control->selectionEnd;
-        }
-        if (control->textBuffer[codeUnitIndex - 1] == ' ') {
-          do {
-            wordBoundaryIndex = codeUnitIndex - 1;
-            if (wordBoundaryIndex == 0) break;
-            shiftCountOrScanIndex = codeUnitIndex - 2;
-            codeUnitIndex = wordBoundaryIndex;
-          } while (control->textBuffer[shiftCountOrScanIndex] == ' ');
-        }
-        else {
-          do {
-            scanIndex = codeUnitIndex;
-            wordBoundaryIndex = scanIndex - 1;
-            if (wordBoundaryIndex == 0) break;
-            codeUnitIndex = wordBoundaryIndex;
-          } while (control->textBuffer[scanIndex - 2] != ' ');
-          if ((1 < (int)wordBoundaryIndex) && (control->textBuffer[scanIndex - 3] != ' ')) {
-            wordBoundaryIndex = scanIndex - 2;
-          }
-        }
-        control->cursorIndex = wordBoundaryIndex;
-        *selectionBoundary = wordBoundaryIndex;
-        normalizeSelection = true;
-      }
-    }
-    else {
-      /* NOTE: as in the original, when the cursor is at selectionStart the space-skipping case is
-         not taken even if the cursor is on a space. */
-      selectionBoundary = &control->selectionStart;
-      if ((codeUnitIndex != control->selectionStart) &&
-         (selectionBoundary = &control->selectionEnd, control->textBuffer[codeUnitIndex] == ' ')) {
-        for (; (control->textBuffer[codeUnitIndex] != 0 && (control->textBuffer[codeUnitIndex] == ' '));
-            codeUnitIndex++) {
-        }
-      }
-      else {
-        while (control->textBuffer[codeUnitIndex] != 0) {
-          codeUnitIndex++;
-          if (control->textBuffer[codeUnitIndex - 1] == ' ') {
-            if (control->textBuffer[codeUnitIndex] == ' ') {
-              codeUnitIndex--;
-            }
-            break;
-          }
-        }
-      }
-      control->cursorIndex = codeUnitIndex;
-      *selectionBoundary = codeUnitIndex;
-      normalizeSelection = true;
-    }
+    UiRequiredTextEdit_JumpToWord(control,keyCode == KEYBOARD_KEY_CODE_LEFT,
+                                  (keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0);
   }
-  if ((normalizeSelection) && (control->selectionEnd < control->selectionStart)) {
-    /* Keep selectionStart <= selectionEnd when the moving end crossed the anchor. */
-    LOCK();
-    codeUnitIndex = control->selectionEnd;
-    control->selectionEnd = control->selectionStart;
-    UNLOCK();
-    control->selectionStart = codeUnitIndex;
+  else if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
+    /* Shift: extend the selection from the cursor. */
+    if (!UiTextEdit_IsCursorMovementKey(keyCode)) {
+      return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
+    }
+    recomputeLayout = UiTextEdit_ExtendSelectionByKey(edit,control->textBuffer,keyCode);
+  }
+  else {
+    switch (keyCode) {
+    case KEYBOARD_KEY_CODE_BACKSPACE:
+    case KEYBOARD_KEY_CODE_DELETE:
+      recomputeLayout = UiTextEdit_DeleteAtCursor(edit,control->textBuffer,control->bufferCapacityCodeUnits,
+                                                  keyCode == KEYBOARD_KEY_CODE_BACKSPACE);
+      break;
+    case KEYBOARD_KEY_CODE_INSERT:
+      control->editStateFlags = control->editStateFlags ^ UI_REQUIRED_TEXT_OVERWRITE_MODE;
+      recomputeLayout = false;
+      break;
+    case KEYBOARD_KEY_CODE_HOME:
+    case KEYBOARD_KEY_CODE_END:
+    case KEYBOARD_KEY_CODE_LEFT:
+    case KEYBOARD_KEY_CODE_RIGHT:
+      UiTextEdit_MoveCursorAndCollapseSelection(edit,control->textBuffer,keyCode);
+      break;
+    case KEYBOARD_KEY_CODE_ENTER:
+      if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
+        return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
+      }
+      UiActionQueue_Enqueue(control->actionId,control);
+      UiRequiredTextEdit_PlayInteractionSound(control);
+      return false;
+    case KEYBOARD_KEY_CODE_ESCAPE:
+      if ((control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION) == 0) {
+        return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
+      }
+      for (clearIndex = 0; clearIndex != control->bufferCapacityCodeUnits; clearIndex++) {
+        control->textBuffer[clearIndex] = 0;
+      }
+      control->cursorIndex = 0;
+      control->selectionStart = 0;
+      control->selectionEnd = 0;
+      UiActionQueue_Enqueue(control->actionId,control);
+      UiRequiredTextEdit_PlayInteractionSound(control);
+      return false;
+    default:
+      /* Raw letter/digit key codes (KEYBOARD_KEY_CODE_CHAR) are swallowed; the characters arrive separately. */
+      if ((keyCode & KEYBOARD_KEY_CODE_CHAR(0)) == KEYBOARD_KEY_CODE_CHAR(0)) {
+        return false;
+      }
+      return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
+    }
   }
   if (recomputeLayout) {
-    UiTextEditControl_RecomputeLayoutAndClampScroll((UiTextEditControl *)control);
+    UiTextEditControl_RecomputeLayoutAndClampScroll(edit);
   }
-  UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)control);
+  UiTextControl_UpdateNonEmptyValidity(edit);
   if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
     UiActionQueue_Enqueue(control->actionId,control);
   }
   UiNode_InvalidateRoot(&control->base);
-  if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-     (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
-  }
+  UiRequiredTextEdit_PlayInteractionSound(control);
   return false;
 }
 

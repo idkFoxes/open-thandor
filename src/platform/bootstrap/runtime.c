@@ -1310,6 +1310,194 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
 }
 
 
+/* ASCII a-z to A-Z, every other byte unchanged. */
+static uint8_t CommandLine_UppercaseAscii(uint8_t character)
+
+{
+  if ((character >= 'a') && (character <= 'z')) {
+    character = character - ('a' - 'A');
+  }
+  return character;
+}
+
+
+/* First positional argument slot still empty, NULL when all three are used. */
+static char *CommandLine_FindFreeArgumentSlot(void)
+
+{
+  if (g_CommandLine.argument1[0] == '\0') {
+    return g_CommandLine.argument1;
+  }
+  if (g_CommandLine.argument2[0] == '\0') {
+    return g_CommandLine.argument2;
+  }
+  if (g_CommandLine.argument3[0] == '\0') {
+    return g_CommandLine.argument3;
+  }
+  return NULL;
+}
+
+
+/* Skips the command line up to and including terminator. Returns the position after it, or NULL when the
+   command line ends first. */
+static uint8_t *CommandLine_SkipPast(uint8_t *cursor,uint8_t terminator)
+
+{
+  uint8_t currentChar;
+
+  do {
+    currentChar = *cursor;
+    cursor++;
+    if (currentChar == '\0') {
+      return NULL;
+    }
+  } while (currentChar != terminator);
+  return cursor;
+}
+
+
+/* Copies the command line uppercased into destination up to terminator, which is stored as the NUL.
+   Returns the position OF the terminator (not after it), or NULL when the command line ends first (its NUL
+   copied as well). */
+static uint8_t *CommandLine_CopyUppercasedUntil(uint8_t *cursor,char *destination,uint8_t terminator)
+
+{
+  uint8_t currentChar;
+
+  currentChar = CommandLine_UppercaseAscii(*cursor);
+  while (currentChar != terminator) {
+    *destination = currentChar;
+    if (currentChar == '\0') {
+      return NULL;
+    }
+    destination++;
+    cursor++;
+    currentChar = CommandLine_UppercaseAscii(*cursor);
+  }
+  *destination = '\0';
+  return cursor;
+}
+
+
+/* Copies the executable path (the first word, or the quoted part without its quotes) into
+   g_CommandLine.executablePath. Returns the position after it, or NULL when the command line ends there
+   (a quoted path without its closing quote is discarded). */
+static uint8_t *CommandLine_CopyExecutablePath(uint8_t *cursor)
+
+{
+  char *pathWrite;
+  uint8_t currentChar;
+
+  pathWrite = g_CommandLine.executablePath;
+  if (*cursor == '"') {
+    cursor++;
+    currentChar = *cursor;
+    cursor++;
+    while (currentChar != '"') {
+      if (currentChar == '\0') {
+        *pathWrite = '\0';
+        /* no closing quote: the path is discarded */
+        g_CommandLine.executablePath[0] = '\0';
+        return NULL;
+      }
+      *pathWrite = currentChar;
+      pathWrite++;
+      currentChar = *cursor;
+      cursor++;
+    }
+  }
+  else {
+    currentChar = *cursor;
+    cursor++;
+    while (currentChar != ' ') {
+      *pathWrite = currentChar;
+      if (currentChar == '\0') {
+        return NULL;
+      }
+      pathWrite++;
+      currentChar = *cursor;
+      cursor++;
+    }
+  }
+  *pathWrite = '\0';
+  return cursor;
+}
+
+
+/* Copies one option (cursor just after its '/' or '-') uppercased up to the next space to *optionWrite,
+   quoted parts verbatim with their quotes, and NUL-terminates it. Returns the position after the space, or
+   NULL when the command line ends inside the option (its NUL copied as well). */
+static uint8_t *CommandLine_CopyOption(uint8_t *cursor,char **optionWrite)
+
+{
+  char *write;
+  uint8_t currentChar;
+
+  write = *optionWrite;
+  currentChar = CommandLine_UppercaseAscii(*cursor);
+  cursor++;
+  while (currentChar != ' ') {
+    *write = currentChar;
+    write++;
+    if (currentChar == '\0') {
+      return NULL;
+    }
+    if (currentChar == '"') {
+      do {
+        currentChar = *cursor;
+        *write = currentChar;
+        cursor++;
+        write++;
+        if (currentChar == '\0') {
+          return NULL;
+        }
+      } while (currentChar != '"');
+    }
+    currentChar = CommandLine_UppercaseAscii(*cursor);
+    cursor++;
+  }
+  *write = '\0';
+  *optionWrite = write + 1;
+  return cursor;
+}
+
+
+/* Copies a quoted positional argument (cursor just after its opening quote) uppercased into the first free
+   slot, or skips it when all three are used. Returns where parsing continues, or NULL when the command line
+   ends inside the argument. */
+static uint8_t *CommandLine_CopyQuotedArgument(uint8_t *cursor)
+
+{
+  char *argumentSlot;
+
+  argumentSlot = CommandLine_FindFreeArgumentSlot();
+  if (argumentSlot == NULL) {
+    return CommandLine_SkipPast(cursor,'"');
+  }
+  /* Original quirk: parsing continues ON the closing quote, which is then read again as the opening quote
+     of a further quoted argument. */
+  return CommandLine_CopyUppercasedUntil(cursor,argumentSlot,'"');
+}
+
+
+/* Copies an unquoted positional argument (firstChar already read, cursor after it) uppercased into the first
+   free slot up to the next space, or skips it when all three are used. Returns where parsing continues, or
+   NULL when the command line ends inside the argument. */
+static uint8_t *CommandLine_CopyArgument(uint8_t firstChar,uint8_t *cursor)
+
+{
+  char *argumentSlot;
+
+  argumentSlot = CommandLine_FindFreeArgumentSlot();
+  if (argumentSlot == NULL) {
+    return CommandLine_SkipPast(cursor,' ');
+  }
+  argumentSlot[0] = CommandLine_UppercaseAscii(firstChar);
+  /* continues on the space after the argument, which is skipped next */
+  return CommandLine_CopyUppercasedUntil(cursor,argumentSlot + 1,' ');
+}
+
+
 /* Address: 0x00586170.
    Splits the process command line (GetCommandLineA) into g_CommandLine and installs CommandLine_FindOption
    as the lookup hook: the executable path without quotes, up to three positional arguments (quotes
@@ -1320,154 +1508,30 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
 void CommandLine_Parse(void)
 
 {
-  uint8_t *commandLineNext;
-  char *pathWriteNext;
-  uint8_t currentChar;
   uint8_t *commandLineCursor;
-  char *textWriteCursor;
-  char *optionWriteNext;
-  char *pathWriteCursor;
-  char *argumentWriteCursor;
+  char *optionWrite;
+  uint8_t currentChar;
 
   g_CommandLineFindOption = CommandLine_FindOption;
-  commandLineCursor = (uint8_t *)GetCommandLineA();
-  pathWriteNext = g_CommandLine.executablePath;
-  if (*commandLineCursor == '"') {
-    commandLineCursor++;
-    do {
-      pathWriteCursor = pathWriteNext;
-      currentChar = *commandLineCursor;
-      *pathWriteCursor = currentChar;
-      commandLineCursor++;
-      if (currentChar == '\0') {
-        /* no closing quote: the path is discarded */
-        g_CommandLine.executablePath[0] = '\0';
-        goto copyWideArguments;
-      }
-      pathWriteNext = pathWriteCursor + 1;
-    } while (currentChar != '"');
-    *pathWriteCursor = '\0';
-    optionWriteNext = g_CommandLine.optionBuffer;
-  }
-  else {
-    do {
-      pathWriteCursor = pathWriteNext;
-      currentChar = *commandLineCursor;
-      *pathWriteCursor = currentChar;
-      commandLineCursor++;
-      if (currentChar == '\0') goto copyWideArguments;
-      pathWriteNext = pathWriteCursor + 1;
-    } while (currentChar != ' ');
-    *pathWriteCursor = '\0';
-    optionWriteNext = g_CommandLine.optionBuffer;
-  }
-  /* options and positional arguments, until the terminating NUL */
-  for (;;) {
+  commandLineCursor = CommandLine_CopyExecutablePath((uint8_t *)GetCommandLineA());
+  optionWrite = g_CommandLine.optionBuffer;
+  /* options and positional arguments, until the terminating NUL (a NULL cursor: it ended inside one) */
+  while (commandLineCursor != NULL) {
     currentChar = *commandLineCursor;
     commandLineCursor++;
+    if (currentChar == '\0') {
+      break;
+    }
     if ((currentChar == '/') || (currentChar == '-')) {
-      /* option: copied uppercased up to the next space; quoted parts verbatim */
-      do {
-        while( true ) {
-          textWriteCursor = optionWriteNext;
-          currentChar = *commandLineCursor;
-          if (('a' - 1 < currentChar) && (currentChar < 'z' + 1)) {
-            currentChar = currentChar - ('a' - 'A');
-          }
-          *textWriteCursor = currentChar;
-          commandLineCursor++;
-          optionWriteNext = textWriteCursor + 1;
-          if (currentChar == '\0') goto copyWideArguments;
-          if (currentChar != '"') break;
-          do {
-            currentChar = *commandLineCursor;
-            *optionWriteNext = currentChar;
-            commandLineCursor++;
-            optionWriteNext++;
-            if (currentChar == '\0') goto copyWideArguments;
-          } while (currentChar != '"');
-        }
-      } while (currentChar != ' ');
-      *textWriteCursor = '\0';
-      continue;
+      commandLineCursor = CommandLine_CopyOption(commandLineCursor,&optionWrite);
     }
-    if (currentChar == '\0') break;
-    if (currentChar == ' ') continue;
-    if (currentChar == '"') {
-      /* quoted positional argument: into the first free slot, or skipped when all three are used */
-      commandLineNext = commandLineCursor;
-      if (g_CommandLine.argument1[0] == '\0') {
-        textWriteCursor = g_CommandLine.argument1;
-      }
-      else if (g_CommandLine.argument2[0] == '\0') {
-        textWriteCursor = g_CommandLine.argument2;
-      }
-      else if (g_CommandLine.argument3[0] == '\0') {
-        textWriteCursor = g_CommandLine.argument3;
-      }
-      else {
-        do {
-          currentChar = *commandLineCursor;
-          commandLineCursor++;
-          if (currentChar == '\0') goto copyWideArguments;
-        } while (currentChar != '"');
-        continue;
-      }
-      do {
-        argumentWriteCursor = textWriteCursor;
-        commandLineCursor = commandLineNext;
-        currentChar = *commandLineCursor;
-        if (('a' - 1 < currentChar) && (currentChar < 'z' + 1)) {
-          currentChar = currentChar - ('a' - 'A');
-        }
-        *argumentWriteCursor = currentChar;
-        if (currentChar == '\0') goto copyWideArguments;
-        commandLineNext = commandLineCursor + 1;
-        textWriteCursor = argumentWriteCursor + 1;
-      } while (currentChar != '"');
-      *argumentWriteCursor = '\0';
-      continue;
+    else if (currentChar == '"') {
+      commandLineCursor = CommandLine_CopyQuotedArgument(commandLineCursor);
     }
-    /* unquoted positional argument */
-    if (('a' - 1 < currentChar) && (currentChar < 'z' + 1)) {
-      currentChar = currentChar - ('a' - 'A');
+    else if (currentChar != ' ') {
+      commandLineCursor = CommandLine_CopyArgument(currentChar,commandLineCursor);
     }
-    commandLineNext = commandLineCursor;
-    if (g_CommandLine.argument1[0] == '\0') {
-      textWriteCursor = g_CommandLine.argument1 + 1;
-      g_CommandLine.argument1[0] = currentChar;
-    }
-    else if (g_CommandLine.argument2[0] == '\0') {
-      textWriteCursor = g_CommandLine.argument2 + 1;
-      g_CommandLine.argument2[0] = currentChar;
-    }
-    else {
-      if (g_CommandLine.argument3[0] != '\0') {
-        do {
-          currentChar = *commandLineCursor;
-          commandLineCursor++;
-          if (currentChar == '\0') goto copyWideArguments;
-        } while (currentChar != ' ');
-        continue;
-      }
-      textWriteCursor = g_CommandLine.argument3 + 1;
-      g_CommandLine.argument3[0] = currentChar;
-    }
-    do {
-      argumentWriteCursor = textWriteCursor;
-      commandLineCursor = commandLineNext;
-      currentChar = *commandLineCursor;
-      if (('a' - 1 < currentChar) && (currentChar < 'z' + 1)) {
-        currentChar = currentChar - ('a' - 'A');
-      }
-      *argumentWriteCursor = currentChar;
-      if (currentChar == '\0') goto copyWideArguments;
-      commandLineNext = commandLineCursor + 1;
-      textWriteCursor = argumentWriteCursor + 1;
-    } while (currentChar != ' ');
-    *argumentWriteCursor = '\0';
   }
-copyWideArguments:
   Text_CopyNarrowToUtf16
             (sizeof g_CommandLineWideArguments.argument1,g_CommandLineWideArguments.argument1,
              (uint8_t *)g_CommandLine.argument1);

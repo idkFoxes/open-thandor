@@ -1101,6 +1101,361 @@ FinalizeTick:
 }
 
 
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: drops the linked model (+0xF0) unless
+   both definitions have a footprint radius and this unit is still within it. When the link is dropped while
+   class state bit 4 is set and the root node has at least three children, the child-part animation starts
+   and the sound whose index is at definition +0x274 is played. */
+static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime)
+{
+  ModelRuntimeSlot *linkedModelRuntime;
+  ModelRuntimeNode *rootNode;
+  ModelDefinitionGroundMovementSteeringView *movementDefinition;
+  uint32_t childCount;
+  uint32_t soundIndex;
+  DirectSoundVoiceSet **voiceSetRef;
+  GraphicsFixedVec3 *worldPosition;
+  uint32_t *classStateWord;
+
+  linkedModelRuntime = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime;
+  rootNode = modelRuntime->rootModelNode;
+  if (linkedModelRuntime == NULL) {
+    return;
+  }
+  movementDefinition = modelRuntime->modelDefinition;
+  if ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius != 0) &&
+      (movementDefinition->footprintRadius != 0) &&
+      ArmyCollision_TestPointWithinExpandedRuntimeRadius
+                (movementDefinition->footprintRadius,(rootNode->worldTransform).translation.y,
+                 (rootNode->worldTransform).translation.x,linkedModelRuntime)) {
+    return;
+  }
+  childCount = rootNode->childCount;
+  (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
+  if ((childCount < 3) || (((modelRuntime->classState).behaviorState & 4) == 0)) {
+    return;
+  }
+  classStateWord = &(modelRuntime->classState).behaviorState;
+  *classStateWord = *classStateWord | 1;
+  soundIndex = ((ModelDefinition *)movementDefinition)->positionedSoundSlotIndex;
+  if ((soundIndex == 0) || (soundIndex >= worldRuntime->dwordArrayCount) || (worldRuntime->dwordArray == NULL)) {
+    return;
+  }
+  voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
+  if (voiceSetRef == NULL) {
+    return;
+  }
+  worldPosition = &(modelRuntime->rootModelNode->worldTransform).translation;
+  if (!TerrainGrid_TestProjectedCellMaskBits01
+                ((modelRuntime->rootModelNode->worldTransform).translation.y,worldPosition->x,worldRuntime)) {
+    SpatialSound_PlayPositionedOneShot
+              (movementDefinition->positionedSoundMaximumDistanceQ12,movementDefinition->positionedSoundGainQ15,
+               worldPosition,voiceSetRef);
+  }
+}
+
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: counts down +0x70 (clearing behaviour
+   bits 0-2 when it runs out) and spins the three child parts by one step. */
+static void ArmyRuntimeClass_SpinBankingChildParts
+          (ModelRuntimeGroundMovementSteeringView *modelRuntime,ModelRuntimeNode *rootNode)
+{
+  uint32_t *classStateWord;
+  ModelRuntimeNode *secondChildNode;
+  ModelRuntimeNode *thirdChildNode;
+  AngleTurn32 *childRotationAngle;
+
+  classStateWord = &(modelRuntime->classLinkState).classState70;
+  *classStateWord = *classStateWord - 1;
+  if (*classStateWord == 0) {
+    classStateWord = &(modelRuntime->classState).behaviorState;
+    *classStateWord = *classStateWord & ~7u;
+  }
+  secondChildNode = rootNode->childNodes[1];
+  thirdChildNode = rootNode->childNodes[2];
+  childRotationAngle = &(rootNode->childNodes[0]->modelPayload).localRotationAngle1;
+  *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
+  childRotationAngle = &(secondChildNode->modelPayload).localRotationAngle1;
+  *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
+  childRotationAngle = &(thirdChildNode->modelPayload).localRotationAngle1;
+  *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
+}
+
+/* Helper for ArmyRuntimeClass_SteerBankingHeading: stops turning and keeps the current model heading. */
+static uint32_t ArmyRuntimeClass_HoldBankingHeading(ModelRuntimeGroundMovementSteeringView *modelRuntime)
+{
+  (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+  return (modelRuntime->rootModelNode->modelPayload).worldRotationAngle2;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: updates the turn velocity and returns
+   the new (unmasked) heading. Close to the route point and not turning, the heading is kept; a turn against
+   the current turn direction also stops and keeps the heading; once the remaining error is within the turn
+   velocity it snaps to the desired heading; otherwise it turns on and accelerates up to the turn rate limit. */
+static uint32_t ArmyRuntimeClass_SteerBankingHeading
+          (ModelRuntimeGroundMovementSteeringView *modelRuntime,ModelRuntimeNode *rootNode,
+           ModelDefinitionGroundMovementSteeringView *movementDefinition,FixedLengthAngle targetAngleLength)
+{
+  uint32_t turnVelocity;
+  AngleTurn32 currentHeading;
+  uint32_t headingError;
+  int turnLimit;
+  int acceleratedVelocity;
+  uint32_t newHeading;
+
+  turnVelocity = (modelRuntime->movementControl).turnVelocityAngle16;
+  if ((turnVelocity == 0) &&
+      (targetAngleLength.length < (uint32_t)movementDefinition->headingErrorInterpolationDistanceQ12)) {
+    return ArmyRuntimeClass_HoldBankingHeading(modelRuntime);
+  }
+  currentHeading = (rootNode->modelPayload).worldRotationAngle2;
+  headingError = targetAngleLength.angle - currentHeading & FIXED_ANGLE16_MASK;
+  if (headingError < FIXED_ANGLE16_HALF_TURN) {
+    /* turn left (positive) */
+    if ((int)turnVelocity < 0) {
+      return ArmyRuntimeClass_HoldBankingHeading(modelRuntime);
+    }
+    if (headingError <= turnVelocity) {
+      (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+      return targetAngleLength.angle;
+    }
+    turnLimit = movementDefinition->turnRateLimitAnglePerTick * g_InGameSimulationStepTicks;
+    acceleratedVelocity = turnVelocity + movementDefinition->turnRateAccelerationAnglePerTick * g_InGameSimulationStepTicks;
+    (modelRuntime->movementControl).turnVelocityAngle16 = turnLimit;
+    newHeading = currentHeading + turnVelocity;
+    if (acceleratedVelocity < turnLimit) {
+      (modelRuntime->movementControl).turnVelocityAngle16 = acceleratedVelocity;
+    }
+    return newHeading;
+  }
+  /* turn right (negative) */
+  if (0 < (int)turnVelocity) {
+    return ArmyRuntimeClass_HoldBankingHeading(modelRuntime);
+  }
+  if (turnVelocity + FIXED_ANGLE16_FULL_TURN <= headingError) {
+    (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+    return targetAngleLength.angle;
+  }
+  newHeading = currentHeading + turnVelocity;
+  turnLimit = -movementDefinition->turnRateLimitAnglePerTick * g_InGameSimulationStepTicks;
+  acceleratedVelocity = turnVelocity - movementDefinition->turnRateAccelerationAnglePerTick * g_InGameSimulationStepTicks;
+  (modelRuntime->movementControl).turnVelocityAngle16 = turnLimit;
+  if (turnLimit < acceleratedVelocity) {
+    (modelRuntime->movementControl).turnVelocityAngle16 = acceleratedVelocity;
+  }
+  return newHeading;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: places the root node with the
+   definition's placement callback at its current position. */
+static void ArmyRuntimeClass_PlaceBankingUnitInPlace
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime,
+           ModelRuntimeNode *rootNode)
+{
+  (*g_ArmyPlacementContactKindDispatchTable.callbacks
+    [modelRuntime->modelDefinition->placementContactKindIndex])
+            (modelRuntime->modelDefinition->placementHeightOffsetQ12,
+             (rootNode->worldTransform).translation.y,
+             (rootNode->worldTransform).translation.x,rootNode,worldRuntime);
+}
+
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: tilts the root node back by the recoil
+   after a shot, as in ArmyRuntimeClass_UpdateGroundMovement. */
+static void ArmyRuntimeClass_ApplyBankingRecoilTilt
+          (ModelRuntimeGroundMovementSteeringView *modelRuntime,ModelRuntimeNode *rootNode,int recoilTilt)
+{
+  FixedAzimuthElevationRoll composedAngles;
+
+  composedAngles = FixedTransform_ComposeEulerAngles
+                     (0,FIXED_ANGLE16_QUARTER_TURN - recoilTilt,
+                      (modelRuntime->ownerArmyRuntime->actionVector0Q12 + FIXED_ANGLE16_HALF_TURN) -
+                      (rootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK,
+                      (rootNode->modelPayload).worldRotationAngle2,
+                      (rootNode->modelPayload).worldRotationAngle1,
+                      (rootNode->modelPayload).worldRotationAngle0);
+  (rootNode->modelPayload).worldRotationAngle0 = composedAngles.azimuthAngle;
+  (rootNode->modelPayload).worldRotationAngle1 = composedAngles.elevationAngle;
+  (rootNode->modelPayload).worldRotationAngle2 = composedAngles.rollAngle;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: the unit is destroyed or has arrived.
+   Stops it, places it where it stands and applies a pending recoil. Returns the root node. */
+static ModelRuntimeNode *ArmyRuntimeClass_PlaceBankingUnitStationary
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime)
+{
+  ArmyRuntimeSlot *ownerArmy;
+  ModelRuntimeNode *rootNode;
+  int recoilTilt;
+
+  (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+  (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+  ownerArmy = modelRuntime->ownerArmyRuntime;
+  rootNode = modelRuntime->rootModelNode;
+  recoilTilt = ownerArmy->actionVector1Q12 - 1;
+  if (recoilTilt < 0) {
+    ArmyRuntimeClass_PlaceBankingUnitInPlace(worldRuntime,modelRuntime,rootNode);
+    return rootNode;
+  }
+  recoilTilt = recoilTilt * ownerArmy->actionVector2Q12;
+  ownerArmy->actionVector1Q12 = ownerArmy->actionVector1Q12 - 1;
+  ArmyRuntimeClass_PlaceBankingUnitInPlace(worldRuntime,modelRuntime,rootNode);
+  ArmyRuntimeClass_ApplyBankingRecoilTilt(modelRuntime,rootNode,recoilTilt);
+  return rootNode;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: turns towards the route point
+   (waypointWorldX, waypointWorldY), slides straight towards it, stops at blocking armies, places the unit and
+   applies a pending recoil. Stores the direction and distance to the route point in *targetAngleLength and
+   returns the root node. */
+static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime,
+           ModelRuntimeNode *rootNode,uint32_t waypointWorldX,Q12 waypointWorldY,
+           FixedLengthAngle *targetAngleLength)
+{
+  ModelDefinitionGroundMovementSteeringView *movementDefinition;
+  ArmyRuntimeSlot *ownerArmy;
+  ArmyMovementStateFlags *ownerMovementFlags;
+  ModelRuntimeNode *collisionRootNode;
+  ModelRuntimeSlot *blockingModelRuntime;
+  ArmyPlacementContactKindIndex32 placementContactKind;
+  Q12 heightOffsetQ12;
+  FixedPlanarPointQ12 nextPosition;
+  Q12 reachedWorldXQ12;
+  Q12 reachedWorldYQ12;
+  AngleTurn32 desiredHeading;
+  uint32_t newHeading;
+  int deltaX;
+  int deltaY;
+  int travelDistance;
+  int recoilTilt;
+
+  /* a new route point (+0x68/+0x6C) restarts from standstill */
+  if ((waypointWorldX != (modelRuntime->classLinkState).classState68) &&
+     ((uint32_t)waypointWorldY != (modelRuntime->classLinkState).armyLinkOrState.classState)) {
+    (modelRuntime->classLinkState).classState68 = waypointWorldX;
+    (modelRuntime->classLinkState).armyLinkOrState.classState = (uint32_t)waypointWorldY;
+    (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+    (modelRuntime->movementControl).turnVelocityAngle16 = 0;
+  }
+  deltaX = waypointWorldX - (rootNode->worldTransform).translation.x;
+  deltaY = waypointWorldY - (rootNode->worldTransform).translation.y;
+  if ((deltaX == 0) && (deltaY == 0)) {
+    *targetAngleLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
+  }
+  else {
+    *targetAngleLength = FixedMath_Vector2AngleAndLength(deltaY,deltaX);
+  }
+  desiredHeading = targetAngleLength->angle;
+  movementDefinition = modelRuntime->modelDefinition;
+  newHeading = ArmyRuntimeClass_SteerBankingHeading(modelRuntime,rootNode,movementDefinition,*targetAngleLength);
+  rootNode = modelRuntime->rootModelNode;
+  if ((newHeading & FIXED_ANGLE16_MASK) != (rootNode->modelPayload).worldRotationAngle2) {
+    (rootNode->modelPayload).worldRotationAngle2 = newHeading & FIXED_ANGLE16_MASK;
+    rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
+  }
+  ArmyRuntime_UpdateActivationMetricAndPlayStartSound
+            (worldRuntime,(ModelRuntimeSlot *)modelRuntime);
+  /* slide straight towards the route point (desiredHeading, not the model heading) */
+  travelDistance = (modelRuntime->movementControl).movementAdvancePerTickQ12 * g_InGameSimulationStepTicks;
+  if (travelDistance < (int)targetAngleLength->length >> 1) {
+    nextPosition = FixedTrig_ProjectPlanarPoint
+                       ((rootNode->worldTransform).translation.x,(rootNode->worldTransform).translation.y,
+                        travelDistance,desiredHeading);
+  }
+  else {
+    ownerArmy = modelRuntime->ownerArmyRuntime;
+    ArmyRuntime_UpdateMovementAndWaypoints
+              (worldRuntime,(ArmyMovementRuntime *)ownerArmy,&reachedWorldXQ12,&reachedWorldYQ12);
+    nextPosition.xQ12 = reachedWorldXQ12;
+    nextPosition.yQ12 = reachedWorldYQ12;
+    ownerMovementFlags = &ownerArmy->movementStateFlags;
+    *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
+  }
+  placementContactKind = movementDefinition->placementContactKindIndex;
+  rootNode = modelRuntime->rootModelNode;
+  heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
+  blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
+                     (nextPosition.yQ12,nextPosition.xQ12,
+                      (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
+  if (blockingModelRuntime != NULL) {
+    collisionRootNode = modelRuntime->rootModelNode;
+    ArmyRuntime_HandleCollisionPartner
+              ((ModelRuntimeSlot *)modelRuntime,(collisionRootNode->worldTransform).translation.y,
+               (collisionRootNode->worldTransform).translation.x,blockingModelRuntime,
+               worldRuntime);
+    (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
+    nextPosition.xQ12 = (collisionRootNode->worldTransform).translation.x;
+    nextPosition.yQ12 = (collisionRootNode->worldTransform).translation.y;
+    ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
+    *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
+  }
+  ownerArmy = modelRuntime->ownerArmyRuntime;
+  g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
+            (heightOffsetQ12,nextPosition.yQ12,nextPosition.xQ12,rootNode,worldRuntime);
+  rootNode = modelRuntime->rootModelNode;
+  /* recoil after a shot, as in ArmyRuntimeClass_UpdateGroundMovement */
+  recoilTilt = ownerArmy->actionVector1Q12 - 1;
+  if (recoilTilt >= 0) {
+    recoilTilt = recoilTilt * ownerArmy->actionVector2Q12;
+    ownerArmy->actionVector1Q12 = ownerArmy->actionVector1Q12 - 1;
+    ArmyRuntimeClass_ApplyBankingRecoilTilt(modelRuntime,rootNode,recoilTilt);
+  }
+  return rootNode;
+}
+
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation. Banking: +0x60 (modelLinkOrState) is
+   the bank value, ARMY_GLIDER_BANK_LEVEL_ANGLE16 = level, +0x64 (classState64) the bank heading. Applies the
+   current bank to the root node, then updates bank value and bank heading for the next tick.
+   targetAngleLength is only read while the unit moves (it is not set when the unit stands). */
+static void ArmyRuntimeClass_UpdateBankAngle
+          (ModelRuntimeGroundMovementSteeringView *modelRuntime,ModelRuntimeNode *rootNode,
+           const FixedLengthAngle *targetAngleLength)
+{
+  ModelDefinitionGroundMovementSteeringView *movementDefinition;
+  FixedAzimuthElevationRoll composedAngles;
+  uint32_t bankHeadingStep;
+
+  movementDefinition = modelRuntime->modelDefinition;
+  if ((modelRuntime->classLinkState).modelLinkOrState.classState != ARMY_GLIDER_BANK_LEVEL_ANGLE16) {
+    composedAngles = FixedTransform_ComposeEulerAngles
+                       ((rootNode->modelPayload).worldRotationAngle2,
+                        (rootNode->modelPayload).worldRotationAngle1,
+                        (rootNode->modelPayload).worldRotationAngle0,0,
+                        (modelRuntime->classLinkState).modelLinkOrState.classState,
+                        (modelRuntime->classLinkState).classState64);
+    (rootNode->modelPayload).worldRotationAngle0 = composedAngles.azimuthAngle;
+    (rootNode->modelPayload).worldRotationAngle1 = composedAngles.elevationAngle;
+    (rootNode->modelPayload).worldRotationAngle2 = composedAngles.rollAngle;
+  }
+  if (((modelRuntime->movementControl).movementAdvancePerTickQ12 == 0) ||
+     ((int)targetAngleLength->length <= movementDefinition->movementStepQ12PerTick * 32)) {
+    /* stopped or within 32 steps of the route point: bank value rises, up to level */
+    (modelRuntime->classLinkState).modelLinkOrState.classState =
+         (modelRuntime->classLinkState).modelLinkOrState.classState + ARMY_GLIDER_BANK_RECOVER_ANGLE16;
+    if (ARMY_GLIDER_BANK_LEVEL_ANGLE16 < (modelRuntime->classLinkState).modelLinkOrState.signedScalarState) {
+      (modelRuntime->classLinkState).modelLinkOrState.classState = ARMY_GLIDER_BANK_LEVEL_ANGLE16;
+    }
+    return;
+  }
+  /* moving: turn the bank heading towards the travel direction by at most
+     ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16, the bank value drops down to ARMY_GLIDER_BANK_MAX_ANGLE16 */
+  bankHeadingStep = targetAngleLength->angle - (modelRuntime->classLinkState).classState64 & FIXED_ANGLE16_MASK;
+  if (bankHeadingStep < FIXED_ANGLE16_HALF_TURN + 1) {
+    if (ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16 < bankHeadingStep) {
+      bankHeadingStep = ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16;
+    }
+  }
+  else if (bankHeadingStep < FIXED_ANGLE16_FULL_TURN - ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16) {
+    bankHeadingStep = (uint32_t)-ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16;
+  }
+  (modelRuntime->classLinkState).modelLinkOrState.classState =
+       (modelRuntime->classLinkState).modelLinkOrState.classState - ARMY_GLIDER_BANK_STEP_ANGLE16;
+  (modelRuntime->classLinkState).classState64 =
+       bankHeadingStep + (modelRuntime->classLinkState).classState64 & FIXED_ANGLE16_MASK;
+  if ((modelRuntime->classLinkState).modelLinkOrState.signedScalarState < ARMY_GLIDER_BANK_MAX_ANGLE16) {
+    (modelRuntime->classLinkState).modelLinkOrState.classState = ARMY_GLIDER_BANK_MAX_ANGLE16;
+  }
+}
+
 /* Address: 0x00522C00.
    Movement of banking units with three animated child parts (runtimeUpdate slot 17 of
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by model class from
@@ -1119,296 +1474,43 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
 
 {
   ArmyMovementStateFlags *ownerMovementFlags;
-  AngleTurn32 *childRotationAngle;
-  uint32_t *classStateWord;
   ModelDefinitionGroundMovementSteeringView *movementDefinition;
-  DirectSoundVoiceSet **voiceSetRef;
   AngleTurn32 previousRotationAngle;
   int previousWorldX;
   int previousWorldY;
-  ModelRuntimeNode *thirdChildNode;
-  AngleTurn32 currentHeading;
-  ArmyPlacementContactKindIndex32 placementContactKind;
-  uint32_t waypointWorldX;
-  /* next turn velocity, travel distance, then the recoil tilt */
-  int primaryDelta;
-  GraphicsFixedVec3 *worldPosition;
-  /* the linked army, the route point Y, then the owner army */
-  ArmyRuntimeSlot *armyOrWaypointY;
-  ModelRuntimeSlot *linkedModelRuntime;
-  int secondaryDelta;
-  AngleTurn32 desiredHeading;
-  uint32_t newHeading;
-  /* child count, sound index, turn velocity, then the bank heading step */
-  uint32_t turnVelocityOrIndex;
   ModelRuntimeNode *rootNode;
-  bool testResult;
-  FixedPlanarPointQ12 nextPosition;
-  ModelRuntimeSlot *blockingModelRuntime;
   bool waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
-  FixedAzimuthElevationRoll composedAngles;
-  Q12 heightOffsetQ12;
-  WorldRuntimeContext *dispatchWorldRuntime;
+  /* set only while the unit moves; read by the bank update only then */
   FixedLengthAngle targetAngleLength;
-  /* the second child part, later the root node at a collision */
-  ModelRuntimeNode *secondChildOrRootNode;
 
-  linkedModelRuntime = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime;
-  rootNode = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
-  /* Drop the linked model (+0xF0) unless both definitions have a footprint radius and this unit is still
-     within it. */
-  if ((linkedModelRuntime != NULL) &&
-      (movementDefinition = modelRuntime->modelDefinition,
-      ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
-        (movementDefinition->footprintRadius == 0)) ||
-       (testResult = ArmyCollision_TestPointWithinExpandedRuntimeRadius
-                     (movementDefinition->footprintRadius,
-                      (rootNode->worldTransform).translation.y,
-                      (rootNode->worldTransform).translation.x,linkedModelRuntime), !testResult))) {
-    turnVelocityOrIndex = rootNode->childCount;
-    (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
-    if ((2 < turnVelocityOrIndex) && (((modelRuntime->classState).behaviorState & 4) != 0)) {
-      /* start the child-part animation and play the sound whose index is at definition +0x274 */
-      classStateWord = &(modelRuntime->classState).behaviorState;
-      *classStateWord = *classStateWord | 1;
-      turnVelocityOrIndex = ((ModelDefinition *)movementDefinition)->positionedSoundSlotIndex;
-      if ((turnVelocityOrIndex != 0) &&
-         ((turnVelocityOrIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)))) {
-        voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[turnVelocityOrIndex];
-        if (voiceSetRef != NULL) {
-          worldPosition = &(modelRuntime->rootModelNode->worldTransform).translation;
-          testResult = TerrainGrid_TestProjectedCellMaskBits01
-                             ((modelRuntime->rootModelNode->worldTransform).translation.y,
-                              worldPosition->x,worldRuntime);
-          if (!testResult) {
-            SpatialSound_PlayPositionedOneShot
-                      (movementDefinition->positionedSoundMaximumDistanceQ12,movementDefinition->positionedSoundGainQ15,
-                       worldPosition,voiceSetRef);
-          }
-        }
-      }
-    }
-  }
+  ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint(worldRuntime,modelRuntime);
   rootNode = modelRuntime->rootModelNode;
   previousRotationAngle = (rootNode->modelPayload).worldRotationAngle2;
   previousWorldX = (rootNode->worldTransform).translation.x;
   previousWorldY = (rootNode->worldTransform).translation.y;
-  if (((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
+  if (((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) != 0) {
+    rootNode = ArmyRuntimeClass_PlaceBankingUnitStationary(worldRuntime,modelRuntime);
+  }
+  else {
     if (((modelRuntime->classState).behaviorState & 1) != 0) {
-      /* spin the three child parts until the countdown at +0x70 runs out, then clear bits 0-2 */
-      classStateWord = &(modelRuntime->classLinkState).classState70;
-      *classStateWord = *classStateWord - 1;
-      if (*classStateWord == 0) {
-        classStateWord = &(modelRuntime->classState).behaviorState;
-        *classStateWord = *classStateWord & ~7u;
-      }
-      secondChildOrRootNode = rootNode->childNodes[1];
-      thirdChildNode = rootNode->childNodes[2];
-      childRotationAngle = &(rootNode->childNodes[0]->modelPayload).localRotationAngle1;
-      *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
-      childRotationAngle = &(secondChildOrRootNode->modelPayload).localRotationAngle1;
-      *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
-      childRotationAngle = &(thirdChildNode->modelPayload).localRotationAngle1;
-      *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
+      ArmyRuntimeClass_SpinBankingChildParts(modelRuntime,rootNode);
     }
     waypointArrived = ArmyRuntime_UpdateMovementAndWaypoints
                        (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime,&waypointWorldXQ12,
                         &waypointWorldYQ12);
-    armyOrWaypointY = (ArmyRuntimeSlot *)waypointWorldYQ12;
-    waypointWorldX = waypointWorldXQ12;
-    if (waypointArrived) goto PlaceStationary;
-    /* a new route point (+0x68/+0x6C) restarts from standstill */
-    if ((waypointWorldX != (modelRuntime->classLinkState).classState68) &&
-       (armyOrWaypointY != (modelRuntime->classLinkState).armyLinkOrState.armyRuntime)) {
-      (modelRuntime->classLinkState).classState68 = waypointWorldX;
-      (modelRuntime->classLinkState).armyLinkOrState.classState = (uint32_t)armyOrWaypointY;
-      (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      (modelRuntime->movementControl).turnVelocityAngle16 = 0;
-    }
-    primaryDelta = waypointWorldX - (rootNode->worldTransform).translation.x;
-    secondaryDelta = (int)armyOrWaypointY - (rootNode->worldTransform).translation.y;
-    if ((primaryDelta == 0) && (secondaryDelta == 0)) {
-      targetAngleLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
+    if (waypointArrived) {
+      rootNode = ArmyRuntimeClass_PlaceBankingUnitStationary(worldRuntime,modelRuntime);
     }
     else {
-      targetAngleLength = FixedMath_Vector2AngleAndLength(secondaryDelta,primaryDelta);
-    }
-    desiredHeading = targetAngleLength.angle;
-    movementDefinition = modelRuntime->modelDefinition;
-    turnVelocityOrIndex = (modelRuntime->movementControl).turnVelocityAngle16;
-    if ((turnVelocityOrIndex == 0) && (targetAngleLength.length < (uint32_t)movementDefinition->headingErrorInterpolationDistanceQ12))
-    {
-HoldHeading:
-      (modelRuntime->movementControl).turnVelocityAngle16 = 0;
-      newHeading = (modelRuntime->rootModelNode->modelPayload).worldRotationAngle2;
-    }
-    else {
-      currentHeading = (rootNode->modelPayload).worldRotationAngle2;
-      newHeading = desiredHeading - currentHeading & FIXED_ANGLE16_MASK;
-      if (newHeading < FIXED_ANGLE16_HALF_TURN) {
-        if ((int)turnVelocityOrIndex < 0) goto HoldHeading;
-        if (turnVelocityOrIndex < newHeading) {
-          secondaryDelta = movementDefinition->turnRateLimitAnglePerTick * g_InGameSimulationStepTicks;
-          primaryDelta = turnVelocityOrIndex + movementDefinition->turnRateAccelerationAnglePerTick * g_InGameSimulationStepTicks
-          ;
-          (modelRuntime->movementControl).turnVelocityAngle16 = secondaryDelta;
-          newHeading = currentHeading + turnVelocityOrIndex;
-          if (primaryDelta < secondaryDelta) {
-            (modelRuntime->movementControl).turnVelocityAngle16 = primaryDelta;
-          }
-        }
-        else {
-SnapToHeading:
-          (modelRuntime->movementControl).turnVelocityAngle16 = 0;
-          newHeading = desiredHeading;
-        }
-      }
-      else {
-        if (0 < (int)turnVelocityOrIndex) goto HoldHeading;
-        if (turnVelocityOrIndex + FIXED_ANGLE16_FULL_TURN <= newHeading) goto SnapToHeading;
-        newHeading = currentHeading + turnVelocityOrIndex;
-        secondaryDelta = -movementDefinition->turnRateLimitAnglePerTick * g_InGameSimulationStepTicks;
-        primaryDelta = turnVelocityOrIndex - movementDefinition->turnRateAccelerationAnglePerTick * g_InGameSimulationStepTicks;
-        (modelRuntime->movementControl).turnVelocityAngle16 = secondaryDelta;
-        if (secondaryDelta < primaryDelta) {
-          (modelRuntime->movementControl).turnVelocityAngle16 = primaryDelta;
-        }
-      }
-    }
-    rootNode = modelRuntime->rootModelNode;
-    if ((newHeading & FIXED_ANGLE16_MASK) != (rootNode->modelPayload).worldRotationAngle2) {
-      (rootNode->modelPayload).worldRotationAngle2 = newHeading & FIXED_ANGLE16_MASK;
-      rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
-    }
-    ArmyRuntime_UpdateActivationMetricAndPlayStartSound
-              (worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-    /* slide straight towards the route point (desiredHeading, not the model heading) */
-    primaryDelta = (modelRuntime->movementControl).movementAdvancePerTickQ12 * g_InGameSimulationStepTicks
-    ;
-    if (primaryDelta < (int)targetAngleLength.length >> 1) {
-      nextPosition = FixedTrig_ProjectPlanarPoint
-                         ((rootNode->worldTransform).translation.x,(rootNode->worldTransform).translation.y,
-                          primaryDelta,desiredHeading);
-    }
-    else {
-      armyOrWaypointY = modelRuntime->ownerArmyRuntime;
-      ArmyRuntime_UpdateMovementAndWaypoints
-                (worldRuntime,(ArmyMovementRuntime *)armyOrWaypointY,&waypointWorldXQ12,&waypointWorldYQ12);
-      nextPosition.xQ12 = waypointWorldXQ12;
-      nextPosition.yQ12 = waypointWorldYQ12;
-      ownerMovementFlags = &armyOrWaypointY->movementStateFlags;
-      *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
-    }
-    placementContactKind = movementDefinition->placementContactKindIndex;
-    rootNode = modelRuntime->rootModelNode;
-    heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
-    dispatchWorldRuntime = worldRuntime;
-    blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
-                       (nextPosition.yQ12,nextPosition.xQ12,
-                        (RuntimeCollisionQueryView *)modelRuntime,worldRuntime);
-    if (blockingModelRuntime != NULL) {
-      secondChildOrRootNode = modelRuntime->rootModelNode;
-      ArmyRuntime_HandleCollisionPartner
-                ((ModelRuntimeSlot *)modelRuntime,(secondChildOrRootNode->worldTransform).translation.y,
-                 (secondChildOrRootNode->worldTransform).translation.x,blockingModelRuntime,
-                 worldRuntime);
-      (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      nextPosition.xQ12 = (secondChildOrRootNode->worldTransform).translation.x;
-      nextPosition.yQ12 = (secondChildOrRootNode->worldTransform).translation.y;
-      ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
-      *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
-    }
-    armyOrWaypointY = modelRuntime->ownerArmyRuntime;
-    g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
-              (heightOffsetQ12,nextPosition.yQ12,nextPosition.xQ12,rootNode,dispatchWorldRuntime);
-    rootNode = modelRuntime->rootModelNode;
-    /* recoil after a shot, as in ArmyRuntimeClass_UpdateGroundMovement */
-    primaryDelta = armyOrWaypointY->actionVector1Q12 - 1;
-    if (primaryDelta < 0) goto FinalizeTick;
-    primaryDelta = primaryDelta * armyOrWaypointY->actionVector2Q12;
-    armyOrWaypointY->actionVector1Q12 = armyOrWaypointY->actionVector1Q12 - 1;
-  }
-  else {
-PlaceStationary:
-    (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-    (modelRuntime->movementControl).turnVelocityAngle16 = 0;
-    armyOrWaypointY = modelRuntime->ownerArmyRuntime;
-    rootNode = modelRuntime->rootModelNode;
-    primaryDelta = armyOrWaypointY->actionVector1Q12 - 1;
-    if (primaryDelta < 0) {
-      (*g_ArmyPlacementContactKindDispatchTable.callbacks
-        [modelRuntime->modelDefinition->placementContactKindIndex])
-                (modelRuntime->modelDefinition->placementHeightOffsetQ12,
-                 (rootNode->worldTransform).translation.y,
-                 (rootNode->worldTransform).translation.x,rootNode,worldRuntime);
-      goto FinalizeTick;
-    }
-    primaryDelta = primaryDelta * armyOrWaypointY->actionVector2Q12;
-    armyOrWaypointY->actionVector1Q12 = armyOrWaypointY->actionVector1Q12 - 1;
-    (*g_ArmyPlacementContactKindDispatchTable.callbacks
-      [modelRuntime->modelDefinition->placementContactKindIndex])
-              (modelRuntime->modelDefinition->placementHeightOffsetQ12,
-               (rootNode->worldTransform).translation.y,(rootNode->worldTransform).translation.x
-               ,rootNode,worldRuntime);
-  }
-  composedAngles = FixedTransform_ComposeEulerAngles
-                     (0,FIXED_ANGLE16_QUARTER_TURN - primaryDelta,
-                      (modelRuntime->ownerArmyRuntime->actionVector0Q12 + FIXED_ANGLE16_HALF_TURN) -
-                      (rootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK,
-                      (rootNode->modelPayload).worldRotationAngle2,
-                      (rootNode->modelPayload).worldRotationAngle1,
-                      (rootNode->modelPayload).worldRotationAngle0);
-  (rootNode->modelPayload).worldRotationAngle0 = composedAngles.azimuthAngle;
-  (rootNode->modelPayload).worldRotationAngle1 = composedAngles.elevationAngle;
-  (rootNode->modelPayload).worldRotationAngle2 = composedAngles.rollAngle;
-FinalizeTick:
-  /* Banking: +0x60 (modelLinkOrState) is the bank value, ARMY_GLIDER_BANK_LEVEL_ANGLE16 = level, +0x64 (classState64) the bank
-     heading. */
-  movementDefinition = modelRuntime->modelDefinition;
-  if ((modelRuntime->classLinkState).modelLinkOrState.classState != ARMY_GLIDER_BANK_LEVEL_ANGLE16) {
-    composedAngles = FixedTransform_ComposeEulerAngles
-                       ((rootNode->modelPayload).worldRotationAngle2,
-                        (rootNode->modelPayload).worldRotationAngle1,
-                        (rootNode->modelPayload).worldRotationAngle0,0,
-                        (modelRuntime->classLinkState).modelLinkOrState.classState,
-                        (modelRuntime->classLinkState).classState64);
-    (rootNode->modelPayload).worldRotationAngle0 = composedAngles.azimuthAngle;
-    (rootNode->modelPayload).worldRotationAngle1 = composedAngles.elevationAngle;
-    (rootNode->modelPayload).worldRotationAngle2 = composedAngles.rollAngle;
-  }
-  turnVelocityOrIndex = targetAngleLength.angle - (modelRuntime->classLinkState).classState64 & FIXED_ANGLE16_MASK;
-  if (((modelRuntime->movementControl).movementAdvancePerTickQ12 == 0) ||
-     ((int)targetAngleLength.length <= movementDefinition->movementStepQ12PerTick * 32)) {
-    /* stopped or within 32 steps of the route point: bank value rises, up to level */
-    (modelRuntime->classLinkState).modelLinkOrState.classState =
-         (modelRuntime->classLinkState).modelLinkOrState.classState + ARMY_GLIDER_BANK_RECOVER_ANGLE16;
-    if (ARMY_GLIDER_BANK_LEVEL_ANGLE16 < (modelRuntime->classLinkState).modelLinkOrState.signedScalarState) {
-      (modelRuntime->classLinkState).modelLinkOrState.classState = ARMY_GLIDER_BANK_LEVEL_ANGLE16;
+      rootNode = ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
+                   (worldRuntime,modelRuntime,rootNode,waypointWorldXQ12,waypointWorldYQ12,&targetAngleLength);
     }
   }
-  else {
-    /* moving: turn the bank heading towards the travel direction by at most
-       ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16, the bank value drops down to ARMY_GLIDER_BANK_MAX_ANGLE16 */
-    if (turnVelocityOrIndex < FIXED_ANGLE16_HALF_TURN + 1) {
-      if (ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16 < turnVelocityOrIndex) {
-        turnVelocityOrIndex = ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16;
-      }
-    }
-    else if (turnVelocityOrIndex < FIXED_ANGLE16_FULL_TURN - ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16) {
-      turnVelocityOrIndex = (uint32_t)-ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16;
-    }
-    (modelRuntime->classLinkState).modelLinkOrState.classState =
-         (modelRuntime->classLinkState).modelLinkOrState.classState - ARMY_GLIDER_BANK_STEP_ANGLE16;
-    (modelRuntime->classLinkState).classState64 =
-         turnVelocityOrIndex + (modelRuntime->classLinkState).classState64 & FIXED_ANGLE16_MASK;
-    if ((modelRuntime->classLinkState).modelLinkOrState.signedScalarState < ARMY_GLIDER_BANK_MAX_ANGLE16) {
-      (modelRuntime->classLinkState).modelLinkOrState.classState = ARMY_GLIDER_BANK_MAX_ANGLE16;
-    }
-  }
+  ArmyRuntimeClass_UpdateBankAngle(modelRuntime,rootNode,&targetAngleLength);
   if (((modelRuntime->classState).behaviorState & 2) == 0) {
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
               (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);

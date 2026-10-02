@@ -15,12 +15,19 @@ folder; the tools started from here make further copies next to it), windowed, w
   saveload     skirmish_save.txt saves a skirmish (save\\Multi Ahaggar.sve must exist and list 10 entries with
                tools/data/pck.py), then choose_load.txt loads it from the choose-game page; the loaded game must
                reach "in game" and quit by script without crash or hang (port 905)
+  textedit     textedit_save.txt opens the save dialog of a skirmish, edits the prefilled file name "Multi Ahaggar"
+               with Home/End, Shift+Home/End, Ctrl+Left/Right, Delete, Backspace and typed text (script command
+               "type") into "Test Edit 42" and saves: save\\Test Edit 42.sve must exist, save\\Multi Ahaggar.sve
+               not; no crash or hang (port 907)
   multiplayer  run_multiplayer.py 150 s with mp_host_create.txt / mp_client_join.txt: both reach the game, no
                crash, and the client log still has "net recv" lines in its last 20 lines (ports 929/930)
   imagecmp     the release build with OPEN_THANDOR_SELFTEST=imagecmp: 0 pointer and 0 byte mismatches
   maps         run_all_maps.py --only "*[!0-9]" (the single games without a digit at the end); non-ok missions
                fail, except ENDED (the strong computer opponents can win a single map in time): a warning
                (ports 940+)
+  campaign     run_campaign_chain.py pairs (tutorial 1->2, 1->3, hansolo 8->9, 12->13, 22->23, one worker each):
+               every target level must receive units from the level before and run to the end of its time
+               without crash or hang (ports 910-914)
 --new defaults to build-test/thandor.exe, --release to build-rel/thandor.exe of this repository. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
 pixels/). Exit status 1 when any check failed. Only game processes started from the copies of this run are
@@ -43,8 +50,9 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log',
            'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
-CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'multiplayer', 'imagecmp', 'maps']
-INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'multiplayer': 2, 'imagecmp': 0}
+CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'imagecmp', 'campaign', 'maps']
+INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
+             'imagecmp': 0, 'campaign': 5}
 
 args = None
 game = None
@@ -236,6 +244,24 @@ def check_saveload():
     return 'PASS', 'saved (10 entries), loaded, ran 20 s in game'
 
 
+def check_textedit():
+    folder = make_copy('textedit', args.new)
+    expected = os.path.join(folder, 'save', 'Test Edit 42.sve')
+    env = {'OPEN_THANDOR_SCRIPT': os.path.join(HERE, 'textedit_save.txt'), 'OPEN_THANDOR_WINDOW_X': '1320',
+           'OPEN_THANDOR_WINDOW_Y': '0'}
+    exited, crashed, text = run_game(folder, '-NOINTRO -KARTE="mittelpunkt"', env, 300, 907)
+    saves = sorted(os.path.basename(p) for p in glob.glob(os.path.join(folder, 'save', '*.sve')))
+    with open(os.path.join(out_dir, 'textedit.txt'), 'w') as log:
+        log.write('==== exited %s, crash/hang %s, save files: %s\n%s\n' % (exited, crashed, saves, text))
+    if crashed:
+        return 'FAIL', 'crash/hang'
+    if 'script: in game' not in text:
+        return 'FAIL', 'did not reach the game'
+    if not os.path.exists(expected) or 'Multi Ahaggar.sve' in saves:
+        return 'FAIL', 'expected "Test Edit 42.sve", found: %s' % (', '.join(saves) or 'no save file')
+    return 'PASS', 'saved as "Test Edit 42.sve"' + ('' if exited else ' (no quit by script: timeout)')
+
+
 def check_multiplayer():
     host = make_copy('mp', args.new)
     client = host + '2'
@@ -303,6 +329,23 @@ def check_maps():
     if code != 0 or not rows:
         return 'FAIL', details + ' (tool exit %s)' % code
     return ('FAIL' if bad else 'WARN' if ended else 'PASS'), details
+
+
+def check_campaign():
+    folder = make_copy('campaign', args.new)
+    shutil.rmtree(os.path.join(folder, 'chain'), ignore_errors=True)
+    code, text = run_tool(os.path.join(out_dir, 'campaign.txt'),
+                          [os.path.join(HERE, 'run_campaign_chain.py'), folder, 'pairs', '--jobs', '5',
+                           '--port-base', '910'], 1500)
+    rows = [l for l in text.splitlines() if l.startswith('[') and '/' in l.split()[0]]
+    # '[n/5] <campaign> <a->b> <verdict> <per level: carried units, end>'
+    bad = [' '.join(r.split(']', 1)[1].split()[:3]) for r in rows if r.split(']', 1)[1].split()[2] != 'ok']
+    details = '%d/5 pairs ok' % (len(rows) - len(bad))
+    if bad:
+        details += ', FAILED: ' + '; '.join(bad)
+    if code != 0 or len(rows) != 5:
+        return 'FAIL', details + ' (%d results, tool exit %s)' % (len(rows), code)
+    return ('FAIL' if bad else 'PASS'), details
 
 
 # ------------------------------------------------------------------------------------------------------ main

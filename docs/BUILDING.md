@@ -30,7 +30,7 @@ Environment switches for testing:
 | `OPEN_THANDOR_SELFTEST=codec\|path\|stretch\|stretchcmp\|scanaddr\|pcx\|crash` | run one self-test and exit (results in `thandor.log`; `pcx` decodes `pcxtest.pcx`, written with the expected result by `tools/test/pcx_check.py`) |
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes frames and audio to `moviedump\`); the player is in [`src/platform/debug/movie_player.c`](../src/platform/debug/movie_player.c) |
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` |
-| `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `quit`) |
+| `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `quit`) |
 | `OPEN_THANDOR_POISON=1` | overwrite all original instructions with INT3 (needs `code_starts.bin`, see below) |
 
 Unattended test: `python tools/test/run_game.py <game dir> 120 --args '-NOINTRO -KARTE="mittelpunkt"' --script tools/test/skirmish_start.txt` starts a skirmish on Ahaggar, plays two minutes, and reports the log, crashes and a contact sheet of snapshots. `tools/test/skirmish_move.txt` also selects the starting vehicle and sends it to two points (left click on the unit, then on the ground), which exercises path finding; its `ingame` line waits until the level has loaded, and the times after it count from that moment. Command-line options need a leading `-` (`-NOINTRO`, `-KARTE="<level>"`).
@@ -80,9 +80,12 @@ All behaviour checks after a build in one command: `python tools/test/run_checks
 <previous build-test/thandor.exe>` runs in parallel, each in its own linked copy `<game dir>_chk_<name>` with its
 own UDP ports: the determinism references, the AI state hash on stromschnelle (two copies of the new build plus
 the old one), a pixel compare new vs old of the paused in-game frame and the choose-game page (only with
-`--old`), save and load of a skirmish (`skirmish_save.txt`, `choose_load.txt`), the two-instance multiplayer
+`--old`), save and load of a skirmish (`skirmish_save.txt`, `choose_load.txt`), the text edit keys in the save
+dialog (`textedit_save.txt` turns the prefilled "Multi Ahaggar" into "Test Edit 42" with Home/End, Shift+Home/End,
+Ctrl+Left/Right, Delete, Backspace and typing; `save\Test Edit 42.sve` must exist), the two-instance multiplayer
 test, the `imagecmp` self-test of the release build (`--release`, default `build-rel/thandor.exe`; the game dir
-needs `thandor_original.exe`) and the single maps (`--map-jobs`, `--map-minutes`; ENDED is only a warning, the
+needs `thandor_original.exe`), the campaign carry-over pairs (`run_campaign_chain.py pairs`, 5 workers, every
+target level must receive units) and the single maps (`--map-jobs`, `--map-minutes`; ENDED is only a warning, the
 strong computer opponents can win a map in time). `--new` defaults to `build-test/thandor.exe`, `--skip a,b`
 leaves checks out. It prints one table (check, result, details, duration), writes each check's output to
 `<game dir>/checks/` and exits non-zero when a check failed; it only stops game processes it started.
@@ -90,7 +93,7 @@ leaves checks out. It prints one table (check, result, details, duration), write
 level's units (tutorial 2 and 3, Hansolo 9, 13, 23) through the real level change and checks that units
 arrive; `... campaigns [--only tutorial,luke]` wins every level of each campaign in turn up to the campaign
 end. The script command `clickuntilnextlevel x y <ms>` clicks until the next level has loaded, then the times
-restart at 0. Results go to `<game dir>/chain/`.
+restart at 0. Results go to `<game dir>/chain/`; worker k uses UDP port `--port-base` (940) + k.
 
 ## Generated files and tools
 
