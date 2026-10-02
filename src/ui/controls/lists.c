@@ -1309,12 +1309,45 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
   return false;
 }
 
+/* Copies a whole path buffer (WIDE_PATH_MAX_CODE_UNITS code units, as dwords) into
+   g_UiTimedListHierarchyPathScratch. */
+static void UiTimedListTree_LoadHierarchyPath(const uint16_t *sourcePathUtf16)
+{
+  const uint32_t *sourceDwords;
+  uint32_t *destDwords;
+  int copyRemaining;
+
+  sourceDwords = (const uint32_t *)sourcePathUtf16;
+  destDwords = (uint32_t *)&g_UiTimedListHierarchyPathScratch;
+  for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
+    *destDwords = *sourceDwords;
+    sourceDwords++;
+    destDwords++;
+  }
+}
+
+/* Failure exit of UiTimedListTree_BuildDirectoryHierarchy: frees levelCount entries from the top of the
+   level stack, clears *outSelectedRecord and returns false.
+   Original quirk: one pop per level (not per (record, block) pair), so this frees the top blocks and
+   interleaved found-record pointers, not every pushed block. */
+static bool UiTimedListTree_AbandonDirectoryHierarchy
+          (UiTimedListTreeRecord **levelStack,int levelStackTop,int levelCount,
+          UiTimedListTreeRecord **outSelectedRecord)
+{
+  for (; levelCount != 0; levelCount--) {
+    g_MemoryApi.free(levelStack[--levelStackTop]);
+  }
+  *outSelectedRecord = NULL;
+  return false;
+}
+
 /* Address: 0x00410380.
    Builds the directory tree from the root ("computer") down to selectedPathUtf16: one record block per path
    level (UiTimedListTree_BuildDirectoryRecordBlock), each linked to its parent block and opened (expanded)
    from the parent row that names it. Returns true with the root block in *outRootBlock and the row of the
    selected directory in *outSelectedRecord, or false on failure (then the blocks built so far are freed,
-   see the note at fail; *outSelectedRecord is set to NULL, *outRootBlock left unchanged). No caller found
+   see UiTimedListTree_AbandonDirectoryHierarchy; *outSelectedRecord is set to NULL, *outRootBlock left
+   unchanged). No caller found
    in src/ or image_data.c (only the function map).
 */
 bool UiTimedListTree_BuildDirectoryHierarchy
@@ -1327,11 +1360,9 @@ bool UiTimedListTree_BuildDirectoryHierarchy
      code units, so there are at most 255 path levels plus the root-level match. */
   UiTimedListTreeRecord *levelStack[514];
   int levelStackTop;
-  int copyRemaining;
   uint32_t recordsRemaining;
   int levelCount;
   uint16_t firstCodeUnit;
-  WidePathBuffer256 *pathCopyCursor;
   UiTimedListTreeRecord *levelBlock;
   UiTimedListTreeRecord *parentBlock;
   UiTimedListTreeRecord *recordCursor;
@@ -1339,22 +1370,20 @@ bool UiTimedListTree_BuildDirectoryHierarchy
 
   levelCount = 0;
   levelStackTop = 0;
-  while( true ) {
-    pathCopyCursor = &g_UiTimedListHierarchyPathScratch;
-    for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) { /* dwords */
-      pathCopyCursor->firstTwoCodeUnits = *(uint32_t *)selectedPathUtf16;
-      selectedPathUtf16 = (uint16_t *)(selectedPathUtf16 + 2);
-      pathCopyCursor = (WidePathBuffer256 *)(&pathCopyCursor->firstTwoCodeUnits + 1);
-    }
-    if ((g_UiTimedListHierarchyPathScratch.codeUnits[3] == 0) ||
-       (g_UiTimedListHierarchyPathScratch.codeUnits[2] == 0)) break;
+  UiTimedListTree_LoadHierarchyPath(selectedPathUtf16);
+  while ((g_UiTimedListHierarchyPathScratch.codeUnits[3] != 0) &&
+         (g_UiTimedListHierarchyPathScratch.codeUnits[2] != 0)) {
     if (levelStackTop >= 512) {
       /* Only reachable when splitting stops shortening the path; the original then pushes until
          its stack overflows. */
-      goto fail;
+      return UiTimedListTree_AbandonDirectoryHierarchy
+                       (levelStack,levelStackTop,levelCount,outSelectedRecord);
     }
     if (!UiTimedListTree_BuildDirectoryRecordBlock
-                       (g_UiTimedListHierarchyPathScratch.codeUnits,&builtBlock)) goto fail;
+                       (g_UiTimedListHierarchyPathScratch.codeUnits,&builtBlock)) {
+      return UiTimedListTree_AbandonDirectoryHierarchy
+                       (levelStack,levelStackTop,levelCount,outSelectedRecord);
+    }
     WidePath_SplitParentAndLeaf
               (g_UiTimedListRecordPathScratch.codeUnits,
                g_UiTimedListHierarchyParentPathScratch.codeUnits,
@@ -1364,11 +1393,11 @@ bool UiTimedListTree_BuildDirectoryHierarchy
                    (g_UiTimedListRecordPathScratch.codeUnits,builtBlock);
     levelStack[levelStackTop++] = builtBlock;
     levelCount++;
-    selectedPathUtf16 = (uint16_t *)&g_UiTimedListHierarchyParentPathScratch;
+    UiTimedListTree_LoadHierarchyPath(g_UiTimedListHierarchyParentPathScratch.codeUnits);
   }
   /* Root level: find the record whose label starts with the drive letter (case-insensitive). */
   if (!UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits,&builtBlock)) {
-    goto fail;
+    return UiTimedListTree_AbandonDirectoryHierarchy(levelStack,levelStackTop,levelCount,outSelectedRecord);
   }
   levelBlock = builtBlock;
   recordsRemaining = levelBlock->countOrLabelText;
@@ -1378,7 +1407,7 @@ bool UiTimedListTree_BuildDirectoryHierarchy
     recordCursor++;
     recordsRemaining--;
     if (recordsRemaining == 0) {
-      goto fail;
+      return UiTimedListTree_AbandonDirectoryHierarchy(levelStack,levelStackTop,levelCount,outSelectedRecord);
     }
   }
   levelStack[levelStackTop++] = recordCursor;
@@ -1386,7 +1415,7 @@ bool UiTimedListTree_BuildDirectoryHierarchy
   levelCount++;
   g_UiTimedListHierarchyPathScratch.codeUnits[0] = 0;
   if (!UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits,&builtBlock)) {
-    goto fail;
+    return UiTimedListTree_AbandonDirectoryHierarchy(levelStack,levelStackTop,levelCount,outSelectedRecord);
   }
   /* Link each level block to its parent block and to the parent record that opens it,
      from the drive list down to the selected path. */
@@ -1409,14 +1438,6 @@ bool UiTimedListTree_BuildDirectoryHierarchy
   *outRootBlock = builtBlock;
   *outSelectedRecord = recordCursor;
   return true;
-fail:
-  /* As in the original: one pop per level (not per pair), so this frees the top blocks and
-     interleaved found-record pointers, not every pushed block. */
-  for (; levelCount != 0; levelCount--) {
-    g_MemoryApi.free(levelStack[--levelStackTop]);
-  }
-  *outSelectedRecord = NULL;
-  return false;
 }
 
 /* Address: 0x004104B0.

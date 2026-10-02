@@ -38,7 +38,9 @@ try:
     process.wait(timeout=args.seconds)
 except subprocess.TimeoutExpired:
     pass
-subprocess.run('taskkill /F /IM thandor.exe', shell=True, capture_output=True)
+# stop only the process started here (and its children); other game instances keep running
+subprocess.run('taskkill /F /T /PID %d' % process.pid, shell=True, capture_output=True)
+process.wait()
 
 if os.path.exists(log):
     for line in list(open(log, errors='replace'))[log_lines:]:

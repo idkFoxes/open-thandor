@@ -99,6 +99,9 @@ else:
     time.sleep(-args.client_delay)
     host = start(host_dir, '-NOINTRO -NAME="Host" -HOST', HOST_ENV, args.host_script)
 time.sleep(args.seconds)
-subprocess.run('taskkill /F /IM thandor.exe', shell=True, capture_output=True)
+# stop only the two processes started here (and their children); other game instances keep running
+for process in (host, client):
+    subprocess.run('taskkill /F /T /PID %d' % process.pid, shell=True, capture_output=True)
+    process.wait()
 report(host_dir, host_first, 'host')
 report(client_dir, client_first, 'client')

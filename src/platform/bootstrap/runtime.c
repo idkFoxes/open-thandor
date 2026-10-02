@@ -25,7 +25,8 @@
 void __cdecl ProcessEntry(void)
 
 {
-  HANDLE processOrThreadHandle;
+  HANDLE processHandle;
+  HANDLE threadHandle;
   HINSTANCE windowInstance;
   int screenHeight;
   int screenWidth;
@@ -42,10 +43,10 @@ void __cdecl ProcessEntry(void)
   uint32_t displayHeight;
 
   g_hInstance = GetModuleHandleA(NULL);
-  processOrThreadHandle = GetCurrentProcess();
-  SetPriorityClass(processOrThreadHandle,REALTIME_PRIORITY_CLASS);
-  processOrThreadHandle = GetCurrentThread();
-  SetThreadPriority(processOrThreadHandle,THREAD_PRIORITY_NORMAL);
+  processHandle = GetCurrentProcess();
+  SetPriorityClass(processHandle,REALTIME_PRIORITY_CLASS);
+  threadHandle = GetCurrentThread();
+  SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
 #ifdef THANDOR_TEST_AIDS
   if ((FindWindowA(sz_MainWindowClass,NULL) == NULL) || Thandor_TestAidAllowSecondInstance()) {

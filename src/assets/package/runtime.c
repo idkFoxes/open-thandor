@@ -324,6 +324,73 @@ bool Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError)
 }
 
 
+/* Package_DeleteEntry, step 1: rewrites the archive header of fileHandle with one entry less and its size
+   reduced by the deleted entry (header plus entryPackedSize payload bytes), staged in destination. Stores the
+   archive size before the delete in *outArchiveEndOffset. Returns 0 or the file-system error code. */
+static uint32_t Package_ShrinkArchiveHeader(PckStoredByteCount entryPackedSize,uint8_t *destination,
+                                            EngineFileHandle fileHandle,int *outArchiveEndOffset)
+{
+  uint32_t statusCode;
+
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  *outArchiveEndOffset = *(int *)(destination + PCK_ARCHIVE_SIZE);
+  ((PckArchiveHeader *)destination)->entryCount--;
+  *(PckStoredByteCount *)(destination + PCK_ARCHIVE_SIZE) =
+       *(int *)(destination + PCK_ARCHIVE_SIZE) - (entryPackedSize + PCK_ENTRY_HEADER_BYTES);
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  return g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
+}
+
+
+/* Package_DeleteEntry, step 2: moves the tailByteCount bytes from tailOffset down to entryOffset (the deleted
+   entry's header) through g_PackageScratchBuffer and truncates the file behind them. Returns 0, the
+   file-system error code, or FATAL_ERROR_GENERAL_FAILURE when the tail does not fit the scratch buffer. */
+static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,FileSystemFilePosition tailOffset,
+                                          uint32_t tailByteCount,EngineFileHandle fileHandle)
+{
+  uint32_t statusCode;
+
+  if (tailByteCount == 0) {
+    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryOffset,(void *)fileHandle);
+    if (statusCode != 0) {
+      return statusCode;
+    }
+    /* a zero-byte write truncates the file at the current position */
+    return g_FileSystemWriteExactOrFlush(0,NULL,(void *)fileHandle);
+  }
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,tailOffset,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  if (PACKAGE_SCRATCH_BUFFER_BYTES < tailByteCount) {
+    return FATAL_ERROR_GENERAL_FAILURE;
+  }
+  statusCode = g_FileSystemReadExact(tailByteCount,g_PackageScratchBuffer,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryOffset,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  statusCode = g_FileSystemWriteExactOrFlush(tailByteCount,g_PackageScratchBuffer,(void *)fileHandle);
+  if (statusCode != 0) {
+    return statusCode;
+  }
+  return g_FileSystemWriteExactOrFlush(0,NULL,(void *)fileHandle);
+}
+
+
 /* Address: 0x0040E6F0.
    Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as
    deleted): the archive header loses one entry and its size, everything behind the entry is moved down over
@@ -351,50 +418,20 @@ bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *ou
     /* a missing entry counts as deleted */
     return true;
   }
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
-  if (statusCode != 0) goto fail;
   entryPackedSize = foundEntry->packedSize;
-  statusCode = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
-  if (statusCode != 0) goto fail;
-  archiveEndOffset = *(int *)(destination + PCK_ARCHIVE_SIZE);
-  ((PckArchiveHeader *)destination)->entryCount--;
-  *(PckStoredByteCount *)(destination + PCK_ARCHIVE_SIZE) =
-       *(int *)(destination + PCK_ARCHIVE_SIZE) - (entryPackedSize + PCK_ENTRY_HEADER_BYTES);
-  statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
-  if (statusCode != 0) goto fail;
-  statusCode = g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
-  if (statusCode != 0) goto fail;
-  /* runtimePayloadOffset is the file offset of the entry header */
-  tailOffset = foundEntry->runtimePayloadOffset + foundEntry->packedSize + PCK_ENTRY_HEADER_BYTES;
-  tailByteCount = archiveEndOffset - tailOffset;
-  if (tailByteCount == 0) {
-    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,foundEntry->runtimePayloadOffset,(void *)fileHandle);
-    if (statusCode != 0) goto fail;
-    /* a zero-byte write truncates the file at the current position */
-    statusCode = g_FileSystemWriteExactOrFlush(0,NULL,(void *)fileHandle);
-    if (statusCode != 0) goto fail;
-  }
-  else {
-    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,tailOffset,(void *)fileHandle);
-    if (statusCode != 0) goto fail;
-    if (PACKAGE_SCRATCH_BUFFER_BYTES < tailByteCount) {
-      statusCode = FATAL_ERROR_GENERAL_FAILURE;
-      goto fail;
+  statusCode = Package_ShrinkArchiveHeader(entryPackedSize,destination,fileHandle,&archiveEndOffset);
+  if (statusCode == 0) {
+    /* runtimePayloadOffset is the file offset of the entry header */
+    tailOffset = foundEntry->runtimePayloadOffset + foundEntry->packedSize + PCK_ENTRY_HEADER_BYTES;
+    tailByteCount = archiveEndOffset - tailOffset;
+    statusCode = Package_MoveTailOverEntry(foundEntry->runtimePayloadOffset,tailOffset,tailByteCount,fileHandle);
+    if (statusCode == 0) {
+      if (Package_ReadDirectory(fileHandle,&directoryErrorCode)) {
+        return true;
+      }
+      statusCode = directoryErrorCode;
     }
-    statusCode = g_FileSystemReadExact(tailByteCount,g_PackageScratchBuffer,(void *)fileHandle);
-    if (statusCode != 0) goto fail;
-    statusCode = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,foundEntry->runtimePayloadOffset,(void *)fileHandle);
-    if (statusCode != 0) goto fail;
-    statusCode = g_FileSystemWriteExactOrFlush(tailByteCount,g_PackageScratchBuffer,(void *)fileHandle);
-    if (statusCode != 0) goto fail;
-    statusCode = g_FileSystemWriteExactOrFlush(0,NULL,(void *)fileHandle);
-    if (statusCode != 0) goto fail;
   }
-  if (Package_ReadDirectory(fileHandle,&directoryErrorCode)) {
-    return true;
-  }
-  statusCode = directoryErrorCode;
-fail:
   if (outErrorCode != NULL) {
     *outErrorCode = statusCode;
   }

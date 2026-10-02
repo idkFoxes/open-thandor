@@ -52,7 +52,8 @@ for t in threads:
     t.join()
 for k, d in enumerate(DIRS):
     print(d, len(results[k]), 'steps, last', results[k][-1] if results[k] else None)
-base = results[0]
+# compare by simulation tick (the first column): under load the first recorded tick can differ by one
+base = {line[0]: line for line in results[0]}
 for k in range(1, len(DIRS)):
-    first = next((a[0] for a, b in zip(base, results[k]) if a != b), None)
+    first = next((line[0] for line in results[k] if line[0] in base and base[line[0]] != line), None)
     print('dir %d vs dir 0: %s' % (k, 'identical' if first is None else 'first difference at tick ' + first))

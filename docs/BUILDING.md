@@ -76,6 +76,16 @@ The arena scenarios have no computer opponents; `python tools/test/compare_map_h
 <dir2> ...` plays a stock map with strong computer opponents under the same state hash in several game
 directories at once (game speed 5 from the first step, `OPEN_THANDOR_STATEHASH_SPEED`) and reports the first
 differing step - put the previous build into one directory to compare versions.
+All behaviour checks after a build in one command: `python tools/test/run_checks.py <game dir> --old
+<previous build-test/thandor.exe>` runs in parallel, each in its own linked copy `<game dir>_chk_<name>` with its
+own UDP ports: the determinism references, the AI state hash on stromschnelle (two copies of the new build plus
+the old one), a pixel compare new vs old of the paused in-game frame and the choose-game page (only with
+`--old`), save and load of a skirmish (`skirmish_save.txt`, `choose_load.txt`), the two-instance multiplayer
+test, the `imagecmp` self-test of the release build (`--release`, default `build-rel/thandor.exe`; the game dir
+needs `thandor_original.exe`) and the single maps (`--map-jobs`, `--map-minutes`; ENDED is only a warning, the
+strong computer opponents can win a map in time). `--new` defaults to `build-test/thandor.exe`, `--skip a,b`
+leaves checks out. It prints one table (check, result, details, duration), writes each check's output to
+`<game dir>/checks/` and exits non-zero when a check failed; it only stops game processes it started.
 `python tools/test/run_campaign_chain.py <game dir> pairs` plays into each level that needs the previous
 level's units (tutorial 2 and 3, Hansolo 9, 13, 23) through the real level change and checks that units
 arrive; `... campaigns [--only tutorial,luke]` wins every level of each campaign in turn up to the campaign

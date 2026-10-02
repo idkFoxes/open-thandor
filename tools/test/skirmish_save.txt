@@ -1,0 +1,12 @@
+# Check script (run_checks.py save/load): start with -NOINTRO -KARTE="mittelpunkt"; click "Weiter"/"Beginnen" until the
+# skirmish runs, open the menu (Esc), "Speichern", then "Speichern" in the dialog -> save\Multi Ahaggar.sve; quit.
+# Lines that do not start with a number are ignored (comments). Layout 1280x720 in an 800-high window: y = screen y - 40.
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+4000 key 27
+6000 move 406 298
+6500 click 406 298
+9000 move 710 499
+9500 click 710 499
+17000 quit

@@ -1,0 +1,12 @@
+# Check script (run_checks.py save/load): start with -NOINTRO -KARTE="-" (choose-game page); "Spiel laden", first entry,
+# "Starten"; wait until the loaded game runs, let it run 20 s, quit.
+# Lines that do not start with a number are ignored (comments). Layout 1280x720 in an 800-high window: y = screen y - 40.
+0 layout 1280 720
+10000 move 391 260
+10500 click 391 260
+13500 move 520 256
+14000 click 520 256
+15500 move 839 499
+16000 click 839 499
+0 ingame
+20000 quit

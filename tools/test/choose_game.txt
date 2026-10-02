@@ -1,0 +1,5 @@
+# Check script (run_checks.py pixel compare): start with -NOINTRO -KARTE="-" (choose-game page), quit after 14 s. Run
+# with OPEN_THANDOR_AUTOSHOT=2000: the last shots\shot_NNNN.bmp shows the page.
+# Lines that do not start with a number are ignored (comments).
+0 layout 1280 720
+14000 quit

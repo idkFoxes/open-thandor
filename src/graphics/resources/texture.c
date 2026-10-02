@@ -606,6 +606,486 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
 }
 
 
+/* Work state of GraphicsTextureSource_DecomposeSubresourceRegions while it cuts a sprite sheet into regions.
+   The work area is the new asset's block: header (and palette bank), then the record table growing upwards,
+   free bytes, the packed sprite pixels growing downwards, and the working copy of the sheet at the end. */
+typedef struct GraphicsTextureDecomposeState {
+  GraphicsTextureSourceAsset *asset;   /* the new asset */
+  GraphicsTextureSourceEntry *records; /* its subresource record table */
+  int sourceWidth;                     /* pixels per row of the sheet, the row stride of the working copy */
+  int rowsRemaining;                   /* rows from the scanned row to the bottom of the sheet, counting it */
+  int freeBytes;                       /* bytes of the work area not yet taken by records or packed pixels */
+  uint8_t *packedPixels;               /* lowest packed sprite pixel */
+  uint32_t packedPixelBytes;
+  bool edgeTransparent;                /* the edge colour is transparent, so border rows/columns in it are trimmed */
+} GraphicsTextureDecomposeState;
+
+/* Takes `amount` bytes of the work area's free bytes. Returns false (taking nothing) unless at least one byte
+   stays free. */
+static bool GraphicsTextureDecompose_ReserveBytes(int *freeBytes,int amount)
+{
+  int bytesLeft;
+
+  bytesLeft = *freeBytes - amount;
+  if (bytesLeft == 0 || *freeBytes < amount) {
+    return false;
+  }
+  *freeBytes = bytesLeft;
+  return true;
+}
+
+/* Copies `count` dwords upwards from the lowest one (the packed pixels move down onto the record table end). */
+static void GraphicsTextureDecompose_CopyDwords(uint32_t *destination,const uint32_t *source,uint32_t count)
+{
+  for (; count != 0; count--) {
+    *destination = *source;
+    destination++;
+    source++;
+  }
+}
+
+/* Appends a record to the new asset's table: logical height and origin zero, the given palette index; the
+   caller fills in the sizes. */
+static GraphicsTextureSourceEntry *GraphicsTextureDecompose_AddRecord
+          (GraphicsTextureDecomposeState *state,GraphicsPaletteIndex paletteIndex)
+{
+  GraphicsTextureSourceEntry *record;
+  AssetSubresourceCount recordIndex;
+
+  recordIndex = (state->asset->tableDescriptor).subresourceCount;
+  (state->asset->tableDescriptor).subresourceCount = recordIndex + 1;
+  record = &state->records[recordIndex];
+  record->logicalHeight = 0;
+  record->originX = 0;
+  record->originY = 0;
+  record->paletteIndex = paletteIndex;
+  return record;
+}
+
+/* True when the `count` (at least 1) ARGB pixels from `pixel` on, `step` pixels apart, all equal `color`. */
+static bool GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t count,int step,uint32_t color)
+{
+  for (; count != 0; count--) {
+    if (*pixel != color) {
+      return false;
+    }
+    pixel = pixel + step;
+  }
+  return true;
+}
+
+/* True when the `count` (at least 1) palette indices from `pixel` on, `step` bytes apart, all equal `index`. */
+static bool GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t count,int step,uint8_t index)
+{
+  for (; count != 0; count--) {
+    if (*pixel != index) {
+      return false;
+    }
+    pixel = pixel + step;
+  }
+  return true;
+}
+
+/* Cuts the region whose top-left pixel (not background) is `blockStart` out of the ARGB working copy;
+   `columnsLeft` counts the pixels from blockStart to the end of its row. Adds its record (logical width = the
+   run of non-background pixels in this row, logical height = the run in this column, palette index -1), trims
+   border rows and columns in the edge colour when that is transparent (the origin records how much was cut at
+   the top/left; at least one row and column stay), copies the remaining pixels in front of the packed ones and
+   clears the whole logical block to background. Returns false when the work area is full. */
+static bool GraphicsTextureDecompose_CutArgbRegion
+          (GraphicsTextureDecomposeState *state,uint32_t *blockStart,int columnsLeft,uint32_t background,
+          uint32_t edgeColor)
+{
+  GraphicsTextureSourceEntry *record;
+  int sourceWidth;
+  int count;
+  int pixelCount;
+  uint32_t rowCount;
+  uint32_t column;
+  uint32_t *pixel;
+  uint32_t *topLeft;
+  uint32_t *bottomRow;
+  uint32_t *rightColumn;
+  uint32_t *packed;
+
+  if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,GFX_SUBRESOURCE_RECORD_SIZE)) {
+    return false;
+  }
+  sourceWidth = state->sourceWidth;
+  record = GraphicsTextureDecompose_AddRecord(state,-1);
+  pixel = blockStart;
+  for (count = columnsLeft; count != 0 && *pixel != background; count--) {
+    pixel++;
+  }
+  record->logicalWidth = (uint32_t)(pixel - blockStart);
+  pixel = blockStart;
+  count = state->rowsRemaining;
+  do {
+    record->logicalHeight = record->logicalHeight + 1;
+    pixel = pixel + sourceWidth;
+    count--;
+  } while (count != 0 && *pixel != background);
+  record->pixelWidth = record->logicalWidth;
+  record->pixelHeight = record->logicalHeight;
+  topLeft = blockStart;
+  if (state->edgeTransparent) {
+    while (GraphicsTextureDecompose_ArgbRunIs(topLeft,record->logicalWidth,1,edgeColor)) {
+      record->originY = record->originY + 1;
+      record->pixelHeight = record->pixelHeight - 1;
+      if (record->pixelHeight == 0) {
+        record->originY = record->originY - 1;
+        record->pixelHeight = record->pixelHeight + 1;
+        break;
+      }
+      topLeft = topLeft + sourceWidth;
+    }
+    bottomRow = topLeft + sourceWidth * (record->pixelHeight - 1);
+    while (GraphicsTextureDecompose_ArgbRunIs(bottomRow,record->logicalWidth,1,edgeColor)) {
+      record->pixelHeight = record->pixelHeight - 1;
+      if (record->pixelHeight == 0) {
+        record->pixelHeight = record->pixelHeight + 1;
+        break;
+      }
+      bottomRow = bottomRow - sourceWidth;
+    }
+    while (GraphicsTextureDecompose_ArgbRunIs(topLeft,record->pixelHeight,sourceWidth,edgeColor)) {
+      record->originX = record->originX + 1;
+      record->pixelWidth = record->pixelWidth - 1;
+      if (record->pixelWidth == 0) {
+        record->originX = record->originX - 1;
+        record->pixelWidth = record->pixelWidth + 1;
+        break;
+      }
+      topLeft = topLeft + 1;
+    }
+    rightColumn = topLeft + (record->pixelWidth - 1);
+    while (GraphicsTextureDecompose_ArgbRunIs(rightColumn,record->pixelHeight,sourceWidth,edgeColor)) {
+      record->pixelWidth = record->pixelWidth - 1;
+      if (record->pixelWidth == 0) {
+        record->pixelWidth = record->pixelWidth + 1;
+        break;
+      }
+      rightColumn = rightColumn - 1;
+    }
+  }
+  pixelCount = record->pixelWidth * record->pixelHeight;
+  if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,pixelCount * 4)) {
+    return false;
+  }
+  state->packedPixels = state->packedPixels - pixelCount * 4;
+  state->packedPixelBytes = state->packedPixelBytes + pixelCount * 4;
+  packed = (uint32_t *)state->packedPixels;
+  pixel = topLeft;
+  for (rowCount = record->pixelHeight; rowCount != 0; rowCount--) {
+    GraphicsTextureDecompose_CopyDwords(packed,pixel,record->pixelWidth);
+    packed = packed + record->pixelWidth;
+    pixel = pixel + sourceWidth;
+  }
+  pixel = blockStart;
+  for (rowCount = record->logicalHeight; rowCount != 0; rowCount--) {
+    for (column = 0; column < record->logicalWidth; column++) {
+      pixel[column] = background;
+    }
+    pixel = pixel + sourceWidth;
+  }
+  return true;
+}
+
+/* GraphicsTextureDecompose_CutArgbRegion on 8-bit palette indices: the record gets palette index 0 and the
+   packed pixels are padded to whole dwords. */
+static bool GraphicsTextureDecompose_CutIndexedRegion
+          (GraphicsTextureDecomposeState *state,uint8_t *blockStart,int columnsLeft,uint8_t backgroundIndex,
+          uint8_t edgeIndex)
+{
+  GraphicsTextureSourceEntry *record;
+  int sourceWidth;
+  int count;
+  uint32_t packedBytes;
+  uint32_t rowCount;
+  uint32_t column;
+  uint8_t *pixel;
+  uint8_t *topLeft;
+  uint8_t *bottomRow;
+  uint8_t *rightColumn;
+  uint8_t *packed;
+
+  if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,GFX_SUBRESOURCE_RECORD_SIZE)) {
+    return false;
+  }
+  sourceWidth = state->sourceWidth;
+  record = GraphicsTextureDecompose_AddRecord(state,0);
+  pixel = blockStart;
+  for (count = columnsLeft; count != 0 && *pixel != backgroundIndex; count--) {
+    pixel++;
+  }
+  record->logicalWidth = (uint32_t)(pixel - blockStart);
+  pixel = blockStart;
+  count = state->rowsRemaining;
+  do {
+    record->logicalHeight = record->logicalHeight + 1;
+    pixel = pixel + sourceWidth;
+    count--;
+  } while (count != 0 && *pixel != backgroundIndex);
+  record->pixelWidth = record->logicalWidth;
+  record->pixelHeight = record->logicalHeight;
+  topLeft = blockStart;
+  if (state->edgeTransparent) {
+    while (GraphicsTextureDecompose_IndexRunIs(topLeft,record->logicalWidth,1,edgeIndex)) {
+      record->originY = record->originY + 1;
+      record->pixelHeight = record->pixelHeight - 1;
+      if (record->pixelHeight == 0) {
+        record->originY = record->originY - 1;
+        record->pixelHeight = record->pixelHeight + 1;
+        break;
+      }
+      topLeft = topLeft + sourceWidth;
+    }
+    bottomRow = topLeft + sourceWidth * (record->pixelHeight - 1);
+    while (GraphicsTextureDecompose_IndexRunIs(bottomRow,record->logicalWidth,1,edgeIndex)) {
+      record->pixelHeight = record->pixelHeight - 1;
+      if (record->pixelHeight == 0) {
+        record->pixelHeight = record->pixelHeight + 1;
+        break;
+      }
+      bottomRow = bottomRow - sourceWidth;
+    }
+    while (GraphicsTextureDecompose_IndexRunIs(topLeft,record->pixelHeight,sourceWidth,edgeIndex)) {
+      record->originX = record->originX + 1;
+      record->pixelWidth = record->pixelWidth - 1;
+      if (record->pixelWidth == 0) {
+        record->originX = record->originX - 1;
+        record->pixelWidth = record->pixelWidth + 1;
+        break;
+      }
+      topLeft = topLeft + 1;
+    }
+    rightColumn = topLeft + (record->pixelWidth - 1);
+    while (GraphicsTextureDecompose_IndexRunIs(rightColumn,record->pixelHeight,sourceWidth,edgeIndex)) {
+      record->pixelWidth = record->pixelWidth - 1;
+      if (record->pixelWidth == 0) {
+        record->pixelWidth = record->pixelWidth + 1;
+        break;
+      }
+      rightColumn = rightColumn - 1;
+    }
+  }
+  packedBytes = record->pixelWidth * record->pixelHeight + 3U & ~3u;
+  if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,(int)packedBytes)) {
+    return false;
+  }
+  state->packedPixels = state->packedPixels - packedBytes;
+  state->packedPixelBytes = state->packedPixelBytes + packedBytes;
+  packed = state->packedPixels;
+  pixel = topLeft;
+  for (rowCount = record->pixelHeight; rowCount != 0; rowCount--) {
+    for (column = 0; column < record->pixelWidth; column++) {
+      packed[column] = pixel[column];
+    }
+    packed = packed + record->pixelWidth;
+    pixel = pixel + sourceWidth;
+  }
+  pixel = blockStart;
+  for (rowCount = record->logicalHeight; rowCount != 0; rowCount--) {
+    for (column = 0; column < record->logicalWidth; column++) {
+      pixel[column] = backgroundIndex;
+    }
+    pixel = pixel + sourceWidth;
+  }
+  return true;
+}
+
+/* Decomposition of a subresource with direct ARGB8888 pixels: no palette, the new record table follows the
+   header. Returns 0 (asset complete and shrunk), 0x2D (nothing but background), FATAL_ERROR_GENERAL_FAILURE
+   (work area too small) or the allocator's error. */
+static uint32_t GraphicsTextureDecompose_ArgbRegions
+          (GraphicsTextureDecomposeState *state,const uint32_t *sourcePixels)
+{
+  GraphicsTextureSourceAsset *asset;
+  uint32_t background;
+  uint32_t edgeColor;
+  uint32_t pixelCount;
+  uint32_t scanLeft;
+  const uint32_t *sourcePixel;
+  uint32_t *workPixels;
+  uint32_t *scanCursor;
+  int columnsLeft;
+  uint32_t tableBytes;
+  uint32_t arenaError;
+  uint32_t pixelDataOffset;
+  GraphicsTextureSourceEntry *record;
+  AssetSubresourceCount recordsLeft;
+
+  asset = state->asset;
+  (asset->tableDescriptor).paletteBankCount = 0;
+  (asset->tableDescriptor).subresourceCount = 0;
+  (asset->tableDescriptor).subresourceTableOffset = GFX_ASSET_HEADER_SIZE;
+  state->records = (GraphicsTextureSourceEntry *)((uint8_t *)asset + GFX_ASSET_HEADER_SIZE);
+  /* the first pixel is the background; the first other pixel gives the edge colour */
+  background = sourcePixels[0];
+  pixelCount = state->sourceWidth * state->rowsRemaining;
+  sourcePixel = sourcePixels;
+  for (scanLeft = pixelCount; scanLeft != 0 && *sourcePixel == background; scanLeft--) {
+    sourcePixel++;
+  }
+  if (scanLeft == 0) {
+    /* nothing but background (error 0x2D, shared with the cursor frame check) */
+    return FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE;
+  }
+  edgeColor = *sourcePixel;
+  /* the working copy of the pixels goes to the end of the work area */
+  if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,(int)(pixelCount * 4))) {
+    return FATAL_ERROR_GENERAL_FAILURE;
+  }
+  workPixels = (uint32_t *)((uint8_t *)state->records + state->freeBytes);
+  GraphicsTextureDecompose_CopyDwords(workPixels,sourcePixels,pixelCount & DWORD_COUNT_MASK);
+  state->edgeTransparent = (edgeColor & ARGB8888_ALPHA_MASK) == 0;
+  state->packedPixels = (uint8_t *)workPixels;
+  state->packedPixelBytes = 0;
+  /* Scan the working copy row by row for the next non-background pixel; each hit starts a region that is cut
+     out and cleared to background, then the scan goes on at the same pixel. */
+  scanCursor = workPixels;
+  do {
+    columnsLeft = state->sourceWidth;
+    while (columnsLeft != 0) {
+      if (*scanCursor != background) {
+        if (!GraphicsTextureDecompose_CutArgbRegion(state,scanCursor,columnsLeft,background,edgeColor)) {
+          return FATAL_ERROR_GENERAL_FAILURE;
+        }
+      }
+      else {
+        scanCursor++;
+        columnsLeft--;
+      }
+    }
+    state->rowsRemaining--;
+  } while (state->rowsRemaining != 0);
+  /* move the packed pixels down behind the record table, shrink the block to header + table + pixels
+     and give every record its pixel offset, counting back from the end */
+  tableBytes = (asset->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
+  (asset->common).allocationSizeBytes = state->packedPixelBytes + tableBytes + GFX_ASSET_HEADER_SIZE;
+  GraphicsTextureDecompose_CopyDwords
+            ((uint32_t *)((uint8_t *)state->records + tableBytes),(uint32_t *)state->packedPixels,
+             state->packedPixelBytes >> 2);
+  arenaError = g_MemoryApi.shrinkInPlace((asset->common).allocationSizeBytes,asset);
+  if (arenaError != 0) {
+    return arenaError;
+  }
+  pixelDataOffset = (asset->common).allocationSizeBytes;
+  record = state->records;
+  recordsLeft = (asset->tableDescriptor).subresourceCount;
+  do {
+    pixelDataOffset = pixelDataOffset - record->pixelWidth * record->pixelHeight * 4;
+    record->dataOffset = pixelDataOffset;
+    record++;
+    recordsLeft--;
+  } while (recordsLeft != 0);
+  return 0;
+}
+
+/* Decomposition of a subresource with 8-bit palette indices: the new asset carries the subresource's palette
+   bank (`sourcePalette`) as its only bank and the record table follows it; otherwise as
+   GraphicsTextureDecompose_ArgbRegions, on bytes. */
+static uint32_t GraphicsTextureDecompose_IndexedRegions
+          (GraphicsTextureDecomposeState *state,const uint8_t *sourcePalette,const uint8_t *sourcePixels)
+{
+  GraphicsTextureSourceAsset *asset;
+  uint8_t backgroundIndex;
+  uint8_t edgeIndex;
+  int pixelCount;
+  int scanLeft;
+  const uint8_t *sourcePixel;
+  uint8_t *workPixels;
+  uint8_t *workPixel;
+  uint8_t *scanCursor;
+  GraphicsTexturePaletteEntry *edgeEntry;
+  int columnsLeft;
+  uint32_t tableBytes;
+  uint32_t arenaError;
+  uint32_t pixelDataOffset;
+  GraphicsTextureSourceEntry *record;
+  AssetSubresourceCount recordsLeft;
+
+  asset = state->asset;
+  (asset->tableDescriptor).paletteBankCount = 1;
+  (asset->tableDescriptor).subresourceCount = 0;
+  (asset->tableDescriptor).subresourceTableOffset = GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
+  state->records = (GraphicsTextureSourceEntry *)((uint8_t *)asset + (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE));
+  if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,GFX_PALETTE_BANK_SIZE)) {
+    return FATAL_ERROR_GENERAL_FAILURE;
+  }
+  GraphicsTextureDecompose_CopyDwords
+            ((uint32_t *)((uint8_t *)asset + GFX_ASSET_HEADER_SIZE),(const uint32_t *)sourcePalette,
+             GFX_PALETTE_BANK_SIZE / 4);
+  backgroundIndex = sourcePixels[0];
+  pixelCount = state->sourceWidth * state->rowsRemaining;
+  sourcePixel = sourcePixels;
+  for (scanLeft = pixelCount; scanLeft != 0 && *sourcePixel == backgroundIndex; scanLeft--) {
+    sourcePixel++;
+  }
+  if (scanLeft == 0) {
+    /* nothing but background (error 0x2D, shared with the cursor frame check) */
+    return FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE;
+  }
+  edgeIndex = *sourcePixel;
+  if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,pixelCount)) {
+    return FATAL_ERROR_GENERAL_FAILURE;
+  }
+  workPixels = (uint8_t *)state->records + state->freeBytes;
+  sourcePixel = sourcePixels;
+  workPixel = workPixels;
+  for (scanLeft = pixelCount; scanLeft != 0; scanLeft--) {
+    *workPixel = *sourcePixel;
+    sourcePixel++;
+    workPixel++;
+  }
+  /* the edge colour's entry in the new palette always loses its alpha, i.e. becomes transparent */
+  edgeEntry = &((GraphicsPaletteTextureSourceAsset *)asset)->paletteEntries[(uint32_t)edgeIndex];
+  state->edgeTransparent = (edgeEntry->argb8888 & ARGB8888_ALPHA_MASK) == 0;
+  edgeEntry->argb8888 = edgeEntry->argb8888 & ARGB8888_RGB_MASK;
+  /* packed sprites are padded to whole dwords */
+  state->packedPixels = (uint8_t *)((uint32_t)workPixels & ~3u);
+  state->packedPixelBytes = 0;
+  if (!GraphicsTextureDecompose_ReserveBytes(&state->freeBytes,3)) {
+    return FATAL_ERROR_GENERAL_FAILURE;
+  }
+  scanCursor = workPixels;
+  do {
+    columnsLeft = state->sourceWidth;
+    while (columnsLeft != 0) {
+      if (*scanCursor != backgroundIndex) {
+        if (!GraphicsTextureDecompose_CutIndexedRegion(state,scanCursor,columnsLeft,backgroundIndex,edgeIndex)) {
+          return FATAL_ERROR_GENERAL_FAILURE;
+        }
+      }
+      else {
+        scanCursor++;
+        columnsLeft--;
+      }
+    }
+    state->rowsRemaining--;
+  } while (state->rowsRemaining != 0);
+  tableBytes = (asset->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
+  (asset->common).allocationSizeBytes =
+       state->packedPixelBytes + tableBytes + (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
+  GraphicsTextureDecompose_CopyDwords
+            ((uint32_t *)((uint8_t *)state->records + tableBytes),(uint32_t *)state->packedPixels,
+             state->packedPixelBytes >> 2);
+  arenaError = g_MemoryApi.shrinkInPlace((asset->common).allocationSizeBytes,asset);
+  if (arenaError != 0) {
+    return arenaError;
+  }
+  pixelDataOffset = (asset->common).allocationSizeBytes;
+  record = state->records;
+  recordsLeft = (asset->tableDescriptor).subresourceCount;
+  do {
+    pixelDataOffset = pixelDataOffset - (record->pixelWidth * record->pixelHeight + 3 & ~3u);
+    record->dataOffset = pixelDataOffset;
+    record++;
+    recordsLeft--;
+  } while (recordsLeft != 0);
+  return 0;
+}
+
 /* Address: 0x004AC8E0.
    Cuts one subresource of a 'gfx' texture source (a sheet of sprites) into its separate sprites and returns
    them as a new 'gfx' asset, one subresource per sprite (installed as
@@ -622,79 +1102,40 @@ bool GraphicsTextureSource_DecomposeSubresourceRegions
           GraphicsTextureSourceAsset **outAsset,uint32_t *outError)
 
 {
-  uint16_t *entryCounterField;
-  uint8_t backgroundIndex;
-  uint8_t edgeIndex;
-  int regionCopyBytes;
-  uint32_t regionWidth;
-  uint32_t regionCopyWidth;
-  GraphicsTextureSourceAsset *copySourceOrError;
-  uint32_t packedDateTime;
-  uint32_t largestBlockSize;
-  int remainingBytesOrCount;
-  int paletteIndexOrCount;
-  int offsetOrColumnCount;
-  uint32_t backgroundColorOrCount;
-  AssetSubresourceCount entryCount;
-  int copyBytesRemaining;
-  int fillBytesRemaining;
-  uint32_t pixelCountOrCounter;
-  uint32_t scanCountOrEdgeColor;
-  uint32_t copyRemaining;
-  uint32_t fillRemaining;
-  int sourceWidthOrTableBytes;
-  int entryOffsetOrRows;
-  uint32_t fillRows;
-  uint8_t *entryOrByteCursor;
-  PckConverterVersion pixelDataOffset;
-  uint32_t *scanCursor;
-  uint32_t *rowCursor;
-  GraphicsTextureSourceAsset *copyDestination;
-  uint8_t *scanByteCursor;
-  uint8_t *probeByteCursor;
-  uint8_t *trimByteCursor;
-  uint8_t *trimByteProbe;
-  uint32_t *probeCursor;
-  uint32_t *trimProbe;
-  uint32_t *fillCursor;
-  bool matchedOrEdgeTransparent;
-  bool bytesMatched;
-  uint32_t arenaError;
+  GraphicsTextureSourceEntry *sourceEntry;
+  GraphicsTextureDecomposeState state;
   GraphicsTextureSourceAsset *decomposedAsset;
-  uint32_t *regionStart;
-  uint32_t packedPixelBytes;
-  uint32_t *packedPixelCursor;
-  int freeBytesAfterPacked;
-  int rowsRemaining;
-  uint32_t *fillRowCursor;
-  
+  GraphicsPaletteIndex paletteIndex;
+  uint8_t *sourcePixels;
+  uint32_t largestBlockSize;
+  uint32_t packedDateTime;
+  uint32_t error;
+
   if (((sourceAsset->common).magic != ASSET_MAGIC_GFX) ||
      ((sourceAsset->tableDescriptor).subresourceCount <= entryIndex)) {
     *outError = FATAL_ERROR_GFX_ASSET_INVALID;
     return false;
   }
-  offsetOrColumnCount = entryIndex * GFX_SUBRESOURCE_RECORD_SIZE +
-                        (sourceAsset->tableDescriptor).subresourceTableOffset;
-  sourceWidthOrTableBytes = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->pixelWidth;
-  rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->pixelHeight;
-  arenaError = g_MemoryApi.allocLargestFreeBlock((void **)&decomposedAsset,&largestBlockSize);
-  if (arenaError != 0) {
-    *outError = arenaError;
+  sourceEntry = (GraphicsTextureSourceEntry *)
+                ((uint8_t *)sourceAsset +
+                 (entryIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset));
+  state.sourceWidth = sourceEntry->pixelWidth;
+  state.rowsRemaining = sourceEntry->pixelHeight;
+  error = g_MemoryApi.allocLargestFreeBlock((void **)&decomposedAsset,&largestBlockSize);
+  if (error != 0) {
+    *outError = error;
     return false;
   }
-  /* the new asset starts as a copy of the source header (REP MOVSD) */
-  copySourceOrError = sourceAsset;
-  copyDestination = decomposedAsset;
-  for (remainingBytesOrCount = GFX_ASSET_HEADER_SIZE / 4; remainingBytesOrCount != 0; remainingBytesOrCount--) {
-    (copyDestination->common).magic = (copySourceOrError->common).magic;
-    copySourceOrError = (GraphicsTextureSourceAsset *)&(copySourceOrError->common).allocationSizeBytes;
-    copyDestination = (GraphicsTextureSourceAsset *)&(copyDestination->common).allocationSizeBytes;
+  /* the new asset starts as a copy of the source header */
+  GraphicsTextureDecompose_CopyDwords
+            ((uint32_t *)decomposedAsset,(const uint32_t *)sourceAsset,GFX_ASSET_HEADER_SIZE / 4);
+  paletteIndex = sourceEntry->paletteIndex;
+  state.asset = decomposedAsset;
+  state.freeBytes = (int)largestBlockSize;
+  if (!GraphicsTextureDecompose_ReserveBytes(&state.freeBytes,GFX_ASSET_HEADER_SIZE)) {
+    error = FATAL_ERROR_GENERAL_FAILURE;
   }
-  paletteIndexOrCount = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->paletteIndex;
-  copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-  remainingBytesOrCount = largestBlockSize - GFX_ASSET_HEADER_SIZE;
-  if (remainingBytesOrCount != 0 && GFX_ASSET_HEADER_SIZE - 1 < (int)largestBlockSize) {
-    offsetOrColumnCount = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->dataOffset;
+  else {
     /* the new asset is stamped with the current time and date and this computer's name */
     packedDateTime = g_LocaleGetPackedCurrentTime();
     ((decomposedAsset)->common).buildMetadata.timestamps.timeValue1 = packedDateTime;
@@ -704,566 +1145,22 @@ bool GraphicsTextureSource_DecomposeSubresourceRegions
     ((decomposedAsset)->common).buildMetadata.timestamps.dateValue2 = packedDateTime;
     g_LocaleCopyDefaultComputerLabelUtf16
               (((decomposedAsset)->common).buildMetadata.names.sourceName);
-    entryOrByteCursor = (uint8_t *)sourceAsset + offsetOrColumnCount;
-    if (paletteIndexOrCount == -1) {
-      /* direct ARGB8888 pixels: no palette, the new subresource table follows the header */
-      ((decomposedAsset)->tableDescriptor).paletteBankCount = 0;
-      ((decomposedAsset)->tableDescriptor).subresourceCount = 0;
-      ((decomposedAsset)->tableDescriptor).subresourceTableOffset = GFX_ASSET_HEADER_SIZE;
-      /* the first pixel is the background; the first other pixel gives the edge colour trimmed below */
-      backgroundColorOrCount = *(uint32_t *)entryOrByteCursor;
-      pixelCountOrCounter = sourceWidthOrTableBytes * rowsRemaining;
-      matchedOrEdgeTransparent = true;
-      scanCountOrEdgeColor = pixelCountOrCounter;
-      scanByteCursor = entryOrByteCursor;
-      do {
-        probeByteCursor = scanByteCursor;
-        if (scanCountOrEdgeColor == 0) break;
-        scanCountOrEdgeColor--;
-        probeByteCursor = scanByteCursor + 4;
-        matchedOrEdgeTransparent = backgroundColorOrCount == *(uint32_t *)scanByteCursor;
-        scanByteCursor = probeByteCursor;
-      } while (matchedOrEdgeTransparent);
-      scanCountOrEdgeColor = *(uint32_t *)(probeByteCursor + -4);
-      /* nothing but background (error 0x2D, shared with the cursor frame check) */
-      copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE;
-      if (!matchedOrEdgeTransparent) {
-        copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-        /* the working copy of the pixels goes to the end of the work area; the packed sprites grow
-           downwards in front of it and the new records upwards behind the header */
-        freeBytesAfterPacked = remainingBytesOrCount + pixelCountOrCounter * -4;
-        if (freeBytesAfterPacked != 0 && (int)(pixelCountOrCounter * 4) <= remainingBytesOrCount) {
-          scanCursor = (uint32_t *)((int)decomposedAsset + freeBytesAfterPacked + GFX_ASSET_HEADER_SIZE);
-          matchedOrEdgeTransparent = scanCursor == NULL;
-          rowCursor = scanCursor;
-          for (pixelCountOrCounter = pixelCountOrCounter & DWORD_COUNT_MASK; pixelCountOrCounter != 0; pixelCountOrCounter--) {
-            *rowCursor = *(uint32_t *)entryOrByteCursor;
-            entryOrByteCursor = entryOrByteCursor + 4;
-            rowCursor++;
-          }
-          packedPixelBytes = 0;
-          offsetOrColumnCount = sourceWidthOrTableBytes;
-          packedPixelCursor = scanCursor;
-          /* Scan the working copy row by row for the next non-background pixel; each hit starts a region that is
-             trimmed, packed below the work area and cleared to the background color. */
-          for (;;) {
-            if (offsetOrColumnCount != 0) {
-              offsetOrColumnCount--;
-              rowCursor = scanCursor + 1;
-              matchedOrEdgeTransparent = backgroundColorOrCount == *scanCursor;
-              scanCursor = rowCursor;
-              if (matchedOrEdgeTransparent) continue;
-            }
-            if (!matchedOrEdgeTransparent) {
-              copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-              remainingBytesOrCount = freeBytesAfterPacked - GFX_SUBRESOURCE_RECORD_SIZE;
-              if (remainingBytesOrCount == 0 || freeBytesAfterPacked < GFX_SUBRESOURCE_RECORD_SIZE) {
-                goto DecomposeFreeWorkBufferAndFail;
-              }
-              entryCount = ((decomposedAsset)->tableDescriptor).subresourceCount;
-              scanCursor--;
-              offsetOrColumnCount++;
-              ((decomposedAsset)->tableDescriptor).subresourceCount =
-                   ((decomposedAsset)->tableDescriptor).subresourceCount + 1;
-              entryOffsetOrRows = entryCount * GFX_SUBRESOURCE_RECORD_SIZE;
-              matchedOrEdgeTransparent = entryOffsetOrRows == 0;
-              paletteIndexOrCount = offsetOrColumnCount;
-              rowCursor = scanCursor;
-              do {
-                probeCursor = rowCursor;
-                if (paletteIndexOrCount == 0) break;
-                paletteIndexOrCount--;
-                probeCursor = rowCursor + 1;
-                matchedOrEdgeTransparent = backgroundColorOrCount == *rowCursor;
-                rowCursor = probeCursor;
-              } while (!matchedOrEdgeTransparent);
-              if (matchedOrEdgeTransparent) {
-                probeCursor--;
-              }
-              /* new record: logical width = the run of non-background pixels in this row, logical height = the
-                 run in this column, palette index -1; the stored pixels start as the whole block */
-              entryOrByteCursor = (uint8_t *)decomposedAsset + GFX_ASSET_HEADER_SIZE + entryOffsetOrRows;
-              *(uint32_t *)entryOrByteCursor = (uint32_t)((int)probeCursor - (int)scanCursor) >> 2;
-              entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT] = 0;
-              entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 1] = 0;
-              entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 2] = 0;
-              entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 3] = 0;
-              *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) = 0;
-              *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X + 2) = 0;
-              *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) = 0;
-              *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y + 2) = 0;
-              *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PALETTE_INDEX) = 0xffff;
-              *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PALETTE_INDEX + 2) = 0xffff;
-              paletteIndexOrCount = rowsRemaining;
-              rowCursor = scanCursor;
-              do {
-                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight + 1;
-                rowCursor = rowCursor + sourceWidthOrTableBytes;
-                paletteIndexOrCount--;
-                matchedOrEdgeTransparent = true;
-                if (paletteIndexOrCount == 0) break;
-                matchedOrEdgeTransparent = backgroundColorOrCount == *rowCursor;
-              } while (!matchedOrEdgeTransparent);
-              ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = *(uint32_t *)entryOrByteCursor;
-              ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight;
-              /* trim top rows, bottom rows, left and right columns that are all edge colour, but only when the
-                 edge colour is transparent (alpha 0); the origin records how much was cut at the top/left */
-              rowCursor = scanCursor;
-              do {
-                pixelCountOrCounter = *(uint32_t *)entryOrByteCursor;
-                probeCursor = rowCursor;
-                do {
-                  if (pixelCountOrCounter == 0) break;
-                  pixelCountOrCounter--;
-                  matchedOrEdgeTransparent = scanCountOrEdgeColor == *probeCursor;
-                  probeCursor++;
-                } while (matchedOrEdgeTransparent);
-                if ((!matchedOrEdgeTransparent) || (ARGB8888_RGB_MASK < scanCountOrEdgeColor)) goto TrueColorTrimBottomRows;
-                rowCursor = rowCursor + sourceWidthOrTableBytes;
-                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY + 1;
-                entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
-                matchedOrEdgeTransparent = *(uint32_t *)entryCounterField == 0;
-              } while (!matchedOrEdgeTransparent);
-              rowCursor = rowCursor + -sourceWidthOrTableBytes;
-              (uint32_t)((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY - 1;
-              ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight + 1;
-TrueColorTrimBottomRows:
-              probeCursor = (uint32_t *)((int)rowCursor + sourceWidthOrTableBytes * 4 * ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight);
-              do {
-                probeCursor = probeCursor + -sourceWidthOrTableBytes;
-                matchedOrEdgeTransparent = probeCursor == NULL;
-                pixelCountOrCounter = *(uint32_t *)entryOrByteCursor;
-                trimProbe = probeCursor;
-                do {
-                  if (pixelCountOrCounter == 0) break;
-                  pixelCountOrCounter--;
-                  matchedOrEdgeTransparent = scanCountOrEdgeColor == *trimProbe;
-                  trimProbe++;
-                } while (matchedOrEdgeTransparent);
-                if ((!matchedOrEdgeTransparent) || (ARGB8888_RGB_MASK < scanCountOrEdgeColor)) goto TrueColorTrimLeftColumns;
-                entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
-              } while (*(uint32_t *)entryCounterField != 0);
-              ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight + 1;
-TrueColorTrimLeftColumns:
-              pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-              regionStart = rowCursor;
-              probeCursor = rowCursor;
-              if ((scanCountOrEdgeColor & ARGB8888_ALPHA_MASK) == 0) {
-                do {
-                  do {
-                    regionStart = probeCursor;
-                    if (scanCountOrEdgeColor != *rowCursor) goto TrueColorTrimRightColumns;
-                    rowCursor = rowCursor + sourceWidthOrTableBytes;
-                    pixelCountOrCounter--;
-                    probeCursor = regionStart;
-                  } while (pixelCountOrCounter != 0);
-                  ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX + 1;
-                  rowCursor = regionStart + 1;
-                  pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                  entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
-                  *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
-                  probeCursor = rowCursor;
-                } while (*(uint32_t *)entryCounterField != 0);
-                (uint32_t)((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX - 1;
-                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + 1;
-              }
-TrueColorTrimRightColumns:
-              rowCursor = regionStart;
-              pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-              probeCursor = (uint32_t *)((int)regionStart +
-                                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth +
-                                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth +
-                                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + -4);
-              regionStart = probeCursor;
-              if ((scanCountOrEdgeColor & ARGB8888_ALPHA_MASK) == 0) {
-                do {
-                  do {
-                    if (scanCountOrEdgeColor != *probeCursor) goto TrueColorPackRegion;
-                    probeCursor = probeCursor + sourceWidthOrTableBytes;
-                    pixelCountOrCounter--;
-                  } while (pixelCountOrCounter != 0);
-                  pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                  probeCursor = regionStart - 1;
-                  entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
-                  *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
-                  regionStart = probeCursor;
-                } while (*(uint32_t *)entryCounterField != 0);
-                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + 1;
-              }
-TrueColorPackRegion:
-              /* copy the trimmed pixels in front of the packed ones, then clear the whole block to background */
-              pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-              paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth * pixelCountOrCounter;
-              freeBytesAfterPacked = remainingBytesOrCount + paletteIndexOrCount * -4;
-              if (freeBytesAfterPacked == 0 || remainingBytesOrCount < paletteIndexOrCount * 4) {
-                copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-                goto DecomposeFreeWorkBufferAndFail;
-              }
-              packedPixelCursor = packedPixelCursor + -paletteIndexOrCount;
-              packedPixelBytes = packedPixelBytes + paletteIndexOrCount * 4;
-              regionWidth = *(uint32_t *)entryOrByteCursor;
-              fillRows = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight;
-              regionCopyWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
-              copyRemaining = regionCopyWidth;
-              probeCursor = packedPixelCursor;
-              trimProbe = rowCursor;
-              do {
-                for (; copyRemaining != 0; copyRemaining--) {
-                  *probeCursor = *rowCursor;
-                  rowCursor++;
-                  probeCursor++;
-                }
-                rowCursor = trimProbe + sourceWidthOrTableBytes;
-                pixelCountOrCounter--;
-                fillRemaining = regionWidth;
-                copyRemaining = regionCopyWidth;
-                fillCursor = scanCursor;
-                trimProbe = rowCursor;
-                fillRowCursor = scanCursor;
-              } while (pixelCountOrCounter != 0);
-              do {
-                for (; fillRemaining != 0; fillRemaining--) {
-                  *fillCursor = backgroundColorOrCount;
-                  fillCursor++;
-                }
-                fillRows--;
-                fillRemaining = regionWidth;
-                fillCursor = fillRowCursor + sourceWidthOrTableBytes;
-                fillRowCursor = fillRowCursor + sourceWidthOrTableBytes;
-              } while (fillRows != 0);
-              matchedOrEdgeTransparent = 0; /* Ghidra: ZF after an ESP adjustment (&stack0x00000000 == 0x40), never set on a real stack */
-              continue;
-            }
-            rowsRemaining--;
-            matchedOrEdgeTransparent = rowsRemaining == 0;
-            offsetOrColumnCount = sourceWidthOrTableBytes;
-            if (matchedOrEdgeTransparent) break;
-          }
-          /* move the packed pixels down behind the record table, shrink the block to header + table + pixels
-             and give every record its pixel offset, counting back from the end */
-          sourceWidthOrTableBytes = ((decomposedAsset)->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
-          backgroundColorOrCount = packedPixelBytes >> 2;
-          ((decomposedAsset)->common).allocationSizeBytes = packedPixelBytes + sourceWidthOrTableBytes +
-                                                                         GFX_ASSET_HEADER_SIZE;
-          entryOrByteCursor = (uint8_t *)decomposedAsset + GFX_ASSET_HEADER_SIZE + sourceWidthOrTableBytes;
-          for (; backgroundColorOrCount != 0; backgroundColorOrCount--) {
-            *(uint32_t *)entryOrByteCursor = *packedPixelCursor;
-            packedPixelCursor++;
-            entryOrByteCursor = entryOrByteCursor + 4;
-          }
-          arenaError = g_MemoryApi.shrinkInPlace
-                             (((decomposedAsset)->common).allocationSizeBytes,
-                              decomposedAsset);
-          copySourceOrError = (GraphicsTextureSourceAsset *)arenaError;
-          if (arenaError == 0) {
-            pixelDataOffset = ((decomposedAsset)->common).allocationSizeBytes;
-            copySourceOrError = decomposedAsset + 1;
-            entryCount = ((decomposedAsset)->tableDescriptor).subresourceCount;
-            /* each record seen through the asset header layout: converterVersion = pixel offset,
-               timeValue1/dateValue1 = pixel width/height, timeValue2 = the next record */
-            do {
-              pixelDataOffset = pixelDataOffset + (copySourceOrError->common).buildMetadata.timestamps.timeValue1 *
-                                (copySourceOrError->common).buildMetadata.timestamps.dateValue1 * -4;
-              (copySourceOrError->common).converterVersion = pixelDataOffset;
-              copySourceOrError = (GraphicsTextureSourceAsset *)
-                       &(copySourceOrError->common).buildMetadata.timestamps.timeValue2;
-              entryCount--;
-            } while (entryCount != 0);
-            *outAsset = decomposedAsset;
-            return true;
-          }
-        }
-      }
+    sourcePixels = (uint8_t *)sourceAsset + sourceEntry->dataOffset;
+    if (paletteIndex == -1) {
+      error = GraphicsTextureDecompose_ArgbRegions(&state,(const uint32_t *)sourcePixels);
     }
     else {
-      /* 8-bit palette indices: the new asset carries the subresource's palette bank as its only bank, the
-         record table follows it; the scan below is the same as above, on bytes */
-      ((decomposedAsset)->tableDescriptor).paletteBankCount = 1;
-      ((decomposedAsset)->tableDescriptor).subresourceCount = 0;
-      ((decomposedAsset)->tableDescriptor).subresourceTableOffset =
-           GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
-      copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-      offsetOrColumnCount = largestBlockSize - (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
-      if (offsetOrColumnCount != 0 && GFX_PALETTE_BANK_SIZE - 1 < remainingBytesOrCount) {
-        copySourceOrError = sourceAsset + paletteIndexOrCount * 4 + 1;
-        copyDestination = decomposedAsset + 1;
-        for (remainingBytesOrCount = GFX_PALETTE_BANK_SIZE / 4; remainingBytesOrCount != 0; remainingBytesOrCount--) {
-          (copyDestination->common).magic = (copySourceOrError->common).magic;
-          copySourceOrError = (GraphicsTextureSourceAsset *)&(copySourceOrError->common).allocationSizeBytes;
-          copyDestination = (GraphicsTextureSourceAsset *)&(copyDestination->common).allocationSizeBytes;
-        }
-        backgroundIndex = *entryOrByteCursor;
-        paletteIndexOrCount = sourceWidthOrTableBytes * rowsRemaining;
-        matchedOrEdgeTransparent = true;
-        remainingBytesOrCount = paletteIndexOrCount;
-        scanByteCursor = entryOrByteCursor;
-        do {
-          probeByteCursor = scanByteCursor;
-          if (remainingBytesOrCount == 0) break;
-          remainingBytesOrCount--;
-          probeByteCursor = scanByteCursor + 1;
-          matchedOrEdgeTransparent = backgroundIndex == *scanByteCursor;
-          scanByteCursor = probeByteCursor;
-        } while (matchedOrEdgeTransparent);
-        edgeIndex = probeByteCursor[-1];
-        /* nothing but background (error 0x2D, shared with the cursor frame check) */
-        copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE;
-        if (!matchedOrEdgeTransparent) {
-          copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-          remainingBytesOrCount = offsetOrColumnCount - paletteIndexOrCount;
-          if (remainingBytesOrCount != 0 && paletteIndexOrCount <= offsetOrColumnCount) {
-            scanByteCursor = (uint8_t *)((int)copyDestination + remainingBytesOrCount);
-            probeByteCursor = scanByteCursor;
-            for (; paletteIndexOrCount != 0; paletteIndexOrCount--) {
-              *probeByteCursor = *entryOrByteCursor;
-              entryOrByteCursor++;
-              probeByteCursor++;
-            }
-            matchedOrEdgeTransparent = (((GraphicsPaletteTextureSourceAsset *)decomposedAsset)->paletteEntries[(uint32_t)edgeIndex].argb8888 & ARGB8888_ALPHA_MASK
-                     ) == 0;
-            /* the edge colour's entry in the new palette always loses its alpha, i.e. becomes transparent */
-            entryOrByteCursor = (uint8_t *)&((GraphicsPaletteTextureSourceAsset *)decomposedAsset)->paletteEntries[(uint32_t)edgeIndex];
-            *(uint32_t *)entryOrByteCursor = *(uint32_t *)entryOrByteCursor & ARGB8888_RGB_MASK;
-            /* packed sprites are padded to whole dwords */
-            packedPixelCursor = (uint32_t *)((uint32_t)scanByteCursor & ~3u);
-            packedPixelBytes = 0;
-            copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-            freeBytesAfterPacked = remainingBytesOrCount - 3;
-            bytesMatched = freeBytesAfterPacked == 0;
-            offsetOrColumnCount = sourceWidthOrTableBytes;
-            if (!bytesMatched && 2 < remainingBytesOrCount) {
-              /* Same region scan as the direct-color path, on 8-bit palette indices. */
-              for (;;) {
-                if (offsetOrColumnCount != 0) {
-                  offsetOrColumnCount--;
-                  entryOrByteCursor = scanByteCursor + 1;
-                  bytesMatched = backgroundIndex == *scanByteCursor;
-                  scanByteCursor = entryOrByteCursor;
-                  if (bytesMatched) continue;
-                }
-                if (!bytesMatched) {
-                  copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-                  remainingBytesOrCount = freeBytesAfterPacked - GFX_SUBRESOURCE_RECORD_SIZE;
-                  if (remainingBytesOrCount == 0 || freeBytesAfterPacked < GFX_SUBRESOURCE_RECORD_SIZE) {
-                    goto DecomposeFreeWorkBufferAndFail;
-                  }
-                  entryCount = ((decomposedAsset)->tableDescriptor).subresourceCount;
-                  scanByteCursor--;
-                  ((decomposedAsset)->tableDescriptor).subresourceCount =
-                       ((decomposedAsset)->tableDescriptor).subresourceCount + 1;
-                  entryOffsetOrRows = entryCount * GFX_SUBRESOURCE_RECORD_SIZE;
-                  bytesMatched = entryOffsetOrRows == 0;
-                  paletteIndexOrCount = offsetOrColumnCount + 1;
-                  entryOrByteCursor = scanByteCursor;
-                  do {
-                    probeByteCursor = entryOrByteCursor;
-                    if (paletteIndexOrCount == 0) break;
-                    paletteIndexOrCount--;
-                    probeByteCursor = entryOrByteCursor + 1;
-                    bytesMatched = backgroundIndex == *entryOrByteCursor;
-                    entryOrByteCursor = probeByteCursor;
-                  } while (!bytesMatched);
-                  if (bytesMatched) {
-                    probeByteCursor--;
-                  }
-                  /* [5]: GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE bytes in (the table follows the one bank) */
-                  entryOrByteCursor = (uint8_t *)&decomposedAsset[5] + entryOffsetOrRows;
-                  *(int *)entryOrByteCursor = (int)probeByteCursor - (int)scanByteCursor;
-                  entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT] = 0;
-                  entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 1] = 0;
-                  entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 2] = 0;
-                  entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 3] = 0;
-                  *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) = 0;
-                  *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X + 2) = 0;
-                  *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) = 0;
-                  *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y + 2) = 0;
-                  *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PALETTE_INDEX) = 0;
-                  *(uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PALETTE_INDEX + 2) = 0;
-                  paletteIndexOrCount = rowsRemaining;
-                  probeByteCursor = scanByteCursor;
-                  do {
-                    ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight + 1;
-                    probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
-                    paletteIndexOrCount--;
-                    bytesMatched = true;
-                    if (paletteIndexOrCount == 0) break;
-                    bytesMatched = backgroundIndex == *probeByteCursor;
-                  } while (!bytesMatched);
-                  (int)((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = *(int *)entryOrByteCursor;
-                  ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight;
-                  probeByteCursor = scanByteCursor;
-                  do {
-                    paletteIndexOrCount = *(int *)entryOrByteCursor;
-                    trimByteCursor = probeByteCursor;
-                    do {
-                      if (paletteIndexOrCount == 0) break;
-                      paletteIndexOrCount--;
-                      bytesMatched = edgeIndex == *trimByteCursor;
-                      trimByteCursor++;
-                    } while (bytesMatched);
-                    if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto PalettedTrimBottomRows;
-                    probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
-                    ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY + 1;
-                    entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                    *(int *)entryCounterField = *(int *)entryCounterField - 1;
-                    bytesMatched = *(int *)entryCounterField == 0;
-                  } while (!bytesMatched);
-                  probeByteCursor = probeByteCursor + -sourceWidthOrTableBytes;
-                  ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY - 1;
-                  (int)((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight + 1;
-PalettedTrimBottomRows:
-                  trimByteCursor = probeByteCursor +
-                                   sourceWidthOrTableBytes * ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                  do {
-                    trimByteCursor = trimByteCursor + -sourceWidthOrTableBytes;
-                    bytesMatched = trimByteCursor == NULL;
-                    paletteIndexOrCount = *(int *)entryOrByteCursor;
-                    trimByteProbe = trimByteCursor;
-                    do {
-                      if (paletteIndexOrCount == 0) break;
-                      paletteIndexOrCount--;
-                      bytesMatched = edgeIndex == *trimByteProbe;
-                      trimByteProbe++;
-                    } while (bytesMatched);
-                    if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto PalettedTrimLeftColumns;
-                    entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                    *(int *)entryCounterField = *(int *)entryCounterField - 1;
-                  } while (*(int *)entryCounterField != 0);
-                  ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight + 1;
-PalettedTrimLeftColumns:
-                  paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                  regionStart = (uint32_t *)probeByteCursor;
-                  scanCursor = (uint32_t *)probeByteCursor;
-                  if (matchedOrEdgeTransparent) {
-                    do {
-                      do {
-                        regionStart = scanCursor;
-                        if (edgeIndex != *probeByteCursor) goto PalettedTrimRightColumns;
-                        probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
-                        paletteIndexOrCount--;
-                        scanCursor = regionStart;
-                      } while (paletteIndexOrCount != 0);
-                      ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX + 1;
-                      probeByteCursor = (uint8_t *)((int)regionStart + 1);
-                      paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                      entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
-                      *(int *)entryCounterField = *(int *)entryCounterField - 1;
-                      scanCursor = (uint32_t *)probeByteCursor;
-                    } while (*(int *)entryCounterField != 0);
-                    ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX - 1;
-                    (int)((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + 1;
-                  }
-PalettedTrimRightColumns:
-                  scanCursor = regionStart;
-                  paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                  probeByteCursor = (uint8_t *)((int)regionStart + ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + -1);
-                  regionStart = (uint32_t *)probeByteCursor;
-                  if (matchedOrEdgeTransparent) {
-                    do {
-                      do {
-                        if (edgeIndex != *probeByteCursor) goto PalettedPackRegion;
-                        probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
-                        paletteIndexOrCount--;
-                      } while (paletteIndexOrCount != 0);
-                      paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                      probeByteCursor = (uint8_t *)((int)regionStart + -1);
-                      entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
-                      *(int *)entryCounterField = *(int *)entryCounterField - 1;
-                      regionStart = (uint32_t *)probeByteCursor;
-                    } while (*(int *)entryCounterField != 0);
-                    ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + 1;
-                  }
-PalettedPackRegion:
-                  paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
-                  backgroundColorOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth * paletteIndexOrCount + 3U & ~3u;
-                  freeBytesAfterPacked = remainingBytesOrCount - backgroundColorOrCount;
-                  if (freeBytesAfterPacked == 0 || remainingBytesOrCount < (int)backgroundColorOrCount) {
-                    copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
-                    goto DecomposeFreeWorkBufferAndFail;
-                  }
-                  packedPixelCursor = (uint32_t *)((int)packedPixelCursor + -backgroundColorOrCount);
-                  packedPixelBytes = packedPixelBytes + backgroundColorOrCount;
-                  remainingBytesOrCount = *(int *)entryOrByteCursor;
-                  entryOffsetOrRows = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight;
-                  regionCopyBytes = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
-                  copyBytesRemaining = regionCopyBytes;
-                  entryOrByteCursor = (uint8_t *)packedPixelCursor;
-                  rowCursor = scanCursor;
-                  do {
-                    for (; copyBytesRemaining != 0; copyBytesRemaining--) {
-                      *entryOrByteCursor = *(uint8_t *)scanCursor;
-                      scanCursor = (uint32_t *)((int)scanCursor + 1);
-                      entryOrByteCursor++;
-                    }
-                    scanCursor = (uint32_t *)((int)rowCursor + sourceWidthOrTableBytes);
-                    paletteIndexOrCount--;
-                    fillBytesRemaining = remainingBytesOrCount;
-                    copyBytesRemaining = regionCopyBytes;
-                    probeByteCursor = scanByteCursor;
-                    rowCursor = scanCursor;
-                    trimByteCursor = scanByteCursor;
-                  } while (paletteIndexOrCount != 0);
-                  do {
-                    for (; fillBytesRemaining != 0; fillBytesRemaining--) {
-                      *probeByteCursor = backgroundIndex;
-                      probeByteCursor++;
-                    }
-                    entryOffsetOrRows--;
-                    fillBytesRemaining = remainingBytesOrCount;
-                    probeByteCursor = trimByteCursor + sourceWidthOrTableBytes;
-                    trimByteCursor = trimByteCursor + sourceWidthOrTableBytes;
-                  } while (entryOffsetOrRows != 0);
-                  bytesMatched = 0; /* Ghidra: ZF after an ESP adjustment (&stack0x00000000 == 0x40), never set on a real stack */
-                  offsetOrColumnCount++;
-                  continue;
-                }
-                rowsRemaining--;
-                bytesMatched = rowsRemaining == 0;
-                offsetOrColumnCount = sourceWidthOrTableBytes;
-                if (bytesMatched) break;
-              }
-              sourceWidthOrTableBytes = ((decomposedAsset)->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
-              backgroundColorOrCount = packedPixelBytes >> 2;
-              ((decomposedAsset)->common).allocationSizeBytes =
-                   packedPixelBytes + sourceWidthOrTableBytes + (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
-              entryOrByteCursor = (uint8_t *)decomposedAsset +
-                                  (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE) + sourceWidthOrTableBytes;
-              for (; backgroundColorOrCount != 0; backgroundColorOrCount--) {
-                *(uint32_t *)entryOrByteCursor = *packedPixelCursor;
-                packedPixelCursor = (uint32_t *)((int)packedPixelCursor + 4);
-                entryOrByteCursor = entryOrByteCursor + 4;
-              }
-              arenaError = g_MemoryApi.shrinkInPlace
-                                 (((decomposedAsset)->common).allocationSizeBytes,
-                                  decomposedAsset);
-              copySourceOrError = (GraphicsTextureSourceAsset *)arenaError;
-              if (arenaError == 0) {
-                pixelDataOffset = ((decomposedAsset)->common).allocationSizeBytes;
-                copySourceOrError = decomposedAsset + 5;
-                entryCount = ((decomposedAsset)->tableDescriptor).subresourceCount;
-                do {
-                  pixelDataOffset = pixelDataOffset - ((copySourceOrError->common).buildMetadata.timestamps.timeValue1 *
-                                     (copySourceOrError->common).buildMetadata.timestamps.dateValue1 + 3 &
-                                    ~3u);
-                  (copySourceOrError->common).converterVersion = pixelDataOffset;
-                  copySourceOrError = (GraphicsTextureSourceAsset *)
-                           &(copySourceOrError->common).buildMetadata.timestamps.timeValue2;
-                  entryCount--;
-                } while (entryCount != 0);
-                *outAsset = decomposedAsset;
-                return true;
-              }
-            }
-          }
-        }
-      }
+      error = GraphicsTextureDecompose_IndexedRegions
+                        (&state,(uint8_t *)sourceAsset + GFX_ASSET_HEADER_SIZE + paletteIndex * GFX_PALETTE_BANK_SIZE,
+                         sourcePixels);
+    }
+    if (error == 0) {
+      *outAsset = decomposedAsset;
+      return true;
     }
   }
-DecomposeFreeWorkBufferAndFail:
   g_MemoryApi.free(decomposedAsset);
-  *outError = (uint32_t)copySourceOrError;
+  *outError = error;
   return false;
 }
 

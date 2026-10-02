@@ -11,12 +11,475 @@
 
 /* Implementation ownership: ui/frontend/runtime. */
 
+/* Frontend_MainLoop: presents UI frames until a page action is pending, then flushes the input and counts the
+   action depth. Returns false instead when no action is pending and the UI root stack is empty (the player
+   quit the game). */
+static bool FrontendMainLoop_PresentFramesUntilPageAction(void)
+{
+  do {
+    if (g_UiRootNode != UI_ROOT_STACK_END) {
+      FrontendRomTransition_ProcessPendingRecord();
+    }
+    UiRootStack_InvalidateAll();
+    UiFrame_ProcessAndPresent();
+    g_FrontendPendingPageActionDepth = 0;
+    if ((g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE) && (g_UiRootNode == UI_ROOT_STACK_END)) {
+      return false;
+    }
+  } while (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE);
+  UiFrame_FlushInputAndResetPendingTicks();
+  g_FrontendPendingPageActionDepth++;
+  return true;
+}
+
+/* Frontend_MainLoop, client side of the scenario selection wait: unpacks the snapshot table the host sent
+   (receivedBuffer holds the unpacked size, then the packed data) into g_PackageScratchBuffer and merges it into
+   the player blocks. Each player's transfer flags are ORed in; when they mark the payload complete, the
+   snapshot payload follows them. */
+static void FrontendMainLoop_TakeReceivedSnapshots(PckDecodedByteCount *receivedBuffer,uint32_t receivedByteCount)
+{
+  FrontendSnapshotTransferFlags *receivedFlagsCursor;
+  FrontendSnapshotTransferFlags receivedTransferFlags;
+  FrontendSnapshotTransferFlags *payloadCursor;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
+  int remainingPayloadDwords;
+
+  PckCodec_DecodeHuffmanRle
+            (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1),NULL,NULL);
+  remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
+  receivedFlagsCursor = (FrontendSnapshotTransferFlags *)g_PackageScratchBuffer;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  do {
+    receivedTransferFlags = *receivedFlagsCursor;
+    playerBlock->snapshotTransferFlags = playerBlock->snapshotTransferFlags | receivedTransferFlags;
+    receivedFlagsCursor++;
+    if ((receivedTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
+      payloadCursor = (FrontendSnapshotTransferFlags *)playerBlock->snapshotPayload;
+      for (remainingPayloadDwords = FRONTEND_SNAPSHOT_PAYLOAD_BYTES / sizeof(uint32_t); remainingPayloadDwords != 0;
+           remainingPayloadDwords--) {
+        *payloadCursor = *receivedFlagsCursor;
+        receivedFlagsCursor++;
+        payloadCursor++;
+      }
+    }
+    playerBlock++;
+    remainingPlayerBlocks--;
+  } while (remainingPlayerBlocks != 0);
+  FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SNAPSHOTS_RECEIVED,0,0,0);
+  UiTransferMailbox_ClearReceivedState();
+}
+
+/* Frontend_MainLoop, scenario catalogue exchange: processes a received scenario asset; unless the local player
+   already has the catalogue, marks it, rebuilds the catalogue and either offers it to the clients (host: the
+   catalogue is compressed into its own buffer right behind the used bytes, prefixed with the uncompressed size)
+   or starts waiting for the host's (client). */
+static void FrontendMainLoop_ExchangeScenarioCatalog(void)
+{
+  FrontendPlayerRuntimeRecord *localPlayerBlock;
+  FrontendRoleStateFlags *localRoleStateFlags;
+  ScenarioCatalogHeader *scenarioCatalog;
+  uint32_t catalogUsedBytes;
+  uint8_t *encodedCatalog;
+  PckOutputCapacityBytes destinationCapacityBytes;
+  bool encodeOk;
+  uint32_t encodedByteCount;
+  uint32_t encodeErrorCode;
+  uint32_t checkedValue;
+
+  localPlayerBlock = g_FrontendPlayerRuntimeBlocks;
+  FrontendScenarioTransfer_ProcessReceivedAsset();
+  if ((localPlayerBlock->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG) != 0) {
+    return;
+  }
+  localRoleStateFlags = &localPlayerBlock->factionAssignment.roleStateFlags;
+  *localRoleStateFlags = *localRoleStateFlags | FRONTEND_PLAYER_STATE_SCENARIO_CATALOG;
+  ScenarioCatalog_Rebuild();
+  catalogUsedBytes = g_ScenarioCatalogUsedBytes;
+  scenarioCatalog = g_ScenarioCatalog;
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
+    UiTransferMailbox_MarkUnavailable();
+    g_FrontendScenarioTransferState = 1;
+  }
+  else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
+    encodedCatalog = (uint8_t *)g_ScenarioCatalog + g_ScenarioCatalogUsedBytes + sizeof(uint32_t);
+    destinationCapacityBytes = (int)(SCENARIO_CATALOG_CAPACITY - sizeof(uint32_t)) - g_ScenarioCatalogUsedBytes;
+    *(uint32_t *)(encodedCatalog - 4) = g_ScenarioCatalogUsedBytes;
+    encodeOk = PckCodec_EncodeHuffmanRle
+                   (destinationCapacityBytes,encodedCatalog,catalogUsedBytes,(uint8_t *)scenarioCatalog,
+                    &encodedByteCount,&encodeErrorCode);
+    checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
+    UiTransferMailbox_SetOutgoingBuffer(checkedValue + 4,encodedCatalog - 4);
+  }
+}
+
+/* Frontend_MainLoop, FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE (checked once per frame): in a network session
+   first wait until every player's snapshot is published; a client takes the snapshot table the host sends
+   meanwhile. Then wait for the scenario catalogue exchange (the host sends its catalogue, a client receives it)
+   before the page opens. */
+static void FrontendMainLoop_PollScenarioSelectionPage(void)
+{
+  FrontendPlayerRuntimeRecord *playerBlock;
+  FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
+  FrontendRoleStateFlags *roleStateFlags;
+  PckDecodedByteCount *receivedBuffer; /* unpacked size, then the packed snapshot flags */
+  uint32_t receivedByteCount;
+
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
+    playerBlock = g_FrontendPlayerRuntimeBlocks;
+    remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
+    do {
+      if ((playerBlock->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
+          receivedBuffer = (PckDecodedByteCount *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
+          if (receivedBuffer != NULL) {
+            FrontendMainLoop_TakeReceivedSnapshots(receivedBuffer,receivedByteCount);
+          }
+        }
+        return;
+      }
+      playerBlock++;
+      remainingPlayerBlocks--;
+    } while (remainingPlayerBlocks != 0);
+  }
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
+  do {
+    /* the AND really clears every other progress bit of the player */
+    roleStateFlags = &playerBlock->factionAssignment.roleStateFlags;
+    *roleStateFlags = *roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG;
+    if (*roleStateFlags == 0) {
+      FrontendMainLoop_ExchangeScenarioCatalog();
+      return;
+    }
+    playerBlock++;
+    remainingPlayerBlocks--;
+  } while (remainingPlayerBlocks != 0);
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
+    UiTransferMailbox_SetOutgoingBuffer(0,NULL);
+  }
+  FrontendScenarioSelectionPage_InitializeAndApplyMapOption
+            ((FrontendScenarioSelectionPageView *)g_FrontendRootNode);
+  g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+}
+
+/* Frontend_MainLoop: true when every player block has one of the roleStateFlags bits in stateMask. */
+static bool FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags stateMask)
+{
+  FrontendPlayerRuntimeRecord *playerBlock;
+  FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
+
+  remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  do {
+    if ((playerBlock->factionAssignment.roleStateFlags & stateMask) == 0) {
+      return false;
+    }
+    playerBlock++;
+    remainingPlayerBlocks--;
+  } while (remainingPlayerBlocks != 0);
+  return true;
+}
+
+/* Frontend_MainLoop, task assignment and mission briefing pages: the host releases its outgoing transfer before
+   the page opens. */
+static void FrontendMainLoop_ReleaseHostTransfer(void)
+{
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
+    g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
+    UiTransferMailbox_SetOutgoingBuffer(0,NULL);
+  }
+}
+
+/* Frontend_MainLoop: runs the prepared session in g_FrontendLoadedLevelAsset (loadExistingSession 1 resumes the
+   saved session) and afterwards flushes the settings and input and clears every player's progress bits. */
+static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSession)
+{
+  uint32_t sessionError;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
+
+  if (!InGameRuntime_RunSessionUntilExit
+         ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,loadExistingSession,
+          (uint16_t *)&g_FrontendScenarioPathScratchUtf16,&sessionError)) {
+    FatalError_ExitIfFailed(sessionError,true);
+  }
+  PersistentSettings_Flush();
+  UiFrame_FlushInputAndResetPendingTicks();
+  g_FrontendScenarioInitializationCount = 0;
+  remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  do {
+    playerBlock->factionAssignment.roleStateFlags = 0;
+    playerBlock++;
+    remainingPlayerBlocks--;
+  } while (remainingPlayerBlocks != 0);
+}
+
+/* Frontend_MainLoop, after a session in a campaign: follows the successor of the campaign's current level chosen
+   by the end movie selection and writes its level path (level\<name>.lev) to g_FrontendScenarioPathScratchUtf16.
+   Returns true when a successor level was selected. A successor id missing from the campaign finishes it (the
+   campaign asset is released); a negative successor id or a current level without a record leaves it loaded.
+   The record cursors start at the asset base and advance by one CampaignLevelRecord, so level record i is
+   ((CampaignAsset *)cursor)->levels[0]. */
+static bool FrontendMainLoop_SelectCampaignSuccessorLevel(void)
+{
+  CampaignAsset *campaign;
+  CampaignAsset *levelRecordView;
+  int remainingLevelRecords;
+  int successorLevelId;
+
+  campaign = (CampaignAsset *)g_FrontendLoadedCampaignAsset;
+  if (campaign == NULL) {
+    return false;
+  }
+  remainingLevelRecords = campaign->levelRecordCount;
+  levelRecordView = campaign;
+  while (campaign->currentLevelId != levelRecordView->levels[0].levelId) {
+    levelRecordView = (CampaignAsset *)((CampaignLevelRecord *)levelRecordView + 1);
+    remainingLevelRecords--;
+    if (remainingLevelRecords == 0) {
+      return false;
+    }
+  }
+  successorLevelId = levelRecordView->levels[0].successorLevelIds[(int)g_EndMovieSelectionIndex];
+  if (successorLevelId < 0) {
+    return false;
+  }
+  remainingLevelRecords = campaign->levelRecordCount;
+  campaign->currentLevelId = successorLevelId;
+  levelRecordView = campaign;
+  while (successorLevelId != levelRecordView->levels[0].levelId) {
+    levelRecordView = (CampaignAsset *)((CampaignLevelRecord *)levelRecordView + 1);
+    remainingLevelRecords--;
+    if (remainingLevelRecords == 0) {
+      /* Successor level missing: the campaign is finished. */
+      Resource_Release((void *)g_FrontendLoadedCampaignAsset);
+      g_FrontendLoadedCampaignAsset = 0;
+      g_FrontendScenarioInitializationCount = 0;
+      return false;
+    }
+  }
+  WidePath_CombineDirectoryAndLeaf
+            ((uint16_t *)&g_FrontendScenarioPathScratchUtf16,levelRecordView->levels[0].levelFileName,
+             (uint16_t *)u_level_0050daac);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,(uint16_t *)&g_FrontendScenarioPathScratchUtf16);
+  return true;
+}
+
+/* Frontend_MainLoop, host: builds the level transfer in the package scratch buffer (level size, grid size, packed
+   level size, packed grid size, then both packed images), copies it to its own allocation and offers it to the
+   clients. */
+static void FrontendMainLoop_OfferLevelToClients(FrontendLoadedLevelAsset *loadedLevelAsset,FieldGridAsset *fieldGrid)
+{
+  ScenarioLevelBundleHeader *bundleHeader;
+  AssetAllocationSizeBytes fieldGridAllocationSize;
+  uint8_t *encodedImages;
+  bool encodeOk;
+  uint32_t encodedByteCount;
+  uint32_t encodeErrorCode;
+  uint32_t levelEncodedBytes;
+  uint32_t fieldGridEncodedBytes;
+  uint32_t transferByteCount;
+  uint32_t allocError;
+  void *allocPayload;
+  uint32_t *transferAllocation;
+  uint32_t *transferDwordCursor;
+  uint32_t *transferSourceDwords;
+  uint32_t remainingDwords;
+
+  bundleHeader = (ScenarioLevelBundleHeader *)g_PackageScratchBuffer;
+  fieldGridAllocationSize = fieldGrid->common.allocationSizeBytes;
+  bundleHeader->levelDecodedBytes = loadedLevelAsset->header.common.allocationSizeBytes;
+  bundleHeader->fieldGridDecodedBytes = fieldGridAllocationSize;
+  encodedImages = (uint8_t *)(bundleHeader + 1);
+  /* capacity: the scratch buffer minus 24 bytes, the size of the campaign bundle header
+     (ScenarioCampaignBundleHeader), although this header has 16 */
+  encodeOk = PckCodec_EncodeHuffmanRle
+                 (PACKAGE_SCRATCH_BUFFER_BYTES - 24,encodedImages,loadedLevelAsset->header.common.allocationSizeBytes,
+                  (uint8_t *)loadedLevelAsset,&encodedByteCount,&encodeErrorCode);
+  levelEncodedBytes = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
+  bundleHeader->levelEncodedBytes = levelEncodedBytes;
+  encodeOk = PckCodec_EncodeFieldGrid
+                 (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - levelEncodedBytes,encodedImages + levelEncodedBytes,
+                  fieldGrid->common.allocationSizeBytes,fieldGrid,&encodedByteCount,&encodeErrorCode);
+  fieldGridEncodedBytes = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
+  bundleHeader->fieldGridEncodedBytes = fieldGridEncodedBytes;
+  transferByteCount =
+       (uint32_t)(encodedImages - (uint8_t *)bundleHeader) + levelEncodedBytes + fieldGridEncodedBytes;
+  allocError = g_MemoryApi.alloc(transferByteCount,&allocPayload);
+  transferAllocation =
+       (uint32_t *)FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  transferDwordCursor = transferAllocation;
+  transferSourceDwords = (uint32_t *)bundleHeader;
+  for (remainingDwords = transferByteCount >> 2; remainingDwords != 0; remainingDwords--) {
+    *transferDwordCursor = *transferSourceDwords;
+    transferSourceDwords++;
+    transferDwordCursor++;
+  }
+  UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)transferByteCount,transferAllocation);
+}
+
+/* Frontend_MainLoop, host and local game: replaces the loaded level by the one at
+   g_FrontendScenarioPathScratchUtf16, loads its field grid (the level's path with the extension "fld", under the
+   executable directory), offers both to the clients when hosting and assigns the factions. */
+static void FrontendMainLoop_LoadSelectedLevel(void)
+{
+  void *loadedPackageEntry;
+  uint32_t packageLoadErrorCode;
+  uint32_t checkedValue;
+  uint16_t *fieldGridPath;
+  FieldGridAsset *fieldGrid;
+  FrontendLoadedLevelAsset *loadedLevelAsset;
+
+  /* levelPathOffsetOrLoadedFieldGrid holds the field grid pointer once loaded, an offset (<= 0xFFFF) into the
+     level before */
+  if ((g_FrontendLoadedLevelAsset != NULL) &&
+     (0xffff < g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid)) {
+    Resource_Release((void *)g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid);
+  }
+  Resource_Release(g_FrontendLoadedLevelAsset);
+  g_FrontendLoadedLevelAsset = NULL;
+  loadedPackageEntry = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16,&packageLoadErrorCode);
+  checkedValue = FatalError_ExitIfFailed
+                      (loadedPackageEntry != NULL ? (uint32_t)loadedPackageEntry : packageLoadErrorCode,
+                       loadedPackageEntry == NULL);
+  g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedValue;
+  fieldGridPath = (uint16_t *)((uint8_t *)g_FrontendLoadedLevelAsset +
+                               g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,fieldGridPath);
+  WidePath_CombineDirectoryAndLeaf
+            ((uint16_t *)&g_LevelResourcePathScratchUtf16,fieldGridPath,(uint16_t *)&g_ExecutableDirectoryUtf16);
+  fieldGrid = Package_LoadEntry(fieldGridPath,&packageLoadErrorCode);
+  if (fieldGrid == NULL) {
+    /* Original quirk: a failed field grid load is not checked; the error code is used as the grid */
+    fieldGrid = (FieldGridAsset *)packageLoadErrorCode;
+  }
+  loadedLevelAsset = g_FrontendLoadedLevelAsset;
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendMainLoop_OfferLevelToClients(loadedLevelAsset,fieldGrid);
+  }
+  loadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)fieldGrid;
+  FrontendPlayerRuntime_InitializeFactionAssignments();
+}
+
+/* Frontend_MainLoop: rebuilds the menu in the briefing room and loads the level (host and local game) or waits
+   for it from the host (client); FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE opens once every player has it.
+   Returns false with Frontend_Init's error in *outError when building the menu fails. */
+static bool FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
+{
+  FrontendRoleStateFlags *localRoleStateFlags;
+
+  if (!Frontend_Init(FRONTEND_ROM_RECORD_MISSION_BRIEFING,outError)) {
+    return false;
+  }
+  g_FrontendScenarioInitializationCount++;
+  g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE;
+  localRoleStateFlags = &g_FrontendPlayerRuntimeBlocks->factionAssignment.roleStateFlags;
+  *localRoleStateFlags = *localRoleStateFlags | FRONTEND_PLAYER_STATE_LEVEL_LOADED;
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendMainLoop_LoadSelectedLevel();
+  }
+  else {
+    UiTransferMailbox_MarkUnavailable();
+    g_FrontendScenarioTransferState = 5;
+  }
+  return true;
+}
+
+/* Frontend_MainLoop: rebuilds the menu at nextRomRecordId with nextPageAction pending (set even when the build
+   fails). Returns false with Frontend_Init's error in *outError when building the menu fails. */
+static bool FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,uint32_t nextPageAction,uint32_t *outError)
+{
+  bool menuBuilt;
+
+  menuBuilt = Frontend_Init(nextRomRecordId,outError);
+  g_FrontendPendingPageAction = nextPageAction;
+  return menuBuilt;
+}
+
+/* Frontend_MainLoop, after a session: a campaign continues with the successor level in the briefing room. Without
+   one, a scenario path left from the session is loaded there again; with none the menu goes back to the scenario
+   selection. Returns false with Frontend_Init's error in *outError when building the menu fails. */
+static bool FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
+{
+  if (!FrontendMainLoop_SelectCampaignSuccessorLevel() && (g_FrontendScenarioPathScratchUtf16 == 0)) {
+    return FrontendMainLoop_RebuildMenu
+                     (FRONTEND_ROM_RECORD_SCENARIO_SELECTION,FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE,outError);
+  }
+  return FrontendMainLoop_EnterMissionBriefing(outError);
+}
+
+/* Frontend_MainLoop: performs the pending g_FrontendPendingPageAction. Page actions open their page (the wait
+   pages only once the peers are ready, otherwise they stay pending); every other action tears the frontend down,
+   runs a session if requested and rebuilds the menu. Returns false with Frontend_Init's error in *outError when
+   rebuilding the menu fails. */
+static bool FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordId,uint32_t *outError)
+{
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) {
+    FrontendNetworkSetupPage_InitializeBackendMode((FrontendUiImage *)g_FrontendRootNode);
+    g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+    return true;
+  }
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) {
+    FrontendGameplaySettingsPage_InitializeFromPersistentSettings((UiRootNode *)g_FrontendRootNode);
+    g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+    return true;
+  }
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE) {
+    FrontendMainLoop_PollScenarioSelectionPage();
+    return true;
+  }
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE) {
+    FrontendScenarioTransfer_ProcessReceivedAsset();
+    if (FrontendMainLoop_AllPlayersHaveRoleState(FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT)) {
+      FrontendMainLoop_ReleaseHostTransfer();
+      FrontendTaskAssignmentPage_Initialize((FrontendTaskAssignmentPageInitView *)g_FrontendRootNode);
+      g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+    }
+    return true;
+  }
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE) {
+    FrontendScenarioTransfer_ProcessReceivedAsset();
+    if (FrontendMainLoop_AllPlayersHaveRoleState(FRONTEND_PLAYER_STATE_LEVEL_READY_MASK)) {
+      FrontendMainLoop_ReleaseHostTransfer();
+      FrontendMissionBriefingPage_Initialize((UiRootNode *)g_FrontendRootNode);
+      g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+    }
+    return true;
+  }
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_CREDITS) {
+    CreditsScreen_Open((FrontendCreditsUiStateView *)g_FrontendRootNode);
+    g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+    return true;
+  }
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE) {
+    FrontendSession_ShowQuitConfirmPage((FrontendUiImage *)g_FrontendRootNode);
+    g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+    return true;
+  }
+  /* every remaining action leaves the menu: tear the frontend down first */
+  FrontendRuntime_ShutdownAndReleaseResources();
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_START_SESSION) {
+    PersistentSettings_Flush();
+    FrontendMainLoop_RunSession(0);
+    return FrontendMainLoop_ContinueAfterSession(outError);
+  }
+  if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_RESUME_SAVED_SESSION) {
+    /* unlike FRONTEND_PAGE_ACTION_START_SESSION the settings are not flushed before the session */
+    FrontendMainLoop_RunSession(1);
+    return FrontendMainLoop_ContinueAfterSession(outError);
+  }
+  /* any other action: rebuild the menu at the entry record */
+  return FrontendMainLoop_RebuildMenu(frontendEntryRecordId,FRONTEND_PAGE_ACTION_NONE,outError);
+}
+
 /* Address: 0x00546BD0.
    The frontend (main menu) state machine, run from Game_Run until the player quits. It builds the menu at
    frontendEntryRecordId, jumps straight into the host/client/map flow when -HOST, -CLIENT= or -KARTE= is on the
-   command line, then presents one UI frame per iteration and performs g_FrontendPendingPageAction
-   (FRONTEND_PAGE_ACTION_*): open a menu page, wait for the network peers (scenario catalogue, task assignment,
-   level transfer), or tear the frontend down to run a session. After a session a campaign continues with the
+   command line, then presents UI frames until g_FrontendPendingPageAction (FRONTEND_PAGE_ACTION_*) is set and
+   performs it: open a menu page, wait for the network peers (scenario catalogue, task assignment, level
+   transfer), or tear the frontend down to run a session. After a session a campaign continues with the
    successor level chosen by the end movie (menu rebuilt at FRONTEND_ROM_RECORD_MISSION_BRIEFING), otherwise
    the menu is rebuilt at the scenario selection or the entry record. Returns true when the UI root stack
    empties (quit); false with Frontend_Init's error in *outError when building the menu fails.
@@ -24,419 +487,32 @@
 bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
 
 {
-  FrontendRoleStateFlags *roleStateFlagsPtr;
-  AssetAllocationSizeBytes fieldGridAllocationSize;
-  FrontendSnapshotTransferFlags receivedTransferFlags;
-  SessionNetworkRoleFlags pendingBlockCountOrRoleMask;
-  ScenarioCatalogHeader *scenarioCatalog;
-  uint32_t errorOrByteCount;
-  FieldGridAsset *sourceGrid;
-  RomRecordId nextRomRecordId;
-  int countOrLevelIdOrNextAction;
-  FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
-  int remainingLevelRecords;
-  uint32_t remainingDwords;
-  SessionNetworkRoleFlags remainingBlockCount;
-  uint8_t *encodeCursorOrSize;
-  PckOutputCapacityBytes destinationCapacityBytes;
-  FrontendPlayerRuntimeRecord *playerBlock;
-  void *levelRecordCursor;
-  void *campaignRecordCursor;
-  uint8_t *transferSourceBytes;
-  FrontendLoadedLevelAsset *loadedLevelAsset;
-  FrontendPlayerRuntimeRecord *roleScanBlock;
-  FrontendSnapshotTransferFlags *receivedFlagsCursor;
-  uint32_t *transferDwordCursor;
-  bool menuBuilt;
-  uint32_t sessionError;
-  void *loadedPackageEntry;
-  uint32_t packageLoadErrorCode;
-  uint32_t checkedValue;
-  bool encodeOk;
-  uint32_t encodedByteCount;
-  uint32_t encodeErrorCode;
-  uint32_t allocError;
-  void *allocPayload;
-  PckDecodedByteCount *receivedBuffer; /* unpacked size, then the packed snapshot flags */
-  uint32_t receivedByteCount;
-  FieldGridAsset *savedFieldGrid;
-  
+  uint32_t initError;
+
   g_FrontendNetworkState = 0;
-  menuBuilt = Frontend_Init(frontendEntryRecordId,&errorOrByteCount);
-  if (menuBuilt) {
+  if (Frontend_Init(frontendEntryRecordId,&initError)) {
     /* -HOST and -CLIENT= activate entry 3 of the entry menu's action table, -KARTE= (map) entry 0, without the
        click sound, and let the started camera transition end at once. */
-    if (g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26) == NULL) { /* "HOST" */
-      if (g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6) == NULL) { /* "CLIENT=" */
-        if (g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14) != NULL) { /* "KARTE=" */
-          FrontendRomActionTable_ExecuteRecord(0,0,1,0);
-          FrontendRomTransition_RequestStop();
-        }
-      }
-      else {
-        FrontendRomActionTable_ExecuteRecord(0,0,1,3);
-        FrontendRomTransition_RequestStop();
-      }
-    }
-    else {
+    if ((g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26) != NULL) || /* "HOST" */
+        (g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6) != NULL)) {       /* "CLIENT=" */
       FrontendRomActionTable_ExecuteRecord(0,0,1,3);
       FrontendRomTransition_RequestStop();
     }
-nextFrame:
+    else if (g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14) != NULL) { /* "KARTE=" */
+      FrontendRomActionTable_ExecuteRecord(0,0,1,0);
+      FrontendRomTransition_RequestStop();
+    }
     do {
-      for (;;) {
-        /* present UI frames until a page action is pending */
-        do {
-          if (g_UiRootNode != UI_ROOT_STACK_END) {
-            FrontendRomTransition_ProcessPendingRecord();
-          }
-          UiRootStack_InvalidateAll();
-          UiFrame_ProcessAndPresent();
-          g_FrontendPendingPageActionDepth = 0;
-          if ((g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE) && (g_UiRootNode == UI_ROOT_STACK_END)) {
-            /* the last UI root was popped: the player quit the game */
-            FrontendRuntime_ShutdownAndReleaseResources();
-            /* The asm returns with CLC and EAX left over from UiFrame_ProcessAndPresent (the shutdown helper
-               preserves EAX), which the only caller ignores. */
-            return true;
-          }
-        } while (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE);
-        UiFrame_FlushInputAndResetPendingTicks();
-        g_FrontendPendingPageActionDepth++;
-        if (g_FrontendPendingPageAction != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) break;
-        FrontendNetworkSetupPage_InitializeBackendMode((FrontendUiImage *)g_FrontendRootNode);
-        g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+      if (!FrontendMainLoop_PresentFramesUntilPageAction()) {
+        /* the last UI root was popped: the player quit the game */
+        FrontendRuntime_ShutdownAndReleaseResources();
+        return true;
       }
-      if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) {
-        FrontendGameplaySettingsPage_InitializeFromPersistentSettings
-                  ((UiRootNode *)g_FrontendRootNode);
-        g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-        continue;
-      }
-      if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE) {
-        /* In a network session first wait until every player's snapshot is published; a client takes the
-           snapshot table the host sends meanwhile. Then wait for the scenario catalogue exchange (the host
-           sends its catalogue, a client receives it) before the page opens. */
-        playerBlock = g_FrontendPlayerRuntimeBlocks;
-        remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
-        pendingBlockCountOrRoleMask = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
-        while (remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount, roleScanBlock = g_FrontendPlayerRuntimeBlocks,
-              pendingBlockCountOrRoleMask != SESSION_NETWORK_ROLE_LOCAL) {
-          if ((playerBlock->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
-            if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) !=
-                SESSION_NETWORK_ROLE_LOCAL) {
-              receivedBuffer = (PckDecodedByteCount *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
-              if (receivedBuffer != NULL) {
-                PckCodec_DecodeHuffmanRle
-                          (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1),
-                           NULL,NULL);
-                remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-                receivedFlagsCursor = (FrontendSnapshotTransferFlags *)g_PackageScratchBuffer;
-                playerBlock = g_FrontendPlayerRuntimeBlocks;
-                do {
-                  receivedTransferFlags = *receivedFlagsCursor;
-                  playerBlock->snapshotTransferFlags = playerBlock->snapshotTransferFlags | receivedTransferFlags;
-                  receivedFlagsCursor++;
-                  if ((receivedTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
-                    encodeCursorOrSize = playerBlock->snapshotPayload;
-                    for (countOrLevelIdOrNextAction = FRONTEND_SNAPSHOT_PAYLOAD_BYTES / sizeof(uint32_t);
-                         countOrLevelIdOrNextAction != 0; countOrLevelIdOrNextAction--) {
-                      *(FrontendSnapshotTransferFlags *)encodeCursorOrSize = *receivedFlagsCursor;
-                      receivedFlagsCursor++;
-                      encodeCursorOrSize = encodeCursorOrSize + 4;
-                    }
-                  }
-                  playerBlock++;
-                  remainingPlayerBlocks--;
-                } while (remainingPlayerBlocks != 0);
-                FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SNAPSHOTS_RECEIVED,0,0,0);
-                UiTransferMailbox_ClearReceivedState();
-              }
-            }
-            goto nextFrame;
-          }
-          playerBlock++;
-          remainingBlockCount--;
-          pendingBlockCountOrRoleMask = remainingBlockCount;
-        }
-        do {
-          /* the AND really clears every other progress bit of the player (AND [ESI+0x60],1 in the asm) */
-          roleStateFlagsPtr = &roleScanBlock->factionAssignment.roleStateFlags;
-          *roleStateFlagsPtr = *roleStateFlagsPtr & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG;
-          playerBlock = g_FrontendPlayerRuntimeBlocks;
-          if (*roleStateFlagsPtr == 0) {
-            FrontendScenarioTransfer_ProcessReceivedAsset();
-            if ((playerBlock->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_SCENARIO_CATALOG) == 0) {
-              roleStateFlagsPtr = &playerBlock->factionAssignment.roleStateFlags;
-              *roleStateFlagsPtr = *roleStateFlagsPtr | FRONTEND_PLAYER_STATE_SCENARIO_CATALOG;
-              ScenarioCatalog_Rebuild();
-              errorOrByteCount = g_ScenarioCatalogUsedBytes;
-              scenarioCatalog = g_ScenarioCatalog;
-              if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) ==
-                  SESSION_NETWORK_ROLE_LOCAL) {
-                if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) !=
-                    SESSION_NETWORK_ROLE_LOCAL) {
-                  /* Host: compress the catalogue into its own buffer right behind the used bytes, prefixed with
-                     the uncompressed size, and offer it to the clients. */
-                  encodeCursorOrSize = (uint8_t *)g_ScenarioCatalog + g_ScenarioCatalogUsedBytes + sizeof(uint32_t);
-                  destinationCapacityBytes = (int)(SCENARIO_CATALOG_CAPACITY - sizeof(uint32_t)) - g_ScenarioCatalogUsedBytes;
-                  *(uint32_t *)(encodeCursorOrSize - 4) = g_ScenarioCatalogUsedBytes;
-                  encodeOk = PckCodec_EncodeHuffmanRle
-                                 (destinationCapacityBytes,encodeCursorOrSize,errorOrByteCount,(uint8_t *)scenarioCatalog,
-                                  &encodedByteCount,&encodeErrorCode);
-                  checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
-                  UiTransferMailbox_SetOutgoingBuffer(checkedValue + 4,encodeCursorOrSize - 4);
-                }
-              }
-              else {
-                UiTransferMailbox_MarkUnavailable();
-                g_FrontendScenarioTransferState = 1;
-              }
-            }
-            goto nextFrame;
-          }
-          roleScanBlock++;
-          remainingPlayerBlocks--;
-        } while (remainingPlayerBlocks != 0);
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-          UiTransferMailbox_SetOutgoingBuffer(0,NULL);
-        }
-        FrontendScenarioSelectionPage_InitializeAndApplyMapOption
-                  ((FrontendScenarioSelectionPageView *)g_FrontendRootNode);
-        g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-        goto nextFrame;
-      }
-      if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE) {
-        FrontendScenarioTransfer_ProcessReceivedAsset();
-        remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-        playerBlock = g_FrontendPlayerRuntimeBlocks;
-        do {
-          if ((playerBlock->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT) == 0)
-          goto nextFrame;
-          playerBlock++;
-          remainingPlayerBlocks--;
-        } while (remainingPlayerBlocks != 0);
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-          g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
-          UiTransferMailbox_SetOutgoingBuffer(0,NULL);
-        }
-        FrontendTaskAssignmentPage_Initialize
-                  ((FrontendTaskAssignmentPageInitView *)g_FrontendRootNode);
-        g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-      }
-      else if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE) {
-        FrontendScenarioTransfer_ProcessReceivedAsset();
-        remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-        playerBlock = g_FrontendPlayerRuntimeBlocks;
-        do {
-          if ((playerBlock->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_READY_MASK) == 0)
-          goto nextFrame;
-          playerBlock++;
-          remainingPlayerBlocks--;
-        } while (remainingPlayerBlocks != 0);
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-          g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
-          UiTransferMailbox_SetOutgoingBuffer(0,NULL);
-        }
-        FrontendMissionBriefingPage_Initialize((UiRootNode *)g_FrontendRootNode);
-        g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-      }
-      else if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_CREDITS) {
-        CreditsScreen_Open((FrontendCreditsUiStateView *)g_FrontendRootNode);
-        g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-      }
-      else {
-        if (g_FrontendPendingPageAction != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE) {
-          /* every remaining action leaves the menu: tear the frontend down first */
-          FrontendRuntime_ShutdownAndReleaseResources();
-          if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_START_SESSION) {
-            PersistentSettings_Flush();
-            if (!InGameRuntime_RunSessionUntilExit
-                   ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,0,
-                    (uint16_t *)&g_FrontendScenarioPathScratchUtf16,&sessionError)) {
-              FatalError_ExitIfFailed(sessionError,true);
-            }
-            PersistentSettings_Flush();
-            UiFrame_FlushInputAndResetPendingTicks();
-            g_FrontendScenarioInitializationCount = 0;
-            remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-            playerBlock = g_FrontendPlayerRuntimeBlocks;
-            do {
-              playerBlock->factionAssignment.roleStateFlags = 0;
-              playerBlock++;
-              remainingPlayerBlocks--;
-              campaignRecordCursor = g_FrontendLoadedCampaignAsset;
-            } while (remainingPlayerBlocks != 0);
-advanceCampaign:
-            /* Campaign asset (CampaignAsset): the record cursors start at the asset base and advance by one
-               CampaignLevelRecord, so level record i is ((CampaignAsset *)cursor)->levels[0]. */
-            g_FrontendLoadedCampaignAsset = campaignRecordCursor;
-            if (campaignRecordCursor != NULL) {
-              countOrLevelIdOrNextAction = ((CampaignAsset *)campaignRecordCursor)->levelRecordCount;
-              levelRecordCursor = campaignRecordCursor;
-              do {
-                if (((CampaignAsset *)campaignRecordCursor)->currentLevelId == ((CampaignAsset *)levelRecordCursor)->levels[0].levelId) {
-                  /* Current level found: follow the successor chosen by the end movie selection. */
-                  countOrLevelIdOrNextAction = ((CampaignAsset *)levelRecordCursor)->levels[0].successorLevelIds[(int)g_EndMovieSelectionIndex];
-                  if (-1 < countOrLevelIdOrNextAction) {
-                    remainingLevelRecords = ((CampaignAsset *)campaignRecordCursor)->levelRecordCount;
-                    ((CampaignAsset *)campaignRecordCursor)->currentLevelId = countOrLevelIdOrNextAction;
-                    for (;;) {
-                      if (countOrLevelIdOrNextAction == ((CampaignAsset *)campaignRecordCursor)->levels[0].levelId) {
-                        WidePath_CombineDirectoryAndLeaf
-                                  ((uint16_t *)&g_FrontendScenarioPathScratchUtf16,
-                                   ((CampaignAsset *)campaignRecordCursor)->levels[0].levelFileName,(uint16_t *)u_level_0050daac);
-                        WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,(uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-                        goto loadSelectedLevel;
-                      }
-                      campaignRecordCursor = (void *)((CampaignLevelRecord *)campaignRecordCursor + 1);
-                      remainingLevelRecords--;
-                      if (remainingLevelRecords == 0) break;
-                    }
-                    /* Successor level missing: the campaign is finished. */
-                    Resource_Release(g_FrontendLoadedCampaignAsset);
-                    g_FrontendLoadedCampaignAsset = NULL;
-                    g_FrontendScenarioInitializationCount = 0;
-                  }
-                  break;
-                }
-                levelRecordCursor = (void *)((CampaignLevelRecord *)levelRecordCursor + 1);
-                countOrLevelIdOrNextAction--;
-              } while (countOrLevelIdOrNextAction != 0);
-            }
-            goto noNextLevel;
-          }
-          if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_RESUME_SAVED_SESSION) {
-            /* unlike FRONTEND_PAGE_ACTION_START_SESSION the settings are not flushed before the session */
-            if (!InGameRuntime_RunSessionUntilExit
-                   ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,1,
-                    (uint16_t *)&g_FrontendScenarioPathScratchUtf16,&sessionError)) {
-              FatalError_ExitIfFailed(sessionError,true);
-            }
-            PersistentSettings_Flush();
-            UiFrame_FlushInputAndResetPendingTicks();
-            g_FrontendScenarioInitializationCount = 0;
-            remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
-            playerBlock = g_FrontendPlayerRuntimeBlocks;
-            do {
-              playerBlock->factionAssignment.roleStateFlags = 0;
-              playerBlock++;
-              remainingPlayerBlocks--;
-              campaignRecordCursor = g_FrontendLoadedCampaignAsset;
-            } while (remainingPlayerBlocks != 0);
-            goto advanceCampaign;
-          }
-          /* any other action: rebuild the menu at the entry record */
-          countOrLevelIdOrNextAction = FRONTEND_PAGE_ACTION_NONE;
-          nextRomRecordId = frontendEntryRecordId;
-          goto rebuildMenu;
-        }
-        FrontendSession_ShowQuitConfirmPage((FrontendUiImage *)g_FrontendRootNode);
-        g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-      }
-    } while (true);
+    } while (FrontendMainLoop_PerformPageAction(frontendEntryRecordId,&initError));
   }
-initFailed:
   FrontendRuntime_ShutdownAndReleaseResources();
-  *outError = errorOrByteCount;
+  *outError = initError;
   return false;
-noNextLevel:
-  /* No level to continue with (no campaign, or it ended): back to the scenario selection. */
-  if (g_FrontendScenarioPathScratchUtf16 == 0) {
-    nextRomRecordId = FRONTEND_ROM_RECORD_SCENARIO_SELECTION;
-    countOrLevelIdOrNextAction = FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE;
-    goto rebuildMenu;
-  }
-loadSelectedLevel:
-  {
-    /* Rebuild the menu in the briefing room and load the level (host and local game) or wait for it from
-       the host (client); FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE opens once every player has it. */
-    if (!Frontend_Init(FRONTEND_ROM_RECORD_MISSION_BRIEFING,&errorOrByteCount)) goto initFailed;
-    g_FrontendScenarioInitializationCount++;
-    g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE;
-    roleStateFlagsPtr = &g_FrontendPlayerRuntimeBlocks->factionAssignment.roleStateFlags;
-    *roleStateFlagsPtr = *roleStateFlagsPtr | FRONTEND_PLAYER_STATE_LEVEL_LOADED;
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-      /* levelPathOffsetOrLoadedFieldGrid holds the field grid pointer once loaded, an offset (<= 0xFFFF)
-         into the level before */
-      if ((g_FrontendLoadedLevelAsset != NULL) &&
-         (0xffff < g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid))
-      {
-        Resource_Release((void *)(g_FrontendLoadedLevelAsset->header).pathState.
-                                 levelPathOffsetOrLoadedFieldGrid);
-      }
-      Resource_Release(g_FrontendLoadedLevelAsset);
-      g_FrontendLoadedLevelAsset = NULL;
-      loadedPackageEntry = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16,&packageLoadErrorCode);
-      checkedValue = FatalError_ExitIfFailed
-                          (loadedPackageEntry != NULL ? (uint32_t)loadedPackageEntry : packageLoadErrorCode,
-                           loadedPackageEntry == NULL);
-      g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedValue;
-      encodeCursorOrSize = (uint8_t *)g_FrontendLoadedLevelAsset +
-                           g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid;
-      /* the field grid file: the level's path with the extension "fld", under the executable directory */
-      WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,(uint16_t *)encodeCursorOrSize);
-      WidePath_CombineDirectoryAndLeaf
-                ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)encodeCursorOrSize,
-                 (uint16_t *)&g_ExecutableDirectoryUtf16);
-      sourceGrid = Package_LoadEntry((uint16_t *)encodeCursorOrSize,&packageLoadErrorCode);
-      if (sourceGrid == NULL) {
-        /* Original quirk: a failed field grid load is not checked; the error code is used as the grid */
-        sourceGrid = (FieldGridAsset *)packageLoadErrorCode;
-      }
-      loadedLevelAsset = g_FrontendLoadedLevelAsset;
-      transferSourceBytes = g_PackageScratchBuffer;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-        /* Host: build the level transfer in the package scratch buffer (level size, grid size, packed level
-           size, packed grid size, then both packed images), copy it to its own allocation and offer it to
-           the clients. */
-        fieldGridAllocationSize = sourceGrid->common.allocationSizeBytes;
-        ((ScenarioLevelBundleHeader *)g_PackageScratchBuffer)->levelDecodedBytes =
-             g_FrontendLoadedLevelAsset->header.common.allocationSizeBytes;
-        ((ScenarioLevelBundleHeader *)transferSourceBytes)->fieldGridDecodedBytes = fieldGridAllocationSize;
-        encodeCursorOrSize = (uint8_t *)((ScenarioLevelBundleHeader *)transferSourceBytes + 1);
-        savedFieldGrid = sourceGrid;
-        /* capacity: the scratch buffer minus 24 bytes, the size of the campaign bundle header
-           (ScenarioCampaignBundleHeader), although this header has 16 */
-        encodeOk = PckCodec_EncodeHuffmanRle
-                       (PACKAGE_SCRATCH_BUFFER_BYTES - 24,encodeCursorOrSize,loadedLevelAsset->header.common.allocationSizeBytes,
-                        (uint8_t *)loadedLevelAsset,&encodedByteCount,&encodeErrorCode);
-        checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
-        errorOrByteCount = checkedValue;
-        ((ScenarioLevelBundleHeader *)transferSourceBytes)->levelEncodedBytes = errorOrByteCount;
-        encodeOk = PckCodec_EncodeFieldGrid
-                       (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - errorOrByteCount,encodeCursorOrSize + errorOrByteCount,
-                        sourceGrid->common.allocationSizeBytes,sourceGrid,&encodedByteCount,&encodeErrorCode);
-        checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
-        ((ScenarioLevelBundleHeader *)transferSourceBytes)->fieldGridEncodedBytes = checkedValue;
-        /* the cursor becomes the total transfer size in bytes */
-        encodeCursorOrSize = encodeCursorOrSize + errorOrByteCount + (checkedValue - (int)transferSourceBytes);
-        allocError = g_MemoryApi.alloc((uint32_t)encodeCursorOrSize,&allocPayload);
-        checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
-        transferDwordCursor = (uint32_t *)checkedValue;
-        for (remainingDwords = (uint32_t)encodeCursorOrSize >> 2; remainingDwords != 0; remainingDwords--) {
-          *transferDwordCursor = *(uint32_t *)transferSourceBytes;
-          transferSourceBytes = transferSourceBytes + 4;
-          transferDwordCursor = transferDwordCursor + 1;
-        }
-        sourceGrid = savedFieldGrid;
-        UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)encodeCursorOrSize,(uint32_t *)checkedValue)
-        ;
-      }
-      loadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)sourceGrid;
-      FrontendPlayerRuntime_InitializeFactionAssignments();
-    }
-    else {
-      UiTransferMailbox_MarkUnavailable();
-      g_FrontendScenarioTransferState = 5;
-    }
-    goto nextFrame;
-  }
-rebuildMenu:
-  menuBuilt = Frontend_Init(nextRomRecordId,&errorOrByteCount);
-  g_FrontendPendingPageAction = countOrLevelIdOrNextAction;
-  if (menuBuilt) goto nextFrame;
-  goto initFailed;
 }
 
 

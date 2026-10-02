@@ -130,11 +130,13 @@ def main():
         else:
             expected = hashes(results[mine[0]])
             others = mine[1:]
+        # compare by simulation tick: under load the first recorded tick can differ by one between runs
         mismatch = None
+        expected_by_tick = dict(expected)
         for k in others:
-            for (tick_a, hash_a), (tick_b, hash_b) in zip(expected, hashes(results[k])):
-                if (tick_a, hash_a) != (tick_b, hash_b):
-                    mismatch = tick_b
+            for tick, value in hashes(results[k]):
+                if tick in expected_by_tick and expected_by_tick[tick] != value:
+                    mismatch = tick
                     break
             if mismatch:
                 break

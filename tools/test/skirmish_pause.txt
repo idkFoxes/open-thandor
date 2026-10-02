@@ -1,0 +1,10 @@
+# Check script (run_checks.py pixel compare): start with -NOINTRO -KARTE="mittelpunkt"; click "Weiter"/"Beginnen" until
+# the skirmish runs. run_checks.py sets OPEN_THANDOR_STATEHASH_PAUSE_AT, so the test build pauses the game at a fixed
+# simulation tick (independent of the frame rate); Esc 25 s after the start opens the options dialog over the paused
+# world, quit 8 s later. Run with OPEN_THANDOR_AUTOSHOT=2000: the last shots\shot_NNNN.bmp shows the paused frame.
+# Lines that do not start with a number are ignored (comments). Layout 1280x720 in an 800-high window: y = screen y - 40.
+0 layout 1280 720
+9000 clickuntilingame 840 500 3000
+0 ingame
+25000 key 27
+33000 quit

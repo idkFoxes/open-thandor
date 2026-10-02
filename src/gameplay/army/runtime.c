@@ -408,6 +408,101 @@ void ArmyRuntimeClass_UpdateAircraft
 }
 
 
+/* Takes the first queued pad asset (asset flag 8) the faction can pay for out of its secondary asset queue: the
+   Xenite is paid, the build interval and the asset's Energy load (held while building) are stored in the pad, and
+   the pad starts producing. Builds one asset at a time. */
+static void ArmyPad_StartBuildingFirstAffordableAsset(ModelRuntimeLinkedChildSpawnAndBuildView *padRuntime,
+          FactionRuntimeIndex factionIndex)
+{
+  FactionArmyAssetCount remainingAssetCount;
+  uint32_t *queueEntry;
+  ArmyAssetRecord *candidateAsset;
+  uint32_t buildTicks;
+  uint32_t selectedAssetValue;
+  PckArmyAssetIdCatalog secondaryAssetId;
+
+  remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
+  queueEntry = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
+  for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1, queueEntry = queueEntry + 1) {
+    /* queued asset record: build ticks (buildTicks), Xenite cost (xeniteCostQ4), Energy load
+       (energyLoadQ4), the sums of its model definitions' build metrics */
+    candidateAsset = (ArmyAssetRecord *)*queueEntry;
+    if (((candidateAsset->flags & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) == 0) ||
+       (g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 < candidateAsset->xeniteCostQ4)) {
+      continue;
+    }
+    g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
+         g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - candidateAsset->xeniteCostQ4;
+    buildTicks = candidateAsset->buildTicks;
+    selectedAssetValue = candidateAsset->energyLoadQ4;
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+      buildTicks = (buildTicks >> 4) + 1;
+    }
+    secondaryAssetId = candidateAsset->registryId;
+    (padRuntime->linkedChildBuildState).secondaryArmyAssetBuildRequiredTicks = buildTicks;
+    (padRuntime->linkedChildBuildState).selectedSecondaryArmyAssetValue = selectedAssetValue;
+    (padRuntime->linkedChildBuildState).selectedSecondaryArmyAssetId = secondaryAssetId;
+    padRuntime->energyLoadQ4 = padRuntime->energyLoadQ4 + selectedAssetValue;
+    (padRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks = 0;
+    g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount =
+         g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount - 1;
+    /* remove the entry: shift the rest of the queue down by one */
+    do {
+      *queueEntry = queueEntry[1];
+      queueEntry = queueEntry + 1;
+      remainingAssetCount = remainingAssetCount - 1;
+    } while (remainingAssetCount != 0);
+    padRuntime->secondaryArmyAssetBuildState = 1;
+    padRuntime->linkedChildRuntimeFlags = padRuntime->linkedChildRuntimeFlags | ARMY_MODEL_STATE_PRODUCING;
+    return;
+  }
+}
+
+/* Plays one hangar sound of the aircraft pad (an index into the world's sound asset workspace; 0 = none) at the
+   pad, unless the pad's terrain cell has mask bits 0/1 set. */
+static void ArmyPadHangar_PlaySound(WorldRuntimeContext *worldRuntime,ModelDefinitionLinkedChildStateView *padDefinition,
+          ModelRuntimeNode *padNode,SoundAssetIndex soundAssetIndex)
+{
+  DirectSoundVoiceSet **soundVoiceSet;
+
+  if ((soundAssetIndex == 0) || (worldRuntime->dwordArrayCount <= soundAssetIndex) ||
+     (worldRuntime->dwordArray == NULL)) {
+    return;
+  }
+  soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
+  if (soundVoiceSet == NULL) {
+    return;
+  }
+  if (!TerrainGrid_TestProjectedCellMaskBits01
+                ((padNode->worldTransform).translation.y,(padNode->worldTransform).translation.x,worldRuntime)) {
+    SpatialSound_PlayPositionedOneShot
+              (padDefinition->positionedSoundMaximumDistanceQ12,padDefinition->positionedSoundGainQ15,
+               &(padNode->worldTransform).translation,soundVoiceSet);
+  }
+}
+
+/* Consumes one pending launch of a linked aircraft slot and tries to create the aircraft. On success the hangar
+   starts opening (with its transition sound) and true is returned. */
+static bool ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRuntime,
+          ModelRuntimeLinkedChildSpawnAndBuildView *padRuntime,uint8_t *pendingSpawnCount,
+          ModelRuntimeLinkedChildSpawnInheritedState *inheritedState,PckArmyAssetIdCatalog linkedArmyAssetId,
+          ModelDefinitionLinkedChildStateView *padDefinition,ModelRuntimeNode *padNode)
+{
+  bool spawnFailed;
+
+  *pendingSpawnCount = *pendingSpawnCount - 1;
+  spawnFailed = ArmyRuntimeSpawner_CreateLinkedChildInstance
+                          (inheritedState->inheritedValue78,inheritedState->inheritedValue74,
+                           inheritedState->inheritedValue70,linkedArmyAssetId,worldRuntime,
+                           (ArmyRuntimeLinkedChildMaskSlotView *)padRuntime);
+  if (spawnFailed) {
+    return false;
+  }
+  padRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_OPENING;
+  ArmyPadHangar_PlaySound(worldRuntime,padDefinition,padNode,padDefinition->linkedChildTransitionSoundAssetIndex);
+  return true;
+}
+
 /* Address: 0x00526620.
    Runtime update of the aircraft home pad class (22), reached only through
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[22]. While the pad is being dismantled it
@@ -421,26 +516,18 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
           ModelRuntimeLinkedChildSpawnAndBuildView *modelRuntime)
 
 {
-  FactionArmyAssetCount *assetCountField;
-  FactionRelationCounter *relationCounter;
-  uint8_t *pendingSpawnCount;
-  Q12 *childTranslationZ;
   ModelRuntimeSlot *ownerPayload;
-  uint32_t candidateAsset;
-  uint32_t selectedAssetValue;
-  int factionIndexOrLimit;
+  FactionRuntimeIndex factionIndex;
+  Q12 translationLimitQ12;
   uint32_t completedAssetValue;
   PckArmyAssetIdCatalog secondaryAssetId;
   ModelRuntimeNode *modelNodeRuntime;
-  DirectSoundVoiceSet **soundVoiceSet;
   ModelRuntimeNode *childNode;
   ModelDefinition *linkedModelDefinition;
-  FactionArmyAssetCount remainingAssetCount;
   int reverseSlotIndex;
-  uint32_t tickOrSoundIndex;
-  WorldOwnerListNode *ownerNodeCursor;
-  uint32_t *dwordCursor;
-  bool testResult;
+  uint32_t elapsedTicks;
+  uint32_t energyLoadBefore;
+  WorldOwnerListNode *ownerNode;
   ArmyAssetRecordPrefix *assetRecord;
   ModelDefinitionRecordPrefix *selectedDefinition;
   GraphicsFixedVec3 loweredChildPosition;
@@ -448,68 +535,33 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   InGameNotificationMovieId notificationMovieId;
   ModelDefinitionLinkedChildStateView *linkedChildDefinition;
   ArmyRuntimeSlot *ownerArmyRuntime;
-  
+
   if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) {
     /* every aircraft (class 21) based on this pad (+0x60) that is not dismantling already */
-    ownerNodeCursor = worldRuntime->ownerListHead;
+    ownerNode = worldRuntime->ownerListHead;
     do {
-      if ((((ownerNodeCursor->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-           (ownerPayload = ownerNodeCursor->runtimePayload,
-           ownerPayload->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
-           MODEL_RUNTIME_CLASS_21_AIRCRAFT)) &&
-          (modelRuntime == (ModelRuntimeLinkedChildSpawnAndBuildView *)
-                           ownerPayload->classLinkState.modelLinkOrState.modelRuntime)) &&
-         ((ownerPayload->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLING) == 0)) {
-        ModelRuntimeHierarchy_MarkDestroyedRecursive
-                  (worldRuntime,ownerPayload->ownerArmyRuntimeOrSavedOffset.armyRuntime);
+      if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+        ownerPayload = ownerNode->runtimePayload;
+        if ((ownerPayload->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
+             MODEL_RUNTIME_CLASS_21_AIRCRAFT) &&
+           (modelRuntime == (ModelRuntimeLinkedChildSpawnAndBuildView *)
+                            ownerPayload->classLinkState.modelLinkOrState.modelRuntime) &&
+           ((ownerPayload->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLING) == 0)) {
+          ModelRuntimeHierarchy_MarkDestroyedRecursive
+                    (worldRuntime,ownerPayload->ownerArmyRuntimeOrSavedOffset.armyRuntime);
+        }
       }
-      ownerNodeCursor = ownerNodeCursor->nextNode;
-    } while (ownerNodeCursor != NULL);
+      ownerNode = ownerNode->nextNode;
+    } while (ownerNode != NULL);
   }
   switch(modelRuntime->secondaryArmyAssetBuildState) {
   case 0:
     if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
-      if (((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) &&
-         (factionIndexOrLimit = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex,
-         (modelRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount <
-         modelRuntime->modelDefinition->linkedChildSlotCapacity)) {
-        remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndexOrLimit].secondaryArmyAssetCount;
-        dwordCursor = g_GameFactionRuntimeImage.records[factionIndexOrLimit].secondaryArmyAssetPointersOrIds;
-        /* the first queued pad asset the faction can pay for */
-        for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
-          /* queued asset record: build ticks (buildTicks), Xenite cost (xeniteCostQ4), Energy load
-             (energyLoadQ4), the sums of its model definitions' build metrics */
-          candidateAsset = *dwordCursor;
-          if (((((ArmyAssetRecord *)candidateAsset)->flags & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) == 0) ||
-             (g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 <
-              ((ArmyAssetRecord *)candidateAsset)->xeniteCostQ4)) {
-            dwordCursor = dwordCursor + 1;
-            continue;
-          }
-          g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 =
-               g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 -
-               ((ArmyAssetRecord *)candidateAsset)->xeniteCostQ4;
-          tickOrSoundIndex = ((ArmyAssetRecord *)candidateAsset)->buildTicks;
-          selectedAssetValue = ((ArmyAssetRecord *)candidateAsset)->energyLoadQ4;
-          if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
-            tickOrSoundIndex = (tickOrSoundIndex >> 4) + 1;
-          }
-          secondaryAssetId = ((ArmyAssetRecord *)candidateAsset)->registryId;
-          (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildRequiredTicks = tickOrSoundIndex;
-          (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetValue = selectedAssetValue;
-          (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetId = secondaryAssetId;
-          modelRuntime->energyLoadQ4 = modelRuntime->energyLoadQ4 + selectedAssetValue;
-          (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks = 0;
-          assetCountField = &g_GameFactionRuntimeImage.records[factionIndexOrLimit].secondaryArmyAssetCount;
-          *assetCountField = *assetCountField - 1;
-          do {
-            *dwordCursor = dwordCursor[1];
-            dwordCursor = dwordCursor + 1;
-            remainingAssetCount = remainingAssetCount - 1;
-          } while (remainingAssetCount != 0);
-          modelRuntime->secondaryArmyAssetBuildState = 1;
-          modelRuntime->linkedChildRuntimeFlags = modelRuntime->linkedChildRuntimeFlags | ARMY_MODEL_STATE_PRODUCING;
-          break; /* one asset at a time */
+      if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0) {
+        factionIndex = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
+        if ((modelRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount <
+            modelRuntime->modelDefinition->linkedChildSlotCapacity) {
+          ArmyPad_StartBuildingFirstAffordableAsset(modelRuntime,factionIndex);
         }
       }
     }
@@ -522,44 +574,45 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
     break;
   case 1:
     if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
-      dwordCursor = &(modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks;
-      *dwordCursor = *dwordCursor + g_InGameSimulationStepTicks;
+      (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks =
+           (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks + g_InGameSimulationStepTicks;
       ownerArmyRuntime = (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
       ArmyRuntime_UpdateTimedShotAndEffectEmitters
                 (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
-      tickOrSoundIndex = (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks;
+      elapsedTicks = (modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildElapsedTicks;
       ArmyRuntime_UpdateAnimatedModelSubnodes
                 (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
-      if ((modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildRequiredTicks <= tickOrSoundIndex)
+      if ((modelRuntime->linkedChildBuildState).secondaryArmyAssetBuildRequiredTicks <= elapsedTicks)
       {
-        factionIndexOrLimit = ownerArmyRuntime->factionIndex;
+        factionIndex = ownerArmyRuntime->factionIndex;
         completedAssetValue = (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetValue;
         (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetValue = 0;
         modelRuntime->secondaryArmyAssetBuildState = 0;
         modelRuntime->linkedChildRuntimeFlags =
              modelRuntime->linkedChildRuntimeFlags & ~ARMY_MODEL_STATE_PRODUCING;
-        dwordCursor = &modelRuntime->energyLoadQ4;
-        tickOrSoundIndex = *dwordCursor;
-        *dwordCursor = *dwordCursor - completedAssetValue;
+        energyLoadBefore = modelRuntime->energyLoadQ4;
+        modelRuntime->energyLoadQ4 = energyLoadBefore - completedAssetValue;
         secondaryAssetId = (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetId;
         (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetId = 0;
-        if (completedAssetValue <= tickOrSoundIndex) {
-          reverseSlotIndex = modelRuntime->modelDefinition->linkedChildSlotCapacity - 1;
-          do {
-            if (modelRuntime->completedSecondaryArmyAssetIds[reverseSlotIndex] == 0)
-            goto StoreCompletedAssetId;
-            reverseSlotIndex = reverseSlotIndex - 1;
-          } while (-1 < reverseSlotIndex);
-          reverseSlotIndex = 0; /* no free slot: overwrite the first */
-StoreCompletedAssetId:
+        if (completedAssetValue <= energyLoadBefore) {
+          /* the last free slot of +0x78 (scanning down from the capacity) */
+          for (reverseSlotIndex = modelRuntime->modelDefinition->linkedChildSlotCapacity - 1; -1 < reverseSlotIndex;
+               reverseSlotIndex = reverseSlotIndex - 1) {
+            if (modelRuntime->completedSecondaryArmyAssetIds[reverseSlotIndex] == 0) {
+              break;
+            }
+          }
+          if (reverseSlotIndex < 0) {
+            reverseSlotIndex = 0; /* no free slot: overwrite the first */
+          }
           modelRuntime->completedSecondaryArmyAssetIds[reverseSlotIndex] = secondaryAssetId;
-          relationCounter = &g_GameFactionRuntimeImage.records[factionIndexOrLimit].relationCounterA;
-          *relationCounter = *relationCounter + 1;
-          assetCountField = &(modelRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount;
-          *assetCountField = *assetCountField + 1;
-          dwordCursor = &(modelRuntime->linkedChildBuildState).classState70;
-          *dwordCursor = *dwordCursor + 1;
-          if (factionIndexOrLimit == worldRuntime->activeFactionRuntimeIndex) {
+          g_GameFactionRuntimeImage.records[factionIndex].relationCounterA =
+               g_GameFactionRuntimeImage.records[factionIndex].relationCounterA + 1;
+          (modelRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount =
+               (modelRuntime->linkedChildBuildState).completedSecondaryArmyAssetCount + 1;
+          (modelRuntime->linkedChildBuildState).classState70 =
+               (modelRuntime->linkedChildBuildState).classState70 + 1;
+          if (factionIndex == worldRuntime->activeFactionRuntimeIndex) {
             /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
                assetRecord) */
             ArmyAssetRegistry_FindById(secondaryAssetId,&assetRecord);
@@ -592,31 +645,19 @@ StoreCompletedAssetId:
     if (ARMY_DOOR_TEXTURE_OPEN_V - 1 < modelNodeRuntime->primaryTextureOffsetV) {
       modelNodeRuntime->primaryTextureOffsetV = ARMY_DOOR_TEXTURE_OPEN_V;
       modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_LIFTING;
-      tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionEndSoundAssetIndex;
-      if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-         (worldRuntime->dwordArray != NULL)) {
-        soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
-        if ((soundVoiceSet != NULL) &&
-           (testResult = TerrainGrid_TestProjectedCellMaskBits01
-                               ((modelNodeRuntime->worldTransform).translation.y,
-                                (modelNodeRuntime->worldTransform).translation.x,worldRuntime),
-           !testResult)) {
-          SpatialSound_PlayPositionedOneShot
-                    (linkedChildDefinition->positionedSoundMaximumDistanceQ12,linkedChildDefinition->positionedSoundGainQ15,
-                     &(modelNodeRuntime->worldTransform).translation,soundVoiceSet);
-        }
-      }
+      ArmyPadHangar_PlaySound(worldRuntime,linkedChildDefinition,modelNodeRuntime,
+                              linkedChildDefinition->linkedChildTransitionEndSoundAssetIndex);
     }
     break;
   case ARMY_PAD_HANGAR_LIFTING: /* the platform is child 0 */
     childNode = modelNodeRuntime->childNodes[0];
-    factionIndexOrLimit = linkedChildDefinition->linkedChildTranslationLimitQ12;
-    childTranslationZ = &(childNode->modelPayload).localTranslationZQ12;
-    *childTranslationZ = *childTranslationZ + linkedChildDefinition->linkedChildTranslationStepQ12PerTick *
-                        g_InGameSimulationStepTicks;
-    if (factionIndexOrLimit < (childNode->modelPayload).localTranslationZQ12) {
+    translationLimitQ12 = linkedChildDefinition->linkedChildTranslationLimitQ12;
+    (childNode->modelPayload).localTranslationZQ12 =
+         (childNode->modelPayload).localTranslationZQ12 +
+         linkedChildDefinition->linkedChildTranslationStepQ12PerTick * g_InGameSimulationStepTicks;
+    if (translationLimitQ12 < (childNode->modelPayload).localTranslationZQ12) {
       modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_READY;
-      (childNode->modelPayload).localTranslationZQ12 = factionIndexOrLimit;
+      (childNode->modelPayload).localTranslationZQ12 = translationLimitQ12;
     }
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
     break;
@@ -626,28 +667,16 @@ StoreCompletedAssetId:
     ModelLookupTable_GetPackedPointPosition
               (0,1,(modelNodeRuntime->modelPayload).modelResource,&loweredChildPosition);
     childNode = modelNodeRuntime->childNodes[0];
-    childTranslationZ = &(childNode->modelPayload).localTranslationZQ12;
-    *childTranslationZ = *childTranslationZ - translationStep * g_InGameSimulationStepTicks;
+    (childNode->modelPayload).localTranslationZQ12 =
+         (childNode->modelPayload).localTranslationZQ12 - translationStep * g_InGameSimulationStepTicks;
     if ((childNode->modelPayload).localTranslationZQ12 < (int)loweredChildPosition.z) {
       modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_CLOSING;
       (childNode->modelPayload).localTranslationZQ12 = loweredChildPosition.z;
     }
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
     if (modelRuntime->linkedChildTransitionState == ARMY_PAD_HANGAR_CLOSING) {
-      tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex;
-      if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-         (worldRuntime->dwordArray != NULL)) {
-        soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
-        if ((soundVoiceSet != NULL) &&
-           (testResult = TerrainGrid_TestProjectedCellMaskBits01
-                               ((modelNodeRuntime->worldTransform).translation.y,
-                                (modelNodeRuntime->worldTransform).translation.x,worldRuntime),
-           !testResult)) {
-          SpatialSound_PlayPositionedOneShot
-                    (linkedChildDefinition->positionedSoundMaximumDistanceQ12,linkedChildDefinition->positionedSoundGainQ15,
-                     &(modelNodeRuntime->worldTransform).translation,soundVoiceSet);
-        }
-      }
+      ArmyPadHangar_PlaySound(worldRuntime,linkedChildDefinition,modelNodeRuntime,
+                              linkedChildDefinition->linkedChildTransitionSoundAssetIndex);
     }
     break;
   case ARMY_PAD_HANGAR_CLOSING:
@@ -664,91 +693,29 @@ StoreCompletedAssetId:
     /* fall through: the idle hangar launches the next pending aircraft */
   case ARMY_PAD_HANGAR_IDLE:
     if (((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) &&
-       (testResult = ArmyRuntime_TestWorldPointAllowedDefault
-                           (linkedChildDefinition->visibilityRadius,(modelNodeRuntime->worldTransform).translation.y
-                            ,(modelNodeRuntime->worldTransform).translation.x), !testResult)) {
-      if ((modelRuntime->linkedChildPendingSpawnCounts).slot0 != 0) {
-        (modelRuntime->linkedChildPendingSpawnCounts).slot0 =
-             (modelRuntime->linkedChildPendingSpawnCounts).slot0 - 1;
-        testResult = ArmyRuntimeSpawner_CreateLinkedChildInstance
-                           (modelRuntime->linkedChildSpawnInheritedState[0].inheritedValue78,
-                            modelRuntime->linkedChildSpawnInheritedState[0].inheritedValue74,
-                            modelRuntime->linkedChildSpawnInheritedState[0].inheritedValue70,
-                            g_ArmyLinkedChildAssetIdSlot0,worldRuntime,
-                            (ArmyRuntimeLinkedChildMaskSlotView *)modelRuntime);
-        if (!testResult) {
-          modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_OPENING;
-          tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex;
-          if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-             (worldRuntime->dwordArray != NULL)) {
-            soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
-            if ((soundVoiceSet != NULL) &&
-               (testResult = TerrainGrid_TestProjectedCellMaskBits01
-                                   ((modelNodeRuntime->worldTransform).translation.y,
-                                    (modelNodeRuntime->worldTransform).translation.x,worldRuntime),
-               !testResult)) {
-              SpatialSound_PlayPositionedOneShot
-                        (linkedChildDefinition->positionedSoundMaximumDistanceQ12,linkedChildDefinition->positionedSoundGainQ15,
-                         &(modelNodeRuntime->worldTransform).translation,soundVoiceSet);
-            }
-          }
-          break;
-        }
+       !ArmyRuntime_TestWorldPointAllowedDefault
+                  (linkedChildDefinition->visibilityRadius,(modelNodeRuntime->worldTransform).translation.y,
+                   (modelNodeRuntime->worldTransform).translation.x)) {
+      /* the first pending slot whose aircraft can be created opens the hangar */
+      if (((modelRuntime->linkedChildPendingSpawnCounts).slot0 != 0) &&
+         ArmyPadHangar_TryLaunchPendingAircraft
+                   (worldRuntime,modelRuntime,&(modelRuntime->linkedChildPendingSpawnCounts).slot0,
+                    &modelRuntime->linkedChildSpawnInheritedState[0],g_ArmyLinkedChildAssetIdSlot0,
+                    linkedChildDefinition,modelNodeRuntime)) {
+        break;
       }
-      if ((modelRuntime->linkedChildPendingSpawnCounts).slot1 != 0) {
-        pendingSpawnCount = &(modelRuntime->linkedChildPendingSpawnCounts).slot1;
-        *pendingSpawnCount = *pendingSpawnCount - 1;
-        testResult = ArmyRuntimeSpawner_CreateLinkedChildInstance
-                           (modelRuntime->linkedChildSpawnInheritedState[1].inheritedValue78,
-                            modelRuntime->linkedChildSpawnInheritedState[1].inheritedValue74,
-                            modelRuntime->linkedChildSpawnInheritedState[1].inheritedValue70,
-                            g_ArmyLinkedChildAssetIdSlot1,worldRuntime,
-                            (ArmyRuntimeLinkedChildMaskSlotView *)modelRuntime);
-        if (!testResult) {
-          modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_OPENING;
-          tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex;
-          if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-             (worldRuntime->dwordArray != NULL)) {
-            soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
-            if ((soundVoiceSet != NULL) &&
-               (testResult = TerrainGrid_TestProjectedCellMaskBits01
-                                   ((modelNodeRuntime->worldTransform).translation.y,
-                                    (modelNodeRuntime->worldTransform).translation.x,worldRuntime),
-               !testResult)) {
-              SpatialSound_PlayPositionedOneShot
-                        (linkedChildDefinition->positionedSoundMaximumDistanceQ12,linkedChildDefinition->positionedSoundGainQ15,
-                         &(modelNodeRuntime->worldTransform).translation,soundVoiceSet);
-            }
-          }
-          break;
-        }
+      if (((modelRuntime->linkedChildPendingSpawnCounts).slot1 != 0) &&
+         ArmyPadHangar_TryLaunchPendingAircraft
+                   (worldRuntime,modelRuntime,&(modelRuntime->linkedChildPendingSpawnCounts).slot1,
+                    &modelRuntime->linkedChildSpawnInheritedState[1],g_ArmyLinkedChildAssetIdSlot1,
+                    linkedChildDefinition,modelNodeRuntime)) {
+        break;
       }
       if ((modelRuntime->linkedChildPendingSpawnCounts).slot2 != 0) {
-        pendingSpawnCount = &(modelRuntime->linkedChildPendingSpawnCounts).slot2;
-        *pendingSpawnCount = *pendingSpawnCount - 1;
-        testResult = ArmyRuntimeSpawner_CreateLinkedChildInstance
-                           (modelRuntime->linkedChildSpawnInheritedState[2].inheritedValue78,
-                            modelRuntime->linkedChildSpawnInheritedState[2].inheritedValue74,
-                            modelRuntime->linkedChildSpawnInheritedState[2].inheritedValue70,
-                            g_ArmyLinkedChildAssetIdSlot2,worldRuntime,
-                            (ArmyRuntimeLinkedChildMaskSlotView *)modelRuntime);
-        if (!testResult) {
-          modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_OPENING;
-          tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex;
-          if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-             (worldRuntime->dwordArray != NULL)) {
-            soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
-            if ((soundVoiceSet != NULL) &&
-               (testResult = TerrainGrid_TestProjectedCellMaskBits01
-                                   ((modelNodeRuntime->worldTransform).translation.y,
-                                    (modelNodeRuntime->worldTransform).translation.x,worldRuntime),
-               !testResult)) {
-              SpatialSound_PlayPositionedOneShot
-                        (linkedChildDefinition->positionedSoundMaximumDistanceQ12,linkedChildDefinition->positionedSoundGainQ15,
-                         &(modelNodeRuntime->worldTransform).translation,soundVoiceSet);
-            }
-          }
-        }
+        ArmyPadHangar_TryLaunchPendingAircraft
+                  (worldRuntime,modelRuntime,&(modelRuntime->linkedChildPendingSpawnCounts).slot2,
+                   &modelRuntime->linkedChildSpawnInheritedState[2],g_ArmyLinkedChildAssetIdSlot2,
+                   linkedChildDefinition,modelNodeRuntime);
       }
     }
   }

@@ -31,6 +31,8 @@ static void StateHash_Add(StateHash *hash, uint32_t word)
 static int s_stepsWanted;       /* OPEN_THANDOR_STATEHASH: steps to record, 0 = off */
 static int s_stepsDone;
 static unsigned s_detailTick;   /* OPEN_THANDOR_STATEHASH_DETAIL: tick whose per-object values are written too */
+static unsigned s_pauseTick;    /* OPEN_THANDOR_STATEHASH_PAUSE_AT: pause the game after this tick instead of exiting
+                                   (a frame-rate independent moment for screenshot comparisons) */
 static FILE *s_output;
 
 static int32_t DebugStateHash_ArmyIndex(const void *army)
@@ -52,6 +54,8 @@ void DebugStateHash_SessionStart(void)
   s_stepsWanted = atoi(steps);
   s_stepsDone = 0;
   s_detailTick = detail != NULL ? (unsigned)atoi(detail) : 0;
+  s_pauseTick = getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT") != NULL ?
+                (unsigned)atoi(getenv("OPEN_THANDOR_STATEHASH_PAUSE_AT")) : 0;
   /* The simulation draws from g_RandomGeneratorState.next; in a local game that is the primary stream, which the
      ambient sound and music code (InGameUiRoot_UpdateFrame) also advances once per rendered frame, so the run would
      depend on the frame rate. A network game seeds both streams and moves the simulation to the secondary one;
@@ -78,12 +82,14 @@ void DebugStateHash_SessionStart(void)
   }
 }
 
-/* Scenario orders (OPEN_THANDOR_ARENA_ORDERS), issued from the step hook at fixed step numbers so they happen at
-   the same simulation tick in every run; they run in the next step, as the game's own commands do. */
-#define ARENA_MOVE_OUT_STEP 100
-#define ARENA_MOVE_BACK_STEP 500
+/* Scenario orders (OPEN_THANDOR_ARENA_ORDERS), issued from the step hook after fixed simulation ticks (not after a
+   number of recorded steps: under load the first recorded tick can differ by one); they run in the next step, as
+   the game's own commands do. The ticks equal the step numbers 100, 500 and 20 of the first version plus the two
+   ticks before the first recorded one, so the stored references stay valid. */
+#define ARENA_MOVE_OUT_TICK 102
+#define ARENA_MOVE_BACK_TICK 502
 #define ARENA_MOVE_ROWS 20
-#define ARENA_PRODUCTION_STEP 20
+#define ARENA_PRODUCTION_TICK 22
 #define ARENA_ROW_STEP_X 0x480   /* world X per grid row (isometric lattice, see tools/data/fld.py) */
 #define ARENA_ROW_STEP_Y (-1999) /* world Y per grid row */
 
@@ -93,10 +99,10 @@ static Q12 s_armyHomeY[ARMY_RUNTIME_SLOT_COUNT];
 /* "move": every army of faction 1 drives ARENA_MOVE_ROWS rows towards the other side (down on the screen), every
    army of faction 2 the same distance the other way (up), then all drive back to where they stood. Immobile
    armies ignore the order (ArmyRuntime_StartRoutedMoveCommand). */
-static void DebugArena_MoveOrders(int step)
+static void DebugArena_MoveOrders(unsigned tick)
 {
   unsigned slotIndex;
-  if (step != ARENA_MOVE_OUT_STEP && step != ARENA_MOVE_BACK_STEP) {
+  if (tick != ARENA_MOVE_OUT_TICK && tick != ARENA_MOVE_BACK_TICK) {
     return;
   }
   for (slotIndex = 0; slotIndex < ARMY_RUNTIME_SLOT_COUNT; slotIndex++) {
@@ -106,7 +112,7 @@ static void DebugArena_MoveOrders(int step)
       continue;
     }
     direction = army->factionIndex == 1 ? 1 : -1;
-    if (step == ARENA_MOVE_OUT_STEP) {
+    if (tick == ARENA_MOVE_OUT_TICK) {
       Q12 x = army->modelNodeRuntime->worldTransform.translation.x;
       Q12 y = army->modelNodeRuntime->worldTransform.translation.y;
       s_armyHomeX[slotIndex] = x;
@@ -124,7 +130,7 @@ static void DebugArena_MoveOrders(int step)
 
 /* "production": both factions queue units for every factory (the build menu's call, which checks nothing: the
    factories take what they can afford) and every lab starts the first technology of its range that is available. */
-static void DebugArena_ProductionOrders(int step)
+static void DebugArena_ProductionOrders(unsigned tick)
 {
   static const uint32_t queued[] = {1, 10, 30, 60, 80, 100, 110, 130, 150, 170, 180, 200, 250, 260, 280};
   static const struct { uint32_t assetId; int firstTech; int lastTech; } labs[] = {
@@ -132,7 +138,7 @@ static void DebugArena_ProductionOrders(int step)
   unsigned slotIndex;
   unsigned index;
   int faction;
-  if (step != ARENA_PRODUCTION_STEP) {
+  if (tick != ARENA_PRODUCTION_TICK) {
     return;
   }
   for (faction = 1; faction <= 2; faction++) {
@@ -202,18 +208,18 @@ static void DebugArena_ProductionSummary(int step)
   }
 }
 
-static void DebugArena_Orders(int step)
+static void DebugArena_Orders(int step, unsigned tick)
 {
   const char *orders = getenv("OPEN_THANDOR_ARENA_ORDERS");
   if (orders == NULL) {
     return;
   }
   if (strcmp(orders, "move") == 0) {
-    DebugArena_MoveOrders(step);
+    DebugArena_MoveOrders(tick);
   }
   else if (strcmp(orders, "production") == 0) {
     DebugArena_ProductionSummary(step);
-    DebugArena_ProductionOrders(step);
+    DebugArena_ProductionOrders(tick);
   }
 }
 
@@ -286,7 +292,16 @@ void DebugStateHash_AfterStep(void)
   fprintf(s_output, "%u %08x%08x armies %u objects %u seed %08x\n", tick, (unsigned)(hash.value >> 32),
           (unsigned)hash.value, armies, nodes, (unsigned)g_RandomGeneratorState.secondarySeed);
   s_stepsDone++;
-  DebugArena_Orders(s_stepsDone);
+  DebugArena_Orders(s_stepsDone, tick);
+  if (s_pauseTick != 0 && tick >= s_pauseTick) {
+    /* the flag the pause command toggles once all players agree (InGameCommand_TogglePauseRequest) */
+    g_UiCommandRuntimeFlags |= UI_COMMAND_RUNTIME_FLAG_PAUSED;
+    fclose(s_output);
+    s_output = NULL;
+    s_stepsWanted = 0;
+    Thandor_Log("test aid: state hash paused the game at tick %u", tick);
+    return;
+  }
   if (s_stepsDone >= s_stepsWanted) {
     fclose(s_output);
     s_output = NULL;
