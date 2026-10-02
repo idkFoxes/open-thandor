@@ -408,7 +408,7 @@ void UiRangeSliderControl_DrawTrackAndThumb
   int edgeLength;
   uint32_t valueOffsetOrRange;
   bool accessFailed;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
 
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
@@ -524,7 +524,7 @@ void UiRangeSliderControl_BeginThumbDrag
 {
   int localX;
   int localY;
-  TextureSizeResult thumbSize;
+  GraphicsTextureLogicalSize thumbSize;
 
   if (((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
        (localX = pointerX - control->base.left, control->base.left <= pointerX)) &&

@@ -1830,10 +1830,10 @@ void SelectionPanel_DrawHorizontalNumberTextCappedBar
   uint32_t requiredEnd;
   uint32_t *cellFlags;
   RichTextExtentRegs textExtent;
-  TextureSizeResult pieceSize;
-  TextureSizeResult textLeftBorderSize;
-  TextureSizeResult textRightBorderSize;
-  TextureSizeResult leftCapSize;
+  GraphicsTextureLogicalSize pieceSize;
+  GraphicsTextureLogicalSize textLeftBorderSize;
+  GraphicsTextureLogicalSize textRightBorderSize;
+  GraphicsTextureLogicalSize leftCapSize;
   
   textExtent = RichTextCommandStream_MeasureRegs(g_SelectionPanelNumberTextStyle,commandStream);
   panelData = g_SelectionPanelData;
@@ -1986,7 +1986,7 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
   uint32_t *cellFlagsPtr;
   RichTextExtentRegs textExtent;
   SelectionPanelAdvanceEaxEdx8 cellAdvance;
-  TextureSizeResult spriteSize;
+  GraphicsTextureLogicalSize spriteSize;
 
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,15,1,value,
@@ -2045,7 +2045,7 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
   uint32_t spriteHeight;
   uint32_t *cellFlagsPtr;
   SelectionPanelAdvanceEaxEdx8 cellAdvance;
-  TextureSizeResult spriteSize;
+  GraphicsTextureLogicalSize spriteSize;
 
   panelData = g_SelectionPanelData;
   cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
@@ -2100,7 +2100,7 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
   uint32_t spriteHeight;
   uint32_t *cellFlagsPtr;
   SelectionPanelAdvanceEaxEdx8 cellAdvance;
-  TextureSizeResult spriteSize;
+  GraphicsTextureLogicalSize spriteSize;
 
   panelData = g_SelectionPanelData;
   if (currentValue < 0) {
@@ -2172,7 +2172,7 @@ void SelectionPanel_DrawProportionalCappedBar
   int filledSpan;
   int fillFrame;
   int fixedDrawCoordinate;
-  TextureSizeResult capSize;
+  GraphicsTextureLogicalSize capSize;
   
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
@@ -2238,7 +2238,7 @@ void SelectionPanel_DrawVerticalProportionalCappedBar
   int filledSpan;
   int fillFrame;
   int fixedDrawCoordinate;
-  TextureSizeResult capSize;
+  GraphicsTextureLogicalSize capSize;
   
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
@@ -2298,8 +2298,8 @@ void SelectionPanel_DrawForwardCappedBar
   int endCapCoordinate;
   uint32_t baseSubresource;
   int fixedDrawCoordinate;
-  TextureSizeResult startCapSize;
-  TextureSizeResult endCapSize;
+  GraphicsTextureLogicalSize startCapSize;
+  GraphicsTextureLogicalSize endCapSize;
   
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
@@ -2335,8 +2335,8 @@ void SelectionPanel_DrawSolidCappedBar
   int endCapCoordinate;
   uint32_t baseSubresource;
   int fixedDrawCoordinate;
-  TextureSizeResult startCapSize;
-  TextureSizeResult endCapSize;
+  GraphicsTextureLogicalSize startCapSize;
+  GraphicsTextureLogicalSize endCapSize;
   
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
@@ -2377,7 +2377,7 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
   int segmentsEnd;
   int fixedDrawCoordinate;
   uint32_t *cellFlags;
-  TextureSizeResult spriteSize;
+  GraphicsTextureLogicalSize spriteSize;
   
   cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_FLAGS);
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
@@ -2496,7 +2496,7 @@ void SelectionPanel_DrawSegmentedCappedBar
   int fixedDrawCoordinate;
   int segmentsEnd;
   uint32_t *cellFlags;
-  TextureSizeResult spriteSize;
+  GraphicsTextureLogicalSize spriteSize;
   
   cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_FLAGS);
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);

@@ -324,7 +324,7 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
   int localY;
   int localXOrTrackBottom;
   bool horizontalBarHit;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
 
   localXOrTrackBottom = pointerX - (control->base).left;
   localY = pointerY - (control->base).top;
@@ -515,7 +515,7 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
   int arrowEnd;
   bool inArrowBar;
   bool arrowHovered;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
 
   if ((control->scrollStateFlags &
       (UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE|UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE|
@@ -1981,7 +1981,7 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
   int contentRight;
   int trackEnd;
   bool accessFailed;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   uint32_t capSize;
   
   accessFailed = g_GraphicsFramebufferBeginAccess();
@@ -2373,7 +2373,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
   int verticalExtent;
   UiPixelExtent availableWidth;
   int horizontalExtent;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   
   contentChild = (control->base).firstChild;
   availableWidth = (control->base).right - (control->base).left;
@@ -2766,7 +2766,7 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
   uint16_t *commandStream;
   bool accessFailed;
   RichTextExtentRegs textExtent;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   
   if (control->rowCount != 0) {
     rowTop = (clipTop - (control->base).top) / (int)control->rowHeight;
@@ -3048,7 +3048,7 @@ void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int cl
              RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
         int width = (int)extent.widthPixels + 6;
         if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
-          TextureSizeResult cap =
+          GraphicsTextureLogicalSize cap =
                g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource);
           int capWidth = (int)cap.logicalWidthPixels;
           int endX = width - capWidth + x;
@@ -3689,7 +3689,7 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
      the horizontal/vertical track lengths and the thumb positions */
   int horizontalExtent;
   int verticalExtent;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
 
   contentChild = (control->base).firstChild;
   if (contentChild != UI_NODE_NONE) {

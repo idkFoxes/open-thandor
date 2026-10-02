@@ -76,7 +76,7 @@ void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,Gr
 void __cdecl GraphicsTexture_RebuildNoOp(void);
 
 /* 0x004A9270 */
-TextureSizeResult GraphicsTextureSource_GetLogicalSizeRegs
+GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004A92C0 */

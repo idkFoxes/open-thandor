@@ -1596,7 +1596,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
   RichTextExtentRegs textExtent;
   uint32_t activePageIndex;
   uint16_t *hintTextResult;
-  TextureSizeResult windowTextureSize;
+  GraphicsTextureLogicalSize windowTextureSize;
 
   resultCode = 0;
   channel3OrHintValue = 0;

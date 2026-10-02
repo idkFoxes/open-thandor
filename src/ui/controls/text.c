@@ -1290,7 +1290,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
   UiPackedTextStyle packedStyle;
   int rightOrCaretX;
   bool framebufferUnavailable;
-  TextureSizeResult cornerTileSize;
+  GraphicsTextureLogicalSize cornerTileSize;
   uint32_t fontLineHeight;
   uint32_t borderWidthOrCaretFrame;
   GraphicsTextureSourceAsset *caretTextureSource;
@@ -1783,7 +1783,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
   bool framebufferUnavailable;
   RichTextExtentRegs textExtent;
   uint16_t *resolvedText;
-  TextureSizeResult tileSize;
+  GraphicsTextureLogicalSize tileSize;
   
   tooltipTarget = g_UiTooltipState.targetNode;
   if ((g_UiTooltipState.targetNode != NULL) && (g_UiTooltipState.countdownFrames == 0)) {
@@ -1934,8 +1934,8 @@ void UiFramedTextButtonControl_DrawClipped
   bool drawFrame;
   RichTextExtentRegs textExtent;
   uint16_t *resolvedText;
-  TextureSizeResult tileSizeOrEndCapSize;
-  TextureSizeResult focusTileSize;
+  GraphicsTextureLogicalSize tileSizeOrEndCapSize;
+  GraphicsTextureLogicalSize focusTileSize;
   int textX;
   int textY;
 
@@ -2295,8 +2295,8 @@ void UiWindowControl_DrawFramedTextAndChrome
   bool framebufferUnavailable;
   RichTextExtentRegs textExtent;
   uint16_t *resolvedText;
-  TextureSizeResult tileSizeOrEndCapSize;
-  TextureSizeResult focusTileSize;
+  GraphicsTextureLogicalSize tileSizeOrEndCapSize;
+  GraphicsTextureLogicalSize focusTileSize;
   
   framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
   if (framebufferUnavailable) {
@@ -2637,7 +2637,7 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
   int clippedTop;
   int drawY;
   bool framebufferUnavailable;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   
   if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     clippedLeft = (control->base).left;
@@ -2720,7 +2720,7 @@ UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,i
   int slackHeight;
   int drawY;
   bool opaqueHit;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   
   hitNode = UI_NODE_NONE;
   childrenAlreadyRetried = false;
@@ -2788,7 +2788,7 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
   uint32_t tileHeight;
   int32_t tileTop;
   bool framebufferUnavailable;
-  TextureSizeResult tileSize;
+  GraphicsTextureLogicalSize tileSize;
   
   controlRight = (control->base).right;
   controlBottom = (control->base).bottom;
@@ -2954,7 +2954,7 @@ void UiSingleLineTextControl_DrawClipped
   bool framebufferUnavailable;
   RichTextExtentRegs textExtent;
   uint16_t *resolvedText;
-  TextureSizeResult tileSize;
+  GraphicsTextureLogicalSize tileSize;
   UiPixelCoordinate originalClipRight;
   UiPixelCoordinate restoredClipRight;
   
@@ -3133,7 +3133,7 @@ void UiTextListControl_DrawRowsAndSelection
   uint16_t **rowSlot;
   bool framebufferUnavailable;
   RichTextExtentRegs rowExtent;
-  TextureSizeResult capSize;
+  GraphicsTextureLogicalSize capSize;
   
   if (control->rowCount != 0) {
     firstRowOrRowTop = (clipTop - (control->base).top) / (int)control->rowHeight;
@@ -3510,13 +3510,13 @@ void UiNineSlicePanelControl_DrawTextureFrameAndChildren
   int bottomEdgeY;
   int rightEdgeX;
   bool framebufferUnavailable;
-  TextureSizeResult slice0Size;
-  TextureSizeResult slice1Size;
-  TextureSizeResult slice2Size;
-  TextureSizeResult slice3Size;
-  TextureSizeResult slice4Or5Size;
-  TextureSizeResult slice6Size;
-  TextureSizeResult slice7Size;
+  GraphicsTextureLogicalSize slice0Size;
+  GraphicsTextureLogicalSize slice1Size;
+  GraphicsTextureLogicalSize slice2Size;
+  GraphicsTextureLogicalSize slice3Size;
+  GraphicsTextureLogicalSize slice4Or5Size;
+  GraphicsTextureLogicalSize slice6Size;
+  GraphicsTextureLogicalSize slice7Size;
   
   if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
@@ -3659,7 +3659,7 @@ void UiFormattedContainer_DrawClipped
   int variantOrFillEnd;
   int barStartX;
   bool framebufferUnavailable;
-  TextureSizeResult frameSize;
+  GraphicsTextureLogicalSize frameSize;
   int tertiaryMarkerOffset;
   
   if (control->limitValue != 0 &&
@@ -3820,7 +3820,7 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
   int clippedTop;
   int drawY;
   bool framebufferUnavailable;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   
   if (((control->base).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     clippedLeft = (control->base).base.left;
@@ -4228,7 +4228,7 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
   int targetOffsetX;
   int currentTextIndex;
   int measuredPrefixWidthPixels;
-  TextureSizeResult decorationSize;
+  GraphicsTextureLogicalSize decorationSize;
   uint32_t glyphWidth;
 
   targetOffsetX = (pointerX - (control->base).left) + control->horizontalScrollPixels;
@@ -4325,7 +4325,7 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
   int overflowOrContentWidth;
   UiPixelOffset maxScrollOffset;
   uint32_t glyphWidth;
-  TextureSizeResult decorationSize;
+  GraphicsTextureLogicalSize decorationSize;
 
   (control->base).layoutWidth = (control->base).right - (control->base).left;
   (control->base).layoutHeight = (control->base).bottom - (control->base).top;
@@ -4387,8 +4387,8 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   bool framebufferUnavailable;
   RichTextExtentRegs textExtent;
   uint16_t *resolvedText;
-  TextureSizeResult skinSizeOrEndCapSize;
-  TextureSizeResult focusTileSize;
+  GraphicsTextureLogicalSize skinSizeOrEndCapSize;
+  GraphicsTextureLogicalSize focusTileSize;
   int textX;
   int textY;
   

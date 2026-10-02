@@ -233,7 +233,7 @@ const ThandorFunctionMapEntry g_ThandorFunctionMap[] = {
     {0x004A9180u, (void *)&SoftwarePixelFormat_BuildChannelPackTables},
     {0x004A9250u, (void *)&GraphicsFramebuffer_BeginAccessStub},
     {0x004A9260u, (void *)&GraphicsFramebuffer_EndAccessStub},
-    {0x004A9270u, (void *)&GraphicsTextureSource_GetLogicalSizeRegs},
+    {0x004A9270u, (void *)&GraphicsTextureSource_GetLogicalSize},
     {0x004A92C0u, (void *)&GraphicsTextureSource_TestOpaquePixel},
     {0x004A93C0u, (void *)&SoftwareTextureSource_BlitSourceAlpha16},
     {0x004A9710u, (void *)&SoftwareTextureSource_BlitSourceAlpha32},

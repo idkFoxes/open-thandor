@@ -3156,7 +3156,7 @@ ImageData_004A8E60 g_ImageData_004A8E60 = {
     (void *)SoftwarePixelFormat_BuildChannelPackTables, /* 004A8EE8 g_SoftwareBuildPixelPackTables */
     (void *)GraphicsFramebuffer_BeginAccessStub, /* 004A8EEC g_GraphicsFramebufferBeginAccess */
     (void *)GraphicsFramebuffer_EndAccessStub, /* 004A8EF0 g_GraphicsFramebufferEndAccess */
-    (void *)GraphicsTextureSource_GetLogicalSizeRegs, /* 004A8EF4 g_GraphicsTextureSourceGetLogicalSize */
+    (void *)GraphicsTextureSource_GetLogicalSize, /* 004A8EF4 g_GraphicsTextureSourceGetLogicalSize */
     (void *)GraphicsTextureSource_TestOpaquePixel, /* 004A8EF8 g_GraphicsTextureSourceTestOpaquePixel */
     0, /* 004A8EFC g_GraphicsTextureSourceBlitSourceAlpha */
     (void *)GraphicsTextureSource_BlitTiledSourceAlpha, /* 004A8F00 g_GraphicsTextureSourceBlitTiledSourceAlpha */

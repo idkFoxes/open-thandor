@@ -18,7 +18,7 @@ typedef struct ArmySegmentMeter ArmySegmentMeter, *PArmySegmentMeter;
 typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
 typedef struct FixedDirection FixedDirection, *PFixedDirection;
 /* Graphics/display result records. */
-typedef struct TextureSizeResult TextureSizeResult, *PTextureSizeResult;
+typedef struct GraphicsTextureLogicalSize GraphicsTextureLogicalSize, *PGraphicsTextureLogicalSize;
 /* DirectSound result records. */
 typedef union IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion;
 typedef struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct;
@@ -789,10 +789,11 @@ typedef pointer32 ImageBaseOffset32;
 #endif
 
 
-struct TextureSizeResult {
-    uint32_t logicalWidthPixels; // EAX logical texture width in pixels on CF-clear success
-    uint32_t logicalHeightPixels; // EDX logical texture height in pixels on CF-clear success
-    bool failed; // Carry/status: false on success; true on failure
+/* Logical size of one texture-source subresource (GraphicsTextureSource_GetLogicalSize); 0 x 0 for an invalid
+   asset or index. */
+struct GraphicsTextureLogicalSize {
+    uint32_t logicalWidthPixels;
+    uint32_t logicalHeightPixels;
 };
 
 
@@ -837,7 +838,7 @@ typedef void GraphicsFramebufferPresentProc(SoftwareFramebufferAccess * framebuf
 typedef GraphicsCapturedTextureSourceAsset *GraphicsFramebufferCaptureRegionProc(uint32_t captureHeight, uint32_t captureWidth, int32_t sourceY, int32_t sourceX);
 typedef bool GraphicsFramebufferBeginAccessProc(void);
 typedef void GraphicsFramebufferEndAccessProc(void);
-typedef TextureSizeResult GraphicsTextureSourceGetLogicalSizeProc(uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
+typedef GraphicsTextureLogicalSize GraphicsTextureSourceGetLogicalSizeProc(uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
 typedef void GraphicsFramebufferFillRectArgbProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t rectMaxY, int32_t rectMaxX, int32_t rectMinY, int32_t rectMinX, uint32_t argb8888, SoftwareFramebufferAccess * framebuffer);
 typedef void GraphicsFramebufferCopyRegionToOriginProc(int32_t copyHeight, int32_t copyWidth, int32_t sourceY, int32_t sourceX, SoftwareFramebufferAccess * destination, SoftwareFramebufferAccess * source);
 typedef void GraphicsFramebufferCopyOriginToRegionProc(int32_t copyHeight, int32_t copyWidth, int32_t destinationY, int32_t destinationX, SoftwareFramebufferAccess * source, SoftwareFramebufferAccess * destination);

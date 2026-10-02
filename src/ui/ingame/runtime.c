@@ -970,7 +970,7 @@ bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint3
   uint32_t detailIndex;
   uint32_t textureLoadError;
   uint16_t *resolvedText;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   GraphicsTextureSourceAsset *loadedTextureSource;
   
   /* the graphics variant digit in "gfx\panel\panel0.gfx" / "gfx\panel\diagram0.gfx" and the resource gauge
@@ -2911,7 +2911,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
   FrontendPlayerNameUtf16 *playerName;
   RichTextExtentRegs textExtent;
   uint16_t *resolvedText;
-  TextureSizeResult windowTextureSize;
+  GraphicsTextureLogicalSize windowTextureSize;
   UiConditionalActionControl *statusBox;
 
   g_SpinLockAcquire(&g_InGameStateTickSpinLock);

@@ -412,7 +412,7 @@ void UiRangeSliderControl_UpdateValueFromPointer
   uint32_t pointerOffset;
   int32_t sliderValue;
   uint32_t trackLength;
-  TextureSizeResult thumbSize;
+  GraphicsTextureLogicalSize thumbSize;
 
   if ((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) != 0) {
     if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {

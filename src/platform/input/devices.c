@@ -120,7 +120,7 @@ bool DirectInputMouse_Init(uint32_t *outError)
   void *cursorFrameData;
   uint32_t cursorFrameBytes;
   uint32_t cursorLoadErrorCode;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   int32_t initStage;
   
   initStage = 0;

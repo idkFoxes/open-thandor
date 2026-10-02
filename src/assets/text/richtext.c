@@ -95,7 +95,7 @@ bool RichTextCommandStream_DrawSingleLine
   uint32_t imageWidth;
   uint16_t *commandCursor;
   RichTextExtentRegs lineExtent;
-  TextureSizeResult imageSize;
+  GraphicsTextureLogicalSize imageSize;
   uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
@@ -1068,7 +1068,7 @@ RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedSty
   RichTextExtentRegs extent;
   uint32_t glyphWidth;
   uint32_t glyphLineHeight;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   uint16_t *command;
   int value;
 
@@ -1163,7 +1163,7 @@ bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiP
   uint8_t *readCursor;
   uint32_t glyphWidth;
   uint32_t glyphLineHeight;
-  TextureSizeResult imageSize;
+  GraphicsTextureLogicalSize imageSize;
   uint8_t *wrapPoint;
 
   FontGlyph_GetLogicalSizeActiveFont(0,&glyphLineHeight);
@@ -1278,7 +1278,7 @@ bool RichTextCommandStream_DrawNextWrappedLine
   uint8_t *drawCursor;
   uint32_t glyphWidth;
   uint32_t glyphLineHeight;
-  TextureSizeResult imageSize;
+  GraphicsTextureLogicalSize imageSize;
   uint8_t *wrapPoint;
   
   FontGlyph_GetLogicalSizeActiveFont(0,&glyphLineHeight);

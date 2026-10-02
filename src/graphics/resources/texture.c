@@ -242,33 +242,28 @@ void __cdecl GraphicsTexture_RebuildNoOp(void)
 }
 
 /* Address: 0x004A9270.
-   Returns the logical width (EAX) and height (EDX) of one subresource of a 'gfx' texture source, i.e. the
-   extent the tiled blits repeat (installed as g_GraphicsTextureSourceGetLogicalSize). CF is set when the asset
-   is not a 'gfx' asset or the index is out of range.
+   Returns the logical width and height of one subresource of a 'gfx' texture source, i.e. the extent the
+   tiled blits repeat (installed as g_GraphicsTextureSourceGetLogicalSize), or 0 x 0 when the asset is not a
+   'gfx' asset or the index is out of range (the original signalled that with CF and left the size registers
+   untouched; the only callers that test it, the glyph size queries, use width 0 then).
 */
-TextureSizeResult GraphicsTextureSource_GetLogicalSizeRegs
+GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  TextureSizeResult successResult;
-  TextureSizeResult failureResult;
-  AssetRelativeOffset subresourceTableOffset;
+  GraphicsTextureLogicalSize size;
+  GraphicsTextureSourceEntry *entry;
 
+  size.logicalWidthPixels = 0;
+  size.logicalHeightPixels = 0;
   if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
      (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-    subresourceTableOffset = (sourceAsset->tableDescriptor).subresourceTableOffset;
-    successResult.logicalHeightPixels =
-         ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + subresourceTableOffset))->logicalHeight;
-    successResult.logicalWidthPixels =
-         ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + subresourceTableOffset))->logicalWidth;
-    successResult.failed = false;
-    return successResult;
+    entry = (GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE +
+                                           (sourceAsset->tableDescriptor).subresourceTableOffset);
+    size.logicalWidthPixels = entry->logicalWidth;
+    size.logicalHeightPixels = entry->logicalHeight;
   }
-  /* Failure (CF set): the original leaves EAX/EDX untouched; callers check CF before using the width. */
-  failureResult.logicalHeightPixels = 0;
-  failureResult.logicalWidthPixels = 0;
-  failureResult.failed = true;
-  return failureResult;
+  return size;
 }
 
 
@@ -347,7 +342,7 @@ void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMax
   uint32_t tileHeight;
   int tileY;
   bool overflowed;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
@@ -417,7 +412,7 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
   uint32_t tileHeight;
   int tileY;
   bool overflowed;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
@@ -487,7 +482,7 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate cli
   uint32_t tileHeight;
   int tileY;
   bool overflowed;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
@@ -558,7 +553,7 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
   uint32_t tileHeight;
   int tileY;
   bool overflowed;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
@@ -3448,7 +3443,7 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   int dwordsRemaining;
   DDPIXELFORMAT *sourceFormatCursor;
   DDPIXELFORMAT *destinationFormatCursor;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   uint32_t textureHandle;
   IDirect3DTexture2 *deviceTexture2;
   IDirectDrawSurface3 *deviceSurface3;
@@ -3805,7 +3800,7 @@ GraphicsTextureResource * GraphicsTexture_CreateStagingTexture(GraphicsTextureRe
   int dwordsRemaining;
   DDPIXELFORMAT *sourceFormatCursor;
   DDPIXELFORMAT *destinationFormatCursor;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   IDirect3DTexture2 *texture2;
   IDirectDrawSurface3 *surface3;
   IDirectDrawSurface *surfaceBase;

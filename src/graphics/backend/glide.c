@@ -3765,7 +3765,7 @@ void Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   uint32_t globalDownsampleShift;
   uint32_t widthOrLodSize;
   uint32_t heightValue;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
 
   globalDownsampleShift = g_TextureDownsampleShift;
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset);

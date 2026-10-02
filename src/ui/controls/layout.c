@@ -26,7 +26,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   int bottomEdgeY;
   int rightEdgeX;
   bool beginAccessFailed;
-  TextureSizeResult cornerSize;
+  GraphicsTextureLogicalSize cornerSize;
 
   if ((control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME)) != 0) {
     beginAccessFailed = g_GraphicsFramebufferBeginAccess();
@@ -142,8 +142,8 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
   int rightEdgeX;
   bool beginAccessFailed;
   uint16_t *titleText;
-  TextureSizeResult textureSize;
-  TextureSizeResult rightCapSize;
+  GraphicsTextureLogicalSize textureSize;
+  GraphicsTextureLogicalSize rightCapSize;
 
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
   if (!beginAccessFailed) {
@@ -272,7 +272,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
   bool beginAccessFailed;
   RichTextExtentRegs titleExtent;
   uint16_t *titleText;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   int savedRightEdgeX;
 
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
@@ -677,7 +677,7 @@ void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *co
   uint32_t bottomInset;
   RichTextExtentRegs titleExtent;
   uint16_t *titleText;
-  TextureSizeResult cornerSize;
+  GraphicsTextureLogicalSize cornerSize;
 
   titleText = TextResource_Resolve(control->titleTextResourceId);
   titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,titleText);
@@ -750,7 +750,7 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
   uint32_t divisionRemainder;
   uint16_t *commandStream;
   bool beginAccessFailed;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
   if (!beginAccessFailed) {
@@ -1006,7 +1006,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
   int offsetYOrEdge;
   int newTopOrOldRight;
   bool overButton;
-  TextureSizeResult buttonSize;
+  GraphicsTextureLogicalSize buttonSize;
 
   offsetXOrEdge = pointerX - control->root.base.left;
   offsetYOrEdge = pointerY - control->root.base.top;
@@ -1396,7 +1396,7 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
   uint32_t resizeFlags;
   int extentLimit;
   bool hitOpaque;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
 
   localX = pointerX - control->root.base.left;
   localY = pointerY - control->root.base.top;
@@ -1478,7 +1478,7 @@ GraphicsCursorFrameIndex UiResizableWindowControl_QueryResizeCursorCode
   int bottomBorderY;
   int localY;
   int localX;
-  TextureSizeResult cornerSize;
+  GraphicsTextureLogicalSize cornerSize;
 
   cursorFrame = GRAPHICS_CURSOR_FRAME_ARROW;
   if (((control->root.rootFlags & UI_ROOT_RESIZABLE) != 0) && ((control->root.rootFlags & UI_ROOT_MAXIMIZED) == 0)) {
@@ -1667,7 +1667,7 @@ void UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *
 
 {
   uint32_t headerHeight;
-  TextureSizeResult headerSize;
+  GraphicsTextureLogicalSize headerSize;
 
   if ((control->root.rootFlags & UI_ROOT_TITLE_BAR) == 0) {
     UiContainer_LayoutChildren((UiNodeBase *)control);

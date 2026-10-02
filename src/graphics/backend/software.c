@@ -25,7 +25,7 @@ void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *mas
   int previousTick;
   uint32_t shapeStep;
   UiBooleanState32 reverseRows;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   
   previousTick = maskRuntime->tickCounter;
   maskRuntime->tickCounter++;
@@ -3164,7 +3164,7 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
 {
   uint64_t *maskQwordWriteCursor;
   uint32_t blocksRemaining;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
 
   maskQwordWriteCursor = (uint64_t *)maskControl->maskPixels;
   if (maskQwordWriteCursor != NULL) {
@@ -3201,7 +3201,7 @@ void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView
 {
   uint8_t *mask;
   uint32_t blocksLeft;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   int i;
 
   mask = maskRuntime->maskPixels;
@@ -3238,7 +3238,7 @@ void SoftwareMaskBuffer_ApplyCircularRegionBit(UiBooleanState32 invertSelection,
   uint32_t rowsRemaining;
   uint32_t columnX;
   uint8_t *maskCursor;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   int rowY;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
@@ -3302,7 +3302,7 @@ void SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
   uint32_t rowsRemaining;
   int diagonalSum;
   uint8_t *maskCursor;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   rowsRemaining = logicalSize.logicalHeightPixels;
@@ -3361,7 +3361,7 @@ void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
 {
   uint32_t maskBlocksRemaining;
   uint32_t *maskWordCursor;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
   maskWordCursor = (uint32_t *)maskControl->maskPixels;
@@ -3391,7 +3391,7 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
   uint32_t bandBytesOrBlocksLeft;
   int bandRow;
   uint32_t *maskWordCursor;
-  TextureSizeResult logicalSize;
+  GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   if ((uint32_t)bandIndex < 25) {

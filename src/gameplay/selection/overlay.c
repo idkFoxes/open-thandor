@@ -385,7 +385,7 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipBottom,UiPixelCoordi
   UiPixelCoordinate originalCornerBX;
   uint32_t cornerWidth;
   bool accessFailed;
-  TextureSizeResult cornerSize;
+  GraphicsTextureLogicalSize cornerSize;
   
   /* order the corners: A becomes bottom-right (maximum), B top-left (minimum) */
   originalCornerBX = cornerBX;
@@ -461,7 +461,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
   int screenY;
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
-  TextureSizeResult markerSize;
+  GraphicsTextureLogicalSize markerSize;
   FixedVectorQ12 terrainPoint;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
@@ -526,7 +526,7 @@ void SelectionOverlay_DrawWorldPointMarker
 {
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
-  TextureSizeResult markerSize;
+  GraphicsTextureLogicalSize markerSize;
   FixedVectorQ12 markerPoint;
 
   if (useTopSurface == 0) {
@@ -582,7 +582,7 @@ void SelectionOverlay_DrawGridVertexMarkers
   uint8_t *vertexCursor;
   int coordinateOffset;
   bool accessFailed;
-  TextureSizeResult markerSize;
+  GraphicsTextureLogicalSize markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;
@@ -648,7 +648,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
   bool accessFailed;
-  TextureSizeResult markerSize;
+  GraphicsTextureLogicalSize markerSize;
   uint32_t receiverTextureId;
   GraphicsTextureSourceAsset *receiverTextureSource;
   SoftwareFramebufferAccess *receiverFramebuffer;
@@ -734,7 +734,7 @@ void SelectionOverlay_DrawResourceCellMarkers
   FieldGridCell *cellCursor;
   FieldCellPackedFlagsAndMaterial selectedResourceFlag;
   bool accessFailed;
-  TextureSizeResult markerSize;
+  GraphicsTextureLogicalSize markerSize;
   uint32_t flaggedTextureId;
   GraphicsTextureSourceAsset *flaggedTextureSource;
   SoftwareFramebufferAccess *flaggedFramebuffer;
@@ -819,7 +819,7 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
   bool accessFailed;
-  TextureSizeResult markerSize;
+  GraphicsTextureLogicalSize markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;

@@ -153,16 +153,13 @@ uint32_t FontGlyph_GetLogicalSizeActiveFont(GraphicsSubresourceIndex glyphSubres
 
 {
   uint32_t glyphWidth;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   uint32_t fontIndex;
 
   fontIndex = g_ActiveFontIndex;
   textureSize = g_GraphicsTextureSourceGetLogicalSize
                     (glyphSubresource,g_FontTextureSources[g_ActiveFontIndex]);
-  glyphWidth = textureSize.logicalWidthPixels;
-  if (textureSize.failed) {
-    glyphWidth = 0;
-  }
+  glyphWidth = textureSize.logicalWidthPixels; /* 0 for a missing glyph */
   textureSize = g_GraphicsTextureSourceGetLogicalSize(0,g_FontTextureSources[fontIndex]);
   if (outLineHeight != NULL) {
     *outLineHeight = textureSize.logicalHeightPixels;
@@ -182,14 +179,11 @@ uint32_t FontGlyph_GetLogicalSizeForStyle
 {
   uint32_t glyphWidth;
   uint32_t fontIndex;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
 
   fontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
   textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,g_FontTextureSources[fontIndex]);
-  glyphWidth = textureSize.logicalWidthPixels;
-  if (textureSize.failed) {
-    glyphWidth = 0;
-  }
+  glyphWidth = textureSize.logicalWidthPixels; /* 0 for a missing glyph */
   textureSize = g_GraphicsTextureSourceGetLogicalSize(0,g_FontTextureSources[fontIndex]);
   if (outLineHeight != NULL) {
     *outLineHeight = textureSize.logicalHeightPixels;
@@ -210,7 +204,7 @@ uint32_t FontGlyph_DrawBottomAligned
 
 {
   int drawY;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   uint32_t colorArgb;
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
@@ -250,7 +244,7 @@ uint32_t FontGlyph_DrawVerticallyCentered
 
 {
   int drawY;
-  TextureSizeResult textureSize;
+  GraphicsTextureLogicalSize textureSize;
   uint32_t colorArgb;
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;

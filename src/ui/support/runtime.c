@@ -145,7 +145,7 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   uint32_t bufferBytes;
   GraphicsTextureSourceAsset *creditsTexture;
   void *blendedBufferPayload;
-  TextureSizeResult textureSizeResult;
+  GraphicsTextureLogicalSize textureSizeResult;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   (frontendCreditsView->creditsMaskRuntime).textureSource = NULL;
