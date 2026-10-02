@@ -34,8 +34,8 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
   uint32_t activePageIndex;
   uint32_t armyLookupError;
   ArmyAssetRecordPrefix *foundArmyAsset;
-  FatalErrorCheckResult hoverRecordResult;
-  FramebufferCaptureResult capturedFramebuffer;
+  uint32_t hoverRecordValue;
+  GraphicsCapturedTextureSourceAsset *capturedFramebuffer;
   
   /* Records are {key code, required modifier mask, handler}; a zero mask matches only while neither Ctrl
      nor Alt is held. The table ends with a zero key code. The cases below are the original handler
@@ -142,9 +142,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
         armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-        hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+        hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
                                                     armyLookupError != 0);
-        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
+        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
@@ -197,9 +197,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
         armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-        hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+        hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
                                                     armyLookupError != 0);
-        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
+        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
@@ -253,9 +253,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
         armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-        hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+        hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
                                                     armyLookupError != 0);
-        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
+        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
@@ -309,9 +309,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
         ((UiImagePanelControl *)INGAME_UI(uiRoot,unitPlacementPreviewImage))->textureSource = modeGPreviewTexture;
         armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-        hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+        hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
                                                     armyLookupError != 0);
-        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
+        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
@@ -425,9 +425,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption0));
       armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-      hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+      hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
                                                   armyLookupError != 0);
-      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
+      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
@@ -440,9 +440,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption1));
       armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-      hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+      hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
                                                   armyLookupError != 0);
-      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
+      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
@@ -455,9 +455,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption2));
       armyLookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&foundArmyAsset);
-      hoverRecordResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+      hoverRecordValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
                                                   armyLookupError != 0);
-      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
+      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordValue;
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
@@ -474,9 +474,9 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     /* The original calls this without pushing arguments (stale stack, RET 0x10); capture the whole
        framebuffer like the end-game and end-movie screenshot commands. */
     capturedFramebuffer = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
-    if (!capturedFramebuffer.failed) {
+    if (capturedFramebuffer != NULL) {
       FileSystem_WriteBufferToPath
-                (((capturedFramebuffer.capture)->common).allocationSizeBytes,capturedFramebuffer.capture,
+                ((capturedFramebuffer->common).allocationSizeBytes,capturedFramebuffer,
                  (uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
       screenshotOnesDigit = u_Dscreen00_pcx_00572e3a[8];
       screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
@@ -723,11 +723,7 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   bool allZero;
   RuntimeImagePointerByteSizeEdxEax8 pointerImage;
   EngineFileHandle packageHandle;
-  StatusResult createDirectoryStatus;
-  ArenaAllocResult oldUnitAllocation;
-  FileSystemSeekResult seekResult;
-  FileSystemReadResult readResult;
-  FileSystemWriteResult writeResult;
+  uint32_t oldUnitAllocationError;
   ResourceRegistrationImagePair domainImagePair;
   bool upsertOk;
 
@@ -742,9 +738,9 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   }
   if (!InGameSaveGame_CreatePackage(savePath,&packageHandle)) {
     WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),savePath);
-    createDirectoryStatus = g_FileSystemCreateDirectoryRecursive
-                      (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0));
-    if (createDirectoryStatus.failed) goto failed;
+    if (g_FileSystemCreateDirectoryRecursive
+            (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0)) != 0)
+      goto failed;
     if (!InGameSaveGame_CreatePackage(savePath,&packageHandle)) goto failed;
   }
   handle = (void *)(uintptr_t)packageHandle;
@@ -832,10 +828,10 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
     Package_DeleteEntry((uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle,NULL);
   }
   else {
-    oldUnitAllocation = g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES);
+    oldUnitAllocationError =
+         g_MemoryApi.alloc(4 + OLD_UNIT_PRIMARY_TABLE_BYTES + OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&oldUnitImage);
     sourceCursor = g_OldUnitPrimaryTable;
-    oldUnitImage = (uint32_t *)oldUnitAllocation.payloadOrError;
-    if (oldUnitAllocation.failed) goto failed;
+    if (oldUnitAllocationError != 0) goto failed;
     *oldUnitImage = g_OldUnitRecordCount;
     destinationCursor = oldUnitImage;
     for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; destinationCursor++, remainingCount != 0;
@@ -855,9 +851,8 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   }
   destination = g_PackageScratchBuffer;
   headerDwords = (uint32_t *)destination; /* EDX: the 0x200-byte package header just read */
-  seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle);
-  if ((!seekResult.failed) &&
-     (readResult = g_FileSystemReadExact(sizeof(InGameSavePackageHeader),destination,handle), !readResult.failed)){
+  if ((g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle) == 0) &&
+     (g_FileSystemReadExact(sizeof(InGameSavePackageHeader),destination,handle) == 0)){
     /* InGameSavePackageHeader: save name (file name of savePath; the directory lands behind the header),
        level title text id, campaign index, "date, time" text, packed date and time. */
     WidePath_SplitParentAndLeaf
@@ -878,9 +873,8 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
     }
     ((InGameSavePackageHeader *)headerDwords)->levelTitleTextId = g_InGameLevelTitleTextResourceIndex;
     ((InGameSavePackageHeader *)headerDwords)->campaignIndex = localeValue;
-    seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle);
-    if ((!seekResult.failed) &&
-       (writeResult = g_FileSystemWriteExactOrFlush(sizeof(InGameSavePackageHeader),headerDwords,handle), !writeResult.failed)){
+    if ((g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle) == 0) &&
+       (g_FileSystemWriteExactOrFlush(sizeof(InGameSavePackageHeader),headerDwords,handle) == 0)){
       Package_Unmount((EngineFileHandle)handle);
       g_InGameResourceRegistrationBusyCount--;
       return false;
@@ -974,7 +968,7 @@ bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint3
   int cellTop;
   uint32_t techTextureHeight;
   uint32_t detailIndex;
-  TextureSourceLoadResult loadedTexture;
+  uint32_t textureLoadError;
   uint16_t *resolvedText;
   TextureSizeResult logicalSize;
   GraphicsTextureSourceAsset *loadedTextureSource;
@@ -1043,10 +1037,10 @@ bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint3
   }
   /* each graphics package replaces the previous one (the empty LOCK/UNLOCK pair is Ghidra's rendering of the
      XCHG of the texture pointer), then the old package is released */
-  loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_panel0_gfx_005630d0);
+  loadedTextureSource =
+       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_panel0_gfx_005630d0,&textureLoadError);
   textureSourceValue = g_InGamePanelTextureSource;
-  loadedTextureSource = loadedTexture.textureSource;
-  if (!loadedTexture.failed) {
+  if (loadedTextureSource != NULL) {
     LOCK();
     UNLOCK();
     g_InGamePanelTextureSource = loadedTextureSource;
@@ -2355,10 +2349,10 @@ bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint3
         cellTop = cellTop - stepOffset;
       }
     } while (detailIndex < 12);
-    loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_diagram0_gfx_00563120);
+    loadedTextureSource =
+         g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_diagram0_gfx_00563120,&textureLoadError);
     textureSourceValue = g_InGameDiagramTextureSource;
-    loadedTextureSource = loadedTexture.textureSource;
-    if (!loadedTexture.failed) {
+    if (loadedTextureSource != NULL) {
       LOCK();
       UNLOCK();
       g_InGameDiagramTextureSource = loadedTextureSource;
@@ -2366,10 +2360,10 @@ bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint3
       ((UiFormattedContainer *)INGAME_UI(inGameRoot,xeniteGauge))->textureSource = loadedTextureSource;
       ((UiFormattedContainer *)INGAME_UI(inGameRoot,tritiumGauge))->textureSource = loadedTextureSource;
       ((UiFormattedContainer *)INGAME_UI(inGameRoot,energyGauge))->textureSource = loadedTextureSource;
-      loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_window_gfx_0056318e);
+      loadedTextureSource =
+           g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_window_gfx_0056318e,&textureLoadError);
       textureSourceValue = g_InGameWindowTextureSource;
-      loadedTextureSource = loadedTexture.textureSource;
-      if (!loadedTexture.failed) {
+      if (loadedTextureSource != NULL) {
         LOCK();
         UNLOCK();
         g_InGameWindowTextureSource = loadedTextureSource;
@@ -2382,10 +2376,10 @@ bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint3
         ((UiImagePanelControl *)INGAME_UI(inGameRoot,graphicsSettingsWindow))->textureSource = loadedTextureSource;
         ((UiImagePanelControl *)INGAME_UI(inGameRoot,audioSettingsWindow))->textureSource = loadedTextureSource;
         ((UiImagePanelControl *)INGAME_UI(inGameRoot,missionHelpWindow))->textureSource = loadedTextureSource;
-        loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_tech_gfx_005630fa);
+        loadedTextureSource =
+             g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_tech_gfx_005630fa,&textureLoadError);
         textureSourceValue = g_InGameTechnologyTextureSource;
-        loadedTextureSource = loadedTexture.textureSource;
-        if (!loadedTexture.failed) {
+        if (loadedTextureSource != NULL) {
           LOCK();
           UNLOCK();
           g_InGameTechnologyTextureSource = loadedTextureSource;
@@ -2680,7 +2674,7 @@ bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint3
       }
     }
   }
-  *outError = (uint32_t)loadedTexture.textureSource;
+  *outError = textureLoadError;
   return false;
 }
 
@@ -3177,7 +3171,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
       break;
     }
         if ((((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (upgradeButton->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,upgradeButton->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,upgradeButton->activationSound,NULL);
     }
     InGameTechnologyPanel_ToggleForSelection((UiNodeBase *)world);
     break;
@@ -5415,7 +5409,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
   bool conditionResult;
   uint32_t armyLookupError;
   ArmyAssetRecordPrefix *foundArmyAsset;
-  FatalErrorCheckResult armyAssetResult;
+  uint32_t armyAssetValue;
   uint16_t *resolvedText;
   ModelDefinitionRecordPrefix *unlockedDefinition;
   ModelRuntimeSlot *selectedModelRuntime;
@@ -5470,10 +5464,10 @@ void InGameSelectionDetailPanel_Rebuild(void)
         }
         armyLookupError = ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId,
                                                      &foundArmyAsset);
-        armyAssetResult = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
+        armyAssetValue = FatalError_ExitIfFailed(armyLookupError != 0 ? armyLookupError : (uint32_t)foundArmyAsset,
                                                   armyLookupError != 0);
         UiPageStack_SetActiveIndex(1,stack);
-        detailValue = ((ArmyAssetRecord *)armyAssetResult.valueOrError)->selectionDetailValue;
+        detailValue = ((ArmyAssetRecord *)armyAssetValue)->selectionDetailValue;
         workValue = ModelRuntimeHierarchy_SumArmour((int *)lastSelectedEntity);
         rootCursor->selectionDetailArmyAssetValue = detailValue;
         rootCursor->selectionDetailEntity = lastSelectedEntity;
@@ -5484,7 +5478,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,metricValue >> 4,
                    g_InGameSelectionDetailEnergyTextUtf16);
-        ((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text = (uint16_t *)(((ArmyAssetRecord *)armyAssetResult.valueOrError)->selectionDetailTemplateVariantIndex +
+        ((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text = (uint16_t *)(((ArmyAssetRecord *)armyAssetValue)->selectionDetailTemplateVariantIndex +
                                   TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE);
         resolvedText = TextResource_Resolve
                            (((ModelDefinition *)*(int *)(lastSelectedEntity->common).ownership.

@@ -23,7 +23,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
           WideNumberSignedValue32 value,uint16_t *destination);
 
 /* 0x00403010 */
-TextCompareResult Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText);
+int Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText);
 
 /* 0x0041BAA0 */
 uint32_t Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);

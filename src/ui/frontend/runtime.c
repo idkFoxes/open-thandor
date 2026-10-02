@@ -49,13 +49,16 @@ bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
   uint32_t *transferDwordCursor;
   bool menuBuilt;
   uint32_t sessionError;
-  PackageLoadResult packageLoadResult;
-  FatalErrorCheckResult checkedResult;
-  PckCodecResult encodeResult;
-  ArenaAllocResult allocResult;
+  void *loadedPackageEntry;
+  uint32_t packageLoadErrorCode;
+  uint32_t checkedValue;
+  bool encodeOk;
+  uint32_t encodedByteCount;
+  uint32_t encodeErrorCode;
+  uint32_t allocError;
+  void *allocPayload;
   PckDecodedByteCount *receivedBuffer; /* unpacked size, then the packed snapshot flags */
   uint32_t receivedByteCount;
-  CommandLineOptionResult commandLineOption;
   FieldGridAsset *savedFieldGrid;
   
   g_FrontendNetworkState = 0;
@@ -63,12 +66,9 @@ bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
   if (menuBuilt) {
     /* -HOST and -CLIENT= activate entry 3 of the entry menu's action table, -KARTE= (map) entry 0, without the
        click sound, and let the started camera transition end at once. */
-    commandLineOption = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26); /* "HOST" */
-    if (commandLineOption.notFound) {
-      commandLineOption = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6); /* "CLIENT=" */
-      if (commandLineOption.notFound) {
-        commandLineOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14); /* "KARTE=" */
-        if (!commandLineOption.notFound) {
+    if (g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26) == NULL) { /* "HOST" */
+      if (g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6) == NULL) { /* "CLIENT=" */
+        if (g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14) != NULL) { /* "KARTE=" */
           FrontendRomActionTable_ExecuteRecord(0,0,1,0);
           FrontendRomTransition_RequestStop();
         }
@@ -128,7 +128,8 @@ nextFrame:
               receivedBuffer = (PckDecodedByteCount *)UiTransferMailbox_GetReceivedBuffer(&receivedByteCount);
               if (receivedBuffer != NULL) {
                 PckCodec_DecodeHuffmanRle
-                          (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1));
+                          (*receivedBuffer,g_PackageScratchBuffer,receivedByteCount - 4,(uint8_t *)(receivedBuffer + 1),
+                           NULL,NULL);
                 remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
                 receivedFlagsCursor = (FrontendSnapshotTransferFlags *)g_PackageScratchBuffer;
                 playerBlock = g_FrontendPlayerRuntimeBlocks;
@@ -180,10 +181,11 @@ nextFrame:
                   encodeCursorOrSize = (uint8_t *)g_ScenarioCatalog + g_ScenarioCatalogUsedBytes + sizeof(uint32_t);
                   destinationCapacityBytes = (int)(SCENARIO_CATALOG_CAPACITY - sizeof(uint32_t)) - g_ScenarioCatalogUsedBytes;
                   *(uint32_t *)(encodeCursorOrSize - 4) = g_ScenarioCatalogUsedBytes;
-                  encodeResult = PckCodec_EncodeHuffmanRle
-                                     (destinationCapacityBytes,encodeCursorOrSize,errorOrByteCount,(uint8_t *)scenarioCatalog);
-                  checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
-                  UiTransferMailbox_SetOutgoingBuffer(checkedResult.valueOrError + 4,encodeCursorOrSize - 4);
+                  encodeOk = PckCodec_EncodeHuffmanRle
+                                 (destinationCapacityBytes,encodeCursorOrSize,errorOrByteCount,(uint8_t *)scenarioCatalog,
+                                  &encodedByteCount,&encodeErrorCode);
+                  checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
+                  UiTransferMailbox_SetOutgoingBuffer(checkedValue + 4,encodeCursorOrSize - 4);
                 }
               }
               else {
@@ -365,9 +367,11 @@ loadSelectedLevel:
       }
       Resource_Release(g_FrontendLoadedLevelAsset);
       g_FrontendLoadedLevelAsset = NULL;
-      packageLoadResult = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-      checkedResult = FatalError_ExitIfFailed((uint32_t)packageLoadResult.bufferOrError,packageLoadResult.failed);
-      g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedResult.valueOrError;
+      loadedPackageEntry = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16,&packageLoadErrorCode);
+      checkedValue = FatalError_ExitIfFailed
+                          (loadedPackageEntry != NULL ? (uint32_t)loadedPackageEntry : packageLoadErrorCode,
+                           loadedPackageEntry == NULL);
+      g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedValue;
       encodeCursorOrSize = (uint8_t *)g_FrontendLoadedLevelAsset +
                            g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid;
       /* the field grid file: the level's path with the extension "fld", under the executable directory */
@@ -375,10 +379,13 @@ loadSelectedLevel:
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)encodeCursorOrSize,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
-      packageLoadResult = Package_LoadEntry((uint16_t *)encodeCursorOrSize);
+      sourceGrid = Package_LoadEntry((uint16_t *)encodeCursorOrSize,&packageLoadErrorCode);
+      if (sourceGrid == NULL) {
+        /* Original quirk: a failed field grid load is not checked; the error code is used as the grid */
+        sourceGrid = (FieldGridAsset *)packageLoadErrorCode;
+      }
       loadedLevelAsset = g_FrontendLoadedLevelAsset;
       transferSourceBytes = g_PackageScratchBuffer;
-      sourceGrid = packageLoadResult.bufferOrError;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
         /* Host: build the level transfer in the package scratch buffer (level size, grid size, packed level
            size, packed grid size, then both packed images), copy it to its own allocation and offer it to
@@ -391,29 +398,29 @@ loadSelectedLevel:
         savedFieldGrid = sourceGrid;
         /* capacity: the scratch buffer minus 24 bytes, the size of the campaign bundle header
            (ScenarioCampaignBundleHeader), although this header has 16 */
-        encodeResult = PckCodec_EncodeHuffmanRle
-                           (PACKAGE_SCRATCH_BUFFER_BYTES - 24,encodeCursorOrSize,loadedLevelAsset->header.common.allocationSizeBytes,
-                            (uint8_t *)loadedLevelAsset);
-        checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
-        errorOrByteCount = checkedResult.valueOrError;
+        encodeOk = PckCodec_EncodeHuffmanRle
+                       (PACKAGE_SCRATCH_BUFFER_BYTES - 24,encodeCursorOrSize,loadedLevelAsset->header.common.allocationSizeBytes,
+                        (uint8_t *)loadedLevelAsset,&encodedByteCount,&encodeErrorCode);
+        checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
+        errorOrByteCount = checkedValue;
         ((ScenarioLevelBundleHeader *)transferSourceBytes)->levelEncodedBytes = errorOrByteCount;
-        encodeResult = PckCodec_EncodeFieldGrid
-                           (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - errorOrByteCount,encodeCursorOrSize + errorOrByteCount,
-                            sourceGrid->common.allocationSizeBytes,sourceGrid);
-        checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
-        ((ScenarioLevelBundleHeader *)transferSourceBytes)->fieldGridEncodedBytes = checkedResult.valueOrError;
+        encodeOk = PckCodec_EncodeFieldGrid
+                       (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - errorOrByteCount,encodeCursorOrSize + errorOrByteCount,
+                        sourceGrid->common.allocationSizeBytes,sourceGrid,&encodedByteCount,&encodeErrorCode);
+        checkedValue = FatalError_ExitIfFailed(encodeOk ? encodedByteCount : encodeErrorCode,!encodeOk);
+        ((ScenarioLevelBundleHeader *)transferSourceBytes)->fieldGridEncodedBytes = checkedValue;
         /* the cursor becomes the total transfer size in bytes */
-        encodeCursorOrSize = encodeCursorOrSize + errorOrByteCount + (checkedResult.valueOrError - (int)transferSourceBytes);
-        allocResult = g_MemoryApi.alloc((uint32_t)encodeCursorOrSize);
-        checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
-        transferDwordCursor = (uint32_t *)checkedResult.valueOrError;
+        encodeCursorOrSize = encodeCursorOrSize + errorOrByteCount + (checkedValue - (int)transferSourceBytes);
+        allocError = g_MemoryApi.alloc((uint32_t)encodeCursorOrSize,&allocPayload);
+        checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+        transferDwordCursor = (uint32_t *)checkedValue;
         for (remainingDwords = (uint32_t)encodeCursorOrSize >> 2; remainingDwords != 0; remainingDwords--) {
           *transferDwordCursor = *(uint32_t *)transferSourceBytes;
           transferSourceBytes = transferSourceBytes + 4;
           transferDwordCursor = transferDwordCursor + 1;
         }
         sourceGrid = savedFieldGrid;
-        UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)encodeCursorOrSize,(uint32_t *)checkedResult.valueOrError)
+        UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)encodeCursorOrSize,(uint32_t *)checkedValue)
         ;
       }
       loadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)sourceGrid;
@@ -2401,22 +2408,20 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
   int remainingDwords;
   uint32_t *endpointSourceDwordCursor;
   uint32_t *endpointDestinationDwordCursor;
-  NetworkSetSessionResult setSessionResult;
-  FatalErrorCheckResult fatalCheckResult;
-  NetworkOpenBindResult openBindResult;
-  
+  uint32_t backendError; /* 0 or a FATAL_ERROR_NETWORK_* code */
+
   selectedBackendIndex = UiPointerList_GetSelectedIndex(backendList);
   if (g_NetworkBackendInstanceCount <= selectedBackendIndex) {
     return;
   }
   g_NetworkBackendSlot3(); /* close */
   g_NetworkBackendSlot1(); /* cleanup */
-  setSessionResult = g_NetworkBackendSlot0(selectedBackendIndex);
-  fatalCheckResult = FatalError_ReportIfFailed(setSessionResult.valueOrError,setSessionResult.failed);
-  if (!fatalCheckResult.failed) {
-    openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
-    fatalCheckResult = FatalError_ReportIfFailed(openBindResult.valueOrError,openBindResult.failed);
-    if (!fatalCheckResult.failed) {
+  backendError = g_NetworkBackendSlot0(selectedBackendIndex);
+  FatalError_ReportIfFailed(backendError,backendError != 0); /* reports and returns: the flag is ours */
+  if (backendError == 0) {
+    backendError = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
+    FatalError_ReportIfFailed(backendError,backendError != 0);
+    if (backendError == 0) {
       endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpoint;
       endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
       for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
@@ -2436,10 +2441,8 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
     }
     g_NetworkBackendSlot1(); /* cleanup */
   }
-  setSessionResult = g_NetworkBackendSlot0(selectedBackendIndex);
-  if (!setSessionResult.failed) {
-    openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
-    if (!openBindResult.failed) {
+  if (g_NetworkBackendSlot0(selectedBackendIndex) == 0) {
+    if (g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT) == 0) {
       return;
     }
     g_NetworkBackendSlot1(); /* cleanup */
@@ -2484,7 +2487,7 @@ void Frontend_PlaySelectedEndMovie(void)
   FrontendPlayerRuntimeRecord *playerBlock;
   uint8_t *copyDestination;
   bool framebufferAccessFailed;
-  MovieOpenResult movieOpenResult;
+  bool movieOpened;
   uint16_t *resultsTextResult;
   uint16_t *levelTitleResult;
   
@@ -2539,11 +2542,10 @@ void Frontend_PlaySelectedEndMovie(void)
       g_GraphicsFramebufferEndAccess();
       g_GraphicsFramebufferPresent(g_FramebufferAccess);
     }
-    movieOpenResult = Movie_Open(1,g_EndMoviePath);
+    movieOpened = Movie_Open(1,g_EndMoviePath,&playbackRateHz,NULL); /* rate: ECX left by Movie_Open */
     runtimeRoot = g_InGameRuntimeRoot;
-    if (!movieOpenResult.failed) {
+    if (movieOpened) {
       g_EndMoviePendingTicks = 0;
-      playbackRateHz = movieOpenResult.playbackRateHz; /* ECX left by Movie_Open */
       g_TimerRegisterPeriodic(playbackRateHz,FrontendSession_PeriodicTick);
       /* EDX = g_InGameRuntimeRoot + 0x17C in the original; the decompiler lost it. */
       stack = (UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack);
@@ -2700,14 +2702,16 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   uint32_t *playerNameDestDwords;
   uint32_t *settingsCopyDestDwordsB;
   bool callFailed;
-  TextureSetResult textureSetResult;
-  PaletteAssetResult paletteResult;
+  GraphicsTextureSet *centralTextureSet;
+  GraphicsPaletteAsset *centralPaletteAsset;
+  uint32_t centralResourceErrorCode;
   uint16_t *endpointTextResult;
-  SampleVoiceSetResult voiceSetResult;
-  PackageLoadResult romLoadResult;
+  uint32_t voiceSetError;
+  DirectSoundVoiceSet *menuVoiceSet;
+  uint32_t romLoadErrorCode;
   uint32_t romError;
-  ArenaAllocResult allocResult;
-  SoundPlayResult playResult;
+  uint32_t allocError;
+  void *allocPayload;
   bool sampleLoaded;
   WorldRuntimeContext *worldRuntime;
   FrontendModelPointerContext *pointerContext;
@@ -2744,14 +2748,22 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   g_FrontendStateTickSpinLock = 0;
   g_TimerRegisterPeriodic(FRONTEND_PERIODIC_TIMER_HZ,FrontendRuntime_TimerCountdownTick);
   UiRuntime_SetSynchronizationHooks(Frontend_StateTick,&g_FrontendStateTickSpinLock);
-  textureSetResult = g_GraphicsTextureSetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_gfx_00545acc);
-  fillCursorOrResult = (FrontendRootResourceSlots *)textureSetResult.textureSet;
-  if (!textureSetResult.failed) {
-    g_FrontendCentralTextureSet = (FrontendRootResourceSlots *)textureSetResult.textureSet;
-    paletteResult = g_GraphicsPaletteAssetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_pal_00545b00);
-    fillCursorOrResult = (FrontendRootResourceSlots *)paletteResult.paletteAsset;
-    if (!paletteResult.failed) {
-      g_FrontendCentralPaletteAsset = (FrontendRootResourceSlots *)paletteResult.paletteAsset;
+  centralTextureSet = g_GraphicsTextureSetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_gfx_00545acc,
+                                                      &centralResourceErrorCode);
+  if (centralTextureSet == NULL) {
+    fillCursorOrResult = (FrontendRootResourceSlots *)centralResourceErrorCode;
+  }
+  else {
+    fillCursorOrResult = (FrontendRootResourceSlots *)centralTextureSet;
+    g_FrontendCentralTextureSet = (FrontendRootResourceSlots *)centralTextureSet;
+    centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_pal_00545b00,
+                                                            &centralResourceErrorCode);
+    if (centralPaletteAsset == NULL) {
+      fillCursorOrResult = (FrontendRootResourceSlots *)centralResourceErrorCode;
+    }
+    else {
+      fillCursorOrResult = (FrontendRootResourceSlots *)centralPaletteAsset;
+      g_FrontendCentralPaletteAsset = (FrontendRootResourceSlots *)centralPaletteAsset;
       endpointTextResult = TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkEndpointTextUtf16,endpointTextResult)
       ;
@@ -2764,9 +2776,10 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
         do {
           if (!Resource_Load((uint16_t *)u_sound_menue01_sam_00545b54,(void **)&loadedSample,NULL,NULL))
             goto loadCentralRom;
-          voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSample);
-          fillCursorOrResult = (FrontendRootResourceSlots *)voiceSetResult.voiceSet;
-          if (voiceSetResult.failed) {
+          voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,&menuVoiceSet);
+          fillCursorOrResult = (FrontendRootResourceSlots *)(voiceSetError != 0 ? voiceSetError
+                                                                                : (uint32_t)menuVoiceSet);
+          if (voiceSetError != 0) {
             /* the asm swaps the stacked sample with the error (XCHG [ESP],EAX) to release it */
             Resource_Release(loadedSample);
             goto fail;
@@ -2780,16 +2793,19 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
         u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'0';
       } while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1);
 loadCentralRom:
-      romLoadResult = Package_LoadEntry((uint16_t *)u_engine_zentrale_rom_00545aa4);
-      fillCursorOrResult = romLoadResult.bufferOrError;
-      if (!romLoadResult.failed) {
+      fillCursorOrResult = Package_LoadEntry((uint16_t *)u_engine_zentrale_rom_00545aa4,&romLoadErrorCode);
+      if (fillCursorOrResult == NULL) {
+        fillCursorOrResult = (FrontendRootResourceSlots *)romLoadErrorCode;
+      }
+      else {
         g_FrontendCentralRomAsset = fillCursorOrResult;
         romError = RomAsset_PrepareRecords((RomAssetHeader *)fillCursorOrResult);
         fillCursorOrResult = (FrontendRootResourceSlots *)romError;
         if (romError == 0) {
-          allocResult = g_MemoryApi.alloc(FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord));
-          fillCursorOrResult = (FrontendRootResourceSlots *)allocResult.payloadOrError;
-          if (!allocResult.failed) {
+          allocError = g_MemoryApi.alloc(FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),
+                                         &allocPayload);
+          fillCursorOrResult = (FrontendRootResourceSlots *)(allocError != 0 ? allocError : (uint32_t)allocPayload);
+          if (allocError == 0) {
             /* the world object records of the 3D menu room, zeroed */
             g_FrontendWorldObjectRecords = (WorldObjectRecord *)fillCursorOrResult;
             for (remainingDwords = FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingDwords != 0; remainingDwords--) {
@@ -2799,10 +2815,10 @@ loadCentralRom:
               ((uint8_t *)fillCursorOrResult)[3] = 0;
               fillCursorOrResult = (FrontendRootResourceSlots *)((uint8_t *)fillCursorOrResult + 4);
             }
-            allocResult = g_MemoryApi.alloc(sizeof(FrontendUiImage));
-            frontendUiState = (FrontendRootResourceSlots *)allocResult.payloadOrError;
+            allocError = g_MemoryApi.alloc(sizeof(FrontendUiImage),&allocPayload);
+            frontendUiState = (FrontendRootResourceSlots *)(allocError != 0 ? allocError : (uint32_t)allocPayload);
             fillCursorOrResult = frontendUiState;
-            if (!allocResult.failed) {
+            if (allocError == 0) {
               worldRuntime = (WorldRuntimeContext *)FRONTEND_UI(frontendUiState,menuRoomModelView);
               frontendInitTemplateDwords = (uint32_t *)&g_FrontendRootInitializationTemplate;
               g_FrontendRootNode = frontendUiState;
@@ -2820,9 +2836,7 @@ loadCentralRom:
                                              NULL,NULL);
                 musicBuffer = g_FrontendMusicActiveBuffer;
                 if (sampleLoaded) {
-                  voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSample);
-                  musicVoiceSet = voiceSetResult.voiceSet;
-                  if (voiceSetResult.failed) {
+                  if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
                     Resource_Release(loadedSample);
                     musicBuffer = g_FrontendMusicActiveBuffer;
                   }
@@ -2830,9 +2844,7 @@ loadCentralRom:
                     g_FrontendMusicVoiceSet = musicVoiceSet;
                     Resource_Release(loadedSample);
                     settingValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
-                    playResult = g_SoundPlayLooping(settingValue,settingValue,musicVoiceSet);
-                    musicBuffer = playResult.soundBuffer;
-                    if (playResult.failed) {
+                    if (!g_SoundPlayLooping(settingValue,settingValue,musicVoiceSet,&musicBuffer)) {
                       g_SoundReleaseSampleVoiceSet(musicVoiceSet);
                       g_FrontendMusicVoiceSet = NULL;
                       musicBuffer = g_FrontendMusicActiveBuffer;
@@ -3102,11 +3114,9 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
   DirectSoundVoiceSet *buttonVoiceSet5;
   GraphicsTextureSourceAsset *menuTexture;
   int controlIndex;
-  TextureSourceLoadResult textureLoadResult;
-  
-  textureLoadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_menue_gfx_00545b78);
-  menuTexture = textureLoadResult.textureSource;
-  if (!textureLoadResult.failed) {
+
+  menuTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_menue_gfx_00545b78,NULL);
+  if (menuTexture != NULL) {
     g_FrontendMenuTextureSource = menuTexture;
     frontendUiState->menuTextureSource_485C = menuTexture;
     frontendUiState->menuTextureSource_4F30 = menuTexture;

@@ -39,17 +39,14 @@ void DirectSound_Shutdown(void)
 
 /* Address: 0x00417570.
    Silent-backend stub in slot g_SoundCreateSampleVoiceSet (image 0x00417338, until DirectSound_Init
-   switches the slots to DirectSound). Returns the dummy voice set 0xFFFFFFFF as success, so callers
-   holding a sample keep a non-NULL handle even without sound.
+   switches the slots to DirectSound). Always succeeds (returns 0) with the dummy voice set 0xFFFFFFFF in
+   *outVoiceSet, so callers holding a sample keep a non-NULL handle even without sound.
 */
-SampleVoiceSetResult SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
+uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet)
 
 {
-  /* Returned through SoundCreateSampleVoiceSetProc, so it must use that {EAX, CF} result type. */
-  SampleVoiceSetResult result;
-  result.voiceSet = (DirectSoundVoiceSet *)0xffffffff;
-  result.failed = false;
-  return result;
+  *outVoiceSet = (DirectSoundVoiceSet *)0xffffffff;
+  return 0;
 }
 
 
@@ -66,18 +63,16 @@ void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 /* Address: 0x00417590.
    Silent-backend stub in slot g_SoundCreatePcmVoiceSet (image 0x00417340). Ignores the raw PCM
-   description and returns the dummy voice set 0xFFFFFFFF as success.
+   description, stores the dummy voice set 0xFFFFFFFF in *outVoiceSet and returns 0 (success).
 */
-PcmVoiceSetResult SoundBackendDisabled_CreatePcmVoiceSet
+uint32_t SoundBackendDisabled_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          void *pcmData)
+          void *pcmData,DirectSoundVoiceSet **outVoiceSet)
 
 {
-  PcmVoiceSetResult result; /* slot type SoundCreatePcmVoiceSetProc */
-  result.voiceSet = (DirectSoundVoiceSet *)0xffffffff;
-  result.failed = false;
-  return result;
+  *outVoiceSet = (DirectSoundVoiceSet *)0xffffffff;
+  return 0;
 }
 
 
@@ -94,37 +89,39 @@ void SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 /* Address: 0x004175B0.
    Silent-backend stub in slot g_SoundPlayOneShot (image 0x00417348): plays nothing and reports
-   success (CF clear); the original leaves EAX unchanged, so its callers store their own leftover EAX as the
-   voice (e.g. the random effect index at 0x005665A6, the music gain at 0x0056666F). Those handles only ever go back
-   to the silent stubs (the backend is chosen once at startup) or through a NULL test before one
-   (Movie_Rewind), so returning NULL here behaves the same.
+   success (returns true) with a NULL voice in *outVoice; the original leaves EAX unchanged, so its callers
+   store their own leftover EAX as the voice (e.g. the random effect index at 0x005665A6, the music gain at
+   0x0056666F). Those handles only ever go back to the silent stubs (the backend is chosen once at startup)
+   or through a NULL test before one (Movie_Rewind), so NULL here behaves the same.
 */
-SoundPlayResult SoundBackendDisabled_PlayOneShot
+bool SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet)
+          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
 {
-  SoundPlayResult result; /* slot type SoundPlayVoiceProc; EAX is left unchanged */
-  memset(&result, 0, sizeof result);
-  return result;
+  if (outVoice != NULL) {
+    *outVoice = NULL;
+  }
+  return true;
 }
 
 
 /* Address: 0x004175C0.
    Silent-backend stub in slot g_SoundPlayLooping (image 0x0041734C): plays nothing and reports
-   success (CF clear); the original leaves EAX unchanged (callers store it: the music gain at 0x0054C03B /
-   0x00546988, the non-zero gain at 0x0050BAC2). As for SoundBackendDisabled_PlayOneShot those values only
-   reach the silent stubs again, so NULL behaves the same (the spatial pool merely calls this stub again
-   instead of the gain stub on the next frame).
+   success (returns true) with a NULL voice in *outVoice; the original leaves EAX unchanged (callers store
+   it: the music gain at 0x0054C03B / 0x00546988, the non-zero gain at 0x0050BAC2). As for
+   SoundBackendDisabled_PlayOneShot those values only reach the silent stubs again, so NULL behaves the same
+   (the spatial pool merely calls this stub again instead of the gain stub on the next frame).
 */
-SoundPlayResult SoundBackendDisabled_PlayLooping
+bool SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet)
+          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
 {
-  SoundPlayResult result; /* slot type SoundPlayVoiceProc; EAX is left unchanged */
-  memset(&result, 0, sizeof result);
-  return result;
+  if (outVoice != NULL) {
+    *outVoice = NULL;
+  }
+  return true;
 }
 
 
@@ -176,9 +173,11 @@ void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,S
    Binds DSOUND.DLL, opens the default DirectSound device in exclusive mode and starts the looping primary
    buffer as 22050 Hz 16-bit stereo, then allocates the 256-entry voice-set registry and switches the
    g_Sound* backend slots from the silent stubs to DirectSound. Without a sound device it succeeds and
-   leaves the silent backend in place; a failing setup step reports FATAL_ERROR_DIRECTSOUND_SETUP.
+   leaves the silent backend in place. Returns 0 on success, otherwise the error code: FATAL_ERROR_DLL_LOAD_FAILED
+   or the DynAPI_Resolve error when DSOUND.DLL cannot be bound, the allocator's error for the registry, or
+   FATAL_ERROR_DIRECTSOUND_SETUP for a failing setup step.
 */
-StatusResult DirectSound_Init(void)
+uint32_t DirectSound_Init(void)
 
 {
   HINSTANCE module;
@@ -186,7 +185,8 @@ StatusResult DirectSound_Init(void)
   int remainingCount;
   DirectSoundVoiceSet **registryCursor;
   uint32_t resolveError;
-  ArenaAllocResult registryAlloc;
+  uint32_t registryAllocError;
+  void *registryPayload;
   int32_t failedStage; /* number of setup steps passed, shown in the error message */
 
   failedStage = 0;
@@ -201,8 +201,9 @@ StatusResult DirectSound_Init(void)
     directSoundResult = pDirectSoundCreate(NULL,&g_DirectSound,NULL);
     Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
     if (directSoundResult != 0) {
-      /* no DirectSound device: not an error, the game runs silent */
-      return StatusValue_Ok((uint32_t)directSoundResult);
+      /* no DirectSound device: not an error, the game runs silent (the original returns the HRESULT with
+         CF clear; no caller reads it) */
+      return 0;
     }
     directSoundResult =
          g_DirectSound->lpVtbl->SetCooperativeLevel(g_DirectSound,g_MainWindow,DSSCL_EXCLUSIVE);
@@ -241,11 +242,11 @@ StatusResult DirectSound_Init(void)
                   directSoundResult =
                        g_PrimarySoundBuffer->lpVtbl->Play(g_PrimarySoundBuffer,0,0,DSBPLAY_LOOPING);
                   if (directSoundResult == 0) {
-                    registryAlloc = g_MemoryApi.alloc(DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY *
-                                                      sizeof(DirectSoundVoiceSet *));
-                    if (!registryAlloc.failed) {
-                      registryCursor = (DirectSoundVoiceSet **)registryAlloc.payloadOrError;
-                      g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)registryAlloc.payloadOrError;
+                    registryAllocError = g_MemoryApi.alloc(DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY *
+                                                           sizeof(DirectSoundVoiceSet *),&registryPayload);
+                    if (registryAllocError == 0) {
+                      registryCursor = (DirectSoundVoiceSet **)registryPayload;
+                      g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)registryPayload;
                       for (remainingCount = DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; remainingCount != 0;
                            remainingCount--) {
                         *registryCursor = NULL;
@@ -263,9 +264,9 @@ StatusResult DirectSound_Init(void)
                       g_SoundQueryVoiceRegs = DirectSound_QueryVoiceRegsStub;
                       g_SoundSetVoiceGains = DirectSound_SetVoiceGains;
                       CosineDerivedLookupTables_Init();
-                      return StatusValue_Ok(0);
+                      return 0;
                     }
-                    return StatusValue_Fail(registryAlloc.payloadOrError);
+                    return registryAllocError;
                   }
                 }
               }
@@ -277,20 +278,22 @@ StatusResult DirectSound_Init(void)
     Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", failedStage,
                 (uint32_t)directSoundResult);
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-    return StatusValue_Fail(FATAL_ERROR_DIRECTSOUND_SETUP);
+    return FATAL_ERROR_DIRECTSOUND_SETUP;
   }
   Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
-  return StatusValue_Fail(module == NULL ? FATAL_ERROR_DLL_LOAD_FAILED : resolveError);
+  return module == NULL ? FATAL_ERROR_DLL_LOAD_FAILED : resolveError;
 }
 
 
 /* Address: 0x00583490.
    Turns a .sam sound asset into a voice set: checks the 0x200-byte header, creates a 22050 Hz 16-bit
    stereo secondary buffer of decodedBlockCount * 0x400 bytes, decodes every packed block into it and
-   registers a new eight-voice set holding the buffer in voices[0]. On failure CF is set, EAX holds the
-   error code and the failing stage number is left in g_PackageLastErrorPath.
+   registers a new eight-voice set holding the buffer in voices[0]. Returns 0 and stores the set in
+   *outVoiceSet; on failure returns the error code (FATAL_ERROR_SOUND_SAMPLE_INVALID,
+   FATAL_ERROR_DIRECTSOUND_SETUP or the allocator's error), leaves *outVoiceSet untouched and leaves the
+   failing stage number in g_PackageLastErrorPath.
 */
-SampleVoiceSetResult DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
+uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet)
 
 {
   TH_LEGACY_HRESULT directSoundResult;
@@ -303,9 +306,8 @@ SampleVoiceSetResult DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAs
   SoundSampleAsset *encodedBlock;
   short *outputStereoPcm;
   DirectSoundVoiceSet **registryCursor;
-  ArenaAllocResult voiceSetAlloc;
-  SampleVoiceSetResult successResult;
-  SampleVoiceSetResult failureResult;
+  uint32_t voiceSetAllocError;
+  void *voiceSetPayload;
   int32_t failedStage;
   TH_LEGACY_DWORD wrapByteCount;
   TH_LEGACY_LPVOID wrapRegion;
@@ -357,9 +359,10 @@ SampleVoiceSetResult DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAs
              soundBuffer->lpVtbl->Unlock(soundBuffer,lockedPcm,lockedByteCount,wrapRegion,wrapByteCount);
         voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
         if (directSoundResult == 0) {
-          voiceSetAlloc = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet));
-          voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.payloadOrError;
-          if (!voiceSetAlloc.failed) {
+          voiceSetAllocError = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet),&voiceSetPayload);
+          voiceSetOrErrorCode = (IDirectSoundBuffer **)(voiceSetAllocError != 0 ? voiceSetAllocError
+                                                                                : (uint32_t)voiceSetPayload);
+          if (voiceSetAllocError == 0) {
             remainingCount = DIRECTSOUND_VOICES_PER_SET;
             voiceCursor = voiceSetOrErrorCode;
             do {
@@ -380,9 +383,8 @@ SampleVoiceSetResult DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAs
                 registryCursor++;
               }
             }
-            successResult.failed = false;
-            successResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-            return successResult;
+            *outVoiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+            return 0;
           }
         }
       }
@@ -392,9 +394,7 @@ SampleVoiceSetResult DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAs
     soundBuffer->lpVtbl->Release(soundBuffer);
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-  failureResult.failed = true;
-  failureResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-  return failureResult;
+  return (uint32_t)voiceSetOrErrorCode;
 }
 
 
@@ -445,12 +445,13 @@ void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 /* Address: 0x00583720.
    Wraps raw PCM data in a voice set: creates a secondary buffer of bufferByteCount bytes in the given
    rate/bits/channels format, copies the data into it dword by dword and registers a new eight-voice set
-   holding the buffer in voices[0]. On failure CF is set, EAX holds the error code and the failing stage
-   number is left in g_PackageLastErrorPath.
+   holding the buffer in voices[0]. Returns 0 and stores the set in *outVoiceSet; on failure returns the
+   error code (FATAL_ERROR_DIRECTSOUND_SETUP or the allocator's error), leaves *outVoiceSet untouched and
+   leaves the failing stage number in g_PackageLastErrorPath.
 */
-PcmVoiceSetResult DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
+uint32_t DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          uint32_t *pcmData)
+          uint32_t *pcmData,DirectSoundVoiceSet **outVoiceSet)
 
 {
   int32_t pendingStage;
@@ -462,9 +463,8 @@ PcmVoiceSetResult DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteC
   IDirectSoundBuffer **voiceCursor;
   uint32_t *destCursor;
   DirectSoundVoiceSet **registryCursor;
-  ArenaAllocResult voiceSetAlloc;
-  PcmVoiceSetResult successResult;
-  PcmVoiceSetResult failureResult;
+  uint32_t voiceSetAllocError;
+  void *voiceSetPayload;
   int32_t failedStage;
   TH_LEGACY_DWORD wrapByteCount;
   TH_LEGACY_LPVOID wrapRegion;
@@ -512,10 +512,11 @@ PcmVoiceSetResult DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteC
       voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
       pendingStage = DIRECTSOUND_VOICE_STAGE_FILL;
       if (directSoundResult == 0) {
-        voiceSetAlloc = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet));
-        voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.payloadOrError;
+        voiceSetAllocError = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet),&voiceSetPayload);
+        voiceSetOrErrorCode = (IDirectSoundBuffer **)(voiceSetAllocError != 0 ? voiceSetAllocError
+                                                                              : (uint32_t)voiceSetPayload);
         pendingStage = failedStage;
-        if (!voiceSetAlloc.failed) {
+        if (voiceSetAllocError == 0) {
           remainingCount = DIRECTSOUND_VOICES_PER_SET;
           voiceCursor = voiceSetOrErrorCode;
           do {
@@ -536,9 +537,8 @@ PcmVoiceSetResult DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteC
               registryCursor++;
             }
           }
-          successResult.failed = false;
-          successResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-          return successResult;
+          *outVoiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+          return 0;
         }
       }
     }
@@ -548,9 +548,7 @@ PcmVoiceSetResult DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteC
     soundBuffer->lpVtbl->Release(soundBuffer);
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-  failureResult.failed = true;
-  failureResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-  return failureResult;
+  return (uint32_t)voiceSetOrErrorCode;
 }
 
 
@@ -616,27 +614,27 @@ static void DirectSound_ApplyChannelGains
 
 /* Shared body of PlayOneShot/PlayLooping (0x00583940 / 0x00583A70), rewritten from the assembly:
    the first idle voice of the set plays; an empty slot is filled with DuplicateSoundBuffer of
-   voice 0 rewound to position 0; with all eight voices busy CF is set. */
-static SoundPlayResult DirectSound_PlayVoiceSet
+   voice 0 rewound to position 0; with all eight voices busy it fails (false, NULL voice). */
+static bool DirectSound_PlayVoiceSet
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet,TH_LEGACY_DWORD playFlags)
+          DirectSoundVoiceSet *voiceSet,TH_LEGACY_DWORD playFlags,IDirectSoundBuffer **outVoice)
 {
-  SoundPlayResult result;
   IDirectSoundBuffer *voice;
   TH_LEGACY_DWORD status;
   int slot;
 
-  result.soundBuffer = NULL;
-  result.failed = true;
+  if (outVoice != NULL) {
+    *outVoice = NULL;
+  }
   if (voiceSet == NULL) {
-    return result;
+    return false;
   }
   for (slot = 0; slot < DIRECTSOUND_VOICES_PER_SET; slot++) {
     voice = voiceSet->voices[slot];
     if (voice == NULL) {
       if (g_DirectSound->lpVtbl->DuplicateSoundBuffer
                     (g_DirectSound,voiceSet->voices[0],&voiceSet->voices[slot]) != 0) {
-        return result;
+        return false;
       }
       voice = voiceSet->voices[slot];
       voice->lpVtbl->SetCurrentPosition(voice,0);
@@ -649,38 +647,39 @@ static SoundPlayResult DirectSound_PlayVoiceSet
     }
   }
   if (slot == DIRECTSOUND_VOICES_PER_SET) {
-    return result;
+    return false;
   }
   voice->lpVtbl->Play(voice,0,0,playFlags);
   DirectSound_ApplyChannelGains(leftChannelGainQ15,rightChannelGainQ15,voice);
-  result.soundBuffer = voice;
-  result.failed = false;
-  return result;
+  if (outVoice != NULL) {
+    *outVoice = voice;
+  }
+  return true;
 }
 
 
 /* Address: 0x00583940.
    Plays a sound once on the first idle voice of the set (duplicating voices[0] into an empty slot when
    needed) and sets its volume/pan from the two 0..0x8000 channel gains via the 129-entry attenuation
-   table. CF clear returns the voice in EAX; CF set (EAX 0) when all eight voices are busy or the
-   duplication fails.
+   table. Returns true and the voice in *outVoice (outVoice may be NULL); false with a NULL voice when the
+   set is NULL, all eight voices are busy or the duplication fails.
 */
-SoundPlayResult DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet)
+bool DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
 {
-  return DirectSound_PlayVoiceSet(leftChannelGainQ15,rightChannelGainQ15,voiceSet,0);
+  return DirectSound_PlayVoiceSet(leftChannelGainQ15,rightChannelGainQ15,voiceSet,0,outVoice);
 }
 
 
 /* Address: 0x00583A70.
    Like DirectSound_PlayOneShot, but the voice plays with DSBPLAY_LOOPING until it is stopped.
 */
-SoundPlayResult DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet)
+bool DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
 {
-  return DirectSound_PlayVoiceSet(leftChannelGainQ15,rightChannelGainQ15,voiceSet,DSBPLAY_LOOPING);
+  return DirectSound_PlayVoiceSet(leftChannelGainQ15,rightChannelGainQ15,voiceSet,DSBPLAY_LOOPING,outVoice);
 }
 
 

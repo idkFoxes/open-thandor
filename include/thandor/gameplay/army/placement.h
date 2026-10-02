@@ -23,7 +23,7 @@
 #define ARMY_PLACEMENT_MODE_STRUCTURES_ONLY 0x4    /* the runtime-list collision only considers armies whose
                                                           g_ArmyRuntimeDepthBinClassByModelClass entry is 0x90 */
 /* Clearance (3.0 in Q12) kept around a model's (1,5) anchor point, the point placement offsets by the model's
-   heading (ArmyPlacementCandidate_TestOffsetClearance, ArmyPlacement_TestModelTerrainAndRuntimeClearance,
+   heading (ArmyPlacement_CanPlaceAnchoredModel,ArmyPlacement_TestModelTerrainAndRuntimeClearance,
    ArmyPlacementCandidate_TestModelAnchorDistance). */
 #define ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 0xc00
 /* ArmyPlacement_ValidateAssetAtPointAndCellCorners: offset (Q12, each axis) of the retry corners from the point
@@ -42,7 +42,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005244B0 */
-PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
+bool ArmyPlacement_CanPlaceAnchoredModel (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 
 /* 0x00524570 */
 bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
@@ -59,7 +59,7 @@ bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
           void *inGameRuntime);
 
 /* 0x00524EB0 */
-PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancy (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
+bool ArmyPlacement_CanPlaceResourceExtractor (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 
 /* 0x00524F70 */
 bool ArmyPlacement_TestGridOccupancyMask
@@ -70,10 +70,11 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 /* 0x005281A0 */
-PlacementCandidateResult ArmyPlacement_TestMobileUnitPoint
+bool ArmyPlacement_CanPlaceMobileUnit
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
-               ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
+               ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime,
+               uint32_t *outPlacementValue);
 
 /* 0x004BE7F0 */
 void ArmyPlacementContact_ApplyTerrainHeight
@@ -112,7 +113,7 @@ void ArmyPlacement_ReleaseClassStateReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00527BD0 */
-PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccess (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime);
+bool ArmyPlacement_CanPlaceAnywhere (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 
 /* 0x00529CB0 */
 bool ArmyCollision_TestPointAgainstRuntimeList
@@ -145,13 +146,13 @@ bool ArmyPlacementCollision_TestCurrentRuntime
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 /* 0x005278D0 */
-PlacementCandidateResult
-ArmyPlacementCollision_TestCandidateAndClearance
+bool ArmyPlacement_CanPlaceBuilding
           (ArmyPlacementDispatchArg0 placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t placementHeading,
           ArmyPlacementDispatchArg3 terrainHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           ModelDefinition *modelDefinition,
-          ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
+          ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime,
+          uint32_t *outPlacementValue);
 
 /* 0x00524650 */
 bool ArmyPlacementCandidate_TestModelAnchorDistance

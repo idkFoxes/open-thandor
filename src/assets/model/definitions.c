@@ -193,7 +193,7 @@ bool ModelLookupTable_GetPackedPointPosition
    Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte entries) for the key
    (keyIndex << 4) | keyClass. Returns true and stores the matching entry in *outEntry when one matches;
    otherwise returns false and stores the address just past the table's last entry in *outEntry (one caller,
-   ArmyPlacementCandidate_TestOffsetClearance, reads it anyway).
+   ArmyPlacement_CanPlaceAnchoredModel, reads it anyway).
 */
 bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,ModelPackedPointRecord **outEntry)
@@ -452,25 +452,23 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uin
   uint32_t childIndex;
   if ((node->nodeFlags & 0xf) == 0) {
     uint16_t *spritePath = (uint16_t *)(node + 1);
-    PackageLoadResult loaded;
+    SpriteAssetHeader *loadedSprite;
     SpriteAssetHeader *registered;
     /* ".spr". The original tests its CF (JC at 0x005286C6), but WidePath_SetExtensionCode always
        returns with CLC (0x0040F314), so that branch is dead. The error exit at 0x00528677 only drops the
        walk's stack frames before MOV ESP,EBP; returning up the recursion is equivalent. */
     WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
-    loaded = Package_LoadEntry(spritePath);
-    if (loaded.failed) {
-      *error = (uint32_t)loaded.bufferOrError;
+    loadedSprite = Package_LoadEntry(spritePath,error);
+    if (loadedSprite == NULL) {
       return true;
     }
-    registered = SpriteAssetRegistry_FindById
-                           (((SpriteAssetHeader *)loaded.bufferOrError)->registryHeader.registryId);
+    registered = SpriteAssetRegistry_FindById(loadedSprite->registryHeader.registryId);
     if (registered == NULL) {
       /* first use of this sprite: the node owns the loaded copy and registers it */
       uint32_t relocateError;
       node->ownedNestedResourcePresent++;
-      node->spriteAssetReference.spriteAsset = (SpriteAssetHeader *)loaded.bufferOrError;
-      relocateError = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)loaded.bufferOrError);
+      node->spriteAssetReference.spriteAsset = loadedSprite;
+      relocateError = SpriteAsset_RegisterAndRelocatePointers(loadedSprite);
       if (relocateError != 0) {
         *error = relocateError;
         return true;
@@ -479,7 +477,7 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uin
     else {
       /* already registered by another model: share it and drop the fresh copy */
       node->spriteAssetReference.spriteAsset = registered;
-      Resource_Release(loaded.bufferOrError);
+      Resource_Release(loadedSprite);
     }
   }
   for (childIndex = 0; childIndex < (uint32_t)node->childCount; childIndex++) {

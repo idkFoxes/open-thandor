@@ -363,13 +363,12 @@ uint32_t __cdecl ModelRuntimePool_Init(void)
 {
   ModelRuntimeSlot *modelRuntimeStorageCursor;
   int allocationDwordsRemaining;
-  ArenaAllocResult allocResult;
+  uint32_t allocError;
 
-  allocResult = g_MemoryApi.alloc(MODEL_RUNTIME_POOL_BYTES);
-  if (allocResult.failed) {
-    return allocResult.payloadOrError;
+  allocError = g_MemoryApi.alloc(MODEL_RUNTIME_POOL_BYTES,(void **)&modelRuntimeStorageCursor);
+  if (allocError != 0) {
+    return allocError;
   }
-  modelRuntimeStorageCursor = (ModelRuntimeSlot *)allocResult.payloadOrError;
   /* pool base - 1 */
   g_ModelRuntimeRebaseDelta = (int)modelRuntimeStorageCursor - 1;
   g_ModelRuntimeSlots = modelRuntimeStorageCursor;

@@ -267,7 +267,7 @@ bool UiListControl_HandleKeyboardNavigation
     if (newSelectedSlot != previousSelectedSlot) {
       if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
          (control->activationSound != NULL)) {
-        g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+        g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
       }
       rowValue = ((uint32_t)((int)newSelectedSlot - (int)control->rowSlots) >> 2) * control->rowHeight;
       UiScrollableControl_ClampOffsetsToViewport
@@ -819,7 +819,7 @@ void UiListControl_SelectRowFromPointer
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
            (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
         }
       }
     }
@@ -1135,20 +1135,13 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
   uint32_t *labelCursor;
   uint32_t *scanPointer;
   uint32_t *nextScanPointer;
-  bool mediaCheckResult;
-  bool closeLabelEmpty;
-  ArenaShrinkResult shrinkResult;
   void *recordBlock;
-  ArenaAllocResult allocResult;
-  ArenaLargestAllocResult largestBlock;
-  DirectoryEnumerationResult enumResult;
+  uint32_t largestBlockSize;
   DriveLetterEnumeration driveEnum;
   
   if (*pathUtf16 == 0) {
     /* header, the "computer" row and its label */
-    allocResult = g_MemoryApi.alloc(2 * sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES);
-    outputRecords = (uint32_t *)allocResult.payloadOrError;
-    if (!allocResult.failed) {
+    if (g_MemoryApi.alloc(2 * sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES,(void **)&outputRecords) == 0) {
       *outputRecords = 1;
       outputRecords[1] = 0;
       outputRecords[2] = 0;
@@ -1166,11 +1159,9 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
     driveEnum = g_FileSystemEnumerateDriveLetters((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
     directoryEntryCount = driveEnum.driveCount;
     /* header, then a row and a label per drive */
-    allocResult = g_MemoryApi.alloc
-                            (driveEnum.driveCountMirror * (sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES) +
-                             sizeof(UiTimedListTreeRecord));
-    outputRecords = (uint32_t *)allocResult.payloadOrError;
-    if (!allocResult.failed) {
+    if (g_MemoryApi.alloc
+              (driveEnum.driveCountMirror * (sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES) +
+               sizeof(UiTimedListTreeRecord),(void **)&outputRecords) == 0) {
       driveRow = (UiTimedListTreeRecord *)outputRecords + 1;
       *outputRecords = directoryEntryCount;
       outputRecords[1] = 0;
@@ -1192,47 +1183,38 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
         ((uint16_t *)labelCursor)[2] = '[';
         ((uint16_t *)labelCursor)[3] = ']';
         ((uint16_t *)labelCursor)[4] = 0;
-        /* Label "X:[<volume label>]"; any failure closes it as "X:[]" (a failing directory probe
-           also truncates an already written volume label, as in the original). */
-        mediaCheckResult = g_FileSystemCheckDriveMediaReady(scanValue);
-        closeLabelEmpty = mediaCheckResult;
-        if (!closeLabelEmpty) {
-          enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                             (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,504, /* the label buffer after "X:[" */
-                              (uint8_t *)((uint16_t *)labelCursor + 3),(uint8_t *)g_UiTimedListDriveWildcardUtf16);
-          closeLabelEmpty = enumResult.failed;
-          if (!closeLabelEmpty) {
-            if (enumResult.entryCount == 0) {
-              ((uint16_t *)labelCursor)[3] = ']';
-              ((uint16_t *)labelCursor)[4] = 0;
-            }
-            else {
-              scanRemaining = 256;
-              scanPointer = labelCursor;
-              do {
-                nextScanPointer = scanPointer;
-                if (scanRemaining == 0) break;
-                scanRemaining--;
-                nextScanPointer = (uint32_t *)((uint16_t *)scanPointer + 1);
-                scanValue = *scanPointer;
-                scanPointer = nextScanPointer;
-              } while ((uint16_t)scanValue != 0);
-              ((uint16_t *)nextScanPointer)[-1] = ']';
-              ((uint16_t *)nextScanPointer)[0] = 0;
-            }
-            enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                               (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,512,
-                                (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
-                                (uint8_t *)g_UiTimedListDriveWildcardUtf16);
-            closeLabelEmpty = enumResult.failed;
-            if ((!closeLabelEmpty) && (enumResult.entryCount != 0)) {
-              driveRow->flags = driveRow->flags | UI_TIMED_LIST_RECORD_EXPANDABLE;
-            }
-          }
-        }
-        if (closeLabelEmpty) {
+        /* Label "X:[<volume label>]"; a drive whose media check reports true is closed as "X:[]". */
+        if (g_FileSystemCheckDriveMediaReady(scanValue)) {
           ((uint16_t *)labelCursor)[3] = ']';
           ((uint16_t *)labelCursor)[4] = 0;
+        }
+        else {
+          if (g_FileSystemEnumerateDirectoryOrVolumeEntries
+                (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,504, /* the label buffer after "X:[" */
+                 (uint8_t *)((uint16_t *)labelCursor + 3),(uint8_t *)g_UiTimedListDriveWildcardUtf16) == 0) {
+            ((uint16_t *)labelCursor)[3] = ']';
+            ((uint16_t *)labelCursor)[4] = 0;
+          }
+          else {
+            scanRemaining = 256;
+            scanPointer = labelCursor;
+            do {
+              nextScanPointer = scanPointer;
+              if (scanRemaining == 0) break;
+              scanRemaining--;
+              nextScanPointer = (uint32_t *)((uint16_t *)scanPointer + 1);
+              scanValue = *scanPointer;
+              scanPointer = nextScanPointer;
+            } while ((uint16_t)scanValue != 0);
+            ((uint16_t *)nextScanPointer)[-1] = ']';
+            ((uint16_t *)nextScanPointer)[0] = 0;
+          }
+          if (g_FileSystemEnumerateDirectoryOrVolumeEntries
+                (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,512,
+                 (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
+                 (uint8_t *)g_UiTimedListDriveWildcardUtf16) != 0) {
+            driveRow->flags = driveRow->flags | UI_TIMED_LIST_RECORD_EXPANDABLE;
+          }
         }
         labelCursor = labelCursor + UI_TIMED_LIST_LABEL_BYTES / 4;
         driveRow++;
@@ -1250,87 +1232,78 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
     WidePath_CombineDirectoryAndLeaf
               (g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                g_UiTimedListCombinedPathScratch.codeUnits);
-    largestBlock = g_MemoryApi.allocLargestFreeBlock();
-    outputRecords = (uint32_t *)largestBlock.allocationOrError;
-    if (!largestBlock.failed) {
-      enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                         (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,largestBlock.blockSizeOrSentinel,
+    if (g_MemoryApi.allocLargestFreeBlock((void **)&outputRecords,&largestBlockSize) == 0) {
+      directoryEntryCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
+                         (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,largestBlockSize,
                           (uint8_t *)outputRecords,(uint8_t *)g_UiTimedListRecordPathScratch.codeUnits);
-      directoryEntryCount = enumResult.entryCount;
-      entryStride = enumResult.recordSizeBytes;
-      if (!enumResult.failed) {
-        shrinkResult = g_MemoryApi.shrinkInPlace(entryStride * directoryEntryCount,outputRecords);
-        if (!shrinkResult.failed) {
-          largestBlock = g_MemoryApi.allocLargestFreeBlock();
-          recordBlock = (void *)largestBlock.allocationOrError;
-          if (!largestBlock.failed) {
-            scanRemaining = directoryEntryCount + 1;
-            remainingBytes =
-                 (uint32_t *)(largestBlock.blockSizeOrSentinel + scanRemaining * -(int)sizeof(UiTimedListTreeRecord));
-            if ((uint32_t)(scanRemaining * sizeof(UiTimedListTreeRecord)) <= largestBlock.blockSizeOrSentinel &&
-                remainingBytes != NULL) {
-              *(uint32_t *)recordBlock = directoryEntryCount;
-              ((uint32_t *)recordBlock)[1] = 0;
-              ((uint32_t *)recordBlock)[2] = 0;
-              ((uint32_t *)recordBlock)[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
-              labelWriteCursor = ((uint32_t *)recordBlock) + scanRemaining * 4;
-              leaf = outputRecords;
-              recordCursor = recordBlock;
-              for (; directoryEntryCount != 0; directoryEntryCount--) {
-                recordCursor[1].countOrLabelText = (uint32_t)labelWriteCursor;
-                recordCursor[1].parentBlockOrIcon = UI_TIMED_LIST_ICON_DIRECTORY;
-                recordCursor[1].childBlockOrParentRecord = NULL;
-                recordCursor[1].flags = 0;
-                WidePath_CombineDirectoryAndLeaf
-                          (g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)leaf,
-                           g_UiTimedListCombinedPathScratch.codeUnits);
-                WidePath_CombineDirectoryAndLeaf
-                          (g_UiTimedListSecondaryPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,
-                                    0),
-                           g_UiTimedListRecordPathScratch.codeUnits);
-                enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                                   (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,512,
-                                    (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
-                                    (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits);
-                if ((!enumResult.failed) && (enumResult.entryCount != 0)) {
-                  recordCursor[1].flags = recordCursor[1].flags | UI_TIMED_LIST_RECORD_EXPANDABLE;
-                }
-                scanRemaining = 256;
-                scanCursor = leaf;
-                do {
-                  if (scanRemaining == 0) break;
-                  scanRemaining--;
-                  leafCodeUnitPair = *scanCursor;
-                  scanCursor = (uint32_t *)((uint16_t *)scanCursor + 1);
-                } while ((uint16_t)leafCodeUnitPair != 0);
-                scanCursor = (uint32_t *)(258U - scanRemaining & ~1U);
-                bytesAfterLabel = (uint32_t *)((int)remainingBytes - (int)scanCursor);
-                if ((remainingBytes < scanCursor || bytesAfterLabel == NULL) ||
-                   (remainingBytes = (uint32_t *)((int)bytesAfterLabel - (int)scanCursor),
-                   bytesAfterLabel < scanCursor || remainingBytes == NULL)) break;
-                scanCursor = leaf;
-                for (scanValue = 258U - scanRemaining >> 1; scanValue != 0; scanValue--) {
-                  *labelWriteCursor = *scanCursor;
-                  scanCursor++;
-                  labelWriteCursor++;
-                }
-                leaf = (uint32_t *)((uint8_t *)leaf + entryStride);
-                recordCursor++;
+      entryStride = FILESYSTEM_ENUMERATION_RECORD_BYTES;
+      if (g_MemoryApi.shrinkInPlace(entryStride * directoryEntryCount,outputRecords) == 0) {
+        if (g_MemoryApi.allocLargestFreeBlock(&recordBlock,&largestBlockSize) == 0) {
+          scanRemaining = directoryEntryCount + 1;
+          remainingBytes =
+               (uint32_t *)(largestBlockSize + scanRemaining * -(int)sizeof(UiTimedListTreeRecord));
+          if ((uint32_t)(scanRemaining * sizeof(UiTimedListTreeRecord)) <= largestBlockSize &&
+              remainingBytes != NULL) {
+            *(uint32_t *)recordBlock = directoryEntryCount;
+            ((uint32_t *)recordBlock)[1] = 0;
+            ((uint32_t *)recordBlock)[2] = 0;
+            ((uint32_t *)recordBlock)[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
+            labelWriteCursor = ((uint32_t *)recordBlock) + scanRemaining * 4;
+            leaf = outputRecords;
+            recordCursor = recordBlock;
+            for (; directoryEntryCount != 0; directoryEntryCount--) {
+              recordCursor[1].countOrLabelText = (uint32_t)labelWriteCursor;
+              recordCursor[1].parentBlockOrIcon = UI_TIMED_LIST_ICON_DIRECTORY;
+              recordCursor[1].childBlockOrParentRecord = NULL;
+              recordCursor[1].flags = 0;
+              WidePath_CombineDirectoryAndLeaf
+                        (g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)leaf,
+                         g_UiTimedListCombinedPathScratch.codeUnits);
+              WidePath_CombineDirectoryAndLeaf
+                        (g_UiTimedListSecondaryPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,
+                                  0),
+                         g_UiTimedListRecordPathScratch.codeUnits);
+              if (g_FileSystemEnumerateDirectoryOrVolumeEntries
+                    (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,512,
+                     (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
+                     (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits) != 0) {
+                recordCursor[1].flags = recordCursor[1].flags | UI_TIMED_LIST_RECORD_EXPANDABLE;
               }
-              /* The loop only ends early (entries left) when the labels no longer fit. */
-              if (directoryEntryCount == 0) {
-                shrinkResult = g_MemoryApi.shrinkInPlace
-                                   ((int)labelWriteCursor + (UI_TIMED_LIST_LABEL_BYTES - (int)recordBlock),
-                                    recordBlock);
-                if (!shrinkResult.failed) {
-                  g_MemoryApi.free(outputRecords);
-                  *outRecordBlock = (UiTimedListTreeRecord *)recordBlock;
-                  return true;
-                }
+              scanRemaining = 256;
+              scanCursor = leaf;
+              do {
+                if (scanRemaining == 0) break;
+                scanRemaining--;
+                leafCodeUnitPair = *scanCursor;
+                scanCursor = (uint32_t *)((uint16_t *)scanCursor + 1);
+              } while ((uint16_t)leafCodeUnitPair != 0);
+              scanCursor = (uint32_t *)(258U - scanRemaining & ~1U);
+              bytesAfterLabel = (uint32_t *)((int)remainingBytes - (int)scanCursor);
+              if ((remainingBytes < scanCursor || bytesAfterLabel == NULL) ||
+                 (remainingBytes = (uint32_t *)((int)bytesAfterLabel - (int)scanCursor),
+                 bytesAfterLabel < scanCursor || remainingBytes == NULL)) break;
+              scanCursor = leaf;
+              for (scanValue = 258U - scanRemaining >> 1; scanValue != 0; scanValue--) {
+                *labelWriteCursor = *scanCursor;
+                scanCursor++;
+                labelWriteCursor++;
+              }
+              leaf = (uint32_t *)((uint8_t *)leaf + entryStride);
+              recordCursor++;
+            }
+            /* The loop only ends early (entries left) when the labels no longer fit. */
+            if (directoryEntryCount == 0) {
+              if (g_MemoryApi.shrinkInPlace
+                    ((int)labelWriteCursor + (UI_TIMED_LIST_LABEL_BYTES - (int)recordBlock),
+                     recordBlock) == 0) {
+
+                g_MemoryApi.free(outputRecords);
+                *outRecordBlock = (UiTimedListTreeRecord *)recordBlock;
+                return true;
               }
             }
-            g_MemoryApi.free(recordBlock);
           }
+          g_MemoryApi.free(recordBlock);
         }
       }
       g_MemoryApi.free(outputRecords);
@@ -1742,7 +1715,7 @@ bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
     if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
        (control->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
     }
     UiActionQueue_Enqueue((control->selectable).actionId,control);
     UiNode_InvalidateRoot(&(control->selectable).base);
@@ -1751,7 +1724,7 @@ bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
   if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
     if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
        (control->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
     }
     (control->selectable).stateFlags =
          (control->selectable).stateFlags ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -1762,7 +1735,7 @@ bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
     if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
        (control->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
     }
     (control->selectable).stateFlags =
          (control->selectable).stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -3485,7 +3458,7 @@ void UiCatalogEntryControl_NonRightRelease
        ((control->command).sprite.activationSound != NULL)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (control->command).sprite.activationSound);
+                 (control->command).sprite.activationSound,NULL);
     }
     UiActionQueue_Enqueue((control->command).sprite.selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);

@@ -67,7 +67,7 @@ bool Movie_EncodeFlmBufferFromFrameProvider
 void MoviePlayback_AdvanceScheduledFrameAndTick(void);
 
 /* 0x004A8590 */
-MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path);
+bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
 
 /* 0x004A8A20 */
 MovieFrameDimensionsEdxEax8 Movie_GetFrameDimensions(void);

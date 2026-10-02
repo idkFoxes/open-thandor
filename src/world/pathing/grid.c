@@ -707,35 +707,30 @@ bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outErr
   uint32_t *newSecondaryScratchBuffer;
   void *newAuxiliaryBuffer;
   uint32_t bytes;
-  ArenaAllocResult allocResult;
+  uint32_t allocError;
   GridScratchCell *previousScratchBuffer;
 
   g_GridScratchWidth = fieldGrid->gridWidth * 4;
   g_GridScratchHeight = fieldGrid->gridHeight * 4;
   bytes = fieldGrid->gridWidth * (4 * sizeof(GridScratchCell)) * g_GridScratchHeight; /* scratch width * height * 8 */
-  allocResult = g_MemoryApi.alloc(bytes);
+  allocError = g_MemoryApi.alloc(bytes,(void **)&newScratchBuffer);
   previousScratchBuffer = g_GridScratchPrimary;
-  newScratchBuffer = (uint32_t *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  if (allocError == 0) {
     /* the original swaps the pointers with XCHG */
     LOCK();
     UNLOCK();
     g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
     g_MemoryApi.free(previousScratchBuffer);
-    allocResult = g_MemoryApi.alloc(bytes);
+    allocError = g_MemoryApi.alloc(bytes,(void **)&newSecondaryScratchBuffer);
     previousSecondaryScratchBuffer = g_GridScratchSecondary;
-    newSecondaryScratchBuffer = (uint32_t *)allocResult.payloadOrError;
-    newScratchBuffer = newSecondaryScratchBuffer;
-    if (!allocResult.failed) {
+    if (allocError == 0) {
       LOCK();
       UNLOCK();
       g_GridScratchSecondary = (GridScratchCell *)newSecondaryScratchBuffer;
       g_MemoryApi.free(previousSecondaryScratchBuffer);
-      allocResult = g_MemoryApi.alloc(GRID_PATH_COST_QUEUE_BYTES);
+      allocError = g_MemoryApi.alloc(GRID_PATH_COST_QUEUE_BYTES,&newAuxiliaryBuffer);
       previousCostQueueBuffer = g_GridPathCostQueueBegin;
-      newAuxiliaryBuffer = (void *)allocResult.payloadOrError;
-      newScratchBuffer = newAuxiliaryBuffer;
-      if (!allocResult.failed) {
+      if (allocError == 0) {
         g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + GRID_PATH_COST_QUEUE_BYTES);
         g_GridPathCostQueueBegin = newAuxiliaryBuffer;
         g_MemoryApi.free(previousCostQueueBuffer);
@@ -743,7 +738,7 @@ bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outErr
       }
     }
   }
-  *outError = (uint32_t)newScratchBuffer;
+  *outError = allocError;
   return false;
 }
 

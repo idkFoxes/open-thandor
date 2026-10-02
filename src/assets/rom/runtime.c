@@ -52,7 +52,7 @@ void FrontendRomActionTable_ExecuteRecord
           (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[entry->activationSoundIndex] != NULL) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[entry->activationSoundIndex]);
+                   (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[entry->activationSoundIndex],NULL);
       }
       if (targetRecordId == 0) {
         if ((int)pageActionOrCopiedDword < 0) {
@@ -527,7 +527,7 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
   uint8_t *rootSerializedNode;
-  PackageLoadResult loadResult;
+  uint32_t loadErrorCode;
   uint32_t spriteRegisterError;
 
   slotCursor = g_RomRegistrySlots;
@@ -553,11 +553,10 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
           /* the sprite file name (UTF-16) follows the node header */
           /* never sets CF */
           WidePath_SetExtensionCode(ASSET_MAGIC_SPR,(uint16_t *)((RomSerializedNodeHeader *)node + 1));
-          loadResult = Package_LoadEntry((uint16_t *)((RomSerializedNodeHeader *)node + 1));
-          if (loadResult.failed) {
-            return (uint32_t)loadResult.bufferOrError;
+          asset = Package_LoadEntry((uint16_t *)((RomSerializedNodeHeader *)node + 1),&loadErrorCode);
+          if (asset == NULL) {
+            return loadErrorCode;
           }
-          asset = loadResult.bufferOrError;
           existingSprite = SpriteAssetRegistry_FindById(((SpriteAssetHeader *)asset)->registryHeader.registryId);
           if (existingSprite != NULL) {
             ((RomSerializedNodeHeader *)node)->spriteAssetReference.spriteAsset = existingSprite;

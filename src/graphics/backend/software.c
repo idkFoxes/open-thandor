@@ -241,31 +241,28 @@ void SoftwareGraphicsDispatch_NoOp(void)
    Initial g_GraphicsSetDisplayMode hook (slot 0x004A8ED0) of the software pixel format: allocates the
    SoftwarePixelPackTables once, rebuilds them through g_SoftwareBuildPixelPackTables with the current colour
    scale/bias, and derives the MMX pack/unpack constants (g_SoftwarePixelMmxConstants) of the 16-bit rasterizer
-   and blits from g_SoftwarePixelFormatConfig. The mode arguments are not used. CF set when the allocation fails;
-   on success EAX holds the blue unpack scale, the last value the original computed.
+   and blits from g_SoftwarePixelFormatConfig. The mode arguments are not used. Returns true on success;
+   false with the arena error in *errorCode when the allocation fails. (The original left the blue unpack
+   scale in EAX on success, which no caller reads.)
 */
-DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
+bool SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
-          FrontendDisplayDimensionPixels width)
+          FrontendDisplayDimensionPixels width,uint32_t *errorCode)
 
 {
-  DisplayModeResult hookResult;
   SoftwarePixelPackTables *packTables;
   uint32_t blueUnpackScale;
   uint8_t redBits;
   uint8_t greenBits;
   uint8_t blueBits;
-  ArenaAllocResult tableAllocation;
-  DisplayModeResult failureResult;
-  
+  uint32_t tableAllocationError;
+
   packTables = g_SoftwarePixelPackTables;
   if (g_SoftwarePixelPackTables == NULL) {
-    tableAllocation = g_MemoryApi.alloc(sizeof(SoftwarePixelPackTables)); /* 3 x 256 dwords */
-    packTables = (SoftwarePixelPackTables *)tableAllocation.payloadOrError;
-    if (tableAllocation.failed) {
-      failureResult.valueOrError = tableAllocation.payloadOrError;
-      failureResult.failed = tableAllocation.failed;
-      return failureResult;
+    tableAllocationError = g_MemoryApi.alloc(sizeof(SoftwarePixelPackTables),(void **)&packTables); /* 3 x 256 dwords */
+    if (tableAllocationError != 0) {
+      *errorCode = tableAllocationError;
+      return false;
     }
   }
   g_SoftwarePixelPackTables = packTables;
@@ -275,8 +272,6 @@ DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
   blueBits = (uint8_t)g_SoftwarePixelFormatConfig.blueBitCount;
   /* unpack scale 1 << (16 - shift - bits) moves a channel to the top of a 16-bit lane */
   blueUnpackScale = 1 << (((16 - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits) & SHIFT_COUNT_MASK);
-  hookResult.failed = false;
-  hookResult.valueOrError = blueUnpackScale;
   g_SoftwarePixelMmxConstants.packedPixelMasks.red =
        (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.redMask;
   g_SoftwarePixelMmxConstants.packedPixelMasks.green =
@@ -307,7 +302,7 @@ DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
   g_SoftwarePixelMmxConstants.packWeights.blue =
        (SoftwareColorLaneFixed16)
        (1 << ((blueBits + (char)g_SoftwarePixelFormatConfig.blueShift) - 4 & SHIFT_COUNT_MASK));
-  return hookResult;
+  return true;
 }
 
 
@@ -315,39 +310,38 @@ DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
    g_SoftwareFramebufferCreate (slot 0x004A8ED8): creates an in-memory framebuffer of width x height pixels in one
    allocation, the 0x10-byte SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by
    the pixels, which are zeroed. Used for the off-screen buffers of the display setup (platform/input/devices.c).
-   CF set with the allocation error on failure.
+   Returns the framebuffer, or NULL when the allocation fails; then the allocator error is stored in
+   *outError (the mouse display-mode hook passes it on as its own error value).
 */
-SoftwareFramebufferResult SoftwareFramebuffer_Create
+SoftwareFramebufferAccess *SoftwareFramebuffer_Create
           (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
-          GraphicsPixelDimension width)
+          GraphicsPixelDimension width,uint32_t *outError)
 
 {
   SoftwareFramebufferAccess *framebuffer;
   uint32_t *cursor;
   uint32_t pixelBytesOrDwordsLeft;
-  ArenaAllocResult frameAllocation;
-  SoftwareFramebufferResult createResult;
+  uint32_t frameAllocationError;
 
   pixelBytesOrDwordsLeft = width * height * bytesPerPixel;
-  frameAllocation = g_MemoryApi.alloc(pixelBytesOrDwordsLeft + sizeof(SoftwareFramebufferAccess));
-  framebuffer = (SoftwareFramebufferAccess *)frameAllocation.payloadOrError;
-  if (!frameAllocation.failed) {
-    /* the pixels follow the header */
-    framebuffer->bytesPerPixel = bytesPerPixel;
-    framebuffer->width = width;
-    framebuffer->height = height;
-    framebuffer->pixels = (uint8_t *)(framebuffer + 1);
-    cursor = (uint32_t *)(framebuffer + 1);
-    /* whole dwords only; the original also leaves up to 3 trailing bytes as allocated */
-    for (pixelBytesOrDwordsLeft = pixelBytesOrDwordsLeft >> 2; pixelBytesOrDwordsLeft != 0; pixelBytesOrDwordsLeft--) {
-      *cursor = 0;
-      cursor++;
-    }
-    frameAllocation = THANDOR_BITCAST(uint64_t, ArenaAllocResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, frameAllocation) & 0xFFFFFFFFFFull) & UINT32_MAX));
+  frameAllocationError = g_MemoryApi.alloc(pixelBytesOrDwordsLeft + sizeof(SoftwareFramebufferAccess),
+                                           (void **)&framebuffer);
+  if (frameAllocationError != 0) {
+    *outError = frameAllocationError;
+    return NULL;
   }
-  createResult.framebuffer = (SoftwareFramebufferAccess *)frameAllocation.payloadOrError;
-  createResult.failed = frameAllocation.failed;
-  return createResult;
+  /* the pixels follow the header */
+  framebuffer->bytesPerPixel = bytesPerPixel;
+  framebuffer->width = width;
+  framebuffer->height = height;
+  framebuffer->pixels = (uint8_t *)(framebuffer + 1);
+  cursor = (uint32_t *)(framebuffer + 1);
+  /* whole dwords only; the original also leaves up to 3 trailing bytes as allocated */
+  for (pixelBytesOrDwordsLeft = pixelBytesOrDwordsLeft >> 2; pixelBytesOrDwordsLeft != 0; pixelBytesOrDwordsLeft--) {
+    *cursor = 0;
+    cursor++;
+  }
+  return framebuffer;
 }
 
 
@@ -2862,12 +2856,13 @@ void SoftwareRasterAux_Mode12
 /* Address: 0x004FE620.
    Software hook in front of g_GraphicsSetDisplayMode (see SoftwareRenderer_InstallDisplayModeHook): after the
    chained mode switch succeeds it picks the queue renderer for the new pixel depth, replaces the depth buffer
-   with one of the new size and rebuilds the MMX colour constants from the new pixel format. CF set when the
-   chained hook or the depth-buffer allocation fails.
+   with one of the new size and rebuilds the MMX colour constants from the new pixel format. Returns true on
+   success; false with the error in *errorCode when the chained hook or the depth-buffer allocation fails.
+   (The original left the blue unpack scale in EAX on success, which no caller reads.)
 */
-DisplayModeResult SoftwareRenderer_SetDisplayMode
+bool SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
-          FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
+          FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width,uint32_t *errorCode)
 
 {
   int32_t *previousDepthBuffer;
@@ -2875,10 +2870,13 @@ DisplayModeResult SoftwareRenderer_SetDisplayMode
   uint8_t redBits;
   uint8_t greenBits;
   uint8_t blueBits;
-  DisplayModeResult hookResult;
+  uint32_t depthAllocationError;
+  void *depthAllocationPayload;
 
-  hookResult = g_SoftwareChainedSetDisplayMode(adapterIndex,bitsPerPixel,height,width);
-  if (!hookResult.failed) {
+  if (!g_SoftwareChainedSetDisplayMode(adapterIndex,bitsPerPixel,height,width,errorCode)) {
+    return false;
+  }
+  {
     g_SoftwareDepthRowStrideBytes = width * 4; /* one int32 depth value per pixel */
     if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
       g_SoftwareDrawQueue = SoftwareRenderer_DrawQueue16Bit;
@@ -2886,13 +2884,16 @@ DisplayModeResult SoftwareRenderer_SetDisplayMode
     else {
       g_SoftwareDrawQueue = SoftwareRenderer_DrawQueueNon16Bit;
     }
-    hookResult = THANDOR_BITCAST(ArenaAllocResult, DisplayModeResult,
-                                 g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * height));
+    depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * height,&depthAllocationPayload);
     previousDepthBuffer = g_SoftwareDepthBuffer;
-    if (!hookResult.failed) {
+    if (depthAllocationError != 0) {
+      *errorCode = depthAllocationError;
+      return false;
+    }
+    {
       LOCK();
       UNLOCK();
-      g_SoftwareDepthBuffer = (int32_t *)hookResult.valueOrError;
+      g_SoftwareDepthBuffer = (int32_t *)depthAllocationPayload;
       g_MemoryApi.free(previousDepthBuffer);
       g_SoftwareDepthEpoch = 0;
       /* quantize mask: the top <bits> bits of a Q12 colour channel */
@@ -2930,12 +2931,9 @@ DisplayModeResult SoftwareRenderer_SetDisplayMode
            (1 << ((16 - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits & SHIFT_COUNT_MASK));
       blueUnpackScale = 1 << ((16 - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits & SHIFT_COUNT_MASK);
       g_SoftwarePixelMmxConstants.unpackScales.blue = (SoftwareColorLaneFixed16)blueUnpackScale;
-      /* success leaves the last computed value (the blue unpack scale) in EAX */
-      hookResult.failed = false;
-      hookResult.valueOrError = blueUnpackScale;
     }
   }
-  return hookResult;
+  return true;
 }
 
 
@@ -2949,7 +2947,7 @@ uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
 
 {
   int32_t *allocatedDepthBuffer;
-  ArenaAllocResult depthAllocation;
+  uint32_t depthAllocationError;
 
   g_SoftwareChainedSetDisplayMode = g_GraphicsSetDisplayMode;
   g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4;
@@ -2962,14 +2960,14 @@ uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
   else {
     g_SoftwareDrawQueue = SoftwareRenderer_DrawQueueNon16Bit;
   }
-  depthAllocation = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight);
-  allocatedDepthBuffer = (int32_t *)depthAllocation.payloadOrError;
-  if (!depthAllocation.failed) {
+  depthAllocationError = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight,
+                                           (void **)&allocatedDepthBuffer);
+  if (depthAllocationError == 0) {
     g_SoftwareDepthBuffer = allocatedDepthBuffer;
     g_SoftwareDepthEpoch = 0;
     return 0;
   }
-  return depthAllocation.payloadOrError;
+  return depthAllocationError;
 }
 
 

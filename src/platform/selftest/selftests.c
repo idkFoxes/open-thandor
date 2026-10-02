@@ -42,8 +42,10 @@ static void Thandor_SelfTestCodec(void)
         uint8_t *unpacked = (uint8_t *)malloc(size + guard);
         unsigned i;
         unsigned seed = 12345;
-        PckCodecResult enc;
-        PckCodecResult dec;
+        bool encodeOk;
+        bool decodeOk;
+        uint32_t encodeValue = 0; /* packed size, or the error code on failure */
+        uint32_t decodeValue = 0; /* reported byte count, or the error code on failure */
         int packedGuardOk = 1;
         int unpackedGuardOk = 1;
         int same;
@@ -57,20 +59,20 @@ static void Thandor_SelfTestCodec(void)
         }
         memset(packed, SELFTEST_GUARD_FILL, capacity + guard);
         memset(unpacked, SELFTEST_GUARD_FILL, size + guard);
-        enc = g_PckEncoderTable[0](capacity, packed, size, source);
+        encodeOk = g_PckEncoderTable[0](capacity, packed, size, source, &encodeValue, &encodeValue);
         for (i = capacity; i < capacity + guard; i++) {
             if (packed[i] != SELFTEST_GUARD_FILL) { packedGuardOk = 0; break; }
         }
-        Thandor_Log("codec selftest %u: size=%x noisy=%d encode carry=%d packed=%x guard=%s", t, size,
-                    noisy, enc.failed, enc.byteCountOrError, packedGuardOk ? "ok" : "OVERWRITTEN");
-        if (!enc.failed) {
-            dec = g_PckDecoderTable[0](size, unpacked, enc.byteCountOrError, packed);
+        Thandor_Log("codec selftest %u: size=%x noisy=%d encode ok=%d packed=%x guard=%s", t, size,
+                    noisy, encodeOk, encodeValue, packedGuardOk ? "ok" : "OVERWRITTEN");
+        if (encodeOk) {
+            decodeOk = g_PckDecoderTable[0](size, unpacked, encodeValue, packed, &decodeValue, &decodeValue);
             for (i = size; i < size + guard; i++) {
                 if (unpacked[i] != SELFTEST_GUARD_FILL) { unpackedGuardOk = 0; break; }
             }
             same = memcmp(source, unpacked, size) == 0;
-            Thandor_Log("codec selftest %u: decode carry=%d eax=%x roundtrip=%s guard=%s", t, dec.failed,
-                        dec.byteCountOrError, same ? "ok" : "MISMATCH", unpackedGuardOk ? "ok" : "OVERWRITTEN");
+            Thandor_Log("codec selftest %u: decode ok=%d value=%x roundtrip=%s guard=%s", t, decodeOk,
+                        decodeValue, same ? "ok" : "MISMATCH", unpackedGuardOk ? "ok" : "OVERWRITTEN");
         }
         free(source);
         free(packed);
@@ -246,26 +248,26 @@ static void Thandor_SelfTestStretchCompare(void)
    original code or data addresses. With OPEN_THANDOR_DUMPTEXT=<dir> it also writes every decoded
    text page (*.str, *.txt) to <dir>\<package>_<entry path>. */
 /* The arena is set up by ProcessEntry; decoders called before that allocate through these. */
-static ArenaAllocResult SelfTest_Alloc(uint32_t bytes)
+static uint32_t SelfTest_Alloc(uint32_t bytes, void **outPayload)
 {
-    ArenaAllocResult result;
-    result.payloadOrError = (uint32_t)(uintptr_t)malloc(bytes);
-    result.failed = result.payloadOrError == 0;
-    return result;
+    void *payload = malloc(bytes);
+    if (payload == NULL) {
+        return FATAL_ERROR_ARENA_EXHAUSTED; /* a failed alloc must report a nonzero code */
+    }
+    *outPayload = payload;
+    return 0;
 }
 
-static ArenaFreeResult SelfTest_Free(void *memory)
+static uint32_t SelfTest_Free(void *memory)
 {
-    ArenaFreeResult result;
-    memset(&result, 0, sizeof result);
     free(memory);
-    return result;
+    return 0;
 }
 
 static void Thandor_SelfTestScanAddresses(void)
 {
-    ArenaAllocResult (*savedAlloc)(uint32_t) = g_MemoryApi.alloc;
-    ArenaFreeResult (*savedFree)(void *) = g_MemoryApi.free;
+    uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
+    uint32_t (*savedFree)(void *) = g_MemoryApi.free;
     static const char *packages[] = {"DATEN.PCK", "ENGINE.PCK", "GRAPHIK.PCK", "LEVEL.PCK",
                                      "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
     unsigned p;
@@ -307,7 +309,7 @@ static void Thandor_SelfTestScanAddresses(void)
         for (;;) {
             PckEntryHeader header;
             uint8_t *unpacked;
-            PckCodecResult decoded;
+            bool decoded;
             char name[PCK_ENTRY_PATH_UNITS + 1];
             int k;
             uint32_t i;
@@ -336,9 +338,9 @@ static void Thandor_SelfTestScanAddresses(void)
                 continue;
             }
             decoded = g_PckDecoderTable[header.compressionMethod]
-                          (header.unpackedSize, unpacked, header.packedSize, packed);
+                          (header.unpackedSize, unpacked, header.packedSize, packed, NULL, NULL);
             totalEntries++;
-            if (decoded.failed) {
+            if (!decoded) {
                 fprintf(out, "%s %s DECODE-FAILED\n", list[p], name);
             }
             else {

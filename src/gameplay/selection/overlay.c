@@ -41,7 +41,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
   ArmyRuntimeSlot *createdArmy;
   bool placeable;
   EffectDefinition *markerDefinition;
-  HeightSampleResult surfaceHeight;
+  Q12 surfaceHeightQ12;
   EffectRuntimeSlot *createdEffect;
   EffectDefinition *targetDefinition;
   PckArmyAssetIdCatalog armyAssetId;
@@ -160,12 +160,12 @@ RefreshMarkers:
             (factoryModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
              worldRuntime->activeFactionRuntimeIndex)))) {
           /* the unit factory's exit point: X at +0x78, Y at +0x7C (classLinkState.classState78 / 7C) */
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
-                             ((factoryModelRuntime->classLinkState).classState7C,
-                              (factoryModelRuntime->classLinkState).classState78,worldRuntime->fieldGrid);
+          FieldGrid_InterpolateTopSurfaceHeight
+                    ((factoryModelRuntime->classLinkState).classState7C,
+                     (factoryModelRuntime->classLinkState).classState78,worldRuntime->fieldGrid,&surfaceHeightQ12);
           createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
                              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
-                              FIXED_ANGLE16_QUARTER_TURN,0,surfaceHeight.heightQ12,(factoryModelRuntime->classLinkState).classState7C,
+                              FIXED_ANGLE16_QUARTER_TURN,0,surfaceHeightQ12,(factoryModelRuntime->classLinkState).classState7C,
                               (factoryModelRuntime->classLinkState).classState78,markerDefinition,
                               worldRuntime);
           if (createdEffect != NULL) {
@@ -963,7 +963,7 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
   int markerSlotIndex;
   int remainingMarkers;
   int *markerCursor;
-  HeightSampleResult surfaceHeight;
+  Q12 surfaceHeightQ12;
   EffectRuntimeSlot *createdEffect;
   
   markerSlotIndex = g_InGameCommandTargetTransientEffectMarkerCount;
@@ -980,11 +980,11 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
       }
       markerCursor++;
     }
-    surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
-                      (worldYQ12,worldXQ12,((WorldRuntimeContext *)inGameRuntime)->fieldGrid);
+    FieldGrid_InterpolateTopSurfaceHeight
+              (worldYQ12,worldXQ12,((WorldRuntimeContext *)inGameRuntime)->fieldGrid,&surfaceHeightQ12);
     createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,FIXED_ANGLE16_QUARTER_TURN,0,
-                       surfaceHeight.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
+                       surfaceHeightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
     if (createdEffect == NULL) {
       /* Original quirk: no failure check; the original stores and dereferences its failure value */
       createdEffect = (EffectRuntimeSlot *)FATAL_ERROR_GENERAL_FAILURE;

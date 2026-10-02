@@ -96,7 +96,7 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
 {
   uint16_t *leaf;
   int rowOrdinal;
-  StatusResult deleteResult;
+  uint32_t deleteError;
   UiListRowIndex selectedIndex;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
@@ -116,10 +116,9 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
               ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    /* the fatal-error dispatch reads EAX and CF of the delete (0x0056C20B) */
-    deleteResult = (*(StatusResult (*)(uint32_t,uint16_t *))g_FileSystemDelete)
-                             (0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    FatalError_ReportIfFailed(deleteResult.valueOrError,deleteResult.failed);
+    /* a failed delete is reported through the fatal-error dispatch (0x0056C20B) */
+    deleteError = g_FileSystemDelete(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    FatalError_ReportIfFailed(deleteError,deleteError != 0);
     /* deleteButton - 0x760 = gameMenuSaveButton, the node RebuildCatalog expects */
     InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(deleteButton - 1888));
   }
@@ -152,31 +151,28 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   uint16_t *leaf;
   ScenarioCatalogByteOffset *destination;
   ScenarioCatalogByteOffset *clearCursor;
-  ArenaAllocResult allocResult;
-  FileSystemOpenResult openResult;
+  uint32_t allocError;
+  uint32_t openError;
   uint16_t *resolvedText;
   UiListRowIndex selectedIndex;
   uint16_t *fieldText;
-  DirectoryEnumerationResult enumResult;
   void *closeHandle;
   uint32_t rowCount;
   
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
+  remainingCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
                      (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
-  remainingCount = enumResult.entryCount;
-  if (enumResult.failed) {
-    remainingCount = 0;
-  }
   g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = NULL;
   /* per row a pointer and a 0x100-byte record: the row pointers first, then the records */
-  allocResult = g_MemoryApi.alloc((remainingCount + 1) * 260);
-  rowPointerCursor = (ScenarioCatalogHeader *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc((remainingCount + 1) * 260,(void **)&rowPointerCursor);
+  if (allocError != 0) {
+    rowPointerCursor = (ScenarioCatalogHeader *)allocError;
+  }
+  else {
     destination = &rowPointerCursor->campaignRecordsOffset + remainingCount; /* behind count + 1 pointers */
     g_ScenarioCatalog = rowPointerCursor;
     rowCount = remainingCount;
@@ -190,11 +186,10 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                  (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-      openResult = g_FileSystemOpen
-                        (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-      handle = (void *)openResult.handleOrError;
+      openError = g_FileSystemOpen
+                        (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16,&handle);
       /* the catalog record is the second 0x100 bytes of the .sve; a save that cannot be opened stays empty */
-      if (!openResult.failed) {
+      if (openError == 0) {
         closeHandle = handle;
         g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,256,handle);
         g_FileSystemReadExact(256,destination,handle);
@@ -207,7 +202,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       }
       rowPointerCursor = (ScenarioCatalogHeader *)&rowPointerCursor->campaignRecordsOffset;
       destination = destination + 64;
-      leaf = (uint16_t *)((int)leaf + enumResult.recordSizeBytes); /* next enumerated file name */
+      leaf = (uint16_t *)((int)leaf + FILESYSTEM_ENUMERATION_RECORD_BYTES); /* next enumerated file name */
     }
     rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
     clearCursor = destination;

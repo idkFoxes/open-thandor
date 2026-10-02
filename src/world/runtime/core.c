@@ -386,12 +386,10 @@ Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel
 
 {
   Q12 interpolatedHeightQ12;
-  HeightSampleResult heightResult;
 
   interpolatedHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
   if (worldRuntime->fieldGrid != NULL) {
-    heightResult = FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
-    interpolatedHeightQ12 = heightResult.heightQ12;
+    FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&interpolatedHeightQ12);
   }
   return interpolatedHeightQ12;
 }
@@ -406,12 +404,10 @@ Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel
 
 {
   Q12 waterSurfaceHeightQ12;
-  HeightSampleResult heightResult;
 
   waterSurfaceHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
   if (worldRuntime->fieldGrid != NULL) {
-    heightResult = FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
-    waterSurfaceHeightQ12 = heightResult.heightQ12;
+    FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&waterSurfaceHeightQ12);
   }
   return waterSurfaceHeightQ12;
 }
@@ -425,13 +421,11 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
                 (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  uint32_t topSurfaceHeightQ12;
-  HeightSampleResult heightResult;
+  Q12 topSurfaceHeightQ12;
 
   topSurfaceHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
   if (worldRuntime->fieldGrid != NULL) {
-    heightResult = FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
-    topSurfaceHeightQ12 = heightResult.heightQ12;
+    FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&topSurfaceHeightQ12);
   }
   return topSurfaceHeightQ12;
 }

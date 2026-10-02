@@ -143,8 +143,8 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 
 {
   uint32_t bufferBytes;
-  TextureSourceLoadResult textureLoadResult;
-  ArenaAllocResult bufferAllocResult;
+  GraphicsTextureSourceAsset *creditsTexture;
+  void *blendedBufferPayload;
   TextureSizeResult textureSizeResult;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
@@ -154,18 +154,15 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   (frontendCreditsView->creditsMaskRuntime).outgoingSubresource = 0;
   (frontendCreditsView->creditsMaskRuntime).incomingSubresource = 0;
   (frontendCreditsView->creditsMaskRuntime).tickCounter = 0;
-  textureLoadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_CreditsTexturePathUtf16);
-  if (!textureLoadResult.failed) {
-    (frontendCreditsView->creditsMaskRuntime).textureSource = textureLoadResult.textureSource;
-    textureSizeResult = g_GraphicsTextureSourceGetLogicalSize(0,textureLoadResult.textureSource);
+  creditsTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_CreditsTexturePathUtf16,NULL);
+  if (creditsTexture != NULL) {
+    (frontendCreditsView->creditsMaskRuntime).textureSource = creditsTexture;
+    textureSizeResult = g_GraphicsTextureSourceGetLogicalSize(0,creditsTexture);
     bufferBytes = textureSizeResult.logicalHeightPixels * textureSizeResult.logicalWidthPixels;
-    bufferAllocResult = g_MemoryApi.alloc(bufferBytes);
-    if (!bufferAllocResult.failed) {
-      (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)bufferAllocResult.payloadOrError;
-      bufferAllocResult = g_MemoryApi.alloc(bufferBytes);
-      if (!bufferAllocResult.failed) {
+    if (g_MemoryApi.alloc(bufferBytes,(void **)&(frontendCreditsView->creditsMaskRuntime).maskPixels) == 0) {
+      if (g_MemoryApi.alloc(bufferBytes,&blendedBufferPayload) == 0) {
         /* blendedSourcePixels is the second work buffer */
-        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = bufferAllocResult.payloadOrError;
+        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = (uint32_t)blendedBufferPayload;
         UiFrame_FlushInputAndResetPendingTicks();
         SoftwareMaskBuffer_Clear(&frontendCreditsView->creditsMaskRuntime);
         /* page 1 of the frontend view-mode stack: the full-screen view instead of the menu room */

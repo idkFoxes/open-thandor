@@ -96,7 +96,7 @@ bool Glide3_TextureSet_CreateBackend(GraphicsTextureSet *textureSet,GraphicsText
   DDPIXELFORMAT *selectedPixelFormat;
   GraphicsTextureResource *texture;
   bool registerFailed;
-  ArenaAllocResult textureAlloc;
+  uint32_t textureAllocError;
   GraphicsTextureSetEntry *entryCursor;
   AssetSubresourceCount remainingSubresources;
   GraphicsSubresourceIndex currentSubresource;
@@ -107,9 +107,11 @@ bool Glide3_TextureSet_CreateBackend(GraphicsTextureSet *textureSet,GraphicsText
   currentSubresource = 0;
   do {
     selectedPixelFormat = GraphicsTexture_SelectPixelFormat(currentSubresource,setSourceAsset);
-    textureAlloc = g_MemoryApi.alloc(sizeof(GraphicsTextureResource));
-    texture = (GraphicsTextureResource *)textureAlloc.payloadOrError;
-    if (!textureAlloc.failed) {
+    textureAllocError = g_MemoryApi.alloc(sizeof(GraphicsTextureResource),(void **)&texture);
+    if (textureAllocError != 0) {
+      texture = (GraphicsTextureResource *)textureAllocError;
+    }
+    else {
       texture->stagingTexture2 = NULL;
       texture->stagingSurface3 = NULL;
       texture->stagingSurfaceBase = NULL;
@@ -201,8 +203,8 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
   GrResolution *resolutionCursor;
   GraphicsTextureResource **textureSlotCursor;
   HINSTANCE glideDll;
-  ArenaAllocResult resolutionAlloc;
-  DisplayModeResult displayModeResult;
+  uint32_t resolutionAllocError;
+  uint32_t finalizeError; /* discarded: only success or failure leaves this function */
   uint32_t *tmuCountOutput;
   uint32_t resolutionQueryCode;
 
@@ -238,9 +240,11 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
       g_GlideSelectedResolutionQuery.resolution = resolutionQueryCode;
       sstIndexOrSizeOrCount = g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,NULL);
       if (15 < (int)sstIndexOrSizeOrCount) {
-        resolutionAlloc = g_MemoryApi.alloc(sstIndexOrSizeOrCount);
-        resolutionList = (GrResolution *)resolutionAlloc.payloadOrError;
-        if (!resolutionAlloc.failed) {
+        resolutionAllocError = g_MemoryApi.alloc(sstIndexOrSizeOrCount,(void **)&resolutionList);
+        if (resolutionAllocError != 0) {
+          resolutionList = (GrResolution *)resolutionAllocError;
+        }
+        else {
           remainingResolutions = sstIndexOrSizeOrCount / sizeof(GrResolution);
           g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,resolutionList);
           resolutionKeyOrBestHz = 0;
@@ -351,8 +355,7 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
             g_GlideResidentTextureHead = NULL;
             g_GlideResidentTextureTail = (GraphicsTextureResource *)g_GlideTmuMinAddress[0];
             g_PrimarySurface3 = NULL;
-            displayModeResult = g_GraphicsDisplayModeFinalize(adapterIndex,bitsPerPixel,height,width);
-            if (!displayModeResult.failed) {
+            if (g_GraphicsDisplayModeFinalize(adapterIndex,bitsPerPixel,height,width,&finalizeError)) {
               slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
               textureSlotCursor = g_GraphicsTextureSlots;
               do {
@@ -753,7 +756,7 @@ uint32_t Glide3_InitAndEnumerate(void)
   GraphicsDisplayMode *displayMode;
   HINSTANCE glideDll;
   uint32_t resolveError;
-  ArenaAllocResult resolutionAlloc;
+  uint32_t resolutionAllocError;
   uint32_t sstIndex;
   int remainingBoards;
 
@@ -788,9 +791,11 @@ uint32_t Glide3_InitAndEnumerate(void)
       (adapter->deviceGuid).Data1 = 1; /* nonzero: the adapter renders in 3D */
       querySizeOrAdapterIndex = g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,NULL);
       if (querySizeOrAdapterIndex != 0) {
-        resolutionAlloc = g_MemoryApi.alloc(querySizeOrAdapterIndex);
-        resolutionList = (GrResolution *)resolutionAlloc.payloadOrError;
-        if (!resolutionAlloc.failed) {
+        resolutionAllocError = g_MemoryApi.alloc(querySizeOrAdapterIndex,(void **)&resolutionList);
+        if (resolutionAllocError != 0) {
+          resolutionList = (GrResolution *)resolutionAllocError;
+        }
+        else {
           remainingResolutions = querySizeOrAdapterIndex / sizeof(GrResolution);
           g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,resolutionList);
           displayMode = g_GraphicsDisplayModes + g_GraphicsDisplayModeCount;
@@ -940,9 +945,9 @@ void Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Gr
    Glide backend of GraphicsFramebuffer_CaptureRegion (screenshots, captured textures): reads the region of the
    RGB565 back buffer with grLfbReadRegion and returns it as a one-image 'gfx' asset of opaque ARGB8888 pixels
    (same layout as the DirectDraw capture: source entry at GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET, pixels at
-   GRAPHICS_CAPTURE_PIXELS_OFFSET). CF set when the allocation fails.
+   GRAPHICS_CAPTURE_PIXELS_OFFSET). Returns the asset, or NULL when the allocation fails.
 */
-FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
+GraphicsCapturedTextureSourceAsset *Glide3_Framebuffer_CaptureRegion
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
 
@@ -954,17 +959,18 @@ FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
   uint16_t *sourcePixelCursor;
   uint32_t *clearCursor;
   uint32_t *argbCursor;
-  FramebufferCaptureResult captureResult;
+  uint32_t allocError;
   uint32_t buffer;
   GraphicsPixelDimension width;
   GraphicsPixelDimension height;
   uint16_t *rgb565Staging;
 
   pixelCountOrRemaining = captureWidth * captureHeight;
-  captureResult = THANDOR_BITCAST(ArenaAllocResult, FramebufferCaptureResult,
-                                  g_MemoryApi.alloc(pixelCountOrRemaining * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET));
-  capturedAsset = captureResult.capture;
-  if (!captureResult.failed) {
+  allocError = g_MemoryApi.alloc(pixelCountOrRemaining * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET,(void **)&capturedAsset);
+  if (allocError != 0) {
+    capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocError;
+  }
+  else {
     /* the RGB565 read-back goes into the upper half of the pixel area and is widened in place, front to back */
     rgb565Staging = (uint16_t *)((int)capturedAsset->argb8888Pixels + pixelCountOrRemaining * 2);
     strideOrTimestamp = captureWidth * 2;
@@ -1020,9 +1026,9 @@ FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
       argbCursor++;
       pixelCountOrRemaining--;
     } while (pixelCountOrRemaining != 0);
-    captureResult = THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(FramebufferCaptureResult, uint64_t, captureResult) & 0xFFFFFFFFFFull) & UINT32_MAX));
+    return capturedAsset;
   }
-  return captureResult;
+  return NULL;
 }
 
 
@@ -3759,7 +3765,6 @@ void Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   uint32_t globalDownsampleShift;
   uint32_t widthOrLodSize;
   uint32_t heightValue;
-  ArenaAllocResult uploadAlloc;
   TextureSizeResult logicalSize;
 
   globalDownsampleShift = g_TextureDownsampleShift;
@@ -3805,11 +3810,10 @@ void Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   texture->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
   texture->residentAddress = 0;
   /* two bytes per texel of the downsampled image */
-  uploadAlloc = g_MemoryApi.alloc
-                    ((logicalSize.logicalHeightPixels >> ((uint8_t)shift & SHIFT_COUNT_MASK)) *
-                     (logicalSize.logicalWidthPixels >> ((uint8_t)shift & SHIFT_COUNT_MASK)) * 2);
-  if (!uploadAlloc.failed) {
-    (texture->glideInfo).data = (void *)uploadAlloc.payloadOrError;
+  if (g_MemoryApi.alloc
+        ((logicalSize.logicalHeightPixels >> ((uint8_t)shift & SHIFT_COUNT_MASK)) *
+         (logicalSize.logicalWidthPixels >> ((uint8_t)shift & SHIFT_COUNT_MASK)) * 2,
+         &(texture->glideInfo).data) == 0) {
     g_GlideTextureColorUpload[shift](texture);
   }
   return;

@@ -93,7 +93,7 @@ bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUni
 void Keyboard_FlushEvents(void);
 
 /* 0x00417240 */
-KeyboardEventResult Keyboard_ReadNextEventRegs(void);
+bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask);
 
 /* 0x004172D0 */
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
@@ -111,9 +111,9 @@ void DirectInputMouse_Shutdown(void);
 void DirectInputMouse_PollBufferedEvents(void);
 
 /* 0x005772F0 */
-DisplayModeResult DirectInputMouse_SetDisplayMode
+bool DirectInputMouse_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
-          GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth);
+          GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode);
 
 /* 0x00577420 */
 void DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX);

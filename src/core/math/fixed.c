@@ -340,11 +340,13 @@ void __cdecl CosineDerivedLookupTables_Init(void)
   int entriesRemaining;
   uint32_t angleIndex16;
   uint32_t secondAngleIndex16;
-  ArenaAllocResult allocResult;
+  uint32_t allocError;
 
-  allocResult = g_MemoryApi.alloc(2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ORDER * sizeof(short));
-  outputCursor = (short *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(2 * COSINE_DERIVED_TABLE_ORDER * COSINE_DERIVED_TABLE_ORDER * sizeof(short),(void **)&outputCursor);
+  if (allocError != 0) {
+    outputCursor = (short *)allocError;
+  }
+  else {
     g_CosineDerivedLookupAllocation = outputCursor;
     /* row 0: 256 entries of 1/sqrt(2) in Q12, written as 128 pairs (REP STOSD in the original) */
     for (entriesRemainingInRow = COSINE_DERIVED_TABLE_ORDER / 2; entriesRemainingInRow != 0; entriesRemainingInRow--) {

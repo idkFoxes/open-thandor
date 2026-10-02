@@ -109,7 +109,7 @@ bool Game_PlayIntroMovies(void);
 uint32_t DynAPI_Bootstrap(void);
 
 /* 0x00586110 */
-CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
+uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
 
 /* 0x00586170 */
 void CommandLine_Parse(void);

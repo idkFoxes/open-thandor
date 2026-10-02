@@ -35,10 +35,9 @@ void __cdecl ProcessEntry(void)
   uint32_t bitsPerPixel;
   uint32_t adapterIndex;
   uint32_t mouseInitError;
-  StatusResult soundResult;
-  FatalErrorCheckResult fatalResult;
-  DisplayModeResult displayModeResult;
-  CommandLineOptionResult soundOption;
+  uint32_t soundError;
+  uint32_t checkedValue;
+  uint32_t displayModeError;
   uint32_t displayWidth;
   uint32_t displayHeight;
 
@@ -85,22 +84,21 @@ void __cdecl ProcessEntry(void)
           FatalError_ExitIfFailed(FATAL_ERROR_CPU_WITHOUT_MMX,true);
         }
         bootstrapError = DynAPI_Bootstrap();
-        fatalResult = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
+        checkedValue = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
         /* TimerSystem_Init only installs the timer procs and always clears CF */
         TimerSystem_Init();
-        fatalResult = FatalError_ExitIfFailed(fatalResult.valueOrError,false);
+        checkedValue = FatalError_ExitIfFailed(checkedValue,false);
         graphicsError = Graphics_Init();
         FatalError_ExitIfFailed(graphicsError,graphicsError != 0);
         if (!DirectInputMouse_Init(&mouseInitError)) {
           FatalError_ExitIfFailed(mouseInitError,true);
         }
-        soundResult = DirectSound_Init();
-        Thandor_Log("DirectSound_Init: %s", soundResult.failed ? "failed (continuing without sound)" : "ok");
-        if (soundResult.failed) {
+        soundError = DirectSound_Init();
+        Thandor_Log("DirectSound_Init: %s", soundError != 0 ? "failed (continuing without sound)" : "ok");
+        if (soundError != 0) {
           /* without a sound device the game only stops when -SOUND demands sound */
-          soundOption = CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound);
-          if (!soundOption.notFound) {
-            FatalError_ExitIfFailed(soundResult.valueOrError,true);
+          if (CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound) != NULL) {
+            FatalError_ExitIfFailed(soundError,true);
           }
         }
         networkResult = Network_Init();
@@ -115,9 +113,9 @@ void __cdecl ProcessEntry(void)
         if (g_GraphicsAdapterCount <= adapterIndex) {
           adapterIndex = 0;
         }
-        displayModeResult =
-             g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth);
-        FatalError_ExitIfFailed(displayModeResult.valueOrError,displayModeResult.failed);
+        if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,displayWidth,&displayModeError)) {
+          FatalError_ExitIfFailed(displayModeError,true);
+        }
         UiRuntime_Initialize();
         Game_Run();
         Runtime_Shutdown();
@@ -147,7 +145,8 @@ uint32_t GameData_ResetDefaults(void)
   GameFactionRuntimeRecord *factionRecord;
   uint32_t *dwordCursor;
   uint32_t *statTableCursor;
-  ArenaAllocResult allocResult;
+  uint32_t allocError;
+  void *allocPayload;
 
   remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4;
   dwordCursor = g_GameDataAuxState.pairPressureMatrix8x8;
@@ -189,16 +188,16 @@ uint32_t GameData_ResetDefaults(void)
     factionRecord++;
     remainingCount--;
   } while (remainingCount != 0);
-  allocResult = g_MemoryApi.alloc(GAME_STAT_TABLE_BYTES);
+  allocError = g_MemoryApi.alloc(GAME_STAT_TABLE_BYTES,&allocPayload);
   previousStatTable = g_GameStatTableImage;
-  if (allocResult.failed) {
-    return allocResult.payloadOrError;
+  if (allocError != 0) {
+    return allocError;
   }
   LOCK();
   UNLOCK();
-  g_GameStatTableImage = (void *)allocResult.payloadOrError;
+  g_GameStatTableImage = allocPayload;
   g_MemoryApi.free(previousStatTable);
-  statTableCursor = (uint32_t *)allocResult.payloadOrError;
+  statTableCursor = (uint32_t *)allocPayload;
   for (remainingCount = GAME_STAT_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
     *statTableCursor = 0;
     statTableCursor++;
@@ -223,7 +222,7 @@ bool GameData_LoadExternalTables(void)
   int remainingCount;
   uint32_t *sourceCursor;
   uint32_t *destinationCursor;
-  PackageLoadResult packageEntry;
+  void *statTable;
 
   remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4;
   oldUnitBufferOrCursor = g_GameDataAuxState.pairPressureMatrix8x8;
@@ -234,16 +233,15 @@ bool GameData_LoadExternalTables(void)
   if (Package_LoadEntryIntoBuffer
                     (GAME_FACTION_IMAGE_BYTES,(uint8_t *)&g_GameFactionRuntimeImage,
                      (uint16_t *)u_daten_hex_0050e054,NULL)) {
-    packageEntry = Package_LoadEntry((uint16_t *)u_stat_hex_0050e082);
+    statTable = Package_LoadEntry((uint16_t *)u_stat_hex_0050e082,NULL);
     previousStatTable = g_GameStatTableImage;
-    if (!packageEntry.failed) {
+    if (statTable != NULL) {
       LOCK();
       UNLOCK();
-      g_GameStatTableImage = packageEntry.bufferOrError;
+      g_GameStatTableImage = statTable;
       g_MemoryApi.free(previousStatTable);
-      packageEntry = Package_LoadEntry((uint16_t *)u_oldunit_hex_0050e094);
-      oldUnitBufferOrCursor = packageEntry.bufferOrError;
-      if (packageEntry.failed) {
+      oldUnitBufferOrCursor = Package_LoadEntry((uint16_t *)u_oldunit_hex_0050e094,NULL);
+      if (oldUnitBufferOrCursor == NULL) {
         oldUnitBufferOrCursor = g_OldUnitPrimaryTable;
         for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
           *oldUnitBufferOrCursor = 0;
@@ -453,6 +451,7 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
   uint16_t keyState;
   HANDLE currentProcess;
   LRESULT defaultResult;
+  uint32_t ignoredModeError; /* a failed restore is ignored here */
 
   if ((message == WM_DESTROY) || (message == WM_CLOSE)) {
     g_WindowDestroyDepth++;
@@ -484,7 +483,7 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
                    (g_SoftwarePixelFormatConfig.redBitCount +
                    g_SoftwarePixelFormatConfig.greenBitCount +
                    g_SoftwarePixelFormatConfig.blueBitCount + 0xf) & 0xfffffff0,g_FramebufferHeight,
-                   g_FramebufferWidth);
+                   g_FramebufferWidth,&ignoredModeError);
       }
       if (g_MouseDevice != NULL) {
         g_KeyboardStateMask = 0;
@@ -557,22 +556,22 @@ void __cdecl Game_Run(void)
   uint32_t bitsPerPixel;
   uint32_t adapterIndex;
   bool introMoviesFailed;
-  CursorFrameResult cursorFrameResult;
-  FatalErrorCheckResult fatalResult;
-  DisplayModeResult displayModeResult;
+  bool cursorFrameSet;
+  uint32_t checkedValue;
+  uint32_t displayModeError;
   uint32_t mainLoopError;
 
-  cursorFrameResult = g_GraphicsCursorSetFrame(0);
-  FatalError_ExitIfFailed(cursorFrameResult.errorCode,cursorFrameResult.failed);
+  cursorFrameSet = g_GraphicsCursorSetFrame(0);
+  FatalError_ExitIfFailed(FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE,!cursorFrameSet);
   renderingInitError = GameRuntime_InitializeSpatialAudioAndRendering();
   FatalError_ExitIfFailed(renderingInitError,renderingInitError != 0);
   loadResultOrWidth = Game_LoadCoreAssets();
   Thandor_Log("Game_LoadCoreAssets -> 0x%08X", loadResultOrWidth);
   /* 0 with CF clear on success, an error code with CF set otherwise */
-  fatalResult = FatalError_ExitIfFailed(loadResultOrWidth,loadResultOrWidth != 0);
+  checkedValue = FatalError_ExitIfFailed(loadResultOrWidth,loadResultOrWidth != 0);
   /* keeps EAX: a movie that cannot start is reported with the previous value */
   introMoviesFailed = Game_PlayIntroMovies();
-  FatalError_ExitIfFailed(fatalResult.valueOrError,introMoviesFailed);
+  FatalError_ExitIfFailed(checkedValue,introMoviesFailed);
   PersistentSettings_Load();
   /* ProcessEntry started in 640x480x16; switch only when the saved mode differs */
   loadResultOrWidth = PersistentSettings_Read(GAME_START_DISPLAY_WIDTH,PERSISTENT_SETTING_DISPLAY_WIDTH);
@@ -584,8 +583,9 @@ void __cdecl Game_Run(void)
     if (g_GraphicsAdapterCount <= adapterIndex) {
       adapterIndex = 0;
     }
-    displayModeResult = g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,loadResultOrWidth);
-    FatalError_ExitIfFailed(displayModeResult.valueOrError,displayModeResult.failed);
+    if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,loadResultOrWidth,&displayModeError)) {
+      FatalError_ExitIfFailed(displayModeError,true);
+    }
     PersistentSettings_Write(g_ActiveGraphicsAdapterIndex,PERSISTENT_SETTING_ADAPTER_INDEX);
   }
   if (!Frontend_MainLoop(1,&mainLoopError)) {
@@ -653,16 +653,20 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
   uint32_t aiInitError;
   uint32_t packageHandle; /* mounted package handle (set on failure too, but then unused) */
-  SampleVoiceSetResult voiceSetResult;
-  FileSystemOpenResult openResult;
+  uint32_t voiceSetError;
+  DirectSoundVoiceSet *buttonVoiceSet;
+  void *screenshotFile;
   uint16_t *resolvedText;
   uint32_t textPageError; /* the failing text page's error code */
-  PackageLoadResult pcxModuleEntry;
+  FncModuleHeader *pcxModuleEntry;
+  uint32_t pcxLoadErrorCode;
   bool pcxModuleLoaded;
   uint32_t fncError;
   void *pcxExport;
-  TextureSourceLoadResult panelTextureResult;
-  ArenaAllocResult allocResult;
+  GraphicsTextureSourceAsset *panelTexture;
+  uint32_t panelTextureError;
+  uint32_t allocError;
+  void *allocPayload;
   uint32_t loadErrorCode;
   
   /* HKLM\Software\Planet4\Thandor "CD": movies are looked up under <CD>\Thandor first */
@@ -751,68 +755,67 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   if (!Resource_Load((uint16_t *)u_sound_button0_sam_00572f06,(void **)&loadedResource,NULL,&loadErrorCode)) {
     return loadErrorCode;
   }
-  voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
-  module = (FncModuleHeader *)voiceSetResult.voiceSet;
-  if (!voiceSetResult.failed) {
+  voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
+  module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
+  if (voiceSetError == 0) {
     Resource_Release(loadedResource);
     g_UiButtonSoundVoiceSets7[0] = (DirectSoundVoiceSet *)module;
     if (!Resource_Load((uint16_t *)u_sound_button1_sam_00572f2a,(void **)&loadedResource,NULL,&loadErrorCode)) {
       return loadErrorCode;
     }
-    voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
-    module = (FncModuleHeader *)voiceSetResult.voiceSet;
-    if (!voiceSetResult.failed) {
+    voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
+    module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
+    if (voiceSetError == 0) {
       Resource_Release(loadedResource);
       g_UiButtonSoundVoiceSets7[1] = (DirectSoundVoiceSet *)module;
       if (!Resource_Load((uint16_t *)u_sound_button2_sam_00572f4e,(void **)&loadedResource,NULL,&loadErrorCode)) {
         return loadErrorCode;
       }
-      voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
-      module = (FncModuleHeader *)voiceSetResult.voiceSet;
-      if (!voiceSetResult.failed) {
+      voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
+      module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
+      if (voiceSetError == 0) {
         Resource_Release(loadedResource);
         g_UiButtonSoundVoiceSets7[2] = (DirectSoundVoiceSet *)module;
         if (!Resource_Load((uint16_t *)u_sound_button3_sam_00572f72,(void **)&loadedResource,NULL,&loadErrorCode)) {
           return loadErrorCode;
         }
-        voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
-        module = (FncModuleHeader *)voiceSetResult.voiceSet;
-        if (!voiceSetResult.failed) {
+        voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
+        module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
+        if (voiceSetError == 0) {
           Resource_Release(loadedResource);
           g_UiButtonSoundVoiceSets7[3] = (DirectSoundVoiceSet *)module;
           if (!Resource_Load((uint16_t *)u_sound_button4_sam_00572f96,(void **)&loadedResource,NULL,&loadErrorCode)) {
             return loadErrorCode;
           }
-          voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
-          module = (FncModuleHeader *)voiceSetResult.voiceSet;
-          if (!voiceSetResult.failed) {
+          voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
+          module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
+          if (voiceSetError == 0) {
             Resource_Release(loadedResource);
             g_UiButtonSoundVoiceSets7[4] = (DirectSoundVoiceSet *)module;
             if (!Resource_Load((uint16_t *)u_sound_button5_sam_00572fba,(void **)&loadedResource,NULL,&loadErrorCode)) {
               return loadErrorCode;
             }
-            voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
-            module = (FncModuleHeader *)voiceSetResult.voiceSet;
-            if (!voiceSetResult.failed) {
+            voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
+            module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
+            if (voiceSetError == 0) {
               Resource_Release(loadedResource);
               g_UiButtonSoundVoiceSets7[5] = (DirectSoundVoiceSet *)module;
               if (!Resource_Load((uint16_t *)u_sound_button6_sam_00572fde,(void **)&loadedResource,NULL,&loadErrorCode)) {
                 return loadErrorCode;
               }
-              voiceSetResult = g_SoundCreateSampleVoiceSet(loadedResource);
-              module = (FncModuleHeader *)voiceSetResult.voiceSet;
-              if (!voiceSetResult.failed) {
+              voiceSetError = g_SoundCreateSampleVoiceSet(loadedResource,&buttonVoiceSet);
+              module = (FncModuleHeader *)(voiceSetError != 0 ? voiceSetError : (uint32_t)buttonVoiceSet);
+              if (voiceSetError == 0) {
                 Resource_Release(loadedResource);
                 g_UiButtonSoundVoiceSets7[6] = (DirectSoundVoiceSet *)module;
                 /* u_Dscreen00_pcx_00572e3a + 1 is "screen00.pcx" ([7] tens digit, [8] ones digit): count up
                    to the first screenshot file that does not exist yet */
                 do {
                   do {
-                    openResult = g_FileSystemOpen(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
-                    if (openResult.failed)
+                    if (g_FileSystemOpen(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1),&screenshotFile) != 0)
                       goto bindDebugOverlayTexts;
                     u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + 1;
-                    g_FileSystemClose((void *)openResult.handleOrError);
+                    g_FileSystemClose(screenshotFile);
                     screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
                   } while ((uint16_t)u_Dscreen00_pcx_00572e3a[8] < '9' + 1);
                   u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + 1;
@@ -921,15 +924,15 @@ bindDebugOverlayTexts:
                 if (!AiRuntime_InitWorkspace(&aiInitError)) {
                   return aiInitError;
                 }
-                pcxModuleEntry = Package_LoadEntry((uint16_t *)u_engine_pcx_fnc_00573028);
-                if (pcxModuleEntry.failed) {
-                  return (uint32_t)pcxModuleEntry.bufferOrError;
+                pcxModuleEntry = Package_LoadEntry((uint16_t *)u_engine_pcx_fnc_00573028,&pcxLoadErrorCode);
+                if (pcxModuleEntry == NULL) {
+                  return pcxLoadErrorCode;
                 }
-                pcxModuleLoaded = FncModule_LoadAndRelocate(pcxModuleEntry.bufferOrError,&module,&fncError);
+                pcxModuleLoaded = FncModule_LoadAndRelocate(pcxModuleEntry,&module,&fncError);
                 if (!pcxModuleLoaded) {
                   module = (FncModuleHeader *)fncError; /* the error code for the failure exit below */
                 }
-                loadedResource = (SoundSampleAsset *)pcxModuleEntry.bufferOrError;
+                loadedResource = (SoundSampleAsset *)pcxModuleEntry;
                 if (pcxModuleLoaded) {
                   g_PcxFunctionModule = module;
                   fncError = FncModule_GetExportByIndex(3,module,&pcxExport);
@@ -941,35 +944,33 @@ bindDebugOverlayTexts:
                     if (fncError == 0) {
                       g_PcxFunctionExport2 = (PcxDecodeProc *)pcxExport;
                       /* EDX still holds the engine\pcx.fnc package buffer. */
-                      Resource_Release((SoundSampleAsset *)pcxModuleEntry.bufferOrError);
-                      panelTextureResult = g_GraphicsTextureSourceLoadPackageAsset
-                                         ((uint16_t *)u_gfx_panel_stat_gfx_00573002);
-                      if (panelTextureResult.failed) {
-                        return (uint32_t)panelTextureResult.textureSource;
+                      Resource_Release((SoundSampleAsset *)pcxModuleEntry);
+                      panelTexture = g_GraphicsTextureSourceLoadPackageAsset
+                                         ((uint16_t *)u_gfx_panel_stat_gfx_00573002,&panelTextureError);
+                      if (panelTexture == NULL) {
+                        return panelTextureError;
                       }
-                      g_InGameStatusPanelTextureSource = panelTextureResult.textureSource;
-                      allocResult = g_MemoryApi.alloc
-                                              (RECENT_TEXT_HISTORY_SLOT_COUNT * sizeof(RecentTextHistorySlot));
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      g_InGameStatusPanelTextureSource = panelTexture;
+                      allocError = g_MemoryApi.alloc
+                                       (RECENT_TEXT_HISTORY_SLOT_COUNT * sizeof(RecentTextHistorySlot),
+                                        (void **)&g_RecentTextSlotStorage);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_RecentTextSlotStorage = (RecentTextHistorySlot *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES);
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      allocError = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES,(void **)&g_OldUnitSecondaryTable);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_OldUnitSecondaryTable = (uint32_t *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES);
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      allocError = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES,(void **)&g_OldUnitPrimaryTable);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_OldUnitPrimaryTable = (uint32_t *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc
-                                              (FRONTEND_PLAYER_LIST_ROW_COUNT * FRONTEND_PLAYER_LIST_ROW_BYTES);
-                      soundOptionsOrBufferBase = allocResult.payloadOrError;
-                      if (allocResult.failed) {
-                        return soundOptionsOrBufferBase;
+                      allocError = g_MemoryApi.alloc
+                                       (FRONTEND_PLAYER_LIST_ROW_COUNT * FRONTEND_PLAYER_LIST_ROW_BYTES,&allocPayload);
+                      if (allocError != 0) {
+                        return allocError;
                       }
+                      soundOptionsOrBufferBase = (uint32_t)allocPayload;
                       g_FrontendPlayerListRow1 = soundOptionsOrBufferBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
                       g_FrontendPlayerListRow2 = soundOptionsOrBufferBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
                       g_FrontendPlayerListRow3 = soundOptionsOrBufferBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
@@ -978,41 +979,40 @@ bindDebugOverlayTexts:
                       g_FrontendPlayerListRow6 = soundOptionsOrBufferBase + 6 * FRONTEND_PLAYER_LIST_ROW_BYTES;
                       g_FrontendPlayerListRow7 = soundOptionsOrBufferBase + 7 * FRONTEND_PLAYER_LIST_ROW_BYTES;
                       g_FrontendPlayerListRows = soundOptionsOrBufferBase;
-                      allocResult = g_MemoryApi.alloc(ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot));
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      allocError = g_MemoryApi.alloc
+                                       (ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot),
+                                        (void **)&g_RomRegistrySlots);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_RomRegistrySlots = (RomRegistrySlot *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc
-                                              (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord *));
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      allocError = g_MemoryApi.alloc
+                                       (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord *),
+                                        (void **)&g_FrontendSessionListRows);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_FrontendSessionListRows = (FrontendSessionDiscoveryRecord **)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc
-                                              (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord));
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      allocError = g_MemoryApi.alloc
+                                       (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord),
+                                        (void **)&g_FrontendSessionDiscoveryRecords);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_FrontendSessionDiscoveryRecords =
-                           (FrontendSessionDiscoveryRecord *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES);
-                      textBuffer = (uint16_t *)allocResult.payloadOrError;
-                      if (allocResult.failed) {
-                        return (uint32_t)textBuffer;
+                      allocError = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES,(void **)&textBuffer);
+                      if (allocError != 0) {
+                        return allocError;
                       }
                       g_InGameFactionStatusTextScratchUtf16 = textBuffer;
                       g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
-                      allocResult = g_MemoryApi.alloc(INGAME_PLAYER_LIST_TEXT_BYTES);
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      allocError = g_MemoryApi.alloc
+                                       (INGAME_PLAYER_LIST_TEXT_BYTES,(void **)&g_InGamePlayerListTextScratchUtf16);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_InGamePlayerListTextScratchUtf16 = (uint16_t *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
-                                                      CUBIC_SPLINE_MATRIX_FLOATS * sizeof(float));
-                      splineBuffer = (float *)allocResult.payloadOrError;
-                      if (allocResult.failed) {
-                        return (uint32_t)splineBuffer;
+                      allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
+                                                     CUBIC_SPLINE_MATRIX_FLOATS * sizeof(float),
+                                                     (void **)&splineBuffer);
+                      if (allocError != 0) {
+                        return allocError;
                       }
                       g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_FLOATS;
                       g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_FLOATS;
@@ -1021,11 +1021,11 @@ bindDebugOverlayTexts:
                       g_WorldMotionSplineMatrixWorkspaces[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_FLOATS;
                       g_WorldMotionSplineMatrixWorkspaces[0] = splineBuffer;
                       /* one coefficient vector of CUBIC_SPLINE_MATRIX_ORDER floats per channel */
-                      allocResult = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
-                                                      CUBIC_SPLINE_MATRIX_ORDER * sizeof(float));
-                      splineBuffer = (float *)allocResult.payloadOrError;
-                      if (allocResult.failed) {
-                        return (uint32_t)splineBuffer;
+                      allocError = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
+                                                     CUBIC_SPLINE_MATRIX_ORDER * sizeof(float),
+                                                     (void **)&splineBuffer);
+                      if (allocError != 0) {
+                        return allocError;
                       }
                       g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_ORDER;
                       g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_ORDER;
@@ -1033,32 +1033,32 @@ bindDebugOverlayTexts:
                       g_WorldMotionSplineCoefficientTables[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_ORDER;
                       g_WorldMotionSplineCoefficientTables[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_ORDER;
                       g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
-                      allocResult = g_MemoryApi.alloc
-                                              (SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock));
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      allocError = g_MemoryApi.alloc
+                                       (SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock),
+                                        (void **)&g_SelectionPlayerBlocks);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_SelectionPlayerBlocks = (SelectionPlayerRuntimeBlock *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(FRONTEND_SNAPSHOT_PAYLOAD_BYTES);
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      allocError = g_MemoryApi.alloc(FRONTEND_SNAPSHOT_PAYLOAD_BYTES,&allocPayload);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_FrontendLocalPlayerPcxPreview = allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8); /* 8-byte records */
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      g_FrontendLocalPlayerPcxPreview = (uint32_t)allocPayload;
+                      allocError = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8,&allocPayload); /* 8-byte records */
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_TerrainRegionCollectionEntries = allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(800);
-                      if (allocResult.failed) {
-                        return allocResult.payloadOrError;
+                      g_TerrainRegionCollectionEntries = (uint32_t)allocPayload;
+                      allocError = g_MemoryApi.alloc(800,&allocPayload);
+                      if (allocError != 0) {
+                        return allocError;
                       }
-                      g_FrontendPlayerMessageBuffers = allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc
-                                    (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord));
-                      playerRecordCursor = (FrontendPlayerRuntimeRecord *)allocResult.payloadOrError;
-                      if (allocResult.failed) {
-                        return (uint32_t)playerRecordCursor;
+                      g_FrontendPlayerMessageBuffers = (uint32_t)allocPayload;
+                      allocError = g_MemoryApi.alloc
+                                       (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord),
+                                        (void **)&playerRecordCursor);
+                      if (allocError != 0) {
+                        return allocError;
                       }
                       playerRuntimePointerTableWriteCursor =
                            g_FrontendPlayerRuntimeRecordPointers32;
@@ -1083,11 +1083,11 @@ bindDebugOverlayTexts:
                         playerRecordCursor++;
                         statusOrCount--;
                       } while (statusOrCount != 0);
-                      allocResult = g_MemoryApi.alloc
-                                    (CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES);
-                      scratchCursor = (uint8_t *)allocResult.payloadOrError;
-                      if (allocResult.failed) {
-                        return (uint32_t)scratchCursor;
+                      allocError = g_MemoryApi.alloc
+                                       (CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES,
+                                        (void **)&scratchCursor);
+                      if (allocError != 0) {
+                        return allocError;
                       }
                       g_CoreAssetScratchSlice1 = scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES;
                       g_CoreAssetScratchSlice2 = scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES;
@@ -1135,12 +1135,11 @@ bool Game_PlayIntroMovies(void)
   int frameAdvanceBudget;
   bool accessFailed;
   MovieFrameDimensionsEdxEax8 frameDimensions;
-  MovieOpenResult openResult;
   MovieRuntime *introMovie;
   bool frameDecoded;
-  KeyboardEventResult keyEvent;
-  CommandLineOptionResult noIntroOption;
-  CursorEventResult cursorEvent;
+  uint32_t keyCode;
+  uint32_t keyStateMask;
+  CursorPointerEvent cursorEvent;
   
     {
     const char *exportMovies = getenv("OPEN_THANDOR_MOVIEEXPORT");
@@ -1175,31 +1174,28 @@ bool Game_PlayIntroMovies(void)
     g_GraphicsFramebufferEndAccess();
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
   }
-  noIntroOption = g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro);
-  if (noIntroOption.notFound) {
-    while (!(openResult = Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046)).failed) {
+  if (g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == NULL) {
+    /* playbackRateHz: the rate Movie_Open left in ECX, pushed for TimerRegisterPeriodic (AdvanceFrame preserves ECX) */
+    while (Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046,&playbackRateHz,NULL)) {
       if (!Movie_AdvanceFrame(&introMovie,NULL)) {
         Movie_Close();
         return true;
       }
       g_IntroMoviePendingTicks = 0;
       UiFrame_FlushInputAndResetPendingTicks();
-      playbackRateHz = openResult.playbackRateHz; /* PUSH ECX: rate left by Movie_Open (AdvanceFrame preserves ECX) */
       g_TimerRegisterPeriodic(playbackRateHz,IntroMovie_TimerTick);
       while( true ) {
         g_Win32PumpMessages();
-        keyEvent = g_KeyboardReadEvent();
-        if (!keyEvent.queueEmpty) {
+        if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) {
           /* [9] is the digit of "flm\intro0.flm"; Escape moves on to intro9 (normally absent, which ends the
              intros) */
-          if (keyEvent.eventCode == KEYBOARD_KEY_CODE_ESCAPE) {
+          if (keyCode == KEYBOARD_KEY_CODE_ESCAPE) {
             u_flm_intro0_flm_00573046[9] = L'8';
           }
           break;
         }
-        cursorEvent = g_GraphicsCursorConsumeEvent();
         /* event types above RIGHT_PRESS are the button releases */
-        if (!cursorEvent.queueEmpty && RIGHT_PRESS < cursorEvent.eventType) break;
+        if (g_GraphicsCursorConsumeEvent(&cursorEvent) && RIGHT_PRESS < cursorEvent.eventType) break;
         if (g_IntroMoviePendingTicks != 0) {
           /* catch up at most three frames per pass */
           frameAdvanceBudget = 3;
@@ -1291,11 +1287,10 @@ uint32_t DynAPI_Bootstrap(void)
    Looks up a command-line option (stored uppercased without its '/' or '-' by CommandLine_Parse) in
    g_CommandLine.optionBuffer, a list of NUL-terminated strings ending with an empty one. Only the first
    length bytes are compared (case-sensitive): a length including the NUL asks for an exact match, a shorter
-   one for a prefix such as an option name followed by its value. Returns CF clear and the stored option in
-   EBX when found, CF set otherwise; EAX is preserved.
-   Original register convention: result in EBX, CF set on failure; EAX, ECX and EDX preserved.
+   one for a prefix such as an option name followed by its value. Returns the stored option (never NULL)
+   when found, NULL otherwise.
 */
-CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
+uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 
 {
   uint32_t compareBytesRemaining;
@@ -1304,8 +1299,6 @@ CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes leng
   char *storedOption;
   char *storedOptionCompareCursor;
   bool comparedBytesEqual;
-  CommandLineOptionResult foundResult;
-  CommandLineOptionResult notFoundResult;
   char scannedByte;
 
   storedOption = g_CommandLine.optionBuffer;
@@ -1323,9 +1316,7 @@ CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes leng
       storedOptionCompareCursor++;
     } while (comparedBytesEqual);
     if (comparedBytesEqual) {
-      foundResult.notFound = false;
-      foundResult.option = (uint8_t *)storedOption;
-      return foundResult;
+      return (uint8_t *)storedOption;
     }
     /* REPNE SCASB to the byte after the NUL; sz_MainWindowTitle directly follows optionBuffer and so
        marks the end of the buffer */
@@ -1340,9 +1331,7 @@ CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes leng
       compareOrScanCursor = storedOption;
     } while (scannedByte != '\0');
   }
-  notFoundResult.notFound = true;
-  notFoundResult.option = NULL; /* EBX not written; all callers read it only with CF clear */
-  return notFoundResult;
+  return NULL;
 }
 
 

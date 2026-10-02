@@ -22,7 +22,7 @@ void DebugAutoShot_Tick(void)
   static unsigned last;
   static unsigned number;
   unsigned now;
-  FramebufferCaptureResult capture;
+  GraphicsCapturedTextureSourceAsset *capture;
   if (interval < 0) {
     const char *value = getenv("OPEN_THANDOR_AUTOSHOT");
     interval = (value != NULL) ? atoi(value) : 0;
@@ -41,14 +41,14 @@ void DebugAutoShot_Tick(void)
   last = now;
   capture = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
 #ifdef THANDOR_TEST_AIDS
-  if (capture.failed || capture.capture == NULL) {
-    Thandor_Log("autoshot failed: error %08x, backend access state %d, frame heartbeat %u",
-                (unsigned)(uintptr_t)capture.capture, (int)g_GraphicsBackendAccessState, g_ThandorFrameHeartbeat);
+  if (capture == NULL) {
+    Thandor_Log("autoshot failed: backend access state %d, frame heartbeat %u",
+                (int)g_GraphicsBackendAccessState, g_ThandorFrameHeartbeat);
   }
 #endif
-  if (!capture.failed && capture.capture != NULL) {
-    GraphicsTextureSourceEntry *entry = &capture.capture->sourceEntry;
-    const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture.capture + entry->dataOffset);
+  if (capture != NULL) {
+    GraphicsTextureSourceEntry *entry = &capture->sourceEntry;
+    const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture + entry->dataOffset);
     uint32_t width = entry->pixelWidth;
     uint32_t height = entry->pixelHeight;
     char name[64];
@@ -73,6 +73,6 @@ void DebugAutoShot_Tick(void)
       fclose(file);
       Thandor_Log("autoshot %s (%ux%u)", name, width, height);
     }
-    g_MemoryApi.free(capture.capture);
+    g_MemoryApi.free(capture);
   }
 }

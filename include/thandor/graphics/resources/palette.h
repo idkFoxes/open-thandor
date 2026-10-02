@@ -32,7 +32,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
 bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount);
 
 /* 0x004AD820 */
-PaletteAssetResult GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16);
+GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode);
 
 /* 0x004AD860 */
 void GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset);
@@ -44,7 +44,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
 void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD8F0 */
-PaletteAssetResult GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset);
+GraphicsPaletteAsset * GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset,uint32_t *outErrorCode);
 
 /* 0x004AD920 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset);

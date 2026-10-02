@@ -952,13 +952,13 @@ int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
 
 
 /* Address: 0x004FEC10.
-   Terrain height at a world position, interpolated linearly over the grid triangle that contains it. Q12
-   height in EAX; CF set (height 0) outside the grid or when the cell or its diagonal neighbour is a border
-   cell. Entries 0, 2 and 3 of g_FieldGridInterpolationCallbacks5 (0x004FEA30); also called directly by
+   Terrain height at a world position, interpolated linearly over the grid triangle that contains it, stored
+   as Q12 in *outHeightQ12. Returns false (and stores height 0) outside the grid or when the cell or its
+   diagonal neighbour is a border cell. Entries 0, 2 and 3 of g_FieldGridInterpolationCallbacks5 (0x004FEA30); also called directly by
    ArmyPlacementContact_ApplyTerrainHeight, WorldRuntime_InterpolateTerrainHeightOrSentinel and the army
    movement code.
 */
-HeightSampleResult FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+bool FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   int64_t upperTriangleAccumulator;
@@ -969,8 +969,6 @@ HeightSampleResult FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ1
   uint32_t rowFractionQ12;
   int rowIndexOrRowOffsetBytes;
   int triangleDiagonalWeightQ12;
-  bool sampleFailed;
-  HeightSampleResult sampleResult;
   FieldGridDimension gridWidth;
   int64_t weightedHeightAccumulator;
   
@@ -1002,7 +1000,6 @@ HeightSampleResult FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ1
                (int64_t)triangleDiagonalWeightQ12);
           columnFractionOrHeightQ12 = (uint32_t)weightedHeightAccumulator >> 12 |
                   (int)((uint64_t)weightedHeightAccumulator >> 32) << 20;
-          sampleFailed = false;
         }
         else {
           upperTriangleAccumulator = (int64_t)
@@ -1013,19 +1010,14 @@ HeightSampleResult FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ1
                   (int64_t)
                   FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldGrid->cells,rowIndexOrRowOffsetBytes)[gridColumnIndex + 1].terrainHeight * (int64_t)(int)(rowFractionQ12 - FIELD_GRID_CELL_Q12));
           columnFractionOrHeightQ12 = (uint32_t)upperTriangleAccumulator >> 12 | (int)((uint64_t)upperTriangleAccumulator >> 32) << 20;
-          sampleFailed = false;
         }
-        sampleResult.failed = sampleFailed;
-        sampleResult.heightQ12 = columnFractionOrHeightQ12;
-        return sampleResult;
+        *outHeightQ12 = columnFractionOrHeightQ12;
+        return true;
       }
     }
   }
-  columnFractionOrHeightQ12 = 0;
-  sampleFailed = true;
-  sampleResult.failed = sampleFailed;
-  sampleResult.heightQ12 = columnFractionOrHeightQ12;
-  return sampleResult;
+  *outHeightQ12 = 0;
+  return false;
 }
 
 
@@ -1096,11 +1088,12 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
 /* Address: 0x004FEE90.
    Height of the water surface (terrainHeight + waterSurfaceDelta, also where waterSurfaceDelta is negative, i.e.
    the surface lies below the ground) at a world position, interpolated linearly over the grid triangle that
-   contains it. Q12 height in EAX; CF set (height 0) outside the grid or on a border cell. Entry 1 of
+   contains it, stored as Q12 in *outHeightQ12. Returns false (and stores height 0) outside the grid or on a
+   border cell. Entry 1 of
    g_FieldGridInterpolationCallbacks5 (0x004FEA30); also called directly by
    ArmyPlacementContact_ApplyWaterSurfaceHeight and WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel.
 */
-HeightSampleResult FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   int gridColumnIndex;
@@ -1111,8 +1104,6 @@ HeightSampleResult FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 wor
   uint32_t rowFractionQ12;
   int rowIndexOrRowOffsetBytes;
   Q12 triangleDiagonalWeightQ12;
-  bool sampleFailed;
-  HeightSampleResult sampleResult;
   int64_t upperTriangleWeightedHeightAccumulator;
   FieldGridDimension gridWidth;
   int64_t weightedHeightAccumulator;
@@ -1148,7 +1139,6 @@ HeightSampleResult FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 wor
                (int64_t)triangleDiagonalWeightQ12);
           surfaceHeightQ12 = (uint32_t)weightedHeightAccumulator >> 12 |
                   (int)((uint64_t)weightedHeightAccumulator >> 32) << 20;
-          sampleFailed = false;
         }
         else {
           upperTriangleWeightedHeightAccumulator =
@@ -1164,28 +1154,24 @@ HeightSampleResult FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 wor
                FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldGrid->cells,rowIndexOrRowOffsetBytes)[gridColumnIndex + 1].waterSurfaceDelta) * (int64_t)(int)(rowFractionQ12 - FIELD_GRID_CELL_Q12));
           surfaceHeightQ12 = (uint32_t)upperTriangleWeightedHeightAccumulator >> 12 |
                   (int)((uint64_t)upperTriangleWeightedHeightAccumulator >> 32) << 20;
-          sampleFailed = false;
         }
-        sampleResult.failed = sampleFailed;
-        sampleResult.heightQ12 = surfaceHeightQ12;
-        return sampleResult;
+        *outHeightQ12 = surfaceHeightQ12;
+        return true;
       }
     }
   }
-  surfaceHeightQ12 = 0;
-  sampleFailed = true;
-  sampleResult.failed = sampleFailed;
-  sampleResult.heightQ12 = surfaceHeightQ12;
-  return sampleResult;
+  *outHeightQ12 = 0;
+  return false;
 }
 
 
 /* Address: 0x004FEFF0.
    Height of the top surface (terrain plus water above it) at a world position, interpolated linearly
    over the grid triangle that contains it; one of the five height samplers of the field-grid
-   interpolation table. Q12 height in EAX; CF set (height 0) outside the grid or on a border cell.
+   interpolation table (entry 4 of g_FieldGridInterpolationCallbacks5). Stores the Q12 height in
+   *outHeightQ12; returns false (and stores height 0) outside the grid or on a border cell.
 */
-HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+bool FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   int64_t partialAccumulator;
@@ -1197,8 +1183,6 @@ HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 world
   uint32_t terrainHeightQ12;
   int rowIndexOrRowOffsetBytes;
   int triangleDiagonalWeightQ12;
-  bool sampleFailed;
-  HeightSampleResult sampleResult;
   FieldGridDimension gridWidth;
   int64_t weightedSurfaceAccumulator;
   
@@ -1244,7 +1228,6 @@ HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 world
           if (-1 < (int)columnFractionOrWaterDelta) {
             terrainHeightQ12 = terrainHeightQ12 + columnFractionOrWaterDelta;
           }
-          sampleFailed = false;
         }
         else {
           partialAccumulator = (int64_t)
@@ -1266,19 +1249,14 @@ HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 world
           if (-1 < (int)columnFractionOrWaterDelta) {
             terrainHeightQ12 = terrainHeightQ12 + columnFractionOrWaterDelta;
           }
-          sampleFailed = false;
         }
-        sampleResult.failed = sampleFailed;
-        sampleResult.heightQ12 = terrainHeightQ12;
-        return sampleResult;
+        *outHeightQ12 = terrainHeightQ12;
+        return true;
       }
     }
   }
-  terrainHeightQ12 = 0;
-  sampleFailed = true;
-  sampleResult.failed = sampleFailed;
-  sampleResult.heightQ12 = terrainHeightQ12;
-  return sampleResult;
+  *outHeightQ12 = 0;
+  return false;
 }
 
 
@@ -2536,13 +2514,12 @@ bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32
   uint32_t *copyDestinationDwords;
   FieldGridCellSaveImageView *fieldGridCellSaveView;
   uint8_t *occupancyBytes;
-  ArenaAllocResult allocResult;
+  uint32_t allocError;
   uint32_t writeError;
 
   imageSizeOrDwordsLeft = sourceImageDwords[1];
-  allocResult = g_MemoryApi.alloc(imageSizeOrDwordsLeft);
-  fieldGridImageCopy = (FieldGridAsset *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(imageSizeOrDwordsLeft,(void **)&fieldGridImageCopy);
+  if (allocError == 0) {
     copyDestinationDwords = (uint32_t *)fieldGridImageCopy;
     for (imageSizeOrDwordsLeft = imageSizeOrDwordsLeft >> 2; imageSizeOrDwordsLeft != 0; imageSizeOrDwordsLeft--) {
       *copyDestinationDwords = *sourceImageDwords;
@@ -2599,7 +2576,7 @@ bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32
     *outError = writeError;
     return false;
   }
-  *outError = allocResult.payloadOrError;
+  *outError = allocError;
   return false;
 }
 

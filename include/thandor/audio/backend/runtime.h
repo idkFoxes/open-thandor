@@ -35,29 +35,29 @@
 void DirectSound_Shutdown(void);
 
 /* 0x00417570 */
-SampleVoiceSetResult SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset);
+uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
 
 /* 0x00417580 */
 void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 
 /* 0x00417590 */
-PcmVoiceSetResult SoundBackendDisabled_CreatePcmVoiceSet
+uint32_t SoundBackendDisabled_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          void *pcmData);
+          void *pcmData,DirectSoundVoiceSet **outVoiceSet);
 
 /* 0x004175A0 */
 void SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet);
 
 /* 0x004175B0 */
-SoundPlayResult SoundBackendDisabled_PlayOneShot
+bool SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet);
+          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
 /* 0x004175C0 */
-SoundPlayResult SoundBackendDisabled_PlayLooping
+bool SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet);
+          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
 /* 0x004175D0 */
 void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice);
@@ -73,29 +73,29 @@ void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,S
           IDirectSoundBuffer *voice);
 
 /* 0x00583140 */
-StatusResult DirectSound_Init(void);
+uint32_t DirectSound_Init(void);
 
 /* 0x00583490 */
-SampleVoiceSetResult DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset);
+uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
 
 /* 0x00583690 */
 void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 
 /* 0x00583720 */
-PcmVoiceSetResult DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
+uint32_t DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          uint32_t *pcmData);
+          uint32_t *pcmData,DirectSoundVoiceSet **outVoiceSet);
 
 /* 0x005838D0 */
 void DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet);
 
 /* 0x00583940 */
-SoundPlayResult DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet);
+bool DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
 /* 0x00583A70 */
-SoundPlayResult DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
-          DirectSoundVoiceSet *voiceSet);
+bool DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+          DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
 /* 0x00583B90 */
 void DirectSound_StopVoice(IDirectSoundBuffer *voice);

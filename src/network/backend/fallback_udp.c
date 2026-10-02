@@ -16,16 +16,12 @@
 
 /* Address: 0x0041A580.
    Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init
-   installs the WinSock backend: every backend index fails with FATAL_ERROR_NETWORK_UNAVAILABLE (CF set).
+   installs the WinSock backend: every backend index fails, returning FATAL_ERROR_NETWORK_UNAVAILABLE.
 */
-StatusResult NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
+uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
 
 {
-  StatusResult status;
-  
-  status.failed = true;
-  status.valueOrError = FATAL_ERROR_NETWORK_UNAVAILABLE;
-  return status;
+  return FATAL_ERROR_NETWORK_UNAVAILABLE;
 }
 
 
@@ -40,16 +36,12 @@ void __cdecl NetworkBackendFallback_Cleanup(void)
 
 /* Address: 0x0041A5A0.
    Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can
-   be opened, so it fails with FATAL_ERROR_NETWORK_UNAVAILABLE (CF set).
+   be opened, so it returns FATAL_ERROR_NETWORK_UNAVAILABLE.
 */
-StatusResult NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
+uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
 
 {
-  StatusResult status;
-  
-  status.failed = true;
-  status.valueOrError = FATAL_ERROR_NETWORK_UNAVAILABLE;
-  return status;
+  return FATAL_ERROR_NETWORK_UNAVAILABLE;
 }
 
 
@@ -63,31 +55,25 @@ void __cdecl NetworkBackendFallback_CloseActiveSocket(void)
 }
 
 /* Address: 0x0041A5C0.
-   Default g_NetworkBackendSlot4 (receive a datagram) in the image data: sets CF (nothing received) and leaves
-   EAX as it was, so UiTransfer receive loops stop at once.
+   Default g_NetworkBackendSlot4 (receive a datagram) in the image data: returns false (nothing received), so
+   UiTransfer receive loops stop at once.
 */
-NetworkReceiveResult NetworkBackendFallback_ReceiveDatagram
+bool NetworkBackendFallback_ReceiveDatagram
                (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer)
 
 {
-  NetworkReceiveResult result; /* result type of the backend slot */
-  memset(&result, 0, sizeof result);
-  result.failed = true;
-  return result;
+  return false;
 }
 
 /* Address: 0x0041A5D0.
    Default g_NetworkBackendSlot5 (send a datagram) in the image data, called by UiTransfer_StagePacketAndSend:
-   drops the packet and reports success (CF clear) so a session without network keeps running.
+   drops the packet and returns true (success) so a session without network keeps running.
 */
-NetworkSendResult NetworkBackendFallback_SendDatagram
+bool NetworkBackendFallback_SendDatagram
                (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
-  NetworkSendResult result; /* result type of the backend slot */
-  memset(&result, 0, sizeof result);
-  result.failed = false;
-  return result;
+  return true;
 }
 
 /* Address: 0x0041A5E0.
@@ -130,9 +116,9 @@ void NetworkFallback_NoOpBackendCleanup(void)
    -IP="host" on the command line (dotted address or host name), with broadcast allowed and non-blocking
    I/O. Also presets the local endpoint descriptor to the IPv4 broadcast address on that port, used for
    session discovery. On failure the WinSock error code is left in g_PackageLastErrorPath and
-   FATAL_ERROR_NETWORK_SOCKET is returned with CF set.
+   FATAL_ERROR_NETWORK_SOCKET is returned; 0 on success (the socket is kept in g_NetworkFallbackSocket).
 */
-NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
+uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
 
 {
   uint8_t copiedByte;
@@ -142,20 +128,19 @@ NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder 
   NetworkIpv4AddressNetworkOrder bindAddress;
   uint8_t *optionCursor;
   uint8_t *outputCursor;
-  NetworkOpenBindResult socketResult;
-  NetworkOpenBindResult failureResult;
-  CommandLineOptionResult ipOption;
+  uint32_t socketHandle;
+  uint8_t *ipOption;
   uint32_t socketToClose;
 
   socketToClose = INVALID_SOCKET;
-  socketResult.valueOrError = g_WinSock_socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
-  if (socketResult.valueOrError != INVALID_SOCKET) {
+  socketHandle = g_WinSock_socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+  if (socketHandle != INVALID_SOCKET) {
     bindAddress = 0; /* INADDR_ANY */
     ipOption = g_CommandLineFindOption(3,s_CommandLineOptionIp); /* "IP=" */
-    if (!ipOption.notFound) {
-      optionCursor = ipOption.option + 4;
+    if (ipOption != NULL) {
+      optionCursor = ipOption + 4;
       nextOutput = g_PackageScratchBuffer;
-      if (ipOption.option[3] == '"') {
+      if (ipOption[3] == '"') {
         /* copy the quoted value, including the closing quote, into the scratch buffer */
         do {
           outputCursor = nextOutput;
@@ -208,14 +193,14 @@ NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder 
     g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[7] = 0;
-    winsockResultOrError = g_WinSock_bind(socketResult.valueOrError,&g_NetworkFallbackBindEndpoint,sizeof(WinSockAddress));
-    socketToClose = socketResult.valueOrError;
+    winsockResultOrError = g_WinSock_bind(socketHandle,&g_NetworkFallbackBindEndpoint,sizeof(WinSockAddress));
+    socketToClose = socketHandle;
     if (winsockResultOrError == 0) {
       /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
-      winsockResultOrError = g_WinSock_setsockopt(socketResult.valueOrError,SOL_SOCKET,SO_BROADCAST,
+      winsockResultOrError = g_WinSock_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,
                                                   (uint8_t *)&g_NetworkFallbackSocketOptionOn,4);
       if (winsockResultOrError == 0) {
-        winsockResultOrError = g_WinSock_ioctlsocket(socketResult.valueOrError,FIONBIO,
+        winsockResultOrError = g_WinSock_ioctlsocket(socketHandle,FIONBIO,
                                                      &g_NetworkFallbackSocketOptionOn);
         if (winsockResultOrError == 0) {
           g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = INADDR_BROADCAST;
@@ -227,9 +212,8 @@ NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder 
           g_NetworkLocalEndpoint.zeroPadding[5] = 0;
           g_NetworkLocalEndpoint.zeroPadding[6] = 0;
           g_NetworkLocalEndpoint.zeroPadding[7] = 0;
-          g_NetworkFallbackSocket = socketResult.valueOrError;
-          socketResult.failed = false;
-          return socketResult;
+          g_NetworkFallbackSocket = socketHandle;
+          return 0;
         }
       }
     }
@@ -240,9 +224,7 @@ NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder 
   if (socketToClose != INVALID_SOCKET) {
     g_WinSock_closesocket(socketToClose);
   }
-  failureResult.failed = true;
-  failureResult.valueOrError = FATAL_ERROR_NETWORK_SOCKET;
-  return failureResult;
+  return FATAL_ERROR_NETWORK_SOCKET;
 }
 
 
@@ -266,55 +248,47 @@ void NetworkFallback_CloseActiveSocket(void)
 
 /* Address: 0x00585060.
    Receives one datagram (non-blocking) into buffer and the sender's address into sourceAddress
-   (16-byte sockaddr_in). Returns the byte count; CF is set when no socket is open or recvfrom fails,
-   including WSAEWOULDBLOCK when nothing is pending.
+   (16-byte sockaddr_in). Returns true when a datagram was received (callers do not need the byte count:
+   the packet header carries its size); false when no socket is open or recvfrom fails, including
+   WSAEWOULDBLOCK when nothing is pending.
 */
-NetworkReceiveResult NetworkFallback_ReceiveDatagram
+bool NetworkFallback_ReceiveDatagram
           (WinSockAddress *sourceAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
-  uint32_t receivedByteCount;
-  NetworkReceiveResult successResult;
-  NetworkReceiveResult failureResult;
+  int receivedByteCount;
 
   g_NetworkFallbackAddressLength = sizeof(WinSockAddress);
-  receivedByteCount = g_NetworkFallbackSocket;
-  if (g_NetworkFallbackSocket != INVALID_SOCKET) {
-    receivedByteCount =
-         g_WinSock_recvfrom
-                   (g_NetworkFallbackSocket,buffer,byteCount,0,sourceAddress,
-                    (int *)&g_NetworkFallbackAddressLength);
-    if (-1 < (int)receivedByteCount) {
-#ifdef THANDOR_TEST_AIDS
-      Thandor_TestAidLogDatagram("recv",sourceAddress,receivedByteCount,buffer);
-#endif
-      successResult.failed = false;
-      successResult.byteCountOrError = receivedByteCount;
-      return successResult;
-    }
+  if (g_NetworkFallbackSocket == INVALID_SOCKET) {
+    return false;
   }
-  failureResult.failed = true;
-  failureResult.byteCountOrError = receivedByteCount;
-  return failureResult;
+  receivedByteCount =
+       g_WinSock_recvfrom
+                 (g_NetworkFallbackSocket,buffer,byteCount,0,sourceAddress,
+                  (int *)&g_NetworkFallbackAddressLength);
+  if (receivedByteCount < 0) {
+    return false;
+  }
+#ifdef THANDOR_TEST_AIDS
+  Thandor_TestAidLogDatagram("recv",sourceAddress,receivedByteCount,buffer);
+#endif
+  return true;
 }
 
 
 /* Address: 0x005850B0.
-   Sends one datagram to destinationAddress (16-byte sockaddr_in) and returns the byte count. Without
-   an open socket nothing is sent and the call still succeeds (returning INVALID_SOCKET as the count).
-   A sendto error leaves the WinSock error code in g_PackageLastErrorPath and returns
-   FATAL_ERROR_NETWORK_SOCKET with CF set.
+   Sends one datagram to destinationAddress (16-byte sockaddr_in) and returns true. Without an open
+   socket nothing is sent and the call still succeeds. A sendto error leaves the WinSock error code in
+   g_PackageLastErrorPath and returns false (the original returned FATAL_ERROR_NETWORK_SOCKET with CF set,
+   but no caller reads the code).
 */
-NetworkSendResult NetworkFallback_SendDatagram
+bool NetworkFallback_SendDatagram
           (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
   uint32_t sentByteCount;
   int winsockErrorCode;
-  NetworkSendResult successResult;
-  NetworkSendResult failureResult;
 
-  sentByteCount = g_NetworkFallbackSocket;
   if (g_NetworkFallbackSocket != INVALID_SOCKET) {
 #ifdef THANDOR_TEST_AIDS
     Thandor_TestAidLogDatagram("send",destinationAddress,byteCount,buffer);
@@ -325,14 +299,10 @@ NetworkSendResult NetworkFallback_SendDatagram
       winsockErrorCode = g_WinSock_WSAGetLastError();
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockErrorCode,g_PackageLastErrorPath);
-      failureResult.failed = true;
-      failureResult.valueOrError = FATAL_ERROR_NETWORK_SOCKET;
-      return failureResult;
+      return false;
     }
   }
-  successResult.failed = false;
-  successResult.valueOrError = sentByteCount;
-  return successResult;
+  return true;
 }
 
 

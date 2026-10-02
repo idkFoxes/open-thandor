@@ -225,31 +225,29 @@ bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32
 
 /* Address: 0x004AD820.
    Loads a 'pal' palette asset from pathUtf16 (Package_LoadEntry) and validates it through
-   g_GraphicsPaletteAssetValidate; an invalid asset is released again. CF set with the load or validation error.
+   g_GraphicsPaletteAssetValidate; an invalid asset is released again. Returns the asset (never NULL), or NULL
+   with the load or validation error in *outErrorCode (outErrorCode may be NULL).
    Installed as g_GraphicsPaletteAssetLoadPackage (used by the army graphics and frontend palette loaders).
 */
-PaletteAssetResult GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
+GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode)
 
 {
   GraphicsPaletteAsset *loadedPaletteAsset;
-  GraphicsPaletteAsset *validateErrorOrAsset;
-  PackageLoadResult loadResult;
-  PaletteAssetResult validateResult;
-  
-  loadResult = Package_LoadEntry(pathUtf16);
-  loadedPaletteAsset = loadResult.bufferOrError;
-  if (!loadResult.failed) {
-    validateResult = g_GraphicsPaletteAssetValidate(loadedPaletteAsset);
-    validateErrorOrAsset = validateResult.paletteAsset;
-    if (!validateResult.failed) {
-      return validateResult;
+  GraphicsPaletteAsset *validatedPaletteAsset;
+  uint32_t errorCode;
+
+  loadedPaletteAsset = Package_LoadEntry(pathUtf16,&errorCode);
+  if (loadedPaletteAsset != NULL) {
+    validatedPaletteAsset = g_GraphicsPaletteAssetValidate(loadedPaletteAsset,&errorCode);
+    if (validatedPaletteAsset != NULL) {
+      return validatedPaletteAsset;
     }
     Resource_Release(loadedPaletteAsset);
-    loadedPaletteAsset = validateErrorOrAsset;
   }
-  validateResult.failed = true;
-  validateResult.paletteAsset = loadedPaletteAsset;
-  return validateResult;
+  if (outErrorCode != NULL) {
+    *outErrorCode = errorCode;
+  }
+  return NULL;
 }
 
 
@@ -280,26 +278,27 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
   GraphicsPaletteAsset *clonedAsset;
   uint32_t sizeOrDwordCount;
   GraphicsPaletteAsset *destinationCursor;
-  ArenaAllocResult allocResult;
-  PaletteAssetResult validateResult;
-  ArenaFreeResult freeResult;
+  uint32_t allocError;
+  GraphicsPaletteAsset *validatedAsset;
   
   sizeOrDwordCount = paletteAsset->allocationSizeBytes;
-  allocResult = g_MemoryApi.alloc(sizeOrDwordCount);
-  clonedAsset = (GraphicsPaletteAsset *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(sizeOrDwordCount,(void **)&clonedAsset);
+  if (allocError != 0) {
+    clonedAsset = (GraphicsPaletteAsset *)allocError;
+  }
+  else {
     destinationCursor = clonedAsset;
     for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount--) {
       destinationCursor->magic = paletteAsset->magic;
       paletteAsset = (GraphicsPaletteAsset *)&paletteAsset->allocationSizeBytes;
       destinationCursor = (GraphicsPaletteAsset *)&destinationCursor->allocationSizeBytes;
     }
-    validateResult = g_GraphicsPaletteAssetValidate(clonedAsset);
-    if (!validateResult.failed) {
-      return validateResult.paletteAsset;
+    validatedAsset = g_GraphicsPaletteAssetValidate(clonedAsset,NULL);
+    if (validatedAsset != NULL) {
+      return validatedAsset;
     }
-    freeResult = g_MemoryApi.free(clonedAsset);
-    clonedAsset = (GraphicsPaletteAsset *)freeResult.valueOrError;
+    /* Original quirk: the clone's result after a failed validation is the free's status (0 = NULL) */
+    clonedAsset = (GraphicsPaletteAsset *)g_MemoryApi.free(clonedAsset);
   }
   return clonedAsset;
 }
@@ -322,23 +321,20 @@ void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
 
 
 /* Address: 0x004AD8F0.
-   Accepts paletteAsset when it starts with the 'pal' signature (CF clear, pointer returned), otherwise CF set
-   with FATAL_ERROR_PALETTE_ASSET_INVALID. Installed as g_GraphicsPaletteAssetValidate.
+   Returns paletteAsset when it starts with the 'pal' signature, otherwise NULL with
+   FATAL_ERROR_PALETTE_ASSET_INVALID in *outErrorCode (outErrorCode may be NULL). Installed as
+   g_GraphicsPaletteAssetValidate.
 */
-PaletteAssetResult GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset)
+GraphicsPaletteAsset * GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset,uint32_t *outErrorCode)
 
 {
-  PaletteAssetResult successResult;
-  PaletteAssetResult failureResult;
-  
   if (paletteAsset->magic == ASSET_MAGIC_PAL) {
-    successResult.failed = false;
-    successResult.paletteAsset = paletteAsset;
-    return successResult;
+    return paletteAsset;
   }
-  failureResult.failed = true;
-  failureResult.paletteAsset = (GraphicsPaletteAsset *)FATAL_ERROR_PALETTE_ASSET_INVALID;
-  return failureResult;
+  if (outErrorCode != NULL) {
+    *outErrorCode = FATAL_ERROR_PALETTE_ASSET_INVALID;
+  }
+  return NULL;
 }
 
 
@@ -378,15 +374,12 @@ GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAn
   GraphicsTexturePaletteEntry *paletteEntryCursor;
   uint8_t *byteSourceCursor;
   GraphicsPaletteTextureSourceAsset *destinationCursor;
-  ArenaAllocResult allocResult;
   GraphicsPaletteTextureSourceAsset *combinedAsset;
 
   bytes = (baseAsset->allocationSizeBytes + appendedAsset->allocationSizeBytes) - GRAPHICS_PALETTE_BANKS_OFFSET;
-  allocResult = g_MemoryApi.alloc(bytes);
-  if (allocResult.failed) {
+  if (g_MemoryApi.alloc(bytes,(void **)&combinedAsset) != 0) {
     return NULL;
   }
-  combinedAsset = (GraphicsPaletteTextureSourceAsset *)allocResult.payloadOrError;
   sourceCursor = baseAsset;
   destinationCursor = combinedAsset;
   /* the header */

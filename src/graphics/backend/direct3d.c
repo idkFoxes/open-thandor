@@ -63,8 +63,8 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
   uint32_t *recordCursor;
   uint32_t *guidCursor;
   uint32_t *descCursor;
-  ArenaAllocResult descAllocation;
-  
+  uint32_t descAllocationError;
+
   newAdapterIndex = g_GraphicsAdapterCount;
   /* The original also tests D3DDEVCAPS_DRAWPRIMTLVERTEX (0x400) but never branches on the result. */
   if ((g_GraphicsAdapterCount < GRAPHICS_ADAPTER_CAPACITY) &&
@@ -89,9 +89,9 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
           (((hardwareDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDSTIPPLED) != 0)) ||
          (((hardwareDesc->dpcTriCaps).dwRasterCaps & D3DPRASTERCAPS_STIPPLE) != 0)))))))))) {
     /* one block for the copies of the hardware and the software device description */
-    descAllocation = g_MemoryApi.alloc(2 * sizeof(D3DDEVICEDESC_DX6));
+    descAllocationError = g_MemoryApi.alloc(2 * sizeof(D3DDEVICEDESC_DX6),(void **)&descCursor);
     updatedAdapterCount = g_GraphicsAdapterCount;
-    if (!descAllocation.failed) {
+    if (descAllocationError == 0) {
       newRecord = g_GraphicsAdapters + newAdapterIndex;
       remainingDwords = sizeof(GraphicsAdapterRecord) / sizeof(uint32_t);
       g_GraphicsAdapterCount++;
@@ -114,8 +114,7 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
         guidCursor++;
       }
       Text_CopyNarrowToUtf16(40,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
-      filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
-      descCursor = (uint32_t *)descAllocation.payloadOrError;
+      filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descCursor;
       for (remainingDwords = sizeof(D3DDEVICEDESC_DX6) / sizeof(uint32_t); remainingDwords != 0;
            remainingDwords--) {
         *descCursor = *(uint32_t *)hardwareDesc;

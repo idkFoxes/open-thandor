@@ -228,6 +228,13 @@ void DebugScript_Tick(void)
         Thandor_Log("script: simulation step ticks now %u", (unsigned)g_InGameSimulationStepTicks);
       }
     }
+    /* held keys for combinations such as Alt+P: keydown 18, key 80, keyup 18 */
+    else if (strcmp(command, "keydown") == 0) {
+      Keyboard_OnKeyDown(x);
+    }
+    else if (strcmp(command, "keyup") == 0) {
+      Keyboard_OnKeyUp(x);
+    }
     else if (strcmp(command, "quit") == 0) {
       ExitProcess(0);
     }

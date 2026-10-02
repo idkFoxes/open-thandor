@@ -696,7 +696,8 @@ bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsse
      (the original is limited only by its stack) fail like an arena overflow. */
   static uint16_t *tagStarts[RICHTEXT_MARKUP_TAG_LIMIT];
   static int32_t tagKeys[RICHTEXT_MARKUP_TAG_LIMIT];
-  ArenaLargestAllocResult largestBlock;
+  uint32_t arenaError;
+  uint32_t largestBlockSize;
   uint16_t *memory;
   uint16_t *outputCursor;
   uint32_t remainingCapacityBytes;
@@ -721,13 +722,12 @@ bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsse
   uint32_t index;
   uint32_t assetSize;
 
-  largestBlock = g_MemoryApi.allocLargestFreeBlock();
-  if (largestBlock.failed) {
-    *outError = largestBlock.allocationOrError;
+  arenaError = g_MemoryApi.allocLargestFreeBlock((void **)&memory,&largestBlockSize);
+  if (arenaError != 0) {
+    *outError = arenaError;
     return false;
   }
-  memory = (uint16_t *)(uintptr_t)largestBlock.allocationOrError;
-  remainingCapacityBytes = largestBlock.blockSizeOrSentinel;
+  remainingCapacityBytes = largestBlockSize;
   asset = NULL;
   markupCursor = markupBytes;
   outputCursor = memory;
@@ -846,14 +846,13 @@ emitCodeUnit:
   tagStarts[tagCount] = outputCursor;
   tagKeys[tagCount] = -1;
   tagCount++;
-  if (g_MemoryApi.shrinkInPlace((uint32_t)((uint8_t *)outputCursor - (uint8_t *)memory),memory).failed) {
+  if (g_MemoryApi.shrinkInPlace((uint32_t)((uint8_t *)outputCursor - (uint8_t *)memory),memory) != 0) {
     goto freePrimaryBufferAndFail;
   }
-  largestBlock = g_MemoryApi.allocLargestFreeBlock();
-  if (largestBlock.failed) goto freePrimaryBufferAndFail;
-  asset = (uint32_t *)(uintptr_t)largestBlock.allocationOrError;
-  if (largestBlock.blockSizeOrSentinel <= sizeof(TextResourceAssetHeader)) goto freeAssetBufferAndFail;
-  remainingCapacityBytes = largestBlock.blockSizeOrSentinel - sizeof(TextResourceAssetHeader);
+  if (g_MemoryApi.allocLargestFreeBlock((void **)&asset,&largestBlockSize) != 0) goto freePrimaryBufferAndFail;
+  if (largestBlockSize <= sizeof(TextResourceAssetHeader)) goto freeAssetBufferAndFail;
+  remainingCapacityBytes = largestBlockSize - sizeof(TextResourceAssetHeader);
+
   for (index = 0; index < sizeof(TextResourceAssetHeader) / sizeof(uint32_t); index++) {
     asset[index] = 0;
   }

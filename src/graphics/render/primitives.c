@@ -289,14 +289,13 @@ uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacit
 
 {
   GraphicsPrimitiveQueue *allocatedQueueStorage;
-  ArenaAllocResult allocResult;
-  
+  uint32_t allocError;
+
   g_PrimitiveQueuePoolCapacity = packetCapacity;
-  allocResult = g_MemoryApi.alloc(packetCapacity * GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET +
-                                  GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES);
-  allocatedQueueStorage = (GraphicsPrimitiveQueue *)allocResult.payloadOrError;
-  if (allocResult.failed) {
-    return allocResult.payloadOrError;
+  allocError = g_MemoryApi.alloc(packetCapacity * GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET +
+                                 GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES,(void **)&allocatedQueueStorage);
+  if (allocError != 0) {
+    return allocError;
   }
   g_PrimitiveQueueStorage = allocatedQueueStorage;
   return 0;

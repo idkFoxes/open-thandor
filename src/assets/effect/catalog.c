@@ -106,7 +106,7 @@ bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_
   int registrySlotsRemaining;
   EffectDefinition **registrySlotCursor;
   bool extensionFailed;
-  PackageLoadResult packageLoad;
+  uint32_t loadErrorCode;
   uint32_t spriteRegisterError;
 
   registrySlotCursor = g_EffectDefinitionRegistry;
@@ -119,9 +119,11 @@ bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_
         *registrySlotCursor = definition;
         extensionFailed = WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16);
         if (extensionFailed) goto ReturnFailure;
-        packageLoad = Package_LoadEntry(definition->resourcePathUtf16);
-        assetOrError = packageLoad.bufferOrError;
-        if (packageLoad.failed) goto ReturnFailure;
+        assetOrError = Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
+        if (assetOrError == NULL) {
+          assetOrError = (SpriteAssetHeader *)loadErrorCode;
+          goto ReturnFailure;
+        }
         existingSpriteAsset = SpriteAssetRegistry_FindById(assetOrError->registryHeader.registryId);
         if (existingSpriteAsset == NULL) {
           definition->ownedNestedResourcePresent++;

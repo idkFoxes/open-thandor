@@ -33,12 +33,12 @@ void GraphicsFramebuffer_EndAccessStub(void);
 void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer);
 
 /* 0x005798A0 */
-FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
+GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);
 
 /* 0x00579B50 */
-FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
+GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);
 

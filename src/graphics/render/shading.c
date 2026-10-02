@@ -86,7 +86,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   uint64_t shadedC;
   uint64_t tintLanesOrShadedC;
   GraphicsProjectedPointPair pointPair0;
-  HeightSampleResult surfaceHeight;
+  Q12 surfaceHeightQ12;
   bool terrainSurfaceHit;
   uint32_t terrainHitMaterial;
   bool terrainHit;
@@ -424,13 +424,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20;
           g_GeneratedTextureScratchRuntime.samples[11].textureCoordinateOffsetQ20 =
                g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -552,13 +552,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -676,13 +676,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -800,13 +800,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -924,13 +924,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -1048,13 +1048,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -1172,13 +1172,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -1296,13 +1296,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -1420,13 +1420,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -1544,13 +1544,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -1668,13 +1668,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -1792,13 +1792,13 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z;
-          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+          FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[11].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x,
-                              renderContext->fieldGrid);
+                              renderContext->fieldGrid,&surfaceHeightQ12);
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[11].textureCoordinateOffsetQ20;
-          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
-          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+          heightDeltaOrIntensityA = surfaceHeightQ12 - sampleWorldZ;
+          if (surfaceHeightQ12 < sampleWorldZ) {
             terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
@@ -2435,13 +2435,14 @@ uint32_t GraphicsIntensityClampTable_Initialize(void)
   uint32_t targetIntensity;
   int previousIntensity;
   char *tableCursor;
-  ArenaAllocResult allocResult;
-  
-  allocResult = g_MemoryApi.alloc(GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES);
-  if (!allocResult.failed) {
+  uint32_t allocError;
+  void *allocPayload;
+
+  allocError = g_MemoryApi.alloc(GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES,&allocPayload);
+  if (allocError == 0) {
     targetIntensity = 0;
     /* round up to the next 64 KiB boundary */
-    tableCursor = (char *)(allocResult.payloadOrError + (GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1) & ~(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1u));
+    tableCursor = (char *)((uint32_t)allocPayload +(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1) & ~(GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT - 1u));
     rowsRemaining = 256;
     previousIntensity = 0;
     g_GraphicsIntensityClampTableBase = (uint32_t)tableCursor;
@@ -2471,7 +2472,7 @@ uint32_t GraphicsIntensityClampTable_Initialize(void)
     } while (rowsRemaining != 0);
     return 0;
   }
-  return allocResult.payloadOrError;
+  return allocError;
 }
 
 
@@ -2718,13 +2719,16 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   int counterOrGridOrigin;
   AssetRelativeOffset pixelDataOffset;
   GraphicsGeneratedTextureAssetOrEntry *entryCursor;
-  ArenaAllocResult allocResult;
-  TextureSetResult textureSetResult;
+  uint32_t allocError;
+  GraphicsTextureSet *createdTextureSet;
+  uint32_t textureSetError;
 
   allocationSize = gridHalfSize * 2 * gridHalfSize * 2;
-  allocResult = g_MemoryApi.alloc(allocationSize);
-  allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(allocationSize,(void **)&allocationCursor);
+  if (allocError != 0) {
+    allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)allocError;
+  }
+  else {
     allocationSize = allocationSize >> 2;
     g_GraphicsShadingGridScratchInterior = (pointer)((int)allocationCursor + allocationSize + (gridHalfSize >> 1));
     g_GraphicsShadingGridScratch = allocationCursor;
@@ -2736,9 +2740,11 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
     /* gfx layout: header and palette up to 0xA00, then one 0x20-byte source entry per image, then the pixels */
     allocationSize = (textureDimension * textureDimension + GFX_SUBRESOURCE_RECORD_SIZE) * subresourceCount +
                      GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
-    allocResult = g_MemoryApi.alloc(allocationSize);
-    allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)allocResult.payloadOrError;
-    if (!allocResult.failed) {
+    allocError = g_MemoryApi.alloc(allocationSize,(void **)&allocationCursor);
+    if (allocError != 0) {
+      allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)allocError;
+    }
+    else {
       entryCursor = allocationCursor;
       g_GraphicsShadingGeneratedAsset = (GraphicsTextureSourceAsset *)allocationCursor;
       for (dwordsRemaining = allocationSize >> 2; dwordsRemaining != 0; dwordsRemaining--) {
@@ -2788,13 +2794,13 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
       g_GraphicsShadingPositiveGridOriginQ12 = counterOrGridOrigin * Q12_ONE;
       g_GraphicsShadingNegativeGridOriginQ12 = counterOrGridOrigin * -Q12_ONE;
       g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
-      textureSetResult = g_GraphicsCreateTextureSet(g_GraphicsShadingGeneratedAsset);
-      allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)textureSetResult.textureSet;
-      if (!textureSetResult.failed) {
-        g_GraphicsShadingTextureSet = (GraphicsTextureSet *)&allocationCursor->asset;
+      createdTextureSet = g_GraphicsCreateTextureSet(g_GraphicsShadingGeneratedAsset,&textureSetError);
+      if (createdTextureSet != NULL) {
+        g_GraphicsShadingTextureSet = createdTextureSet;
         return 0;
       }
       g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
+      allocationCursor = (GraphicsGeneratedTextureAssetOrEntry *)textureSetError;
     }
   }
   return (uint32_t)allocationCursor;

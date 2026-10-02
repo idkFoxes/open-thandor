@@ -56,8 +56,6 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
   uint32_t *receivedChunkDestinationDwords;
   uint32_t *chunkPayloadCursor;
   bool lockBusy;
-  NetworkReceiveResult receiveResult;
-  ArenaAllocResult allocResult;
   
   g_UiTransferMailboxTickCounter++;
   lockBusy = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
@@ -69,11 +67,10 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
     while (slotIndexOrByteCount = g_UiRuntimeRecordWriteIndex,
            ringRecord = g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex,
            nextIndexOrChunkSize = g_UiRuntimeRecordWriteIndex + 1,
-           receiveResult = g_NetworkBackendSlot4
-                              ((WinSockAddress *)
-                               (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots),256,
-                               (uint8_t *)ringRecord),
-           !receiveResult.failed) {
+           g_NetworkBackendSlot4
+                    ((WinSockAddress *)
+                     (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots),256,
+                     (uint8_t *)ringRecord)) {
       UiTransfer_DecryptPacketBlocks
                 (g_UiTransferRoundKeys16,ringRecord,256,ringRecord);
       LOCK();
@@ -105,10 +102,8 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
                first chunk still missing (allocated here), otherwise the buffer being filled */
             if (g_UiTransferMailbox.receivedAllocation != NULL) {
               if (g_UiTransferMailbox.receivedAllocation == UI_TRANSFER_MAILBOX_UNAVAILABLE) {
-                allocResult = g_MemoryApi.alloc(slotIndexOrByteCount);
-                if (allocResult.failed) continue;
+                if (g_MemoryApi.alloc(slotIndexOrByteCount,&g_UiTransferMailbox.receivedAllocation) != 0) continue;
                 counterOrOffset = 0;
-                g_UiTransferMailbox.receivedAllocation = (void *)allocResult.payloadOrError;
                 g_UiTransferMailbox.receivedByteCount = slotIndexOrByteCount;
                 g_UiTransferMailbox.receivedRemainingBytes = slotIndexOrByteCount;
               }
@@ -1644,7 +1639,7 @@ void FrontendTransfer_SendLobbyCommandAndSnapshotRequest(void)
    machine's sequence token and sender context and the XOR checksum over all dwords, then writes a scrambled
    copy (UiTransfer_EncryptPacketBlocks) into the next free units of a 256-unit ring (0x20 bytes per unit,
    with a parallel ring of 16-byte endpoint copies) and hands that copy to the backend send slot. The unit
-   count is the high word of packedTypeAndUnitCount. CF is the backend's send result.
+   count is the high word of packedTypeAndUnitCount. Returns true when the backend send failed.
 */
 bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet)
 
@@ -1664,8 +1659,7 @@ bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTran
   uint32_t *outputBlocks;
   UiTransferPacketHeader *checksumCursor;
   uint32_t *endpointDestinationDwordCursor;
-  NetworkSendResult sendResult;
-  
+
   currentSenderContext = g_UiTransferSenderContext;
   currentSequenceToken = g_UiTransferSequenceToken;
   unitCount = packet->packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT;
@@ -1706,8 +1700,7 @@ bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTran
     endpoint = (UiTransferEndpointDescriptor *)&endpoint->ipv4AddressNetworkOrder;
     endpointDestinationDwordCursor++;
   }
-  sendResult = g_NetworkBackendSlot5
-                     ((WinSockAddress *)(endpointBufferBase + endpointOffset + -8),byteCount,(uint8_t *)outputBlocks);
-  return sendResult.failed;
+  return !g_NetworkBackendSlot5
+                ((WinSockAddress *)(endpointBufferBase + endpointOffset + -8),byteCount,(uint8_t *)outputBlocks);
 }
 

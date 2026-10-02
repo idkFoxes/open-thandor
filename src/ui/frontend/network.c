@@ -27,7 +27,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   uint8_t optionChar;
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
   UiListRowIndex backendIndex;
-  uint32_t errorOrValue;
+  uint32_t backendError; /* status of the last backend slot 0/2 call: 0 or a FATAL_ERROR_NETWORK_* code */
   int remainingOrRootNode; /* loop counter; once also holds g_FrontendRootNode */
   uint16_t *destination;
   uint8_t *commandLineOptionBytes;
@@ -39,9 +39,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   uint8_t *optionTextCursor;
   uint32_t *localPlayerRecordDwordCursor;
   bool endpointParseFailed;
-  NetworkSetSessionResult setSessionResult;
-  NetworkOpenBindResult openBindResult;
-  CommandLineOptionResult findOptionResult;
+  uint8_t *foundOption;
   uint32_t sequenceToken;
 
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -128,10 +126,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   UiTransferMailbox_RandomizeSequenceToken();
   backendIndex = UiPointerList_GetSelectedIndex
                           ((UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
-  setSessionResult = g_NetworkBackendSlot0(backendIndex);
-  if (!setSessionResult.failed) {
-    openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
-    if (!openBindResult.failed) {
+  if (g_NetworkBackendSlot0(backendIndex) == 0) {
+    if (g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT) == 0) {
 backendOpened:
       UiPointerList_SelectTextListIndex
                 (backendIndex,(UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
@@ -145,9 +141,9 @@ backendOpened:
         endpointDestinationDwordCursor++;
       }
       /* -NAME="player name" */
-      findOptionResult = g_CommandLineFindOption(6,s_NAME__CLIENT__KARTE___00545e91);
-      commandLineOptionBytes = findOptionResult.option;
-      if (!findOptionResult.notFound) {
+      foundOption = g_CommandLineFindOption(6,s_NAME__CLIENT__KARTE___00545e91);
+      commandLineOptionBytes = foundOption;
+      if (foundOption != NULL) {
         optionTextCursor = commandLineOptionBytes + 6;
         remainingOrRootNode = 19;
         /* find the closing quote within 19 characters (stop at control characters) */
@@ -190,12 +186,12 @@ backendOpened:
                 (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
       UiTransfer_SendDiscoveryProbe();
       /* -HOST */
-      findOptionResult = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26);
-      if (findOptionResult.notFound) {
+      foundOption = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26);
+      if (foundOption == NULL) {
         /* -CLIENT="host address" */
-        findOptionResult = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
-        secondaryCommandLineOptionBytes = findOptionResult.option;
-        if (!findOptionResult.notFound) {
+        foundOption = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
+        secondaryCommandLineOptionBytes = foundOption;
+        if (foundOption != NULL) {
           remainingOrRootNode = FRONTEND_CLIENT_OPTION_SCAN_LIMIT;
           optionTextCursor = secondaryCommandLineOptionBytes + 8;
           for (optionChar = *optionTextCursor; optionChar != 0; optionChar = *++optionTextCursor) {
@@ -239,7 +235,7 @@ backendOpened:
         }
       }
       else {
-        *findOptionResult.option = 'h';
+        *foundOption = 'h';
         FrontendNetworkSetupPage_InitializeFromCommandLine
                   (FRONTEND_UI(frontendUi,networkGameHostButton));
       }
@@ -249,18 +245,16 @@ backendOpened:
   }
   backendIndex = 0;
   do {
-    setSessionResult = g_NetworkBackendSlot0(backendIndex);
-    errorOrValue = setSessionResult.valueOrError;
-    if (!setSessionResult.failed) {
-      openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
-      errorOrValue = openBindResult.valueOrError;
-      if (!openBindResult.failed) goto backendOpened;
+    backendError = g_NetworkBackendSlot0(backendIndex);
+    if (backendError == 0) {
+      backendError = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
+      if (backendError == 0) goto backendOpened;
       g_NetworkBackendSlot1(); /* cleanup takes no arguments; Ghidra passed a stale register */
     }
     backendIndex++;
   } while (g_NetworkBackendInstanceCount > backendIndex);
   /* no backend opens: report the last error and leave the network page */
-  FatalError_ReportIfFailed(errorOrValue,true);
+  FatalError_ReportIfFailed(backendError,true);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
@@ -373,13 +367,13 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   uint8_t *optionText;
   uint8_t *optionTextCursor;
   uint16_t *resolvedText;
-  CommandLineOptionResult findOptionResult;
+  uint8_t *foundOption;
 
   appliedOptionMask = 0;
   /* -SPIELER="n" */
-  findOptionResult = g_CommandLineFindOption(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
-  optionText = findOptionResult.option;
-  if (!findOptionResult.notFound && optionText[10] == '"' &&
+  foundOption = g_CommandLineFindOption(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
+  optionText = foundOption;
+  if (foundOption != NULL && optionText[10] == '"' &&
       (digitValueOrSpeed = optionText[9] - '0', '/' < optionText[9] && digitValueOrSpeed != 0) &&
       optionText[11] == 0 && digitValueOrSpeed < 9 && 1 < digitValueOrSpeed) {
     *optionText = 's';
@@ -388,9 +382,9 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
          digitValueOrSpeed;
   }
   /* -SPIEL="game name" */
-  findOptionResult = g_CommandLineFindOption(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
-  optionText = findOptionResult.option;
-  if (!findOptionResult.notFound) {
+  foundOption = g_CommandLineFindOption(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
+  optionText = foundOption;
+  if (foundOption != NULL) {
     optionTextCursor = optionText + 7;
     remainingChars = 19;
     /* find the closing quote within 19 characters (stop at control characters) */
@@ -412,9 +406,9 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     }
   }
   /* -NETZWERK="n" */
-  findOptionResult = g_CommandLineFindOption(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 16);
-  optionText = findOptionResult.option;
-  if (!findOptionResult.notFound && optionText[11] == '"' &&
+  foundOption = g_CommandLineFindOption(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 16);
+  optionText = foundOption;
+  if (foundOption != NULL && optionText[11] == '"' &&
       (digitValueOrSpeed = optionText[10] - '0', '/' < optionText[10] && digitValueOrSpeed != 0) &&
       optionText[12] == 0 && digitValueOrSpeed < 8 && digitValueOrSpeed != 0) {
     *optionText = 'n';

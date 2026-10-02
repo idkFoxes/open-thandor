@@ -97,7 +97,7 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
   WorldRuntimeContext *worldRuntime;
   uint32_t lookupError;
   ArmyAssetRecordPrefix *armyRecord;
-  FatalErrorCheckResult checkedAssetLookup;
+  uint32_t checkedAssetLookup;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_UNIT_PLACEMENT,source);
   worldRuntime = &runtimeRoot->worldRuntime;
@@ -111,7 +111,7 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
   lookupError = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId,&armyRecord);
   checkedAssetLookup = FatalError_ExitIfFailed(lookupError != 0 ? lookupError : (uint32_t)armyRecord,
                                                lookupError != 0);
-  g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.valueOrError;
+  g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup;
   InGameSelectionDetailPanel_Rebuild();
   return;
 }
@@ -324,7 +324,7 @@ void UiCommandSpriteButtonControl_NonRightRelease
        ((control->sprite).activationSound != NULL)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (control->sprite).activationSound);
+                 (control->sprite).activationSound,NULL);
     }
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
@@ -356,7 +356,7 @@ void UiCommandSpriteButtonControl_RightRelease
        ((control->sprite).activationSound != NULL)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (control->sprite).activationSound);
+                 (control->sprite).activationSound,NULL);
     }
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);

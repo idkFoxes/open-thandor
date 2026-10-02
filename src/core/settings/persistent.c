@@ -41,17 +41,12 @@ void PersistentSettings_Load(void)
   int dwordsRemaining;
   uint32_t byteCount;
   PersistentSettingsImage *image;
-  ArenaAllocResult allocResult;
-  FileSystemOpenResult openResult;
   uint32_t pathByteCount;
-  FileSystemSizeResult sizeResult;
-  FileSystemReadResult readResult;
+  uint32_t fileSize;
 
   Resource_Release(g_PersistentSettings.image);
   g_PersistentSettings.image = NULL;
-  allocResult = g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES);
-  clearCursor = (uint32_t *)allocResult.payloadOrError;
-  if (allocResult.failed) {
+  if (g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES,(void **)&clearCursor) != 0) {
     return;
   }
   for (dwordsRemaining = PERSISTENT_SETTINGS_IMAGE_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
@@ -59,14 +54,11 @@ void PersistentSettings_Load(void)
     clearCursor++;
   }
   image = (PersistentSettingsImage *)(clearCursor - PERSISTENT_SETTINGS_IMAGE_BYTES / 4);
-  openResult = g_FileSystemOpen(0,g_PersistentSettings.path);
-  fileHandle = (void *)openResult.handleOrError;
-  if (openResult.failed) {
+  if (g_FileSystemOpen(0,g_PersistentSettings.path,&fileHandle) != 0) {
     WidePath_CombineDirectoryAndLeaf
               (g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                g_ExecutableDirectoryUtf16);
-    openResult = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16);
-    if (openResult.failed) {
+    if (g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&fileHandle) != 0) {
       g_MemoryApi.free(image);
       return;
     }
@@ -80,14 +72,12 @@ void PersistentSettings_Load(void)
     }
     fileHandle = (void *)pathByteCount;
   }
-  sizeResult = g_FileSystemGetSize(fileHandle);
-  if (!sizeResult.failed) {
+  if (g_FileSystemGetSize(fileHandle,&fileSize)) {
     byteCount = PERSISTENT_SETTINGS_IMAGE_BYTES;
-    if (sizeResult.sizeOrError < PERSISTENT_SETTINGS_IMAGE_BYTES) {
-      byteCount = sizeResult.sizeOrError;
+    if (fileSize < PERSISTENT_SETTINGS_IMAGE_BYTES) {
+      byteCount = fileSize;
     }
-    readResult = g_FileSystemReadExact(byteCount,image,fileHandle);
-    if (!readResult.failed) {
+    if (g_FileSystemReadExact(byteCount,image,fileHandle) == 0) {
       g_FileSystemClose(fileHandle);
       if (byteCount < PERSISTENT_SETTING_LOCALE_COUNTRY_CODE + 4) {
         g_PersistentSettings.image = image;

@@ -80,44 +80,36 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
 
 /* Address: 0x004168B0.
    Selects the software cursor frame (GRAPHICS_CURSOR_FRAME_*) that the cursor timer animates and draws.
-   An index at or above g_CursorFrameCount is rejected with CF set. EAX holds FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE
-   on both paths. Installed in g_GraphicsCursorSetFrame (image slot 0x00416848).
+   Returns true when the frame was selected, false (frame unchanged) for an index at or above g_CursorFrameCount;
+   the error to report for that is FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE. Installed in g_GraphicsCursorSetFrame
+   (image slot 0x00416848).
 */
-CursorFrameResult GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
+bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 {
-  CursorFrameResult successResult;
-  CursorFrameResult failureResult;
-
   if (frameIndex < g_CursorFrameCount) {
     g_CursorFrameIndex = frameIndex;
-    successResult.errorCode = FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE;
-    successResult.failed = false;
-    return successResult;
+    return true;
   }
-  failureResult.failed = true;
-  failureResult.errorCode = FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE;
-  return failureResult;
+  return false;
 }
 
 
 /* Address: 0x004168E0.
-   Takes the next mouse event from the 256-entry ring the mouse input code fills (CF set when it is empty)
-   and publishes it: button state, cursor position and wheel delta go to the g_Cursor* globals, a release stores
+   Takes the next mouse event from the 256-entry ring the mouse input code fills (returns false and leaves
+   *outEvent untouched when it is empty; true with the event in *outEvent otherwise) and publishes it: button state, cursor position and wheel delta go to the g_Cursor* globals, a release stores
    its clock per button, a press its position as the last click. Installed in g_GraphicsCursorConsumeEvent
    (image slot 0x00416850). A press less than 16 clock ticks after the release of the same button and within
    +-4 pixels of the last click also sets bit 31 (double click) in the returned button state (EBX;
    g_CursorButtonState keeps the raw value), which UiPointer_DispatchPendingEvents passes on to the press
    dispatchers as UI_POINTER_BUTTON_REPEAT_CLICK.
-   Original register convention: the event is returned in registers (see the result type), CF flag.
+   Original register convention: the event came back in EAX/EBX/ECX/EDX/ESI, CF set for an empty ring.
 */
-CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void)
+bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
 
 {
   GraphicsCursorEventType consumedEventType;
   uint32_t nextReadIndex;
-  CursorEventResult eventResult;
-  CursorEventResult emptyResult;
   GraphicsCursorClockValue eventClock;
   uint32_t eventIndex;
   uint32_t rawButtonState;
@@ -128,9 +120,7 @@ CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void)
   eventIndex = g_CursorInputReadIndex;
   nextReadIndex = g_CursorInputReadIndex + 1;
   if (g_CursorInputReadIndex == g_CursorInputWriteIndex) {
-    memset(&emptyResult, 0, sizeof emptyResult);
-    emptyResult.queueEmpty = true;
-    return emptyResult;
+    return false;
   }
   if (GRAPHICS_CURSOR_INPUT_EVENT_CAPACITY - 1 < nextReadIndex) { /* wrap around the ring */
     nextReadIndex = 0;
@@ -181,15 +171,14 @@ CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void)
     g_CursorLastClickX = g_CursorInputEvents[eventIndex].pointerX;
     g_CursorLastClickY = g_CursorInputEvents[eventIndex].pointerY;
   }
-  /* Called through GraphicsCursorConsumeEventProc: the event also leaves the button state in EBX,
-     position in ECX/EDX and wheel delta in ESI, which Ghidra's EAX/CF view of this function dropped. */
-  eventResult.eventType = consumedEventType;
-  eventResult.buttonState = (GraphicsCursorButtonState)rawButtonState;
-  eventResult.pointerX = g_CursorInputEvents[eventIndex].pointerX;
-  eventResult.pointerY = g_CursorInputEvents[eventIndex].pointerY;
-  eventResult.wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta;
-  eventResult.queueEmpty = false;
-  return eventResult;
+  /* The original also left the button state in EBX, position in ECX/EDX and wheel delta in ESI, which Ghidra's
+     EAX/CF view of this function dropped. */
+  outEvent->eventType = consumedEventType;
+  outEvent->buttonState = (GraphicsCursorButtonState)rawButtonState;
+  outEvent->pointerX = g_CursorInputEvents[eventIndex].pointerX;
+  outEvent->pointerY = g_CursorInputEvents[eventIndex].pointerY;
+  outEvent->wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta;
+  return true;
 }
 
 
@@ -611,24 +600,28 @@ uint32_t __cdecl Graphics_Init(void)
   uint32_t displayAdapterIndex;
   GraphicsAdapterRecord *adapterOrModule;
   uint32_t glideError;
-  ArenaAllocResult allocResult;
+  uint32_t allocError;
   uint32_t resolveError;
-  CommandLineOptionResult optionResult;
   IDirect3D2 *direct3D2;
   IDirectDraw *directDraw;
 
-  allocResult = g_MemoryApi.alloc(GRAPHICS_TEXTURE_SLOT_CAPACITY * sizeof(GraphicsTextureResource *));
-  cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(GRAPHICS_TEXTURE_SLOT_CAPACITY * sizeof(GraphicsTextureResource *),
+                                 (void **)&cursorOrResult);
+  if (allocError != 0) {
+    cursorOrResult = (GraphicsAdapterRecord *)allocError;
+  }
+  else {
     g_GraphicsTextureSlots = (GraphicsTextureResource **)cursorOrResult;
     zeroCursor = (uint32_t *)cursorOrResult;
     for (remainingDwords = GRAPHICS_TEXTURE_SLOT_CAPACITY; remainingDwords != 0; remainingDwords--) {
       *zeroCursor = 0;
       zeroCursor++;
     }
-    allocResult = g_MemoryApi.alloc(256 * sizeof(DirectDrawPaletteEntry)); /* 256 palette entries */
-    cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
-    if (!allocResult.failed) {
+    allocError = g_MemoryApi.alloc(256 * sizeof(DirectDrawPaletteEntry),(void **)&cursorOrResult); /* 256 palette entries */
+    if (allocError != 0) {
+      cursorOrResult = (GraphicsAdapterRecord *)allocError;
+    }
+    else {
       g_TexturePaletteEntries = (DirectDrawPaletteEntry *)cursorOrResult;
       zeroCursor = (uint32_t *)cursorOrResult;
       for (remainingDwords = 256; remainingDwords != 0; remainingDwords--) {
@@ -637,26 +630,31 @@ uint32_t __cdecl Graphics_Init(void)
       }
       /* ADC of the not-found carry: the flag becomes nonzero without -D3DALL, and then
          Direct3D_EnumDeviceCallback accepts only hardware devices with the required caps */
-      optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionD3dAll,g_CommandLineOptionD3dAll);
-      g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + optionResult.notFound;
-      allocResult = g_MemoryApi.alloc(GRAPHICS_ADAPTER_CAPACITY * sizeof(GraphicsAdapterRecord));
-      cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
-      if (!allocResult.failed) {
+      g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag +
+        (CommandLine_FindOption(sizeof g_CommandLineOptionD3dAll,g_CommandLineOptionD3dAll) == NULL);
+      allocError = g_MemoryApi.alloc(GRAPHICS_ADAPTER_CAPACITY * sizeof(GraphicsAdapterRecord),
+                                     (void **)&cursorOrResult);
+      if (allocError != 0) {
+        cursorOrResult = (GraphicsAdapterRecord *)allocError;
+      }
+      else {
         g_GraphicsAdapterCount = 0;
-        g_GraphicsAdapters = (GraphicsAdapterRecord *)allocResult.payloadOrError;
-        allocResult = g_MemoryApi.alloc(GRAPHICS_DISPLAY_MODE_CAPACITY * sizeof(GraphicsDisplayMode));
-        cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
-        if (!allocResult.failed) {
+        g_GraphicsAdapters = cursorOrResult;
+        allocError = g_MemoryApi.alloc(GRAPHICS_DISPLAY_MODE_CAPACITY * sizeof(GraphicsDisplayMode),
+                                       (void **)&cursorOrResult);
+        if (allocError != 0) {
+          cursorOrResult = (GraphicsAdapterRecord *)allocError;
+        }
+        else {
           g_GraphicsDisplayModeCount = 0;
-          g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocResult.payloadOrError;
+          g_GraphicsDisplayModes = (GraphicsDisplayMode *)cursorOrResult;
 #ifdef THANDOR_TEST_AIDS
           /* Glide is optional, unless -GLIDE asks for it. The windowed test aid (OPEN_THANDOR_WINDOWED, not in
              the original) runs only the software renderer, so it enumerates neither Glide nor Direct3D. */
           if (!Thandor_TestAidWindowed()) {
             glideError = Glide3_InitAndEnumerate();
             if ((glideError != 0) &&
-                (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide),
-                 !optionResult.notFound)) {
+                CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide) != NULL) {
               FatalError_ExitIfFailed(glideError,true);
             }
           }
@@ -664,8 +662,7 @@ uint32_t __cdecl Graphics_Init(void)
           /* Glide is optional, unless -GLIDE asks for it */
           glideError = Glide3_InitAndEnumerate();
           if ((glideError != 0) &&
-              (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide),
-               !optionResult.notFound)) {
+              CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide) != NULL) {
             FatalError_ExitIfFailed(glideError,true);
           }
 #endif

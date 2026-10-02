@@ -99,10 +99,10 @@ typedef struct GraphicsObject {
 void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
 
 /* 0x004168B0 */
-CursorFrameResult GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
+bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
 /* 0x004168E0 */
-CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void);
+bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
 
 /* 0x00486430 */
 GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint);

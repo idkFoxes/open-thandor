@@ -173,11 +173,11 @@ void ArenaHeap_Shutdown(void)
 
 /* Address: 0x005864A0.
    The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32
-   bytes, splitting off the rest of the block as a new free block when it is large enough. Returns the
-   payload pointer with CF clear; with CF set FATAL_ERROR_ARENA_EXHAUSTED (largest free size left in
-   g_PackageLastErrorPath) or ARENA_HEAP_CORRUPT for a corrupt block chain.
+   bytes, splitting off the rest of the block as a new free block when it is large enough. Returns 0 with
+   the payload pointer in *outPayload, or FATAL_ERROR_ARENA_EXHAUSTED (largest free size left in
+   g_PackageLastErrorPath) or ARENA_HEAP_CORRUPT for a corrupt block chain; *outPayload is then unchanged.
 */
-ArenaAllocResult ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
+uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
 
 {
   ArenaBlockHeader *followingBlock;
@@ -185,10 +185,6 @@ ArenaAllocResult ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
   ArenaBlockHeader *splitBlock;
   uint32_t largestFreeOrOriginalSize;
   ArenaBlockHeader *blockCursor;
-  ArenaAllocResult outOfMemoryResult;
-  ArenaAllocResult corruptHeapResult;
-  ArenaAllocResult exactFitResult;
-  ArenaAllocResult splitResult;
 
   largestFreeOrOriginalSize = 1;
   alignedBytes = (bytes + ARENA_BLOCK_ALIGNMENT_MASK) & ~ARENA_BLOCK_ALIGNMENT_MASK;
@@ -196,9 +192,7 @@ ArenaAllocResult ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
   do {
     if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
       if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
-        corruptHeapResult.failed = true;
-        corruptHeapResult.payloadOrError = ARENA_HEAP_CORRUPT;
-        return corruptHeapResult;
+        return ARENA_HEAP_CORRUPT;
       }
       if (largestFreeOrOriginalSize < blockCursor->payloadSize) {
         largestFreeOrOriginalSize = blockCursor->payloadSize;
@@ -206,9 +200,8 @@ ArenaAllocResult ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
       if (alignedBytes <= blockCursor->payloadSize) {
         blockCursor->stateMagic = ARENA_BLOCK_ALLOCATED;
         if (blockCursor->payloadSize <= alignedBytes + ARENA_BLOCK_SPLIT_SLACK_BYTES) {
-          exactFitResult.failed = false;
-          exactFitResult.payloadOrError = (uint32_t)(blockCursor + 1);
-          return exactFitResult;
+          *outPayload = blockCursor + 1;
+          return 0;
         }
         largestFreeOrOriginalSize = blockCursor->payloadSize;
         blockCursor->payloadSize = alignedBytes;
@@ -223,17 +216,14 @@ ArenaAllocResult ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
         if (followingBlock != ARENA_BLOCK_LIST_END) {
           followingBlock->previous = splitBlock;
         }
-        splitResult.failed = false;
-        splitResult.payloadOrError = (uint32_t)(blockCursor + 1);
-        return splitResult;
+        *outPayload = blockCursor + 1;
+        return 0;
       }
     }
     blockCursor = blockCursor->next;
   } while (blockCursor != ARENA_BLOCK_LIST_END);
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreeOrOriginalSize,g_PackageLastErrorPath);
-  outOfMemoryResult.failed = true;
-  outOfMemoryResult.payloadOrError = FATAL_ERROR_ARENA_EXHAUSTED;
-  return outOfMemoryResult;
+  return FATAL_ERROR_ARENA_EXHAUSTED;
 }
 
 
@@ -263,27 +253,23 @@ uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
 
 /* Address: 0x005865B0.
    The arena's free (g_MemoryApi.free): marks the block free and merges it with a free following block,
-   then merges a free preceding block with it. NULL is accepted; a payload whose header is not marked
-   allocated returns ARENA_HEAP_CORRUPT with CF set.
+   then merges a free preceding block with it. NULL is accepted. Returns 0, or ARENA_HEAP_CORRUPT for a
+   payload whose header is not marked allocated.
    The ArenaBlockHeader lies directly below the payload.
 */
-ArenaFreeResult ArenaHeap_Free(void *memory)
+uint32_t ArenaHeap_Free(void *memory)
 
 {
   ArenaBlockHeader *freedBlock;
   ArenaBlockHeader *followingBlock;
   ArenaBlockHeader *previousBlock;
   ArenaBlockHeader *mergedNextBlock;
-  ArenaFreeResult successResult;
-  ArenaFreeResult corruptBlockResult;
 
   if (memory != NULL) {
     /* the header is addressed both as freedBlock (sizes) and as memory[-1] (links), as in the original */
     freedBlock = (ArenaBlockHeader *)((int)memory - ARENA_BLOCK_HEADER_BYTES);
     if (((ArenaBlockHeader *)memory)[-1].stateMagic != ARENA_BLOCK_ALLOCATED) {
-      corruptBlockResult.failed = true;
-      corruptBlockResult.valueOrError = ARENA_HEAP_CORRUPT;
-      return corruptBlockResult;
+      return ARENA_HEAP_CORRUPT;
     }
     ((ArenaBlockHeader *)memory)[-1].stateMagic = ARENA_BLOCK_FREE;
     /* merge the following block */
@@ -307,38 +293,30 @@ ArenaFreeResult ArenaHeap_Free(void *memory)
       }
     }
   }
-  /* The original returns with EAX unchanged on success; callers only test CF. */
-  successResult.failed = false;
-  successResult.valueOrError = 0;
-  return successResult;
+  /* The original leaves EAX unchanged on success; the few callers that read it get 0 here. */
+  return 0;
 }
 
 
 /* Address: 0x00586640.
-   Takes the largest free block whole (g_MemoryApi.allocLargestFreeBlock): marks it allocated and returns
-   its payload pointer in EAX and its size in ECX, for callers that shrink it afterwards with
-   ArenaHeap_ShrinkInPlace. CF set with FATAL_ERROR_ARENA_EXHAUSTED when nothing is free, or
-   ARENA_HEAP_CORRUPT (ECX 0xFFFFFFFF) for a corrupt block chain.
+   Takes the largest free block whole (g_MemoryApi.allocLargestFreeBlock): marks it allocated and returns 0
+   with its payload pointer in *outAllocation and its size in *outBlockSize, for callers that shrink it
+   afterwards with ArenaHeap_ShrinkInPlace. Returns FATAL_ERROR_ARENA_EXHAUSTED when nothing is free, or
+   ARENA_HEAP_CORRUPT for a corrupt block chain; the out-parameters are then unchanged.
 */
-ArenaLargestAllocResult ArenaHeap_AllocLargestFreeBlock(void)
+uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlockSize)
 
 {
   uint32_t largestFreePayloadBytes;
   ArenaBlockHeader *blockCursor;
   ArenaBlockHeader *largestFreeBlock;
-  ArenaLargestAllocResult outOfMemoryResult;
-  ArenaLargestAllocResult corruptHeapResult;
-  ArenaLargestAllocResult successResult;
-  
+
   largestFreePayloadBytes = 0;
   blockCursor = g_Arena.firstBlock;
   do {
     if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
       if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
-        corruptHeapResult.blockSizeOrSentinel = UINT32_MAX;
-        corruptHeapResult.allocationOrError = ARENA_HEAP_CORRUPT;
-        corruptHeapResult.failed = true;
-        return corruptHeapResult;
+        return ARENA_HEAP_CORRUPT;
       }
       if (largestFreePayloadBytes < blockCursor->payloadSize) {
         largestFreePayloadBytes = blockCursor->payloadSize;
@@ -349,26 +327,22 @@ ArenaLargestAllocResult ArenaHeap_AllocLargestFreeBlock(void)
   } while (blockCursor != ARENA_BLOCK_LIST_END);
   if (largestFreePayloadBytes == 0) {
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0,g_PackageLastErrorPath);
-    outOfMemoryResult.failed = true;
-    outOfMemoryResult.allocationOrError = FATAL_ERROR_ARENA_EXHAUSTED;
-    outOfMemoryResult.blockSizeOrSentinel = 0;
-    return outOfMemoryResult;
+    return FATAL_ERROR_ARENA_EXHAUSTED;
   }
   largestFreeBlock->stateMagic = ARENA_BLOCK_ALLOCATED;
-  successResult.blockSizeOrSentinel = largestFreePayloadBytes;
-  successResult.allocationOrError = (uint32_t)(largestFreeBlock + 1);
-  successResult.failed = false;
-  return successResult;
+  *outBlockSize = largestFreePayloadBytes;
+  *outAllocation = largestFreeBlock + 1;
+  return 0;
 }
 
 
 /* Address: 0x005866B0.
    Shrinks an allocated block to newSize (rounded up to 32 bytes) and returns the tail as a free block,
    merged with a free following block (g_MemoryApi.shrinkInPlace). A tail too small to split is kept.
-   CF clear on success (EAX carries no meaning); CF set with ARENA_HEAP_CORRUPT when the
-   block is not allocated or newSize is larger than the block.
+   Returns 0 on success, or ARENA_HEAP_CORRUPT when the block is not allocated or newSize is larger
+   than the block.
 */
-ArenaShrinkResult ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
+uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 
 {
   uint32_t originalPayloadSize;
@@ -379,8 +353,6 @@ ArenaShrinkResult ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *me
   int *thresholdOrSplitBlock;
   int splitPayloadSize;
   uint32_t *blockHeader;
-  ArenaShrinkResult successResult;
-  ArenaShrinkResult failureResult;
 
   /* header dwords: [0] payloadSize, [1] stateMagic, [2] next, [3] previous (see ArenaBlockHeader) */
   blockHeader = (uint32_t *)((int)memory - ARENA_BLOCK_HEADER_BYTES);
@@ -408,38 +380,30 @@ ArenaShrinkResult ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *me
         }
       }
     }
-    successResult.failed = false;
-    successResult.scratchOrError = (uint32_t)thresholdOrSplitBlock;
-    return successResult;
+    /* The original leaves split-block scratch in EAX here; no caller reads it on success. */
+    return 0;
   }
-  failureResult.failed = true;
-  failureResult.scratchOrError = ARENA_HEAP_CORRUPT;
-  return failureResult;
+  return ARENA_HEAP_CORRUPT;
 }
 
 
 /* Address: 0x00586750.
    Bump allocation from the linear region g_Arena.linearCursor..linearLimit (g_MemoryApi.reserveLinear):
-   returns the old cursor and advances it by bytes, or CF set with FATAL_ERROR_GENERAL_FAILURE when the
-   region is full. Nothing is ever given back.
+   returns 0 with the old cursor in *outBase and advances it by bytes, or FATAL_ERROR_GENERAL_FAILURE
+   (*outBase unchanged) when the region is full. Nothing is ever given back.
 */
-ArenaReserveResult ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
+uint32_t ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes,void **outBase)
 
 {
   uint8_t *previousLinearCursor;
-  ArenaReserveResult successResult;
-  ArenaReserveResult failureResult;
 
   previousLinearCursor = g_Arena.linearCursor;
   if (g_Arena.linearCursor + bytes < g_Arena.linearLimit) {
     g_Arena.linearCursor = g_Arena.linearCursor + bytes;
-    successResult.failed = false;
-    successResult.baseOrError = (uint32_t)previousLinearCursor;
-    return successResult;
+    *outBase = previousLinearCursor;
+    return 0;
   }
-  failureResult.failed = true;
-  failureResult.baseOrError = FATAL_ERROR_GENERAL_FAILURE;
-  return failureResult;
+  return FATAL_ERROR_GENERAL_FAILURE;
 }
 
 

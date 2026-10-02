@@ -232,7 +232,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
            (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
         }
         return false;
       default:
@@ -332,7 +332,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
   UiNode_InvalidateRoot(&control->base);
   if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
   }
   return false;
 }
@@ -554,7 +554,7 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
            (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
         }
         return false;
       default:
@@ -734,7 +734,7 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
   UiNode_InvalidateRoot(&control->base);
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
   }
   return false;
 }
@@ -931,7 +931,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
            (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
         }
         return false;
       case KEYBOARD_KEY_CODE_ESCAPE:
@@ -950,7 +950,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
            (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
         }
         return false;
       default:
@@ -1167,7 +1167,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
   UiNode_InvalidateRoot(&control->base);
   if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
   }
   return false;
 }
@@ -1457,7 +1457,7 @@ void UiTextEditControl_BeginSelectionAtPointer
   }
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
   }
   return;
 }
@@ -2137,7 +2137,7 @@ void UiFramedTextButtonControl_NonRightPress
           (control->activationSound != NULL)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound);
+                   control->activationSound,NULL);
       }
       toggleStateFlagsField = &(control->selectable).stateFlags;
       *toggleStateFlagsField = *toggleStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2150,7 +2150,7 @@ void UiFramedTextButtonControl_NonRightPress
           (control->activationSound != NULL)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound);
+                   control->activationSound,NULL);
       }
       selectedStateFlagsField = &(control->selectable).stateFlags;
       *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2180,7 +2180,7 @@ void UiFramedTextButtonControl_NonRightRelease
     if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
         (control->activationSound != NULL)) {
       g_SoundPlayOneShot
-                (g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+                (g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
     }
     stateFlagsField = &(control->selectable).stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2527,7 +2527,7 @@ void UiTextButtonControl_NonRightPress
             (control->activationSound != NULL)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     control->activationSound);
+                     control->activationSound,NULL);
         }
         if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
           stateFlagsField = &(control->selectable).stateFlags;
@@ -2547,7 +2547,7 @@ void UiTextButtonControl_NonRightPress
             (control->activationSound != NULL)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     control->activationSound);
+                     control->activationSound,NULL);
         }
         toggleStateFlagsField = &(control->selectable).stateFlags;
         *toggleStateFlagsField = *toggleStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2587,7 +2587,7 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
           (control->activationSound != NULL)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound);
+                   control->activationSound,NULL);
       }
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2602,7 +2602,7 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
           (control->activationSound != NULL)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound);
+                   control->activationSound,NULL);
       }
       selectedStateFlagsField = &(control->selectable).stateFlags;
       *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2857,7 +2857,7 @@ void UiTextEditControl_EndSelection
   control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE;
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
   }
   return;
 }
@@ -3229,7 +3229,7 @@ void UiTextListControl_SelectRowFromPointer
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
            (control->activationSound != NULL)) {
-          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
         }
       }
     }
@@ -3329,7 +3329,7 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
   if (slotCursorOrSelection != previousSelectedSlot) {
     if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
        (control->activationSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound,NULL);
     }
     rowIndexOrTopOrPulse =
          ((uint32_t)((int)slotCursorOrSelection - (int)control->rowTextSlots) >> 2) * control->rowHeight;
@@ -4301,19 +4301,13 @@ void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
 int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText)
 
 {
-  TextCompareResult compareFlags;
-
   RichTextCommandStream_CopyExpanded
             (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText,NULL);
   RichTextCommandStream_CopyExpanded
             (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText,NULL);
   /* The order is the comparator's: nothing after the call changes its flags (0x004BB5A5). */
-  compareFlags = (*(TextCompareResult (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
+  return (*(int (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
             ((uint16_t *)&g_UiPointerListExpandedRightTextUtf16,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16);
-  if (compareFlags.less) {
-    return -1;
-  }
-  return compareFlags.equal ? 0 : 1;
 }
 
 

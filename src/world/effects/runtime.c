@@ -50,24 +50,27 @@ bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *out
 {
   EffectRuntimeSlot *runtimeSlotCursor;
   int runtimeSlotsRemaining;
-  ArenaAllocResult loadOrAllocResult;
+  uint32_t loadOrAllocError;
+  bool loadOrAllocFailed;
+  GraphicsTextureSet *loadedTextureSet;
+  GraphicsPaletteAsset *loadedPalette;
 
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadOrAllocResult =
-       THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
-  if (!loadOrAllocResult.failed) {
+  loadedTextureSet = g_GraphicsTextureSetLoadPackage(mutableBasePath,&loadOrAllocError);
+  loadOrAllocFailed = loadedTextureSet == NULL;
+  if (!loadOrAllocFailed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
-    g_EffectTextureSet = (GraphicsTextureSet *)loadOrAllocResult.payloadOrError;
+    g_EffectTextureSet = loadedTextureSet;
     WidePath_SetExtensionCode(ASSET_MAGIC_PAL,mutableBasePath);
-    loadOrAllocResult =
-         THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
-    if (!loadOrAllocResult.failed) {
+    loadedPalette = g_GraphicsPaletteAssetLoadPackage(mutableBasePath,&loadOrAllocError);
+    loadOrAllocFailed = loadedPalette == NULL;
+    if (!loadOrAllocFailed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_EffectPalette = (GraphicsPaletteAsset *)loadOrAllocResult.payloadOrError;
-      loadOrAllocResult = g_MemoryApi.alloc(EFFECT_RUNTIME_POOL_BYTES);
-      runtimeSlotCursor = (EffectRuntimeSlot *)loadOrAllocResult.payloadOrError;
-      if (!loadOrAllocResult.failed) {
+      g_EffectPalette = loadedPalette;
+      loadOrAllocError = g_MemoryApi.alloc(EFFECT_RUNTIME_POOL_BYTES,(void **)&runtimeSlotCursor);
+      loadOrAllocFailed = loadOrAllocError != 0;
+      if (!loadOrAllocFailed) {
         /* pool base - 1 (the rebase value for saved offsets) */
         g_EffectRuntimeRebaseBaseMinusOne = (uint8_t *)runtimeSlotCursor - 1;
         g_EffectRuntimeSlots = runtimeSlotCursor;
@@ -77,13 +80,11 @@ bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *out
           runtimeSlotCursor->definitionOrSavedId.definition = NULL;
           runtimeSlotCursor = (EffectRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
         }
-        loadOrAllocResult.payloadOrError = 0;
-        loadOrAllocResult.failed = false;
       }
     }
   }
-  *outError = loadOrAllocResult.payloadOrError;
-  return !loadOrAllocResult.failed;
+  *outError = loadOrAllocError;
+  return !loadOrAllocFailed;
 }
 
 

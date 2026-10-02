@@ -1278,17 +1278,20 @@ bool UiRootStack_BringToFront(UiRootNode *root)
 void UiWindowResources_Init(void)
 
 {
-  TextureSourceLoadResult loadResult;
-  FatalErrorCheckResult checkedResult;
+  GraphicsTextureSourceAsset *loadedTexture;
+  uint32_t textureLoadError;
+  uint32_t checkedValue;
   uint32_t localeBlockOrError;
   bool pageLoaded;
 
-  loadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_UiWindowTexturePathUtf16);
-  checkedResult = FatalError_ExitIfFailed((uint32_t)loadResult.textureSource,loadResult.failed);
-  g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
-  loadResult = g_GraphicsTextureSourceLoadPackageAsset(g_UiWindowClassTexturePathUtf16);
-  checkedResult = FatalError_ExitIfFailed((uint32_t)loadResult.textureSource,loadResult.failed);
-  g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
+  loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_UiWindowTexturePathUtf16,&textureLoadError);
+  checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uint32_t)loadedTexture : textureLoadError,
+                                          loadedTexture == NULL);
+  g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedValue;
+  loadedTexture = g_GraphicsTextureSourceLoadPackageAsset(g_UiWindowClassTexturePathUtf16,&textureLoadError);
+  checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uint32_t)loadedTexture : textureLoadError,
+                                          loadedTexture == NULL);
+  g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedValue;
   pageLoaded = TextResourcePage_Load(1,(uint16_t *)g_UiWindowClassTextPathUtf16,&localeBlockOrError);
   FatalError_ExitIfFailed(localeBlockOrError,!pageLoaded);
   UiActionHandlers_SetPage(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);

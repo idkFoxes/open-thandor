@@ -123,7 +123,7 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
 {
   int64_t scaledAnchor;
   UiRootNode *root;
-  DisplayModeResult modeResult;
+  uint32_t modeError;
   uint32_t adapterIndex;
   uint32_t bitsPerPixel;
   uint32_t modeHeight;
@@ -139,8 +139,9 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
   UiRootStack_Pop(root);
   g_CursorVisibilityToken--;
   UiFrame_ProcessAndPresentWithLockTransition();
-  modeResult = g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,modeHeight,modeWidth);
-  FatalError_ExitIfFailed(modeResult.valueOrError,modeResult.failed);
+  if (!g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,modeHeight,modeWidth,&modeError)) {
+    FatalError_ExitIfFailed(modeError,true);
+  }
   /* the loop of UiRootStack_Relayout, inlined: edge = framebuffer size * anchor (Q31) + offset */
   root = g_UiRootNode;
   do {
@@ -284,8 +285,8 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   uint32_t pendingModeWidth;
   uint32_t pendingModeHeight;
   uint32_t currentBitsPerPixel;
-  DisplayModeResult pendingModeResult;
-  DisplayModeResult restoreModeResult;
+  uint32_t pendingModeError;
+  uint32_t restoreModeError;
   uint32_t currentAdapterIndex;
   uint32_t pendingWidthOrCurrentHeight;
   uint32_t pendingHeightOrCurrentWidth;
@@ -312,14 +313,14 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
     currentAdapterIndex = g_ActiveGraphicsAdapterIndex;
     pendingWidthOrCurrentHeight = g_FramebufferHeight;
     pendingHeightOrCurrentWidth = g_FramebufferWidth;
-    pendingModeResult = g_GraphicsSetDisplayMode(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,
-                                                 pendingModeWidth);
-    if (pendingModeResult.failed) {
-      restoreModeResult = g_GraphicsSetDisplayMode(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,
-                                                   pendingHeightOrCurrentWidth);
-      FatalError_ExitIfFailed(restoreModeResult.valueOrError,restoreModeResult.failed);
+    if (!g_GraphicsSetDisplayMode(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,
+                                  pendingModeWidth,&pendingModeError)) {
+      if (!g_GraphicsSetDisplayMode(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,
+                                    pendingHeightOrCurrentWidth,&restoreModeError)) {
+        FatalError_ExitIfFailed(restoreModeError,true);
+      }
       g_CursorVisibilityToken++;
-      FatalError_ReportIfFailed(pendingModeResult.valueOrError,true);
+      FatalError_ReportIfFailed(pendingModeError,true);
       return;
     }
     UiRootStack_Relayout();
@@ -546,7 +547,7 @@ void UiRangeSliderControl_BeginThumbDrag
       control->sliderFlags = control->sliderFlags | UI_RANGE_SLIDER_DRAGGING;
     }
     if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != NULL)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
     }
   }
   return;
@@ -565,7 +566,7 @@ void UiRangeSliderControl_EndThumbDrag
   control->sliderFlags = control->sliderFlags & ~UI_RANGE_SLIDER_DRAGGING;
   if ((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
        ((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0)) && (control->clickSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
   }
   return;
 }
@@ -663,7 +664,7 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
       control->pointerActivationSound != NULL) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
-               control->pointerActivationSound);
+               control->pointerActivationSound,NULL);
   }
   opaqueHit = false;
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
@@ -733,7 +734,7 @@ void UiImageControl_NonRightRelease
             control->pointerActivationSound != NULL) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     control->pointerActivationSound);
+                     control->pointerActivationSound,NULL);
         }
       }
     }
@@ -858,12 +859,9 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   uint32_t lowWordValue;
   uint32_t *templateCursor;
   GraphicsDisplayMode *displayMode;
-  ArenaAllocResult allocResult;
   
   if (1 < g_GraphicsDisplayModeCount) {
-    allocResult = g_MemoryApi.alloc(sizeof(DisplaySettingsUiImage));
-    root = (UiRootNode *)allocResult.payloadOrError;
-    if (allocResult.failed) {
+    if (g_MemoryApi.alloc(sizeof(DisplaySettingsUiImage),(void **)&root) != 0) {
       return;
     }
     /* REP MOVSD of the template, one dword per step */

@@ -148,11 +148,11 @@ void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 /* Address: 0x005798A0.
    g_GraphicsFramebufferCaptureRegion in 16-bit modes (callers grab the whole screen): copies a rectangle of
    the back surface into a newly allocated one-image 'gfx' asset in opaque ARGB8888, expanding each channel
-   with the masks and shifts of g_SoftwarePixelFormatConfig. The Glide adapter has its own capture. CF set
-   with the arena error, or with FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES when the back surface cannot be
-   restored or locked.
+   with the masks and shifts of g_SoftwarePixelFormatConfig. The Glide adapter has its own capture. Returns
+   the asset, or NULL when the allocation fails or the back surface cannot be restored or locked (the
+   original's error values, the arena error or FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES, were never read).
 */
-FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
+GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
 
@@ -168,18 +168,18 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
   uint16_t *sourcePixel;
   GraphicsCapturedTextureSourceAsset *clearCursor;
   uint32_t *destinationPixel;
-  ArenaAllocResult allocResult;
-  FramebufferCaptureResult captureResult;
+  uint32_t allocError;
   uint16_t *sourceRowStart;
-  
+
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
-    captureResult = Glide3_Framebuffer_CaptureRegion(captureHeight,captureWidth,sourceY,sourceX);
-    return captureResult;
+    return Glide3_Framebuffer_CaptureRegion(captureHeight,captureWidth,sourceY,sourceX);
   }
   allocationSizeOrPixel = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
-  allocResult = g_MemoryApi.alloc(allocationSizeOrPixel);
-  capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(allocationSizeOrPixel,(void **)&capturedAsset);
+  if (allocError != 0) {
+    capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocError;
+  }
+  else {
     /* dword clear of the whole asset (REP STOSD in the original) */
     clearCursor = capturedAsset;
     for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords--) {
@@ -257,28 +257,24 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
         g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
-        return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult,
-                               THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX);
+        return capturedAsset;
       }
     }
     g_MemoryApi.free(capturedAsset);
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,GRAPHICS_CAPTURE_FAILED_STAGE_16BIT,
                             g_PackageLastErrorPath);
-    capturedAsset = (GraphicsCapturedTextureSourceAsset *)FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
   }
-  captureResult.failed = true;
-  captureResult.capture = capturedAsset;
-  return captureResult;
+  return NULL;
 }
 
 
 /* Address: 0x00579B50.
    32-bit counterpart of GraphicsFramebuffer_CaptureRegion16Bit: copies a rectangle of the back surface into a
    newly allocated one-image 'gfx' asset, keeping RGB and forcing alpha to 0xFF, two pixels per step. There is
-   no Glide branch here. Callers pass the full (even) screen width. CF set with the arena error or
-   FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES.
+   no Glide branch here. Callers pass the full (even) screen width. Returns the asset, or NULL when the
+   allocation fails or the back surface cannot be restored or locked.
 */
-FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
+GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
 
@@ -295,14 +291,15 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
   GraphicsCapturedTextureSourceAsset *clearCursor;
   uint32_t *destinationPair;
   uint32_t *destinationPixel;
-  ArenaAllocResult allocResult;
-  FramebufferCaptureResult captureResult;
+  uint32_t allocError;
   uint32_t *sourceRowStart;
   
   allocationSizeOrPixel = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
-  allocResult = g_MemoryApi.alloc(allocationSizeOrPixel);
-  capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(allocationSizeOrPixel,(void **)&capturedAsset);
+  if (allocError != 0) {
+    capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocError;
+  }
+  else {
     /* dword clear of the whole asset (REP STOSD in the original) */
     clearCursor = capturedAsset;
     for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords--) {
@@ -373,18 +370,14 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
         g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
-        return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult,
-                               THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX);
+        return capturedAsset;
       }
     }
     g_MemoryApi.free(capturedAsset);
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,GRAPHICS_CAPTURE_FAILED_STAGE_32BIT,
                             g_PackageLastErrorPath);
-    capturedAsset = (GraphicsCapturedTextureSourceAsset *)FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
   }
-  captureResult.failed = true;
-  captureResult.capture = capturedAsset;
-  return captureResult;
+  return NULL;
 }
 
 

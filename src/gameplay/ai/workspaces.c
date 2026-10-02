@@ -1085,65 +1085,62 @@ AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
 bool AiRuntime_InitWorkspace(uint32_t *outErrorCode)
 
 {
-  uint8_t *workspaceAllocation;
-  AiTechnologyPlanningCandidate *technologyCandidateWorkspaceAllocation;
   AiKnowledgeDataImage *knowledgeDataImage;
-  PackageLoadResult loadResult;
+  uint32_t allocError;
+  uint32_t loadErrorCode;
 
-  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE00_CAPACITY * sizeof(AiStructureWorkspaceEntry)));
-  workspaceAllocation = loadResult.bufferOrError;
-  if (!loadResult.failed) {
-    g_AiWorkspace00Structures = (AiStructureWorkspaceEntry *)workspaceAllocation;
-    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE01_CAPACITY * sizeof(AiRuntimeWorkspaceEntry)));
-    if (!loadResult.failed) {
-      g_AiWorkspace01Units = loadResult.bufferOrError;
-      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE02_CAPACITY * sizeof(AiRuntimeWorkspaceEntry)));
-      if (!loadResult.failed) {
-        g_AiWorkspace02VisibleHostiles = loadResult.bufferOrError;
-        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE03_CAPACITY * sizeof(AiRuntimeWorkspaceEntry)));
-        if (!loadResult.failed) {
-          g_AiWorkspace03UnseenHostiles = loadResult.bufferOrError;
-          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE04_CAPACITY * sizeof(AiRuntimeWorkspaceEntry)));
-          if (!loadResult.failed) {
-            g_AiWorkspace04RequestedAssets = loadResult.bufferOrError;
-            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE05_CAPACITY * sizeof(AiScoredSiteWorkspaceEntry)));
-            if (!loadResult.failed) {
-              g_AiWorkspace05GeneralSites = loadResult.bufferOrError;
-              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE06_CAPACITY * sizeof(AiScoredSiteWorkspaceEntry)));
-              if (!loadResult.failed) {
-                g_AiWorkspace06FlaggedSites = loadResult.bufferOrError;
-                loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE07_CAPACITY * sizeof(AiTargetWorkspaceEntry)));
-                if (!loadResult.failed) {
-                  g_AiWorkspace07Targets = loadResult.bufferOrError;
-                  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE08_CAPACITY * sizeof(AiTerrainFeatureWorkspaceEntry)));
-                  if (!loadResult.failed) {
-                    g_AiWorkspace08TerrainFeatureSites = loadResult.bufferOrError;
-                    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE09_CAPACITY * sizeof(FieldGridCell *)));
-                    if (!loadResult.failed) {
-                      g_AiWorkspace09Cells = loadResult.bufferOrError;
-                      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE10_CAPACITY * sizeof(FieldGridCell *)));
-                      if (!loadResult.failed) {
-                        g_AiWorkspace10Cells = loadResult.bufferOrError;
-                        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE11_CAPACITY * sizeof(ArmyAssetRecordPrefix *)));
-                        if (!loadResult.failed) {
-                          g_AiWorkspace11ProducibleAssets = loadResult.bufferOrError;
-                          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE12_CAPACITY * sizeof(AiTechnologyPlanningCandidate)));
-                          technologyCandidateWorkspaceAllocation = loadResult.bufferOrError;
-                          if (!loadResult.failed) {
-                            g_AiWorkspace12TechnologyCandidates = technologyCandidateWorkspaceAllocation;
-                            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_CANDIDATE_WORKSPACE_CAPACITY * sizeof(AiCandidateWorkspaceEntry)));
-                            if (!loadResult.failed) {
-                              g_AiWorkspace13Candidates = loadResult.bufferOrError;
-                              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult,
-                                                           g_MemoryApi.alloc(AI_WORKSPACE14_CAPACITY * sizeof(ArmyRuntimeSlot *)));
-                              if (!loadResult.failed) {
-                                g_AiWorkspace14CollectedArmies = loadResult.bufferOrError;
-                                loadResult = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4);
-                                knowledgeDataImage = loadResult.bufferOrError;
-                                if (!loadResult.failed) {
+  allocError = g_MemoryApi.alloc(AI_WORKSPACE00_CAPACITY * sizeof(AiStructureWorkspaceEntry),
+                                 (void **)&g_AiWorkspace00Structures);
+  if (allocError == 0) {
+    allocError = g_MemoryApi.alloc(AI_WORKSPACE01_CAPACITY * sizeof(AiRuntimeWorkspaceEntry),
+                                   (void **)&g_AiWorkspace01Units);
+    if (allocError == 0) {
+      allocError = g_MemoryApi.alloc(AI_WORKSPACE02_CAPACITY * sizeof(AiRuntimeWorkspaceEntry),
+                                     (void **)&g_AiWorkspace02VisibleHostiles);
+      if (allocError == 0) {
+        allocError = g_MemoryApi.alloc(AI_WORKSPACE03_CAPACITY * sizeof(AiRuntimeWorkspaceEntry),
+                                       (void **)&g_AiWorkspace03UnseenHostiles);
+        if (allocError == 0) {
+          allocError = g_MemoryApi.alloc(AI_WORKSPACE04_CAPACITY * sizeof(AiRuntimeWorkspaceEntry),
+                                         (void **)&g_AiWorkspace04RequestedAssets);
+          if (allocError == 0) {
+            allocError = g_MemoryApi.alloc(AI_WORKSPACE05_CAPACITY * sizeof(AiScoredSiteWorkspaceEntry),
+                                           (void **)&g_AiWorkspace05GeneralSites);
+            if (allocError == 0) {
+              allocError = g_MemoryApi.alloc(AI_WORKSPACE06_CAPACITY * sizeof(AiScoredSiteWorkspaceEntry),
+                                             (void **)&g_AiWorkspace06FlaggedSites);
+              if (allocError == 0) {
+                allocError = g_MemoryApi.alloc(AI_WORKSPACE07_CAPACITY * sizeof(AiTargetWorkspaceEntry),
+                                               (void **)&g_AiWorkspace07Targets);
+                if (allocError == 0) {
+                  allocError = g_MemoryApi.alloc(AI_WORKSPACE08_CAPACITY * sizeof(AiTerrainFeatureWorkspaceEntry),
+                                                 (void **)&g_AiWorkspace08TerrainFeatureSites);
+                  if (allocError == 0) {
+                    allocError = g_MemoryApi.alloc(AI_WORKSPACE09_CAPACITY * sizeof(FieldGridCell *),
+                                                   (void **)&g_AiWorkspace09Cells);
+                    if (allocError == 0) {
+                      allocError = g_MemoryApi.alloc(AI_WORKSPACE10_CAPACITY * sizeof(FieldGridCell *),
+                                                     (void **)&g_AiWorkspace10Cells);
+                      if (allocError == 0) {
+                        allocError = g_MemoryApi.alloc(AI_WORKSPACE11_CAPACITY * sizeof(ArmyAssetRecordPrefix *),
+                                                       (void **)&g_AiWorkspace11ProducibleAssets);
+                        if (allocError == 0) {
+                          allocError = g_MemoryApi.alloc(AI_WORKSPACE12_CAPACITY * sizeof(AiTechnologyPlanningCandidate),
+                                                         (void **)&g_AiWorkspace12TechnologyCandidates);
+                          if (allocError == 0) {
+                            allocError = g_MemoryApi.alloc(AI_CANDIDATE_WORKSPACE_CAPACITY * sizeof(AiCandidateWorkspaceEntry),
+                                                           (void **)&g_AiWorkspace13Candidates);
+                            if (allocError == 0) {
+                              allocError = g_MemoryApi.alloc(AI_WORKSPACE14_CAPACITY * sizeof(ArmyRuntimeSlot *),
+                                                             (void **)&g_AiWorkspace14CollectedArmies);
+                              if (allocError == 0) {
+                                knowledgeDataImage = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4,&loadErrorCode);
+                                if (knowledgeDataImage != NULL) {
                                   g_AiKnowledgeData = knowledgeDataImage;
                                   return true;
                                 }
+                                /* the failure exit reports the error of the last failed step */
+                                allocError = loadErrorCode;
                               }
                             }
                           }
@@ -1159,7 +1156,7 @@ bool AiRuntime_InitWorkspace(uint32_t *outErrorCode)
       }
     }
   }
-  *outErrorCode = (uint32_t)loadResult.bufferOrError;
+  *outErrorCode = allocError;
   return false;
 }
 

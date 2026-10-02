@@ -29,8 +29,8 @@ int __stdcall DirectDraw_EnumAdapterCallback (TH_LEGACY_GUID *adapterGuid,char *
 int32_t __stdcall DirectDraw_EnumDisplayModeCallback (DDSURFACEDESC_DX6 *surfaceDesc,FrontendDisplayAdapterIndex adapterIndex);
 
 /* 0x00578920 */
-DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
+bool GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
-          GraphicsPixelDimension height,GraphicsPixelDimension width);
+          GraphicsPixelDimension height,GraphicsPixelDimension width,uint32_t *errorCode);
 
 #endif /* THANDOR_GRAPHICS_BACKEND_DIRECTDRAW_H */

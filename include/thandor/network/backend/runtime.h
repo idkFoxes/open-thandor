@@ -63,7 +63,7 @@ uint32_t __cdecl Network_Init(void);
 void Network_Shutdown(void);
 
 /* 0x00584E50 */
-NetworkSetSessionResult NetworkBackend_SetSessionContext(void *sessionContext,NetworkBackendSessionReturnValue32 backendIndex);
+uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex);
 
 /* 0x00585210 */
 bool NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex);

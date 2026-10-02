@@ -535,7 +535,7 @@ ImageData_004169DC g_ImageData_004169DC = {
     0, /* 004171EC g_KeyboardToggleLatchMask */
     {0}, /* 004171F0 g_KeyboardSpecialKeyDown */
     (void *)Keyboard_FlushEvents, /* 00417210 g_KeyboardFlushEvents */
-    (void *)Keyboard_ReadNextEventRegs, /* 00417214 g_KeyboardReadEvent */
+    (void *)Keyboard_ReadNextEvent, /* 00417214 g_KeyboardReadEvent */
     /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
     {
         .compareCaseInsensitiveFlags = (void *)Keyboard_CompareAsciiCaseInsensitiveFlags,
@@ -6771,30 +6771,30 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /* 23 */ (void *)ArmyPlacementCollision_TestCurrentRuntime
         },
         .placementAssetClassDispatch = {
-            /*  0 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /*  1 */ (void *)ArmyPlacement_TestMobileUnitPoint,
-            /*  2 */ (void *)ArmyPlacement_TestMobileUnitPoint,
-            /*  3 */ (void *)ArmyPlacement_TestMobileUnitPoint,
-            /*  4 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
-            /*  5 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /*  6 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /*  7 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /*  8 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /*  9 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /* 10 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
-            /* 11 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
-            /* 12 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /* 13 */ (void *)ArmyPlacementCandidate_TestOffsetClearance,
-            /* 14 */ (void *)ArmyPlacementCandidate_TestFieldOccupancy,
-            /* 15 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
-            /* 16 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
-            /* 17 */ (void *)ArmyPlacement_TestMobileUnitPoint,
-            /* 18 */ (void *)ArmyPlacement_TestMobileUnitPoint,
-            /* 19 */ (void *)ArmyPlacement_TestMobileUnitPoint,
-            /* 20 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
-            /* 21 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /* 22 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
-            /* 23 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance
+            /*  0 */ (void *)ArmyPlacement_CanPlaceAnywhere,
+            /*  1 */ (void *)ArmyPlacement_CanPlaceMobileUnit,
+            /*  2 */ (void *)ArmyPlacement_CanPlaceMobileUnit,
+            /*  3 */ (void *)ArmyPlacement_CanPlaceMobileUnit,
+            /*  4 */ (void *)ArmyPlacement_CanPlaceBuilding,
+            /*  5 */ (void *)ArmyPlacement_CanPlaceAnywhere,
+            /*  6 */ (void *)ArmyPlacement_CanPlaceAnywhere,
+            /*  7 */ (void *)ArmyPlacement_CanPlaceAnywhere,
+            /*  8 */ (void *)ArmyPlacement_CanPlaceAnywhere,
+            /*  9 */ (void *)ArmyPlacement_CanPlaceAnywhere,
+            /* 10 */ (void *)ArmyPlacement_CanPlaceBuilding,
+            /* 11 */ (void *)ArmyPlacement_CanPlaceBuilding,
+            /* 12 */ (void *)ArmyPlacement_CanPlaceAnywhere,
+            /* 13 */ (void *)ArmyPlacement_CanPlaceAnchoredModel,
+            /* 14 */ (void *)ArmyPlacement_CanPlaceResourceExtractor,
+            /* 15 */ (void *)ArmyPlacement_CanPlaceBuilding,
+            /* 16 */ (void *)ArmyPlacement_CanPlaceBuilding,
+            /* 17 */ (void *)ArmyPlacement_CanPlaceMobileUnit,
+            /* 18 */ (void *)ArmyPlacement_CanPlaceMobileUnit,
+            /* 19 */ (void *)ArmyPlacement_CanPlaceMobileUnit,
+            /* 20 */ (void *)ArmyPlacement_CanPlaceBuilding,
+            /* 21 */ (void *)ArmyPlacement_CanPlaceAnywhere,
+            /* 22 */ (void *)ArmyPlacement_CanPlaceBuilding,
+            /* 23 */ (void *)ArmyPlacement_CanPlaceBuilding
         },
         .classCommand = {
             /*  0 */ (void *)ArmyRuntimeClassCommand_NoOp,

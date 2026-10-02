@@ -40,7 +40,8 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   int pathLength = 0;
   int nameIndex;
   unsigned start;
-  MovieOpenResult opened;
+  uint32_t playbackRateHz;
+  uint32_t openError;
   MovieRuntime *movie;
   /* UTF-16 path "flm\<name>.flm"; the name is cut so ".flm" and the terminator still fit */
   path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm'; path[pathLength++] = '\\';
@@ -51,9 +52,8 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   path[pathLength] = 0;
   DebugMovie_ClearScreen();
   DebugMovie_ClearScreen();
-  opened = Movie_Open(1,path);
-  if (opened.failed) {
-    Thandor_Log("debug movie %d/%d %s: Movie_Open failed (eax=%08x)", index, count, name, opened.frameCountOrError);
+  if (!Movie_Open(1,path,&playbackRateHz,&openError)) {
+    Thandor_Log("debug movie %d/%d %s: Movie_Open failed (eax=%08x)", index, count, name, openError);
     sprintf(label, "Video %d/%d: %s.flm - OEFFNEN FEHLGESCHLAGEN", index, count, name);
     if (!g_GraphicsFramebufferBeginAccess()) {
       DebugFont_DrawText(8, 8, label);
@@ -69,19 +69,18 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
     return;
   }
   Thandor_Log("debug movie %d/%d %s: playing, %u frames at %u Hz", index, count, name,
-              g_ActiveMovie->fileHeader->frameCount, opened.playbackRateHz);
+              g_ActiveMovie->fileHeader->frameCount, playbackRateHz);
   g_IntroMoviePendingTicks = 0;
   UiFrame_FlushInputAndResetPendingTicks();
-  g_TimerRegisterPeriodic(opened.playbackRateHz,IntroMovie_TimerTick);
+  g_TimerRegisterPeriodic(playbackRateHz,IntroMovie_TimerTick);
   start = Thandor_TickCount();
   for (;;) {
-    KeyboardEventResult key;
-    CursorEventResult cursor;
+    uint32_t keyCode;
+    uint32_t keyStateMask;
+    CursorPointerEvent cursor;
     g_Win32PumpMessages();
-    key = g_KeyboardReadEvent();
-    if (!key.queueEmpty) break;
-    cursor = g_GraphicsCursorConsumeEvent();
-    if (!cursor.queueEmpty && RIGHT_PRESS < cursor.eventType) break;
+    if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) break;
+    if (g_GraphicsCursorConsumeEvent(&cursor) && RIGHT_PRESS < cursor.eventType) break;
     if (Thandor_TickCount() - start > 10000) break;
     if (g_IntroMoviePendingTicks != 0) {
       int burst = 3;
@@ -133,7 +132,8 @@ void DebugMovie_ExportOne(const char *name)
   uint32_t frames = 0;
   uint32_t width;
   uint32_t height;
-  MovieOpenResult opened;
+  uint32_t playbackRateHz;
+  uint32_t openError;
   bool frameDecoded;
   FILE *video;
   FILE *info;
@@ -145,9 +145,8 @@ void DebugMovie_ExportOne(const char *name)
   path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
   path[pathLength] = 0;
   CreateDirectoryA("moviedump", NULL);
-  opened = Movie_Open(1,path);
-  if (opened.failed) {
-    Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, opened.frameCountOrError);
+  if (!Movie_Open(1,path,&playbackRateHz,&openError)) {
+    Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, openError);
     return;
   }
   width = g_ActiveMovie->fileHeader->widthPixels;
@@ -201,10 +200,10 @@ void DebugMovie_ExportOne(const char *name)
   sprintf(fileName, "moviedump\\%s.txt", name);
   info = fopen(fileName, "w");
   if (info != NULL) {
-    fprintf(info, "%u %u %u %u\n", width, height, frames, opened.playbackRateHz);
+    fprintf(info, "%u %u %u %u\n", width, height, frames, playbackRateHz);
     fclose(info);
   }
-  Thandor_Log("movie export %s: %ux%u, %u frames at %u Hz", name, width, height, frames, opened.playbackRateHz);
+  Thandor_Log("movie export %s: %ux%u, %u frames at %u Hz", name, width, height, frames, playbackRateHz);
   Movie_Close();
 }
 

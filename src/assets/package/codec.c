@@ -10,18 +10,37 @@
 
 /* Implementation ownership: assets/package/codec. */
 
+/* Success exit of a codec (PckCodecProc): stores byteCount in *outByteCount when it is not NULL. */
+static bool PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
+{
+  if (outByteCount != NULL) {
+    *outByteCount = byteCount;
+  }
+  return true;
+}
+
+/* Failure exit of a codec (PckCodecProc): stores errorCode in *outErrorCode when it is not NULL. */
+static bool PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
+{
+  if (outErrorCode != NULL) {
+    *outErrorCode = errorCode;
+  }
+  return false;
+}
+
 /* Address: 0x0040A9C0.
    PCK compression method 2 writer for field grids: keeps only the header and the four persisted dwords of each
    0x80-byte cell (the rest is runtime state that the decoder regenerates), then packs that compact image with
    method 0 behind a PCK_FIELD_GRID_PREFIX_BYTES prefix holding its size. Returns the packed size including the
-   prefix; CF set with the error code of the allocation or the method-0 encoder.
+   prefix in *outByteCount (true), or false with the error code of the allocation or the method-0 encoder in
+   *outErrorCode.
 */
-PckCodecResult PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
-          PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid)
+bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+          PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid,
+          uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   AssetMagic pendingCellDword;
-  AssetMagic *encodedSizeOrError;
   AssetMagic *compactFieldImageBase;
   PckHeaderDwordCount headerDwordCount;
   uint32_t cellCount;
@@ -30,16 +49,18 @@ PckCodecResult PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapaci
   AssetMagic *compactWriteCursor;
   AssetMagic *headerReadCursor;
   FieldGridCell *sourceCell;
-  ArenaAllocResult allocResult;
-  PckCodecResult encodeResult;
-  PckCodecResult successResult;
+  uint32_t allocError;
+  uint32_t encodedByteCount;
+  uint32_t encodeErrorCode;
   AssetMagic persistedCellDword;
   
   cellCount = sourceGrid->gridWidth * sourceGrid->gridHeight;
   bytes = cellCount * FIELD_GRID_COMPACT_CELL_BYTES + FIELD_GRID_HEADER_BYTES;
-  allocResult = g_MemoryApi.alloc(bytes);
-  compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(bytes,(void **)&compactFieldImageBase);
+  if (allocError != 0) {
+    compactFieldImageBase = (AssetMagic *)allocError;
+  }
+  else {
     compactWriteCursor = compactFieldImageBase;
     /* the header dword by dword; the read cursor then points at cells[0] */
     headerReadCursor = (AssetMagic *)sourceGrid;
@@ -64,33 +85,30 @@ PckCodecResult PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapaci
       cellCount--;
     } while (cellCount != 0);
     *(uint32_t *)destination = bytes;
-    encodeResult = PckCodec_EncodeHuffmanRle
-                      (destinationCapacityBytes - PCK_FIELD_GRID_PREFIX_BYTES,
-                       destination + PCK_FIELD_GRID_PREFIX_BYTES,bytes,(uint8_t *)compactFieldImageBase);
-    encodedSizeOrError = (AssetMagic *)encodeResult.byteCountOrError;
-    if (!encodeResult.failed) {
+    if (PckCodec_EncodeHuffmanRle
+            (destinationCapacityBytes - PCK_FIELD_GRID_PREFIX_BYTES,destination + PCK_FIELD_GRID_PREFIX_BYTES,bytes,
+             (uint8_t *)compactFieldImageBase,&encodedByteCount,&encodeErrorCode)) {
       g_MemoryApi.free(compactFieldImageBase);
-      successResult.byteCountOrError = (uint32_t)encodedSizeOrError + PCK_FIELD_GRID_PREFIX_BYTES;
-      successResult.failed = false;
-      return successResult;
+      return PckCodec_Succeed(outByteCount,encodedByteCount + PCK_FIELD_GRID_PREFIX_BYTES);
     }
     g_MemoryApi.free(compactFieldImageBase);
-    compactFieldImageBase = encodedSizeOrError;
+    return PckCodec_Fail(outErrorCode,encodeErrorCode);
   }
-  encodeResult.failed = true;
-  encodeResult.byteCountOrError = (uint32_t)compactFieldImageBase;
-  return encodeResult;
+  return PckCodec_Fail(outErrorCode,(uint32_t)compactFieldImageBase);
 }
 
 
 /* Address: 0x0040AAA0.
    PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image,
    restores the header, expands every 0x10-byte record into a zeroed FieldGridCell and regenerates the cell world
-   coordinates: worldX = column * 0x901 + row * 0x480, worldY = row * -1999 (Q12, 32-bit wrap). CF set with the
-   error code of the allocation or the method-0 decoder.
+   coordinates: worldX = column * 0x901 + row * 0x480, worldY = row * -1999 (Q12, 32-bit wrap). Returns true,
+   or false with the error code of the allocation in *outErrorCode.
+   Original quirk: when the method-0 decoder fails, the error code is not its code but what the following free
+   returned (0 unless the heap is corrupt); on success the byte count is likewise the free's return value.
 */
-PckCodecResult PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
-          PckStoredByteCount sourceSizeBytes,uint8_t *source)
+bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
+          PckStoredByteCount sourceSizeBytes,uint8_t *source,
+          uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   uint32_t bytes;
@@ -106,19 +124,19 @@ PckCodecResult PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapaci
   uint32_t *expandedZeroCursor;
   AssetMagic *expandedHeaderCursor;
   FieldGridCell *expandedCell;
-  ArenaAllocResult allocResult;
-  PckCodecResult decodeResult;
-  ArenaFreeResult freeResult;
+  uint32_t allocError;
+  uint32_t freeStatus;
   FieldGridDimension gridWidth;
   
   bytes = *(uint32_t *)source;
-  allocResult = g_MemoryApi.alloc(bytes);
-  compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
-    decodeResult = PckCodec_DecodeHuffmanRle
-                      (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - PCK_FIELD_GRID_PREFIX_BYTES,
-                       source + PCK_FIELD_GRID_PREFIX_BYTES);
-    if (!decodeResult.failed) {
+  allocError = g_MemoryApi.alloc(bytes,(void **)&compactFieldImageBase);
+  if (allocError != 0) {
+    compactFieldImageBase = (AssetMagic *)allocError;
+  }
+  else {
+    if (PckCodec_DecodeHuffmanRle
+            (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - PCK_FIELD_GRID_PREFIX_BYTES,
+             source + PCK_FIELD_GRID_PREFIX_BYTES,NULL,NULL)) {
       /* header dwords 0x2E/0x2F are gridWidth/gridHeight */
       cellCountOrWorldX = compactFieldImageBase[46] * compactFieldImageBase[47];
       compactReadCursor = compactFieldImageBase;
@@ -169,33 +187,27 @@ PckCodecResult PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapaci
         columnsRemaining = gridWidth;
         countOrRowStartX = cellCountOrWorldX;
       } while (rowsRemaining != 0);
-      freeResult = g_MemoryApi.free(compactFieldImageBase);
-      /* EAX is whatever the free left in it (callers only test CF), CF clear. */
-      decodeResult.failed = false;
-      decodeResult.byteCountOrError = (uint32_t)freeResult.valueOrError;
-      return decodeResult;
+      freeStatus = g_MemoryApi.free(compactFieldImageBase);
+      return PckCodec_Succeed(outByteCount,freeStatus);
     }
-    freeResult = g_MemoryApi.free(compactFieldImageBase);
-    compactFieldImageBase = (AssetMagic *)freeResult.valueOrError;
+    freeStatus = g_MemoryApi.free(compactFieldImageBase);
+    compactFieldImageBase = (AssetMagic *)freeStatus;
   }
-  decodeResult.failed = true;
-  decodeResult.byteCountOrError = (uint32_t)compactFieldImageBase;
-  return decodeResult;
+  return PckCodec_Fail(outErrorCode,(uint32_t)compactFieldImageBase);
 }
 
 
 /* Address: 0x0040A960.
    PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable (0x0040E224).
-   Copies the source dword by dword when it fits into the destination and returns its size rounded up to
-   four bytes with CF clear; FATAL_ERROR_GENERAL_FAILURE with CF set when it does not fit.
+   Copies the source dword by dword when it fits into the destination and returns true with its size rounded up
+   to four bytes in *outByteCount; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when it does not fit.
 */
-PckCodecResult PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
-          PckDecodedByteCount sourceSizeBytes,uint8_t *source)
+bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+          PckDecodedByteCount sourceSizeBytes,uint8_t *source,
+          uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   PckDwordCopyCount dwordCopyCount;
-  PckCodecResult successResult;
-  PckCodecResult errorResult;
 
   if (sourceSizeBytes <= destinationCapacityBytes) {
     /* only whole dwords are copied (REP MOVSD); a 1..3-byte tail is left out */
@@ -204,38 +216,36 @@ PckCodecResult PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityB
       source = source + 4;
       destination = destination + 4;
     }
-    successResult.byteCountOrError = sourceSizeBytes + 3 & PACKAGE_DWORD_ALIGN_MASK;
-    successResult.failed = false;
-    return successResult;
+    return PckCodec_Succeed(outByteCount,sourceSizeBytes + 3 & PACKAGE_DWORD_ALIGN_MASK);
   }
-  errorResult.failed = true;
-  errorResult.byteCountOrError = FATAL_ERROR_GENERAL_FAILURE;
-  return errorResult;
+  return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
 }
 
 
 /* Address: 0x0040A9A0.
    PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable (0x0040E230).
    Copies the stored bytes dword by dword to the destination; the capacity is not checked.
+   Original quirk: the outcome is what SHR ECX,2 shifted out last, so it fails exactly when bit 1 of
+   sourceSizeBytes is set (stored sizes written by the encoder are multiples of four, so it succeeds for them).
+   Either way the reported value (byte count or error code) is sourceSizeBytes: EAX is untouched and in
+   Package_DecodeEntryInto still holds the read size (packedSize).
 */
-PckCodecResult PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
-          PckStoredByteCount sourceSizeBytes,uint8_t *source)
+bool PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+          PckStoredByteCount sourceSizeBytes,uint8_t *source,
+          uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   PckDwordCopyCount dwordCopyCount;
-  PckCodecResult copyResult;
 
   for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0; dwordCopyCount--) {
     *(uint32_t *)destination = *(uint32_t *)source;
     source = source + 4;
     destination = destination + 4;
   }
-  /* CF is what SHR ECX,2 shifted out last (bit 1 of the size). Package_DecodeEntryInto treats it as the
-     failure flag; stored sizes written by the encoder are multiples of four, so it is clear for them. */
-  copyResult.failed = (sourceSizeBytes >> 1 & 1) != 0;
-  /* EAX is untouched; in Package_DecodeEntryInto it still holds the read size (packedSize). */
-  copyResult.byteCountOrError = sourceSizeBytes;
-  return copyResult;
+  if ((sourceSizeBytes >> 1 & 1) != 0) {
+    return PckCodec_Fail(outErrorCode,sourceSizeBytes);
+  }
+  return PckCodec_Succeed(outByteCount,sourceSizeBytes);
 }
 
 
@@ -243,11 +253,12 @@ PckCodecResult PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityB
    PCK compression method 0 writer. Counts the byte frequencies of the source, scales them to 8 bits, builds a
    Huffman tree from them, writes the 256-byte frequency table and then the bitstream of literal and 3..18-byte
    run tokens (format in codec.h). Returns the packed size (rounded up to 16 bytes, with at least 16 bytes of
-   slack for the decoder's dword reads) with CF clear, or FATAL_ERROR_GENERAL_FAILURE with CF set when the tree
-   overflows or the output does not fit.
+   slack for the decoder's dword reads) in *outByteCount with true, or false with FATAL_ERROR_GENERAL_FAILURE in
+   *outErrorCode when the tree overflows or the output does not fit.
 */
-PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
-          PckDecodedByteCount sourceSizeBytes,uint8_t *source)
+bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+          PckDecodedByteCount sourceSizeBytes,uint8_t *source,
+          uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   PckHuffmanNodePtr ancestorNode;
@@ -270,8 +281,6 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
   PckHuffmanNodePtr currentLeafNode;
   uint32_t *outputClearCursor;
   uint32_t *outputWriteCursor;
-  PckCodecResult successResult;
-  PckCodecResult errorResult;
   PckHuffmanNodePtr nextInternalNode;
   uint8_t currentSymbolByte;
 
@@ -449,33 +458,31 @@ finish:
       if (outputBitOffset != 0) {
         maxCountOrWeightOrSize++;
       }
-      successResult.byteCountOrError = maxCountOrWeightOrSize & 0xfffffff0;
-      successResult.failed = false;
-      return successResult;
+      return PckCodec_Succeed(outByteCount,maxCountOrWeightOrSize & 0xfffffff0);
     }
   }
 fail:
-  errorResult.failed = true;
-  errorResult.byteCountOrError = FATAL_ERROR_GENERAL_FAILURE;
-  return errorResult;
+  return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
 }
 
 
 /* Address: 0x0040A790.
    PCK compression method 0 reader. Rebuilds the encoder's Huffman tree from the 256-byte frequency table at
    the start of source, then decodes literal and run tokens (format in codec.h) until outputSizeBytes bytes are
-   written. CF clear on success; FATAL_ERROR_GENERAL_FAILURE with CF set when the tree overflows the workspace.
-   sourceSizeBytes is not checked: the bitstream is trusted.
+   written. Returns true on success; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when the tree
+   overflows the workspace. sourceSizeBytes is not checked: the bitstream is trusted.
+   Original quirk: the byte count reported on success is the leftover run counter (EAX), not a size.
 */
-PckCodecResult PckCodec_DecodeHuffmanRle
+bool PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
-          uint8_t *source)
+          uint8_t *source,
+          uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   PckHuffmanSymbolState symbolState;
   /* lowest weight while building the tree, then the input bits at the current offset */
   uint32_t lowWeightOrBitWindow;
-  /* literal code bits, then the run length; also the EAX value of the success return */
+  /* literal code bits, then the run length; also the byte count reported on success */
   PckHuffmanRunLength codeBitsOrRunLength;
   PckHuffmanBitOffset nextBitOffset;
   PckHuffmanBitOffset inputBitOffset;
@@ -490,7 +497,6 @@ PckCodecResult PckCodec_DecodeHuffmanRle
   uint32_t *inputCursor;
   PckHuffmanSymbolState *symbolStateCursor;
   PckHuffmanNode *leafOrSecondLowestNode;
-  PckCodecResult huffmanResult;
   PckHuffmanNodePtr nextInternalNode;
 
   /* The symbol table ends where the leaf node workspace begins. */
@@ -552,9 +558,7 @@ PckCodecResult PckCodec_DecodeHuffmanRle
     /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
        where the internal node workspace ends. */
     if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) {
-      huffmanResult.failed = true;
-      huffmanResult.byteCountOrError = FATAL_ERROR_GENERAL_FAILURE;
-      return huffmanResult;
+      return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
     }
   }
   /* The root is the last internal node created (nextInternalNode - 1); leaves have no zeroChild. The input
@@ -613,8 +617,6 @@ PckCodecResult PckCodec_DecodeHuffmanRle
       codeBitsOrRunLength--;
     } while (codeBitsOrRunLength != 0);
   } while (outputSizeBytes != 0);
-  huffmanResult.failed = false;
-  huffmanResult.byteCountOrError = codeBitsOrRunLength;
-  return huffmanResult;
+  return PckCodec_Succeed(outByteCount,codeBitsOrRunLength);
 }
 

@@ -179,8 +179,8 @@ bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
   uint32_t *scratchCursor;
   FrontendCommandPacketRecord *batchCursor;
   uint32_t *outgoingCursor;
-  PckCodecResult encodeResult;
-  ArenaAllocResult allocResult;
+  uint32_t encodedByteCount;
+  void *allocPayload;
   
   loopCount = g_FrontendPlayerRuntimeBlockCount - 1;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -318,15 +318,13 @@ bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
         scratchSizeBytes = sourceSizeBytes;
       } while (remainingPlayerCount != 0);
       /* encoded behind the packed data, after a size dword; the size and the encoded bytes are then copied out */
-      encodeResult = PckCodec_EncodeHuffmanRle
-                         (PACKAGE_SCRATCH_BUFFER_BYTES - 4 - sourceSizeBytes,(uint8_t *)(scratchCursor + 1),sourceSizeBytes,
-                          g_PackageScratchBuffer);
-      if (!encodeResult.failed) {
+      if (PckCodec_EncodeHuffmanRle
+              (PACKAGE_SCRATCH_BUFFER_BYTES - 4 - sourceSizeBytes,(uint8_t *)(scratchCursor + 1),sourceSizeBytes,
+               g_PackageScratchBuffer,&encodedByteCount,NULL)) {
         *scratchCursor = sourceSizeBytes;
-        commandCountOrBufferSize = encodeResult.byteCountOrError + 4;
-        allocResult = g_MemoryApi.alloc(commandCountOrBufferSize);
-        if (!allocResult.failed) {
-          outgoingCursor = (uint32_t *)allocResult.payloadOrError;
+        commandCountOrBufferSize = encodedByteCount + 4;
+        if (g_MemoryApi.alloc(commandCountOrBufferSize,&allocPayload) == 0) {
+          outgoingCursor = (uint32_t *)allocPayload;
           for (packedCommandOrDwordCount = commandCountOrBufferSize >> 2; packedCommandOrDwordCount != 0;
                packedCommandOrDwordCount--) {
             *outgoingCursor = *scratchCursor;
@@ -334,7 +332,7 @@ bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
             outgoingCursor++;
           }
           UiTransferMailbox_SetOutgoingBuffer
-                    (commandCountOrBufferSize,(void *)allocResult.payloadOrError);
+                    (commandCountOrBufferSize,allocPayload);
           FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE,0,0,0);
         }
       }
@@ -705,20 +703,16 @@ void Network_Shutdown(void)
 
 /* Address: 0x00584E50.
    Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it
-   accepts any backendIndex and returns it with CF clear. It stores ECX, not the index, in
+   accepts any backendIndex and always returns 0 (success). The original stores ECX, not the index, in
    g_NetworkBackendSessionContext (the ws2_32 variant NetworkBackend_SelectInstanceByIndex stores the
-   index); the callers pass the index on the stack only.
-   Original register convention: result in EAX, CF set on failure; ECX and EDX preserved.
+   index); the callers pass the index on the stack only. Like the previous C version (which received the
+   index in its sessionContext parameter), this stores the index; nothing reads the global.
 */
-NetworkSetSessionResult NetworkBackend_SetSessionContext(void *sessionContext,NetworkBackendSessionReturnValue32 backendIndex)
+uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex)
 
 {
-  NetworkSetSessionResult sessionResult;
-
-  g_NetworkBackendSessionContext = sessionContext;
-  sessionResult.failed = false;
-  sessionResult.valueOrError = backendIndex;
-  return sessionResult;
+  g_NetworkBackendSessionContext = (NetworkSessionContext *)(uintptr_t)backendIndex;
+  return 0;
 }
 
 

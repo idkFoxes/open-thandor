@@ -15,22 +15,22 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041A580 */
-StatusResult NetworkBackendFallback_SetSessionContext(uint32_t backendIndex);
+uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex);
 
 /* 0x0041A590 */
 void __cdecl NetworkBackendFallback_Cleanup(void);
 
 /* 0x0041A5A0 */
-StatusResult NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort);
+uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort);
 
 /* 0x0041A5B0 */
 void __cdecl NetworkBackendFallback_CloseActiveSocket(void);
 
 /* 0x0041A5C0 */
-NetworkReceiveResult NetworkBackendFallback_ReceiveDatagram (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
+bool NetworkBackendFallback_ReceiveDatagram(WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
 
 /* 0x0041A5D0 */
-NetworkSendResult NetworkBackendFallback_SendDatagram (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
+bool NetworkBackendFallback_SendDatagram(WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
 /* 0x0041A5E0 */
 bool NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText);
@@ -42,17 +42,17 @@ void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *s
 void NetworkFallback_NoOpBackendCleanup(void);
 
 /* 0x00584E80 */
-NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort);
+uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort);
 
 /* 0x00585030 */
 void NetworkFallback_CloseActiveSocket(void);
 
 /* 0x00585060 */
-NetworkReceiveResult NetworkFallback_ReceiveDatagram
+bool NetworkFallback_ReceiveDatagram
           (WinSockAddress *sourceAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
 /* 0x005850B0 */
-NetworkSendResult NetworkFallback_SendDatagram
+bool NetworkFallback_SendDatagram
           (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
 /* 0x00585120 */

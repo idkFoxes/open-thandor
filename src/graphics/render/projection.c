@@ -42,9 +42,9 @@ bool GraphicsProjectedTriangle_PointOutsideBounds
    g_GraphicsOffscreenRenderModelListToTextureSource). The asset holds one direct-colour subresource of
    outputWidth x outputHeight ARGB pixels at +0x220; it is drawn with the software rasterizer's auxiliary
    family into a temporary depth buffer that replaces g_SoftwareDepthBuffer/g_SoftwareDepthEpoch for the call.
-   Returns the asset (CF clear), or CF set with the allocation error.
+   Returns the asset, or NULL when either allocation fails.
 */
-OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
+GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
           GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputHeight,
           GraphicsPixelDimension outputWidth,ModelRuntimeCount modelCount,
@@ -60,15 +60,15 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
   uint32_t dwordsLeft;
   uint32_t assetBytesOrPixelsLeft;
   int32_t *depthCursor;
-  ArenaAllocResult textureAllocation;
-  ArenaAllocResult depthAllocation;
-  OffscreenRenderResult failureResult;
-  
+  uint32_t textureAllocationError;
+  void *textureAllocationPayload;
+  uint32_t depthAllocationError;
+
   /* 0x200-byte asset header, one 0x20-byte subresource entry, then the pixels */
   assetBytesOrPixelsLeft = outputWidth * outputHeight * 4 + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
-  textureAllocation = g_MemoryApi.alloc(assetBytesOrPixelsLeft);
-  assetOrDepthBuffer = (int32_t *)textureAllocation.payloadOrError;
-  if (!textureAllocation.failed) {
+  textureAllocationError = g_MemoryApi.alloc(assetBytesOrPixelsLeft,&textureAllocationPayload);
+  if (textureAllocationError == 0) {
+    assetOrDepthBuffer = (int32_t *)textureAllocationPayload;
     zeroCursorOrDepthBuffer = assetOrDepthBuffer;
     for (dwordsLeft = assetBytesOrPixelsLeft >> 2; dwordsLeft != 0; dwordsLeft--) {
       *zeroCursorOrDepthBuffer = 0;
@@ -104,9 +104,11 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
     assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(ORIGIN_Y)] = 0;
     assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(PALETTE_INDEX)] = -1;
     assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(PIXEL_OFFSET)] = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
-    depthAllocation = g_MemoryApi.alloc(outputHeight * outputWidth * 4);
-    zeroCursorOrDepthBuffer = (int32_t *)depthAllocation.payloadOrError;
-    if (!depthAllocation.failed) {
+    depthAllocationError = g_MemoryApi.alloc(outputHeight * outputWidth * 4,(void **)&zeroCursorOrDepthBuffer);
+    if (depthAllocationError != 0) {
+      zeroCursorOrDepthBuffer = (int32_t *)depthAllocationError;
+    }
+    else {
       depthCursor = zeroCursorOrDepthBuffer;
       for (assetBytesOrPixelsLeft = outputHeight * outputWidth & DWORD_COUNT_MASK; savedDepthEpoch = g_SoftwareDepthEpoch,
           savedDepthBuffer = g_SoftwareDepthBuffer, assetBytesOrPixelsLeft != 0; assetBytesOrPixelsLeft--) {
@@ -151,16 +153,11 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
       g_SoftwareDepthBuffer = savedDepthBuffer;
       g_SoftwareDepthEpoch = savedDepthEpoch;
       g_MemoryApi.free(assetOrDepthBuffer);
-      /* success: the asset pointer with CF clear */
-      return THANDOR_BITCAST(uint64_t, OffscreenRenderResult,
-                             THANDOR_BITCAST(ArenaAllocResult, uint64_t, textureAllocation) & UINT32_MAX);
+      return (GraphicsTextureSourceAsset *)textureAllocationPayload;
     }
     g_MemoryApi.free(assetOrDepthBuffer);
-    assetOrDepthBuffer = zeroCursorOrDepthBuffer;
   }
-  failureResult.failed = true;
-  failureResult.allocation = assetOrDepthBuffer;
-  return failureResult;
+  return NULL;
 }
 
 

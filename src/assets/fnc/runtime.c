@@ -45,16 +45,18 @@ bool FncModule_LoadAndRelocate(FncModuleHeader *serializedModule,FncModuleHeader
   AssetMagic *copyCursor;
   int *relocationCursor;
   void **hostApiTable;
-  ArenaReserveResult reserveResult;
+  uint32_t reserveError;
 
   moduleBaseOrError = (AssetMagic *)FATAL_ERROR_FNC_MODULE_INVALID;
   if (serializedModule->magic == ASSET_MAGIC_FNC) {
     moduleBaseOrError = (AssetMagic *)FATAL_ERROR_FNC_MODULE_BINDING;
     sizeOrDwordCount = serializedModule->allocationSizeBytes;
     if (serializedModule->exportBinding.bindingMode == 0) {
-      reserveResult = g_MemoryApi.reserveLinear(sizeOrDwordCount);
-      moduleBaseOrError = (AssetMagic *)reserveResult.baseOrError;
-      if (!reserveResult.failed) {
+      reserveError = g_MemoryApi.reserveLinear(sizeOrDwordCount,(void **)&moduleBaseOrError);
+      if (reserveError != 0) {
+        moduleBaseOrError = (AssetMagic *)reserveError;
+      }
+      else {
         /* dword copy of the whole image (REP MOVSD in the original) */
         copyCursor = moduleBaseOrError;
         for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount--) {

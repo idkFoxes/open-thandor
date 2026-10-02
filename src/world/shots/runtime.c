@@ -142,24 +142,27 @@ bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outEr
 {
   ShotRuntimeSlot *runtimeSlotCursor;
   int runtimeSlotsRemaining;
-  ArenaAllocResult loadResult;
+  uint32_t loadError;
+  bool loadFailed;
+  GraphicsTextureSet *loadedTextureSet;
+  GraphicsPaletteAsset *loadedPalette;
 
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadResult =
-       THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
-  if (!loadResult.failed) {
+  loadedTextureSet = g_GraphicsTextureSetLoadPackage(mutableBasePath,&loadError);
+  loadFailed = loadedTextureSet == NULL;
+  if (!loadFailed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
-    g_ShotTextureSet = (GraphicsTextureSet *)loadResult.payloadOrError;
+    g_ShotTextureSet = loadedTextureSet;
     WidePath_SetExtensionCode(ASSET_MAGIC_PAL,mutableBasePath);
-    loadResult =
-         THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
-    if (!loadResult.failed) {
+    loadedPalette = g_GraphicsPaletteAssetLoadPackage(mutableBasePath,&loadError);
+    loadFailed = loadedPalette == NULL;
+    if (!loadFailed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_ShotPalette = (GraphicsPaletteAsset *)loadResult.payloadOrError;
-      loadResult = g_MemoryApi.alloc(SHOT_RUNTIME_POOL_BYTES);
-      runtimeSlotCursor = (ShotRuntimeSlot *)loadResult.payloadOrError;
-      if (!loadResult.failed) {
+      g_ShotPalette = loadedPalette;
+      loadError = g_MemoryApi.alloc(SHOT_RUNTIME_POOL_BYTES,(void **)&runtimeSlotCursor);
+      loadFailed = loadError != 0;
+      if (!loadFailed) {
         /* pool address - 1 */
         g_ShotRuntimeRebaseBaseMinusOne = (uint8_t *)runtimeSlotCursor - 1;
         g_ShotRuntimeSlots = runtimeSlotCursor;
@@ -169,13 +172,11 @@ bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outEr
           runtimeSlotCursor->definitionOrSavedId.definition = NULL;
           runtimeSlotCursor = (ShotRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
         }
-        loadResult.payloadOrError = 0;
-        loadResult.failed = false;
       }
     }
   }
-  *outError = loadResult.payloadOrError;
-  return !loadResult.failed;
+  *outError = loadError;
+  return !loadFailed;
 }
 
 

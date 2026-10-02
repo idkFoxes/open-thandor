@@ -55,7 +55,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0057E970 */
-TextureSetResult GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset);
+GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 
 /* 0x0057AD30 */
 void GraphicsTexture_RebuildAllStagingTextures(void);
@@ -64,7 +64,7 @@ void GraphicsTexture_RebuildAllStagingTextures(void);
 GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
 
 /* 0x00485E40 */
-TextureSetResult GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16);
+GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode);
 
 /* 0x00485E80 */
 void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set);
@@ -118,13 +118,13 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AD630 */
-TextureSourceLoadResult GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16);
+GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16,uint32_t *outError);
 
 /* 0x004AD670 */
 GraphicsTextureSourceAsset * GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004AD6C0 */
-PaletteTextureSourceResult GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset);
+uint32_t GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset);
 
 /* 0x004AD770 */
 void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset);
@@ -167,7 +167,7 @@ void GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,G
 void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture);
 
 /* 0x00485EA0 */
-TextureSetResult GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset);
+GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 
 /* 0x00485F90 */
 GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set);
@@ -189,7 +189,8 @@ void GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture);
 
 
 /* 0x004AC8E0 */
-TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
-          (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset);
+bool GraphicsTextureSource_DecomposeSubresourceRegions
+          (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
+          GraphicsTextureSourceAsset **outAsset,uint32_t *outError);
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_TEXTURE_H */

@@ -14,7 +14,7 @@
 /* Address: 0x00575890.
    Points all three fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and
    loads the error texts (texte\error.str) as text page 0. If they cannot be loaded the game exits with
-   the built-in I/O error message; otherwise FatalError_Exit returns at once because the failure flag is clear.
+   the built-in I/O error message; otherwise FatalError_Exit returns at once because failed is false.
 */
 void __cdecl ErrorSystem_Init(void)
 
@@ -69,12 +69,11 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
 
 /* Address: 0x00407F90.
    The in-game fatal-error handler behind FatalError_ReportIfFailed (installed by
-   ErrorRuntime_InstallUiHandlerAndAllocateState): with CF clear it passes EAX through; with CF set it builds
-   the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames until the
-   dialog is dismissed, then returns the error with CF set so the caller can carry on.
-   Original register convention: EAX and CF are passed in and returned (CF set = failure); ECX and EDX preserved.
+   ErrorRuntime_InstallUiHandlerAndAllocateState): returns valueOrError unchanged. When failed is set it first
+   builds the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames
+   until the dialog is dismissed, so the caller can carry on (the caller knows the failure from its own flag).
 */
-FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn)
+uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool failed)
 
 {
   int32_t *topOffsetField;
@@ -84,19 +83,16 @@ FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrVal
   uint32_t *templateImageCursor;
   UiRootNode *templateCopyCursor;
   RichTextExtentRegs wrappedExtent;
-  FatalErrorCheckResult passThroughResult;
-  FatalErrorCheckResult dispatchResult;
+  uint32_t errorOrValue;
   uint16_t *resolvedText;
 
-  if (!carryIn) {
-    passThroughResult.failed = false;
-    passThroughResult.valueOrError = errorOrValue;
-    return passThroughResult;
+  if (!failed) {
+    return valueOrError;
   }
+  errorOrValue = valueOrError;
   if (g_FatalErrorUiRootTemplate == NULL) {
     /* no dialog state allocated yet: FatalError_Exit, which does not return */
-    dispatchResult = FatalError_ExitIfFailed(errorOrValue,true);
-    errorOrValue = dispatchResult.valueOrError;
+    errorOrValue = FatalError_ExitIfFailed(errorOrValue,true);
   }
   stream = (uint16_t *)errorOrValue;
   if (FATAL_ERROR_IS_CODE(errorOrValue)) {
@@ -134,9 +130,7 @@ FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrVal
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresentWithLockTransition();
   } while (g_FatalErrorDialogDismissed == 0);
-  dispatchResult.failed = true;
-  dispatchResult.valueOrError = errorOrValue;
-  return dispatchResult;
+  return errorOrValue;
 }
 
 
@@ -148,12 +142,11 @@ FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrVal
 void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
 
 {
-  ArenaAllocResult allocResult;
+  void *allocPayload;
 
-  allocResult = g_MemoryApi.alloc(sizeof g_FatalErrorUiRootTemplateImage);
-  if (!allocResult.failed) {
+  if (g_MemoryApi.alloc(sizeof g_FatalErrorUiRootTemplateImage,&allocPayload) == 0) {
     g_FatalErrorReportHandler = FatalErrorRuntime_DispatchPendingError;
-    g_FatalErrorUiRootTemplate = (UiRootNode *)allocResult.payloadOrError;
+    g_FatalErrorUiRootTemplate = (UiRootNode *)allocPayload;
   }
   return;
 }
@@ -192,23 +185,21 @@ uint32_t FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint
 
 
 /* Address: 0x005758D0.
-   The fatal-error handler: with CF clear it passes EAX through; with CF set it builds the error message
-   (a code below 0x100 selects a text of the error page, anything else is a rich-text stream), fills in the
-   last path and the three detail strings, shuts everything down, shows the text in a message box and
-   exits the process.
-   Original register convention: EAX and CF are passed in and returned (CF set = failure); ECX and EDX preserved.
+   The fatal-error handler: without failed it returns valueOrError unchanged; with failed it builds the error
+   message (a code below 0x100 selects a text of the error page, anything else is a rich-text stream), fills
+   in the last path and the three detail strings, shuts everything down, shows the text in a message box and
+   exits the process (it does not return then).
 */
-FatalErrorCheckResult FatalError_Exit(uint32_t errorOrValue,bool carryIn)
+uint32_t FatalError_Exit(uint32_t valueOrError,bool failed)
 
 {
-  FatalErrorCheckResult passThroughResult;
+  uint32_t errorOrValue;
   uint16_t *resolvedText;
-  
-  if (!carryIn) {
-    passThroughResult.failed = false;
-    passThroughResult.valueOrError = errorOrValue;
-    return passThroughResult;
+
+  if (!failed) {
+    return valueOrError;
   }
+  errorOrValue = valueOrError;
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
   Thandor_Log("fatal error 0x%08X, last path \"%ls\"", errorOrValue, (wchar_t *)g_PackageLastErrorPath);
   Thandor_LogStack("fatal error stack", errorOrValue);

@@ -13,9 +13,9 @@
 
 /* Submodule: core/error/runtime. */
 
-/* The two fatal-error handlers, installed by ErrorSystem_Init. Both take a value and a failure flag:
-   without the flag they return the value unchanged; with it they treat the value as an error code or
-   message and handle it.
+/* The two fatal-error handlers, installed by ErrorSystem_Init. Both take a value and a failure flag and
+   return the value unchanged; with the flag set they first treat the value as an error code or message
+   and handle it (so callers can wrap a computation: x = FatalError_ExitIfFailed(value, failed)).
    FatalError_ExitIfFailed: always FatalError_Exit, which shows the message box, shuts down and exits.
    FatalError_ReportIfFailed: FatalError_Exit until the UI error state exists
    (ErrorRuntime_InstallUiHandlerAndAllocateState), then FatalErrorRuntime_DispatchPendingError, which
@@ -134,7 +134,7 @@
                                                FncModule_GetExportByIndex: the export index is out of range */
 /* GraphicsTextureSet_AllocateMetadata: an image of a texture set is not a power of two wide and high */
 #define FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO 0x2F
-/* GraphicsCursor_SetFrameIndex: the frame index is not below g_CursorFrameCount (EAX holds it on success too) */
+/* GraphicsCursor_SetFrameIndex: the frame index is not below g_CursorFrameCount (it returns false) */
 #define FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE 0x2D
 /* Texture sources (graphics/resources/texture): not a 'gfx' asset or the subresource index is out of range
    (GraphicsTextureSource_ConvertPaletteEntries, GraphicsTextureSource_DecomposeSubresourceRegions) */
@@ -161,7 +161,7 @@ int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
 void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 
 /* 0x00407F90 */
-FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn);
+uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool failed);
 
 /* 0x00408090 */
 void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void);
@@ -170,7 +170,7 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 uint32_t FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x005758D0 */
-FatalErrorCheckResult FatalError_Exit(uint32_t errorOrValue,bool carryIn);
+uint32_t FatalError_Exit(uint32_t valueOrError,bool failed);
 
 /* 0x0041BB00 */
 int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);

@@ -68,18 +68,21 @@ void FontRuntime_Init(void)
   wchar_t *pathUtf16;
   wchar_t *pathCursor;
   uint32_t *overrideDword;
-  TextureSourceLoadResult textureLoadResult;
-  FatalErrorCheckResult checkedResult;
-  ArenaAllocResult allocResult;
+  GraphicsTextureSourceAsset *loadedTexture;
+  uint32_t textureLoadError;
+  uint32_t checkedValue;
+  uint32_t allocError;
+  void *allocPayload;
   
   pathUtf16 = u_engine_font_gfx_0041b030;
   textureSourceSlot = g_FontTextureSources;
   remainingSources = 2;
   scanLimitOrSlotCount = FONT_TEXTURE_PATHS_SCAN_UNITS;
   do {
-    textureLoadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)pathUtf16);
-    checkedResult = FatalError_ExitIfFailed((uint32_t)textureLoadResult.textureSource,textureLoadResult.failed);
-    *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
+    loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)pathUtf16,&textureLoadError);
+    checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uint32_t)loadedTexture : textureLoadError,
+                                            loadedTexture == NULL);
+    *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedValue;
     /* step pathUtf16 past the terminator to the next path */
     pathCursor = pathUtf16;
     do {
@@ -93,12 +96,12 @@ void FontRuntime_Init(void)
     textureSourceSlot++;
     remainingSources--;
   } while (remainingSources != 0);
-  allocResult = g_MemoryApi.alloc(RICHTEXT_RUNTIME_BUFFER_UNITS * sizeof(uint16_t)); /* 16 KiB */
-  checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
-  g_FontRuntimeBuffer = (uint8_t *)checkedResult.valueOrError;
-  allocResult = g_MemoryApi.alloc(sizeof(TextResourceOverrideTable));
-  checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
-  g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.valueOrError;
+  allocError = g_MemoryApi.alloc(RICHTEXT_RUNTIME_BUFFER_UNITS * sizeof(uint16_t),&allocPayload); /* 16 KiB */
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  g_FontRuntimeBuffer = (uint8_t *)checkedValue;
+  allocError = g_MemoryApi.alloc(sizeof(TextResourceOverrideTable),&allocPayload);
+  checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
+  g_TextResourceOverrides = (TextResourceOverrideTable *)checkedValue;
   overrideDword = g_TextResourceOverrides->resourceIds;
   /* all dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
      after this fill it finds no free slot (the original does the same: OR EAX,-1 / REP STOSD). */
@@ -295,16 +298,15 @@ bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32
   uint16_t *recordStart;
   uint16_t *textCursor;
   int stringIndex;
-  PackageLoadResult loadResult;
+  uint32_t loadErrorCode;
 
-  loadResult = Package_LoadEntry(path);
-  if (loadResult.failed) {
+  allocation = Package_LoadEntry(path,&loadErrorCode);
+  if (allocation == NULL) {
     Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
-                (uint32_t)loadResult.bufferOrError);
+                loadErrorCode);
+    localeBlockOrError = (TextResourceAssetHeader *)loadErrorCode;
   }
-  allocation = loadResult.bufferOrError;
-  localeBlockOrError = allocation;
-  if (!loadResult.failed) {
+  else {
     localeBlockOrError = (TextResourceAssetHeader *)TEXT_RESOURCE_MISSING_SENTINEL_0x33;
     if ((allocation->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
       remainingBlocks = (allocation->localeCountHeader).localeBlockCount;

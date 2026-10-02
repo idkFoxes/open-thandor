@@ -199,7 +199,7 @@ void UiSpriteButtonControl_NonRightPress
           control->activationSound != NULL) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound);
+                   control->activationSound,NULL);
       }
       selectionStateFlagsField = &(control->selectable).stateFlags;
       *selectionStateFlagsField = *selectionStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -226,7 +226,7 @@ void UiSpriteButtonControl_NonRightPress
           control->activationSound != NULL) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound);
+                   control->activationSound,NULL);
       }
       pressStateFlagsField = &(control->selectable).stateFlags;
       *pressStateFlagsField = *pressStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -276,7 +276,7 @@ void UiSpriteButtonControl_NonRightRelease
           control->activationSound != NULL) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   control->activationSound);
+                   control->activationSound,NULL);
       }
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;

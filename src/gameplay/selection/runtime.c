@@ -789,26 +789,33 @@ bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint
   int entriesRemaining;
   int blockCountOrRecordOffset;
   SelectionPlayerRuntimeBlock *playerBlockCursor;
-  TextureSourceLoadResult textureLoad;
-  PackageLoadResult packageLoad;
+  uint32_t loadErrorCode;
   AssetRelativeOffset swappedSelectionDataOffset;
   uint32_t referencePayloadValue;
-  
-  textureLoad = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_select_gfx_0052ce18);
-  loadedResource = textureLoad.textureSource;
-  if (!textureLoad.failed) {
+
+  loadedResource = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_select_gfx_0052ce18,&loadErrorCode);
+  if (loadedResource == NULL) {
+    loadedResource = (GraphicsTextureSourceAsset *)loadErrorCode;
+  }
+  else {
     g_SelectionPanelTextureSource = loadedResource;
-    textureLoad = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_info_gfx_0052ce42);
-    loadedResource = textureLoad.textureSource;
-    if (!textureLoad.failed) {
+    loadedResource = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_info_gfx_0052ce42,&loadErrorCode);
+    if (loadedResource == NULL) {
+      loadedResource = (GraphicsTextureSourceAsset *)loadErrorCode;
+    }
+    else {
       g_InfoPanelTextureSource = loadedResource;
-      packageLoad = Package_LoadEntry((uint16_t *)u_gfx_panel_select_dat_0052ce68);
-      loadedResource = packageLoad.bufferOrError;
-      if (!packageLoad.failed) {
+      loadedResource = Package_LoadEntry((uint16_t *)u_gfx_panel_select_dat_0052ce68,&loadErrorCode);
+      if (loadedResource == NULL) {
+        loadedResource = (GraphicsTextureSourceAsset *)loadErrorCode;
+      }
+      else {
         g_SelectionPanelData = loadedResource;
-        packageLoad = Package_LoadEntry((uint16_t *)u_gfx_panel_info_dat_0052ce92);
-        loadedResource = packageLoad.bufferOrError;
-        if (!packageLoad.failed) {
+        loadedResource = Package_LoadEntry((uint16_t *)u_gfx_panel_info_dat_0052ce92,&loadErrorCode);
+        if (loadedResource == NULL) {
+          loadedResource = (GraphicsTextureSourceAsset *)loadErrorCode;
+        }
+        else {
           blockCountOrRecordOffset = 8; /* player blocks */
           playerBlockCursor = g_SelectionPlayerBlocks;
           g_InfoPanelData = loadedResource;

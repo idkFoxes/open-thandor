@@ -55,7 +55,7 @@ bool Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError);
 bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 /* 0x0040EE30 */
-PackageLoadResult Package_LoadEntry(uint16_t *path);
+void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode);
 
 /* 0x0040E3A0 */
 bool Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError);

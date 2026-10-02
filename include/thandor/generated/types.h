@@ -13,41 +13,13 @@
 /* Forward declarations (hoisted by tools/sort_types.py). */
 /* Forward declarations (hoisted by tools/sort_types.py). */
 
-typedef struct MovieOpenResult MovieOpenResult, *PMovieOpenResult;
-typedef struct Win32FileSeekResult Win32FileSeekResult, *PWin32FileSeekResult;
-typedef struct CommandLineOptionResult CommandLineOptionResult, *PCommandLineOptionResult;
-typedef struct Win32FileReadResult Win32FileReadResult, *PWin32FileReadResult;
-typedef struct FileSystemSeekResult FileSystemSeekResult, *PFileSystemSeekResult;
-typedef struct NetworkReceiveResult NetworkReceiveResult, *PNetworkReceiveResult;
 typedef struct FixedVectorAngles FixedVectorAngles, *PFixedVectorAngles;
-typedef struct NetworkOpenBindResult NetworkOpenBindResult, *PNetworkOpenBindResult;
-typedef struct Win32FileOpenResult Win32FileOpenResult, *PWin32FileOpenResult;
-typedef struct FileSystemReadResult FileSystemReadResult, *PFileSystemReadResult;
-typedef struct FileSystemSizeResult FileSystemSizeResult, *PFileSystemSizeResult;
-typedef struct ArenaFreeResult ArenaFreeResult, *PArenaFreeResult;
-typedef struct Win32FileSizeResult Win32FileSizeResult, *PWin32FileSizeResult;
-typedef struct NetworkSendResult NetworkSendResult, *PNetworkSendResult;
 typedef struct ArmySegmentMeter ArmySegmentMeter, *PArmySegmentMeter;
-typedef struct FileSystemWriteResult FileSystemWriteResult, *PFileSystemWriteResult;
-typedef struct FileSystemOpenResult FileSystemOpenResult, *PFileSystemOpenResult;
-typedef struct FatalErrorCheckResult FatalErrorCheckResult, *PFatalErrorCheckResult;
-typedef struct PckCodecResult PckCodecResult, *PPckCodecResult;
 typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
-typedef struct ArenaAllocResult ArenaAllocResult, *PArenaAllocResult;
-typedef struct Win32FileWriteResult Win32FileWriteResult, *PWin32FileWriteResult;
 typedef struct FixedDirection FixedDirection, *PFixedDirection;
-typedef struct NetworkSetSessionResult NetworkSetSessionResult, *PNetworkSetSessionResult;
 /* Graphics/display result records. */
-typedef struct DisplayModeResult DisplayModeResult, *PDisplayModeResult;
-typedef struct CursorFrameResult CursorFrameResult, *PCursorFrameResult;
 typedef struct TextureSizeResult TextureSizeResult, *PTextureSizeResult;
-typedef struct FramebufferCaptureResult FramebufferCaptureResult, *PFramebufferCaptureResult;
-typedef struct TextureSourceLoadResult TextureSourceLoadResult, *PTextureSourceLoadResult;
 /* DirectSound result records. */
-typedef struct SampleVoiceSetResult SampleVoiceSetResult, *PSampleVoiceSetResult;
-typedef struct PcmVoiceSetResult PcmVoiceSetResult, *PPcmVoiceSetResult;
-typedef struct SoundPlayResult SoundPlayResult, *PSoundPlayResult;
-typedef struct PlacementCandidateResult PlacementCandidateResult, *PPlacementCandidateResult;
 typedef union IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion;
 typedef struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct;
 typedef struct _OVERLAPPED _OVERLAPPED, *P_OVERLAPPED;
@@ -518,7 +490,6 @@ typedef struct CommandLineState CommandLineState, *PCommandLineState;
 typedef struct ArenaState ArenaState, *PArenaState;
 typedef struct TH_WNDCLASSA TH_WNDCLASSA, *PTH_WNDCLASSA;
 typedef struct MemoryApiTable MemoryApiTable, *PMemoryApiTable;
-typedef struct ArenaReserveResult ArenaReserveResult, *PArenaReserveResult;
 typedef struct ArmyPlacementContactCallbackTable5 ArmyPlacementContactCallbackTable5, *PArmyPlacementContactCallbackTable5;
 typedef struct DIPROPHEADER DIPROPHEADER, *PDIPROPHEADER;
 typedef struct PALETTEENTRY_DX6 PALETTEENTRY_DX6, *PPALETTEENTRY_DX6;
@@ -610,42 +581,29 @@ typedef struct IMAGE_SECTION_HEADER IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER
 typedef union Misc Misc, *PMisc;
 typedef struct IMAGE_RESOURCE_DATA_ENTRY IMAGE_RESOURCE_DATA_ENTRY, *PIMAGE_RESOURCE_DATA_ENTRY;
 typedef struct IMAGE_RESOURCE_DIRECTORY IMAGE_RESOURCE_DIRECTORY, *PIMAGE_RESOURCE_DIRECTORY;
-typedef struct HeightSampleResult HeightSampleResult, *PHeightSampleResult;
 typedef struct FixedVectorQ12 FixedVectorQ12, *PFixedVectorQ12;
-typedef struct PaletteTextureSourceResult PaletteTextureSourceResult, *PPaletteTextureSourceResult;
-typedef struct PaletteAssetResult PaletteAssetResult, *PPaletteAssetResult;
 typedef struct PathingDestination PathingDestination, *PPathingDestination;
 typedef struct FieldGridCoordinates FieldGridCoordinates, *PFieldGridCoordinates;
-typedef struct SoftwareFramebufferResult SoftwareFramebufferResult, *PSoftwareFramebufferResult;
-typedef struct OffscreenRenderResult OffscreenRenderResult, *POffscreenRenderResult;
 typedef struct StatusResult StatusResult, *PStatusResult;
-typedef struct TextCompareResult TextCompareResult, *PTextCompareResult;
 typedef struct WorldCameraOrientation WorldCameraOrientation, *PWorldCameraOrientation;
 typedef struct ShotLaunchAngles ShotLaunchAngles, *PShotLaunchAngles;
-typedef struct TextureSetResult TextureSetResult, *PTextureSetResult;
-typedef struct KeyboardEventResult KeyboardEventResult, *PKeyboardEventResult;
 typedef struct WorldPositionResult WorldPositionResult, *PWorldPositionResult;
 typedef struct FixedRollAzimuthElevation FixedRollAzimuthElevation, *PFixedRollAzimuthElevation;
 typedef struct SelectableNodeResult SelectableNodeResult, *PSelectableNodeResult;
 typedef struct InputEventResult InputEventResult, *PInputEventResult;
 typedef struct WorldCameraPosition WorldCameraPosition, *PWorldCameraPosition;
 typedef struct FixedLengthAzimuthElevation FixedLengthAzimuthElevation, *PFixedLengthAzimuthElevation;
-typedef struct PlacementDispatchResult PlacementDispatchResult, *PPlacementDispatchResult;
-typedef struct PackageLoadResult PackageLoadResult, *PPackageLoadResult;
 typedef struct FixedAzimuthElevationRoll FixedAzimuthElevationRoll, *PFixedAzimuthElevationRoll;
-typedef struct DirectoryEnumerationResult DirectoryEnumerationResult, *PDirectoryEnumerationResult;
 typedef struct AiSecondaryWorkspaceDistanceSelection AiSecondaryWorkspaceDistanceSelection, *PAiSecondaryWorkspaceDistanceSelection;
 typedef struct TerrainOccupancyFlagsAndCombinedMask TerrainOccupancyFlagsAndCombinedMask, *PTerrainOccupancyFlagsAndCombinedMask;
 typedef struct TerrainOccupancyResolvedMasks TerrainOccupancyResolvedMasks, *PTerrainOccupancyResolvedMasks;
 typedef struct AiGeneralSiteDistanceSelection AiGeneralSiteDistanceSelection, *PAiGeneralSiteDistanceSelection;
-typedef struct ArenaLargestAllocResult ArenaLargestAllocResult, *PArenaLargestAllocResult;
 typedef struct GridPathBestUnreachableCell GridPathBestUnreachableCell, *PGridPathBestUnreachableCell;
 typedef struct AiStrategicClassSelection AiStrategicClassSelection, *PAiStrategicClassSelection;
-typedef struct ArenaShrinkResult ArenaShrinkResult, *PArenaShrinkResult;
 typedef struct DriveLetterEnumeration DriveLetterEnumeration, *PDriveLetterEnumeration;
 typedef struct FrontendCreditsUiStateView FrontendCreditsUiStateView, *PFrontendCreditsUiStateView;
 typedef struct GeneratedTextureRenderContextView GeneratedTextureRenderContextView, *PGeneratedTextureRenderContextView;
-typedef struct CursorEventResult CursorEventResult, *PCursorEventResult;
+typedef struct CursorPointerEvent CursorPointerEvent, *PCursorPointerEvent;
 typedef struct GraphicsProjectedPointPair GraphicsProjectedPointPair, *PGraphicsProjectedPointPair;
 typedef struct GraphicsTextureSourceHeaderView GraphicsTextureSourceHeaderView, *PGraphicsTextureSourceHeaderView;
 typedef struct InGameLevelSaveWorldView InGameLevelSaveWorldView, *PInGameLevelSaveWorldView;
@@ -710,7 +668,6 @@ typedef union ModelRaycastNearestNodeOrScratch4 ModelRaycastNearestNodeOrScratch
 typedef struct WorldPositionXY WorldPositionXY, *PWorldPositionXY;
 typedef struct FixedLengthAngle FixedLengthAngle, *PFixedLengthAngle;
 typedef struct TerrainPlacementResult TerrainPlacementResult, *PTerrainPlacementResult;
-typedef struct TextureSourceDecomposeResult TextureSourceDecomposeResult, *PTextureSourceDecomposeResult;
 typedef struct TerrainProjectedRowSpan TerrainProjectedRowSpan, *PTerrainProjectedRowSpan;
 typedef struct WinSockIpxAddress16 WinSockIpxAddress16, *PWinSockIpxAddress16;
 typedef union NetworkBackendSocketAddress16 NetworkBackendSocketAddress16, *PNetworkBackendSocketAddress16;
@@ -832,78 +789,12 @@ typedef pointer32 ImageBaseOffset32;
 #endif
 
 
-struct MovieOpenResult {
-    uint32_t frameCountOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-    uint32_t playbackRateHz; // ECX on success: header dword +0xFC, the frame-timer frequency callers pass to TimerRegisterPeriodic (lost in the Ghidra EAX/CF view)
-};
-
-struct Win32FileSeekResult {
-    uint32_t positionOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct CommandLineOptionResult {
-    uint8_t *option; // Physical ABI component EBX
-    bool notFound; // Physical ABI component CF
-};
-
-struct CursorFrameResult {
-    uint32_t errorCode; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct DisplayModeResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct FramebufferCaptureResult {
-    struct GraphicsCapturedTextureSourceAsset *capture; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct PcmVoiceSetResult {
-    struct DirectSoundVoiceSet *voiceSet; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct SampleVoiceSetResult {
-    struct DirectSoundVoiceSet *voiceSet; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct SoundPlayResult {
-    struct IDirectSoundBuffer *soundBuffer; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
 struct TextureSizeResult {
     uint32_t logicalWidthPixels; // EAX logical texture width in pixels on CF-clear success
     uint32_t logicalHeightPixels; // EDX logical texture height in pixels on CF-clear success
     bool failed; // Carry/status: false on success; true on failure
 };
 
-struct TextureSourceLoadResult {
-    struct GraphicsTextureSourceAsset *textureSource; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct Win32FileReadResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct FileSystemSeekResult {
-    uint32_t positionOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-
-struct NetworkReceiveResult {
-    uint32_t byteCountOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
 
 struct FixedVectorAngles {
     uint32_t azimuthAngle; // Physical ABI component ECX
@@ -918,64 +809,10 @@ struct FixedElevationAzimuth {
     uint32_t azimuthAngle; 
 };
 
-struct NetworkOpenBindResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct Win32FileOpenResult {
-    uint32_t handleOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct FileSystemReadResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct FileSystemSizeResult {
-    uint32_t sizeOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct ArenaFreeResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct Win32FileSizeResult {
-    uint32_t sizeOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct NetworkSendResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
 
 struct ArmySegmentMeter {
     uint32_t filledSegments; // Physical ABI component EBX
     uint32_t totalSegments; // Physical ABI component ECX
-};
-
-struct FileSystemWriteResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct FileSystemOpenResult {
-    uint32_t handleOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct FatalErrorCheckResult {
-    uint32_t valueOrError;
-    bool failed;
-};
-
-struct PckCodecResult {
-    uint32_t byteCountOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
 };
 
 struct ModelWorldPoint {
@@ -984,15 +821,6 @@ struct ModelWorldPoint {
     uint32_t zQ12; // Physical ABI component EDX
 };
 
-struct ArenaAllocResult {
-    uint32_t payloadOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct Win32FileWriteResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
 
 struct FixedDirection {
     uint32_t x; // Physical ABI component EAX
@@ -1000,16 +828,13 @@ struct FixedDirection {
     uint32_t z; // Physical ABI component EDX
 };
 
-struct NetworkSetSessionResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
 /* Callback/function-definition ABIs. */
-typedef CursorFrameResult GraphicsCursorSetFrameProc(uint32_t frameIndex);
-typedef DisplayModeResult SoftwareDisplayModeHookProc(uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width);
+typedef bool GraphicsCursorSetFrameProc(uint32_t frameIndex);
+/* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
+   returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */
+typedef bool SoftwareDisplayModeHookProc(uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
 typedef void GraphicsFramebufferPresentProc(SoftwareFramebufferAccess * framebuffer);
-typedef FramebufferCaptureResult GraphicsFramebufferCaptureRegionProc(uint32_t captureHeight, uint32_t captureWidth, int32_t sourceY, int32_t sourceX);
+typedef GraphicsCapturedTextureSourceAsset *GraphicsFramebufferCaptureRegionProc(uint32_t captureHeight, uint32_t captureWidth, int32_t sourceY, int32_t sourceX);
 typedef bool GraphicsFramebufferBeginAccessProc(void);
 typedef void GraphicsFramebufferEndAccessProc(void);
 typedef TextureSizeResult GraphicsTextureSourceGetLogicalSizeProc(uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
@@ -1028,27 +853,26 @@ typedef void GraphicsTextureSourceStretchDirectColorBilinearProc(uint32_t destin
 typedef void GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t integerScale, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t paletteBankIndex, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void SoftwareFramebufferDestroyProc(SoftwareFramebufferAccess * framebuffer);
-typedef TextureSourceDecomposeResult GraphicsTextureSourceDecomposeSubresourceProc(uint32_t entryIndex, GraphicsTextureSourceAsset * sourceAsset);
-typedef SampleVoiceSetResult SoundCreateSampleVoiceSetProc(SoundSampleAsset * sampleAsset);
-typedef PcmVoiceSetResult SoundCreatePcmVoiceSetProc(uint32_t bufferByteCount, uint32_t sampleRateHz, uint32_t bitsPerSample, uint32_t channelCount, void * pcmData);
-typedef SoundPlayResult SoundPlayVoiceProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, DirectSoundVoiceSet * voiceSet);
+typedef bool GraphicsTextureSourceDecomposeSubresourceProc(uint32_t entryIndex, GraphicsTextureSourceAsset * sourceAsset, GraphicsTextureSourceAsset * * outAsset, uint32_t * outError);
+/* Voice-set creation: 0 on success (*outVoiceSet written), else an error code (*outVoiceSet untouched). */
+typedef uint32_t SoundCreateSampleVoiceSetProc(SoundSampleAsset * sampleAsset, DirectSoundVoiceSet * * outVoiceSet);
+typedef uint32_t SoundCreatePcmVoiceSetProc(uint32_t bufferByteCount, uint32_t sampleRateHz, uint32_t bitsPerSample, uint32_t channelCount, void * pcmData, DirectSoundVoiceSet * * outVoiceSet);
+/* Play a voice of the set: true when it plays; the voice (NULL on failure and from the silent backend) goes to
+   *outVoice unless outVoice is NULL. */
+typedef bool SoundPlayVoiceProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, DirectSoundVoiceSet * voiceSet, IDirectSoundBuffer * * outVoice);
 typedef void SoundReleaseSampleVoiceSetProc(DirectSoundVoiceSet * voiceSet);
 typedef void SoundReleasePcmVoiceSetProc(DirectSoundVoiceSet * voiceSet);
 typedef void SoundStopVoiceProc(IDirectSoundBuffer * voice);
 typedef bool SoundIsVoicePlayingProc(IDirectSoundBuffer * voice);
 typedef void SoundStopAllVoicesProc(void);
 typedef void SoundSetVoiceGainsProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, IDirectSoundBuffer * voice);
-struct PlacementCandidateResult {
-    int value;   /* Placement candidate/result value carried in EAX. */
-    bool rejected; /* Carry-flag status. */
-};
 
 #ifndef _WCHAR_T_DEFINED /* Win32 wchar_t: 16-bit unsigned, same as the CRT's */
 #define _WCHAR_T_DEFINED
 typedef unsigned short wchar_t;
 #endif
 
-typedef TextureSourceLoadResult GraphicsTextureSourceLoadPackageAssetProc(uint16_t * pathUtf16);
+typedef GraphicsTextureSourceAsset * GraphicsTextureSourceLoadPackageAssetProc(uint16_t * pathUtf16, uint32_t * outError);
 
 /* Recovered semantic scalar types used by canonical records. */
 typedef uint32_t ResourceExtractionDescriptor32;
@@ -9732,10 +9556,6 @@ struct TH_WNDCLASSA {
     char *lpszClassName;
 };
 
-struct ArenaReserveResult {
-    uint32_t baseOrError; // EAX: reserved linear base on CF-clear; engine error on CF-set.
-    bool failed; // Carry flag: clear success, set failure.
-};
 
 struct ArmyPlacementContactCallbackTable5 {
     void (*callbacks[5])(Q12, Q12, Q12, struct ModelRuntimeNode *, struct WorldRuntimeContext *); 
@@ -10611,13 +10431,8 @@ struct IMAGE_RESOURCE_DIRECTORY {
     uint16_t NumberOfIdEntries;
 };
 
-struct HeightSampleResult {
-    Q12 heightQ12; // EAX interpolated height
-    bool failed; // CF status
-};
-
 struct FieldGridInterpolationCallbackTable5 {
-    HeightSampleResult (*callbacks[5])(Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
+    bool (*callbacks[5])(Q12, Q12, struct FieldGridAsset *, Q12 *); // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.
 };
 
 /* Q12 vector returned by the fixed-point rotation helpers (the original returns it in EAX/ECX/EDX, the
@@ -10626,16 +10441,6 @@ struct FixedVectorQ12 {
     Q12 xQ12;
     Q12 yQ12;
     Q12 zQ12;
-};
-
-struct PaletteTextureSourceResult {
-    struct GraphicsPaletteTextureSourceAsset *paletteSource; // EAX palette-source pointer / error-coded value
-    bool failed; // CF status
-};
-
-struct PaletteAssetResult {
-    struct GraphicsPaletteAsset *paletteAsset; // EAX palette asset pointer / error-coded value
-    bool failed; // CF status
 };
 
 struct PathingDestination {
@@ -10651,24 +10456,9 @@ struct FieldGridCoordinates {
 };
 
 
-struct SoftwareFramebufferResult {
-    struct SoftwareFramebufferAccess *framebuffer; // EAX framebuffer pointer / allocator error value
-    bool failed; // CF status
-};
-
-struct OffscreenRenderResult {
-    void *allocation; // EAX offscreen allocation base
-    bool failed; // CF allocation/render status
-};
-
 struct StatusResult {
     uint32_t valueOrError; // EAX value/error code
     bool failed; // CF status
-};
-
-struct TextCompareResult {
-    bool equal; // ZF equality flag
-    bool less; // CF unsigned-order flag
 };
 
 struct WorldCameraOrientation {
@@ -10682,17 +10472,6 @@ struct ShotLaunchAngles {
     AngleTurn32 elevationAngle; // EDX launch elevation
 };
 
-
-struct TextureSetResult {
-    struct GraphicsTextureSet *textureSet; // EAX texture-set pointer / error-coded value
-    bool failed; // CF status
-};
-
-struct KeyboardEventResult {
-    uint32_t eventCode; // EAX keyboard event code
-    uint32_t eventData; // EDX keyboard event payload
-    bool queueEmpty; // CF queue-empty status
-};
 
 struct WorldPositionResult {
     Q12 worldXQ12; // EAX world X
@@ -10731,11 +10510,6 @@ struct FixedLengthAzimuthElevation {
     AngleTurn32 elevationAngle; // EDX elevation/pitch
 };
 
-struct PlacementDispatchResult {
-    uint32_t value; // EAX placement result
-    bool failed; // CF status
-};
-
 /* runtimeUpdate, classMethodD (sound update) and classCommand of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
    are called with a model runtime (ModelRuntimeSlot, first dword = its ModelDefinition), never with an army:
    ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, ArmyRuntimeHierarchy_DispatchClassMethodDRecursive
@@ -10751,15 +10525,10 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
     void (*modelClassInitialize[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     void (*modelReleaseOrCommit[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     bool (*placementValidation[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *); // 24 placement validators; CF is the boolean result. Split from generic world/army callbacks.
-    PlacementDispatchResult (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *);
+    bool (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue); // true = accepted, *outPlacementValue set only then
     ModelRuntimeClassCallback *classCommand[24];
     void (*gridInfluenceAdd[24])(struct GameEntityRuntime *);
     void (*gridInfluenceRemove[24])(struct GameEntityRuntime *);
-};
-
-struct PackageLoadResult {
-    void *bufferOrError; // EAX loaded buffer or error-coded value
-    bool failed; // CF status
 };
 
 /* Angles of a composed rotation as FixedTransform_ComposeEulerAnglesRegs returns them (EAX, EBX, EDX); the
@@ -10771,11 +10540,6 @@ struct FixedAzimuthElevationRoll {
 };
 
 
-struct DirectoryEnumerationResult {
-    uint32_t recordSizeBytes; /* EAX physical enumeration record size; current backend returns 0x200. */
-    uint32_t entryCount;      /* ECX number of output records produced. */
-    bool failed;            /* CF enumeration status; current Win32 backend clears CF on every return. */
-};
 struct AiSecondaryWorkspaceDistanceSelection {
     AiCandidateScore32 score;
     struct AiTargetWorkspaceEntry *selectedEntry;
@@ -10793,11 +10557,6 @@ struct AiGeneralSiteDistanceSelection {
     AiCandidateScore32 score;
     struct AiScoredSiteWorkspaceEntry *selectedEntry;
 };
-struct ArenaLargestAllocResult {
-    uint32_t allocationOrError;    /* EAX: allocation pointer on success; arena error code on failure. */
-    uint32_t blockSizeOrSentinel;  /* ECX: selected block size on success; failure sentinel otherwise. */
-    bool failed;                 /* CF: clear on success, set on failure. */
-};
 struct GridPathBestUnreachableCell {
     uint32_t bestCellByteOffset; /* EDI in/out: byte offset from g_GridScratchBase. */
     GridPathCost bestCost;    /* EDX in/out: best path metric; outer caller starts at 0x7fffffff. */
@@ -10807,18 +10566,16 @@ struct AiStrategicClassSelection {
     RuntimeToken selectedRuntimeToken;
 };
 
-struct ArenaShrinkResult {
-    uint32_t scratchOrError; // Physical ABI component EAX; arithmetic/free-block scratch on success, engine error on failure
-    bool failed; // Physical ABI component CF; clear=success, set=failure
-};
 
 struct MemoryApiTable {
-    ArenaAllocResult (*alloc)(uint32_t); // 0x005864A0
-    ArenaFreeResult (*free)(void *); // 0x005865B0
-    ArenaLargestAllocResult (*allocLargestFreeBlock)(void); // 0x00586640
-    ArenaShrinkResult (*shrinkInPlace)(uint32_t, void *); // 0x005866B0; arguments are (newSize, memory). Status is returned through CF; EAX is only meaningful on failure.
+    /* Every status-returning entry returns 0 on success or an engine error code (FATAL_ERROR_*,
+       ARENA_HEAP_CORRUPT); out-parameters are written only on success. */
+    uint32_t (*alloc)(uint32_t bytes, void **outPayload); // 0x005864A0
+    uint32_t (*free)(void *memory); // 0x005865B0
+    uint32_t (*allocLargestFreeBlock)(void **outAllocation, uint32_t *outBlockSize); // 0x00586640
+    uint32_t (*shrinkInPlace)(uint32_t newSize, void *memory); // 0x005866B0
     uint32_t (*queryFreeBytes)(void); // 0x00586570
-    ArenaReserveResult (*reserveLinear)(uint32_t); // 0x00586750; returns the previous linear cursor in EAX.
+    uint32_t (*reserveLinear)(uint32_t bytes, void **outBase); // 0x00586750; *outBase = previous linear cursor
 };
 
 
@@ -10845,13 +10602,12 @@ struct GeneratedTextureRenderContextView {
     uint32_t *projectedPointBlockPool; // Pool descriptor used by reserve/rollback helpers; descriptor[1] is allocation cursor and descriptor[2] data base.
 };
 
-struct CursorEventResult {
-    uint32_t eventType; // EAX event code when CF clear
-    enum GraphicsCursorButtonState buttonState; // EBX button state when CF clear
-    UiPixelCoordinate pointerX; // ECX X when CF clear
-    UiPixelCoordinate pointerY; // EDX Y when CF clear
-    UiPointerWheelDelta wheelDelta; // ESI wheel/event payload when CF clear
-    bool queueEmpty; // CF set when input queue empty
+struct CursorPointerEvent {
+    uint32_t eventType; // GraphicsCursorEventType of the consumed event
+    enum GraphicsCursorButtonState buttonState; // button state, bit 31 set for a double click
+    UiPixelCoordinate pointerX;
+    UiPixelCoordinate pointerY;
+    UiPointerWheelDelta wheelDelta;
 };
 
 
@@ -12224,10 +11980,6 @@ struct TerrainClassPlacementAndOverlayCallbackTable10 {
 
 
 typedef uint32_t NetworkSocketHandle32;
-struct TextureSourceDecomposeResult {
-    struct GraphicsTextureSourceAsset *assetOrError;
-    bool failed;
-};
 struct TerrainProjectedRowSpan {
     int firstColumn;
     int endColumnExclusive;

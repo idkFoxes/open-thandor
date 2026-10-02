@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00486B00 */
-OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
+GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
           GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputHeight,
           GraphicsPixelDimension outputWidth,ModelRuntimeCount modelCount,

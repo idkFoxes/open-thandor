@@ -50,14 +50,13 @@ void UiPointer_DispatchPendingEvents(void)
   UiPixelCoordinate pointerY;
   GraphicsCursorButtonState buttonMask;
   UiPointerWheelDelta wheelDelta;
-  CursorEventResult pointerEvent;
-  
+  CursorPointerEvent pointerEvent;
+
   g_SpinLockAcquire(g_UiRuntimeFrameLock);
   if (g_PointerSetPosition == DirectInputMouse_SetPosition) {
     DirectInputMouse_PollBufferedEvents();
   }
-  while (control = g_UiPointerCaptureTarget, pointerEvent = g_GraphicsCursorConsumeEvent(),
-         !pointerEvent.queueEmpty) {
+  while (control = g_UiPointerCaptureTarget, g_GraphicsCursorConsumeEvent(&pointerEvent)) {
     pointerX = pointerEvent.pointerX;
     wheelDelta = pointerEvent.wheelDelta;
     pointerY = pointerEvent.pointerY;
@@ -147,13 +146,10 @@ void UiKeyboard_DispatchPendingEvents(void)
   UiNodeBase *control;
   UiNodeBase *walkNode;
   bool passToNext;
-  KeyboardEventResult keyboardEvent;
 
   g_SpinLockAcquire(g_UiRuntimeFrameLock);
-  while (keyboardEvent = g_KeyboardReadEvent(), !keyboardEvent.queueEmpty) {
+  while (g_KeyboardReadEvent(&keyCode,&keyboardStateMask)) {
     if (g_UiPointerCaptureTarget != UI_NODE_NONE) continue;
-    keyboardStateMask = keyboardEvent.eventData;
-    keyCode = keyboardEvent.eventCode;
     control = g_UiKeyboardFocusNode;
     dispatchToRoot = true;
     if (control != UI_NODE_NONE) {
@@ -311,7 +307,7 @@ bool UiRangeSliderControl_HandleKeyboard
   }
   control->value = adjustedSliderValue;
   if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != NULL)) {
-    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound,NULL);
   }
   UiActionQueue_Enqueue(control->actionId,&control->base);
   UiNode_InvalidateRoot(&control->base);

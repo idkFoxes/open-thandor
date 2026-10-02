@@ -23,9 +23,10 @@
    Creates the renderer textures of a texture asset: allocates the set metadata and hands it to the Glide
    backend, or (DirectDraw) creates one texture resource per subresource with its staging and device
    texture and registers it in g_GraphicsTextureSlots. A subresource whose allocation or registration
-   fails is left NULL; only a failed metadata allocation fails the call (CF set).
+   fails is left NULL; only a failed metadata allocation fails the call: then NULL is returned with its error in
+   *outErrorCode (outErrorCode may be NULL). Never NULL on success.
 */
-TextureSetResult GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
+GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode)
 
 {
   GraphicsTextureSourceAsset *setSourceAsset;
@@ -35,35 +36,34 @@ TextureSetResult GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAss
   DDPIXELFORMAT *selectedPixelFormat;
   GraphicsTextureResource *newTexture;
   bool registerFailed;
-  TextureSetResult allocatedSet;
-  ArenaAllocResult textureAllocation;
-  TextureSetResult successResult;
-  TextureSetResult failureResult;
+  GraphicsTextureSet *allocatedSet;
+  uint32_t textureAllocationError;
   GraphicsTextureSetEntry *entryCursor;
   AssetSubresourceCount entriesRemaining;
   GraphicsSubresourceIndex subresourceIndex;
-  
+
   adapters = g_GraphicsAdapters;
   adapterIndex = g_ActiveGraphicsAdapterIndex;
-  allocatedSet = GraphicsTextureSet_AllocateMetadata(sourceAsset);
-  if (allocatedSet.failed) {
-    failureResult.failed = true;
-    failureResult.textureSet = allocatedSet.textureSet;
-    return failureResult;
+  allocatedSet = GraphicsTextureSet_AllocateMetadata(sourceAsset,outErrorCode);
+  if (allocatedSet == NULL) {
+    return NULL;
   }
   if (adapters[adapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
-    allocatedSet.failed = Glide3_TextureSet_CreateBackend(allocatedSet.textureSet,sourceAsset);
+    /* the Glide backend always succeeds (returns false) */
+    Glide3_TextureSet_CreateBackend(allocatedSet,sourceAsset);
     return allocatedSet;
   }
-  setSourceAsset = (allocatedSet.textureSet)->sourceAsset;
+  setSourceAsset = allocatedSet->sourceAsset;
   entriesRemaining = (setSourceAsset->tableDescriptor).subresourceCount;
-  entryCursor = (allocatedSet.textureSet)->entries;
+  entryCursor = allocatedSet->entries;
   subresourceIndex = 0;
   do {
     selectedPixelFormat = GraphicsTexture_SelectPixelFormat(subresourceIndex,setSourceAsset);
-    textureAllocation = g_MemoryApi.alloc(sizeof(GraphicsTextureResource));
-    newTexture = (GraphicsTextureResource *)textureAllocation.payloadOrError;
-    if (!textureAllocation.failed) {
+    textureAllocationError = g_MemoryApi.alloc(sizeof(GraphicsTextureResource),(void **)&newTexture);
+    if (textureAllocationError != 0) {
+      newTexture = (GraphicsTextureResource *)textureAllocationError;
+    }
+    else {
       newTexture->stagingTexture2 = NULL;
       newTexture->stagingSurface3 = NULL;
       newTexture->stagingSurfaceBase = NULL;
@@ -93,9 +93,7 @@ TextureSetResult GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAss
     entryCursor++;
     entriesRemaining--;
   } while (entriesRemaining != 0);
-  successResult.failed = false;
-  successResult.textureSet = allocatedSet.textureSet;
-  return successResult;
+  return allocatedSet;
 }
 
 
@@ -181,30 +179,28 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
 /* Address: 0x00485E40.
    Loads a 'gfx' texture source from the package and builds a renderer texture set from it through
    g_GraphicsCreateTextureSet (installed as g_GraphicsTextureSetLoadPackage). When the set cannot be created the
-   loaded asset is released again and CF is set with the creation error; a failed load returns its own error.
+   loaded asset is released again. Returns the set (never NULL), or NULL with the load or creation error in
+   *outErrorCode (outErrorCode may be NULL).
 */
-TextureSetResult GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16)
+GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode)
 
 {
-  GraphicsTextureSourceAsset *loadedSourceOrError;
-  GraphicsTextureSet *createdSetOrError;
-  PackageLoadResult loadResult;
-  TextureSetResult createResult;
+  GraphicsTextureSourceAsset *loadedSource;
+  GraphicsTextureSet *createdSet;
+  uint32_t errorCode;
 
-  loadResult = Package_LoadEntry(pathUtf16);
-  loadedSourceOrError = loadResult.bufferOrError;
-  if (!loadResult.failed) {
-    createResult = g_GraphicsCreateTextureSet(loadedSourceOrError);
-    createdSetOrError = createResult.textureSet;
-    if (!createResult.failed) {
-      return createResult;
+  loadedSource = Package_LoadEntry(pathUtf16,&errorCode);
+  if (loadedSource != NULL) {
+    createdSet = g_GraphicsCreateTextureSet(loadedSource,&errorCode);
+    if (createdSet != NULL) {
+      return createdSet;
     }
-    Resource_Release(loadedSourceOrError);
-    loadedSourceOrError = (GraphicsTextureSourceAsset *)createdSetOrError;
+    Resource_Release(loadedSource);
   }
-  createResult.failed = true;
-  createResult.textureSet = (GraphicsTextureSet *)loadedSourceOrError;
-  return createResult;
+  if (outErrorCode != NULL) {
+    *outErrorCode = errorCode;
+  }
+  return NULL;
 }
 
 
@@ -622,11 +618,13 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
    other pixels (as wide as the run in its first row, as high as the run in its first column) becomes one
    subresource, trimmed of border rows/columns in the colour of the first non-background pixel when that colour
    is transparent, and is then cleared from the work copy. The work area is the largest free arena block,
-   shrunk to the result at the end. CF is set with FATAL_ERROR_GFX_ASSET_INVALID, 0x2D (nothing but
-   background), FATAL_ERROR_GENERAL_FAILURE (work area too small) or the allocator's error.
+   shrunk to the result at the end. Returns true with the new asset in *outAsset; returns false with
+   FATAL_ERROR_GFX_ASSET_INVALID, 0x2D (nothing but background), FATAL_ERROR_GENERAL_FAILURE (work area too
+   small) or the allocator's error in *outError. No caller in the recovered code (only the hook slot).
 */
-TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
-          (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset)
+bool GraphicsTextureSource_DecomposeSubresourceRegions
+          (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
+          GraphicsTextureSourceAsset **outAsset,uint32_t *outError)
 
 {
   uint16_t *entryCounterField;
@@ -666,11 +664,8 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
   uint32_t *fillCursor;
   bool matchedOrEdgeTransparent;
   bool bytesMatched;
-  ArenaShrinkResult shrinkResult;
-  TextureSourceDecomposeResult decomposedAsset;
-  TextureSourceDecomposeResult successResult;
-  TextureSourceDecomposeResult failureResult;
-  ArenaLargestAllocResult largestBlock;
+  uint32_t arenaError;
+  GraphicsTextureSourceAsset *decomposedAsset;
   uint32_t *regionStart;
   uint32_t packedPixelBytes;
   uint32_t *packedPixelCursor;
@@ -680,25 +675,21 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
   
   if (((sourceAsset->common).magic != ASSET_MAGIC_GFX) ||
      ((sourceAsset->tableDescriptor).subresourceCount <= entryIndex)) {
-    failureResult.failed = true;
-    failureResult.assetOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GFX_ASSET_INVALID;
-    return failureResult;
+    *outError = FATAL_ERROR_GFX_ASSET_INVALID;
+    return false;
   }
   offsetOrColumnCount = entryIndex * GFX_SUBRESOURCE_RECORD_SIZE +
                         (sourceAsset->tableDescriptor).subresourceTableOffset;
   sourceWidthOrTableBytes = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->pixelWidth;
   rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->pixelHeight;
-  largestBlock = g_MemoryApi.allocLargestFreeBlock();
-  largestBlockSize = largestBlock.blockSizeOrSentinel;
-  decomposedAsset.assetOrError = (GraphicsTextureSourceAsset *)largestBlock.allocationOrError;
-  if (largestBlock.failed) {
-    failureResult.failed = true;
-    failureResult.assetOrError = decomposedAsset.assetOrError;
-    return failureResult;
+  arenaError = g_MemoryApi.allocLargestFreeBlock((void **)&decomposedAsset,&largestBlockSize);
+  if (arenaError != 0) {
+    *outError = arenaError;
+    return false;
   }
   /* the new asset starts as a copy of the source header (REP MOVSD) */
   copySourceOrError = sourceAsset;
-  copyDestination = decomposedAsset.assetOrError;
+  copyDestination = decomposedAsset;
   for (remainingBytesOrCount = GFX_ASSET_HEADER_SIZE / 4; remainingBytesOrCount != 0; remainingBytesOrCount--) {
     (copyDestination->common).magic = (copySourceOrError->common).magic;
     copySourceOrError = (GraphicsTextureSourceAsset *)&(copySourceOrError->common).allocationSizeBytes;
@@ -711,19 +702,19 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
     offsetOrColumnCount = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->dataOffset;
     /* the new asset is stamped with the current time and date and this computer's name */
     packedDateTime = g_LocaleGetPackedCurrentTime();
-    ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.timeValue1 = packedDateTime;
-    ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.timeValue2 = packedDateTime;
+    ((decomposedAsset)->common).buildMetadata.timestamps.timeValue1 = packedDateTime;
+    ((decomposedAsset)->common).buildMetadata.timestamps.timeValue2 = packedDateTime;
     packedDateTime = g_LocaleGetPackedCurrentDate();
-    ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue1 = packedDateTime;
-    ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue2 = packedDateTime;
+    ((decomposedAsset)->common).buildMetadata.timestamps.dateValue1 = packedDateTime;
+    ((decomposedAsset)->common).buildMetadata.timestamps.dateValue2 = packedDateTime;
     g_LocaleCopyDefaultComputerLabelUtf16
-              (((decomposedAsset.assetOrError)->common).buildMetadata.names.sourceName);
+              (((decomposedAsset)->common).buildMetadata.names.sourceName);
     entryOrByteCursor = (uint8_t *)sourceAsset + offsetOrColumnCount;
     if (paletteIndexOrCount == -1) {
       /* direct ARGB8888 pixels: no palette, the new subresource table follows the header */
-      ((decomposedAsset.assetOrError)->tableDescriptor).paletteBankCount = 0;
-      ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount = 0;
-      ((decomposedAsset.assetOrError)->tableDescriptor).subresourceTableOffset = GFX_ASSET_HEADER_SIZE;
+      ((decomposedAsset)->tableDescriptor).paletteBankCount = 0;
+      ((decomposedAsset)->tableDescriptor).subresourceCount = 0;
+      ((decomposedAsset)->tableDescriptor).subresourceTableOffset = GFX_ASSET_HEADER_SIZE;
       /* the first pixel is the background; the first other pixel gives the edge colour trimmed below */
       backgroundColorOrCount = *(uint32_t *)entryOrByteCursor;
       pixelCountOrCounter = sourceWidthOrTableBytes * rowsRemaining;
@@ -747,7 +738,7 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
            downwards in front of it and the new records upwards behind the header */
         freeBytesAfterPacked = remainingBytesOrCount + pixelCountOrCounter * -4;
         if (freeBytesAfterPacked != 0 && (int)(pixelCountOrCounter * 4) <= remainingBytesOrCount) {
-          scanCursor = (uint32_t *)((int)decomposedAsset.assetOrError + freeBytesAfterPacked + GFX_ASSET_HEADER_SIZE);
+          scanCursor = (uint32_t *)((int)decomposedAsset + freeBytesAfterPacked + GFX_ASSET_HEADER_SIZE);
           matchedOrEdgeTransparent = scanCursor == NULL;
           rowCursor = scanCursor;
           for (pixelCountOrCounter = pixelCountOrCounter & DWORD_COUNT_MASK; pixelCountOrCounter != 0; pixelCountOrCounter--) {
@@ -774,11 +765,11 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
               if (remainingBytesOrCount == 0 || freeBytesAfterPacked < GFX_SUBRESOURCE_RECORD_SIZE) {
                 goto DecomposeFreeWorkBufferAndFail;
               }
-              entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
+              entryCount = ((decomposedAsset)->tableDescriptor).subresourceCount;
               scanCursor--;
               offsetOrColumnCount++;
-              ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount =
-                   ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount + 1;
+              ((decomposedAsset)->tableDescriptor).subresourceCount =
+                   ((decomposedAsset)->tableDescriptor).subresourceCount + 1;
               entryOffsetOrRows = entryCount * GFX_SUBRESOURCE_RECORD_SIZE;
               matchedOrEdgeTransparent = entryOffsetOrRows == 0;
               paletteIndexOrCount = offsetOrColumnCount;
@@ -796,7 +787,7 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
               }
               /* new record: logical width = the run of non-background pixels in this row, logical height = the
                  run in this column, palette index -1; the stored pixels start as the whole block */
-              entryOrByteCursor = (uint8_t *)decomposedAsset.assetOrError + GFX_ASSET_HEADER_SIZE + entryOffsetOrRows;
+              entryOrByteCursor = (uint8_t *)decomposedAsset + GFX_ASSET_HEADER_SIZE + entryOffsetOrRows;
               *(uint32_t *)entryOrByteCursor = (uint32_t)((int)probeCursor - (int)scanCursor) >> 2;
               entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT] = 0;
               entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 1] = 0;
@@ -957,24 +948,24 @@ TrueColorPackRegion:
           }
           /* move the packed pixels down behind the record table, shrink the block to header + table + pixels
              and give every record its pixel offset, counting back from the end */
-          sourceWidthOrTableBytes = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
+          sourceWidthOrTableBytes = ((decomposedAsset)->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
           backgroundColorOrCount = packedPixelBytes >> 2;
-          ((decomposedAsset.assetOrError)->common).allocationSizeBytes = packedPixelBytes + sourceWidthOrTableBytes +
+          ((decomposedAsset)->common).allocationSizeBytes = packedPixelBytes + sourceWidthOrTableBytes +
                                                                          GFX_ASSET_HEADER_SIZE;
-          entryOrByteCursor = (uint8_t *)decomposedAsset.assetOrError + GFX_ASSET_HEADER_SIZE + sourceWidthOrTableBytes;
+          entryOrByteCursor = (uint8_t *)decomposedAsset + GFX_ASSET_HEADER_SIZE + sourceWidthOrTableBytes;
           for (; backgroundColorOrCount != 0; backgroundColorOrCount--) {
             *(uint32_t *)entryOrByteCursor = *packedPixelCursor;
             packedPixelCursor++;
             entryOrByteCursor = entryOrByteCursor + 4;
           }
-          shrinkResult = g_MemoryApi.shrinkInPlace
-                             (((decomposedAsset.assetOrError)->common).allocationSizeBytes,
-                              decomposedAsset.assetOrError);
-          copySourceOrError = (GraphicsTextureSourceAsset *)shrinkResult.scratchOrError;
-          if (!shrinkResult.failed) {
-            pixelDataOffset = ((decomposedAsset.assetOrError)->common).allocationSizeBytes;
-            copySourceOrError = decomposedAsset.assetOrError + 1;
-            entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
+          arenaError = g_MemoryApi.shrinkInPlace
+                             (((decomposedAsset)->common).allocationSizeBytes,
+                              decomposedAsset);
+          copySourceOrError = (GraphicsTextureSourceAsset *)arenaError;
+          if (arenaError == 0) {
+            pixelDataOffset = ((decomposedAsset)->common).allocationSizeBytes;
+            copySourceOrError = decomposedAsset + 1;
+            entryCount = ((decomposedAsset)->tableDescriptor).subresourceCount;
             /* each record seen through the asset header layout: converterVersion = pixel offset,
                timeValue1/dateValue1 = pixel width/height, timeValue2 = the next record */
             do {
@@ -985,9 +976,8 @@ TrueColorPackRegion:
                        &(copySourceOrError->common).buildMetadata.timestamps.timeValue2;
               entryCount--;
             } while (entryCount != 0);
-            successResult.failed = false;
-            successResult.assetOrError = decomposedAsset.assetOrError;
-            return successResult;
+            *outAsset = decomposedAsset;
+            return true;
           }
         }
       }
@@ -995,15 +985,15 @@ TrueColorPackRegion:
     else {
       /* 8-bit palette indices: the new asset carries the subresource's palette bank as its only bank, the
          record table follows it; the scan below is the same as above, on bytes */
-      ((decomposedAsset.assetOrError)->tableDescriptor).paletteBankCount = 1;
-      ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount = 0;
-      ((decomposedAsset.assetOrError)->tableDescriptor).subresourceTableOffset =
+      ((decomposedAsset)->tableDescriptor).paletteBankCount = 1;
+      ((decomposedAsset)->tableDescriptor).subresourceCount = 0;
+      ((decomposedAsset)->tableDescriptor).subresourceTableOffset =
            GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE;
       copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
       offsetOrColumnCount = largestBlockSize - (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
       if (offsetOrColumnCount != 0 && GFX_PALETTE_BANK_SIZE - 1 < remainingBytesOrCount) {
         copySourceOrError = sourceAsset + paletteIndexOrCount * 4 + 1;
-        copyDestination = decomposedAsset.assetOrError + 1;
+        copyDestination = decomposedAsset + 1;
         for (remainingBytesOrCount = GFX_PALETTE_BANK_SIZE / 4; remainingBytesOrCount != 0; remainingBytesOrCount--) {
           (copyDestination->common).magic = (copySourceOrError->common).magic;
           copySourceOrError = (GraphicsTextureSourceAsset *)&(copySourceOrError->common).allocationSizeBytes;
@@ -1036,10 +1026,10 @@ TrueColorPackRegion:
               entryOrByteCursor++;
               probeByteCursor++;
             }
-            matchedOrEdgeTransparent = (((GraphicsPaletteTextureSourceAsset *)decomposedAsset.assetOrError)->paletteEntries[(uint32_t)edgeIndex].argb8888 & ARGB8888_ALPHA_MASK
+            matchedOrEdgeTransparent = (((GraphicsPaletteTextureSourceAsset *)decomposedAsset)->paletteEntries[(uint32_t)edgeIndex].argb8888 & ARGB8888_ALPHA_MASK
                      ) == 0;
             /* the edge colour's entry in the new palette always loses its alpha, i.e. becomes transparent */
-            entryOrByteCursor = (uint8_t *)&((GraphicsPaletteTextureSourceAsset *)decomposedAsset.assetOrError)->paletteEntries[(uint32_t)edgeIndex];
+            entryOrByteCursor = (uint8_t *)&((GraphicsPaletteTextureSourceAsset *)decomposedAsset)->paletteEntries[(uint32_t)edgeIndex];
             *(uint32_t *)entryOrByteCursor = *(uint32_t *)entryOrByteCursor & ARGB8888_RGB_MASK;
             /* packed sprites are padded to whole dwords */
             packedPixelCursor = (uint32_t *)((uint32_t)scanByteCursor & ~3u);
@@ -1064,10 +1054,10 @@ TrueColorPackRegion:
                   if (remainingBytesOrCount == 0 || freeBytesAfterPacked < GFX_SUBRESOURCE_RECORD_SIZE) {
                     goto DecomposeFreeWorkBufferAndFail;
                   }
-                  entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
+                  entryCount = ((decomposedAsset)->tableDescriptor).subresourceCount;
                   scanByteCursor--;
-                  ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount =
-                       ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount + 1;
+                  ((decomposedAsset)->tableDescriptor).subresourceCount =
+                       ((decomposedAsset)->tableDescriptor).subresourceCount + 1;
                   entryOffsetOrRows = entryCount * GFX_SUBRESOURCE_RECORD_SIZE;
                   bytesMatched = entryOffsetOrRows == 0;
                   paletteIndexOrCount = offsetOrColumnCount + 1;
@@ -1084,7 +1074,7 @@ TrueColorPackRegion:
                     probeByteCursor--;
                   }
                   /* [5]: GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE bytes in (the table follows the one bank) */
-                  entryOrByteCursor = (uint8_t *)&decomposedAsset.assetOrError[5] + entryOffsetOrRows;
+                  entryOrByteCursor = (uint8_t *)&decomposedAsset[5] + entryOffsetOrRows;
                   *(int *)entryOrByteCursor = (int)probeByteCursor - (int)scanByteCursor;
                   entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT] = 0;
                   entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 1] = 0;
@@ -1239,25 +1229,25 @@ PalettedPackRegion:
                 offsetOrColumnCount = sourceWidthOrTableBytes;
                 if (bytesMatched) break;
               }
-              sourceWidthOrTableBytes = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
+              sourceWidthOrTableBytes = ((decomposedAsset)->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
               backgroundColorOrCount = packedPixelBytes >> 2;
-              ((decomposedAsset.assetOrError)->common).allocationSizeBytes =
+              ((decomposedAsset)->common).allocationSizeBytes =
                    packedPixelBytes + sourceWidthOrTableBytes + (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
-              entryOrByteCursor = (uint8_t *)decomposedAsset.assetOrError +
+              entryOrByteCursor = (uint8_t *)decomposedAsset +
                                   (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE) + sourceWidthOrTableBytes;
               for (; backgroundColorOrCount != 0; backgroundColorOrCount--) {
                 *(uint32_t *)entryOrByteCursor = *packedPixelCursor;
                 packedPixelCursor = (uint32_t *)((int)packedPixelCursor + 4);
                 entryOrByteCursor = entryOrByteCursor + 4;
               }
-              shrinkResult = g_MemoryApi.shrinkInPlace
-                                 (((decomposedAsset.assetOrError)->common).allocationSizeBytes,
-                                  decomposedAsset.assetOrError);
-              copySourceOrError = (GraphicsTextureSourceAsset *)shrinkResult.scratchOrError;
-              if (!shrinkResult.failed) {
-                pixelDataOffset = ((decomposedAsset.assetOrError)->common).allocationSizeBytes;
-                copySourceOrError = decomposedAsset.assetOrError + 5;
-                entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
+              arenaError = g_MemoryApi.shrinkInPlace
+                                 (((decomposedAsset)->common).allocationSizeBytes,
+                                  decomposedAsset);
+              copySourceOrError = (GraphicsTextureSourceAsset *)arenaError;
+              if (arenaError == 0) {
+                pixelDataOffset = ((decomposedAsset)->common).allocationSizeBytes;
+                copySourceOrError = decomposedAsset + 5;
+                entryCount = ((decomposedAsset)->tableDescriptor).subresourceCount;
                 do {
                   pixelDataOffset = pixelDataOffset - ((copySourceOrError->common).buildMetadata.timestamps.timeValue1 *
                                      (copySourceOrError->common).buildMetadata.timestamps.dateValue1 + 3 &
@@ -1267,8 +1257,8 @@ PalettedPackRegion:
                            &(copySourceOrError->common).buildMetadata.timestamps.timeValue2;
                   entryCount--;
                 } while (entryCount != 0);
-                decomposedAsset.failed = false;
-                return decomposedAsset;
+                *outAsset = decomposedAsset;
+                return true;
               }
             }
           }
@@ -1277,42 +1267,36 @@ PalettedPackRegion:
     }
   }
 DecomposeFreeWorkBufferAndFail:
-  g_MemoryApi.free(decomposedAsset.assetOrError);
-  decomposedAsset.assetOrError = copySourceOrError;
-  failureResult.failed = true;
-  failureResult.assetOrError = decomposedAsset.assetOrError;
-  return failureResult;
+  g_MemoryApi.free(decomposedAsset);
+  *outError = (uint32_t)copySourceOrError;
+  return false;
 }
 
 /* Address: 0x004AD630.
    Loads a 'gfx' texture source for the software renderer (installed as g_GraphicsTextureSourceLoadPackageAsset;
    used for the UI, text and selection-panel graphics): the package entry is loaded and its palettes are converted
-   to the current framebuffer format. If the conversion fails the entry is released again; CF is set with the
-   load or conversion error.
+   to the current framebuffer format. Returns the texture source (never NULL: the conversion rejects NULL).
+   If the conversion fails the entry is released again; on failure returns NULL and stores the load or
+   conversion error in *outError (when outError is not NULL).
 */
-TextureSourceLoadResult GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16)
+GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16,uint32_t *outError)
 
 {
-  GraphicsPaletteTextureSourceAsset *loadedSourceOrError;
-  GraphicsPaletteTextureSourceAsset *convertedSourceOrError;
-  PackageLoadResult loadResult;
-  TextureSourceLoadResult convertResult;
+  GraphicsPaletteTextureSourceAsset *loadedSource;
+  uint32_t loadError;
 
-  loadResult = Package_LoadEntry(pathUtf16);
-  loadedSourceOrError = loadResult.bufferOrError;
-  if (!loadResult.failed) {
-    convertResult = THANDOR_BITCAST(PaletteTextureSourceResult, TextureSourceLoadResult,
-                                    g_GraphicsTextureSourceConvertPaletteEntries(loadedSourceOrError));
-    convertedSourceOrError = (GraphicsPaletteTextureSourceAsset *)convertResult.textureSource;
-    if (!convertResult.failed) {
-      return convertResult;
+  loadedSource = Package_LoadEntry(pathUtf16,&loadError);
+  if (loadedSource != NULL) {
+    loadError = g_GraphicsTextureSourceConvertPaletteEntries(loadedSource);
+    if (loadError == 0) {
+      return (GraphicsTextureSourceAsset *)loadedSource;
     }
-    Resource_Release(loadedSourceOrError);
-    loadedSourceOrError = convertedSourceOrError;
+    Resource_Release(loadedSource);
   }
-  convertResult.failed = true;
-  convertResult.textureSource = (GraphicsTextureSourceAsset *)loadedSourceOrError;
-  return convertResult;
+  if (outError != NULL) {
+    *outError = loadError;
+  }
+  return NULL;
 }
 
 
@@ -1329,14 +1313,14 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
   GraphicsPaletteTextureSourceAsset *clonedAsset;
   uint32_t allocationSizeOrCount;
   GraphicsPaletteTextureSourceAsset *cloneCursor;
-  ArenaAllocResult cloneAllocation;
-  PaletteTextureSourceResult convertResult;
-  ArenaFreeResult freeResult;
+  uint32_t cloneAllocationError;
 
   allocationSizeOrCount = (sourceAsset->common).allocationSizeBytes;
-  cloneAllocation = g_MemoryApi.alloc(allocationSizeOrCount);
-  clonedAsset = (GraphicsPaletteTextureSourceAsset *)cloneAllocation.payloadOrError;
-  if (!cloneAllocation.failed) {
+  cloneAllocationError = g_MemoryApi.alloc(allocationSizeOrCount,(void **)&clonedAsset);
+  if (cloneAllocationError != 0) {
+    clonedAsset = (GraphicsPaletteTextureSourceAsset *)cloneAllocationError;
+  }
+  else {
     /* REP MOVSD of the whole allocation */
     cloneCursor = clonedAsset;
     for (allocationSizeOrCount = allocationSizeOrCount >> 2; allocationSizeOrCount != 0; allocationSizeOrCount--) {
@@ -1344,12 +1328,11 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
       sourceAsset = (GraphicsTextureSourceAsset *)&(sourceAsset->common).allocationSizeBytes;
       cloneCursor = (GraphicsPaletteTextureSourceAsset *)&cloneCursor->allocationSizeBytes;
     }
-    convertResult = g_GraphicsTextureSourceConvertPaletteEntries(clonedAsset);
-    if (!convertResult.failed) {
-      return (GraphicsTextureSourceAsset *)convertResult.paletteSource;
+    if (g_GraphicsTextureSourceConvertPaletteEntries(clonedAsset) == 0) {
+      return (GraphicsTextureSourceAsset *)clonedAsset;
     }
-    freeResult = g_MemoryApi.free(clonedAsset);
-    clonedAsset = (GraphicsPaletteTextureSourceAsset *)freeResult.valueOrError;
+    /* Original quirk: the clone's result after a failed conversion is the free's status (0 = NULL) */
+    clonedAsset = (GraphicsPaletteTextureSourceAsset *)g_MemoryApi.free(clonedAsset);
   }
   return (GraphicsTextureSourceAsset *)clonedAsset;
 }
@@ -1359,16 +1342,14 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
    Fills the framebuffer-pixel half of every palette entry of a 'gfx' texture source from its ARGB8888 half,
    packed for the current framebuffer format through g_SoftwarePixelPackTables (alpha is kept in the top byte),
    so the software blits can copy palette colours directly (installed as
-   g_GraphicsTextureSourceConvertPaletteEntries). CF is set with FATAL_ERROR_GFX_ASSET_INVALID for a NULL or
-   non-'gfx' asset.
+   g_GraphicsTextureSourceConvertPaletteEntries). Returns 0 on success, FATAL_ERROR_GFX_ASSET_INVALID for a
+   NULL or non-'gfx' asset (the asset itself is the success value of the original).
 */
-PaletteTextureSourceResult GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset)
+uint32_t GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset)
 
 {
   int paletteEntriesRemaining;
   GraphicsTexturePaletteEntry *paletteEntryCursor;
-  PaletteTextureSourceResult successResult;
-  PaletteTextureSourceResult failureResult;
   uint32_t argb8888;
   
   if ((sourceAsset != NULL) &&
@@ -1385,13 +1366,9 @@ PaletteTextureSourceResult GraphicsTextureSource_ConvertPaletteEntries(GraphicsP
            g_SoftwarePixelPackTables->blue[argb8888 & ARGB8888_BLUE_MASK];
       paletteEntryCursor++;
     }
-    successResult.failed = false;
-    successResult.paletteSource = sourceAsset;
-    return successResult;
+    return 0;
   }
-  failureResult.failed = true;
-  failureResult.paletteSource = (GraphicsPaletteTextureSourceAsset *)FATAL_ERROR_GFX_ASSET_INVALID;
-  return failureResult;
+  return FATAL_ERROR_GFX_ASSET_INVALID;
 }
 
 
@@ -3583,10 +3560,10 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
    Builds a texture set for a 'gfx' asset: converts its palettes to the display format, then allocates the
    set (an 8-byte header with the source asset and image count, then one 0x20-byte GraphicsTextureSetEntry
    per image) and fills each entry with the image index, source entry and log2 of its width and height.
-   CF set with the conversion/arena error, or FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO (the set is then not
-   freed, as in the original).
+   Returns the set (never NULL), or NULL with the conversion/arena error or FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO
+   in *outErrorCode (outErrorCode may be NULL; on the size error the set is not freed, as in the original).
 */
-TextureSetResult GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
+GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode)
 
 {
   uint32_t widthLog2;
@@ -3596,22 +3573,23 @@ TextureSetResult GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset 
   int entryIndex;
   GraphicsPaletteTextureFormatVersion *entryFieldCursor;
   uint8_t *sourceEntry;
-  PaletteTextureSourceResult convertResult;
-  ArenaAllocResult metadataAllocation;
-  TextureSetResult failureResult;
+  uint32_t convertError;
+  uint32_t metadataAllocationError;
   GraphicsAssetAllocationByteSize entriesRemaining;
-  
-  convertResult = g_GraphicsTextureSourceConvertPaletteEntries
-                    ((GraphicsPaletteTextureSourceAsset *)sourceAsset);
-  convertedSource = convertResult.paletteSource;
-  metadataOrError = convertedSource;
-  if (!convertResult.failed) {
+
+  convertedSource = (GraphicsPaletteTextureSourceAsset *)sourceAsset;
+  convertError = g_GraphicsTextureSourceConvertPaletteEntries(convertedSource);
+  metadataOrError = (GraphicsPaletteTextureSourceAsset *)convertError;
+  if (convertError == 0) {
     entriesRemaining = convertedSource->subresourceCount;
-    metadataAllocation = g_MemoryApi.alloc(entriesRemaining * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + 8);
     /* the set is typed as a palette asset here: magic = sourceAsset, allocationSizeBytes = image count, and
        from formatVersion on eight dwords per entry */
-    metadataOrError = (GraphicsPaletteTextureSourceAsset *)metadataAllocation.payloadOrError;
-    if (!metadataAllocation.failed) {
+    metadataAllocationError = g_MemoryApi.alloc(entriesRemaining * GRAPHICS_TEXTURE_SET_ENTRY_BYTES + 8,
+                                                (void **)&metadataOrError);
+    if (metadataAllocationError != 0) {
+      metadataOrError = (GraphicsPaletteTextureSourceAsset *)metadataAllocationError;
+    }
+    else {
       entryFieldCursor = &metadataOrError->formatVersion;
       metadataOrError->magic = (GraphicsPaletteTextureAssetMagic)convertedSource;
       metadataOrError->allocationSizeBytes = entriesRemaining;
@@ -3643,16 +3621,16 @@ TextureSetResult GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset 
         entryIndex++;
         entriesRemaining--;
         if (entriesRemaining == 0) {
-          return THANDOR_BITCAST(uint64_t, TextureSetResult,
-                                 THANDOR_BITCAST(ArenaAllocResult, uint64_t, metadataAllocation) & UINT32_MAX);
+          return (GraphicsTextureSet *)metadataOrError;
         }
       }
       metadataOrError = (GraphicsPaletteTextureSourceAsset *)FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO;
     }
   }
-  failureResult.failed = true;
-  failureResult.textureSet = (GraphicsTextureSet *)metadataOrError;
-  return failureResult;
+  if (outErrorCode != NULL) {
+    *outErrorCode = (uint32_t)metadataOrError;
+  }
+  return NULL;
 }
 
 

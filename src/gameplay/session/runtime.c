@@ -127,7 +127,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
   bool voicePlaying;
   FieldGridCoordinates targetGridPosition;
   uint32_t activePageIndex;
-  SoundPlayResult playVoiceResult;
+  IDirectSoundBuffer *playedVoice;
   uint32_t cursorFrameOrScratch;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -260,11 +260,11 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
           if (g_InGameEffectsEnabled == 0) {
             cursorFrameOrScratch = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
             candidateFrameOrScore = Random_NextPrimary();
-            playVoiceResult = g_SoundPlayOneShot
-                               (cursorFrameOrScratch,cursorFrameOrScratch,
-                                (DirectSoundVoiceSet *)(&g_InGameLevelEffectVoiceSet0)[candidateFrameOrScore & 3]);
-            if (!playVoiceResult.failed) {
-              g_InGameActiveEffectVoice = playVoiceResult.soundBuffer;
+            if (g_SoundPlayOneShot
+                          (cursorFrameOrScratch,cursorFrameOrScratch,
+                           (DirectSoundVoiceSet *)(&g_InGameLevelEffectVoiceSet0)[candidateFrameOrScore & 3],
+                           &playedVoice)) {
+              g_InGameActiveEffectVoice = playedVoice;
             }
           }
         }
@@ -304,11 +304,11 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
                    (levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[bestTrackOrSecondsLeft];
               cursorFrameOrScratch = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
               g_EndGameResultsCurrentMusicTrackId = selectedMusicTrackId;
-              playVoiceResult = g_SoundPlayOneShot
-                                 (cursorFrameOrScratch,cursorFrameOrScratch,
-                                  (DirectSoundVoiceSet *)(&g_InGameLevelMusicVoiceSet0)[bestTrackOrSecondsLeft]);
-              if (!playVoiceResult.failed) {
-                g_InGameActiveMusicVoice = playVoiceResult.soundBuffer;
+              if (g_SoundPlayOneShot
+                            (cursorFrameOrScratch,cursorFrameOrScratch,
+                             (DirectSoundVoiceSet *)(&g_InGameLevelMusicVoiceSet0)[bestTrackOrSecondsLeft],
+                             &playedVoice)) {
+                g_InGameActiveMusicVoice = playedVoice;
               }
             }
           }
@@ -689,7 +689,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     if (((toggle->stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
         (((UiSpriteButtonControl *)toggle)->activationSound != NULL)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,
-                            ((UiSpriteButtonControl *)toggle)->activationSound);
+                            ((UiSpriteButtonControl *)toggle)->activationSound,NULL);
     }
     if (target == 0x567460) {
       InGameMissionHelpPage_Toggle((UiNodeBase *)toggle);
@@ -781,23 +781,23 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     break;
   }
   case 0x5677e0: { /* Alt+P: screenshot to the next numbered PCX file */
-    FramebufferCaptureResult capture =
+    GraphicsCapturedTextureSourceAsset *capture =
          g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeResult pcx;
     uint16_t *digitHigh = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,12);
     uint16_t *digitLow = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,14);
-    if (capture.failed) {
+    if (capture == NULL) {
       break;
     }
-    pcx = g_PcxFunctionExport3(g_PcxFunctionModule,capture.capture);
+    pcx = g_PcxFunctionExport3(g_PcxFunctionModule,capture);
     if (pcx.failed) {
-      g_MemoryApi.free(capture.capture);
+      g_MemoryApi.free(capture);
       break;
     }
     FileSystem_WriteBufferToPath(pcx.encodedByteCount,pcx.encodedBytesOrError,
                                    (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     g_MemoryApi.free(pcx.encodedBytesOrError);
-    g_MemoryApi.free(capture.capture);
+    g_MemoryApi.free(capture);
     /* advance the two-digit number in the file name */
     *digitLow = *digitLow + 1;
     if (*digitLow > '9') {
@@ -843,7 +843,6 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
   uint32_t *sourceWord;
   uint32_t *destinationWord;
   MovieRuntime *notificationMovie;
-  MovieOpenResult openResult;
   InGameRuntimeRoot *inGameRoot;
   
   panelTextureSource = g_InGamePanelTextureSource;
@@ -860,8 +859,7 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
       notificationMovieNumber = inGameRoot->notificationQueue[0].movieId;
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,(uint16_t *)(u_flm_movie000_flm_0056314e + 9));
-      openResult = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)u_flm_movie000_flm_0056314e);
-      if (!openResult.failed) {
+      if (Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)u_flm_movie000_flm_0056314e,NULL,NULL)) {
         /* movies 100-299 and 700-899 play at the alternate movie gain */
         if ((99 < notificationMovieNumber) &&
             ((notificationMovieNumber < 300 || ((699 < notificationMovieNumber && (notificationMovieNumber < 900)))))) {
@@ -952,11 +950,10 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
   InGameNotificationQueueRecord *queueRecord;
   bool subsystemFailed;
   uint16_t *resolvedTitle;
-  ArenaAllocResult allocation;
+  uint32_t allocationError;
   uint32_t resetDefaultsError;
   uint32_t stepError;
   uint16_t *loadingMoviePath;
-  MovieOpenResult movieOpen;
   bool firstFrameDecoded;
   MovieRuntime *firstFrameMovie;
   uint32_t movieEndCode;
@@ -1046,9 +1043,12 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
     countOrPlayerId--;
   } while (countOrPlayerId != 0);
   /* 4 MB pool for the world objects (INGAME_WORLD_OBJECT_RECORD_COUNT records), zeroed */
-  allocation = g_MemoryApi.alloc(INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord));
-  rootCursorOrError = (InGameRuntimeRoot *)allocation.payloadOrError;
-  if (!allocation.failed) {
+  allocationError = g_MemoryApi.alloc(INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),
+                                      (void **)&rootCursorOrError);
+  if (allocationError != 0) {
+    rootCursorOrError = (InGameRuntimeRoot *)allocationError;
+  }
+  else {
     g_RuntimeObjectRebaseBaseMinusOne = (uint8_t *)rootCursorOrError - 1;
     g_InGameWorldObjectRecords = (WorldObjectRecord *)rootCursorOrError;
     for (countOrPlayerId = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; countOrPlayerId != 0; countOrPlayerId--) {
@@ -1061,10 +1061,12 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
       rootCursorOrError = (InGameRuntimeRoot *)stepError;
     }
     else {
-      allocation = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot));
-      inGameRoot = (InGameRuntimeRoot *)allocation.payloadOrError;
-      rootCursorOrError = inGameRoot;
-      if (!allocation.failed) {
+      allocationError = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot),(void **)&inGameRoot);
+      if (allocationError != 0) {
+        rootCursorOrError = (InGameRuntimeRoot *)allocationError;
+      }
+      else {
+        rootCursorOrError = inGameRoot;
         templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
         g_InGameRuntimeRoot = inGameRoot;
         /* copy the in-game root template (sizeof(InGameRuntimeRoot) / 4 dwords) */
@@ -1112,9 +1114,10 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
             rootCursorOrError = (InGameRuntimeRoot *)stepError;
           }
           else {
-            movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath);
-            rootCursorOrError = (InGameRuntimeRoot *)movieOpen.frameCountOrError;
-            if (!movieOpen.failed) {
+            if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,NULL,&stepError)) {
+              rootCursorOrError = (InGameRuntimeRoot *)stepError;
+            }
+            else {
               firstFrameDecoded = Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode);
               rootCursorOrError = firstFrameDecoded ? (InGameRuntimeRoot *)firstFrameMovie :
                                                       (InGameRuntimeRoot *)movieEndCode;
@@ -1349,11 +1352,11 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
   bool terminatorOrFailure;
   bool saveMounted;
   uint32_t saveHandleOrError; /* the save package's handle, or the mount error code */
-  PackageLoadResult packageEntry;
-  ArenaAllocResult allocation;
+  void *campaignAsset;
+  uint32_t packageLoadErrorCode;
+  uint32_t allocationError;
   uint32_t stepError;
   uint16_t *loadingMoviePath;
-  MovieOpenResult movieOpen;
   bool firstFrameDecoded;
   MovieRuntime *firstFrameMovie;
   uint32_t movieEndCode;
@@ -1412,15 +1415,15 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
         sessionNameCursor++;
       }
     }
-    packageEntry = Package_LoadEntry((uint16_t *)u_campagne_hex_0050e068);
-    if (!packageEntry.failed) {
-      g_FrontendLoadedCampaignAsset = packageEntry.bufferOrError;
+    campaignAsset = Package_LoadEntry((uint16_t *)u_campagne_hex_0050e068,NULL);
+    if (campaignAsset != NULL) {
+      g_FrontendLoadedCampaignAsset = campaignAsset;
     }
-    packageEntry = Package_LoadEntry((uint16_t *)u_level_hex_0050e040);
-    levelImage = packageEntry.bufferOrError;
-    rootCursorOrError = (InGameRuntimeRoot *)levelImage;
+    levelImage = Package_LoadEntry((uint16_t *)u_level_hex_0050e040,&packageLoadErrorCode);
+    rootCursorOrError = levelImage != NULL ? (InGameRuntimeRoot *)levelImage
+                                           : (InGameRuntimeRoot *)packageLoadErrorCode;
     mountedPackage = mountResult;
-    if (!packageEntry.failed) {
+    if (levelImage != NULL) {
       /* only one selection block is set up: local player 0 with the saved faction */
       settingOrFactionToken = levelImage->playerSlots[6].aiClassOrMode;
       selectionBlockCursor = g_SelectionPlayerBlocks;
@@ -1451,10 +1454,13 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
       UiRuntime_SetSynchronizationHooks
                 (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
       /* 4 MB pool for the world objects (0x4000 records of 0x100 bytes), zeroed */
-      allocation = g_MemoryApi.alloc(INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord));
-      rootCursorOrError = (InGameRuntimeRoot *)allocation.payloadOrError;
+      allocationError = g_MemoryApi.alloc(INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord),
+                                          (void **)&rootCursorOrError);
       loadedLevelAsset = levelImage;
-      if (!allocation.failed) {
+      if (allocationError != 0) {
+        rootCursorOrError = (InGameRuntimeRoot *)allocationError;
+      }
+      else {
         g_RuntimeObjectRebaseBaseMinusOne = (uint8_t *)rootCursorOrError - 1;
         g_InGameWorldObjectRecords = (WorldObjectRecord *)rootCursorOrError;
         for (remainingCount = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingCount != 0; remainingCount--) {
@@ -1465,10 +1471,12 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
           rootCursorOrError = (InGameRuntimeRoot *)stepError;
         }
         else {
-          allocation = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot));
-          inGameRoot = (InGameRuntimeRoot *)allocation.payloadOrError;
-          rootCursorOrError = inGameRoot;
-          if (!allocation.failed) {
+          allocationError = g_MemoryApi.alloc(sizeof(InGameRuntimeRoot),(void **)&inGameRoot);
+          if (allocationError != 0) {
+            rootCursorOrError = (InGameRuntimeRoot *)allocationError;
+          }
+          else {
+            rootCursorOrError = inGameRoot;
             templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
             g_InGameRuntimeRoot = inGameRoot;
             /* copy the in-game root template (0x30F9 dwords = 0xC3E4 bytes) */
@@ -1520,9 +1528,10 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
                 rootCursorOrError = (InGameRuntimeRoot *)stepError;
               }
               else {
-                movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath);
-                rootCursorOrError = (InGameRuntimeRoot *)movieOpen.frameCountOrError;
-                if (!movieOpen.failed) {
+                if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,loadingMoviePath,NULL,&stepError)) {
+                  rootCursorOrError = (InGameRuntimeRoot *)stepError;
+                }
+                else {
                   firstFrameDecoded = Movie_AdvanceFrame(&firstFrameMovie,&movieEndCode);
                   rootCursorOrError = firstFrameDecoded ? (InGameRuntimeRoot *)firstFrameMovie :
                                                           (InGameRuntimeRoot *)movieEndCode;
@@ -1546,9 +1555,11 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
                               (INGAME_WORLD_DWORD_ARRAY_COUNT,(uint32_t *)&g_InGameWorldRuntimeDwordArray256,world);
                     terminatorOrFailure = GameData_LoadExternalTables();
                     if (!terminatorOrFailure) {
-                      packageEntry = Package_LoadEntry((uint16_t *)u_field_hex_0050e002);
-                      rootCursorOrError = packageEntry.bufferOrError;
-                      if (!packageEntry.failed) {
+                      rootCursorOrError = Package_LoadEntry((uint16_t *)u_field_hex_0050e002,&packageLoadErrorCode);
+                      if (rootCursorOrError == NULL) {
+                        rootCursorOrError = (InGameRuntimeRoot *)packageLoadErrorCode;
+                      }
+                      else {
                         (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid =
                              (uint32_t)rootCursorOrError;
                         if (!InGameLevelRuntime_LoadResourcesAfterExternalTables

@@ -43,22 +43,22 @@ void * __cdecl ArenaHeap_Init(void);
 void ArenaHeap_Shutdown(void);
 
 /* 0x005864A0 */
-ArenaAllocResult ArenaHeap_Alloc(ArenaPayloadByteCount bytes);
+uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload);
 
 /* 0x00586570 */
 uint32_t __cdecl ArenaHeap_QueryFreeBytes(void);
 
 /* 0x005865B0 */
-ArenaFreeResult ArenaHeap_Free(void *memory);
+uint32_t ArenaHeap_Free(void *memory);
 
 /* 0x00586640 */
-ArenaLargestAllocResult ArenaHeap_AllocLargestFreeBlock(void);
+uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlockSize);
 
 /* 0x005866B0 */
-ArenaShrinkResult ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory);
+uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory);
 
 /* 0x00586750 */
-ArenaReserveResult ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes);
+uint32_t ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes,void **outBase);
 
 /* 0x005873A0 */
 void Memory_ZeroDwords(MemoryByteCount bytes,void *destination);

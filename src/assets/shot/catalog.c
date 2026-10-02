@@ -262,7 +262,7 @@ uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
   int referencesRemaining;
   ShotDefinition **registrySlotCursor;
   bool extensionFailed;
-  PackageLoadResult loadResult;
+  uint32_t loadErrorCode;
   uint32_t spriteRegisterError;
   uint32_t effectLookupError;
   EffectDefinition *resolvedEffect;
@@ -278,9 +278,11 @@ uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
         *registrySlotCursor = definition;
         extensionFailed = WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16);
         if (extensionFailed) goto ReturnFailure;
-        loadResult = Package_LoadEntry(definition->resourcePathUtf16);
-        valueOrError = loadResult.bufferOrError;
-        if (loadResult.failed) goto ReturnFailure;
+        valueOrError = Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
+        if (valueOrError == NULL) {
+          valueOrError = (ShotDefinition *)loadErrorCode;
+          goto ReturnFailure;
+        }
         /* the loaded file is a sprite asset */
         existingSprite =
              SpriteAssetRegistry_FindById(((SpriteAssetHeader *)valueOrError)->registryHeader.registryId);

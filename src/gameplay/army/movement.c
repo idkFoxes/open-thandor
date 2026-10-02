@@ -1570,12 +1570,11 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
 
 {
   ArmyRuntimeCoordinateCommandOrHistoryValue rootHeading;
-  uint32_t terrainHeight;
+  Q12 terrainHeight;
   uint32_t footX;
   uint32_t footY;
   int lateralOffsetY;
   FixedSinCosEdxEax8 lateralOffset;
-  HeightSampleResult terrainHeightResult;
   Q12 worldXQ12;
   Q12 worldYQ12;
   ArmyArticulatedRuntimeSlotView *articulatedRuntime;
@@ -1585,8 +1584,7 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   worldYQ12 = (modelNodeRuntime->worldTransform).translation.y;
   terrainHeight = 0;
   if (worldRuntime->fieldGrid != NULL) {
-    terrainHeightResult = FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
-    terrainHeight = terrainHeightResult.heightQ12;
+    FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&terrainHeight);
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   lateralOffset = FixedMath_SinCosScaled

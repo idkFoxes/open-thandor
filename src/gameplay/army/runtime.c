@@ -48,7 +48,7 @@ void ArmyRuntimeClass_UpdateAircraft
   ModelRuntimeNode *modelNode;
   bool pointAllowed;
   FixedSinCosEdxEax8 sinCosStep;
-  HeightSampleResult terrainHeight;
+  Q12 terrainHeightQ12;
   AngleTurn32 savedAngle1;
   InGameSimulationStepBatchTicks remainingTicks;
   AngleTurn32 savedAngle0;
@@ -199,9 +199,9 @@ void ArmyRuntimeClass_UpdateAircraft
       maxTerrainHeight = 0;
       durationValue = (modelRuntime->classLinkState).classState80;
       do {
-        terrainHeight = FieldGrid_InterpolateTopSurfaceHeight(sampleCoord,stepValue,worldRuntime->fieldGrid);
-        if (maxTerrainHeight < terrainHeight.heightQ12) {
-          maxTerrainHeight = terrainHeight.heightQ12;
+        FieldGrid_InterpolateTopSurfaceHeight(sampleCoord,stepValue,worldRuntime->fieldGrid,&terrainHeightQ12);
+        if (maxTerrainHeight < terrainHeightQ12) {
+          maxTerrainHeight = terrainHeightQ12;
         }
         stepValue = stepValue + (int)sinCosStep;
         sampleCoord = sampleCoord + (int)(sinCosStep >> 32);
@@ -219,9 +219,9 @@ void ArmyRuntimeClass_UpdateAircraft
     translationVec->x = translationVec->x + (int)sinCosStep;
     translationY = &(modelNode->worldTransform).translation.y;
     *translationY = *translationY + (int)(sinCosStep >> 32);
-    terrainHeight = FieldGrid_InterpolateTopSurfaceHeight
-                       ((modelNode->worldTransform).translation.y,
-                        (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+    FieldGrid_InterpolateTopSurfaceHeight
+              ((modelNode->worldTransform).translation.y,
+               (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid,&terrainHeightQ12);
     classUpdate21Definition = modelRuntime->modelDefinition;
     stateValue = (modelRuntime->classLinkState).classState7C;
     product64 = (int64_t)(int)stateValue * (int64_t)(int)stateValue;
@@ -233,7 +233,7 @@ void ArmyRuntimeClass_UpdateAircraft
     stateValue = (modelRuntime->classLinkState).classState7C;
     (modelNode->modelPayload).localTranslationZQ12 =
          (FIXED_PRODUCT_SHR(product64,Q12_SHIFT) +
-         (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12) - terrainHeight.heightQ12;
+         (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12) - terrainHeightQ12;
     product64 = (int64_t)(int)(stateValue * g_InGameSimulationStepTicks) *
              (int64_t)classUpdate21Definition->verticalArcCoefficient;
     stateValue = FixedMath_Atan2Angle16
@@ -1422,15 +1422,11 @@ bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphics
   ArmyAssetRecordPrefix **registryCursor;
   uint16_t *pathCursor;
   uint16_t *pathEnd;
-  ArenaAllocResult allocResult;
-  PackageLoadResult packageResult;
-  TextureSetResult textureSetResult;
-  PaletteAssetResult paletteResult;
+  uint32_t allocError;
   GraphicsTextureResource *previewTexture;
 
-  allocResult = g_MemoryApi.alloc(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot));
-  armySlot1 = (ArmyRuntimeSlot *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
+  allocError = g_MemoryApi.alloc(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),(void **)&armySlot1);
+  if (allocError == 0) {
     /* base - 1 (MOV then DEC): the rebase value for saved offsets, see ArmyRuntimePool_RebaseAfterLoad */
     g_ArmyRuntimeRebaseBaseMinusOne = (uint8_t *)armySlot1 - 1;
     g_ArmyRuntimeSlots = armySlot1;
@@ -1478,30 +1474,24 @@ bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphics
       if (loadFactionGraphics) {
         *(int *)pathEnd = factionSuffixChar; /* the suffix and a terminator in one dword */
         WidePath_SetExtensionCode(ASSET_MAGIC_GFX,graphicsBasePath);
-        packageResult = Package_LoadEntry(graphicsBasePath);
-        textureSourceAsset = packageResult.bufferOrError;
-        if (packageResult.failed) {
-          *outError = (uint32_t)packageResult.bufferOrError;
+        textureSourceAsset = Package_LoadEntry(graphicsBasePath,outError);
+        if (textureSourceAsset == NULL) {
           return false;
         }
         ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
                   (frontendPlayerRuntimeId,(ArmyGraphicsAssetAddress32)textureSourceAsset);
-        textureSetResult = g_GraphicsCreateTextureSet(textureSourceAsset);
-        loadedTextureSet = textureSetResult.textureSet;
-        if (textureSetResult.failed) {
+        loadedTextureSet = g_GraphicsCreateTextureSet(textureSourceAsset,outError);
+        if (loadedTextureSet == NULL) {
           LOCK();
           UNLOCK();
           Resource_Release(textureSourceAsset);
-          *outError = (uint32_t)loadedTextureSet;
           return false;
         }
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].textureSet = loadedTextureSet;
         WidePath_SetExtensionCode(ASSET_MAGIC_PAL,graphicsBasePath);
-        paletteResult = g_GraphicsPaletteAssetLoadPackage(graphicsBasePath);
-        paletteOrResult = paletteResult.paletteAsset;
-        if (paletteResult.failed) {
-          *outError = (uint32_t)paletteOrResult;
+        paletteOrResult = g_GraphicsPaletteAssetLoadPackage(graphicsBasePath,outError);
+        if (paletteOrResult == NULL) {
           return false;
         }
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].paletteAsset = paletteOrResult;
@@ -1545,7 +1535,7 @@ bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphics
     *outError = 0;
     return true;
   }
-  *outError = allocResult.payloadOrError;
+  *outError = allocError;
   return false;
 }
 
@@ -2776,7 +2766,6 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
   uint64_t mm1PackedValue0;
   uint64_t mm2PackedValue0;
   uint64_t mm3PackedValue0;
-  OffscreenRenderResult offscreenResult;
 
   savedPreviewWidth = previewWidth;
   /* a temporary army at world position (ARMY_PREVIEW_WORLD_POSITION_Q12 on both axes) */
@@ -2825,14 +2814,13 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
     g_ArmyPreviewViewAngle1 = 0;
     g_ArmyPreviewProjectionShift = 4;
     g_ArmyPreviewModelNodePointer = (uint32_t)rootNodeOrSize;
-    offscreenResult = g_GraphicsOffscreenRenderModelListToTextureSource
+    previewTexture = (GameEntityRuntime *)g_GraphicsOffscreenRenderModelListToTextureSource
                        ((GraphicsOffscreenSceneExtents *)&g_ArmyPreviewPrimaryColorArgb,
                         &g_ArmyPreviewAuxiliaryOrientation0,
                         (GraphicsOffscreenViewParameters *)&g_ArmyPreviewViewOriginXQ12,
                         previewHeight * 2,previewWidth * 2,1,
                         (ModelRuntimeNode **)&g_ArmyPreviewModelNodePointer);
-    previewTexture = offscreenResult.allocation;
-    if (!offscreenResult.failed) {
+    if (previewTexture != NULL) {
       /* the texture is typed as GameEntityRuntime here: its pixels start at +0x220 and the header fields
          rewritten below (+0x200/+0x204 and +0x218/+0x21C) hold its width and height; +0x04 is the
          allocation size */
@@ -3331,7 +3319,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
            (16 < g_GameFactionRuntimeImage.records[capabilityBitIndex].relationTransitionTick)) {
           g_GameFactionRuntimeImage.records[capabilityBitIndex].relationTransitionTick = 0;
           g_SoundPlayOneShot
-                    (g_SoundEffectsGainQ15,g_SoundEffectsGainQ15,*voiceSetRef);
+                    (g_SoundEffectsGainQ15,g_SoundEffectsGainQ15,*voiceSetRef,NULL);
         }
       }
     }

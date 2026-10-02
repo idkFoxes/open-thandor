@@ -198,10 +198,11 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   uint32_t trackOffset;
   uint32_t trackBytes;
   void *audioSample;
-  FileSystemSeekResult seekResult;
-  ArenaAllocResult allocResult;
-  FileSystemReadResult readResult;
-  SampleVoiceSetResult voiceSetResult;
+  uint32_t seekError;
+  uint32_t allocError;
+  uint32_t readError;
+  uint32_t voiceSetError;
+  DirectSoundVoiceSet *voiceSet;
   StatusResult result;
 
   result.failed = false;
@@ -223,26 +224,25 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   if (trackBytes == 0) {
     return result;
   }
-  seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_CURRENT,trackOffset + remainingVideoBytes,handle);
-  result.failed = seekResult.failed;
-  result.valueOrError = seekResult.positionOrError;
-  if (seekResult.failed) {
+  seekError = g_FileSystemSeek(FILESYSTEM_SEEK_CURRENT,trackOffset + remainingVideoBytes,handle);
+  result.failed = seekError != 0;
+  result.valueOrError = seekError;
+  if (seekError != 0) {
     return result;
   }
-  allocResult = g_MemoryApi.alloc(trackBytes);
-  result.failed = allocResult.failed;
-  result.valueOrError = allocResult.payloadOrError;
-  if (allocResult.failed) {
+  allocError = g_MemoryApi.alloc(trackBytes,&audioSample);
+  result.failed = allocError != 0;
+  result.valueOrError = allocError != 0 ? allocError : (uint32_t)audioSample;
+  if (allocError != 0) {
     return result;
   }
-  audioSample = (void *)allocResult.payloadOrError;
-  readResult = g_FileSystemReadExact(trackBytes,audioSample,handle);
-  result.failed = readResult.failed;
-  result.valueOrError = readResult.valueOrError;
-  if (!readResult.failed) {
-    voiceSetResult = g_SoundCreateSampleVoiceSet((SoundSampleAsset *)audioSample);
-    result.failed = voiceSetResult.failed;
-    result.valueOrError = (uint32_t)voiceSetResult.voiceSet;
+  readError = g_FileSystemReadExact(trackBytes,audioSample,handle);
+  result.failed = readError != 0;
+  result.valueOrError = readError;
+  if (readError == 0) {
+    voiceSetError = g_SoundCreateSampleVoiceSet((SoundSampleAsset *)audioSample,&voiceSet);
+    result.failed = voiceSetError != 0;
+    result.valueOrError = voiceSetError != 0 ? voiceSetError : (uint32_t)voiceSet;
   }
   g_MemoryApi.free(audioSample);
   return result;
@@ -254,9 +254,12 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
    mounted package, the executable directory or the plain path, in that order. Loads the header and the video
    stream (only its start when streaming), picks one of the embedded audio tracks at random and builds a
    MovieRuntime that looks like a one-frame gfx texture, so the ARGB frame can be drawn like any other texture.
-   A partly loaded stream gets the refill worker thread. Returns frameCount and frameIntervalMilliseconds.
+   A partly loaded stream gets the refill worker thread. Returns true on success and stores the header's
+   frame timer rate (frameIntervalMilliseconds, the value callers pass to TimerRegisterPeriodic) in
+   *outPlaybackRateHz; returns false and stores the error code of the failing step in *outError. Either
+   pointer may be NULL. (The original also returned frameCount in EAX on success; no caller uses it.)
 */
-MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
+bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError)
 
 {
   MovieFileHeader *header;
@@ -273,14 +276,11 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
   uint32_t initialVideoBytes;
   uint32_t status;
   bool looseFileOpened;
-  FileSystemOpenResult openResult;
-  FileSystemSeekResult seekResult;
-  FileSystemSeekResult positionResult;
-  FileSystemReadResult readResult;
-  ArenaAllocResult allocResult;
+  uint32_t openError;
+  bool gotPosition;
+  uint32_t allocError;
+  void *allocPayload;
   StatusResult audioResult;
-  MovieOpenResult successResult;
-  MovieOpenResult failureResult;
   PckEntryHeader *packageEntry;
   EngineFileHandle packageFileHandle;
   MovieStreamByteCount remainingByteCount;
@@ -293,17 +293,15 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
   if (((movieOpenFlags & MOVIE_OPEN_PACKAGE_ONLY) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
-    openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-    handle = (void *)openResult.handleOrError;
-    looseFileOpened = !openResult.failed;
+    looseFileOpened = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle) == 0;
   }
   if (!looseFileOpened) {
     movieOpenFlags = movieOpenFlags & ~MOVIE_OPEN_PACKAGE_ONLY;
     packageEntry = Package_FindEntryAcrossMounts(path,&packageFileHandle);
     if ((packageEntry != NULL) &&
-       (seekResult = g_FileSystemSeek
-                           (FILESYSTEM_SEEK_BEGIN,packageEntry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,
-                            (void *)packageFileHandle), !seekResult.failed)) {
+       (g_FileSystemSeek
+            (FILESYSTEM_SEEK_BEGIN,packageEntry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,
+             (void *)packageFileHandle) == 0)) {
       isSharedPackageHandle++;
       handle = (void *)packageFileHandle;
     }
@@ -311,22 +309,21 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
-      openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-      if (openResult.failed) {
-        openResult = g_FileSystemOpen(0,path);
-        if (openResult.failed) {
+      openError = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16,&handle);
+      if (openError != 0) {
+        openError = g_FileSystemOpen(0,path,&handle);
+        if (openError != 0) {
           /* Nothing is open yet: no close. */
-          failureResult.failed = true;
-          failureResult.frameCountOrError = openResult.handleOrError;
-          return failureResult;
+          if (outError != NULL) {
+            *outError = openError;
+          }
+          return false;
         }
       }
-      handle = (void *)openResult.handleOrError;
     }
   }
-  readResult = g_FileSystemReadExact(MOVIE_FILE_HEADER_BYTES,g_PackageScratchBuffer,handle);
-  status = readResult.valueOrError;
-  if (!readResult.failed) {
+  status = g_FileSystemReadExact(MOVIE_FILE_HEADER_BYTES,g_PackageScratchBuffer,handle);
+  if (status == 0) {
     header = (MovieFileHeader *)g_PackageScratchBuffer;
     status = FATAL_ERROR_MOVIE_INVALID;
     if ((header->common.magic == ASSET_MAGIC_FLM) &&
@@ -336,41 +333,38 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
       if ((MOVIE_STREAM_BUFFER_MAX_BYTES < sizeOrValue) && (movieOpenFlags != 0)) {
         sizeOrValue = MOVIE_STREAM_BUFFER_MAX_BYTES;
       }
-      allocResult = g_MemoryApi.alloc(sizeOrValue);
-      status = allocResult.payloadOrError;
-      if (!allocResult.failed) {
+      allocError = g_MemoryApi.alloc(sizeOrValue,&allocPayload);
+      status = allocError != 0 ? allocError : (uint32_t)allocPayload;
+      if (allocError == 0) {
         copySource = (uint32_t *)g_PackageScratchBuffer;
-        copyDestination = (uint32_t *)allocResult.payloadOrError;
+        copyDestination = (uint32_t *)allocPayload;
         for (copyCount = MOVIE_FILE_HEADER_BYTES / 4; copyCount != 0; copyCount--) {
           *copyDestination = *copySource;
           copySource++;
           copyDestination++;
         }
-        header = (MovieFileHeader *)allocResult.payloadOrError;
+        header = (MovieFileHeader *)allocPayload;
         initialVideoBytes = header->videoStreamBytes;
         if ((MOVIE_INITIAL_VIDEO_MAX_BYTES < initialVideoBytes) && (movieOpenFlags != 0)) {
           initialVideoBytes = MOVIE_INITIAL_VIDEO_MAX_BYTES;
         }
         remainingByteCount = header->videoStreamBytes - initialVideoBytes;
         loadedEnd = (uint8_t *)(header + 1) + initialVideoBytes;
-        readResult = g_FileSystemReadExact(initialVideoBytes,header + 1,handle);
-        status = readResult.valueOrError;
-        if (!readResult.failed) {
-          /* The original also fails on CF of g_FileSystemGetPosition (JC 0x004a89f1, EAX 0); the
-             generated slot type returns only EAX, so it is called through its real signature. */
-          positionResult = (*(FileSystemSeekResult (*)(void *))g_FileSystemGetPosition)(handle);
-          streamPosition = positionResult.positionOrError;
-          status = positionResult.positionOrError;
-          if (!positionResult.failed) {
+        status = g_FileSystemReadExact(initialVideoBytes,header + 1,handle);
+        if (status == 0) {
+          /* a failed position query fails the open with status 0 (JC 0x004a89f1) */
+          gotPosition = g_FileSystemGetPosition(handle,&streamPosition);
+          status = streamPosition;
+          if (gotPosition) {
             audioResult = Movie_OpenLoadRandomAudioTrack(header,remainingByteCount,handle);
             status = audioResult.valueOrError;
           }
-          if ((!positionResult.failed) && (!audioResult.failed)) {
+          if (gotPosition && (!audioResult.failed)) {
             sizeOrValue = header->widthPixels * header->heightPixels * 4 + MOVIE_RUNTIME_PIXELS_OFFSET;
-            allocResult = g_MemoryApi.alloc(sizeOrValue);
-            status = allocResult.payloadOrError;
-            if (!allocResult.failed) {
-              movie = (MovieRuntime *)allocResult.payloadOrError;
+            allocError = g_MemoryApi.alloc(sizeOrValue,&allocPayload);
+            status = allocError != 0 ? allocError : (uint32_t)allocPayload;
+            if (allocError == 0) {
+              movie = (MovieRuntime *)allocPayload;
               g_ActiveMovie = movie;
               if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
                 g_FileSystemClose(handle);
@@ -436,10 +430,10 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
                   CloseHandle(semaphoreOrThread);
                 }
               }
-              successResult.failed = false;
-              successResult.frameCountOrError = header->frameCount;
-              successResult.playbackRateHz = header->frameIntervalMilliseconds; /* MOV ECX,[ESI+0xFC] */
-              return successResult;
+              if (outPlaybackRateHz != NULL) {
+                *outPlaybackRateHz = header->frameIntervalMilliseconds; /* MOV ECX,[ESI+0xFC] */
+              }
+              return true;
             }
           }
         }
@@ -450,9 +444,10 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
   if (isSharedPackageHandle == 0) {
     g_FileSystemClose(handle);
   }
-  failureResult.failed = true;
-  failureResult.frameCountOrError = status;
-  return failureResult;
+  if (outError != NULL) {
+    *outError = status;
+  }
+  return false;
 }
 
 
@@ -502,7 +497,6 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
   void *handle;
   MovieRuntime *movie;
   uint32_t byteCount;
-  FileSystemReadResult readResult;
 
   /* The original keeps the movie in ESI: it re-reads g_ActiveMovie only at the loop top, after the wait
      and at the exit. */
@@ -519,8 +513,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
         byteCount = MOVIE_REFILL_CHUNK_BYTES;
       }
       g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle);
-      readResult = g_FileSystemReadExact(byteCount,movie->loadedVideoEnd,handle);
-      if (readResult.failed) {
+      if (g_FileSystemReadExact(byteCount,movie->loadedVideoEnd,handle) != 0) {
         if (movie->streamState != MOVIE_STREAM_SHUTDOWN) {
           movie->streamState = MOVIE_STREAM_READ_FAILED;
         }
@@ -674,22 +667,22 @@ void EndMovieUiRuntime_DispatchCommandByFlags
   }
   switch (target) {
   case 0x5658f0: { /* screenshot */
-    FramebufferCaptureResult capture =
+    GraphicsCapturedTextureSourceAsset *capture =
          g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeResult pcx;
     uint16_t *digitHigh = &g_ScreenshotFileNameUtf16[6];
     uint16_t *digitLow = &g_ScreenshotFileNameUtf16[7];
-    if (capture.failed) {
+    if (capture == NULL) {
       break;
     }
-    pcx = g_PcxFunctionExport3(g_PcxFunctionModule,capture.capture);
+    pcx = g_PcxFunctionExport3(g_PcxFunctionModule,capture);
     if (pcx.failed) {
-      g_MemoryApi.free(capture.capture);
+      g_MemoryApi.free(capture);
       break;
     }
     FileSystem_WriteBufferToPath(pcx.encodedByteCount,pcx.encodedBytesOrError,g_ScreenshotFileNameUtf16);
     g_MemoryApi.free(pcx.encodedBytesOrError);
-    g_MemoryApi.free(capture.capture);
+    g_MemoryApi.free(capture);
     /* two-digit counter in the file name, wrapping from 99 to 00 */
     (*digitLow)++;
     if (*digitLow > '9') {
@@ -1756,7 +1749,7 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   uint32_t *copySource;
   uint32_t *copyDestination;
   uint8_t *streamCursor;
-  SoundPlayResult playResult;
+  IDirectSoundBuffer *playedVoice;
 
   movie = g_ActiveMovie;
   byteCountOrStatus = FATAL_ERROR_MOVIE_INVALID;
@@ -1785,9 +1778,9 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
       previousFrameIndex = movie->currentFrameIndex;
       streamCursor = (uint8_t *)flmHeader + movie->videoStreamOffset;
       if ((previousFrameIndex == 0) && (movie->audioVoiceSet != NULL)) {
-        playResult = g_SoundPlayOneShot
-                          (movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet);
-        movie->activeAudioBuffer = playResult.soundBuffer;
+        /* stored whether or not it plays (NULL on failure) */
+        g_SoundPlayOneShot(movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet,&playedVoice);
+        movie->activeAudioBuffer = playedVoice;
       }
       nextFrameOrLoadedSize = previousFrameIndex + 1;
       byteCountOrStatus = movie->loadedVideoEnd - streamCursor;

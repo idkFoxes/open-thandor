@@ -165,7 +165,6 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   RichTextExtentRegs textExtent;
   uint16_t *briefingText;
   uint16_t *templateText;
-  MovieOpenResult movieOpen;
   MovieRuntime *firstFrameMovie;
   uint32_t movieEndCode;
 
@@ -203,8 +202,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
              g_FrontendMissionBriefingLevelDigitsUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLM,g_FrontendMissionBriefingMoviePathUtf16);
-  movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16);
-  if (movieOpen.failed) {
+  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16,NULL,NULL)) {
     ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = NULL;
   }
   else {

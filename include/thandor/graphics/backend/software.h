@@ -53,14 +53,14 @@ void SoftwareGraphicsDispatch_SuccessNoOp(void);
 void SoftwareGraphicsDispatch_NoOp(void);
 
 /* 0x004A8F80 */
-DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
+bool SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
-          FrontendDisplayDimensionPixels width);
+          FrontendDisplayDimensionPixels width,uint32_t *errorCode);
 
 /* 0x004A9110 */
-SoftwareFramebufferResult SoftwareFramebuffer_Create
+SoftwareFramebufferAccess *SoftwareFramebuffer_Create
           (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
-          GraphicsPixelDimension width);
+          GraphicsPixelDimension width,uint32_t *outError);
 
 /* 0x004A9160 */
 void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer);
@@ -394,9 +394,9 @@ void SoftwareRasterAux_Mode10 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenC
 void SoftwareRasterAux_Mode12 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX, GraphicsPrimitivePacket *packet);
 
 /* 0x004FE620 */
-DisplayModeResult SoftwareRenderer_SetDisplayMode
+bool SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
-          FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
+          FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width,uint32_t *errorCode);
 
 /* 0x004FE7D0 */
 uint32_t __cdecl SoftwareRenderer_InstallDisplayModeHook(void);

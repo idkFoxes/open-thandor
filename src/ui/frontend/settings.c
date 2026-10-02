@@ -284,8 +284,8 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   uint32_t selectedBitsPerPixel;
   int colorBitsCounterOrParentLink;
   GraphicsTextureSourceAsset **fontTextureSource;
-  DisplayModeResult selectedModeResult;
-  DisplayModeResult restoredModeResult;
+  uint32_t selectedModeError;
+  uint32_t restoredModeError;
   
   selectedBitsPerPixel = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
              bitsPerPixel;
@@ -302,7 +302,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   /* the current colour depth: the RGB bits of the pixel format, rounded up to a multiple of 16 below */
   colorBitsCounterOrParentLink = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
           g_SoftwarePixelFormatConfig.blueBitCount;
-  selectedModeResult = g_GraphicsSetDisplayMode
+  if (!g_GraphicsSetDisplayMode
                     (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.adapterIndex,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
@@ -310,12 +310,13 @@ void FrontendDisplaySettings_ApplyMode(void *control)
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.height,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
-                     persistentSelection.width);
-  if (selectedModeResult.failed) {
-    restoredModeResult = g_GraphicsSetDisplayMode(previousAdapterIndex,colorBitsCounterOrParentLink + 15U & ~15U,previousHeight,previousWidth);
-    FatalError_ExitIfFailed(restoredModeResult.valueOrError,restoredModeResult.failed);
+                     persistentSelection.width,&selectedModeError)) {
+    if (!g_GraphicsSetDisplayMode(previousAdapterIndex,colorBitsCounterOrParentLink + 15U & ~15U,previousHeight,
+                                  previousWidth,&restoredModeError)) {
+      FatalError_ExitIfFailed(restoredModeError,true);
+    }
     g_CursorVisibilityToken++;
-    FatalError_ReportIfFailed(selectedModeResult.valueOrError,true);
+    FatalError_ReportIfFailed(selectedModeError,true);
     /* note the default adapter 1 here (ProcessEntry uses 0) */
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
     adapterIndex = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
@@ -1015,8 +1016,6 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   uint32_t musicEnabledBit;
   uint32_t newAudioFlags;
   bool isSelected;
-  SampleVoiceSetResult createVoiceResult;
-  SoundPlayResult playResult;
   bool musicLoaded;
 
   musicEnabledBit = 0;
@@ -1027,9 +1026,7 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     musicLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e,(void **)&musicSample,NULL,NULL);
     activeMusicBuffer = g_FrontendMusicActiveBuffer;
     if (musicLoaded) {
-      createVoiceResult = g_SoundCreateSampleVoiceSet(musicSample);
-      musicVoiceSet = createVoiceResult.voiceSet;
-      if (createVoiceResult.failed) {
+      if (g_SoundCreateSampleVoiceSet(musicSample,&musicVoiceSet) != 0) {
         Resource_Release(musicSample);
         activeMusicBuffer = g_FrontendMusicActiveBuffer;
       }
@@ -1037,9 +1034,7 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
         g_FrontendMusicVoiceSet = musicVoiceSet;
         Resource_Release(musicSample);
         gainOrAudioFlags = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
-        playResult = g_SoundPlayLooping(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet);
-        activeMusicBuffer = playResult.soundBuffer;
-        if (playResult.failed) {
+        if (!g_SoundPlayLooping(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet,&activeMusicBuffer)) {
           g_SoundReleaseSampleVoiceSet(musicVoiceSet);
           g_FrontendMusicVoiceSet = NULL;
           activeMusicBuffer = g_FrontendMusicActiveBuffer;

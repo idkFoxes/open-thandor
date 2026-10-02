@@ -76,7 +76,7 @@ void Glide3_TextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,Gr
 void Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
 
 /* 0x00580540 */
-FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
+GraphicsCapturedTextureSourceAsset *Glide3_Framebuffer_CaptureRegion
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);
 

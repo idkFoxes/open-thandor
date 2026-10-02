@@ -57,17 +57,15 @@ void Keyboard_FlushEvents(void)
 
 /* Address: 0x00417240.
    Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer
-   (0x00417214). Returns EAX = key code and EDX = modifier state with CF clear, or CF set when the ring is
-   empty; the struct return only models that register triple.
+   (0x00417214). Returns true with the key code in *outKeyCode and the modifier state in *outStateMask, or
+   false (outputs untouched) when the ring is empty. Original: EAX = key code, EDX = state mask, CF = empty.
 */
-KeyboardEventResult Keyboard_ReadNextEventRegs(void)
+bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask)
 
 {
   uint32_t nextReadIndex;
-  KeyboardEventResult readEvent;
-  KeyboardEventResult emptyResult;
   KeyboardInputEvent *eventRecord;
-  
+
   nextReadIndex = g_KeyboardReadIndex + 1;
   if (g_KeyboardReadIndex != g_KeyboardWriteIndex) {
     if (KEYBOARD_EVENT_RING_SIZE - 1 < nextReadIndex) {
@@ -75,16 +73,11 @@ KeyboardEventResult Keyboard_ReadNextEventRegs(void)
     }
     eventRecord = g_KeyboardEvents + g_KeyboardReadIndex;
     g_KeyboardReadIndex = nextReadIndex;
-    /* EAX = key code, EDX = state mask; the decompiled version filled an unused local instead. */
-    readEvent.queueEmpty = false;
-    readEvent.eventCode = eventRecord->keyCode;
-    readEvent.eventData = eventRecord->stateMask;
-    return readEvent;
+    *outKeyCode = eventRecord->keyCode;
+    *outStateMask = eventRecord->stateMask;
+    return true;
   }
-  emptyResult.eventData = nextReadIndex;
-  emptyResult.eventCode = 0; /* EAX unchanged in the original; all callers read it only with CF clear */
-  emptyResult.queueEmpty = true;
-  return emptyResult;
+  return false;
 }
 
 
@@ -124,7 +117,6 @@ bool DirectInputMouse_Init(uint32_t *outError)
   uint32_t maxWidth;
   HINSTANCE directInputModule;
   uint32_t resolveError;
-  PackageLoadResult packageLoadResult;
   void *cursorFrameData;
   uint32_t cursorFrameBytes;
   uint32_t cursorLoadErrorCode;
@@ -171,9 +163,11 @@ bool DirectInputMouse_Init(uint32_t *outError)
             TimerSystem_RegisterPeriodic(MOUSE_POLL_TIMER_HZ,DirectInputMouse_PollBufferedEvents);
             g_PointerFlushEvents = DirectInputMouse_FlushBufferedEvents;
             g_PointerSetPosition = DirectInputMouse_SetPosition;
-            packageLoadResult = Package_LoadEntry(u_engine_mouse_gfx_00416864);
-            cursorDataOrError = packageLoadResult.bufferOrError;
-            if (!packageLoadResult.failed) {
+            cursorDataOrError = Package_LoadEntry(u_engine_mouse_gfx_00416864,&cursorLoadErrorCode);
+            if (cursorDataOrError == NULL) {
+              cursorDataOrError = (GraphicsTextureSourceAsset *)cursorLoadErrorCode;
+            }
+            else {
               maxWidth = 0;
               maxHeight = 0;
               subresourceIndex = 0;
@@ -477,32 +471,22 @@ void DirectInputMouse_PollBufferedEvents(void)
 }
 
 
-/* Real signature behind the g_SoftwareFramebufferCreate slot (SoftwareFramebuffer_Create): EAX pointer, CF failure. */
-typedef SoftwareFramebufferResult SoftwareFramebufferCreateCfProc
-          (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
-          GraphicsPixelDimension width);
-
 /* Address: 0x005772F0.
    Mouse hook in front of g_GraphicsSetDisplayMode (installed by DirectInputMouse_Init): frees the three
    cursor buffers, switches the mode through the chained setter, recreates the buffers in the new pixel
-   format, converts the cursor palette, centres the mouse and reacquires the device. CF set when the mode
-   switch fails or a buffer creation fails (JC after each g_SoftwareFramebufferCreate call: 0x00577377,
-   0x00577397, 0x005773B7). The slot's generated type returns only the pointer, so the calls go through
-   the SoftwareFramebuffer_Create signature to read its CF. On failure g_GraphicsBackendAccessState stays -1
+   format, converts the cursor palette, centres the mouse and reacquires the device. Returns true on
+   success; false with the error in *errorCode when the mode switch fails or a buffer creation fails (JC after each g_SoftwareFramebufferCreate call: 0x00577377,
+   0x00577397, 0x005773B7; the failing create stores its allocator error there). On failure g_GraphicsBackendAccessState stays -1
    and the buffers created so far stay installed, as in the original.
 */
-DisplayModeResult DirectInputMouse_SetDisplayMode
+bool DirectInputMouse_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
-          GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth)
+          GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode)
 
 {
   SoftwareFramebufferAccess *primaryFramebuffer;
   SoftwareFramebufferAccess *newCursorFramebuffer;
   SoftwareFramebufferAccess *newCompositeFramebuffer;
-  DisplayModeResult previousHookResult;
-  DisplayModeResult successResult;
-  SoftwareFramebufferResult createResult;
-  bool previousHookFailed;
 
   g_GraphicsBackendAccessState = -1; /* blocks backend access (timer cursor drawing) during the switch */
   g_MemoryApi.free(g_CursorSavedBackground);
@@ -511,51 +495,39 @@ DisplayModeResult DirectInputMouse_SetDisplayMode
   g_CursorSavedBackground = NULL;
   g_CursorCompositeBuffer = NULL;
   g_CursorAlternateSavedBackground = NULL;
-  previousHookResult = g_DirectInputMouseChainedSetDisplayMode
-                    (adapterIndex,bitsPerPixel,framebufferHeight,framebufferWidth);
-  primaryFramebuffer = g_FramebufferAccess;
-  previousHookFailed = previousHookResult.failed;
-  newCursorFramebuffer = (SoftwareFramebufferAccess *)previousHookResult.valueOrError;
-  if (!previousHookFailed) {
-    createResult =
-         (*(SoftwareFramebufferCreateCfProc *)g_SoftwareFramebufferCreate)
-                   (g_FramebufferAccess->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
-    newCursorFramebuffer = createResult.framebuffer;
-    previousHookFailed = createResult.failed;
-    if (!previousHookFailed) {
-      g_CursorSavedBackground = newCursorFramebuffer;
-      createResult =
-           (*(SoftwareFramebufferCreateCfProc *)g_SoftwareFramebufferCreate)
-                     (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
-      newCompositeFramebuffer = createResult.framebuffer;
-      newCursorFramebuffer = newCompositeFramebuffer;
-      previousHookFailed = createResult.failed;
-      if (!previousHookFailed) {
-        g_CursorCompositeBuffer = newCompositeFramebuffer;
-        createResult =
-             (*(SoftwareFramebufferCreateCfProc *)g_SoftwareFramebufferCreate)
-                       (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
-        newCursorFramebuffer = createResult.framebuffer;
-        previousHookFailed = createResult.failed;
-        if (!previousHookFailed) {
-          g_CursorAlternateSavedBackground = newCursorFramebuffer;
-          g_GraphicsTextureSourceConvertPaletteEntries
-                    ((GraphicsPaletteTextureSourceAsset *)g_CursorSourceAsset);
-          g_CursorOverrideX = framebufferWidth >> 1;
-          g_CursorOverrideY = framebufferHeight >> 1;
-          g_MouseX = g_CursorOverrideX;
-          g_MouseY = g_CursorOverrideY;
-          successResult.valueOrError = g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
-          g_GraphicsBackendAccessState = 0;
-          successResult.failed = false;
-          return successResult;
-        }
-      }
-    }
+  if (!g_DirectInputMouseChainedSetDisplayMode
+                    (adapterIndex,bitsPerPixel,framebufferHeight,framebufferWidth,errorCode)) {
+    return false; /* the chained hook's error is passed through */
   }
-  previousHookResult.failed = true;
-  previousHookResult.valueOrError = (uint32_t)newCursorFramebuffer;
-  return previousHookResult;
+  primaryFramebuffer = g_FramebufferAccess;
+  /* a failing create stores its allocator error in *errorCode */
+  newCursorFramebuffer = g_SoftwareFramebufferCreate
+                   (g_FramebufferAccess->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth,errorCode);
+  if (newCursorFramebuffer == NULL) {
+    return false;
+  }
+  g_CursorSavedBackground = newCursorFramebuffer;
+  newCompositeFramebuffer = g_SoftwareFramebufferCreate
+                   (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth,errorCode);
+  if (newCompositeFramebuffer == NULL) {
+    return false;
+  }
+  g_CursorCompositeBuffer = newCompositeFramebuffer;
+  newCursorFramebuffer = g_SoftwareFramebufferCreate
+                   (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth,errorCode);
+  if (newCursorFramebuffer == NULL) {
+    return false;
+  }
+  g_CursorAlternateSavedBackground = newCursorFramebuffer;
+  g_GraphicsTextureSourceConvertPaletteEntries
+            ((GraphicsPaletteTextureSourceAsset *)g_CursorSourceAsset);
+  g_CursorOverrideX = framebufferWidth >> 1;
+  g_CursorOverrideY = framebufferHeight >> 1;
+  g_MouseX = g_CursorOverrideX;
+  g_MouseY = g_CursorOverrideY;
+  g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
+  g_GraphicsBackendAccessState = 0;
+  return true;
 }
 
 
