@@ -133,17 +133,17 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
 /* Address: 0x0052B540.
    Loads the shot graphics of a level (mutableBasePath with its extension replaced by .gfx and .pal) and
    allocates the zeroed shot runtime pool; g_ShotRuntimeRebaseBaseMinusOne is set for the 1-based saved slot
-   offsets. The movie playback is advanced between the steps so that a running movie keeps going. CF set with
-   the error code of the first failing load or allocation.
+   offsets. The movie playback is advanced between the steps so that a running movie keeps going. Returns true
+   with *outError = 0 on success, or false with the error code of the first failing load or allocation in
+   *outError (always written).
 */
-StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
+bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
 
 {
   ShotRuntimeSlot *runtimeSlotCursor;
   int runtimeSlotsRemaining;
   ArenaAllocResult loadResult;
-  StatusResult initResult;
-  
+
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
   loadResult =
@@ -174,9 +174,8 @@ StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
       }
     }
   }
-  initResult.valueOrError = loadResult.payloadOrError;
-  initResult.failed = loadResult.failed;
-  return initResult;
+  *outError = loadResult.payloadOrError;
+  return !loadResult.failed;
 }
 
 
@@ -219,17 +218,15 @@ void ShotRuntime_ShutdownGraphicsResources(void)
 /* Address: 0x0052B660.
    Looks a shot definition up by id in the 256-slot registry (a second copy of
    ShotDefinitionRegistry_FindByIdWithError, used by ShotDefinition registration to reject duplicates).
-   On a miss a number is formatted into g_PackageLastErrorPath and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned
-   with CF set.
+   Returns the registered definition (never NULL), or NULL on a miss; then a number is also formatted into
+   g_PackageLastErrorPath (the original returned FATAL_ERROR_SHOT_ID_NOT_FOUND as its error value).
 */
-ShotDefinitionResult ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
+ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
 
 {
   ShotDefinition *registryDefinition;
   int registrySlotsRemaining;
   ShotDefinition **registryCursor;
-  ShotDefinitionResult failureResult;
-  ShotDefinitionResult successResult;
 
   registryCursor = g_ShotDefinitionRegistry;
   registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
@@ -240,14 +237,10 @@ ShotDefinitionResult ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog d
       /* the original formats EAX, i.e. the last registry slot, not the missing id (PUSH EAX at 0x0052B699) */
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
-      failureResult.notFound = true;
-      failureResult.definitionOrError = (ShotDefinition *)FATAL_ERROR_SHOT_ID_NOT_FOUND;
-      return failureResult;
+      return NULL;
     }
   }
-  successResult.notFound = false;
-  successResult.definitionOrError = registryDefinition;
-  return successResult;
+  return registryDefinition;
 }
 
 

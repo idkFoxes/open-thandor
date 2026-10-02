@@ -32,7 +32,6 @@ typedef struct FileSystemWriteResult FileSystemWriteResult, *PFileSystemWriteRes
 typedef struct FileSystemOpenResult FileSystemOpenResult, *PFileSystemOpenResult;
 typedef struct FatalErrorCheckResult FatalErrorCheckResult, *PFatalErrorCheckResult;
 typedef struct PckCodecResult PckCodecResult, *PPckCodecResult;
-typedef struct TerrainPointResult TerrainPointResult, *PTerrainPointResult;
 typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
 typedef struct ArenaAllocResult ArenaAllocResult, *PArenaAllocResult;
 typedef struct Win32FileWriteResult Win32FileWriteResult, *PWin32FileWriteResult;
@@ -617,7 +616,6 @@ typedef struct PaletteTextureSourceResult PaletteTextureSourceResult, *PPaletteT
 typedef struct PaletteAssetResult PaletteAssetResult, *PPaletteAssetResult;
 typedef struct PathingDestination PathingDestination, *PPathingDestination;
 typedef struct FieldGridCoordinates FieldGridCoordinates, *PFieldGridCoordinates;
-typedef struct TerrainRaycastResult TerrainRaycastResult, *PTerrainRaycastResult;
 typedef struct SoftwareFramebufferResult SoftwareFramebufferResult, *PSoftwareFramebufferResult;
 typedef struct OffscreenRenderResult OffscreenRenderResult, *POffscreenRenderResult;
 typedef struct StatusResult StatusResult, *PStatusResult;
@@ -628,17 +626,13 @@ typedef struct TextureSetResult TextureSetResult, *PTextureSetResult;
 typedef struct KeyboardEventResult KeyboardEventResult, *PKeyboardEventResult;
 typedef struct WorldPositionResult WorldPositionResult, *PWorldPositionResult;
 typedef struct FixedRollAzimuthElevation FixedRollAzimuthElevation, *PFixedRollAzimuthElevation;
-typedef struct HeightNormalSampleResult HeightNormalSampleResult, *PHeightNormalSampleResult;
 typedef struct SelectableNodeResult SelectableNodeResult, *PSelectableNodeResult;
 typedef struct InputEventResult InputEventResult, *PInputEventResult;
-typedef struct ShotDefinitionResult ShotDefinitionResult, *PShotDefinitionResult;
 typedef struct WorldCameraPosition WorldCameraPosition, *PWorldCameraPosition;
 typedef struct FixedLengthAzimuthElevation FixedLengthAzimuthElevation, *PFixedLengthAzimuthElevation;
-typedef struct SurfacePointResult SurfacePointResult, *PSurfacePointResult;
 typedef struct PlacementDispatchResult PlacementDispatchResult, *PPlacementDispatchResult;
 typedef struct PackageLoadResult PackageLoadResult, *PPackageLoadResult;
 typedef struct FixedAzimuthElevationRoll FixedAzimuthElevationRoll, *PFixedAzimuthElevationRoll;
-typedef struct TerrainRayTriangleResult TerrainRayTriangleResult, *PTerrainRayTriangleResult;
 typedef struct DirectoryEnumerationResult DirectoryEnumerationResult, *PDirectoryEnumerationResult;
 typedef struct AiSecondaryWorkspaceDistanceSelection AiSecondaryWorkspaceDistanceSelection, *PAiSecondaryWorkspaceDistanceSelection;
 typedef struct TerrainOccupancyFlagsAndCombinedMask TerrainOccupancyFlagsAndCombinedMask, *PTerrainOccupancyFlagsAndCombinedMask;
@@ -982,13 +976,6 @@ struct FatalErrorCheckResult {
 struct PckCodecResult {
     uint32_t byteCountOrError; // Physical ABI component EAX
     bool failed; // Physical ABI component CF
-};
-
-struct TerrainPointResult {
-    uint32_t worldXQ12; // Physical ABI component EAX
-    uint32_t worldYQ12; // Physical ABI component ECX
-    uint32_t terrainHeightQ12; // Physical ABI component EDX
-    bool outOfBounds; // Physical ABI component CF
 };
 
 struct ModelWorldPoint {
@@ -10663,12 +10650,6 @@ struct FieldGridCoordinates {
     Q12 rowQ12; // EDX row coordinate
 };
 
-struct TerrainRaycastResult {
-    Q12 distanceQ12; // EAX nearest distance
-    uint32_t materialOrCellIndex; // EDX cell/material result
-    bool hit; // CF hit status
-};
-
 
 struct SoftwareFramebufferResult {
     struct SoftwareFramebufferAccess *framebuffer; // EAX framebuffer pointer / allocator error value
@@ -10728,12 +10709,6 @@ struct FixedRollAzimuthElevation {
     AngleTurn32 elevationAngle;
 };
 
-struct HeightNormalSampleResult {
-    Q12 heightQ12; // EAX interpolated terrain height
-    uint32_t packedNormalAngles; // EDX packed normal angles
-    bool failed; // CF status
-};
-
 struct SelectableNodeResult {
     struct UiNodeBase *node; // EAX selected/last node
     bool noneSelected; // CF none-visible-selected status
@@ -10742,11 +10717,6 @@ struct SelectableNodeResult {
 struct InputEventResult {
     uint32_t eventType; // EAX input event type
     bool queueEmpty; // CF queue-empty status
-};
-
-struct ShotDefinitionResult {
-    struct ShotDefinition *definitionOrError; // EAX shot definition pointer or error-coded value
-    bool notFound; // CF status
 };
 
 struct WorldCameraPosition {
@@ -10759,13 +10729,6 @@ struct FixedLengthAzimuthElevation {
     uint32_t lengthQ12; // EAX vector length
     AngleTurn32 azimuthAngle; // ECX azimuth/heading
     AngleTurn32 elevationAngle; // EDX elevation/pitch
-};
-
-struct SurfacePointResult {
-    Q12 worldXQ12; // EAX surface-point X
-    Q12 worldYQ12; // ECX surface-point Y
-    Q12 worldZQ12; // EDX top-surface Z
-    bool outOfBounds; // CF status
 };
 
 struct PlacementDispatchResult {
@@ -10805,11 +10768,6 @@ struct FixedAzimuthElevationRoll {
     AngleTurn32 azimuthAngle;
     AngleTurn32 elevationAngle;
     AngleTurn32 rollAngle;
-};
-
-struct TerrainRayTriangleResult {
-    Q12 distanceQ12; // EAX intersection distance
-    bool missed; // CF status
 };
 
 

@@ -72,18 +72,20 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053D370 */
-StatusResult TerrainCompositeTexture_Create(void);
+bool TerrainCompositeTexture_Create(uint32_t *outError);
 
 /* 0x00503B10 */
-StatusResult TerrainByteClampLookup_Initialize(void);
+bool TerrainByteClampLookup_Initialize(uint32_t *outError);
 
 /* 0x00503F30 */
-StatusResult TerrainVisualResources_LoadPrimary
-          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field);
+bool TerrainVisualResources_LoadPrimary
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
+          uint32_t *outError);
 
 /* 0x005041C0 */
-StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
-          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field);
+bool TerrainVisualResources_LoadAndClearCellOverlayFlags
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
+          uint32_t *outError);
 
 /* 0x00504470 */
 void TerrainVisualResources_Shutdown(void);

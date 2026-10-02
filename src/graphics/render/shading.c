@@ -87,7 +87,10 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   uint64_t tintLanesOrShadedC;
   GraphicsProjectedPointPair pointPair0;
   HeightSampleResult surfaceHeight;
-  TerrainRaycastResult terrainRay;
+  bool terrainSurfaceHit;
+  uint32_t terrainHitMaterial;
+  bool terrainHit;
+  Q12 terrainHitDistanceQ12;
   FixedDirection direction;
   
   if (g_GraphicsShadingGeneratedTextureCompletedTraversalCount == 0) {
@@ -428,19 +431,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
@@ -470,15 +473,14 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               /* Original quirk, kept (all 12 such sites, e.g. 0x004CE3F4-0x004CE3F8): after the hit the original
@@ -486,7 +488,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                  -lightElevationAngle - 0x4000 before the call, but the raycast returns the hit cell's material byte in
                  EDX (0x00504C80), so the material byte becomes the elevation angle. */
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
@@ -524,19 +526,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
@@ -557,19 +559,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
@@ -599,19 +601,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
@@ -649,19 +650,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
@@ -682,19 +683,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
@@ -724,19 +725,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
@@ -774,19 +774,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
@@ -807,19 +807,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
@@ -849,19 +849,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
@@ -899,19 +898,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
@@ -932,19 +931,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
@@ -974,19 +973,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
@@ -1024,19 +1022,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
@@ -1057,19 +1055,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
@@ -1099,19 +1097,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
@@ -1149,19 +1146,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
@@ -1182,19 +1179,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
@@ -1224,19 +1221,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
@@ -1274,19 +1270,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
@@ -1307,19 +1303,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
@@ -1349,19 +1345,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
@@ -1399,19 +1394,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
@@ -1432,19 +1427,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
@@ -1474,19 +1469,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
@@ -1524,19 +1518,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
@@ -1557,19 +1551,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
@@ -1599,19 +1593,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
@@ -1649,19 +1642,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
@@ -1682,19 +1675,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
@@ -1724,19 +1717,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
@@ -1774,19 +1766,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
@@ -1807,19 +1799,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[11].textureCoordinateOffsetQ20;
           heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
           if (surfaceHeight.heightQ12 < sampleWorldZ) {
-            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+            terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[11].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x,
-                                renderContext->fieldGrid);
-            if (terrainRay.hit) {
+                                renderContext->fieldGrid,&terrainHitDistanceQ12);
+            if (terrainHit) {
               g_GeneratedTextureScratchRuntime.samples[11].terrainRayDistanceQ12 =
-                   terrainRay.distanceQ12;
+                   terrainHitDistanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.y =
@@ -1849,19 +1841,18 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->lightAzimuthAngle ^ FIXED_ANGLE16_HALF_TURN;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
+              terrainSurfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->lightElevationAngle - FIXED_ANGLE16_QUARTER_TURN,
                                   heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[11].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x,
-                                  renderContext->fieldGrid);
-              surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&surfaceDistanceQ12,&terrainHitMaterial);
+              if (!terrainSurfaceHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs /* quirk: EDX */
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainHitMaterial,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.y =
@@ -1899,19 +1890,19 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[11].worldPoint.y - direction.y;
               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z - direction.z;
-              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
+              terrainHit = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[11].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x,
-                                  renderContext->fieldGrid);
-              if (!terrainRay.hit) {
+                                  renderContext->fieldGrid,&terrainHitDistanceQ12);
+              if (!terrainHit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->lightElevationAngle,renderContext->lightAzimuthAngle,
-                                  terrainRay.distanceQ12);
+                                  terrainHitDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[11].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[11].worldPoint.y =

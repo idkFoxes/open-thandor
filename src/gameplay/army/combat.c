@@ -447,7 +447,6 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   int maxAngleOrRange;
   uint32_t distanceDifference;
   FixedLengthAngle horizontalVector;
-  TerrainRaycastResult terrainHit;
   bool modelHit;
   Q12 modelHitDistanceQ12;
   ModelRuntimeNode *hitModelNode;
@@ -543,11 +542,12 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   maxAngleOrRange = shotDefinition->launchSpeedQ12 * (int)shotDefinition->projectileLifetimeTicks;
   originYQ12 = (originNode->worldTransform).translation.y;
   originZQ12 = (originNode->worldTransform).translation.z;
-  terrainHit = FieldGrid_RaycastTerrainSurfaceDistance
+  /* only the distance matters: a miss reports FIELD_GRID_RAYCAST_MISS_DISTANCE */
+  (void)FieldGrid_RaycastTerrainSurfaceDistance
                      (elevationAngle,azimuthAngle,maxAngleOrRange,(originNode->worldTransform).translation.z,
                       (originNode->worldTransform).translation.y,
-                      (originNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-  minAngleOwnerOrDistance = terrainHit.distanceQ12;
+                      (originNode->worldTransform).translation.x,worldRuntime->fieldGrid,
+                      &minAngleOwnerOrDistance,NULL);
   modelHit = ModelRuntime_RaycastCandidateListNearest
                      (elevationAngle,azimuthAngle,maxAngleOrRange,originZQ12,originYQ12,originXQ12,
                       requiredOwnerId,excludedNode,worldRuntime,&modelHitDistanceQ12,&hitModelNode);

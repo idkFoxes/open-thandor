@@ -462,7 +462,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   TextureSizeResult markerSize;
-  TerrainPointResult terrainPoint;
+  FixedVectorQ12 terrainPoint;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;
@@ -476,13 +476,12 @@ void SelectionOverlay_DrawTerrainPointMarkers
            like triangular-lattice coordinates in Q12 */
         worldXProduct = (int64_t)(gridCoordinatePairs[1] + *gridCoordinatePairs * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
         worldYProduct = (int64_t)gridCoordinatePairs[1] * -1999;
-        terrainPoint = FieldGrid_GetNearestTerrainPoint
-                          (FIXED_PRODUCT_SHR(worldYProduct,Q12_SHIFT),
-                           FIXED_PRODUCT_SHR(worldXProduct,13),fieldGrid);
-        if (!terrainPoint.outOfBounds) {
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = terrainPoint.worldXQ12;
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = terrainPoint.worldYQ12;
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = terrainPoint.terrainHeightQ12;
+        if (FieldGrid_GetNearestTerrainPoint
+                      (FIXED_PRODUCT_SHR(worldYProduct,Q12_SHIFT),
+                       FIXED_PRODUCT_SHR(worldXProduct,13),fieldGrid,&terrainPoint)) {
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = terrainPoint.xQ12;
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = terrainPoint.yQ12;
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = terrainPoint.zQ12;
           FixedTransform_ApplyPoint
                     (&g_GraphicsTransformInputScratchVec3,
                      (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,
@@ -525,36 +524,24 @@ void SelectionOverlay_DrawWorldPointMarker
           FieldGridAsset *fieldGrid)
 
 {
-  uint32_t pointX;
-  uint32_t pointY;
-  uint32_t pointZ;
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   TextureSizeResult markerSize;
-  SurfacePointResult topSurfacePoint;
-  TerrainPointResult terrainPoint;
-  
+  FixedVectorQ12 markerPoint;
+
   if (useTopSurface == 0) {
-    terrainPoint = FieldGrid_GetNearestTerrainPoint(worldYQ12,worldXQ12,fieldGrid);
-    pointZ = terrainPoint.terrainHeightQ12;
-    pointY = terrainPoint.worldYQ12;
-    pointX = terrainPoint.worldXQ12;
-    if (terrainPoint.outOfBounds) {
+    if (!FieldGrid_GetNearestTerrainPoint(worldYQ12,worldXQ12,fieldGrid,&markerPoint)) {
       return;
     }
   }
   else {
-    topSurfacePoint = FieldGrid_GetNearestTopSurfacePoint(worldYQ12,worldXQ12,fieldGrid);
-    pointZ = topSurfacePoint.worldZQ12;
-    pointY = topSurfacePoint.worldYQ12;
-    pointX = topSurfacePoint.worldXQ12;
-    if (topSurfacePoint.outOfBounds) {
+    if (!FieldGrid_GetNearestTopSurfacePoint(worldYQ12,worldXQ12,fieldGrid,&markerPoint)) {
       return;
     }
   }
-  g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = pointX;
-  g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = pointY;
-  g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = pointZ;
+  g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = markerPoint.xQ12;
+  g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = markerPoint.yQ12;
+  g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = markerPoint.zQ12;
   FixedTransform_ApplyPoint
             (&g_GraphicsTransformInputScratchVec3,
              (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,&g_ViewProjectionMatrixFixed)

@@ -61,10 +61,10 @@ static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,
 /* Address: 0x0053D370.
    Builds the terrain composite texture for the current field grid: an in-memory gfx asset with three direct-colour
    ARGB images of one pixel per field cell, published in g_TerrainCompositeTexture and the in-game root. Fills
-   planes 1 and 2 and then derives plane 0 from them. Returns the total image size, or the allocator error with
-   CF set.
+   planes 1 and 2 and then derives plane 0 from them. Returns true on success; on failure returns false and
+   stores the allocator error in *outError (untouched on success).
 */
-StatusResult TerrainCompositeTexture_Create(void)
+bool TerrainCompositeTexture_Create(uint32_t *outError)
 
 {
   FieldGridAsset *terrainFieldGrid;
@@ -75,7 +75,6 @@ StatusResult TerrainCompositeTexture_Create(void)
   uint32_t totalImageBytes;
   int planeSizeBytes;
   ArenaAllocResult allocResult;
-  StatusResult resultStatus;
   TerrainCompositeTextureRuntime *compositeTexture;
   
   inGameRoot = g_InGameRuntimeRoot;
@@ -86,52 +85,50 @@ StatusResult TerrainCompositeTexture_Create(void)
      width * height * 4 bytes */
   allocResult = g_MemoryApi.alloc(fieldWidth * (3 * 4) * fieldHeight + TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET);
   compositeTexture = (TerrainCompositeTextureRuntime *)allocResult.payloadOrError;
-  if (!allocResult.failed) {
-    g_TerrainCompositeTexture = compositeTexture;
-    inGameRoot->minimapTextureSource = compositeTexture;
-    /* paletteIndex -1: direct ARGB colour, no palette */
-    compositeTexture->sourceEntries[0].pixelWidth = fieldWidth;
-    compositeTexture->sourceEntries[0].pixelHeight = fieldHeight;
-    compositeTexture->sourceEntries[0].originX = 0;
-    compositeTexture->sourceEntries[0].originY = 0;
-    planeSizeBytes = fieldWidth * 4 * fieldHeight;
-    compositeTexture->sourceEntries[0].paletteIndex = -1;
-    compositeTexture->sourceEntries[0].logicalWidth = fieldWidth;
-    compositeTexture->sourceEntries[0].logicalHeight = fieldHeight;
-    compositeTexture->sourceEntries[0].dataOffset = TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET;
-    compositeTexture->sourceEntries[1].pixelWidth = fieldWidth;
-    compositeTexture->sourceEntries[1].pixelHeight = fieldHeight;
-    compositeTexture->sourceEntries[1].originX = 0;
-    compositeTexture->sourceEntries[1].originY = 0;
-    compositeTexture->sourceEntries[1].paletteIndex = -1;
-    compositeTexture->sourceEntries[1].logicalWidth = fieldWidth;
-    compositeTexture->sourceEntries[1].logicalHeight = fieldHeight;
-    compositeTexture->sourceEntries[1].dataOffset = planeSizeBytes + (uint32_t)TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET;
-    compositeTexture->sourceEntries[2].pixelWidth = fieldWidth;
-    compositeTexture->sourceEntries[2].pixelHeight = fieldHeight;
-    compositeTexture->sourceEntries[2].originX = 0;
-    compositeTexture->sourceEntries[2].originY = 0;
-    plane2DataOffset = planeSizeBytes + (uint32_t)TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET + planeSizeBytes;
-    compositeTexture->sourceEntries[2].paletteIndex = -1;
-    compositeTexture->sourceEntries[2].logicalWidth = fieldWidth;
-    compositeTexture->sourceEntries[2].logicalHeight = fieldHeight;
-    compositeTexture->sourceEntries[2].dataOffset = plane2DataOffset;
-    (compositeTexture->textureSource).common.magic = ASSET_MAGIC_GFX;
-    totalImageBytes = plane2DataOffset + planeSizeBytes;
-    (compositeTexture->textureSource).tableDescriptor.subresourceCount = 3;
-    (compositeTexture->textureSource).tableDescriptor.paletteBankCount = 0;
-    (compositeTexture->textureSource).tableDescriptor.subresourceTableOffset = TERRAIN_COMPOSITE_TEXTURE_HEADER_BYTES;
-    (compositeTexture->textureSource).unusedHeaderDwordBC = 0;
-    (compositeTexture->textureSource).common.allocationSizeBytes = totalImageBytes;
-    TerrainCompositeTexture_FillPlane1();
-    TerrainCompositeTexture_FillPlane2();
-    TerrainCompositeTexture_RebuildPlane0();
-    allocResult.failed = false;
-    allocResult.payloadOrError = totalImageBytes;
+  if (allocResult.failed) {
+    *outError = allocResult.payloadOrError;
+    return false;
   }
-  resultStatus.valueOrError = allocResult.payloadOrError;
-  resultStatus.failed = allocResult.failed;
-  return resultStatus;
+  g_TerrainCompositeTexture = compositeTexture;
+  inGameRoot->minimapTextureSource = compositeTexture;
+  /* paletteIndex -1: direct ARGB colour, no palette */
+  compositeTexture->sourceEntries[0].pixelWidth = fieldWidth;
+  compositeTexture->sourceEntries[0].pixelHeight = fieldHeight;
+  compositeTexture->sourceEntries[0].originX = 0;
+  compositeTexture->sourceEntries[0].originY = 0;
+  planeSizeBytes = fieldWidth * 4 * fieldHeight;
+  compositeTexture->sourceEntries[0].paletteIndex = -1;
+  compositeTexture->sourceEntries[0].logicalWidth = fieldWidth;
+  compositeTexture->sourceEntries[0].logicalHeight = fieldHeight;
+  compositeTexture->sourceEntries[0].dataOffset = TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET;
+  compositeTexture->sourceEntries[1].pixelWidth = fieldWidth;
+  compositeTexture->sourceEntries[1].pixelHeight = fieldHeight;
+  compositeTexture->sourceEntries[1].originX = 0;
+  compositeTexture->sourceEntries[1].originY = 0;
+  compositeTexture->sourceEntries[1].paletteIndex = -1;
+  compositeTexture->sourceEntries[1].logicalWidth = fieldWidth;
+  compositeTexture->sourceEntries[1].logicalHeight = fieldHeight;
+  compositeTexture->sourceEntries[1].dataOffset = planeSizeBytes + (uint32_t)TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET;
+  compositeTexture->sourceEntries[2].pixelWidth = fieldWidth;
+  compositeTexture->sourceEntries[2].pixelHeight = fieldHeight;
+  compositeTexture->sourceEntries[2].originX = 0;
+  compositeTexture->sourceEntries[2].originY = 0;
+  plane2DataOffset = planeSizeBytes + (uint32_t)TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET + planeSizeBytes;
+  compositeTexture->sourceEntries[2].paletteIndex = -1;
+  compositeTexture->sourceEntries[2].logicalWidth = fieldWidth;
+  compositeTexture->sourceEntries[2].logicalHeight = fieldHeight;
+  compositeTexture->sourceEntries[2].dataOffset = plane2DataOffset;
+  (compositeTexture->textureSource).common.magic = ASSET_MAGIC_GFX;
+  totalImageBytes = plane2DataOffset + planeSizeBytes;
+  (compositeTexture->textureSource).tableDescriptor.subresourceCount = 3;
+  (compositeTexture->textureSource).tableDescriptor.paletteBankCount = 0;
+  (compositeTexture->textureSource).tableDescriptor.subresourceTableOffset = TERRAIN_COMPOSITE_TEXTURE_HEADER_BYTES;
+  (compositeTexture->textureSource).unusedHeaderDwordBC = 0;
+  (compositeTexture->textureSource).common.allocationSizeBytes = totalImageBytes;
+  TerrainCompositeTexture_FillPlane1();
+  TerrainCompositeTexture_FillPlane2();
+  TerrainCompositeTexture_RebuildPlane0();
+  return true;
 }
 
 
@@ -139,9 +136,10 @@ StatusResult TerrainCompositeTexture_Create(void)
    Builds g_TerrainByteClampLookup, the 64-KiB table FieldGrid_ApplyByteClampLookupToCells uses every few ticks to
    fade each cell's runtime byte (+0x68) one step (TERRAIN_RUNTIME_BYTE_FADE_STEP) towards the level its occupancy
    byte asks for (row targets: see TERRAIN_BYTE_CLAMP_LOOKUP_BYTES). The table is 64-KiB aligned so the original
-   can index it by loading the two bytes into AH/AL. CF set with the allocator error on failure.
+   can index it by loading the two bytes into AH/AL. Returns true on success; false when the allocation fails,
+   with the allocator error in *outError.
 */
-StatusResult TerrainByteClampLookup_Initialize(void)
+bool TerrainByteClampLookup_Initialize(uint32_t *outError)
 
 {
   void *lookupAllocationBase;
@@ -157,7 +155,8 @@ StatusResult TerrainByteClampLookup_Initialize(void)
   allocResult = g_MemoryApi.alloc(TERRAIN_BYTE_CLAMP_LOOKUP_BYTES * 2);
   lookupAllocationBase = (void *)allocResult.payloadOrError;
   if (allocResult.failed) {
-    return StatusValue_Fail(allocResult.payloadOrError);
+    *outError = allocResult.payloadOrError;
+    return false;
   }
   clampInputValue = 0;
   lookupWriteCursor = (uint8_t *)((int)lookupAllocationBase + 0xffffU & 0xffff0000);
@@ -288,7 +287,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
     nextInputByte = (char)lookupInputValue + 1;
     lookupInputValue = (uint32_t)nextInputByte;
   } while ((nextInputByte != 0) || (finalRowsRemaining--, finalRowsRemaining != 0));
-  return StatusValue_Ok(0);
+  return true;
 }
 
 
@@ -296,10 +295,12 @@ StatusResult TerrainByteClampLookup_Initialize(void)
    Loads the terrain graphics of a field (fld asset, else FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material
    texture sets <secondary>a..z.gfx (those flagged in field->fieldFlags are required, the others optional),
    <primary>.dat/.gfx/.pal and <secondary>.pal/.dat, then initialises the field's runtime cells and the
-   animated direction table. Advances the loading movie between steps; CF set with the error on failure.
+   animated direction table. Advances the loading movie between steps. Returns true on success; on failure
+   returns false and stores the error (field check or failed resource load) in *outError (untouched on success).
 */
-StatusResult TerrainVisualResources_LoadPrimary
-          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field)
+bool TerrainVisualResources_LoadPrimary
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
+          uint32_t *outError)
 
 {
   GraphicsPaletteAsset *loadedResourceOrError;
@@ -317,8 +318,6 @@ StatusResult TerrainVisualResources_LoadPrimary
   TextureSetResult textureSetLoad;
   PackageLoadResult packageLoad;
   PaletteAssetResult paletteLoad;
-  StatusResult randomOrSuccessStatus;
-  StatusResult failureStatus;
   TerrainMaterialSuffixEntry *pathSuffixEntry;
   
   loopCounter = 256; /* the path is scanned for at most 256 characters */
@@ -366,9 +365,8 @@ StatusResult TerrainVisualResources_LoadPrimary
         textureSetLoad = g_GraphicsTextureSetLoadPackage(secondaryResourcePath);
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
         if (textureSetLoad.failed) {
-          failureStatus.failed = true;
-          failureStatus.valueOrError = (uint32_t)loadedResourceOrError;
-          return failureStatus;
+          *outError = (uint32_t)loadedResourceOrError;
+          return false;
         }
         MoviePlayback_AdvanceScheduledFrameAndTick();
         *materialTextureSetSlot = (GraphicsTextureSet *)loadedResourceOrError;
@@ -435,12 +433,12 @@ StatusResult TerrainVisualResources_LoadPrimary
                 directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
                 pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
                                          TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
-                randomOrSuccessStatus.valueOrError = Random_NextPrimary();
-                if ((int)randomOrSuccessStatus.valueOrError < 0) {
+                randomValue = Random_NextPrimary();
+                if ((int)randomValue < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
                 directionRecord->rateB = pathCharOrRotationRate;
-                ((short *)&directionRecord->packedAngles)[1] = (short)randomOrSuccessStatus.valueOrError; /* angle B */
+                ((short *)&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
                 directionRecord->angleAComponent0ScaledQ28 = 0;
                 directionRecord->angleAComponent1ScaledQ28 = 0;
                 directionRecord->angleBComponent0ScaledQ28 = 0;
@@ -449,27 +447,27 @@ StatusResult TerrainVisualResources_LoadPrimary
               } while (loopCounter != 0);
               MoviePlayback_AdvanceScheduledFrameAndTick();
               TerrainDirectionTable_AdvanceAndRebuildVectors();
-              randomOrSuccessStatus.failed = false;
-              return randomOrSuccessStatus;
+              return true;
             }
           }
         }
       }
     }
   }
-  failureStatus.failed = true;
-  failureStatus.valueOrError = (uint32_t)loadedResourceOrError;
-  return failureStatus;
+  *outError = (uint32_t)loadedResourceOrError;
+  return false;
 }
 
 
 /* Address: 0x005041C0.
    Variant of TerrainVisualResources_LoadPrimary for a field whose runtime cells already exist (loading a
    savegame): the same resources are loaded, but the cells only get their lookup pointers rebuilt, and
-   flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell.
+   flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell. Returns true on success; on failure
+   returns false and stores the error in *outError (untouched on success).
 */
-StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
-          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field)
+bool TerrainVisualResources_LoadAndClearCellOverlayFlags
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
+          uint32_t *outError)
 
 {
   GraphicsPaletteAsset *loadedResourceOrError;
@@ -488,8 +486,6 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
   TextureSetResult textureSetLoad;
   PackageLoadResult packageLoad;
   PaletteAssetResult paletteLoad;
-  StatusResult randomOrSuccessStatus;
-  StatusResult failureStatus;
   TerrainMaterialSuffixEntry *pathSuffixEntry;
   
   loopCounter = 256; /* the path is scanned for at most 256 characters */
@@ -537,9 +533,8 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
         textureSetLoad = g_GraphicsTextureSetLoadPackage(secondaryResourcePath);
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
         if (textureSetLoad.failed) {
-          failureStatus.failed = true;
-          failureStatus.valueOrError = (uint32_t)loadedResourceOrError;
-          return failureStatus;
+          *outError = (uint32_t)loadedResourceOrError;
+          return false;
         }
         MoviePlayback_AdvanceScheduledFrameAndTick();
         *materialTextureSetSlot = (GraphicsTextureSet *)loadedResourceOrError;
@@ -606,12 +601,12 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
                 directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
                 pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
                                          TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
-                randomOrSuccessStatus.valueOrError = Random_NextPrimary();
-                if ((int)randomOrSuccessStatus.valueOrError < 0) {
+                randomValue = Random_NextPrimary();
+                if ((int)randomValue < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
                 directionRecord->rateB = pathCharOrRotationRate;
-                ((short *)&directionRecord->packedAngles)[1] = (short)randomOrSuccessStatus.valueOrError; /* angle B */
+                ((short *)&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
                 directionRecord->angleAComponent0ScaledQ28 = 0;
                 directionRecord->angleAComponent1ScaledQ28 = 0;
                 directionRecord->angleBComponent0ScaledQ28 = 0;
@@ -629,17 +624,15 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
                 loopCounter--;
               } while (loopCounter != 0);
               TerrainDirectionTable_AdvanceAndRebuildVectors();
-              randomOrSuccessStatus.failed = false;
-              return randomOrSuccessStatus;
+              return true;
             }
           }
         }
       }
     }
   }
-  failureStatus.failed = true;
-  failureStatus.valueOrError = (uint32_t)loadedResourceOrError;
-  return failureStatus;
+  *outError = (uint32_t)loadedResourceOrError;
+  return false;
 }
 
 

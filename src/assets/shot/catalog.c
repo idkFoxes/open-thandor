@@ -262,7 +262,6 @@ uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
   int referencesRemaining;
   ShotDefinition **registrySlotCursor;
   bool extensionFailed;
-  ShotDefinitionResult existingLookup;
   PackageLoadResult loadResult;
   uint32_t spriteRegisterError;
   uint32_t effectLookupError;
@@ -270,9 +269,10 @@ uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
 
   registrySlotCursor = g_ShotDefinitionRegistry;
   slotsRemainingOrIndex = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-  existingLookup = ShotRuntime_FindDefinitionById(definition->definitionId);
-  valueOrError = existingLookup.definitionOrError;
-  if (existingLookup.notFound) {
+  if (ShotRuntime_FindDefinitionById(definition->definitionId) == NULL) {
+    /* Original quirk: the lookup's error code is still in EAX, so a failing .spr extension switch below
+       returns FATAL_ERROR_SHOT_ID_NOT_FOUND */
+    valueOrError = (ShotDefinition *)FATAL_ERROR_SHOT_ID_NOT_FOUND;
     for (; slotsRemainingOrIndex != 0; slotsRemainingOrIndex--) {
       if (*registrySlotCursor == NULL) {
         *registrySlotCursor = definition;

@@ -20,13 +20,13 @@
 void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetModelRuntime,ShotRuntimeSlot *shotRuntime);
 
 /* 0x0052B540 */
-StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath);
+bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 
 /* 0x0052B5C0 */
 void ShotRuntime_ShutdownGraphicsResources(void);
 
 /* 0x0052B660 */
-ShotDefinitionResult ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId);
+ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId);
 
 /* 0x0052B750 */
 void ShotRuntime_RebaseSlotsAfterLoad(void);

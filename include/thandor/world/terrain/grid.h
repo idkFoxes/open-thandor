@@ -154,12 +154,10 @@ void FieldGrid_SetCellResourceSupportFlag
           Q12 gridColumnQ12);
 
 /* 0x004FEA80 */
-TerrainPointResult
-FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field);
+bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);
 
 /* 0x004FEB10 */
-SurfacePointResult
-FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field);
+bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);
 
 /* 0x004FEBA0 */
 int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
@@ -177,20 +175,21 @@ HeightSampleResult FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 wor
 HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FF1A0 */
-HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field);
+bool FieldGrid_InterpolateTerrainHeightAndNormal
+          (Q12 worldY,Q12 worldX,FieldGridAsset *field,Q12 *outHeightQ12,uint32_t *outPackedNormalAngles);
 
 /* 0x004FF3D0 */
-HeightNormalSampleResult FieldGrid_InterpolateWaterDepthAndTriangle0Normal
-          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
+bool FieldGrid_InterpolateWaterDepthAndTriangle0Normal
+          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles);
 
 /* 0x004FF600 */
-HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
-          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
+bool FieldGrid_InterpolateWaterDepthAndTriangle1Normal
+          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles);
 
 /* 0x004FF830 */
-HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
+bool FieldGrid_InterpolateWaterDepthAndTopSurfaceNormal
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
-          FieldGridAsset *fieldGrid);
+          FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles);
 
 /* 0x004FFB80 */
 bool FieldGrid_TestWorldPointBlocked
@@ -213,19 +212,21 @@ void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,Fi
 void TerrainDirectionTable_AdvanceAndRebuildVectors(void);
 
 /* 0x00504B10 */
-TerrainRaycastResult FieldGrid_RaycastTerrainSurfaceDistance
+bool FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
-          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
+          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12,
+          uint32_t *outMaterialIndex);
 
 /* 0x00504CA0 */
-TerrainRaycastResult FieldGrid_RaycastSecondarySurfaceDistance
+bool FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
-          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
+          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12);
 
 /* 0x00504E60 */
-TerrainRaycastResult FieldGrid_RaycastTerrainTrianglesAlongDirection
+bool FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
-          Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
+          Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,
+          Q12 *outDistanceQ12);
 
 /* 0x00505120 */
 void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid);
@@ -248,7 +249,7 @@ void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid);
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);
 
 /* 0x00532B60 */
-StatusResult FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords);
+bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError);
 
 /* 0x00561050 */
 void FieldGrid_ClearPlayerScratchPlane

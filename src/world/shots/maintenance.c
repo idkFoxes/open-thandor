@@ -195,7 +195,8 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   ModelPackedPointRecord *emitterRecord;
   bool armyHit;
   Q12 armyHitDistanceQ12;
-  TerrainRaycastResult surfaceRaycast;
+  bool surfaceHit;
+  Q12 surfaceDistanceQ12;
   FixedVectorAngles targetAngles;
   ModelWorldPoint emitterWorldPoint;
   FixedLengthAzimuthElevation ballisticAngles;
@@ -277,29 +278,30 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
          [targetClassIndex] == NULL)) {
         frameAccumulatorOrDistance = MODEL_RAYCAST_NO_HIT_DISTANCE;
       }
-      surfaceRaycast = FieldGrid_RaycastTerrainSurfaceDistance
+      surfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                          (modelNode->modelPayload.worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           modelNode->modelPayload.worldRotationAngle0,frameCountDistanceOrAge,
                           modelNode->worldTransform.translation.z,
                           modelNode->worldTransform.translation.y,
-                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
-      terrainMaterialIndex = surfaceRaycast.materialOrCellIndex;
-      terrainHitDistance = surfaceRaycast.distanceQ12;
-      if ((surfaceRaycast.hit) &&
+                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid,
+                          &surfaceDistanceQ12,&terrainMaterialIndex);
+      terrainHitDistance = surfaceDistanceQ12;
+      if ((surfaceHit) &&
          (shotRuntime->definitionOrSavedId.definition->terrainImpactEffectDefinitions31[terrainMaterialIndex]
           == NULL)) {
         terrainHitDistance = FIELD_GRID_RAYCAST_MISS_DISTANCE;
       }
-      surfaceRaycast = FieldGrid_RaycastSecondarySurfaceDistance
+      surfaceHit = FieldGrid_RaycastSecondarySurfaceDistance
                          (modelNode->modelPayload.worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           modelNode->modelPayload.worldRotationAngle0,frameCountDistanceOrAge,
                           modelNode->worldTransform.translation.z,
                           modelNode->worldTransform.translation.y,
-                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
-      secondaryHitDistance = surfaceRaycast.distanceQ12;
-      if ((surfaceRaycast.hit) &&
+                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid,
+                          &surfaceDistanceQ12);
+      secondaryHitDistance = surfaceDistanceQ12;
+      if ((surfaceHit) &&
          (shotRuntime->definitionOrSavedId.definition->primaryEffectDefinition == NULL)) {
         secondaryHitDistance = FIELD_GRID_RAYCAST_MISS_DISTANCE;
       }
@@ -414,29 +416,30 @@ HandleNearestArmyHitAndContinueMotion:
          [targetClassIndex] == NULL)) {
         frameCountDistanceOrAge = MODEL_RAYCAST_NO_HIT_DISTANCE;
       }
-      surfaceRaycast = FieldGrid_RaycastTerrainSurfaceDistance
+      surfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                          (modelNode->modelPayload.worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           modelNode->modelPayload.worldRotationAngle0,shotRuntime->launchSpeedQ12,
                           modelNode->worldTransform.translation.z,
                           modelNode->worldTransform.translation.y,
-                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
-      terrainMaterialIndex = surfaceRaycast.materialOrCellIndex;
-      movingTerrainHitDistance = surfaceRaycast.distanceQ12;
-      if ((surfaceRaycast.hit) &&
+                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid,
+                          &surfaceDistanceQ12,&terrainMaterialIndex);
+      movingTerrainHitDistance = surfaceDistanceQ12;
+      if ((surfaceHit) &&
          (shotRuntime->definitionOrSavedId.definition->terrainImpactEffectDefinitions31[terrainMaterialIndex]
           == NULL)) {
         movingTerrainHitDistance = FIELD_GRID_RAYCAST_MISS_DISTANCE;
       }
-      surfaceRaycast = FieldGrid_RaycastSecondarySurfaceDistance
+      surfaceHit = FieldGrid_RaycastSecondarySurfaceDistance
                          (modelNode->modelPayload.worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           modelNode->modelPayload.worldRotationAngle0,shotRuntime->launchSpeedQ12,
                           modelNode->worldTransform.translation.z,
                           modelNode->worldTransform.translation.y,
-                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
-      frameAccumulatorOrDistance = surfaceRaycast.distanceQ12;
-      if ((surfaceRaycast.hit) &&
+                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid,
+                          &surfaceDistanceQ12);
+      frameAccumulatorOrDistance = surfaceDistanceQ12;
+      if ((surfaceHit) &&
          (shotRuntime->definitionOrSavedId.definition->primaryEffectDefinition == NULL)) {
         frameAccumulatorOrDistance = FIELD_GRID_RAYCAST_MISS_DISTANCE;
       }

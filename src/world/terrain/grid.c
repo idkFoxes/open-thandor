@@ -846,12 +846,11 @@ void FieldGrid_SetCellResourceSupportFlag
 
 
 /* Address: 0x004FEA80.
-   Snaps a world position to the nearest grid vertex (cell): returns that cell's worldX (EAX), worldY (ECX)
-   and terrain height (EDX) with CF clear. Outside the grid CF is set and the input position comes back
-   with height 0.
+   Snaps a world position to the nearest grid vertex (cell): *outPoint receives that cell's worldX, worldY and
+   terrain height and true is returned. Outside the grid false is returned and *outPoint is the input position
+   with height 0 (always written).
 */
-TerrainPointResult
-FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
 
 {
   int columnOrCellIndex;
@@ -859,7 +858,6 @@ FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
   int gridRowIndex;
   Q12 terrainHeightQ12;
   bool outOfBounds;
-  TerrainPointResult nearestPoint;
 
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 =
@@ -879,30 +877,27 @@ FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
     terrainHeightQ12 = field->cells[columnOrCellIndex].terrainHeight;
     outOfBounds = 0;
   }
-  nearestPoint.worldYQ12 = worldY;
-  nearestPoint.worldXQ12 = worldX;
-  nearestPoint.outOfBounds = outOfBounds;
-  nearestPoint.terrainHeightQ12 = terrainHeightQ12;
-  return nearestPoint;
+  outPoint->xQ12 = worldX;
+  outPoint->yQ12 = worldY;
+  outPoint->zQ12 = terrainHeightQ12;
+  return !outOfBounds;
 }
 
 
 /* Address: 0x004FEB10.
    Snaps a world position to the nearest grid vertex (cell) like FieldGrid_GetNearestTerrainPoint, but returns
-   the height of the top surface there (terrainHeight + waterSurfaceDelta): worldX (EAX), worldY (ECX) and
-   height (EDX) with CF clear. Outside the grid CF is set and the input position comes back with height 0.
+   the height of the top surface there (terrainHeight + waterSurfaceDelta) in *outPoint and returns true.
+   Outside the grid false is returned and *outPoint is the input position with height 0 (always written).
    Used by SelectionOverlay_DrawWorldPointMarker (0x0052F5A0).
 */
-SurfacePointResult
-FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
 
 {
   int columnCellOrSurfaceZ;
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
   bool outOfBounds;
-  SurfacePointResult nearestPoint;
-  
+
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 =
        FIXED_MUL_SHR(worldY, FIELD_GRID_WORLD_Y_TO_ROW_Q20, Q20_SHIFT + 1);
@@ -921,11 +916,10 @@ FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
     columnCellOrSurfaceZ = field->cells[columnCellOrSurfaceZ].waterSurfaceDelta + field->cells[columnCellOrSurfaceZ].terrainHeight;
     outOfBounds = false;
   }
-  nearestPoint.worldYQ12 = worldY;
-  nearestPoint.worldXQ12 = worldX;
-  nearestPoint.outOfBounds = outOfBounds;
-  nearestPoint.worldZQ12 = columnCellOrSurfaceZ;
-  return nearestPoint;
+  outPoint->xQ12 = worldX;
+  outPoint->yQ12 = worldY;
+  outPoint->zQ12 = columnCellOrSurfaceZ;
+  return !outOfBounds;
 }
 
 
@@ -1290,12 +1284,13 @@ HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 world
 
 /* Address: 0x004FF1A0.
    Terrain height and terrain normal at a world position: interpolates terrainHeight over the grid triangle
-   that contains it (Q12, EAX) and blends the three vertex normals (triangle0NormalAngles, +0x08) with the
-   same barycentric weights, returned as packed angles elevation << 16 | azimuth (EDX). CF set (height 0, EDX
-   left over from the fractions) outside the grid or on a border cell. Used by the articulated army contact
+   that contains it (Q12, *outHeightQ12) and blends the three vertex normals (triangle0NormalAngles, +0x08) with
+   the same barycentric weights, stored as packed angles elevation << 16 | azimuth (*outPackedNormalAngles).
+   Returns false (outputs untouched) outside the grid or on a border cell. Used by the articulated army contact
    code (ArmyArticulatedRuntime_UpdateLeftTerrainContact, ..RightTerrainContact and their siblings).
 */
-HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+bool FieldGrid_InterpolateTerrainHeightAndNormal
+          (Q12 worldY,Q12 worldX,FieldGridAsset *field,Q12 *outHeightQ12,uint32_t *outPackedNormalAngles)
 
 {
   FieldGridDimension rowLength;
@@ -1311,12 +1306,10 @@ HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,
   int rowOffsetOrNormalSum;
   int cellOffsetOrNormalSum;
   int diagonalWeightOrNormalSum;
-  bool sampleFailed;
-  HeightNormalSampleResult sampleResult;
   FixedVectorAngles blendedNormalAngles;
   FixedDirection scaledNormal;
-  
-  rowFractionOrNormalAngles = FIXED_MUL_SHR(worldY, FIELD_GRID_WORLD_Y_TO_ROW_Q20, Q20_SHIFT + 1);
+
+  rowFractionOrNormalAngles = FIXED_MUL_SHR(worldY,FIELD_GRID_WORLD_Y_TO_ROW_Q20, Q20_SHIFT + 1);
   columnFractionOrNormalAngles = (FIXED_MUL_SHR(worldX, FIELD_GRID_WORLD_X_TO_COLUMN_Q20, Q20_SHIFT)) - rowFractionOrNormalAngles;
   rowFractionOrNormalAngles = rowFractionOrNormalAngles * 2;
   rowLength = field->gridWidth;
@@ -1357,7 +1350,6 @@ HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
                              (columnOrNormalSum + scaledNormal.z,diagonalWeightOrNormalSum + scaledNormal.y,cellOffsetOrNormalSum + scaledNormal.x);
           rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-          sampleFailed = false;
         }
         else {
           weightedHeightAccumulator = (int64_t)
@@ -1385,31 +1377,26 @@ HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
                              (cellOffsetOrNormalSum - scaledNormal.z,rowOffsetOrNormalSum - scaledNormal.y,columnOrNormalSum - scaledNormal.x);
           rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-          sampleFailed = false;
         }
-        sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
-        sampleResult.heightQ12 = interpolatedHeightQ12;
-        sampleResult.failed = sampleFailed;
-        return sampleResult;
+        *outPackedNormalAngles = rowFractionOrNormalAngles;
+        *outHeightQ12 = (Q12)interpolatedHeightQ12;
+        return true;
       }
     }
   }
-  interpolatedHeightQ12 = 0;
-  sampleFailed = true;
-  sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
-  sampleResult.heightQ12 = interpolatedHeightQ12;
-  sampleResult.failed = sampleFailed;
-  return sampleResult;
+  return false;
 }
 
 
 /* Address: 0x004FF3D0.
    Like FieldGrid_InterpolateTerrainHeightAndNormal, but the interpolated value is the water depth
    (waterSurfaceDelta, +0x4C), not the terrain height; the blended normal is still the
-   terrain normal (triangle0NormalAngles, +0x08). No caller found in src/ or the image tables.
+   terrain normal (triangle0NormalAngles, +0x08). Same contract: true with *outDepthQ12 and
+   *outPackedNormalAngles, false (outputs untouched) outside the grid or on a border cell. No caller found in
+   src/ or the image tables.
 */
-HeightNormalSampleResult FieldGrid_InterpolateWaterDepthAndTriangle0Normal
-          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+bool FieldGrid_InterpolateWaterDepthAndTriangle0Normal
+          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles)
 
 {
   FieldGridDimension rowLength;
@@ -1425,8 +1412,6 @@ HeightNormalSampleResult FieldGrid_InterpolateWaterDepthAndTriangle0Normal
   int rowOffsetOrNormalSum;
   int cellOffsetOrNormalSum;
   int diagonalWeightOrNormalSum;
-  bool sampleFailed;
-  HeightNormalSampleResult sampleResult;
   FixedVectorAngles blendedNormalAngles;
   FixedDirection scaledNormal;
   
@@ -1468,7 +1453,6 @@ HeightNormalSampleResult FieldGrid_InterpolateWaterDepthAndTriangle0Normal
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
                              (columnOrNormalSum + scaledNormal.z,diagonalWeightOrNormalSum + scaledNormal.y,cellOffsetOrNormalSum + scaledNormal.x);
           rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-          sampleFailed = false;
         }
         else {
           weightedHeightAccumulator = (int64_t)
@@ -1496,31 +1480,25 @@ HeightNormalSampleResult FieldGrid_InterpolateWaterDepthAndTriangle0Normal
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
                              (cellOffsetOrNormalSum - scaledNormal.z,rowOffsetOrNormalSum - scaledNormal.y,columnOrNormalSum - scaledNormal.x);
           rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-          sampleFailed = false;
         }
-        sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
-        sampleResult.heightQ12 = interpolatedHeightQ12;
-        sampleResult.failed = sampleFailed;
-        return sampleResult;
+        *outPackedNormalAngles = rowFractionOrNormalAngles;
+        *outDepthQ12 = (Q12)interpolatedHeightQ12;
+        return true;
       }
     }
   }
-  interpolatedHeightQ12 = 0;
-  sampleFailed = true;
-  sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
-  sampleResult.heightQ12 = interpolatedHeightQ12;
-  sampleResult.failed = sampleFailed;
-  return sampleResult;
+  return false;
 }
 
 
 /* Address: 0x004FF600.
    Like FieldGrid_InterpolateTerrainHeightAndNormal, but interpolates the water depth (waterSurfaceDelta, +0x4C)
-   and blends the water-surface normals (triangle1NormalAngles, +0x78). No caller found in src/ or the image
-   tables.
+   and blends the water-surface normals (triangle1NormalAngles, +0x78). Same contract: true with *outDepthQ12 and
+   *outPackedNormalAngles, false (outputs untouched) outside the grid or on a border cell. No caller found in
+   src/ or the image tables.
 */
-HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
-          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+bool FieldGrid_InterpolateWaterDepthAndTriangle1Normal
+          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles)
 
 {
   FieldGridDimension rowLength;
@@ -1535,8 +1513,6 @@ HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
   uint32_t firstNormalEdx;
   int rowOffsetBytes;
   int diagonalWeightOrNormalSum;
-  bool sampleFailed;
-  HeightNormalSampleResult sampleResult;
   FixedVectorAngles blendedNormalAngles;
   FixedDirection scaledNormal;
   int normalSumEcx;
@@ -1578,7 +1554,6 @@ HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
                              (columnOrNormalSum + scaledNormal.z,normalSumEcx + scaledNormal.y,diagonalWeightOrNormalSum + scaledNormal.x);
           rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-          sampleFailed = false;
         }
         else {
           weightedHeightAccumulator = (int64_t)
@@ -1606,33 +1581,28 @@ HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
                              (columnOrNormalSum - scaledNormal.z,normalSumEcx - scaledNormal.y,diagonalWeightOrNormalSum - scaledNormal.x);
           rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-          sampleFailed = false;
         }
-        sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
-        sampleResult.heightQ12 = interpolatedHeightQ12;
-        sampleResult.failed = sampleFailed;
-        return sampleResult;
+        *outPackedNormalAngles = rowFractionOrNormalAngles;
+        *outDepthQ12 = (Q12)interpolatedHeightQ12;
+        return true;
       }
     }
   }
-  interpolatedHeightQ12 = 0;
-  sampleFailed = true;
-  sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
-  sampleResult.heightQ12 = interpolatedHeightQ12;
-  sampleResult.failed = sampleFailed;
-  return sampleResult;
+  return false;
 }
 
 
 /* Address: 0x004FF830.
    Water depth and the normal of the surface that is on top at a world position: interpolates waterSurfaceDelta
-   (+0x4C) over the grid triangle (EAX) and blends the terrain normals (triangle0NormalAngles) where the result is
-   negative (dry) or the water-surface normals (triangle1NormalAngles) otherwise (packed angles in EDX). CF set
-   outside the grid or on a border cell. No caller found in src/ or the image tables.
+   (+0x4C) over the grid triangle (*outDepthQ12) and blends the terrain normals (triangle0NormalAngles) where the
+   result is negative (dry) or the water-surface normals (triangle1NormalAngles) otherwise (packed angles
+   elevation << 16 | azimuth in *outPackedNormalAngles). Returns false outside the grid or on a border cell; both
+   outputs are written then too (depth 0, the normal output left over from the row fraction). No caller found
+   in src/ or the image tables.
 */
-HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
+bool FieldGrid_InterpolateWaterDepthAndTopSurfaceNormal
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
-          FieldGridAsset *fieldGrid)
+          FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles)
 
 {
   FieldGridDimension rowLength;
@@ -1650,8 +1620,6 @@ HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAngle
   int rowOffsetOrNormalSum;
   int cellOffsetOrNormalSum;
   int diagonalWeightOrNormalSum;
-  bool sampleFailed;
-  HeightNormalSampleResult sampleResult;
   FixedVectorAngles blendedNormalAngles;
   FixedDirection scaledNormal;
   
@@ -1697,7 +1665,6 @@ HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAngle
             blendedNormalAngles = FixedMath_VectorToAngles3Regs
                                (columnOrNormalSum + scaledNormal.z,diagonalWeightOrNormalSum + scaledNormal.y,cellOffsetOrNormalSum + scaledNormal.x);
             rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-            sampleFailed = false;
           }
           else {
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
@@ -1717,7 +1684,6 @@ HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAngle
             blendedNormalAngles = FixedMath_VectorToAngles3Regs
                                (columnOrNormalSum + scaledNormal.z,diagonalWeightOrNormalSum + scaledNormal.y,cellOffsetOrNormalSum + scaledNormal.x);
             rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-            sampleFailed = false;
           }
         }
         else {
@@ -1750,7 +1716,6 @@ HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAngle
             blendedNormalAngles = FixedMath_VectorToAngles3Regs
                                (cellOffsetOrNormalSum - scaledNormal.z,rowOffsetOrNormalSum - scaledNormal.y,columnOrNormalSum - scaledNormal.x);
             rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-            sampleFailed = false;
           }
           else {
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
@@ -1770,22 +1735,17 @@ HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAngle
             blendedNormalAngles = FixedMath_VectorToAngles3Regs
                                (columnOrNormalSum - scaledNormal.z,diagonalWeightOrNormalSum - scaledNormal.y,cellOffsetOrNormalSum - scaledNormal.x);
             rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
-            sampleFailed = false;
           }
         }
-        sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
-        sampleResult.heightQ12 = interpolatedHeightQ12;
-        sampleResult.failed = sampleFailed;
-        return sampleResult;
+        *outPackedNormalAngles = rowFractionOrNormalAngles;
+        *outDepthQ12 = (Q12)interpolatedHeightQ12;
+        return true;
       }
     }
   }
-  interpolatedHeightQ12 = 0;
-  sampleFailed = true;
-  sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
-  sampleResult.heightQ12 = interpolatedHeightQ12;
-  sampleResult.failed = sampleFailed;
-  return sampleResult;
+  *outPackedNormalAngles = rowFractionOrNormalAngles;
+  *outDepthQ12 = 0;
+  return false;
 }
 
 
@@ -2044,13 +2004,15 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors(void)
 
 /* Address: 0x00504B10.
    Casts a ray from a world point along (elevation, azimuth) scaled to rayScaleQ12 and walks the field grid cell by
-   cell towards its end point, testing the two terrain triangles of each in-bounds cell. On a hit it returns the
-   distance and the cell's material byte with CF set; a miss (or more than FIELD_GRID_RAYCAST_MAX_STEPS cells)
-   returns FIELD_GRID_RAYCAST_MISS_DISTANCE with CF clear. Used for line-of-fire tests and terrain picking.
+   cell towards its end point, testing the two terrain triangles of each in-bounds cell. On a hit it returns true
+   and stores the distance and the cell's material byte; a miss (or more than FIELD_GRID_RAYCAST_MAX_STEPS cells)
+   returns false and stores FIELD_GRID_RAYCAST_MISS_DISTANCE as the distance (both outputs are always written;
+   outMaterialIndex may be NULL). Used for line-of-fire tests and terrain picking.
 */
-TerrainRaycastResult FieldGrid_RaycastTerrainSurfaceDistance
+bool FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
-          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid)
+          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12,
+          uint32_t *outMaterialIndex)
 
 {
   FieldGridCell *currentCell;
@@ -2069,9 +2031,6 @@ TerrainRaycastResult FieldGrid_RaycastTerrainSurfaceDistance
   int currentRowFromStartQ12;
   int stepsRemaining;
   bool traversalDone;
-  TerrainRayTriangleResult triangleHit;
-  TerrainRaycastResult missResult;
-  TerrainRaycastResult hitResult;
   FixedDirection rayDirection;
 
   gridWidth = fieldGrid->gridWidth;
@@ -2105,17 +2064,16 @@ TerrainRaycastResult FieldGrid_RaycastTerrainSurfaceDistance
         ((int)rayEndHalfRowOrCurrentColumnQ12 < (int)((gridWidth - 1) * FIELD_GRID_CELL_Q12))) &&
        ((int)currentRowQ12 < (int)((gridHeight - 1) * FIELD_GRID_CELL_Q12))) {
       currentRowFromStartQ12 = currentRowQ12 + rayStartHalfRowQ12 * -2;
-      triangleHit = TerrainTriangle_IntersectRayDistance
+      if (TerrainTriangle_IntersectRayDistance
                          (rayDirection.z,rayEndRowQ12 + rayStartHalfRowQ12 * -2,
                           rayEndColumnQ12 - rayStartColumnQ12,rayOriginZQ12,
                           currentCell[rowLength + 1].terrainHeight,currentCell[rowLength].terrainHeight,
                           currentCell[1].terrainHeight,currentCell->terrainHeight,currentRowFromStartQ12,
-                          rayEndHalfRowOrCurrentColumnQ12 - rayStartColumnQ12);
-      if (!triangleHit.missed) {
-        hitResult.hit = true;
-        hitResult.distanceQ12 = triangleHit.distanceQ12;
-        hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
-        return hitResult;
+                          rayEndHalfRowOrCurrentColumnQ12 - rayStartColumnQ12,outDistanceQ12)) {
+        if (outMaterialIndex != NULL) {
+          *outMaterialIndex = currentCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+        }
+        return true;
       }
       /* the original subtracted the start in the argument registers and adds it back here */
       rayEndHalfRowOrCurrentColumnQ12 =
@@ -2129,23 +2087,26 @@ TerrainRaycastResult FieldGrid_RaycastTerrainSurfaceDistance
     rayEndHalfRowOrCurrentColumnQ12 = g_TerrainRayNextCoord1Q12;
     currentRowQ12 = g_TerrainRayNextCoord0Q12;
   } while (!traversalDone);
-  /* a miss leaves EDX as is: the current row, or end row - current row when the traversal reached the ray end.
-     No caller reads it on a miss (shots index their impact table only with a terrain distance within range). */
-  missResult.materialOrCellIndex = currentRowQ12;
-  missResult.distanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
-  missResult.hit = false;
-  return missResult;
+  /* Original quirk: a miss leaves EDX (the material register) as is: the current row, or end row - current row
+     when the traversal reached the ray end. Callers that copy the material unconditionally get this value, but
+     none uses it on a miss (shots index their impact table only with a terrain distance within range). */
+  if (outMaterialIndex != NULL) {
+    *outMaterialIndex = currentRowQ12;
+  }
+  *outDistanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
+  return false;
 }
 
 
 /* Address: 0x00504CA0.
    Same walk as FieldGrid_RaycastTerrainSurfaceDistance, but against the secondary (water) surface: each triangle
-   corner is terrainHeight + waterSurfaceDelta. Same result contract: distance and material byte with CF set on
-   a hit, FIELD_GRID_RAYCAST_MISS_DISTANCE with CF clear on a miss.
+   corner is terrainHeight + waterSurfaceDelta. Returns true with the hit distance in *outDistanceQ12, or false with
+   FIELD_GRID_RAYCAST_MISS_DISTANCE there on a miss (the original also returned the hit cell's material byte in
+   EDX; no caller reads it).
 */
-TerrainRaycastResult FieldGrid_RaycastSecondarySurfaceDistance
+bool FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
-          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid)
+          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12)
 
 {
   FieldGridCell *currentCell;
@@ -2164,9 +2125,6 @@ TerrainRaycastResult FieldGrid_RaycastSecondarySurfaceDistance
   int currentRowFromStartQ12;
   int stepsRemaining;
   bool traversalDone;
-  TerrainRayTriangleResult triangleHit;
-  TerrainRaycastResult missResult;
-  TerrainRaycastResult hitResult;
   FixedDirection rayDirection;
 
   gridWidth = fieldGrid->gridWidth;
@@ -2200,7 +2158,7 @@ TerrainRaycastResult FieldGrid_RaycastSecondarySurfaceDistance
         ((int)rayEndHalfRowOrCurrentColumnQ12 < (int)((gridWidth - 1) * FIELD_GRID_CELL_Q12))) &&
        ((int)currentRowQ12 < (int)((gridHeight - 1) * FIELD_GRID_CELL_Q12))) {
       currentRowFromStartQ12 = currentRowQ12 + rayStartHalfRowQ12 * -2;
-      triangleHit = TerrainTriangle_IntersectRayDistance
+      if (TerrainTriangle_IntersectRayDistance
                          (rayDirection.z,rayEndRowQ12 + rayStartHalfRowQ12 * -2,
                           rayEndColumnQ12 - rayStartColumnQ12,rayOriginZQ12,
                           currentCell[rowLength + 1].terrainHeight +
@@ -2208,12 +2166,9 @@ TerrainRaycastResult FieldGrid_RaycastSecondarySurfaceDistance
                           currentCell[rowLength].terrainHeight + currentCell[rowLength].waterSurfaceDelta,
                           currentCell[1].terrainHeight + currentCell[1].waterSurfaceDelta,
                           currentCell->waterSurfaceDelta + currentCell->terrainHeight,
-                          currentRowFromStartQ12,rayEndHalfRowOrCurrentColumnQ12 - rayStartColumnQ12);
-      if (!triangleHit.missed) {
-        hitResult.hit = true;
-        hitResult.distanceQ12 = triangleHit.distanceQ12;
-        hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
-        return hitResult;
+                          currentRowFromStartQ12,rayEndHalfRowOrCurrentColumnQ12 - rayStartColumnQ12,
+                          outDistanceQ12)) {
+        return true;
       }
       /* the original subtracted the start in the argument registers and adds it back here */
       rayEndHalfRowOrCurrentColumnQ12 =
@@ -2227,26 +2182,24 @@ TerrainRaycastResult FieldGrid_RaycastSecondarySurfaceDistance
     rayEndHalfRowOrCurrentColumnQ12 = g_TerrainRayNextCoord1Q12;
     currentRowQ12 = g_TerrainRayNextCoord0Q12;
   } while (!traversalDone);
-  /* a miss leaves EDX as is: the current row, or end row - current row when the traversal reached the ray end.
-     No caller reads it on a miss (shots index their impact table only with a terrain distance within range). */
-  missResult.materialOrCellIndex = currentRowQ12;
-  missResult.distanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
-  missResult.hit = false;
-  return missResult;
+  *outDistanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
+  return false;
 }
 
 
 /* Address: 0x00504E60.
    Casts a ray of length rayScaleQ12 from a world point in the direction (elevation, azimuth) over the terrain
-   triangles and returns the first hit: distance and the material byte of the hit cell (hit = true, CF clear),
-   or FIELD_GRID_RAYCAST_MISS_DISTANCE when it ends first or after FIELD_GRID_RAYCAST_MAX_STEPS - 1 cells (EDX
-   then holds the traversal's last row coordinate). Cells outside the grid are clamped to the border. Used by
-   GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy (0x004CDD40) along the render context's view
-   angles from a model's sample points, to find terrain between them and the viewer.
+   triangles and returns true on the first hit, with its distance in *outDistanceQ12; false (output untouched)
+   when the ray ends first or after FIELD_GRID_RAYCAST_MAX_STEPS - 1 cells. The original also returned the hit
+   cell's material byte (or the traversal's last row coordinate on a miss) in EDX; no caller reads it. Cells
+   outside the grid are clamped to the border. Used by GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
+   (0x004CDD40) along the render context's view angles from a model's sample points, to find terrain between
+   them and the viewer.
 */
-TerrainRaycastResult FieldGrid_RaycastTerrainTrianglesAlongDirection
+bool FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
-          Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid)
+          Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,
+          Q12 *outDistanceQ12)
 
 {
   FieldGridDimension rowLength;
@@ -2269,9 +2222,6 @@ TerrainRaycastResult FieldGrid_RaycastTerrainTrianglesAlongDirection
   FieldGridCell *sampleCell;
   int rowStrideBytes;
   bool traversalDone;
-  TerrainRayTriangleResult triangleHit;
-  TerrainRaycastResult hitResult;
-  TerrainRaycastResult missResult;
   FixedDirection rayDirection;
   FieldCellPersistedAux cornerHeight0Q12;
   FieldCellPersistedAux cornerHeight1Q12;
@@ -2369,15 +2319,12 @@ TerrainRaycastResult FieldGrid_RaycastTerrainTrianglesAlongDirection
         cornerHeight0Q12 = sampleCell[rowLength].terrainHeight;
       }
     }
-    triangleHit = TerrainTriangle_IntersectRayDistance
+    if (TerrainTriangle_IntersectRayDistance
                        (rayDirection.z,rayEndRowQ12 + rayStartHalfRowQ12 * -2,rayEndColumnQ12 - rayStartColumnQ12,
                         rayOriginZQ12,cornerHeight0Q12,cornerHeight1Q12,cornerHeight2Q12,
-                        cornerHeight3Q12,rowFromStartQ12,endHalfRowOrCurrentColumnQ12 - rayStartColumnQ12);
-    if (!triangleHit.missed) {
-      hitResult.hit = true;
-      hitResult.distanceQ12 = triangleHit.distanceQ12;
-      hitResult.materialOrCellIndex = sampleCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK; /* low byte: material */
-      return hitResult;
+                        cornerHeight3Q12,rowFromStartQ12,endHalfRowOrCurrentColumnQ12 - rayStartColumnQ12,
+                        outDistanceQ12)) {
+      return true;
     }
     traversalDone = TerrainRay_AdvanceGridTraversal
                        (rayEndRowQ12,rayEndColumnQ12,rayStartRowQ12,rayStartColumnQ12,
@@ -2386,10 +2333,7 @@ TerrainRaycastResult FieldGrid_RaycastTerrainTrianglesAlongDirection
     endHalfRowOrCurrentColumnQ12 = g_TerrainRayNextCoord1Q12;
     currentRowQ12 = g_TerrainRayNextCoord0Q12;
   } while (!traversalDone);
-  missResult.materialOrCellIndex = currentRowQ12; /* EDX as the traversal left it (see above) */
-  missResult.distanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
-  missResult.hit = false;
-  return missResult;
+  return false;
 }
 
 
@@ -2578,13 +2522,13 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
    Map editor save of the field grid: copies the loaded asset image (its size is the second dword) into a
    temporary block, resets the runtime-only cell state (normals to straight up, derived dwords and occupancy
    to 0, runtime flag bits cleared), rebuilds fieldFlags as the set of used material ids and writes the block to
-   g_LevelResourcePathScratchUtf16. Returns the free status (CF clear) on success, or CF set with the
-   allocation or write error. Called by InGameUiCommand_SaveFieldAndLevelAssetImages (0x005622F0).
+   g_LevelResourcePathScratchUtf16. Returns true on success (the temporary block is freed; the free's own
+   status is ignored), or false with the allocation or write error in *outError. Called by
+   InGameUiCommand_SaveFieldAndLevelAssetImages (0x005622F0).
 */
-StatusResult FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords)
+bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
 
 {
-  FieldGridAsset *writeErrorValue;
   FieldGridAsset *fieldGridImageCopy;
   uint32_t imageSizeOrDwordsLeft;
   int cellsRemaining;
@@ -2593,9 +2537,7 @@ StatusResult FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDword
   FieldGridCellSaveImageView *fieldGridCellSaveView;
   uint8_t *occupancyBytes;
   ArenaAllocResult allocResult;
-  StatusResult writeStatus;
   uint32_t writeError;
-  ArenaFreeResult freeResult;
 
   imageSizeOrDwordsLeft = sourceImageDwords[1];
   allocResult = g_MemoryApi.alloc(imageSizeOrDwordsLeft);
@@ -2650,16 +2592,15 @@ StatusResult FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDword
                       ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                        (uint16_t *)&g_LevelResourcePathScratchUtf16);
     if (writeError == 0) {
-      freeResult = g_MemoryApi.free(fieldGridImageCopy);
-      return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(ArenaFreeResult, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+      g_MemoryApi.free(fieldGridImageCopy);
+      return true;
     }
-    writeErrorValue = (FieldGridAsset *)writeError;
     g_MemoryApi.free(fieldGridImageCopy);
-    fieldGridImageCopy = writeErrorValue;
+    *outError = writeError;
+    return false;
   }
-  writeStatus.failed = true;
-  writeStatus.valueOrError = (uint32_t)fieldGridImageCopy;
-  return writeStatus;
+  *outError = allocResult.payloadOrError;
+  return false;
 }
 
 

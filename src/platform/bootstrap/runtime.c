@@ -606,16 +606,14 @@ void __cdecl Game_Run(void)
 uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 
 {
-  StatusResult step;
   uint32_t poolError;
   uint32_t stepError;
 
   if (!SpatialSoundPool_Init(&poolError)) {
     return poolError;
   }
-  step = TerrainByteClampLookup_Initialize();
-  if (step.failed) {
-    return step.valueOrError;
+  if (!TerrainByteClampLookup_Initialize(&stepError)) {
+    return stepError;
   }
   stepError = GraphicsIntensityClampTable_Initialize();
   if (stepError != 0) {

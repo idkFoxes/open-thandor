@@ -953,7 +953,6 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
   bool subsystemFailed;
   uint16_t *resolvedTitle;
   ArenaAllocResult allocation;
-  StatusResult statusResult;
   uint32_t resetDefaultsError;
   uint32_t stepError;
   uint16_t *loadingMoviePath;
@@ -1149,9 +1148,10 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
                       queueRecord->movieId = 0;
                       queueRecord = (InGameNotificationQueueRecord *)&queueRecord->priority;
                     }
-                    statusResult = TerrainCompositeTexture_Create();
-                    rootCursorOrError = (InGameRuntimeRoot *)statusResult.valueOrError;
-                    if (!statusResult.failed) {
+                    if (!TerrainCompositeTexture_Create(&stepError)) {
+                      rootCursorOrError = (InGameRuntimeRoot *)stepError;
+                    }
+                    else {
                       /* hold the step off while the world is finished */
                       g_SpinLockAcquire(&g_InGameStateTickSpinLock);
                       g_InGameSimulationStepTicks = 1;
@@ -1347,7 +1347,6 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
   SelectionPlayerRuntimeBlock *selectionBlockCursor;
   InGameNotificationQueueRecord *queueRecord;
   bool terminatorOrFailure;
-  StatusResult statusResult;
   bool saveMounted;
   uint32_t saveHandleOrError; /* the save package's handle, or the mount error code */
   PackageLoadResult packageEntry;
@@ -1562,9 +1561,10 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
                             queueRecord->movieId = 0;
                             queueRecord = (InGameNotificationQueueRecord *)&queueRecord->priority;
                           }
-                          statusResult = TerrainCompositeTexture_Create();
-                          rootCursorOrError = (InGameRuntimeRoot *)statusResult.valueOrError;
-                          if (!statusResult.failed) {
+                          if (!TerrainCompositeTexture_Create(&stepError)) {
+                            rootCursorOrError = (InGameRuntimeRoot *)stepError;
+                          }
+                          else {
                             /* hold the step off while the world is finished */
                             g_SpinLockAcquire(&g_InGameStateTickSpinLock);
                             InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);

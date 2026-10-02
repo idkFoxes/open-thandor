@@ -489,14 +489,14 @@ void TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGri
 /* Address: 0x00504520.
    Terrain raycast step: intersects the ray segment (grid-space delta, Z origin and Z delta, relative to the cell)
    with the two triangles of one field-grid cell given its four corner heights, first the one based on corner 3,
-   then the one based on corner 0 (the far corner, local coordinates shifted by one cell). A hit returns the world
-   distance from the ray origin with CF clear; a miss (also the quick reject when all four corners lie below the
-   ray's lowest point) returns CF set with a meaningless EAX.
+   then the one based on corner 0 (the far corner, local coordinates shifted by one cell). A hit returns true with
+   the world distance from the ray origin in *outDistanceQ12; a miss (also the quick reject when all four corners
+   lie below the ray's lowest point) returns false and leaves *outDistanceQ12 untouched.
 */
-TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
+bool TerrainTriangle_IntersectRayDistance
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
-          Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12)
+          Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12)
 
 {
   int64_t planeTermOrProductA;
@@ -520,19 +520,14 @@ TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
   uint32_t edgeSumLowA;
   uint32_t edgeSumLowB;
   uint32_t partialSumLow;
-  TerrainRayTriangleResult rejectResult;
-  TerrainRayTriangleResult firstTriangleHit;
-  TerrainRayTriangleResult secondTriangleHit;
-  TerrainRayTriangleResult secondTriangleZeroResult;
-  TerrainRayTriangleResult firstTriangleZeroResult;
-  
+
   lowestRayZQ12 = rayOriginZQ12;
   if (rayDeltaZQ12 < 0) {
     lowestRayZQ12 = rayOriginZQ12 + rayDeltaZQ12;
   }
   if ((((cornerHeight3Q12 <= lowestRayZQ12) && (cornerHeight2Q12 <= lowestRayZQ12)) &&
       (cornerHeight1Q12 <= lowestRayZQ12)) && (heightDeltaOrLowWord = cornerHeight2Q12, cornerHeight0Q12 <= lowestRayZQ12))
-  goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
+  goto TerrainTriangle_IntersectRayDistance_Miss;
   planeTermOrProductA = ((int64_t)(cornerHeight1Q12 - cornerHeight3Q12) * (int64_t)gridRayDelta0Q12 +
           (int64_t)(cornerHeight2Q12 - cornerHeight3Q12) * (int64_t)gridRayDelta1Q12) -
           ((int64_t)rayDeltaZQ12 << Q12_SHIFT);
@@ -603,9 +598,8 @@ TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
           heightDeltaOrLowWord = heightDeltaOrLowWord + edgeSumLowA + edgeSumLowB >> Q12_SHIFT | combinedHigh * (1 << (32 - Q12_SHIFT));
           combinedHigh = combinedHigh >> Q12_SHIFT;
           if (heightDeltaOrLowWord == 0) {
-            firstTriangleZeroResult.distanceQ12 = 0;
-            firstTriangleZeroResult.missed = false;
-            return firstTriangleZeroResult;
+            *outDistanceQ12 = 0;
+            return true;
           }
           if ((int)heightDeltaOrLowWord < 0) {
             if (combinedHigh != -1) {
@@ -635,15 +629,14 @@ TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
              * FIELD_GRID_WORLD_COLUMN_STEP_X / 0x1000, Y = row * FIELD_GRID_WORLD_ROW_STEP_Y / 0x1000 */
           worldXOffsetProduct = (int64_t)(combinedHigh + (cellLocalCoord0Q12 + edgeHighOrCoord1) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
           worldYOffsetProduct = (int64_t)combinedHigh * FIELD_GRID_WORLD_ROW_STEP_Y;
-          firstTriangleHit.distanceQ12 =
+          *outDistanceQ12 =
                FixedMath_Length3(((cornerHeight3Q12 +
                                   (FIXED_PRODUCT_SHR(planeTermOrProductB, Q12_SHIFT))
                                   ) - rayOriginZQ12) +
                                  (FIXED_PRODUCT_SHR(planeTermOrProductA, Q12_SHIFT)),
                                  FIXED_PRODUCT_SHR(worldYOffsetProduct, 12),
                                  FIXED_PRODUCT_SHR(worldXOffsetProduct, Q12_SHIFT + 1));
-          firstTriangleHit.missed = false;
-          return firstTriangleHit;
+          return true;
         }
       }
     }
@@ -663,10 +656,10 @@ TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
   edgeHighC = (int)((uint64_t)planeTermOrProductA >> 32);
   if (planeTermOrProductA < 0) {
     if ((-1 < planeTermOrProductB) || ((int)((edgeHighC - combinedHigh) - (uint32_t)((uint32_t)planeTermOrProductA < productLowOrDivisor)) < 0))
-    goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
+    goto TerrainTriangle_IntersectRayDistance_Miss;
   }
   else if ((planeTermOrProductB < 0) || (-1 < (int)((edgeHighC - combinedHigh) - (uint32_t)((uint32_t)planeTermOrProductA < productLowOrDivisor))))
-  goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
+  goto TerrainTriangle_IntersectRayDistance_Miss;
   rayCrossLocal = (int64_t)gridRayDelta1Q12 * (int64_t)edgeHighOrCoord1 -
           (int64_t)edgeHighOrCoord0 * (int64_t)gridRayDelta0Q12;
   edgeHighC = (int)(rayCrossLocal >> 32);
@@ -693,10 +686,10 @@ TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
            FIXED_MUL_SHR(rayDeltaZQ12, edgeHighOrCoord0, 32 - Q12_SHIFT) + (uint32_t)CARRY4(edgeSumLowB,heightDeltaOrLowWord);
   if (edgeHighD < 0) {
     if (-1 < planeTermOrProductB)
-    goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
+    goto TerrainTriangle_IntersectRayDistance_Miss;
   }
   else if (planeTermOrProductB < 0)
-  goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
+  goto TerrainTriangle_IntersectRayDistance_Miss;
   heightDeltaOrLowWord = cornerHeight1Q12 - cornerHeight0Q12;
   if ((int)heightDeltaOrLowWord < 0) {
     planeTermOrProductB = (uint64_t)heightDeltaOrLowWord * (rayCrossLocal & UINT32_MAX);
@@ -731,9 +724,8 @@ TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
       productLowOrDivisor = shiftedLowA + heightDeltaOrLowWord + rateHighOrEdgeSumLow >> Q12_SHIFT | edgeHighC * (1 << (32 - Q12_SHIFT));
       edgeHighC = edgeHighC >> Q12_SHIFT;
       if (productLowOrDivisor == 0) {
-        secondTriangleZeroResult.distanceQ12 = 0;
-        secondTriangleZeroResult.missed = false;
-        return secondTriangleZeroResult;
+        *outDistanceQ12 = 0;
+        return true;
       }
       if ((int)productLowOrDivisor < 0) {
         if (edgeHighC != -1) {
@@ -762,21 +754,18 @@ TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
       /* back to world units as for the first triangle */
       worldXOffsetProduct = (int64_t)(edgeHighOrCoord1 + (edgeHighOrCoord0 - edgeHighC) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
       worldYOffsetProduct = (int64_t)edgeHighOrCoord1 * FIELD_GRID_WORLD_ROW_STEP_Y;
-      secondTriangleHit.distanceQ12 =
+      *outDistanceQ12 =
            FixedMath_Length3(((cornerHeight0Q12 +
                               (FIXED_PRODUCT_SHR(planeTermOrProductB, Q12_SHIFT))) -
                              rayOriginZQ12) +
                              (FIXED_PRODUCT_SHR(planeTermOrProductA, Q12_SHIFT)),
                              FIXED_PRODUCT_SHR(worldYOffsetProduct, 12),
                              FIXED_PRODUCT_SHR(worldXOffsetProduct, Q12_SHIFT + 1));
-      secondTriangleHit.missed = false;
-      return secondTriangleHit;
+      return true;
     }
   }
-TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet:
-  rejectResult.missed = true;
-  rejectResult.distanceQ12 = heightDeltaOrLowWord;
-  return rejectResult;
+TerrainTriangle_IntersectRayDistance_Miss:
+  return false;
 }
 
 

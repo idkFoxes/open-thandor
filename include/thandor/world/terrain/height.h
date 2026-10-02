@@ -51,10 +51,10 @@ void TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGri
 void TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x00504520 */
-TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
+bool TerrainTriangle_IntersectRayDistance
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
-          Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12);
+          Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12);
 
 /* ESI/EDX/ECX results of TerrainRay_AdvanceGridTraversal: next cell and grid corner. */
 extern FieldGridCell *g_TerrainRayNextCell;

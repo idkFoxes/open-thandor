@@ -1124,37 +1124,38 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   uint32_t endpointDistanceQ12;
   int rayLengthOrOffsetY;
   FixedSinCosEdxEax8 groundOffsetXY;
-  TerrainRaycastResult raycastResult;
-  TerrainRaycastResult secondaryRaycastResult;
+  bool surfaceHit;
+  Q12 rayDistanceQ12;
+  Q12 secondaryDistanceQ12;
   FixedDirection endpointOffset;
 
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) == 0) {
     rayLengthOrOffsetY = worldRuntime->maximumCameraDistanceQ12 << 2;
-    raycastResult = FieldGrid_RaycastTerrainSurfaceDistance
+    surfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
                       (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthOrOffsetY,
                        worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
-                       worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid);
-    hitDistanceQ12 = raycastResult.distanceQ12;
-    if (raycastResult.hit) {
+                       worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid,&rayDistanceQ12,NULL);
+    hitDistanceQ12 = rayDistanceQ12;
+    if (surfaceHit) {
       /* terrain hit: a nearer secondary-surface hit wins */
-      secondaryRaycastResult = FieldGrid_RaycastSecondarySurfaceDistance
+      if ((FieldGrid_RaycastSecondarySurfaceDistance
                         (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthOrOffsetY,
                          worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
-                         worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid);
-      if ((secondaryRaycastResult.hit) && (secondaryRaycastResult.distanceQ12 < (int)hitDistanceQ12)) {
-        hitDistanceQ12 = secondaryRaycastResult.distanceQ12;
+                         worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid,&secondaryDistanceQ12)) &&
+          (secondaryDistanceQ12 < (int)hitDistanceQ12)) {
+        hitDistanceQ12 = secondaryDistanceQ12;
       }
     }
   }
   else {
-    raycastResult = FieldGrid_RaycastSecondarySurfaceDistance
+    surfaceHit = FieldGrid_RaycastSecondarySurfaceDistance
                       (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,
                        worldRuntime->maximumCameraDistanceQ12 << 2,
                        worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
-                       worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid);
-    hitDistanceQ12 = raycastResult.distanceQ12;
+                       worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid,&rayDistanceQ12);
+    hitDistanceQ12 = rayDistanceQ12;
   }
-  if (!raycastResult.hit) {
+  if (!surfaceHit) {
     /* no hit: intersect the view ray with the ground plane z = 0 */
     currentPitchAngle = worldRuntime->motion.pitchAngle;
     groundOffsetXY = FixedMath_SinCosScaled

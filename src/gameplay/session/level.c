@@ -137,10 +137,12 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
   uint32_t regionOriginOrRelationMask;
   ArenaAllocResult allocResult;
   PackageLoadResult loadEntryResult;
-  StatusResult statusResult;
+  uint32_t terrainLoadError;
   uint32_t assetError;
   bool armyRuntimeInitialized;
   uint32_t armyInitError;
+  bool shotsInitialized;
+  uint32_t shotInitError;
   bool effectsInitialized;
   uint32_t effectInitError;
   ArmyRuntimeSlot *createdArmy;
@@ -395,15 +397,15 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
               g_MoviePlaybackScheduleCounter = 0;
               g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
               /* stage 1: terrain textures (surface, ground) and the field grid */
-              statusResult = TerrainVisualResources_LoadPrimary
-                                 ((uint16_t *)((uint8_t *)levelImage +
-                                               (levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
-                                  (uint16_t *)((uint8_t *)levelImage +
-                                               (levelImage->header).pathOffsets.groundTextureBasePathOffset),
-                                  (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset
-                                 );
-              resultOrPointer = (void *)statusResult.valueOrError;
-              if (!statusResult.failed) {
+              if (!TerrainVisualResources_LoadPrimary
+                     ((uint16_t *)((uint8_t *)levelImage +
+                                   (levelImage->header).pathOffsets.surfaceTextureBasePathOffset),
+                      (uint16_t *)((uint8_t *)levelImage +
+                                   (levelImage->header).pathOffsets.groundTextureBasePathOffset),
+                      (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,&terrainLoadError)) {
+                resultOrPointer = (void *)terrainLoadError;
+              }
+              else {
                 assetError = ShotDefinitions_ValidateTerrainMaterialReferences();
                 resultOrPointer = (void *)assetError;
                 if (assetError == 0) {
@@ -428,11 +430,12 @@ bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
                       g_MoviePlaybackBaseFrameGroup = 3;
                       g_MoviePlaybackScheduleCounter = 0;
                       g_MoviePlaybackScheduleSpan = 4;
-                      statusResult = ShotRuntime_InitGraphicsResources
+                      shotsInitialized = ShotRuntime_InitGraphicsResources
                                          ((uint16_t *)((uint8_t *)levelImage +
-                                                       (levelImage->header).pathOffsets.shotTextureBasePathOffset));
-                      resultOrPointer = (void *)statusResult.valueOrError;
-                      if (!statusResult.failed) {
+                                                       (levelImage->header).pathOffsets.shotTextureBasePathOffset),
+                                          &shotInitError);
+                      resultOrPointer = (void *)shotInitError;
+                      if (shotsInitialized) {
                         g_MoviePlaybackBaseFrameGroup = 4;
                         g_MoviePlaybackScheduleCounter = 0;
                         g_MoviePlaybackScheduleSpan = 4;
@@ -971,10 +974,12 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
   uint32_t *soundSlotCursor;
   ArenaAllocResult allocResult;
   PackageLoadResult loadEntryResult;
-  StatusResult statusResult;
+  uint32_t terrainLoadError;
   uint32_t assetError;
   bool armyRuntimeInitialized;
   uint32_t armyInitError;
+  bool shotsInitialized;
+  uint32_t shotInitError;
   bool effectsInitialized;
   uint32_t effectInitError;
   ArenaShrinkResult shrinkResult;
@@ -1122,15 +1127,16 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
               g_MoviePlaybackScheduleCounter = 0;
               g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
               /* stage 1: terrain textures (surface, ground) and the field grid */
-              statusResult = TerrainVisualResources_LoadAndClearCellOverlayFlags
-                                 ((uint16_t *)((uint8_t *)levelImage +
-                                               (levelImage->header).pathState.surfaceTextureBasePathOffset),
-                                  (uint16_t *)((uint8_t *)levelImage +
-                                               (levelImage->header).pathState.groundTextureBasePathOffset),
-                                  (FieldGridAsset *)
-                                  (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid);
-              resultOrPointer = (void *)statusResult.valueOrError;
-              if (!statusResult.failed) {
+              if (!TerrainVisualResources_LoadAndClearCellOverlayFlags
+                     ((uint16_t *)((uint8_t *)levelImage +
+                                   (levelImage->header).pathState.surfaceTextureBasePathOffset),
+                      (uint16_t *)((uint8_t *)levelImage +
+                                   (levelImage->header).pathState.groundTextureBasePathOffset),
+                      (FieldGridAsset *)(levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid,
+                      &terrainLoadError)) {
+                resultOrPointer = (void *)terrainLoadError;
+              }
+              else {
                 assetError = ShotDefinitions_ValidateTerrainMaterialReferences();
                 resultOrPointer = (void *)assetError;
                 if (assetError == 0) {
@@ -1154,11 +1160,12 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
                       g_MoviePlaybackBaseFrameGroup = 3;
                       g_MoviePlaybackScheduleCounter = 0;
                       g_MoviePlaybackScheduleSpan = 4;
-                      statusResult = ShotRuntime_InitGraphicsResources
+                      shotsInitialized = ShotRuntime_InitGraphicsResources
                                          ((uint16_t *)((uint8_t *)levelImage +
-                                                       (levelImage->header).pathState.shotTextureBasePathOffset));
-                      resultOrPointer = (void *)statusResult.valueOrError;
-                      if (!statusResult.failed) {
+                                                       (levelImage->header).pathState.shotTextureBasePathOffset),
+                                          &shotInitError);
+                      resultOrPointer = (void *)shotInitError;
+                      if (shotsInitialized) {
                         g_MoviePlaybackBaseFrameGroup = 4;
                         g_MoviePlaybackScheduleCounter = 0;
                         g_MoviePlaybackScheduleSpan = 4;

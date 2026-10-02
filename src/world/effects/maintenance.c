@@ -140,7 +140,8 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   uint64_t modulatedLanes;
   ModelPackedPointRecord *packedPoint;
   ArmyRuntimeSlot *createdArmy;
-  HeightNormalSampleResult terrainSample;
+  Q12 terrainHeightQ12; /* sampled with the normal, unused here */
+  uint32_t terrainNormalAngles;
   ModelWorldPoint localPoint;
   FixedDirection scaledDirection;
   GraphicsFixedVec3 terrainNormalDirection;
@@ -393,15 +394,15 @@ SpawnArmyFromOwner:
       }
       break;
     case EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT:
-      terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
+      if (FieldGrid_InterpolateTerrainHeightAndNormal
                          (modelNode->worldTransform.translation.y,
-                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
-      if (!terrainSample.failed) {
+                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid,
+                          &terrainHeightQ12,&terrainNormalAngles)) {
         /* Both register-returned directions are spilled to the stack in the binary; Ghidra showed
            them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. Both are unit vectors
            (0x10000000 = 1.0 in Q28); the motion elevation drops with the square of the effect's age. */
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
-                  ((int)terrainSample.packedNormalAngles >> 16,terrainSample.packedNormalAngles & FIXED_ANGLE16_MASK,
+                  ((int)terrainNormalAngles >> 16,terrainNormalAngles & FIXED_ANGLE16_MASK,
                    Q28_ONE);
         terrainNormalDirection.x = scaledDirection.x;
         terrainNormalDirection.y = scaledDirection.y;

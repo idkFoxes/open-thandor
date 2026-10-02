@@ -447,17 +447,17 @@ void ArmyPlacementContact_ApplyTerrainHeightAndNormal
 
 {
   int resourceHeightOffsetQ12;
-  HeightNormalSampleResult surfaceHeightNormal;
-  
+  Q12 surfaceHeightQ12;
+  uint32_t surfaceNormalAngles;
+
   if (worldRuntime->fieldGrid != NULL) {
-    surfaceHeightNormal = FieldGrid_InterpolateTerrainHeightAndNormal(worldYQ12,worldXQ12,worldRuntime->fieldGrid)
-    ;
-    if (!surfaceHeightNormal.failed) {
+    if (FieldGrid_InterpolateTerrainHeightAndNormal
+          (worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12,&surfaceNormalAngles)) {
       resourceHeightOffsetQ12 = ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
-      (modelNode->modelPayload).worldRotationAngle0 = surfaceHeightNormal.packedNormalAngles & FIXED_ANGLE16_MASK;
-      (modelNode->modelPayload).worldRotationAngle1 = (int)surfaceHeightNormal.packedNormalAngles >> 16;
+      (modelNode->modelPayload).worldRotationAngle0 = surfaceNormalAngles & FIXED_ANGLE16_MASK;
+      (modelNode->modelPayload).worldRotationAngle1 = (int)surfaceNormalAngles >> 16;
       (modelNode->worldTransform).translation.z =
-           surfaceHeightNormal.heightQ12 + resourceHeightOffsetQ12 + heightOffsetQ12;
+           surfaceHeightQ12 + resourceHeightOffsetQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldXQ12;
       (modelNode->worldTransform).translation.y = worldYQ12;
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;

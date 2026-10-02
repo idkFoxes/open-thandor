@@ -3091,16 +3091,16 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
     /* the in-game root that holds this world view */
     InGameRuntimeRoot *root = (InGameRuntimeRoot *)
          ((uint8_t *)world - offsetof(InGameRuntimeRoot,worldRuntime));
-    TerrainPointResult point;
+    FixedVectorQ12 point;
     if ((root->targetingWorldXQ12 == 0) ||
         (root->targetingWorldYQ12 == 0)) {
       break;
     }
-    point = FieldGrid_GetNearestTerrainPoint(root->targetingWorldYQ12,
-                                             root->targetingWorldXQ12,world->fieldGrid);
+    FieldGrid_GetNearestTerrainPoint(root->targetingWorldYQ12,
+                                     root->targetingWorldXQ12,world->fieldGrid,&point);
     WorldRuntime_PointCameraAtTarget
               ((world->motion).pitchAngle,(world->motion).headingAngle,(world->motion).targetDistanceQ12,
-               point.terrainHeightQ12,root->targetingWorldYQ12,
+               point.zQ12,root->targetingWorldYQ12,
                root->targetingWorldXQ12,world);
     break;
   }
@@ -4109,7 +4109,7 @@ void InGameUiCommand_BeginInteractionByMode
   uint32_t snappedWorldY;
   uint32_t worldCoordinateTerm;
   int cellY;
-  TerrainPointResult nearestTerrainPoint;
+  FixedVectorQ12 nearestTerrainPoint;
   
   if ((ownerNodeUnderPointer != NULL) &&
      (ownerNodeUnderPointer->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) {
@@ -4125,11 +4125,11 @@ void InGameUiCommand_BeginInteractionByMode
       }
       g_UiCommandDragStartScreenX = mapControl->pointerPressX;
       g_UiCommandDragStartScreenY = mapControl->pointerPressY;
-      nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+      FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
       /* World point to grid point (Q12), used throughout the editor callbacks: t = y * -0x20C8CC / 2^21,
          gx = x * 0x1C6E9C / 2^20 - t, gy = 2t (64-bit products); + 0x3FF & ~0xFFF snaps to the grid. */
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
       worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
       g_UiCommandDragAnchorWorldXQ12 = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - worldCoordinateTerm);
       g_UiCommandDragAnchorWorldYQ12 = INGAME_SNAP_GRID_Q12(worldCoordinateTerm * 2);
@@ -4149,9 +4149,9 @@ void InGameUiCommand_BeginInteractionByMode
       }
       g_UiCommandDragStartScreenX = mapControl->pointerPressX;
       g_UiCommandDragStartScreenY = mapControl->pointerPressY;
-      nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+      scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
       worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
       g_UiCommandDragAnchorWorldXQ12 = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - worldCoordinateTerm);
       g_UiCommandDragAnchorWorldYQ12 = INGAME_SNAP_GRID_Q12(worldCoordinateTerm * 2);
@@ -4179,9 +4179,9 @@ void InGameUiCommand_BeginInteractionByMode
         if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
           return;
         }
-        nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+        FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+        scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+        scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
         snappedWorldY = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
         worldCoordinateTerm = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - snappedWorldY);
         snappedWorldY = INGAME_SNAP_GRID_Q12(snappedWorldY * 2);
@@ -4205,9 +4205,9 @@ void InGameUiCommand_BeginInteractionByMode
         return;
       }
       if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
-        nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+        FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+        scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+        scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
         snappedWorldY = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
         worldCoordinateTerm = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - snappedWorldY);
         snappedWorldY = INGAME_SNAP_GRID_Q12(snappedWorldY * 2);
@@ -4229,9 +4229,9 @@ void InGameUiCommand_BeginInteractionByMode
       if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
         g_UiCommandDragStartScreenX = mapControl->pointerPressX;
         g_UiCommandDragStartScreenY = mapControl->pointerPressY;
-        nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+        FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+        scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+        scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
         worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
         g_UiCommandDragAnchorWorldXQ12 = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - worldCoordinateTerm);
         g_UiCommandDragAnchorWorldYQ12 = INGAME_SNAP_GRID_Q12(worldCoordinateTerm * 2);
@@ -4246,9 +4246,9 @@ void InGameUiCommand_BeginInteractionByMode
       }
       /* The drag sets the flag when the pressed cell lacks it and clears it otherwise; outside the
          field it sets it. */
-      nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+      scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
       worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
       mapFieldGrid = mapControl->fieldGrid;
       cellX = (int)(((FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - worldCoordinateTerm) + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
@@ -4277,9 +4277,9 @@ void InGameUiCommand_BeginInteractionByMode
     if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
-    nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+    scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
     worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     mapFieldGrid = mapControl->fieldGrid;
     cellX = (int)(((FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - worldCoordinateTerm) + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
@@ -4394,9 +4394,9 @@ void InGameUiCommand_BeginInteractionByMode
     if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
-    nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+    scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
     worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     mapFieldGrid = mapControl->fieldGrid;
     cellX = (int)(((FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - worldCoordinateTerm) + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
@@ -4438,9 +4438,9 @@ void InGameUiCommand_BeginInteractionByMode
         InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SELECTION,0,0,0);
       }
     }
-    nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+    scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
     worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     g_UiCommandSelectionAnchorWorldXQ12 =
          (FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - worldCoordinateTerm;
@@ -4482,7 +4482,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
   WorldOwnerListNode *runtimeNode;
   CommandPayload *tripletEntry;
   bool conditionResult;
-  TerrainPointResult nearestTerrainPoint;
+  FixedVectorQ12 nearestTerrainPoint;
   GameEntityRuntime *entry;
   
   if ((mapControl->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
@@ -4614,9 +4614,9 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
-      nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+      scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
       columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
       encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
       columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
@@ -4644,9 +4644,9 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
-      nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+      scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
       columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
       encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
       columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
@@ -4690,9 +4690,9 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
-      nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+      scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
       columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
       encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
       columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
@@ -4709,9 +4709,9 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
     if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
-    nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+    scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
     columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
     columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
@@ -4769,9 +4769,9 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
     if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
-    nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+    scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
     columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
     columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
@@ -4786,9 +4786,9 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
     return;
   }
   if ((pointerRegionCode != WORLD_POINTER_NO_HIT) && (g_UiCommandSelectionAnchorWorldXQ12 != WORLD_POINTER_NO_HIT)) {
-    nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid,&nearestTerrainPoint);
+    scaledGridX = (int64_t)nearestTerrainPoint.xQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)nearestTerrainPoint.yQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
     encodedValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     boundWorldY = (FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - encodedValue;
     workValue = encodedValue * 2;
@@ -5185,14 +5185,13 @@ void InGameUiCommand_SaveFieldAndLevelAssetImages
 
 {
   InGameRuntimeRoot *runtimeRoot;
-  StatusResult saveStatus;
+  uint32_t fieldSaveError;
   uint32_t levelSaveError;
 
   runtimeRoot = g_InGameRuntimeRoot;
-  saveStatus = FieldGrid_SaveAssetImageFromRuntimeState
-                    ((uint32_t *)(g_InGameRuntimeRoot->worldRuntime).fieldGrid);
-  if (saveStatus.failed) {
-    FatalError_ReportIfFailed(saveStatus.valueOrError,true);
+  if (!FieldGrid_SaveAssetImageFromRuntimeState
+                    ((uint32_t *)(g_InGameRuntimeRoot->worldRuntime).fieldGrid,&fieldSaveError)) {
+    FatalError_ReportIfFailed(fieldSaveError,true);
   }
   if (!InGameLevelRuntime_SaveLevelAssetImageFromWorldState
                     ((InGameLevelSaveWorldView *)&runtimeRoot->worldRuntime,&levelSaveError)) {

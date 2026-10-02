@@ -37,7 +37,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
   int payloadEntityAddress;
   CommandPayload modelToken;
   CommandPayload armyToken;
-  TerrainPointResult nearestTerrainPoint;
+  FixedVectorQ12 nearestTerrainPoint;
   
   if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE) {
     InGameTargetingContext_CancelAndRestoreState(targetingContext);
@@ -90,16 +90,14 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
       targetingContext->targetingWorldYQ12 = secondaryCoordinateQ12;
       /* falls through */
     case ARMY_CREATED:
-      nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint
-                        ((targetingContext->activeNotificationPayload).
-                         worldYQ12,
-                         (targetingContext->activeNotificationPayload).
-                         worldXQ12,(targetingContext->worldRuntime).fieldGrid
-                        );
+      FieldGrid_GetNearestTerrainPoint
+                ((targetingContext->activeNotificationPayload).worldYQ12,
+                 (targetingContext->activeNotificationPayload).worldXQ12,
+                 (targetingContext->worldRuntime).fieldGrid,&nearestTerrainPoint);
       WorldRuntime_PointCameraAtTarget
                 ((targetingContext->worldRuntime).motion.pitchAngle,
                  (targetingContext->activeNotificationPayload).headingAngle,
-                 (targetingContext->worldRuntime).motion.targetDistanceQ12,nearestTerrainPoint.terrainHeightQ12,
+                 (targetingContext->worldRuntime).motion.targetDistanceQ12,nearestTerrainPoint.zQ12,
                  (targetingContext->activeNotificationPayload).worldYQ12,
                  (targetingContext->activeNotificationPayload).worldXQ12,
                  &targetingContext->worldRuntime);

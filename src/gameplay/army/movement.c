@@ -2002,7 +2002,8 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   ModelRuntimeSlot *blockingModelRuntime;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
-  HeightNormalSampleResult terrainSample;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
   UQ12 footRadius;
   ModelRuntimeNode *rootNode;
 
@@ -2042,11 +2043,11 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   if (activeFieldGrid == NULL) {
     return;
   }
-  terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
-                     ((int)(lateralSinCos >> 32) + footY,(int)lateralSinCos + footXOrLength,activeFieldGrid);
-  if (!terrainSample.failed) {
-    armyRuntime->fallbackWorldYQ12 = terrainSample.packedNormalAngles;
-    armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
+  if (FieldGrid_InterpolateTerrainHeightAndNormal
+                     ((int)(lateralSinCos >> 32) + footY,(int)lateralSinCos + footXOrLength,activeFieldGrid,
+                      &terrainHeightQ12,&terrainNormalAngles)) {
+    armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
+    armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
     footXOrLength = armyRuntime->runtimeState98;
     aheadXOrFootZ = armyRuntime->articulatedHeightOrStateA0;
     blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
@@ -2073,13 +2074,13 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   armyRuntime->runtimeState90 = footXOrLength;
   armyRuntime->runtimeState98 = footY;
   lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,footRadius);
-  terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
-                     ((int)(lateralSinCos >> 32) + footY,(int)lateralSinCos + footXOrLength,activeFieldGrid);
-  if (terrainSample.failed) {
+  if (!FieldGrid_InterpolateTerrainHeightAndNormal
+                     ((int)(lateralSinCos >> 32) + footY,(int)lateralSinCos + footXOrLength,activeFieldGrid,
+                      &terrainHeightQ12,&terrainNormalAngles)) {
     return;
   }
-  armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
-  armyRuntime->fallbackWorldYQ12 = terrainSample.packedNormalAngles;
+  armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
+  armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
   footXOrLength = armyRuntime->runtimeState98;
   aheadXOrFootZ = armyRuntime->articulatedHeightOrStateA0;
   /* the owner's common.commandFlags is its movementStateFlags */
@@ -2134,7 +2135,8 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   ModelRuntimeSlot *blockingModelRuntime;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
-  HeightNormalSampleResult terrainSample;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
   UQ12 footRadius;
   ModelRuntimeNode *rootNode;
 
@@ -2173,11 +2175,11 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   if (activeFieldGrid == NULL) {
     return;
   }
-  terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
-                     ((int)(lateralSinCos >> 32) + aheadYOrStride,(int)lateralSinCos + footXOrLength,activeFieldGrid);
-  if (!terrainSample.failed) {
-    armyRuntime->fallbackWorldXQ12 = terrainSample.packedNormalAngles;
-    armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
+  if (FieldGrid_InterpolateTerrainHeightAndNormal
+                     ((int)(lateralSinCos >> 32) + aheadYOrStride,(int)lateralSinCos + footXOrLength,activeFieldGrid,
+                      &terrainHeightQ12,&terrainNormalAngles)) {
+    armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
+    armyRuntime->runtimeStateA4 = terrainHeightQ12;
     aheadXOrFootY = armyRuntime->articulatedCoordinateOrState9C;
     footXOrLength = armyRuntime->runtimeStateA4;
     blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
@@ -2204,13 +2206,13 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   armyRuntime->runtimeState94 = footXOrLength;
   armyRuntime->articulatedCoordinateOrState9C = aheadXOrFootY;
   lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,footRadius);
-  terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
-                     ((int)(lateralSinCos >> 32) + aheadXOrFootY,(int)lateralSinCos + footXOrLength,activeFieldGrid);
-  if (terrainSample.failed) {
+  if (!FieldGrid_InterpolateTerrainHeightAndNormal
+                     ((int)(lateralSinCos >> 32) + aheadXOrFootY,(int)lateralSinCos + footXOrLength,activeFieldGrid,
+                      &terrainHeightQ12,&terrainNormalAngles)) {
     return;
   }
-  armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
-  armyRuntime->fallbackWorldXQ12 = terrainSample.packedNormalAngles;
+  armyRuntime->runtimeStateA4 = terrainHeightQ12;
+  armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
   aheadXOrFootY = armyRuntime->articulatedCoordinateOrState9C;
   footXOrLength = armyRuntime->runtimeStateA4;
   /* the owner's common.commandFlags is its movementStateFlags */
@@ -2983,7 +2985,8 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
   uint32_t footTravel;
   uint32_t sideAngle;
   FixedSinCosEdxEax8 offsetSinCos;
-  HeightNormalSampleResult terrainSample;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
 
   armyRuntime->ownerValue64 = headingAngle16;
   (armyRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue.signedValue =
@@ -2997,12 +3000,12 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
                     (sideAngle,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
                            contactRadiusQ12);
   if (worldRuntime->fieldGrid != NULL) {
-    terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
+    if (FieldGrid_InterpolateTerrainHeightAndNormal
                       ((int)(offsetSinCos >> 32) + armyRuntime->runtimeState98,
-                       (int)offsetSinCos + armyRuntime->runtimeState90,worldRuntime->fieldGrid);
-    if (!terrainSample.failed) {
-      armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
-      armyRuntime->fallbackWorldYQ12 = terrainSample.packedNormalAngles;
+                       (int)offsetSinCos + armyRuntime->runtimeState90,worldRuntime->fieldGrid,
+                       &terrainHeightQ12,&terrainNormalAngles)) {
+      armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
+      armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
       movementDefinition = armyRuntime->definitionOrAsset;
       footTravel = FixedMath_Length3(armyRuntime->articulatedHeightOrStateA0 -
                                 armyRuntime->definitionClassValue88,
@@ -3038,7 +3041,8 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
   uint32_t footTravel;
   uint32_t sideAngle;
   FixedSinCosEdxEax8 offsetSinCos;
-  HeightNormalSampleResult terrainSample;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
 
   armyRuntime->ownerValue64 = headingAngle16;
   (armyRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.signedValue =
@@ -3052,12 +3056,12 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
                     (sideAngle,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
                            contactRadiusQ12);
   if (worldRuntime->fieldGrid != NULL) {
-    terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
+    if (FieldGrid_InterpolateTerrainHeightAndNormal
                       ((int)(offsetSinCos >> 32) + armyRuntime->articulatedCoordinateOrState9C,
-                       (int)offsetSinCos + armyRuntime->runtimeState94,worldRuntime->fieldGrid);
-    if (!terrainSample.failed) {
-      armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
-      armyRuntime->fallbackWorldXQ12 = terrainSample.packedNormalAngles;
+                       (int)offsetSinCos + armyRuntime->runtimeState94,worldRuntime->fieldGrid,
+                       &terrainHeightQ12,&terrainNormalAngles)) {
+      armyRuntime->runtimeStateA4 = terrainHeightQ12;
+      armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
       movementDefinition = armyRuntime->definitionOrAsset;
       footTravel = FixedMath_Length3(armyRuntime->runtimeStateA4 - armyRuntime->runtimeState8C,
                                 armyRuntime->articulatedCoordinateOrState9C -
@@ -3107,7 +3111,8 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
   /* pivot/target Y, then the stride length */
   int pointYOrStride;
   FixedSinCosEdxEax8 offsetSinCos;
-  HeightNormalSampleResult terrainSample;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
   FieldGridAsset *fieldGrid;
   ModelRuntimeNode *rootNode;
 
@@ -3141,12 +3146,12 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     fieldGrid = worldRuntime->fieldGrid;
     armyRuntime->ownerValue64 = ((int)steeringAngle16 >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
     if (fieldGrid != NULL) {
-      terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
+      if (FieldGrid_InterpolateTerrainHeightAndNormal
                          ((int)(offsetSinCos >> 32) + armyRuntime->runtimeState98,
-                          (int)offsetSinCos + armyRuntime->runtimeState90,fieldGrid);
-      if (!terrainSample.failed) {
-        armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
-        armyRuntime->fallbackWorldYQ12 = terrainSample.packedNormalAngles;
+                          (int)offsetSinCos + armyRuntime->runtimeState90,fieldGrid,
+                          &terrainHeightQ12,&terrainNormalAngles)) {
+        armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
+        armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
       }
     }
     /* upper 16 bits of the step state = steeringAngle16 / 2 (bit 15 gets its lowest bit) */
@@ -3200,12 +3205,12 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     fieldGrid = worldRuntime->fieldGrid;
     armyRuntime->ownerValue64 = (signedSteeringAngle >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
     if (fieldGrid != NULL) {
-      terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
+      if (FieldGrid_InterpolateTerrainHeightAndNormal
                          ((int)(offsetSinCos >> 32) + armyRuntime->articulatedCoordinateOrState9C,
-                          (int)offsetSinCos + armyRuntime->runtimeState94,fieldGrid);
-      if (!terrainSample.failed) {
-        armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
-        armyRuntime->fallbackWorldXQ12 = terrainSample.packedNormalAngles;
+                          (int)offsetSinCos + armyRuntime->runtimeState94,fieldGrid,
+                          &terrainHeightQ12,&terrainNormalAngles)) {
+        armyRuntime->runtimeStateA4 = terrainHeightQ12;
+        armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
       }
     }
     contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
