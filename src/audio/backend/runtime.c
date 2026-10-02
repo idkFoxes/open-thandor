@@ -322,8 +322,8 @@ uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSo
   if ((sampleAsset->magic == ASSET_MAGIC_SAM) && (sampleAsset->formatVersion == SOUND_SAMPLE_FORMAT_VERSION)) {
     WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
     WaveFormat_PCM_22050_Stereo16.nChannels = 2;
-    /* the original writes only the low word (the dword was zeroed above) */
-    THANDOR_PART(uint16_t, WaveFormat_PCM_22050_Stereo16.nSamplesPerSec, 0) = 22050;
+    /* the original writes only the low word; the high word was zeroed above, so the dword is 22050 */
+    WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = 22050;
     WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 88200; /* 22050 * 4 */
     WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4; /* 2 channels * 2 bytes */
     WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 16;

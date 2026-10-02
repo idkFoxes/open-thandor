@@ -750,8 +750,8 @@ DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthI
   do {
     binMask = binMask | currentBinBit;
     binIndex = binIndex + 1;
-    /* ADD EBX,EBX / ADC EBX,0: rotate left by one, so bin 31 wraps to bit 0 */
-    currentBinBit = currentBinBit * 2 + (uint32_t)CARRY4(currentBinBit,currentBinBit);
+    /* rotate left by one, so bin 31 wraps to bit 0 */
+    currentBinBit = currentBinBit << 1 | currentBinBit >> 31;
   } while (binIndex <= ((centerQ12 - radiusQ12) + radiusQ12 * 2) >> SPATIAL_BIN_SHIFT);
   return binMask;
 }

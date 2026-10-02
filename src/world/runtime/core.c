@@ -448,21 +448,19 @@ bool WorldRuntimeNode_IsPositionInsideBounds
   int boundsMinX;
   int boundsMaxY;
   int boundsMinY;
-  GraphicsProjectedPointEdxEax8 projectedPositionPair;
+  GraphicsProjectedPointPair projectedPosition;
   
   FixedTransform_ApplyPoint
             (&g_GraphicsProjectionScratchVec3,(GraphicsFixedVec3 *)&runtimeNode->worldXQ12,
              &g_ViewProjectionMatrixFixed);
-  projectedPositionPair =
-       THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8,
-                       Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3));
+  projectedPosition = Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3);
   boundsMinX = boundsControl->pointerPressX;
   boundsSecondX = boundsControl->pointerX;
   boundsMinY = boundsControl->pointerPressY;
   boundsSecondY = boundsControl->pointerY;
-  /* EAX = Q12 screen x, EDX = Q12 screen y */
-  projectedScreenX = (int)projectedPositionPair >> 12;
-  projectedScreenY = (int)((int64_t)projectedPositionPair >> (32 + 12));
+  /* the projection is in Q12 screen pixels */
+  projectedScreenX = projectedPosition.projectedX >> 12;
+  projectedScreenY = projectedPosition.projectedY >> 12;
   boundsMaxX = boundsSecondX;
   if (boundsSecondX < boundsMinX) {
     boundsMaxX = boundsMinX;
@@ -1120,7 +1118,7 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   UQ12 hitDistanceQ12;
   uint32_t endpointDistanceQ12;
   int rayLengthOrOffsetY;
-  FixedSinCosEdxEax8 groundOffsetXY;
+  FixedSinCos groundOffsetXY;
   bool surfaceHit;
   Q12 rayDistanceQ12;
   Q12 secondaryDistanceQ12;
@@ -1160,12 +1158,12 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
                        (FixedMathScale32)
                        (((int64_t)(worldRuntime->motion).positionZQ12 *
                         (int64_t)g_FixedCosQ28[-currentPitchAngle]) / (int64_t)g_FixedSinQ28[-currentPitchAngle]));
-    rayLengthOrOffsetY = (int)(groundOffsetXY >> 32);
-    worldRuntime->motion.targetPositionXQ12 = (int)groundOffsetXY + worldRuntime->motion.positionXQ12;
+    rayLengthOrOffsetY = groundOffsetXY.sinValue;
+    worldRuntime->motion.targetPositionXQ12 = groundOffsetXY.cosValue + worldRuntime->motion.positionXQ12;
     worldRuntime->motion.targetPositionYQ12 = rayLengthOrOffsetY + worldRuntime->motion.positionYQ12;
     worldRuntime->motion.targetPositionZQ12 = 0;
     endpointDistanceQ12 =
-         FixedMath_Length3(worldRuntime->motion.positionZQ12,rayLengthOrOffsetY,(int)groundOffsetXY);
+         FixedMath_Length3(worldRuntime->motion.positionZQ12,rayLengthOrOffsetY,groundOffsetXY.cosValue);
     worldRuntime->motion.targetDistanceQ12 = endpointDistanceQ12;
     WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
     return;

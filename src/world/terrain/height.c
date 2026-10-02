@@ -48,8 +48,8 @@ bool TerrainHeightBand_TestAroundWorldPoint
     gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     baseColumn = gridCoordinates.columnQ12 >> 12;
     cellRow = gridCoordinates.rowQ12 >> 12;
-    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK);
-    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK) >> 32);
+    columnFractionQ12 = (uint32_t)gridCoordinates.columnQ12 & Q12_FRACTION_MASK;
+    rowFractionQ12 = (uint32_t)gridCoordinates.rowQ12 & Q12_FRACTION_MASK;
     fractionSumOrGridWidth = rowFractionQ12 + columnFractionQ12 * 2;
     cellColumn = baseColumn;
     if (fractionSumOrGridWidth < FIELD_GRID_CELL_Q12) {
@@ -146,8 +146,8 @@ bool TerrainAuxHeightThreshold_TestAroundWorldPoint
     gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     baseColumn = gridCoordinates.columnQ12 >> 12;
     cellRow = gridCoordinates.rowQ12 >> 12;
-    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK);
-    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK) >> 32);
+    columnFractionQ12 = (uint32_t)gridCoordinates.columnQ12 & Q12_FRACTION_MASK;
+    rowFractionQ12 = (uint32_t)gridCoordinates.rowQ12 & Q12_FRACTION_MASK;
     fractionSumOrGridWidth = rowFractionQ12 + columnFractionQ12 * 2;
     cellColumn = baseColumn;
     if (fractionSumOrGridWidth < FIELD_GRID_CELL_Q12) {
@@ -560,8 +560,8 @@ bool TerrainTriangle_IntersectRayDistance
     shiftedLowB = productLowB * Q12_ONE;
     edgeSumLowB = edgeSumLowA + shiftedLowB;
     edgeHighOrCoord1 = edgeHighOrCoord1 + FIXED_PRODUCT_SHR(planeTermOrProductB, 32 - Q12_SHIFT) +
-             (uint32_t)CARRY4(productLowOrDivisor,shiftedLowA) +
-             FIXED_MUL_SHR(rayDeltaZQ12, cellLocalCoord0Q12, 32 - Q12_SHIFT) + (uint32_t)CARRY4(edgeSumLowA,shiftedLowB);
+             (uint32_t)(edgeSumLowA < productLowOrDivisor) +
+             FIXED_MUL_SHR(rayDeltaZQ12, cellLocalCoord0Q12, 32 - Q12_SHIFT) + (uint32_t)(edgeSumLowB < edgeSumLowA);
     /* each edge term must have the sign of the plane rate (planeTermOrProductA) */
     if ((edgeHighOrCoord1 < 0) ? (planeTermOrProductA < 0) : (-1 < planeTermOrProductA)) {
       heightDeltaOrLowWord = cornerHeight3Q12 - cornerHeight2Q12;
@@ -586,15 +586,17 @@ bool TerrainTriangle_IntersectRayDistance
       edgeSumLowA = shiftedLowB + partialSumLow;
       edgeHighOrCoord0 = FIXED_MUL_SHR(rayDeltaZQ12, cellLocalCoord1Q12, 32 - Q12_SHIFT) +
                edgeHighOrCoord0 + FIXED_PRODUCT_SHR(planeTermOrProductB, 32 - Q12_SHIFT) +
-               (uint32_t)CARRY4(productLowOrDivisor,shiftedLowA) + (uint32_t)CARRY4(shiftedLowB,partialSumLow);
+               (uint32_t)(partialSumLow < productLowOrDivisor) + (uint32_t)(edgeSumLowA < shiftedLowB);
       if ((edgeHighOrCoord0 < 0) ? ((int)rateHighOrEdgeSumLow < 0) : (-1 < (int)rateHighOrEdgeSumLow)) {
         heightDeltaOrLowWord = (rateShiftedWord - edgeSumLowA) - edgeSumLowB;
         combinedHigh = (((rateHighOrEdgeSumLow - edgeHighOrCoord0) - (uint32_t)(rateShiftedWord < edgeSumLowA)) - edgeHighOrCoord1) -
                  (uint32_t)(rateShiftedWord - edgeSumLowA < edgeSumLowB);
         if ((edgeHighOrCoord0 < 0) ? (combinedHigh < 0) : (-1 < combinedHigh)) {
           /* inside the first triangle: intersection distance */
-          combinedHigh = combinedHigh + edgeHighOrCoord0 + (uint32_t)CARRY4(heightDeltaOrLowWord,edgeSumLowA) + edgeHighOrCoord1 +
-                   (uint32_t)CARRY4(heightDeltaOrLowWord + edgeSumLowA,edgeSumLowB);
+          combinedHigh = combinedHigh + edgeHighOrCoord0 +
+                   (uint32_t)((uint32_t)(heightDeltaOrLowWord + edgeSumLowA) < heightDeltaOrLowWord) + edgeHighOrCoord1 +
+                   (uint32_t)((uint32_t)(heightDeltaOrLowWord + edgeSumLowA + edgeSumLowB) <
+                              (uint32_t)(heightDeltaOrLowWord + edgeSumLowA));
           heightDeltaOrLowWord = heightDeltaOrLowWord + edgeSumLowA + edgeSumLowB >> Q12_SHIFT | combinedHigh * (1 << (32 - Q12_SHIFT));
           combinedHigh = combinedHigh >> Q12_SHIFT;
           if (heightDeltaOrLowWord == 0) {
@@ -617,7 +619,7 @@ bool TerrainTriangle_IntersectRayDistance
             edgeHighOrCoord0 = edgeHighOrCoord0 >> Q12_SHIFT;
             edgeHighOrCoord1 = edgeHighOrCoord1 >> Q12_SHIFT;
           }
-          /* IDIV of the EDX:EAX pairs */
+          /* signed 64/32 division of the high:low pairs */
           edgeHighOrCoord0 = (int)((int64_t)((uint64_t)(uint32_t)edgeHighOrCoord0 << 32 | (uint64_t)edgeSumLowA) /
                                    (int64_t)(int)heightDeltaOrLowWord);
           combinedHigh = cellLocalCoord1Q12 + edgeHighOrCoord0;
@@ -682,8 +684,8 @@ bool TerrainTriangle_IntersectRayDistance
   heightDeltaOrLowWord = edgeSumLowA * Q12_ONE;
   rateHighOrEdgeSumLow = edgeSumLowB + heightDeltaOrLowWord;
   edgeHighD = edgeHighD + ((int)((uint64_t)planeTermOrProductA >> 32) << Q12_SHIFT | productLowB >> (32 - Q12_SHIFT)) +
-           (uint32_t)CARRY4(shiftedLowA,shiftedLowB) +
-           FIXED_MUL_SHR(rayDeltaZQ12, edgeHighOrCoord0, 32 - Q12_SHIFT) + (uint32_t)CARRY4(edgeSumLowB,heightDeltaOrLowWord);
+           (uint32_t)(edgeSumLowB < shiftedLowA) +
+           FIXED_MUL_SHR(rayDeltaZQ12, edgeHighOrCoord0, 32 - Q12_SHIFT) + (uint32_t)(rateHighOrEdgeSumLow < edgeSumLowB);
   if (edgeHighD < 0) {
     if (-1 < planeTermOrProductB)
     goto TerrainTriangle_IntersectRayDistance_Miss;
@@ -712,15 +714,17 @@ bool TerrainTriangle_IntersectRayDistance
   heightDeltaOrLowWord = edgeSumLowB + partialSumLow;
   combinedHigh = FIXED_MUL_SHR(rayDeltaZQ12, edgeHighOrCoord1, 32 - Q12_SHIFT) +
            edgeHighC + ((int)((uint64_t)planeTermOrProductB >> 32) << Q12_SHIFT | productLowB >> (32 - Q12_SHIFT)) +
-           (uint32_t)CARRY4(shiftedLowA,shiftedLowB) + (uint32_t)CARRY4(edgeSumLowB,partialSumLow);
+           (uint32_t)(partialSumLow < shiftedLowA) + (uint32_t)(heightDeltaOrLowWord < edgeSumLowB);
   if ((combinedHigh < 0) ? ((int)rateShiftedWord < 0) : (-1 < (int)rateShiftedWord)) {
     shiftedLowA = (productLowOrDivisor - heightDeltaOrLowWord) - rateHighOrEdgeSumLow;
     edgeHighC = (((rateShiftedWord - combinedHigh) - (uint32_t)(productLowOrDivisor < heightDeltaOrLowWord)) - edgeHighD) -
              (uint32_t)(productLowOrDivisor - heightDeltaOrLowWord < rateHighOrEdgeSumLow);
     if ((combinedHigh < 0) ? (edgeHighC < 0) : (-1 < edgeHighC)) {
       /* inside the second triangle: intersection distance */
-      edgeHighC = edgeHighC + combinedHigh + (uint32_t)CARRY4(shiftedLowA,heightDeltaOrLowWord) + edgeHighD +
-               (uint32_t)CARRY4(shiftedLowA + heightDeltaOrLowWord,rateHighOrEdgeSumLow);
+      edgeHighC = edgeHighC + combinedHigh +
+               (uint32_t)((uint32_t)(shiftedLowA + heightDeltaOrLowWord) < shiftedLowA) + edgeHighD +
+               (uint32_t)((uint32_t)(shiftedLowA + heightDeltaOrLowWord + rateHighOrEdgeSumLow) <
+                          (uint32_t)(shiftedLowA + heightDeltaOrLowWord));
       productLowOrDivisor = shiftedLowA + heightDeltaOrLowWord + rateHighOrEdgeSumLow >> Q12_SHIFT | edgeHighC * (1 << (32 - Q12_SHIFT));
       edgeHighC = edgeHighC >> Q12_SHIFT;
       if (productLowOrDivisor == 0) {
@@ -743,7 +747,7 @@ bool TerrainTriangle_IntersectRayDistance
         combinedHigh = combinedHigh >> Q12_SHIFT;
         edgeHighD = edgeHighD >> Q12_SHIFT;
       }
-      /* IDIV of the EDX:EAX pairs */
+      /* signed 64/32 division of the high:low pairs */
       combinedHigh = (int)((int64_t)((uint64_t)(uint32_t)combinedHigh << 32 | (uint64_t)heightDeltaOrLowWord) /
                            (int64_t)(int)productLowOrDivisor);
       edgeHighOrCoord1 = edgeHighOrCoord1 - combinedHigh;

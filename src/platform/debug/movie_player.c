@@ -97,12 +97,12 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
                    (GraphicsTextureSourceAsset *)movie,g_FramebufferAccess);
       }
       else {
-        MovieFrameDimensionsEdxEax8 size = Movie_GetFrameDimensions();
+        MovieFrameDimensions size = Movie_GetFrameDimensions();
         uint32_t height = g_FramebufferHeight;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,
-                   ((int)((height - (height >> 2)) - (int)(size >> 32)) >> 1) + (height >> 3),
-                   (int)(g_FramebufferWidth - (int)size) >> 1,0,
+                   ((int)((height - (height >> 2)) - (int)size.height) >> 1) + (height >> 3),
+                   (int)(g_FramebufferWidth - (int)size.width) >> 1,0,
                    (GraphicsTextureSourceAsset *)movie,g_FramebufferAccess);
       }
       sprintf(label, "Video %d/%d: %s.flm  Frame %u/%u", index, count, name,

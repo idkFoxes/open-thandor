@@ -392,29 +392,32 @@ void WorldRuntime_TranslateCameraByScreenDelta
   Q12 *coordinateField;
   AngleTurn32 angle;
   int distanceScaleOrSideDeltaY;
-  FixedSinCosEdxEax8 movementDeltaXYQ12;
-  FixedSinCosEdxEax8 sideMovementDeltaXYQ12;
+  FixedSinCos movementDeltaXYQ12;
+  FixedSinCos sideMovementDeltaXYQ12;
+  Q12 movementDeltaXQ12;
+  Q12 movementDeltaYQ12;
   Q12 *motionCoordinateField;
 
   distanceScaleOrSideDeltaY =
        (int)(_k_CameraScreenDeltaDistanceScaleQ16 * worldRuntime->motion.targetDistanceQ12) >> 16;
   angle = worldRuntime->motion.headingAngle;
   movementDeltaXYQ12 = FixedMath_SinCosScaled(angle,screenDeltaDown * distanceScaleOrSideDeltaY);
-  THANDOR_PART(uint32_t, movementDeltaXYQ12, 4) = (int)(movementDeltaXYQ12 >> 32);
+  movementDeltaXQ12 = movementDeltaXYQ12.cosValue;
+  movementDeltaYQ12 = movementDeltaXYQ12.sinValue;
   worldRuntime->motion.positionXQ12 =
-       worldRuntime->motion.positionXQ12 - (int)movementDeltaXYQ12;
+       worldRuntime->motion.positionXQ12 - movementDeltaXQ12;
   motionCoordinateField = &worldRuntime->motion.positionYQ12;
-  *motionCoordinateField = *motionCoordinateField - THANDOR_PART(uint32_t, movementDeltaXYQ12, 4);
+  *motionCoordinateField = *motionCoordinateField - movementDeltaYQ12;
   coordinateField = &worldRuntime->motion.targetPositionXQ12;
-  *coordinateField = *coordinateField - (int)movementDeltaXYQ12;
+  *coordinateField = *coordinateField - movementDeltaXQ12;
   coordinateField = &worldRuntime->motion.targetPositionYQ12;
-  *coordinateField = *coordinateField - THANDOR_PART(uint32_t, movementDeltaXYQ12, 4);
+  *coordinateField = *coordinateField - movementDeltaYQ12;
   sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK,
                                                   screenDeltaRight * distanceScaleOrSideDeltaY);
-  distanceScaleOrSideDeltaY = (int)(sideMovementDeltaXYQ12 >> 32);
-  worldRuntime->motion.positionXQ12 -= (int)sideMovementDeltaXYQ12;
+  distanceScaleOrSideDeltaY = sideMovementDeltaXYQ12.sinValue;
+  worldRuntime->motion.positionXQ12 -= sideMovementDeltaXYQ12.cosValue;
   worldRuntime->motion.positionYQ12 -= distanceScaleOrSideDeltaY;
-  worldRuntime->motion.targetPositionXQ12 -= (int)sideMovementDeltaXYQ12;
+  worldRuntime->motion.targetPositionXQ12 -= sideMovementDeltaXYQ12.cosValue;
   worldRuntime->motion.targetPositionYQ12 -= distanceScaleOrSideDeltaY;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;

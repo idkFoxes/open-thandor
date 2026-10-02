@@ -649,16 +649,15 @@ Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLet
 
 /* Address: 0x005766B0.
    Lists the existing drives: writes one letter 'A'..'Z' per set bit of GetLogicalDrives to lettersOut
-   (no terminator) and returns the number of letters in EAX and ECX.
+   (no terminator) and returns the number of letters.
 */
-DriveLetterEnumeration Win32Drive_EnumerateLetters(uint8_t *lettersOut)
+uint32_t Win32Drive_EnumerateLetters(uint8_t *lettersOut)
 
 {
   uint32_t logicalDriveMask;
   uint32_t enumeratedDriveCount;
   uint8_t currentDriveLetter;
   int driveLettersRemaining;
-  DriveLetterEnumeration enumerationResult;
 
   logicalDriveMask = GetLogicalDrives();
   enumeratedDriveCount = 0;
@@ -674,9 +673,7 @@ DriveLetterEnumeration Win32Drive_EnumerateLetters(uint8_t *lettersOut)
     currentDriveLetter++;
     driveLettersRemaining--;
   } while (driveLettersRemaining != 0);
-  enumerationResult.driveCountMirror = enumeratedDriveCount;
-  enumerationResult.driveCount = enumeratedDriveCount;
-  return enumerationResult;
+  return enumeratedDriveCount;
 }
 
 

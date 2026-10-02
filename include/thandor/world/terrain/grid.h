@@ -65,8 +65,6 @@
    (column) and g (row), f + 2g and 2f + g compared with one and two cells (FIELD_GRID_CELL_Q12,
    FIELD_GRID_TWO_CELLS_Q12) pick the cell of the triangle the point lies in. */
 #define FIELD_GRID_TWO_CELLS_Q12 0x2000
-/* Both Q12 fractions of a FieldGridCoordinates read as one 64-bit value (columnQ12 low dword, rowQ12 high) */
-#define FIELD_GRID_COORDINATES_FRACTION_MASK 0xfff00000fff
 /* gridWidth as the original recovers it from the row stride (gridWidth * sizeof(FieldGridCell), SHL 7 then
    SHR 7): the 25 width bits that survive the stride multiply */
 #define FIELD_GRID_ROW_STRIDE_WIDTH_MASK 0x1ffffff

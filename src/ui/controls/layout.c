@@ -780,13 +780,13 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
       if (rangeProgressOrPercent == 0) {
         rangeProgressOrPercent = 1;
       }
-      /* DIV, ADD EDX,EDX, ADC EAX,0 in the original: rounds up only when the remainder has bit 31 set */
+      /* Original quirk: meant as rounding (carry of remainder + remainder), but it rounds up only when the
+         remainder has bit 31 set */
       divisionRemainder = (uint32_t)(scaledFillProduct % (uint64_t)rangeProgressOrPercent);
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_GAUGE_FILL_LEFT,
                                                           g_UiWindowTextureSource);
       fillEndX = ((int)(scaledFillProduct / rangeProgressOrPercent) +
-                  (uint32_t)CARRY4(divisionRemainder,
-                                   divisionRemainder) + leftCapWidth) - textureSize.logicalWidthPixels;
+                  (divisionRemainder >> 31) + leftCapWidth) - textureSize.logicalWidthPixels;
       rightCapXOrFillMin = textureSize.logicalWidthPixels + leftCapWidth;
       rangeProgressOrPercent = progressOrRange;
       if (rightCapXOrFillMin <= fillEndX) {
@@ -810,7 +810,7 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
       }
       divisionRemainder = (uint32_t)(((uint64_t)rangeProgressOrPercent * 100) % (uint64_t)progressOrRange);
       rangeProgressOrPercent = (int)(((uint64_t)rangeProgressOrPercent * 100) / (uint64_t)progressOrRange) +
-                               (uint32_t)CARRY4(divisionRemainder,divisionRemainder);
+                               (divisionRemainder >> 31); /* same rounding quirk as the fill above */
       if (rangeProgressOrPercent == 100) {
         g_UiWindowPercentTextUtf16[0] = '1';
         g_UiWindowPercentTextUtf16[1] = '0';
@@ -1518,16 +1518,17 @@ GraphicsCursorFrameIndex UiResizableWindowControl_QueryResizeCursorCode
 
 
 /* Address: 0x00569A80.
-   Picks a grid for itemCount items, returned as EDX = rows, EAX = columns: up to 4 items in one row, up to
+   Picks a grid (columns and rows) for itemCount items: up to 4 items in one row, up to
    4 * maxRows items in rows of 4, more in maxRows rows (fewer when the last rows would stay empty) of as
    many columns as needed.
 */
-UiGridDimensionsEdxEax8 UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
+UiGridDimensions UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
 
 {
   uint32_t columnCount;
   uint32_t rowCount;
-  
+  UiGridDimensions dimensions;
+
   rowCount = 1;
   columnCount = itemCount;
   if (4 < itemCount) {
@@ -1545,18 +1546,23 @@ UiGridDimensionsEdxEax8 UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,Ui
       rowCount = itemCount + 3 >> 2;
     }
   }
-  /* EDX:EAX = rows:columns */
-  return ((UiGridDimensionsEdxEax8)rowCount << 32) | (UiGridDimensionsEdxEax8)columnCount;
+  dimensions.columnCount = columnCount;
+  dimensions.rowCount = rowCount;
+  return dimensions;
 }
 
 
 /* Address: 0x00569AE0.
-   The single-column counterpart of UiGrid_ComputeDimensionsPacked: EDX = itemCount rows, EAX = 1 column.
+   The single-column counterpart of UiGrid_ComputeDimensionsPacked: itemCount rows, 1 column.
 */
-UiGridDimensionsEdxEax8 UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
+UiGridDimensions UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
 
 {
-  return ((UiGridDimensionsEdxEax8)itemCount << 32) | 1;
+  UiGridDimensions dimensions;
+
+  dimensions.columnCount = 1;
+  dimensions.rowCount = itemCount;
+  return dimensions;
 }
 
 

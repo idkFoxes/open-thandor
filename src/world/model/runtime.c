@@ -475,9 +475,8 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
     modelRuntime->linkedModelRuntimeSavedOffset = (uint32_t)linkedModelOffset;
     modelRuntime->classState.linkedArmyRuntimeSavedOffset = offsetClassOrCount;
     offsetClassOrCount = modelRuntime->definitionReferenceOrSavedId.runtimeDefinition->runtimeClassId;
-    modelRuntime->definitionReferenceOrSavedId =
-         THANDOR_BITCAST(PckModelDefinitionIdCatalog, ModelDefinitionReferenceOrSavedId,
-                         modelRuntime->definitionReferenceOrSavedId.definition->definitionId);
+    modelRuntime->definitionReferenceOrSavedId.savedIdOrOffset =
+         (uint32_t)modelRuntime->definitionReferenceOrSavedId.definition->definitionId;
     g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[offsetClassOrCount]
               ((ModelRuntimeSlot *)modelRuntime);
     attachmentCursor = modelRuntime;
@@ -588,7 +587,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
             }
             modelRuntime->attachmentCount = 0;
             ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
-                      (modelRuntime,modelRuntime,
+                      (modelRuntime,
                        (MdlSerializedNodeHeader *)
                        modelRuntime->definitionOrSavedId.runtimeDefinition->rootNodeOffsetOrPointer);
           }

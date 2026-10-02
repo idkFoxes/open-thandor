@@ -950,6 +950,7 @@ void UiSelectionGeometryControl_DrawClipped
   PackedArgb32 sourcePixelSample3; /* texel (column + 1, row + 1) */
   PackedArgb32 blendedPixel;
   uint64_t packedLanes;
+  uint64_t quantizeMaskLanes; /* the four 16-bit quantize masks as one 64-bit lane vector */
   int remainingColumns;
   uint8_t *destRowStart;
 
@@ -1065,9 +1066,8 @@ void UiSelectionGeometryControl_DrawClipped
                                         (int)(sourceV & Q12_FRACTION_MASK) >> 4);
               /* 32-bit colour to 16-bit: PUNPCKLBW/PSRLW 4, PAND quantize masks, PMADDWD pack weights,
                  then (q >> 40) + (q >> 8) with PADDW; the low word is the pixel. */
-              packedLanes = pmaddwd(UiScaler_UnpackBytesToWordLanes(blendedPixel,4) &
-                                    THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t,
-                                                    g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+              memcpy(&quantizeMaskLanes,&g_SoftwarePixelMmxConstants.quantizeMasksQ12,sizeof(quantizeMaskLanes));
+              packedLanes = pmaddwd(UiScaler_UnpackBytesToWordLanes(blendedPixel,4) & quantizeMaskLanes,
                                     g_SoftwarePixelMmxConstants.packWeights);
               *(short *)destPixel = (short)(packedLanes >> 40) + (short)(packedLanes >> 8);
               sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;

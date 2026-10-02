@@ -51,9 +51,9 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
-/* EDX side channel of the score callbacks: the category mask the only caller
+/* Extra input of the category score callback: the category mask the only caller
    (AiTechnologyCandidate_AddBestResearch) computes before its loop. */
-extern AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
+extern AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMask;
 
 /* 0x0053BC00 */
 bool AiTechnologyCompatibility_AcceptRuntimeClassCandidate

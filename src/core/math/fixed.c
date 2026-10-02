@@ -414,31 +414,34 @@ void FixedMath_WriteDirectionQ28(GraphicsFixedVec3 *output,AngleTurn32 elevation
 
 
 /* Address: 0x00484B00.
-   Returns cos(angle) * scale in EAX and sin(angle) * scale in EDX for a 16-bit angle (65536 = full turn),
+   Returns cos(angle) * scale and sin(angle) * scale for a 16-bit angle (65536 = full turn),
    using the Q28 tables, so the results keep the scale's fixed-point format. Used for terrain direction
    records and by the rotation basis builder.
 */
-FixedSinCosEdxEax8 FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
+FixedSinCos FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 
 {
-  uint32_t sinScaled;
-  uint32_t cosScaled;
+  FixedSinCos result;
 
-  /* SHLD by 4 of the 64-bit products: bits 28..59, i.e. the Q28 factor is divided out */
-  sinScaled = (uint32_t)((int64_t)g_FixedSinQ28[angle & FIXED_ANGLE16_MASK] * (int64_t)scale >> 28);
-  cosScaled = (uint32_t)((int64_t)g_FixedCosQ28[angle & FIXED_ANGLE16_MASK] * (int64_t)scale >> 28);
-  return (uint64_t)sinScaled << 32 | (uint64_t)cosScaled; /* EDX = sin, EAX = cos */
+  /* bits 28..59 of the 64-bit products, i.e. the Q28 factor is divided out */
+  result.cosValue = (int32_t)((int64_t)g_FixedCosQ28[angle & FIXED_ANGLE16_MASK] * (int64_t)scale >> 28);
+  result.sinValue = (int32_t)((int64_t)g_FixedSinQ28[angle & FIXED_ANGLE16_MASK] * (int64_t)scale >> 28);
+  return result;
 }
 
 
 /* Address: 0x00484B40.
-   Table lookup of a 16-bit angle (65536 = full turn): returns EAX = cos(angle) and EDX = sin(angle) in Q28.
+   Table lookup of a 16-bit angle (65536 = full turn): returns cos(angle) and sin(angle) in Q28.
    Used by the graphics projection setup (g_ProjectionAngleFactors).
 */
-FixedSinCosEdxEax8 FixedMath_SinCosQ28(AngleTurn32 angle)
+FixedSinCos FixedMath_SinCosQ28(AngleTurn32 angle)
 
 {
-  return (uint64_t)(uint32_t)g_FixedSinQ28[angle & FIXED_ANGLE16_MASK] << 32 | (uint64_t)(uint32_t)g_FixedCosQ28[angle & FIXED_ANGLE16_MASK];
+  FixedSinCos result;
+
+  result.cosValue = g_FixedCosQ28[angle & FIXED_ANGLE16_MASK];
+  result.sinValue = g_FixedSinQ28[angle & FIXED_ANGLE16_MASK];
+  return result;
 }
 
 /* Address: 0x00484F10.

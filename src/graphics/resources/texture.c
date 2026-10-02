@@ -341,7 +341,7 @@ void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMax
   int tileX;
   uint32_t tileHeight;
   int tileY;
-  bool overflowed;
+  int64_t steppedOrigin;
   GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
@@ -357,15 +357,15 @@ void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMax
      before it is the first one drawn */
   do {
     do {
-      overflowed = SCARRY4(tileOriginX,tileWidth);
+      steppedOrigin = (int64_t)tileOriginX + (int)tileWidth;
       tileOriginX = tileOriginX + tileWidth;
-    } while (tileOriginX == 0 || overflowed != tileOriginX < 0);
+    } while (steppedOrigin <= 0);
   } while (tileOriginX <= clipMinX);
   do {
     do {
-      overflowed = SCARRY4(tileOriginY,tileHeight);
+      steppedOrigin = (int64_t)tileOriginY + (int)tileHeight;
       tileOriginY = tileOriginY + tileHeight;
-    } while (tileOriginY == 0 || overflowed != tileOriginY < 0);
+    } while (steppedOrigin <= 0);
   } while (tileOriginY <= clipMinY);
   tileY = tileOriginY - tileHeight;
   if (clipMaxX < repeatEndX) {
@@ -411,7 +411,7 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
   int tileX;
   uint32_t tileHeight;
   int tileY;
-  bool overflowed;
+  int64_t steppedOrigin;
   GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
@@ -427,15 +427,15 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
      before it is the first one drawn */
   do {
     do {
-      overflowed = SCARRY4(tileOriginX,tileWidth);
+      steppedOrigin = (int64_t)tileOriginX + (int)tileWidth;
       tileOriginX = tileOriginX + tileWidth;
-    } while (tileOriginX == 0 || overflowed != tileOriginX < 0);
+    } while (steppedOrigin <= 0);
   } while (tileOriginX <= clipMinX);
   do {
     do {
-      overflowed = SCARRY4(tileOriginY,tileHeight);
+      steppedOrigin = (int64_t)tileOriginY + (int)tileHeight;
       tileOriginY = tileOriginY + tileHeight;
-    } while (tileOriginY == 0 || overflowed != tileOriginY < 0);
+    } while (steppedOrigin <= 0);
   } while (tileOriginY <= clipMinY);
   tileY = tileOriginY - tileHeight;
   if (clipMaxX < repeatEndX) {
@@ -481,7 +481,7 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate cli
   int tileX;
   uint32_t tileHeight;
   int tileY;
-  bool overflowed;
+  int64_t steppedOrigin;
   GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
@@ -497,15 +497,15 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate cli
      before it is the first one drawn */
   do {
     do {
-      overflowed = SCARRY4(tileOriginX,tileWidth);
+      steppedOrigin = (int64_t)tileOriginX + (int)tileWidth;
       tileOriginX = tileOriginX + tileWidth;
-    } while (tileOriginX == 0 || overflowed != tileOriginX < 0);
+    } while (steppedOrigin <= 0);
   } while (tileOriginX <= clipMinX);
   do {
     do {
-      overflowed = SCARRY4(tileOriginY,tileHeight);
+      steppedOrigin = (int64_t)tileOriginY + (int)tileHeight;
       tileOriginY = tileOriginY + tileHeight;
-    } while (tileOriginY == 0 || overflowed != tileOriginY < 0);
+    } while (steppedOrigin <= 0);
   } while (tileOriginY <= clipMinY);
   tileY = tileOriginY - tileHeight;
   if (clipMaxX < repeatEndX) {
@@ -552,7 +552,7 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
   int tileX;
   uint32_t tileHeight;
   int tileY;
-  bool overflowed;
+  int64_t steppedOrigin;
   GraphicsTextureLogicalSize logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
@@ -568,15 +568,15 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
      before it is the first one drawn */
   do {
     do {
-      overflowed = SCARRY4(tileOriginX,tileWidth);
+      steppedOrigin = (int64_t)tileOriginX + (int)tileWidth;
       tileOriginX = tileOriginX + tileWidth;
-    } while (tileOriginX == 0 || overflowed != tileOriginX < 0);
+    } while (steppedOrigin <= 0);
   } while (tileOriginX <= clipMinX);
   do {
     do {
-      overflowed = SCARRY4(tileOriginY,tileHeight);
+      steppedOrigin = (int64_t)tileOriginY + (int)tileHeight;
       tileOriginY = tileOriginY + tileHeight;
-    } while (tileOriginY == 0 || overflowed != tileOriginY < 0);
+    } while (steppedOrigin <= 0);
   } while (tileOriginY <= clipMinY);
   tileY = tileOriginY - tileHeight;
   if (clipMaxX < repeatEndX) {
@@ -1544,9 +1544,11 @@ void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               do {
                 *paletteEntryCursor = grayPaletteEntry;
                 paletteEntryCursor++;
-                grayPaletteEntry = THANDOR_BITCAST(int, DirectDrawPaletteEntry,
-                                                   (THANDOR_BITCAST(DirectDrawPaletteEntry, int,
-                                                                    grayPaletteEntry) + ARGB8888_CHANNEL_ONES));
+                /* bytes never exceed 255 before the last (unused) step, so no carry crosses bytes */
+                grayPaletteEntry.red++;
+                grayPaletteEntry.green++;
+                grayPaletteEntry.blue++;
+                grayPaletteEntry.flags++;
                 paletteIndexOrCounter--;
               } while (paletteIndexOrCounter != 0);
               /* as in the original, the palette is released at once and never attached (no SetPalette) */
@@ -1975,9 +1977,11 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               do {
                 *paletteEntryCursor = grayPaletteEntry;
                 paletteEntryCursor++;
-                grayPaletteEntry = THANDOR_BITCAST(int, DirectDrawPaletteEntry,
-                                                   (THANDOR_BITCAST(DirectDrawPaletteEntry, int,
-                                                                    grayPaletteEntry) + ARGB8888_CHANNEL_ONES));
+                /* bytes never exceed 255 before the last (unused) step, so no carry crosses bytes */
+                grayPaletteEntry.red++;
+                grayPaletteEntry.green++;
+                grayPaletteEntry.blue++;
+                grayPaletteEntry.flags++;
                 paletteIndexOrCounter--;
               } while (paletteIndexOrCounter != 0);
               /* as in the original, the palette is released at once and never attached (no SetPalette) */
@@ -2492,9 +2496,11 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               do {
                 *paletteEntryCursor = grayPaletteEntry;
                 paletteEntryCursor++;
-                grayPaletteEntry = THANDOR_BITCAST(int, DirectDrawPaletteEntry,
-                                                   (THANDOR_BITCAST(DirectDrawPaletteEntry, int,
-                                                                    grayPaletteEntry) + ARGB8888_CHANNEL_ONES));
+                /* bytes never exceed 255 before the last (unused) step, so no carry crosses bytes */
+                grayPaletteEntry.red++;
+                grayPaletteEntry.green++;
+                grayPaletteEntry.blue++;
+                grayPaletteEntry.flags++;
                 paletteIndexOrCounter--;
               } while (paletteIndexOrCounter != 0);
               /* as in the original, the palette is released at once and never attached (no SetPalette) */

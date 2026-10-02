@@ -322,7 +322,7 @@ bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,u
   symbolState = g_PckHuffmanSymbolWorkspace256;
   leafOrSecondLowestNode = g_PckHuffmanLeafNodeWorkspace256;
   do {
-    leafOrSecondLowestNode->weight = THANDOR_BITCAST(PckHuffmanSymbolState, PckHuffmanWeight, *symbolState);
+    leafOrSecondLowestNode->weight = symbolState->frequencyCount;
     symbolState++;
     leafOrSecondLowestNode++;
   } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
@@ -516,7 +516,7 @@ bool PckCodec_DecodeHuffmanRle
   symbolStateCursor = g_PckHuffmanSymbolWorkspace256;
   leafOrSecondLowestNode = g_PckHuffmanLeafNodeWorkspace256;
   do {
-    leafOrSecondLowestNode->weight = THANDOR_BITCAST(PckHuffmanSymbolState, PckHuffmanWeight, *symbolStateCursor);
+    leafOrSecondLowestNode->weight = symbolStateCursor->frequencyCount;
     symbolStateCursor++;
     leafOrSecondLowestNode++;
   } while (symbolStateCursor < g_PckHuffmanLeafNodeWorkspace256);

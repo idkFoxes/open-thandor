@@ -82,8 +82,8 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
     referenceHeight = g_TerrainScanReferenceHeight;
     baseColumn = gridCoordinates.columnQ12 >> 12;
     gridRow = gridCoordinates.rowQ12 >> 12;
-    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK);
-    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK) >> 32);
+    columnFraction = (uint32_t)(gridCoordinates.columnQ12 & Q12_FRACTION_MASK);
+    rowFraction = (uint32_t)(gridCoordinates.rowQ12 & Q12_FRACTION_MASK);
     /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
@@ -181,8 +181,8 @@ bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     baseColumn = gridCoordinates.columnQ12 >> 12;
     gridRow = gridCoordinates.rowQ12 >> 12;
-    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK);
-    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK) >> 32);
+    columnFraction = (uint32_t)(gridCoordinates.columnQ12 & Q12_FRACTION_MASK);
+    rowFraction = (uint32_t)(gridCoordinates.rowQ12 & Q12_FRACTION_MASK);
     /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
@@ -274,8 +274,8 @@ bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     baseColumn = gridCoordinates.columnQ12 >> 12;
     gridRow = gridCoordinates.rowQ12 >> 12;
-    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK);
-    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK) >> 32);
+    columnFraction = (uint32_t)(gridCoordinates.columnQ12 & Q12_FRACTION_MASK);
+    rowFraction = (uint32_t)(gridCoordinates.rowQ12 & Q12_FRACTION_MASK);
     /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;

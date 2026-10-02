@@ -222,10 +222,10 @@ GraphicsCursorFrameIndex UiResizableWindowControl_QueryResizeCursorCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiResizableWindowControl *control);
 
 /* 0x00569A80 */
-UiGridDimensionsEdxEax8 UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount);
+UiGridDimensions UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount);
 
 /* 0x00569AE0 */
-UiGridDimensionsEdxEax8 UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount);
+UiGridDimensions UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount);
 
 /* 0x004B0940 */
 void UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control);

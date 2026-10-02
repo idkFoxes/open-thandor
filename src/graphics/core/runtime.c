@@ -199,10 +199,11 @@ GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoin
   
   if (g_ProjectionNumerator.high < viewPoint->z) {
     perspectiveScaleQ12 =
-         (int)(THANDOR_BITCAST(GraphicsWideFixed, int64_t, g_ProjectionNumerator) / (int64_t)viewPoint->z);
+         (int)((int64_t)((uint64_t)(uint32_t)g_ProjectionNumerator.high << 32 | g_ProjectionNumerator.low) /
+               (int64_t)viewPoint->z);
     projectedXProduct = (int64_t)viewPoint->x * (int64_t)perspectiveScaleQ12;
     projectedYProduct = (int64_t)viewPoint->y * (int64_t)perspectiveScaleQ12;
-    /* SHLD EDX,EAX,20: bits 12..43 of the 64-bit product, i.e. the Q12 product shifted back by 12 */
+    /* bits 12..43 of the 64-bit product, i.e. the Q12 product shifted back by 12 */
     projectedPoint.projectedY =
          (FIXED_PRODUCT_SHR(projectedYProduct, 12)) +
          g_ProjectionCenterFixed.component1;
@@ -250,6 +251,7 @@ void Graphics_SetViewProjectionParameters
 
 {
   uint32_t halfViewAngle16;
+  FixedSinCos sinCosQ28;
 
   g_ViewOriginFixed.x = originX;
   g_ViewOriginFixed.y = originY;
@@ -280,12 +282,13 @@ void Graphics_SetViewProjectionParameters
   g_ProjectionShift = projectionShift;
   halfViewAngle16 =
        FixedMath_Atan2Angle16(1 << (12U - (char)projectionShift & SHIFT_COUNT_MASK),projectionScale);
-  g_ProjectionAngleFactors[0] =
-       THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed,
-                       FixedMath_SinCosQ28(halfViewAngle16 + viewAzimuthAngle & FIXED_ANGLE16_MASK));
-  g_ProjectionAngleFactors[1] =
-       THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed,
-                       FixedMath_SinCosQ28(viewAzimuthAngle - halfViewAngle16 & FIXED_ANGLE16_MASK));
+  /* each factor: low = cos, high = sin (Q28) */
+  sinCosQ28 = FixedMath_SinCosQ28(halfViewAngle16 + viewAzimuthAngle & FIXED_ANGLE16_MASK);
+  g_ProjectionAngleFactors[0].low = (uint32_t)sinCosQ28.cosValue;
+  g_ProjectionAngleFactors[0].high = sinCosQ28.sinValue;
+  sinCosQ28 = FixedMath_SinCosQ28(viewAzimuthAngle - halfViewAngle16 & FIXED_ANGLE16_MASK);
+  g_ProjectionAngleFactors[1].low = (uint32_t)sinCosQ28.cosValue;
+  g_ProjectionAngleFactors[1].high = sinCosQ28.sinValue;
 }
 
 

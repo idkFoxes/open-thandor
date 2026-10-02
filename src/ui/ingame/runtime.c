@@ -3388,7 +3388,7 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
   SessionNetworkRoleFlags remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   uint32_t slotIndex;
-  UiGridDimensionsEdxEax8 gridDimensions;
+  UiGridDimensions gridDimensions;
   UiControlCount otherActiveCount;
 
   /* node becomes the in-game UI root (parent -1) */
@@ -3410,9 +3410,9 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
     remainingFactions--;
   } while (remainingFactions != 0);
   gridDimensions = UiGrid_OneColumnDimensionsPacked(otherActiveCount);
-  factionIndexOrRecord = (int)gridDimensions * g_InGamePanelTextureSubresource32Width +
+  factionIndexOrRecord = (int)gridDimensions.columnCount * g_InGamePanelTextureSubresource32Width +
           g_InGamePanelTextureSubresource19Width + g_InGamePanelTextureSubresource20Width;
-  controlOffset = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource32Height +
+  controlOffset = (int)gridDimensions.rowCount * g_InGamePanelTextureSubresource32Height +
           g_InGamePanelTextureSubresource18Height + g_InGamePanelTextureSubresource23Height;
   if ((int)g_FramebufferWidth < 800) {
     INGAME_UI(node,diplomacyFrame)->leftOffset = -31;

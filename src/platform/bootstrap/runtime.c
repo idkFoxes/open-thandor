@@ -1108,7 +1108,7 @@ bool Game_PlayIntroMovies(void)
   uint32_t quarterFrameHeight;
   int frameAdvanceBudget;
   bool accessFailed;
-  MovieFrameDimensionsEdxEax8 frameDimensions;
+  MovieFrameDimensions frameDimensions;
   MovieRuntime *introMovie;
   bool frameDecoded;
   uint32_t keyCode;
@@ -1183,14 +1183,14 @@ bool Game_PlayIntroMovies(void)
           quarterFrameHeight = g_FramebufferHeight >> 2;
           accessFailed = g_GraphicsFramebufferBeginAccess();
           if (accessFailed) break;
-          frameDimensions = Movie_GetFrameDimensions(); /* EDX:EAX = height:width */
+          frameDimensions = Movie_GetFrameDimensions();
           /* y = (H - H/4 - frameHeight) / 2 + H/8, i.e. vertically centred; the source is the movie
              returned by the first Movie_AdvanceFrame */
           g_GraphicsTextureSourceBlitSourceAlpha
                     (g_FramebufferHeight,g_FramebufferWidth,0,0,
-                     ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)(frameDimensions >> 32)) >> 1) +
+                     ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)frameDimensions.height) >> 1) +
                      (frameHeightSnapshot >> 3),
-                     (int)(g_FramebufferWidth - (int)frameDimensions) >> 1,0,
+                     (int)(g_FramebufferWidth - (int)frameDimensions.width) >> 1,0,
                      (GraphicsTextureSourceAsset *)introMovie,g_FramebufferAccess);
           g_GraphicsFramebufferEndAccess();
           g_GraphicsFramebufferPresent(g_FramebufferAccess);

@@ -411,27 +411,26 @@ uint32_t NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder,uint32_t 
   if (socketOrAddressLength != INVALID_SOCKET) {
     socketHandle = socketOrAddressLength;
     networkPort = g_Ws2_32_htons(portHostOrder);
-    /* The asm stores all of EAX after htons; the high word is whatever htons left there. Every reader
-       (this function and NetworkBackend_ParseEndpointText) uses only the low word (CX). */
+    /* Stored as a dword; only the low word (the port) is ever read
+       (this function and NetworkBackend_ParseEndpointText). */
     g_NetworkBackendPortNetworkOrderCarrier = (uint32_t)networkPort;
     /* bind address: the family dword, then all zero (INADDR_ANY / any IPX network and node) */
     g_NetworkBackendBindAddress.ipv4.ipv4AddressNetworkOrder = 0;
-    THANDOR_PART(uint32_t, g_NetworkBackendBindAddress, 8) = 0;
-    THANDOR_PART(uint32_t, g_NetworkBackendBindAddress, 12) = 0;
-    g_NetworkBackendBindAddress.ipv4.addressHeader =
-         THANDOR_BITCAST(uint32_t, NetworkEndpointAddressHeader4, g_NetworkBackendActiveAddressFamily);
+    memset(g_NetworkBackendBindAddress.ipv4.zeroPadding, 0, sizeof(g_NetworkBackendBindAddress.ipv4.zeroPadding));
+    /* the whole first dword: the family in the low word, port 0 in the high word */
+    g_NetworkBackendBindAddress.ipv4.addressHeader.packedFamilyAndPort = g_NetworkBackendActiveAddressFamily;
     /* bind with the instance's address length, at least 16 bytes */
     socketOrAddressLength = g_NetworkBackendActiveSocketAddressLength;
     if (g_NetworkBackendActiveSocketAddressLength < 16) {
       socketOrAddressLength = 16;
     }
     if (g_NetworkBackendActiveAddressFamily == AF_INET) {
-      THANDOR_PART(uint16_t, g_NetworkBackendBindAddress, 2) = networkPort;
+      g_NetworkBackendBindAddress.ipv4.addressHeader.fields.portNetworkOrder = networkPort;
       g_NetworkBackendBindAddress.ipx.addressFamily = AF_INET;
     }
     else if (g_NetworkBackendActiveAddressFamily == AF_IPX) {
-      THANDOR_PART(uint8_t, g_NetworkBackendBindAddress, 14) = 0;
-      THANDOR_PART(uint8_t, g_NetworkBackendBindAddress, 15) = 0;
+      g_NetworkBackendBindAddress.ipx.padding[0] = 0;
+      g_NetworkBackendBindAddress.ipx.padding[1] = 0;
       g_NetworkBackendBindAddress.ipx.socketNetworkOrder = networkPort;
     }
     winsockResultOrError = g_Ws2_32_bind(socketHandle,&g_NetworkBackendBindAddress.ipv4,socketOrAddressLength);
@@ -447,8 +446,7 @@ uint32_t NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder,uint32_t 
             /* 255.255.255.255 on the game port */
             g_NetworkLocalEndpoint.addressHeader.fields.addressFamily =
                  NETWORK_ADDRESS_FAMILY_IPV4;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.ipv4AddressNetworkOrder, 0) = 0xffff;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.ipv4AddressNetworkOrder, 2) = 0xffff;
+            g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = 0xffffffffu;
             g_NetworkLocalEndpoint.addressHeader.fields.portNetworkOrder =
                  (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
           }
@@ -457,14 +455,15 @@ uint32_t NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder,uint32_t 
             g_NetworkLocalEndpoint.addressHeader.fields.addressFamily =
                  NETWORK_ADDRESS_FAMILY_IPX;
             g_NetworkLocalEndpoint.addressHeader.fields.portNetworkOrder = 0;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.ipv4AddressNetworkOrder, 0) = 0;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.ipv4AddressNetworkOrder, 2) = 0xffff;
+            /* network bytes 2..3 = 0, node bytes 0..1 = FF FF */
+            g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = 0xffff0000u;
             g_NetworkLocalEndpoint.zeroPadding[0] = 0xff;
             g_NetworkLocalEndpoint.zeroPadding[1] = 0xff;
             g_NetworkLocalEndpoint.zeroPadding[2] = 0xff;
             g_NetworkLocalEndpoint.zeroPadding[3] = 0xff;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.zeroPadding, 4) =
-                 (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
+            /* the socket number, stored as it lies in memory (low byte first) */
+            g_NetworkLocalEndpoint.zeroPadding[4] = (uint8_t)g_NetworkBackendPortNetworkOrderCarrier;
+            g_NetworkLocalEndpoint.zeroPadding[5] = (uint8_t)(g_NetworkBackendPortNetworkOrderCarrier >> 8);
           }
           g_NetworkFallbackSocket = socketHandle;
           *outSocket = socketHandle;

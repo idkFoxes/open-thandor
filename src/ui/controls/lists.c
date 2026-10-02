@@ -1135,7 +1135,6 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
   uint32_t *nextScanPointer;
   void *recordBlock;
   uint32_t largestBlockSize;
-  DriveLetterEnumeration driveEnum;
   
   if (*pathUtf16 == 0) {
     /* header, the "computer" row and its label */
@@ -1154,11 +1153,11 @@ bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTr
     }
   }
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
-    driveEnum = g_FileSystemEnumerateDriveLetters((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
-    directoryEntryCount = driveEnum.driveCount;
+    directoryEntryCount =
+         g_FileSystemEnumerateDriveLetters((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
     /* header, then a row and a label per drive */
     if (g_MemoryApi.alloc
-              (driveEnum.driveCountMirror * (sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES) +
+              (directoryEntryCount * (sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES) +
                sizeof(UiTimedListTreeRecord),(void **)&outputRecords) == 0) {
       driveRow = (UiTimedListTreeRecord *)outputRecords + 1;
       *outputRecords = directoryEntryCount;
@@ -1513,7 +1512,8 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
         }
       }
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
-      THANDOR_PART(uint32_t, g_UiTimedListCombinedPathScratch, 4) = 0;
+      g_UiTimedListCombinedPathScratch.codeUnits[2] = 0; /* terminator (and one spare zero) after "x:" */
+      g_UiTimedListCombinedPathScratch.codeUnits[3] = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
                  g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits);
@@ -1524,7 +1524,8 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
   }
   else {
     g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = L':' << 16 | L'a'; /* "a:": list the drives */
-    THANDOR_PART(uint32_t, g_UiTimedListHierarchyParentPathScratch, 4) = 0;
+    g_UiTimedListHierarchyParentPathScratch.codeUnits[2] = 0;
+    g_UiTimedListHierarchyParentPathScratch.codeUnits[3] = 0;
   }
   if (!UiTimedListTree_BuildDirectoryRecordBlock
                     (g_UiTimedListHierarchyParentPathScratch.codeUnits,&linkedRecord)) {
@@ -1633,7 +1634,8 @@ bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeR
         }
       }
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
-      THANDOR_PART(uint32_t, g_UiTimedListCombinedPathScratch, 4) = 0;
+      g_UiTimedListCombinedPathScratch.codeUnits[2] = 0; /* terminator (and one spare zero) after "x:" */
+      g_UiTimedListCombinedPathScratch.codeUnits[3] = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
                  g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits);

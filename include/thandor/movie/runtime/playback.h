@@ -70,7 +70,7 @@ void MoviePlayback_AdvanceScheduledFrameAndTick(void);
 bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
 
 /* 0x004A8A20 */
-MovieFrameDimensionsEdxEax8 Movie_GetFrameDimensions(void);
+MovieFrameDimensions Movie_GetFrameDimensions(void);
 
 /* 0x004A8A40 */
 void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15);

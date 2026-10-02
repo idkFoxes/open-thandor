@@ -258,7 +258,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                            (packedPoint,(ModelRuntimeNode *)modelNode);
         /* the periodic child effect always starts with rotation angle 1 at a quarter turn */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                    localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,periodicDefinition,worldRuntime);
       }
@@ -273,7 +273,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             localPoint = ModelNodeRuntime_TransformLocalPoint
                                (packedPoint,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
                        modelNode->modelPayload.worldRotationAngle2,
                        modelNode->modelPayload.worldRotationAngle1,
                        modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
@@ -312,7 +312,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             localPoint = ModelNodeRuntime_TransformLocalPoint
                                (packedPoint,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
                        modelNode->modelPayload.worldRotationAngle2,
                        modelNode->modelPayload.worldRotationAngle1,
                        modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,

@@ -62,7 +62,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
    workspace 07 (or workspace 03 when 07 is empty) and sends every collected army to attack it. The target
    class is read with a single dereference from the target model's +0x4C, not from its type field.
 */
-void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
+void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
 
 {
   uint32_t targetClassIndex;

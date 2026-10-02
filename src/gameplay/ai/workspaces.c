@@ -537,16 +537,16 @@ void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,Worl
   
   hasSpecialAsset = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
   if (hasSpecialAsset) {
-    /* EDX side channel for the category score callback: bit 2 / bit 4 when the faction owns any
+    /* Category mask for the category score callback: bit 2 / bit 4 when the faction owns any
        technology of category 2 / 3 (the decompiler kept only the empty loop). */
-    g_AiTechnologyScoreCategoryMaskEdx = 0;
+    g_AiTechnologyScoreCategoryMask = 0;
     for (wordIndexOrBestScore = 0; wordIndexOrBestScore < 8; wordIndexOrBestScore++) {
       uint32_t owned = g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[wordIndexOrBestScore];
       if ((g_TechnologyCategoryMasks.category2[wordIndexOrBestScore] & owned) != 0) {
-        g_AiTechnologyScoreCategoryMaskEdx = g_AiTechnologyScoreCategoryMaskEdx | 2;
+        g_AiTechnologyScoreCategoryMask = g_AiTechnologyScoreCategoryMask | 2;
       }
       if ((g_TechnologyCategoryMasks.category3[wordIndexOrBestScore] & owned) != 0) {
-        g_AiTechnologyScoreCategoryMaskEdx = g_AiTechnologyScoreCategoryMaskEdx | 4;
+        g_AiTechnologyScoreCategoryMask = g_AiTechnologyScoreCategoryMask | 4;
       }
     }
     wordIndexOrBestScore = 0;
@@ -1043,7 +1043,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlotPair,worldRuntime); /* the created army */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,

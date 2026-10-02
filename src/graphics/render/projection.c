@@ -164,7 +164,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
 /* Address: 0x0050A6A0.
    Point-in-triangle test for the mouse pointer against a projected triangle, used by
    ModelRuntimeNode_HitTestProjectedBoundsAndChildren on the faces of a model's projected bounding box.
-   Returns true (CF set) when the pointer is strictly inside. Each edge test is a 64-bit cross product; the
+   Returns true when the pointer is strictly inside. Each edge test is a 64-bit cross product; the
    winding is normalized first (vertex1/vertex2 swapped when the triangle's own cross product is not
    negative) so that "inside" means all three pointer cross products are negative.
 */
@@ -176,31 +176,27 @@ bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsP
   int64_t crossPartA;
   GraphicsProjectedPoint2i *orderedVertex2;
   
-  /* the sign of the 64-bit sum crossPartA + crossPartB is the sign of its high dword plus the carry */
+  /* each test is the sign of the wrapping 64-bit sum crossPartA + crossPartB */
   crossPartA = (int64_t)(vertex0->y - vertex1->y) * (int64_t)vertex2->x +
           (int64_t)(vertex2->y - vertex0->y) * (int64_t)vertex1->x;
   crossPartB = (int64_t)(vertex1->y - vertex2->y) * (int64_t)vertex0->x;
   orderedVertex2 = vertex2;
-  if (-1 < (int)((int)((uint64_t)crossPartB >> 32) + (int)((uint64_t)crossPartA >> 32) +
-                (uint32_t)CARRY4((uint32_t)crossPartB,(uint32_t)crossPartA))) {
+  if (0 <= (int64_t)((uint64_t)crossPartB + (uint64_t)crossPartA)) {
     orderedVertex2 = vertex1;
     vertex1 = vertex2;
   }
   crossPartA = (int64_t)(pointerY - vertex1->y) * (int64_t)orderedVertex2->x +
           (int64_t)(orderedVertex2->y - pointerY) * (int64_t)vertex1->x;
   crossPartB = (int64_t)(vertex1->y - orderedVertex2->y) * (int64_t)pointerX;
-  if ((int)((int)((uint64_t)crossPartB >> 32) + (int)((uint64_t)crossPartA >> 32) +
-           (uint32_t)CARRY4((uint32_t)crossPartB,(uint32_t)crossPartA)) < 0) {
+  if ((int64_t)((uint64_t)crossPartB + (uint64_t)crossPartA) < 0) {
     crossPartA = (int64_t)(vertex0->y - pointerY) * (int64_t)orderedVertex2->x +
             (int64_t)(orderedVertex2->y - vertex0->y) * (int64_t)pointerX;
     crossPartB = (int64_t)(pointerY - orderedVertex2->y) * (int64_t)vertex0->x;
-    if ((int)((int)((uint64_t)crossPartB >> 32) + (int)((uint64_t)crossPartA >> 32) +
-             (uint32_t)CARRY4((uint32_t)crossPartB,(uint32_t)crossPartA)) < 0) {
+    if ((int64_t)((uint64_t)crossPartB + (uint64_t)crossPartA) < 0) {
       crossPartA = (int64_t)(vertex0->y - vertex1->y) * (int64_t)pointerX +
               (int64_t)(pointerY - vertex0->y) * (int64_t)vertex1->x;
       crossPartB = (int64_t)(vertex1->y - pointerY) * (int64_t)vertex0->x;
-      if ((int)((int)((uint64_t)crossPartB >> 32) + (int)((uint64_t)crossPartA >> 32) +
-               (uint32_t)CARRY4((uint32_t)crossPartB,(uint32_t)crossPartA)) < 0) {
+      if ((int64_t)((uint64_t)crossPartB + (uint64_t)crossPartA) < 0) {
         return true;
       }
     }

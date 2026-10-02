@@ -128,7 +128,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   UiCommandRuntimeRecordPrefix **recordCursor;
   ArmyAssetRecordPrefix **registryCursor;
   bool checkResult;
-  UiGridDimensionsEdxEax8 gridDimensions;
+  UiGridDimensions gridDimensions;
   ArmyBuildXeniteCostQ4 xeniteCost;
 
   inGameUiGridView = (InGameRuntimeRootUiGridView *)UiNode_GetRoot(node);
@@ -181,13 +181,13 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
     }
   }
   gridDimensions = UiGrid_ComputeDimensionsPacked(6,itemCount);
-  columnCount = (uint32_t)gridDimensions;
+  columnCount = gridDimensions.columnCount;
   if (BUILD_CATALOG_MAX_COLUMNS < columnCount) {
     columnCount = BUILD_CATALOG_MAX_COLUMNS;
   }
   panelWidth = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
           g_InGamePanelTextureSubresource28Width;
-  panelHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
+  panelHeight = (int)gridDimensions.rowCount * g_InGamePanelTextureSubresource34Height +
           g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCatalogGroup48ColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
@@ -272,7 +272,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   UiCommandRuntimeRecordPrefix **recordCursor;
   ArmyAssetRecordPrefix **registryCursor;
   bool checkResult;
-  UiGridDimensionsEdxEax8 gridDimensions;
+  UiGridDimensions gridDimensions;
   ArmyBuildXeniteCostQ4 xeniteCost;
   
   inGameUiGridView = (InGameRuntimeRootUiGridView *)UiNode_GetRoot(node);
@@ -318,13 +318,13 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
     }
   }
   gridDimensions = UiGrid_ComputeDimensionsPacked(7,itemCount);
-  columnCount = (uint32_t)gridDimensions;
+  columnCount = gridDimensions.columnCount;
   if (SPECIAL_BUILD_CATALOG_MAX_COLUMNS < columnCount) {
     columnCount = SPECIAL_BUILD_CATALOG_MAX_COLUMNS;
   }
   panelWidth = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
           g_InGamePanelTextureSubresource28Width;
-  panelHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
+  panelHeight = (int)gridDimensions.rowCount * g_InGamePanelTextureSubresource34Height +
            g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCatalogGroup42ColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {

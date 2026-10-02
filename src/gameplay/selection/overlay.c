@@ -164,7 +164,7 @@ RefreshMarkers:
                     ((factoryModelRuntime->classLinkState).classState7C,
                      (factoryModelRuntime->classLinkState).classState78,worldRuntime->fieldGrid,&surfaceHeightQ12);
           createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
-                             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
+                             (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                               FIXED_ANGLE16_QUARTER_TURN,0,surfaceHeightQ12,(factoryModelRuntime->classLinkState).classState7C,
                               (factoryModelRuntime->classLinkState).classState78,markerDefinition,
                               worldRuntime);
@@ -983,7 +983,7 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
     FieldGrid_InterpolateTopSurfaceHeight
               (worldYQ12,worldXQ12,((WorldRuntimeContext *)inGameRuntime)->fieldGrid,&surfaceHeightQ12);
     createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,FIXED_ANGLE16_QUARTER_TURN,0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,FIXED_ANGLE16_QUARTER_TURN,0,
                        surfaceHeightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
     if (createdEffect == NULL) {
       /* Original quirk: no failure check; the original stores and dereferences its failure value */

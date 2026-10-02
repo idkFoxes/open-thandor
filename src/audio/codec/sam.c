@@ -20,15 +20,10 @@
    executable calls it or stores its address in a function-pointer table; it is only listed in the
    g_ThandorFunctionMap address map.
 */
-PreservedEaxEdxRegisterPair64 __fastcall
-SoundCoefficientTransform_ApplyCosineBanksMmx
-          (uint32_t preservedIncomingEcx,uint32_t preservedIncomingEdx,short *outputMonoPcm,
-          SoundCoefficientBlock *coefficientBlock)
+void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoefficientBlock *coefficientBlock)
 
 {
   MmxPackedValue64 coefficientQuadHigh;
-  /* The original preserves the caller's EAX (and EDX); the function has no callers, zero stands in for EAX. */
-  uint32_t preservedIncomingEax = 0;
   short *cosineRowCursor;
   MmxPackedValue64 coefficientPairProducts91;
   MmxPackedValue64 coefficientPairProducts93;
@@ -957,7 +952,6 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
     outputPassesRemaining--;
     outputMonoPcm = outputMonoPcm + SAM_MMX_OUTPUTS_PER_PASS;
   } while (outputPassesRemaining != 0);
-  return ((uint64_t)preservedIncomingEdx << 32) | preservedIncomingEax;
 }
 
 

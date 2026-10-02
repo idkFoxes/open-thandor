@@ -34,10 +34,10 @@ void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgume
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x00565320 */
-void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void);
+void OldUnitRuntime_RebuildScenarioReplayTables(void);
 
 /* 0x005130B0 */
-void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void);
+void GameFactionRuntime_RebaseLoadedArmyReferences(void);
 
 /* 0x00513960 */
 void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember);

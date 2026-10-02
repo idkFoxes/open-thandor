@@ -20,10 +20,7 @@
 #define SAM_MMX_OUTPUTS_PER_PASS 4
 
 /* 0x00417700 */
-PreservedEaxEdxRegisterPair64 __fastcall
-SoundCoefficientTransform_ApplyCosineBanksMmx
-          (uint32_t preservedIncomingEcx,uint32_t preservedIncomingEdx,short *outputMonoPcm,
-          SoundCoefficientBlock *coefficientBlock);
+void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoefficientBlock *coefficientBlock);
 
 /* 0x00418560 */
 void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients);

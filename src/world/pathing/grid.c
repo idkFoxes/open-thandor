@@ -1515,7 +1515,7 @@ void GridPathRegion_MarkUnreachableFromCell
           FieldGridCellCoordinate column,FieldGridCellCoordinate *outRow,FieldGridCellCoordinate *outColumn)
 
 {
-  uint64_t markedCellIndex;
+  uint32_t markedCellIndex;
   int rowBaseIndex;
   GridPathBestUnreachableCell recursionResult;
 
@@ -1526,9 +1526,9 @@ void GridPathRegion_MarkUnreachableFromCell
   recursionResult = GridPathRegion_MarkUnreachableRecursive
                     (g_GridScratchWidth << 3,g_GridScratchPrimary + rowBaseIndex + column,INT32_MAX
                      ,(rowBaseIndex + column) * 8);
-  markedCellIndex = THANDOR_BITCAST(GridPathBestUnreachableCell, uint64_t, recursionResult) >> 3 & (UINT32_MAX >> 3);
+  markedCellIndex = recursionResult.bestCellByteOffset >> 3;
   *outRow = (FieldGridCellCoordinate)(markedCellIndex / g_GridScratchWidth);
-  *outColumn = (FieldGridCellCoordinate)(markedCellIndex % (uint64_t)g_GridScratchWidth);
+  *outColumn = (FieldGridCellCoordinate)(markedCellIndex % g_GridScratchWidth);
 }
 
 

@@ -395,9 +395,8 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
          ((int)runtimeSlotCursor->modelNodeOrSavedOffset.modelNode -
          (int)g_RuntimeObjectRebaseBaseMinusOne);
     runtimeSlotCursor->completionAction = slotCompletionAction;
-    serializedDefinitionId =
-         THANDOR_BITCAST(PckEffectDefinitionIdCatalog, EffectDefinitionReferenceOrSavedId,
-                         runtimeSlotCursor->definitionOrSavedId.definition->definitionId);
+    serializedDefinitionId.savedId =
+         runtimeSlotCursor->definitionOrSavedId.definition->definitionId;
     runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
          ownerModelNode;
     runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
@@ -462,9 +461,8 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
          ((int)runtimeSlotCursor->modelNodeOrSavedOffset.modelNode -
          (int)g_RuntimeObjectRebaseBaseMinusOne);
     runtimeSlotCursor->runtimeStateOrSavedOffset.runtimeStatePointer = runtimeStateRef;
-    serializedDefinitionId =
-         THANDOR_BITCAST(PckShotDefinitionIdCatalog, ShotDefinitionReferenceOrSavedId,
-                         runtimeSlotCursor->definitionOrSavedId.definition->definitionId);
+    serializedDefinitionId.savedId =
+         runtimeSlotCursor->definitionOrSavedId.definition->definitionId;
     runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
     runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
     runtimeSlotCursor = runtimeSlotCursor + 1;

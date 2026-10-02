@@ -23,7 +23,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00514350 */
-void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void);
+void AiFactionRuntime_RebuildPlanningCapacityState(void);
 
 /* 0x0053BA50 */
 AiCandidateScore32 AiArmyCandidate_ComputeAverageCompatibleAssetScore (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex, ModelRuntimeClassId runtimeClassId);

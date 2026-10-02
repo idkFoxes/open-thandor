@@ -246,7 +246,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                            (emitterRecord,(ModelRuntimeNode *)modelNode);
         emitterWorldYQ12 = emitterWorldPoint.yQ12;
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                    emitterWorldPoint.zQ12,emitterWorldYQ12,emitterWorldPoint.xQ12,effectDefinition,effectWorldRuntime);
       }
@@ -318,7 +318,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                (modelNode->modelPayload.worldRotationAngle1,
                                 modelNode->modelPayload.worldRotationAngle0,secondaryHitDistance);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                        directionOffset.z + modelNode->worldTransform.translation.z,
                        directionOffset.y + modelNode->worldTransform.translation.y,
@@ -351,7 +351,7 @@ HandleNearestArmyHitAndContinueMotion:
                                  (modelNode->modelPayload.worldRotationAngle1,
                                   modelNode->modelPayload.worldRotationAngle0,frameAccumulatorOrDistance);
               EffectRuntimePool_CreateInstanceFromDefinition
-                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
+                        (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                          -modelNode->modelPayload.worldRotationAngle1,
                          modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,
                          directionOffset.z + modelNode->worldTransform.translation.z,
@@ -378,9 +378,9 @@ HandleNearestArmyHitAndContinueMotion:
                               modelNode->modelPayload.worldRotationAngle0,terrainHitDistance);
           EffectRuntimePool_CreateInstanceFromDefinition
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-                     THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference,
-                                     (ModelRuntimeNode *)(shotDefinition->terrainImpactHeightDeltasQ12 +
-                                                          terrainMaterialIndex)),
+                     (EffectRuntimeOwnerReference){
+                       .terrainImpactColumns = (ShotTerrainImpactDeformationColumns *)
+                                               (shotDefinition->terrainImpactHeightDeltasQ12 + terrainMaterialIndex) },
                      0,FIXED_ANGLE16_QUARTER_TURN,0,directionOffset.z + modelNode->worldTransform.translation.z,
                      directionOffset.y + modelNode->worldTransform.translation.y,
                      directionOffset.x + modelNode->worldTransform.translation.x,effectDefinition,effectWorldRuntime);
@@ -454,7 +454,7 @@ HandleNearestArmyHitAndContinueMotion:
                                (modelNode->modelPayload.worldRotationAngle1,
                                 modelNode->modelPayload.worldRotationAngle0,frameAccumulatorOrDistance);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                        directionOffset.z + modelNode->worldTransform.translation.z,
                        directionOffset.y + modelNode->worldTransform.translation.y,
@@ -486,7 +486,7 @@ HandleNearestArmyHitAndTerminateProjectile:
                                  (modelNode->modelPayload.worldRotationAngle1,
                                   modelNode->modelPayload.worldRotationAngle0,frameCountDistanceOrAge);
               EffectRuntimePool_CreateInstanceFromDefinition
-                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
+                        (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                          -modelNode->modelPayload.worldRotationAngle1,
                          modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,
                          directionOffset.z + modelNode->worldTransform.translation.z,
@@ -515,9 +515,9 @@ HandleNearestArmyHitAndTerminateProjectile:
                               movingTerrainHitDistance);
           EffectRuntimePool_CreateInstanceFromDefinition
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-                     THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference,
-                                     (ModelRuntimeNode *)(shotDefinition->terrainImpactHeightDeltasQ12 +
-                                                          terrainMaterialIndex)),
+                     (EffectRuntimeOwnerReference){
+                       .terrainImpactColumns = (ShotTerrainImpactDeformationColumns *)
+                                               (shotDefinition->terrainImpactHeightDeltasQ12 + terrainMaterialIndex) },
                      0,FIXED_ANGLE16_QUARTER_TURN,0,directionOffset.z + modelNode->worldTransform.translation.z,
                      directionOffset.y + modelNode->worldTransform.translation.y,
                      directionOffset.x + modelNode->worldTransform.translation.x,effectDefinition,worldRuntime);

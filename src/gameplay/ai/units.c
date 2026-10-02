@@ -394,7 +394,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
   FieldGridCell *workspaceRecord;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
   bool chainFailed;
-  FixedSinCosEdxEax8 headingOffset;
+  FixedSinCos headingOffset;
   uint32_t bucketCount;
   Q12 steerWorldXQ12; /* unused here */
   Q12 steerWorldYQ12; /* unused here */
@@ -413,7 +413,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
       siteScoreOrY = (modelNode->worldTransform).translation.y;
       armyRuntime->aiUnitState = 8;
       ArmyRuntime_StartRoutedMoveCommand
-                ((int)(headingOffset >> 32) + siteScoreOrY,(int)headingOffset + sitesRemainingOrX,
+                (headingOffset.sinValue + siteScoreOrY,headingOffset.cosValue +sitesRemainingOrX,
                  (ArmyMovementRuntime *)armyRuntime)
       ;
     }

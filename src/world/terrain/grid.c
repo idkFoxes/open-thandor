@@ -661,8 +661,8 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     baseColumn = gridCoordinates.columnQ12 >> Q12_SHIFT;
     targetRow = gridCoordinates.rowQ12 >> Q12_SHIFT;
-    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK);
-    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & FIELD_GRID_COORDINATES_FRACTION_MASK) >> 32);
+    columnFractionQ12 = (uint32_t)(gridCoordinates.columnQ12 & Q12_FRACTION_MASK);
+    rowFractionQ12 = (uint32_t)(gridCoordinates.rowQ12 & Q12_FRACTION_MASK);
     /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrWidth = rowFractionQ12 + columnFractionQ12 * 2;
     targetColumn = baseColumn;
@@ -1958,8 +1958,8 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors(void)
   uint32_t previousPackedAngles;
   TerrainDirectionRecordCount recordsRemaining;
   TerrainDirectionRecord *currentDirectionRecord;
-  FixedSinCosEdxEax8 scaledSinCosPair;
-  FixedSinCosEdxEax8 angleBScaledSinCosPair;
+  FixedSinCos scaledSinCosPair;
+  FixedSinCos angleBScaledSinCosPair;
 
   currentDirectionRecord = g_TerrainDirectionRecordTable256;
   recordsRemaining = 256;
@@ -1969,11 +1969,11 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors(void)
        of angle A moves angle B by one more */
     currentDirectionRecord->packedAngles = currentDirectionRecord->packedAngles + *(int *)&currentDirectionRecord->rateA;
     scaledSinCosPair = FixedMath_SinCosScaled(previousPackedAngles & FIXED_ANGLE16_MASK,currentDirectionRecord->scaleA);
-    currentDirectionRecord->angleAComponent0ScaledQ28 = (int)scaledSinCosPair;
-    currentDirectionRecord->angleAComponent1ScaledQ28 = (int)(scaledSinCosPair >> 32);
+    currentDirectionRecord->angleAComponent0ScaledQ28 = scaledSinCosPair.cosValue;
+    currentDirectionRecord->angleAComponent1ScaledQ28 = scaledSinCosPair.sinValue;
     angleBScaledSinCosPair =
          FixedMath_SinCosScaled((int)previousPackedAngles >> 16,currentDirectionRecord->scaleB);
-    currentDirectionRecord->angleBComponent0ScaledQ28 = (uint32_t)angleBScaledSinCosPair;
+    currentDirectionRecord->angleBComponent0ScaledQ28 = (uint32_t)angleBScaledSinCosPair.cosValue;
     currentDirectionRecord++;
     recordsRemaining--;
   } while (recordsRemaining != 0);

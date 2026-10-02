@@ -48,10 +48,10 @@ static __inline uint64_t Glide_PackWordLanes(uint32_t lane3,uint32_t lane2,uint3
                       (uint16_t)((short)(lanes) * g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2)
 
 /* The MMX mask constants as qwords. */
-#define GLIDE_QUANTIZE_MASKS \
-  THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12)
-#define GLIDE_PACKED_PIXEL_MASKS \
-  THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks)
+#define GLIDE_LANES_AS_QWORD(lanes) \
+  Glide_PackWordLanes((lanes).zero,(lanes).red,(lanes).green,(lanes).blue)
+#define GLIDE_QUANTIZE_MASKS GLIDE_LANES_AS_QWORD(g_SoftwarePixelMmxConstants.quantizeMasksQ12)
+#define GLIDE_PACKED_PIXEL_MASKS GLIDE_LANES_AS_QWORD(g_SoftwarePixelMmxConstants.packedPixelMasks)
 
 /* PUNPCKLBW mm,mm + PSRLW shift of an ARGB8888 pixel: one byte-duplicated, shifted word lane per channel
    (lane3 = alpha, lane0 = blue). */
@@ -234,8 +234,8 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
       } while (binding->importName != NULL);
       g_GrGlideInit();
       /* Glide3_InitAndEnumerate stored the board index in Data2/Data3 of the adapter GUID */
-      THANDOR_PART(uint16_t, sstIndexOrSizeOrCount, 0) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data2;
-      THANDOR_PART(uint16_t, sstIndexOrSizeOrCount, 2) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data3;
+      sstIndexOrSizeOrCount = (uint32_t)g_GraphicsAdapters[adapterIndex].adapterGuid.Data2 |
+                              ((uint32_t)g_GraphicsAdapters[adapterIndex].adapterGuid.Data3 << 16);
       g_GrSstSelect(sstIndexOrSizeOrCount);
       g_GlideSelectedResolutionQuery.resolution = resolutionQueryCode;
       sstIndexOrSizeOrCount = g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,NULL);
@@ -787,7 +787,7 @@ uint32_t Glide3_InitAndEnumerate(void)
       Text_CopyNarrowToUtf16(40,adapter->deviceNameUtf16,boardName);
       (adapter->adapterGuid).Data1 = GRAPHICS_ADAPTER_GUID_GLIDE;
       (adapter->adapterGuid).Data2 = (uint16_t)sstIndex;
-      (adapter->adapterGuid).Data3 = THANDOR_PART(uint16_t, sstIndex, 2);
+      (adapter->adapterGuid).Data3 = (uint16_t)(sstIndex >> 16);
       (adapter->deviceGuid).Data1 = 1; /* nonzero: the adapter renders in 3D */
       querySizeOrAdapterIndex = g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,NULL);
       if (querySizeOrAdapterIndex != 0) {

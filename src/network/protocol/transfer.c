@@ -833,7 +833,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   }
   endpointCursor = senderEndpoint;
   for (rootNodeOrCount = 4; rootNodeOrCount != 0; rootNodeOrCount--) {
-    *joiningPlayerRecordDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, uint32_t, endpointCursor->addressHeader);
+    *joiningPlayerRecordDwordCursor = endpointCursor->addressHeader.packedFamilyAndPort;
     endpointCursor = (UiTransferEndpointDescriptor *)&endpointCursor->ipv4AddressNetworkOrder;
     joiningPlayerRecordDwordCursor++;
   }
@@ -1249,7 +1249,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
               advertisement).header.sequenceToken;
       }
       for (remainingCount = 4; remainingCount != 0; remainingCount--) {
-        *sessionDiscoveryRecordDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, uint32_t, senderEndpoint->addressHeader);
+        *sessionDiscoveryRecordDwordCursor = senderEndpoint->addressHeader.packedFamilyAndPort;
         senderEndpoint = (UiTransferEndpointDescriptor *)&senderEndpoint->ipv4AddressNetworkOrder;
         sessionDiscoveryRecordDwordCursor++;
       }
@@ -1696,7 +1696,7 @@ bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTran
   /* endpointBufferBase points 8 bytes into the endpoint ring, so "- 8" is the endpoint slot itself */
   endpointDestinationDwordCursor = (uint32_t *)(endpointBufferBase + endpointOffset + -8);
   for (dataOffsetOrDwordCount = 4; dataOffsetOrDwordCount != 0; dataOffsetOrDwordCount--) {
-    *endpointDestinationDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, uint32_t, endpoint->addressHeader);
+    *endpointDestinationDwordCursor = endpoint->addressHeader.packedFamilyAndPort;
     endpoint = (UiTransferEndpointDescriptor *)&endpoint->ipv4AddressNetworkOrder;
     endpointDestinationDwordCursor++;
   }

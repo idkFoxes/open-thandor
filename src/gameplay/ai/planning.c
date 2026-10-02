@@ -17,7 +17,7 @@
    (+0x5C, stock data ~0) for each other faction flagged in its faction mask, and the channel maximum is stored.
    Called on tick-wheel cases 2 and 6.
 */
-void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
+void AiFactionRuntime_RebuildPlanningCapacityState(void)
 
 {
   GameSpeedQ8 currentGameSpeedQ8;
@@ -554,7 +554,7 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)createdModelNode);
             ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)armyRuntime,worldRuntime); /* the created army */
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
                        ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle2,
                        ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle1,
                        ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle0,
@@ -596,7 +596,7 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)createdModelNode);
             ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)armyRuntime,worldRuntime); /* the created army */
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
                        ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle2,
                        ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle1,
                        ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle0,
@@ -861,7 +861,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlots,worldRuntime); /* the created army */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
@@ -1651,7 +1651,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
             ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlots,worldRuntime); /* the created army */
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
                        ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
                        ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
                        ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,

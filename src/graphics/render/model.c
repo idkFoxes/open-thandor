@@ -242,7 +242,7 @@ void ModelRender_PrepareProjectedVertex
   PackedArgb32 vertexColor;
   uint32_t depthBiasHalf;
   GraphicsFixedVec3 *surfaceNormalQ12;
-  GraphicsProjectedPointEdxEax8 projectedScreenCoordinatePair;
+  GraphicsProjectedPointPair projectedScreenPoint;
   GraphicsWorldCoordinateQ12 savedVertexXQ12;
   int64_t scaledVertexCoordinateProduct;
   GraphicsWorldCoordinateQ12 savedVertexZQ12;
@@ -273,14 +273,12 @@ void ModelRender_PrepareProjectedVertex
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
-    projectedScreenCoordinatePair =
-         THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8,
-                         Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z));
+    projectedScreenPoint = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z);
     vertex->z = savedVertexZQ12;
     vertex->y = savedVertexYQ12;
     vertex->x = savedVertexXQ12;
-    vertex[4].x = (int)projectedScreenCoordinatePair;
-    vertex[4].y = (int)(projectedScreenCoordinatePair >> 32);
+    vertex[4].x = projectedScreenPoint.projectedX;
+    vertex[4].y = projectedScreenPoint.projectedY;
   }
   else if (((triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS) == vertex[4].z) &&
           ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) == 0)) {

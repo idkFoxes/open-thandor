@@ -35,7 +35,7 @@ bool ArmyPlacement_CanPlaceAnchoredModel
   int offsetYQ12;
   bool blocked;
   FixedLengthAngle offsetLengthAngle;
-  FixedSinCosEdxEax8 rotatedOffset;
+  FixedSinCos rotatedOffset;
   uint32_t clearanceValue;
   ModelPackedPointRecord *anchorRecord;
   TerrainPlacementResult terrainTest;
@@ -53,8 +53,8 @@ bool ArmyPlacement_CanPlaceAnchoredModel
     offsetLengthAngle = FixedMath_Vector2AngleAndLength
                       ((anchorRecord->localPosition).y,(anchorRecord->localPosition).x);
     rotatedOffset = FixedMath_SinCosScaled(offsetLengthAngle.angle + placementHeading & FIXED_ANGLE16_MASK,offsetLengthAngle.length);
-    offsetYQ12 = (int)rotatedOffset;
-    offsetWorldXQ12 = worldXQ12 + (int)(rotatedOffset >> 32);
+    offsetYQ12 = rotatedOffset.cosValue;
+    offsetWorldXQ12 = worldXQ12 + rotatedOffset.sinValue;
     blocked = ArmyPlacementCollision_TestPointAgainstRuntimeList
                       (placementMode,ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,offsetWorldXQ12,
                        worldYQ12 + offsetYQ12,worldRuntime);

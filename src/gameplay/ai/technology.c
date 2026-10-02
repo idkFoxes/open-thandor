@@ -273,18 +273,18 @@ AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind4
 }
 
 
-/* The original passes the category mask in EDX; AiTechnologyCandidate_AddBestResearch stores it
+/* The category mask for the score callback below; AiTechnologyCandidate_AddBestResearch stores it
    here before its scoring loop. */
-AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
+AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMask;
 
 AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
-          (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
+          (AiTechnologyCategoryMask categoryMask,FactionRuntimeIndex factionIndex,
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
 
 /* Address: 0x0053BEC0.
    Technology score callback for score kind 5 (g_AiTechnologyCandidateScoreCallbackTable[5], image
-   0x0053B9F4; every technology not caught by kinds 0-4). Hands the EDX category mask (here a global) to
-   the body below, which holds the original code.
+   0x0053B9F4; every technology not caught by kinds 0-4). Hands the category mask (a global set by the
+   caller) to the body below, which holds the original code.
 */
 AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
@@ -292,17 +292,17 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
 
 {
   return AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
-                   (g_AiTechnologyScoreCategoryMaskEdx,factionIndex,technologyId,worldRuntime);
+                   (g_AiTechnologyScoreCategoryMask,factionIndex,technologyId,worldRuntime);
 }
 
 /* Body of 0x0053BEC0 (C-only split, no address of its own; only called by the wrapper above).
    Category C and D technologies score nothing unless the faction already owns a technology of that
-   category (bit 2 / bit 4 of categoryMaskEdx). Otherwise the score is the average faction-weighted score
+   category (bit 2 / bit 4 of categoryMask). Otherwise the score is the average faction-weighted score
    of the army assets the technology leads to (weights g_AiArmyCandidateScoreWeightsVariantC15) times the
    base candidate score, >> 8.
 */
 AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
-          (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
+          (AiTechnologyCategoryMask categoryMask,FactionRuntimeIndex factionIndex,
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime)
 
 {
@@ -315,13 +315,13 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
   technologyCategory = g_TechnologyAsset->records[technologyId].category;
   /* Categories C and D need their bit in the category mask; every other category is always compatible. */
   if (technologyCategory == TECHNOLOGY_CATEGORY_C) {
-    categoryMaskBit = categoryMaskEdx & 2;
+    categoryMaskBit = categoryMask & 2;
     if (categoryMaskBit == 0) {
       return 0;
     }
   }
   else if (technologyCategory == TECHNOLOGY_CATEGORY_D) {
-    categoryMaskBit = categoryMaskEdx & 4;
+    categoryMaskBit = categoryMask & 4;
     if (categoryMaskBit == 0) {
       return 0;
     }

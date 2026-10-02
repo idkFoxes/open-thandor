@@ -23,9 +23,11 @@ typedef uint32_t FileSystemCreateDirectoryRecursiveProc(FileSystemCreateDirector
 typedef uint32_t FileSystemDeleteProc(uint32_t unusedFlags, uint16_t * path); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef bool FileSystemDriveReadyProc(uint32_t driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemEnumerateDirectoryOrVolumeEntriesProc(FileSystemEnumerationMode mode, uint32_t reserved, FileSystemOutputCapacityBytes outputCapacityBytes, uint8_t * outputRecords, uint8_t * pathOrVolumeText); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef DriveLetterEnumeration FileSystemEnumerateDriveLettersEaxEcxProc(uint8_t * lettersOut); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef uint32_t FileSystemEnumerateDriveLettersProc(uint8_t * lettersOut); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemEnumerateDriveLettersProc FileSystemEnumerateDriveLettersEaxEcxProc; /* old name, still used by image_data.h until it is regenerated */
 typedef bool FileSystemGetCurrentDirectoryProc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef EngineDriveTypeCode FileSystemGetDriveTypeCodePreserveProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef EngineDriveTypeCode FileSystemGetDriveTypeCodeProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemGetDriveTypeCodeProc FileSystemGetDriveTypeCodePreserveProc; /* old name, still used by image_data.h until it is regenerated */
 typedef Win32DriveCapacity FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemGetLastWriteDosDateProc(uint16_t * path, uint32_t * outDosDateTime); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemGetLastWriteTimeHighProc(uint16_t * path, uint32_t * outLastWriteTimeHigh); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
@@ -78,7 +80,8 @@ typedef void __stdcall GrTexSourceImportProc(GraphicsTextureResidentTmuIndex tmu
 typedef void __stdcall GrVertexLayoutImportProc(uint32_t parameter, uint32_t byteOffset, uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrViewportImportProc(uint32_t x, uint32_t y, uint32_t width, uint32_t height); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void GraphicsBackendRefreshActiveAdapterProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void GraphicsBeginScenePreserveAllProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void GraphicsBeginSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsBeginSceneProc GraphicsBeginScenePreserveAllProc; /* old name, still used by image_data.h until it is regenerated */
 typedef bool GraphicsCursorConsumeEventProc(CursorPointerEvent *outEvent); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsDrawPrimitiveQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsEndSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
@@ -254,8 +257,8 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_FileSystemDelete (*(FileSystemDeleteProc * *)THANDOR_IMAGE(0x0040b1dc))
 #define g_FileSystemEnumerateDirectoryOrVolumeEntries (*(FileSystemEnumerateDirectoryOrVolumeEntriesProc * *)THANDOR_IMAGE(0x0040b214))
 #define g_UiTimedListDriveWildcardUtf16 (*(uint16_t (*)[7])THANDOR_IMAGE(0x0040ff58))
-#define g_FileSystemEnumerateDriveLetters (*(FileSystemEnumerateDriveLettersEaxEcxProc * *)THANDOR_IMAGE(0x0040b1f0))
-#define g_FileSystemGetDriveTypeCode (*(FileSystemGetDriveTypeCodePreserveProc * *)THANDOR_IMAGE(0x0040b1f4))
+#define g_FileSystemEnumerateDriveLetters (*(FileSystemEnumerateDriveLettersProc * *)THANDOR_IMAGE(0x0040b1f0))
+#define g_FileSystemGetDriveTypeCode (*(FileSystemGetDriveTypeCodeProc * *)THANDOR_IMAGE(0x0040b1f4))
 #define g_UiTimedListRecordPathScratch (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040f550))
 #define g_UiTimedListCombinedPathScratch (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040f750))
 #define g_UiTimedListSecondaryPathScratch (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040f950))
@@ -664,7 +667,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_SelectionPanelBlitClipped (*(GraphicsTextureSourceTiledBlitProc * *)THANDOR_IMAGE(0x0052cedc))
 #define g_GraphicsSetViewportAndClearDepth (*(GraphicsSetViewportProc * *)THANDOR_IMAGE(0x00485818))
 #define g_GraphicsDrawPrimitiveQueue (*(GraphicsDrawPrimitiveQueueProc * *)THANDOR_IMAGE(0x0048581c))
-#define g_GraphicsBeginScene (*(GraphicsBeginScenePreserveAllProc * *)THANDOR_IMAGE(0x00485820))
+#define g_GraphicsBeginScene (*(GraphicsBeginSceneProc * *)THANDOR_IMAGE(0x00485820))
 #define g_GraphicsEndScene (*(GraphicsEndSceneProc * *)THANDOR_IMAGE(0x00485824))
 #define g_GraphicsTextureSourceBlitTiledHalfSourceRgb (*(GraphicsTextureSourceTiledBlitProc * *)THANDOR_IMAGE(0x004a8f08))
 #define g_KeyboardStateMask (*(uint32_t *)THANDOR_IMAGE(0x004171e8))

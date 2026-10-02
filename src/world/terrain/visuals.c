@@ -1015,6 +1015,8 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   int cellsRemainingOrRowQ12;
   int counterOrGridColumn;
   int gridRow;
+  int64_t roundedRowQ12;
+  bool rowRoundingOverflows;
   uint32_t colorVariant;
   AssetRelativeOffset assetOffset;
   uint8_t *pixelCursor;
@@ -1066,8 +1068,12 @@ void TerrainCompositeTexture_RebuildPlane0(void)
       panelTextureSource = g_InGamePanelTextureSource;
       cellsRemainingOrRowQ12 = gridCoordinates.rowQ12;
       counterOrGridColumn = gridCoordinates.columnQ12 + FIELD_GRID_CELL_Q12 / 2 >> Q12_SHIFT; /* round to the nearest cell */
-      if ((SCARRY4(cellsRemainingOrRowQ12,FIELD_GRID_CELL_Q12 / 2) == counterOrGridColumn < 0) &&
-         (((gridRow = cellsRemainingOrRowQ12 + FIELD_GRID_CELL_Q12 / 2 >> Q12_SHIFT, SCARRY4(cellsRemainingOrRowQ12,FIELD_GRID_CELL_Q12 / 2) == gridRow < 0 &&
+      /* exact (non-wrapping) row + half a cell. As decompiled, the column test (JL after the column's SAR)
+         sees the overflow flag of the row's ADD, so it is "column >= 0" unless that ADD overflows. */
+      roundedRowQ12 = (int64_t)cellsRemainingOrRowQ12 + FIELD_GRID_CELL_Q12 / 2;
+      rowRoundingOverflows = INT32_MAX < roundedRowQ12;
+      if (((counterOrGridColumn < 0) == rowRoundingOverflows) &&
+         (((gridRow = cellsRemainingOrRowQ12 + FIELD_GRID_CELL_Q12 / 2 >> Q12_SHIFT, roundedRowQ12 >= 0 &&
            (counterOrGridColumn < (int)textureWidth)) && (gridRow < (int)textureHeight)))) {
         ownerEntity = (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         colorVariant = g_GameFactionRuntimeImage.records[(ownerEntity->common).ownership.ownerIndex].

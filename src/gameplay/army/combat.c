@@ -290,7 +290,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
     healthOrOwnerIndex = *healthField;
     *healthField = *healthField - damageAmount;
     /* SUB / JLE: the new health is <= 0 */
-    if (*healthField == 0 || SBORROW4(healthOrOwnerIndex,damageAmount) != *healthField < 0) {
+    if (healthOrOwnerIndex <= damageAmount) {
       healthOrOwnerIndex = modelRuntime->health; /* <= 0; its negation is the excess damage */
       (modelRuntime->classState).stateFlags =
            (modelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
@@ -363,7 +363,7 @@ void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFa
     healthOrDelta = *healthField;
     *healthField = *healthField - damageAmount;
     /* SUB / JLE: the new health is <= 0 */
-    if (*healthField == 0 || SBORROW4(healthOrDelta,damageAmount) != *healthField < 0) {
+    if (healthOrDelta <= damageAmount) {
       healthOrDelta = modelRuntime->health; /* <= 0; its negation is the excess damage */
       (modelRuntime->classState).stateFlags =
            (modelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
@@ -619,7 +619,7 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
     healthValue = *healthField;
     *healthField = *healthField - damageAmount;
     /* SUB / JLE: the new health is <= 0 */
-    if (*healthField == 0 || SBORROW4(healthValue,damageAmount) != *healthField < 0) {
+    if (healthValue <= damageAmount) {
       healthValue = modelRuntime->health; /* <= 0; its negation is the excess damage */
       (modelRuntime->classState).stateFlags =
            (modelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
@@ -723,7 +723,7 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
   randomOffset = randomBits & FIXED_ANGLE16_MASK;
   randomValue = g_RandomGeneratorState.next();
   EffectRuntimePool_CreateInstanceFromDefinition
-            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),randomBits >> 16,
+            (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },randomBits >> 16,
              (randomValue & (FIXED_ANGLE16_EIGHTH_TURN - 1)) + (FIXED_ANGLE16_EIGHTH_TURN - 1),randomOffset,pointZQ12,pointYQ12,randomOrPointX,effectDefinition,
              worldRuntime);
   return;

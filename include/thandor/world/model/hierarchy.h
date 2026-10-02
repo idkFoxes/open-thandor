@@ -86,9 +86,8 @@ void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextAr
 int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot);
 
 /* 0x00528C20 */
-ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
-          (ModelRuntimeSlot *modelRuntimeContinuityEdi,ModelRuntimeSlot *modelRuntime,
-          MdlSerializedNodeHeader *definitionNode);
+bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+          (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode);
 
 /* 0x00528E90 */
 bool ModelNodeRuntime_CreateHierarchyRecursive

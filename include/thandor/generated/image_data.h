@@ -125,8 +125,8 @@ typedef struct ImageData_0040ABBC {
     FileSystemSetCurrentDirectoryProc * at_g_FileSystemSetCurrentDirectory; /* 0040B1E4 g_FileSystemSetCurrentDirectory */
     FileSystemCreateDirectoryRecursiveProc * at_g_FileSystemCreateDirectoryRecursive; /* 0040B1E8 g_FileSystemCreateDirectoryRecursive */
     FileSystemRemoveDirectoryProc * at_g_FileSystemRemoveDirectory; /* 0040B1EC g_FileSystemRemoveDirectory */
-    FileSystemEnumerateDriveLettersEaxEcxProc * at_g_FileSystemEnumerateDriveLetters; /* 0040B1F0 g_FileSystemEnumerateDriveLetters */
-    FileSystemGetDriveTypeCodePreserveProc * at_g_FileSystemGetDriveTypeCode; /* 0040B1F4 g_FileSystemGetDriveTypeCode */
+    FileSystemEnumerateDriveLettersProc * at_g_FileSystemEnumerateDriveLetters; /* 0040B1F0 g_FileSystemEnumerateDriveLetters */
+    FileSystemGetDriveTypeCodeProc * at_g_FileSystemGetDriveTypeCode; /* 0040B1F4 g_FileSystemGetDriveTypeCode */
     FileSystemDriveReadyProc * at_g_FileSystemCheckDriveMediaReady; /* 0040B1F8 g_FileSystemCheckDriveMediaReady */
     FileSystemGetFreeAndTotalBytesRegsProc * at_g_FileSystemGetFreeAndTotalBytes; /* 0040B1FC g_FileSystemGetFreeAndTotalBytes */
     FileSystemGetLastWriteDosDateProc * at_g_FileSystemGetLastWriteDosDate; /* 0040B200 g_FileSystemGetLastWriteDosDate */
@@ -560,7 +560,7 @@ typedef struct ImageData_00485808 {
     uint32_t at_g_TextureDownsampleShift; /* 00485814 g_TextureDownsampleShift */
     GraphicsSetViewportProc * at_g_GraphicsSetViewportAndClearDepth; /* 00485818 g_GraphicsSetViewportAndClearDepth */
     GraphicsDrawPrimitiveQueueProc * at_g_GraphicsDrawPrimitiveQueue; /* 0048581C g_GraphicsDrawPrimitiveQueue */
-    GraphicsBeginScenePreserveAllProc * at_g_GraphicsBeginScene; /* 00485820 g_GraphicsBeginScene */
+    GraphicsBeginSceneProc * at_g_GraphicsBeginScene; /* 00485820 g_GraphicsBeginScene */
     GraphicsEndSceneProc * at_g_GraphicsEndScene; /* 00485824 g_GraphicsEndScene */
     GraphicsTextureRebuildAllProc * at_g_GraphicsRebuildAllStagingTextures; /* 00485828 g_GraphicsRebuildAllStagingTextures */
     GraphicsTextureSetLoadPackageProc * at_g_GraphicsTextureSetLoadPackage; /* 0048582C g_GraphicsTextureSetLoadPackage */

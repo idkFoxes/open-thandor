@@ -877,14 +877,13 @@ int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
 
 /* Address: 0x00528C20.
    Collects the attachment points of a runtime model from its serialized MDL definition node (nodes whose
-   nodeFlags low nibble is not 0 return NULL and are not walked). Per child slot the first transform record of
-   kind 0 or 1 naming that slot is searched in the definition's sprite asset; after recursing into the child
-   definition, a NULL result from there stores the record in the next of the six attachments[] entries.
-   Returns the caller's EDI (modelRuntimeContinuityEdi) otherwise.
+   nodeFlags low nibble is not 0 return false and are not walked). Per child slot the first transform record of
+   kind 0 or 1 naming that slot is searched in the definition's sprite asset; when the child definition is not
+   walked (false from the recursion), the record goes into the next of the six attachments[] entries.
+   Returns true when the node was walked.
 */
-ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
-          (ModelRuntimeSlot *modelRuntimeContinuityEdi,ModelRuntimeSlot *modelRuntime,
-          MdlSerializedNodeHeader *definitionNode)
+bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+          (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode)
 
 {
   uint32_t attachmentSlot;
@@ -893,11 +892,11 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   MdlChildCount childCountRemaining;
   uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransformCursor;
-  ModelRuntimeAttachmentCollectionRegisterPair recursiveCollectionResult;
+  bool childWalked;
   AssetRecordByteCount definitionAssetBase;
 
   if ((definitionNode->nodeFlags & 0xf) != 0) {
-    return NULL;
+    return false;
   }
   childCountRemaining = definitionNode->childCount;
   definitionAssetBase = definitionNode->spriteAssetReference.savedId;
@@ -915,12 +914,12 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
       attachmentKind = attachmentTransformCursor->packedKindAndSelector & 0xf;
       if (((attachmentKind == 0) || (attachmentKind == 1)) &&
          (childIndex == attachmentTransformCursor->packedKindAndSelector >> 4)) {
-        THANDOR_PART(uint32_t, recursiveCollectionResult, 0) =
+        childWalked =
              ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
-                       (modelRuntimeContinuityEdi,modelRuntime,
+                       (modelRuntime,
                         (MdlSerializedNodeHeader *)
                         definitionNode->childSerializedOffsets[childIndex]);
-        if (((ModelRuntimeSlot *)recursiveCollectionResult == NULL) &&
+        if (!childWalked &&
            (attachmentSlot = modelRuntime->attachmentCount, attachmentSlot < 6)) {
           modelRuntime->attachmentCount++;
           modelRuntime->attachments[attachmentSlot].sourceTransform = attachmentTransformCursor;
@@ -935,7 +934,7 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
       childIndex++;
     }
   }
-  return modelRuntimeContinuityEdi;
+  return true;
 }
 
 

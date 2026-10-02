@@ -2190,7 +2190,7 @@ next_condition:
       (g_GameStatTableImage, shown by the results screen).
    All amounts are Q4 fixed point.
 */
-void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void)
+void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void)
 
 {
   uint8_t *totalAccumulator;
@@ -2580,8 +2580,7 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
   cursorGridPosition = FieldGrid_WorldToGridQ12
                     ((g_InGameRuntimeRoot->worldRuntime).motion.targetPositionYQ12,
                      (g_InGameRuntimeRoot->worldRuntime).motion.targetPositionXQ12);
-  inGameRoot->minimapOriginGridPosition =
-       THANDOR_BITCAST(FieldGridCoordinates, FixedPlanarPointEdxEax8, cursorGridPosition);
+  inGameRoot->minimapOriginGridPosition = cursorGridPosition;
   viewSettings = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   committedDistance = (inGameRoot->worldRuntime).motion.committedDistanceQ12;
   if ((viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF) == 0) {

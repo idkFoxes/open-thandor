@@ -538,7 +538,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdArmySlots,worldRuntime); /* the created army */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
@@ -586,7 +586,7 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
   uint32_t slotIndex;
   UiCommandRuntimeRecordPrefix **recordCursor;
   uint32_t *assetCursor;
-  UiGridDimensionsEdxEax8 gridDimensions;
+  UiGridDimensions gridDimensions;
 
   /* node becomes the in-game UI root */
   while (node->parent != UI_NODE_NONE) {
@@ -613,13 +613,13 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
     } while (remainingAssets != 0);
   }
   gridDimensions = UiGrid_ComputeDimensionsPacked(6,itemCount);
-  columnCount = (uint32_t)gridDimensions;
+  columnCount = gridDimensions.columnCount;
   if (ARMY_STOCK_MAX_COLUMNS < columnCount) {
     columnCount = ARMY_STOCK_MAX_COLUMNS;
   }
   panelWidth = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
           g_InGamePanelTextureSubresource28Width;
-  panelHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
+  panelHeight = (int)gridDimensions.rowCount * g_InGamePanelTextureSubresource34Height +
           g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCommandSpriteVariantAColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {

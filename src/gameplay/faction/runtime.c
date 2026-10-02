@@ -115,7 +115,7 @@ void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgume
    moved by the scenario's per-faction offset. OldUnitRuntime_MergeMasksAndReplayRecords applies both in the
    next mission. Without a matching scenario both tables are cleared.
 */
-void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
+void OldUnitRuntime_RebuildScenarioReplayTables(void)
 
 {
   WorldOwnerListNode *ownerNode;
@@ -128,20 +128,18 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   int scenarioRecord;
   int destinationY;
   CampaignLevelRecord *factionExitZoneCursor;
-  /* The original multiplies a stale caller ESI by the active faction index here; the loop then walks
-     all eight 0x740-byte faction records, which only stays inside the table from records[0]. */
-  int staleCallerEsi = 0;
   uint32_t *sourceOrRecordCursor;
   uint32_t *secondaryTableCursor;
   bool scenarioFound;
 
   scenarioFound = false;
   /* Campaign asset (CampaignAsset): the cursor starts at the asset base and advances by one 0x180-byte level
-     record, so ((CampaignAsset *)cursor)->levels[0] is the current record. */
+     record, so ((CampaignAsset *)cursor)->levels[0] is the current record.
+     Original quirk: the original offsets the faction-record cursor by an uninitialized value times the
+     active faction index; the loop then walks all eight 0x740-byte faction records, which only stays
+     inside the table from records[0], so the cursor always starts there. */
   if ((g_InGameRuntimeRoot != NULL) &&
-     (sourceOrRecordCursor = (uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                         staleCallerEsi *
-                         (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex),
+     (sourceOrRecordCursor = (uint32_t *)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits,
      g_FrontendLoadedCampaignAsset != 0)) {
     remainingOrWorldY = ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->levelRecordCount;
     scenarioRecord = g_FrontendLoadedCampaignAsset;
@@ -246,7 +244,7 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
    registry pointers (an unknown id empties that list) and converts the 256 saved runtime-group member offsets
    into pointers again (offset + g_ArmyRuntimeRebaseBaseMinusOne; 0 stays NULL).
 */
-void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
+void GameFactionRuntime_RebaseLoadedArmyReferences(void)
 
 {
   ArmyRuntimeSlot *rebasedSlot;
@@ -846,7 +844,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
     integrityDeltaOrFaction = *integrityField;
     *integrityField = *integrityField - impactValue;
     /* JLE after the SUB: the entity is destroyed */
-    if (*integrityField == 0 || SBORROW4(integrityDeltaOrFaction,impactValue) != *integrityField < 0) {
+    if (integrityDeltaOrFaction <= impactValue) {
       modelOrParentNode = (targetEntityRuntime->common).ownership.modelNode;
       integrityDeltaOrFaction = (targetEntityRuntime->common).damageState.remainingIntegrity;
       runtimeFlagsField = &(targetEntityRuntime->common).runtimeFlags;

@@ -164,7 +164,7 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool failed);
 
 /* 0x00408090 */
-void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void);
+void ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 
 /* 0x0041BC50 */
 uint32_t FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);

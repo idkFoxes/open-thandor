@@ -47,7 +47,7 @@ void ArmyRuntimeClass_UpdateAircraft
   ArmyRuntimeClassUpdate21DefinitionView *classUpdate21Definition;
   ModelRuntimeNode *modelNode;
   bool pointAllowed;
-  FixedSinCosEdxEax8 sinCosStep;
+  FixedSinCos sinCosStep;
   Q12 terrainHeightQ12;
   AngleTurn32 savedAngle1;
   InGameSimulationStepBatchTicks remainingTicks;
@@ -73,7 +73,7 @@ void ArmyRuntimeClass_UpdateAircraft
             ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_CLOSED)) {
       EffectRuntimePool_CreateInstanceFromDefinition
                 (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-                 THANDOR_BITCAST(ModelRuntimeClass21UpdateView *, EffectRuntimeOwnerReference, modelRuntime),
+                 (EffectRuntimeOwnerReference){ .modelRuntime = (ModelRuntimeSlot *)modelRuntime },
                  (modelNode->modelPayload).worldRotationAngle2,
                  (modelNode->modelPayload).worldRotationAngle1,
                  (modelNode->modelPayload).worldRotationAngle0,
@@ -113,9 +113,9 @@ void ArmyRuntimeClass_UpdateAircraft
     modelNode = modelRuntime->rootModelNode;
     sinCosStep = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,stepValue);
     translationVec = &(modelNode->worldTransform).translation;
-    translationVec->x = translationVec->x + (int)sinCosStep;
+    translationVec->x = translationVec->x + sinCosStep.cosValue;
     translationY = &(modelNode->worldTransform).translation.y;
-    *translationY = *translationY + (int)(sinCosStep >> 32);
+    *translationY = *translationY + sinCosStep.sinValue;
     stateField = &(modelRuntime->classLinkState).classState68;
     *stateField = *stateField - 1;
     if (((int)*stateField < 0) &&
@@ -155,9 +155,9 @@ void ArmyRuntimeClass_UpdateAircraft
     modelNode = modelRuntime->rootModelNode;
     sinCosStep = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,stepValue);
     translationVec = &(modelNode->worldTransform).translation;
-    translationVec->x = translationVec->x + (int)sinCosStep;
+    translationVec->x = translationVec->x + sinCosStep.cosValue;
     translationY = &(modelNode->worldTransform).translation.y;
-    *translationY = *translationY + (int)(sinCosStep >> 32);
+    *translationY = *translationY + sinCosStep.sinValue;
     stateField = &(modelRuntime->classLinkState).classState64;
     *stateField = *stateField - 1;
     if ((*stateField == 0) && (homeModelRuntime != NULL)) {
@@ -183,8 +183,8 @@ void ArmyRuntimeClass_UpdateAircraft
                          (headingOrDelta ^ FIXED_ANGLE16_HALF_TURN,currentDefinition->movementStepQ12 * currentDefinition->travelStepCount);
       stateValue = (modelRuntime->classLinkState).classState74;
       (modelNode->worldTransform).translation.x =
-           (int)sinCosStep + (modelRuntime->classLinkState).classState70;
-      (modelNode->worldTransform).translation.y = (int)(sinCosStep >> 32) + stateValue;
+           sinCosStep.cosValue + (modelRuntime->classLinkState).classState70;
+      (modelNode->worldTransform).translation.y = sinCosStep.sinValue + stateValue;
       (modelNode->modelPayload).worldRotationAngle2 = headingOrDelta;
       durationValue = currentDefinition->travelStepCount;
       (modelRuntime->classLinkState).armyLinkOrState.classState = durationValue;
@@ -203,8 +203,8 @@ void ArmyRuntimeClass_UpdateAircraft
         if (maxTerrainHeight < terrainHeightQ12) {
           maxTerrainHeight = terrainHeightQ12;
         }
-        stepValue = stepValue + (int)sinCosStep;
-        sampleCoord = sampleCoord + (int)(sinCosStep >> 32);
+        stepValue = stepValue + sinCosStep.cosValue;
+        sampleCoord = sampleCoord + sinCosStep.sinValue;
         stateValue = stateValue - 10;
       } while (-1 < (int)stateValue);
       (modelRuntime->class21State).trajectoryTerrainReferenceHeightQ12 =
@@ -216,9 +216,9 @@ void ArmyRuntimeClass_UpdateAircraft
                        ((modelNode->modelPayload).worldRotationAngle2,
                         g_InGameSimulationStepTicks * currentDefinition->movementStepQ12);
     translationVec = &(modelNode->worldTransform).translation;
-    translationVec->x = translationVec->x + (int)sinCosStep;
+    translationVec->x = translationVec->x + sinCosStep.cosValue;
     translationY = &(modelNode->worldTransform).translation.y;
-    *translationY = *translationY + (int)(sinCosStep >> 32);
+    *translationY = *translationY + sinCosStep.sinValue;
     FieldGrid_InterpolateTopSurfaceHeight
               ((modelNode->worldTransform).translation.y,
                (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid,&terrainHeightQ12);
@@ -360,8 +360,8 @@ void ArmyRuntimeClass_UpdateAircraft
         stepValue = (modelNode->worldTransform).translation.y;
         childNode = modelRuntime->rootModelNode;
         (childNode->worldTransform).translation.x =
-             (int)sinCosStep + (modelNode->worldTransform).translation.x;
-        (childNode->worldTransform).translation.y = (int)(sinCosStep >> 32) + stepValue;
+             sinCosStep.cosValue + (modelNode->worldTransform).translation.x;
+        (childNode->worldTransform).translation.y = sinCosStep.sinValue + stepValue;
         (childNode->modelPayload).worldRotationAngle2 = headingOrDelta;
         stateValue = currentDefinition->phaseDuration;
         stepValue = currentDefinition->movementStepQ12;
@@ -1312,8 +1312,8 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
                          &completionEffect) == 0) {
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL,
-                   THANDOR_BITCAST(ArmyRuntimeSlot *, EffectRuntimeOwnerReference,
-                                   scanModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime),
+                   (EffectRuntimeOwnerReference){
+                     .armyRuntime = scanModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime },
                    (scanNode->modelPayload).worldRotationAngle2,
                    (scanNode->modelPayload).worldRotationAngle1,
                    (scanNode->modelPayload).worldRotationAngle0,
@@ -2989,14 +2989,14 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
     classStateField = &modelRuntime->health;
     previousHealth = *classStateField;
     *classStateField = *classStateField - limitOrFlags;
-    if (*classStateField == 0 || SBORROW4(previousHealth,limitOrFlags) != (int)*classStateField < 0) {
+    if ((int)previousHealth <= (int)limitOrFlags) { /* SUB / JLE: signed compare of the old health */
       modelRuntime->health = 0;
       classStateField = &(modelRuntime->classState).stateFlags;
       *classStateField = *classStateField ^ (ARMY_MODEL_STATE_DISMANTLING | ARMY_MODEL_STATE_DISMANTLED);
       rootNode = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
       EffectRuntimePool_CreateInstanceFromDefinition
                 (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-                 THANDOR_BITCAST(ModelRuntimeSlot *, EffectRuntimeOwnerReference, modelRuntime),
+                 (EffectRuntimeOwnerReference){ .modelRuntime = modelRuntime },
                  (rootNode->modelPayload).worldRotationAngle2,
                  (rootNode->modelPayload).worldRotationAngle1,
                  (rootNode->modelPayload).worldRotationAngle0,(rootNode->worldTransform).translation.z,
@@ -3886,7 +3886,8 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
               ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
               /* remainingOrDefinition: the model runtime's definition (its first dword). Terrain contact by the
                  definition's contact kind; depth class by its model class; depth radius from the definition. */
-              remainingOrDefinition = *THANDOR_BITCAST(ModelRuntimeSlotReferenceOrSavedOffset, int *, armyRuntime->modelRuntimeOrSavedOffset);
+              remainingOrDefinition =
+                   (int)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime->definitionOrSavedId.runtimeDefinition;
               g_ArmyPlacementContactKindDispatchTable.callbacks[((ModelDefinition *)remainingOrDefinition)->placementContactKindIndex]
                         (((ModelDefinition *)remainingOrDefinition)->placementHeightOffsetQ12,
                          (modelNodeRuntime->worldTransform).translation.y,
@@ -3938,20 +3939,17 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
 
 {
   uint32_t occupancyRuntimeFlags;
-  uint64_t neighborhoodClassificationPair;
   TerrainOccupancyResolvedMasks resolvedMasks;
   ModelRuntimeNode *modelNode;
   ModelRuntimeSlot *modelRuntime;
 
-  /* the original stores EDX of the classification result (MOV [ECX+0x50],EDX) */
-  THANDOR_PART(uint32_t, neighborhoodClassificationPair, 4) =
+  armyRuntime->terrainOccupancyMask0 =
        TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
                  ((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionOrSavedId).runtimeDefinition->
                   footprintRadius,
                   (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                   (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                   worldRuntime->fieldGrid);
-  armyRuntime->terrainOccupancyMask0 = THANDOR_PART(uint32_t, neighborhoodClassificationPair, 4);
   modelNode = armyRuntime->modelNodeRuntime;
   resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                     (modelNode->runtimeFlags,armyRuntime->terrainOccupancyMask1,
@@ -4080,7 +4078,7 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
   AngleTurn32 orientationAngle1;
   ModelRuntimeNode *modelNode;
   EffectDefinition *selectedEffectDefinition;
-  bool timerOverflow;
+  int previousTimerTicks;
   ModelPackedPointRecord *emitterPoint;
   FixedDirection launchDirection;
   ModelWorldPoint localPoint;
@@ -4094,10 +4092,10 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
   
   emitterDefinition = modelRuntime->modelDefinition;
   emitterTimer = &(modelRuntime->classState).shotEmitterTimerTicks;
-  timerOverflow = SBORROW4(*emitterTimer,g_InGameSimulationStepTicks);
+  previousTimerTicks = (int)*emitterTimer;
   *emitterTimer = *emitterTimer - g_InGameSimulationStepTicks;
-  /* SUB + JG: the shot timer has reached 0 or below (signed) */
-  if ((*emitterTimer == 0 || timerOverflow != (int)*emitterTimer < 0) &&
+  /* SUB + JG: the shot timer has reached 0 or below (signed compare of the old value with the step) */
+  if (previousTimerTicks <= (int)g_InGameSimulationStepTicks &&
      ((emitterDefinition->emitterShotDefinitionReference).definition != (ShotDefinition *)0xffffffff)) {
     randomOrPointCount = 0;
     if (emitterDefinition->shotEmitterRandomTicks != 0) {
@@ -4121,10 +4119,10 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
   }
   emitterDefinition = modelRuntime->modelDefinition;
   emitterTimer = &(modelRuntime->classState).effectEmitterTimerTicks;
-  timerOverflow = SBORROW4(*emitterTimer,g_InGameSimulationStepTicks);
+  previousTimerTicks = (int)*emitterTimer;
   *emitterTimer = *emitterTimer - g_InGameSimulationStepTicks;
   /* the effect timer has reached 0 or below (signed) and there is an effect to emit */
-  if ((*emitterTimer == 0 || timerOverflow != (int)*emitterTimer < 0) &&
+  if (previousTimerTicks <= (int)g_InGameSimulationStepTicks &&
       ((emitterDefinition->emitterEffectDefinitionReference).definition != NULL ||
        (emitterDefinition->waterEmitterEffectDefinitionReference).definition != NULL)) {
     randomOrPointCount = 0;
@@ -4206,7 +4204,7 @@ UseRootPosition:
       orientationAngle2 = orientationAngle0;
     }
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),orientationAngle0,
+              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },orientationAngle0,
                orientationAngle1,orientationAngle2,worldZQ12,worldY,nodeOrWorldX,effectDefinition,
                worldContext);
     emitterTimer = &(modelRuntime->classState).effectEmitterPointIndex;

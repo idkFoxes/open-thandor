@@ -80,7 +80,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
     ArmyRuntime_ApplyDamageAndPropagateToParent(advanceOrDeltaX,(ModelRuntimeSlot *)modelRuntime);
   }
   advanceOrDeltaX = (modelRuntime->movementControl).movementAdvancePerTickQ12;
-  speedHeadingOrWorldY = THANDOR_BITCAST(Q12, ArmyRuntimeCoordinateCommandOrHistoryValue, movementDefinition->movementAdvanceDeltaQ12PerTick);
+  speedHeadingOrWorldY.coordinateOrTargetQ12 = movementDefinition->movementAdvanceDeltaQ12PerTick;
   if (((modelRuntime->articulatedContact).fallbackPosition0Q12 &
        (ARMY_ARTICULATED_STEP_LEFT | ARMY_ARTICULATED_STEP_RIGHT)) != 0) {
     /* a step is running: accelerate in its first half, decelerate in its second */
@@ -91,7 +91,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
     else {
       speedHeadingOrWorldY.signedValue = -(speedHeadingOrWorldY.signedValue - advanceOrDeltaX);
     }
-    (modelRuntime->movementControl).movementAdvancePerTickQ12 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue, Q12, speedHeadingOrWorldY);
+    (modelRuntime->movementControl).movementAdvancePerTickQ12 = speedHeadingOrWorldY.coordinateOrTargetQ12;
     /* progress increment = previous speed * step rate (fallbackPosition1Q12) * ticks */
     stepSteerOrWorldX =
          (ModelRuntimeNode *)
@@ -213,7 +213,7 @@ AdvanceWaypoint:
         advanceOrDeltaX = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
         deltaY = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
         if ((advanceOrDeltaX == 0) && (deltaY == 0)) {
-          targetAngleLength = THANDOR_BITCAST(uint64_t, FixedLengthAngle, ((uint64_t)(rootNode->modelPayload).worldRotationAngle2 << 32));
+          targetAngleLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
         }
         else {
           targetAngleLength = FixedMath_Vector2AngleAndLength(deltaY,advanceOrDeltaX);
@@ -296,7 +296,7 @@ SharedContinuation:
     }
     stepSteerOrWorldX =
          (ModelRuntimeNode *)(modelRuntime->rootModelNode->worldTransform).translation.x;
-    speedHeadingOrWorldY = THANDOR_BITCAST(GraphicsWorldCoordinateQ12, ArmyRuntimeCoordinateCommandOrHistoryValue, (modelRuntime->rootModelNode->worldTransform).translation.y);
+    speedHeadingOrWorldY.coordinateOrTargetQ12 = (modelRuntime->rootModelNode->worldTransform).translation.y;
     if ((worldRuntime->fieldGrid->runtimeStateFlags & 1) == 0) {
       return;
     }
@@ -332,7 +332,7 @@ InitializeTerrainContact:
 CommitPosition:
   rootNode = modelRuntime->rootModelNode;
   (rootNode->worldTransform).translation.x = (GraphicsWorldCoordinateQ12)stepSteerOrWorldX;
-  (rootNode->worldTransform).translation.y = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue, GraphicsWorldCoordinateQ12, speedHeadingOrWorldY);
+  (rootNode->worldTransform).translation.y = speedHeadingOrWorldY.coordinateOrTargetQ12;
   rootNode->runtimeFlags = rootNode->runtimeFlags | 1;
   ArmyArticulatedRuntime_UpdateSuspensionHierarchy(rootNode,worldRuntime);
   if (((previousWorldX != (rootNode->worldTransform).translation.x) ||
@@ -796,7 +796,7 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   bool withinLinkRadius;
   FixedLengthAngle angleAndLength;
   FixedPlanarPointQ12 nextPosition;
-  FixedSinCosEdxEax8 sinCosOffset;
+  FixedSinCos sinCosOffset;
   ModelRuntimeSlot *blockingModelRuntime;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
@@ -838,7 +838,7 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
     secondaryDelta = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
     primaryDelta = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
-      angleAndLength = THANDOR_BITCAST(uint64_t, FixedLengthAngle, ((uint64_t)(rootNode->modelPayload).worldRotationAngle2 << 32));
+      angleAndLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
     }
     else {
       angleAndLength = FixedMath_Vector2AngleAndLength(secondaryDelta,primaryDelta);
@@ -988,11 +988,11 @@ FinalizeTick:
   desiredHeading = previousRotationAngle - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   facingAngle = (placedRootNode->modelPayload).worldRotationAngle2 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   sinCosOffset = FixedMath_SinCosScaled(facingAngle,nodeModelResource->localBoundsY0Q12);
-  primaryDelta = (int)sinCosOffset + (placedRootNode->worldTransform).translation.x;
-  secondaryDelta = (int)(sinCosOffset >> 32) + (placedRootNode->worldTransform).translation.y;
+  primaryDelta = sinCosOffset.cosValue + (placedRootNode->worldTransform).translation.x;
+  secondaryDelta = sinCosOffset.sinValue + (placedRootNode->worldTransform).translation.y;
   sinCosOffset = FixedMath_SinCosScaled(desiredHeading,nodeModelResource->localBoundsY0Q12);
   angleAndLength = FixedMath_Vector2AngleAndLength
-                     (secondaryDelta - ((int)(sinCosOffset >> 32) + previousWorldY),primaryDelta - ((int)sinCosOffset + previousWorldX));
+                     (secondaryDelta - (sinCosOffset.sinValue + previousWorldY),primaryDelta - (sinCosOffset.cosValue + previousWorldX));
   trackDistance = angleAndLength.length;
   turnVelocityOrLimit = angleAndLength.angle - (placedRootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
   if ((FIXED_ANGLE16_QUARTER_TURN < turnVelocityOrLimit) && (turnVelocityOrLimit < FIXED_ANGLE16_THREE_QUARTER_TURN)) {
@@ -1003,11 +1003,11 @@ FinalizeTick:
        trackDistance * modelRuntime->modelDefinition->trackTextureUScalePerDistance;
   /* the other side (heading + 90 degrees) */
   sinCosOffset = FixedMath_SinCosScaled(facingAngle ^ FIXED_ANGLE16_HALF_TURN,nodeModelResource->localBoundsY0Q12);
-  primaryDelta = (int)sinCosOffset + (placedRootNode->worldTransform).translation.x;
-  secondaryDelta = (int)(sinCosOffset >> 32) + (placedRootNode->worldTransform).translation.y;
+  primaryDelta = sinCosOffset.cosValue + (placedRootNode->worldTransform).translation.x;
+  secondaryDelta = sinCosOffset.sinValue + (placedRootNode->worldTransform).translation.y;
   sinCosOffset = FixedMath_SinCosScaled(desiredHeading ^ FIXED_ANGLE16_HALF_TURN,nodeModelResource->localBoundsY0Q12);
   angleAndLength = FixedMath_Vector2AngleAndLength
-                     (secondaryDelta - ((int)(sinCosOffset >> 32) + previousWorldY),primaryDelta - ((int)sinCosOffset + previousWorldX));
+                     (secondaryDelta - (sinCosOffset.sinValue + previousWorldY),primaryDelta - (sinCosOffset.cosValue + previousWorldX));
   trackDistance = angleAndLength.length;
   facingAngle = angleAndLength.angle - (placedRootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
   if ((FIXED_ANGLE16_QUARTER_TURN < facingAngle) && (facingAngle < FIXED_ANGLE16_THREE_QUARTER_TURN)) {
@@ -1183,7 +1183,7 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
     primaryDelta = waypointWorldX - (rootNode->worldTransform).translation.x;
     secondaryDelta = (int)armyOrWaypointY - (rootNode->worldTransform).translation.y;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
-      targetAngleLength = THANDOR_BITCAST(uint64_t, FixedLengthAngle, ((uint64_t)(rootNode->modelPayload).worldRotationAngle2 << 32));
+      targetAngleLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
     }
     else {
       targetAngleLength = FixedMath_Vector2AngleAndLength(secondaryDelta,primaryDelta);
@@ -1570,12 +1570,12 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
           (ModelRuntimeNode *modelNodeRuntime,WorldRuntimeContext *worldRuntime)
 
 {
-  ArmyRuntimeCoordinateCommandOrHistoryValue rootHeading;
+  AngleTurn32 rootHeading;
   Q12 terrainHeight;
   uint32_t footX;
   uint32_t footY;
   int lateralOffsetY;
-  FixedSinCosEdxEax8 lateralOffset;
+  FixedSinCos lateralOffset;
   Q12 worldXQ12;
   Q12 worldYQ12;
   ArmyArticulatedRuntimeSlotView *articulatedRuntime;
@@ -1591,9 +1591,9 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   lateralOffset = FixedMath_SinCosScaled
                     ((modelNodeRuntime->modelPayload).worldRotationAngle2 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK,
                      (articulatedRuntime->articulatedContact).lateralOffsetQ12);
-  lateralOffsetY = (int)(lateralOffset >> 32);
+  lateralOffsetY = lateralOffset.sinValue;
   /* left foot: heading + 90 degrees */
-  footX = worldXQ12 + (int)lateralOffset;
+  footX = worldXQ12 + lateralOffset.cosValue;
   footY = worldYQ12 + lateralOffsetY;
   articulatedRuntime->movementTarget0Q12 = footX;
   articulatedRuntime->definitionClassValue80 = footY;
@@ -1602,7 +1602,7 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   articulatedRuntime->runtimeState98 = footY;
   articulatedRuntime->articulatedHeightOrStateA0 = terrainHeight;
   /* right foot */
-  footX = worldXQ12 - (int)lateralOffset;
+  footX = worldXQ12 - lateralOffset.cosValue;
   footY = worldYQ12 - lateralOffsetY;
   articulatedRuntime->movementTarget1Q12 = footX;
   articulatedRuntime->definitionClassValue84 = footY;
@@ -1610,13 +1610,13 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   articulatedRuntime->runtimeState94 = footX;
   articulatedRuntime->articulatedCoordinateOrState9C = footY;
   articulatedRuntime->runtimeStateA4 = terrainHeight;
-  rootHeading = THANDOR_BITCAST(AngleTurn32, ArmyRuntimeCoordinateCommandOrHistoryValue, (modelNodeRuntime->modelPayload).worldRotationAngle2);
-  articulatedRuntime->classState60 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue, uint32_t, rootHeading);
-  articulatedRuntime->ownerValue64 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue, uint32_t, rootHeading);
-  (articulatedRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory = rootHeading;
-  (articulatedRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue = rootHeading;
-  (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory = rootHeading;
-  (articulatedRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue = rootHeading;
+  rootHeading = (modelNodeRuntime->modelPayload).worldRotationAngle2;
+  articulatedRuntime->classState60 = rootHeading;
+  articulatedRuntime->ownerValue64 = rootHeading;
+  (articulatedRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.headingOrTurnValue = rootHeading;
+  (articulatedRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue.headingOrTurnValue = rootHeading;
+  (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.headingOrTurnValue = rootHeading;
+  (articulatedRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.headingOrTurnValue = rootHeading;
   /* ground normals: elevation a quarter turn (straight up), azimuth 0 */
   articulatedRuntime->ownerValue68 = ARMY_ARTICULATED_NORMAL_UP;
   articulatedRuntime->fallbackWorldYQ12 = ARMY_ARTICULATED_NORMAL_UP;
@@ -1804,7 +1804,7 @@ void ArmyRuntimeClass_UpdateGroundMovement
     deltaYOrTurnLimit = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
     deltaXOrTilt = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
     if ((deltaXOrTilt == 0) && (deltaYOrTurnLimit == 0)) {
-      angleAndLength = THANDOR_BITCAST(uint64_t, FixedLengthAngle, ((uint64_t)(rootNode->modelPayload).worldRotationAngle2 << 32));
+      angleAndLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
     }
     else {
       angleAndLength = FixedMath_Vector2AngleAndLength(deltaYOrTurnLimit,deltaXOrTilt);
@@ -1996,8 +1996,8 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   /* the point ahead Y, then the stride length */
   int aheadYOrStride;
   uint32_t footY;
-  FixedSinCosEdxEax8 lateralSinCos;
-  FixedSinCosEdxEax8 headingSinCos;
+  FixedSinCos lateralSinCos;
+  FixedSinCos headingSinCos;
   ModelRuntimeSlot *blockingModelRuntime;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
@@ -2014,16 +2014,16 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   sideAngle = headingAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   lateralSinCos = FixedMath_SinCosScaled(sideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
   footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
-  footXOrLength = FixedMath_Length2(((int)(lateralSinCos >> 32) + armyRuntime->articulatedCoordinateOrState9C) -
+  footXOrLength = FixedMath_Length2((lateralSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C) -
                             (rootNode->worldTransform).translation.y,
-                            ((int)lateralSinCos + armyRuntime->runtimeState94) -
+                            (lateralSinCos.cosValue + armyRuntime->runtimeState94) -
                             (rootNode->worldTransform).translation.x);
   /* classParameterC0: stride length */
   reachOrSideAngle = footXOrLength + ((ModelDefinition *)movementDefinition)->classParameterC0;
   if (reachOrSideAngle < (uint32_t)routeDistanceQ12) {
     headingSinCos = FixedMath_SinCosScaled(headingAngle16,reachOrSideAngle);
-    aheadXOrFootZ = (int)headingSinCos + (rootNode->worldTransform).translation.x;
-    aheadYOrStride = (int)(headingSinCos >> 32) + (rootNode->worldTransform).translation.y;
+    aheadXOrFootZ = headingSinCos.cosValue + (rootNode->worldTransform).translation.x;
+    aheadYOrStride = headingSinCos.sinValue + (rootNode->worldTransform).translation.y;
   }
   else {
     ArmyRuntime_UpdateMovementAndWaypoints
@@ -2032,8 +2032,8 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
     aheadYOrStride = waypointWorldYQ12;
     aheadXOrFootZ = waypointWorldXQ12;
   }
-  footXOrLength = aheadXOrFootZ + (int)lateralSinCos;
-  footY = aheadYOrStride + (int)(lateralSinCos >> 32);
+  footXOrLength = aheadXOrFootZ + lateralSinCos.cosValue;
+  footY = aheadYOrStride + lateralSinCos.sinValue;
   activeFieldGrid = worldRuntime->fieldGrid;
   armyRuntime->runtimeState90 = footXOrLength;
   armyRuntime->runtimeState98 = footY;
@@ -2043,7 +2043,7 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
     return;
   }
   if (FieldGrid_InterpolateTerrainHeightAndNormal
-                     ((int)(lateralSinCos >> 32) + footY,(int)lateralSinCos + footXOrLength,activeFieldGrid,
+                     (lateralSinCos.sinValue + footY,lateralSinCos.cosValue + footXOrLength,activeFieldGrid,
                       &terrainHeightQ12,&terrainNormalAngles)) {
     armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
     armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
@@ -2067,14 +2067,14 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   reachOrSideAngle = headingAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
   footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
-  footXOrLength = armyRuntime->movementTarget1Q12 + (int)lateralSinCos * 2;
-  footY = armyRuntime->definitionClassValue84 + (int)(lateralSinCos >> 32) * 2;
+  footXOrLength = armyRuntime->movementTarget1Q12 + lateralSinCos.cosValue * 2;
+  footY = armyRuntime->definitionClassValue84 + lateralSinCos.sinValue * 2;
   activeFieldGrid = worldRuntime->fieldGrid;
   armyRuntime->runtimeState90 = footXOrLength;
   armyRuntime->runtimeState98 = footY;
   lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,footRadius);
   if (!FieldGrid_InterpolateTerrainHeightAndNormal
-                     ((int)(lateralSinCos >> 32) + footY,(int)lateralSinCos + footXOrLength,activeFieldGrid,
+                     (lateralSinCos.sinValue + footY,lateralSinCos.cosValue + footXOrLength,activeFieldGrid,
                       &terrainHeightQ12,&terrainNormalAngles)) {
     return;
   }
@@ -2129,8 +2129,8 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   uint32_t sideAngle;
   /* the point ahead Y, then the target Y, then the stride length */
   int aheadYOrStride;
-  FixedSinCosEdxEax8 lateralSinCos;
-  FixedSinCosEdxEax8 headingSinCos;
+  FixedSinCos lateralSinCos;
+  FixedSinCos headingSinCos;
   ModelRuntimeSlot *blockingModelRuntime;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
@@ -2147,16 +2147,16 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   sideAngle = headingAngle16 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   lateralSinCos = FixedMath_SinCosScaled(sideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
   footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
-  footXOrLength = FixedMath_Length2(((int)(lateralSinCos >> 32) + armyRuntime->runtimeState98) -
+  footXOrLength = FixedMath_Length2((lateralSinCos.sinValue + armyRuntime->runtimeState98) -
                             (rootNode->worldTransform).translation.y,
-                            ((int)lateralSinCos + armyRuntime->runtimeState90) -
+                            (lateralSinCos.cosValue + armyRuntime->runtimeState90) -
                             (rootNode->worldTransform).translation.x);
   /* classParameterC0: stride length */
   reachOrSideAngle = footXOrLength + ((ModelDefinition *)movementDefinition)->classParameterC0;
   if (reachOrSideAngle < (uint32_t)routeDistanceQ12) {
     headingSinCos = FixedMath_SinCosScaled(headingAngle16,reachOrSideAngle);
-    aheadXOrFootY = (int)headingSinCos + (rootNode->worldTransform).translation.x;
-    aheadYOrStride = (int)(headingSinCos >> 32) + (rootNode->worldTransform).translation.y;
+    aheadXOrFootY = headingSinCos.cosValue + (rootNode->worldTransform).translation.x;
+    aheadYOrStride = headingSinCos.sinValue + (rootNode->worldTransform).translation.y;
   }
   else {
     ArmyRuntime_UpdateMovementAndWaypoints
@@ -2165,8 +2165,8 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
     aheadYOrStride = waypointWorldYQ12;
     aheadXOrFootY = waypointWorldXQ12;
   }
-  footXOrLength = aheadXOrFootY + (int)lateralSinCos;
-  aheadYOrStride = aheadYOrStride + (int)(lateralSinCos >> 32);
+  footXOrLength = aheadXOrFootY + lateralSinCos.cosValue;
+  aheadYOrStride = aheadYOrStride + lateralSinCos.sinValue;
   activeFieldGrid = worldRuntime->fieldGrid;
   armyRuntime->runtimeState94 = footXOrLength;
   armyRuntime->articulatedCoordinateOrState9C = aheadYOrStride;
@@ -2175,7 +2175,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
     return;
   }
   if (FieldGrid_InterpolateTerrainHeightAndNormal
-                     ((int)(lateralSinCos >> 32) + aheadYOrStride,(int)lateralSinCos + footXOrLength,activeFieldGrid,
+                     (lateralSinCos.sinValue + aheadYOrStride,lateralSinCos.cosValue + footXOrLength,activeFieldGrid,
                       &terrainHeightQ12,&terrainNormalAngles)) {
     armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
     armyRuntime->runtimeStateA4 = terrainHeightQ12;
@@ -2199,14 +2199,14 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   reachOrSideAngle = headingAngle16 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
   footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
-  footXOrLength = armyRuntime->movementTarget0Q12 + (int)lateralSinCos * 2;
-  aheadXOrFootY = armyRuntime->definitionClassValue80 + (int)(lateralSinCos >> 32) * 2;
+  footXOrLength = armyRuntime->movementTarget0Q12 + lateralSinCos.cosValue * 2;
+  aheadXOrFootY = armyRuntime->definitionClassValue80 + lateralSinCos.sinValue * 2;
   activeFieldGrid = worldRuntime->fieldGrid;
   armyRuntime->runtimeState94 = footXOrLength;
   armyRuntime->articulatedCoordinateOrState9C = aheadXOrFootY;
   lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,footRadius);
   if (!FieldGrid_InterpolateTerrainHeightAndNormal
-                     ((int)(lateralSinCos >> 32) + aheadXOrFootY,(int)lateralSinCos + footXOrLength,activeFieldGrid,
+                     (lateralSinCos.sinValue + aheadXOrFootY,lateralSinCos.cosValue + footXOrLength,activeFieldGrid,
                       &terrainHeightQ12,&terrainNormalAngles)) {
     return;
   }
@@ -2307,7 +2307,7 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
     deltaYOrTurnLimit = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
     deltaXOrTilt = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
     if ((deltaXOrTilt == 0) && (deltaYOrTurnLimit == 0)) {
-      angleAndLength = THANDOR_BITCAST(uint64_t, FixedLengthAngle, ((uint64_t)(rootNode->modelPayload).worldRotationAngle2 << 32));
+      angleAndLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
     }
     else {
       angleAndLength = FixedMath_Vector2AngleAndLength(deltaYOrTurnLimit,deltaXOrTilt);
@@ -2476,7 +2476,7 @@ void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyM
   GraphicsWorldCoordinateQ12 currentWorldY;
   InGameRuntimeRoot *inGameRoot;
   FixedLengthAngle offsetAngleLength;
-  FixedSinCosEdxEax8 clampedOffset;
+  FixedSinCos clampedOffset;
   PathingDestination resolvedDestination;
 
   inGameRoot = g_InGameRuntimeRoot;
@@ -2487,8 +2487,8 @@ void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyM
                        targetWorldX - movementRuntime->movementTargetWorldXQ12);
     if (ARMY_MOVEMENT_FOLLOW_MAX_STEP_Q12 < (int)offsetAngleLength.length) {
       clampedOffset = FixedMath_SinCosScaled(offsetAngleLength.angle,ARMY_MOVEMENT_FOLLOW_MAX_STEP_Q12);
-      targetWorldX = (int)clampedOffset + movementRuntime->movementTargetWorldXQ12;
-      targetWorldY = (int)(clampedOffset >> 32) + movementRuntime->movementTargetWorldYQ12;
+      targetWorldX = clampedOffset.cosValue + movementRuntime->movementTargetWorldXQ12;
+      targetWorldY = clampedOffset.sinValue + movementRuntime->movementTargetWorldYQ12;
     }
     movementRuntime->movementStateFlags =
          movementRuntime->movementStateFlags &
@@ -2597,7 +2597,7 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
   }
   if (effectDefinition != NULL) {
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
+              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
                (footNode->modelPayload).worldRotationAngle2,
                (footNode->modelPayload).worldRotationAngle1,
                (footNode->modelPayload).worldRotationAngle0,
@@ -2650,7 +2650,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   int leftYOrElevation;
   FixedLengthAngle leftPlanarVector;
   FixedLengthAngle rightPlanarVector;
-  FixedSinCosEdxEax8 contactOffset;
+  FixedSinCos contactOffset;
   FixedTriangleJointAngles jointAngles;
   FixedLengthAzimuthElevation leftLegVector;
   FixedLengthAzimuthElevation rightLegVector;
@@ -2666,10 +2666,6 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   GraphicsWorldCoordinateQ12 rightContactY;
   int rightXOrTargetY;
   GraphicsWorldCoordinateQ12 rightContactZ;
-  AngleTurn32 rightBlendAngleEcx;
-  AngleTurn32 rightBlendAngleEdx;
-  AngleTurn32 leftBlendAngleEcx;
-  AngleTurn32 leftBlendAngleEdx;
   ArmyArticulatedRuntimeSlotView *articulatedRuntime;
   ArmyRuntimeSlot *walkerRuntime;
   ModelRuntimeNode *rightNode;
@@ -2842,11 +2838,11 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
                      (rootHeading + FIXED_ANGLE16_QUARTER_TURN + (leftYawOffset & FIXED_ANGLE16_MASK) & FIXED_ANGLE16_MASK,
                       (((modelNodeRuntime->runtimePayload).armyRuntime)->articulatedContact).
                       contactRadiusOrLinkedSlotMask.contactRadiusQ12);
-  leftXOrAngle = leftContactX + (int)contactOffset;
-  leftYOrElevation = leftContactY + (int)(contactOffset >> 32);
+  leftXOrAngle = leftContactX + contactOffset.cosValue;
+  leftYOrElevation = leftContactY + contactOffset.sinValue;
   contactOffset = FixedMath_SinCosScaled(rightLengthOrAngle,scale);
-  heightOrRightTargetX = rightContactX - (int)contactOffset;
-  rightXOrTargetY = rightContactY - (int)(contactOffset >> 32);
+  heightOrRightTargetX = rightContactX - contactOffset.cosValue;
+  rightXOrTargetY = rightContactY - contactOffset.sinValue;
   /* two-bone leg: aim thigh and shin at the ankle points (contactRadius beside each foot) */
   ModelNodeRuntime_RebuildTransformsFromRoot(leftNode);
   ModelNodeRuntime_RebuildTransformsFromRoot(rightNode);
@@ -2923,12 +2919,10 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   FixedTransform_InvertRigidQ28
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA,
              (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB);
-  leftBlendAngleEdx = leftBlendAngles.azimuthAngle;
-  leftBlendAngleEcx = leftBlendAngles.elevationAngle;
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (((leftHeading - leftPreviousHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * leftBlendQ12 >> Q12_SHIFT) + leftHeadingBase & FIXED_ANGLE16_MASK,leftBlendAngleEcx,leftBlendAngleEdx
-            );
+             (((leftHeading - leftPreviousHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * leftBlendQ12 >> Q12_SHIFT) + leftHeadingBase & FIXED_ANGLE16_MASK,
+             leftBlendAngles.elevationAngle,leftBlendAngles.azimuthAngle);
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch,
              (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
@@ -2946,12 +2940,10 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   FixedTransform_InvertRigidQ28
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA,
              (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB);
-  rightBlendAngleEdx = rightBlendAngles.azimuthAngle;
-  rightBlendAngleEcx = rightBlendAngles.elevationAngle;
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (((inverseBlendOrRightHeading - rightPreviousHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * rightBlendQ12 >> Q12_SHIFT) + rightHeadingBase & FIXED_ANGLE16_MASK,rightBlendAngleEcx,
-             rightBlendAngleEdx);
+             (((inverseBlendOrRightHeading - rightPreviousHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * rightBlendQ12 >> Q12_SHIFT) + rightHeadingBase & FIXED_ANGLE16_MASK,
+             rightBlendAngles.elevationAngle,rightBlendAngles.azimuthAngle);
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch,
              (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
@@ -2983,7 +2975,7 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
   int strideLength;
   uint32_t footTravel;
   uint32_t sideAngle;
-  FixedSinCosEdxEax8 offsetSinCos;
+  FixedSinCos offsetSinCos;
   Q12 terrainHeightQ12;
   uint32_t terrainNormalAngles;
 
@@ -2992,16 +2984,16 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
        headingAngle16;
   sideAngle = headingAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   offsetSinCos = FixedMath_SinCosScaled(sideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
-  armyRuntime->runtimeState90 = (int)offsetSinCos * 2 + armyRuntime->runtimeState94;
+  armyRuntime->runtimeState90 = offsetSinCos.cosValue * 2 + armyRuntime->runtimeState94;
   armyRuntime->runtimeState98 =
-       (int)(offsetSinCos >> 32) * 2 + armyRuntime->articulatedCoordinateOrState9C;
+       offsetSinCos.sinValue * 2 + armyRuntime->articulatedCoordinateOrState9C;
   offsetSinCos = FixedMath_SinCosScaled
                     (sideAngle,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
                            contactRadiusQ12);
   if (worldRuntime->fieldGrid != NULL) {
     if (FieldGrid_InterpolateTerrainHeightAndNormal
-                      ((int)(offsetSinCos >> 32) + armyRuntime->runtimeState98,
-                       (int)offsetSinCos + armyRuntime->runtimeState90,worldRuntime->fieldGrid,
+                      (offsetSinCos.sinValue + armyRuntime->runtimeState98,
+                       offsetSinCos.cosValue + armyRuntime->runtimeState90,worldRuntime->fieldGrid,
                        &terrainHeightQ12,&terrainNormalAngles)) {
       armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
       armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
@@ -3039,7 +3031,7 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
   int strideLength;
   uint32_t footTravel;
   uint32_t sideAngle;
-  FixedSinCosEdxEax8 offsetSinCos;
+  FixedSinCos offsetSinCos;
   Q12 terrainHeightQ12;
   uint32_t terrainNormalAngles;
 
@@ -3048,16 +3040,16 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
        headingAngle16;
   sideAngle = headingAngle16 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   offsetSinCos = FixedMath_SinCosScaled(sideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
-  armyRuntime->runtimeState94 = (int)offsetSinCos * 2 + armyRuntime->runtimeState90;
+  armyRuntime->runtimeState94 = offsetSinCos.cosValue * 2 + armyRuntime->runtimeState90;
   armyRuntime->articulatedCoordinateOrState9C =
-       (int)(offsetSinCos >> 32) * 2 + armyRuntime->runtimeState98;
+       offsetSinCos.sinValue * 2 + armyRuntime->runtimeState98;
   offsetSinCos = FixedMath_SinCosScaled
                     (sideAngle,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
                            contactRadiusQ12);
   if (worldRuntime->fieldGrid != NULL) {
     if (FieldGrid_InterpolateTerrainHeightAndNormal
-                      ((int)(offsetSinCos >> 32) + armyRuntime->articulatedCoordinateOrState9C,
-                       (int)offsetSinCos + armyRuntime->runtimeState94,worldRuntime->fieldGrid,
+                      (offsetSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C,
+                       offsetSinCos.cosValue + armyRuntime->runtimeState94,worldRuntime->fieldGrid,
                        &terrainHeightQ12,&terrainNormalAngles)) {
       armyRuntime->runtimeStateA4 = terrainHeightQ12;
       armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
@@ -3109,7 +3101,7 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
   uint32_t pivotDistance;
   /* pivot/target Y, then the stride length */
   int pointYOrStride;
-  FixedSinCosEdxEax8 offsetSinCos;
+  FixedSinCos offsetSinCos;
   Q12 terrainHeightQ12;
   uint32_t terrainNormalAngles;
   FieldGridAsset *fieldGrid;
@@ -3126,19 +3118,19 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     scaledOffsetProduct = (int64_t)(armyRuntime->articulatedContact).lateralOffsetQ12 * (3 * Q12_ONE / 2);
     pivotDistance = FIXED_PRODUCT_SHR(scaledOffsetProduct,Q12_SHIFT);
     offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
-    pointXOrSegment = (int)offsetSinCos + (rootNode->worldTransform).translation.x;
-    pointYOrStride = (int)(offsetSinCos >> 32) + (rootNode->worldTransform).translation.y;
+    pointXOrSegment = offsetSinCos.cosValue + (rootNode->worldTransform).translation.x;
+    pointYOrStride = offsetSinCos.sinValue + (rootNode->worldTransform).translation.y;
     /* rotate forward from the pivot by the steering angle, then step out to the left */
     footHeading = (footHeading + steeringAngle16) - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
     (armyRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue.headingOrTurnValue =
          footHeading;
     offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
-    pointXOrSegment = pointXOrSegment + (int)offsetSinCos;
-    pointYOrStride = pointYOrStride + (int)(offsetSinCos >> 32);
+    pointXOrSegment = pointXOrSegment + offsetSinCos.cosValue;
+    pointYOrStride = pointYOrStride + offsetSinCos.sinValue;
     footHeading = footHeading + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
     offsetSinCos = FixedMath_SinCosScaled(footHeading,(armyRuntime->articulatedContact).lateralOffsetQ12);
-    armyRuntime->runtimeState90 = (int)offsetSinCos + pointXOrSegment;
-    armyRuntime->runtimeState98 = (int)(offsetSinCos >> 32) + pointYOrStride;
+    armyRuntime->runtimeState90 = offsetSinCos.cosValue + pointXOrSegment;
+    armyRuntime->runtimeState98 = offsetSinCos.sinValue + pointYOrStride;
     offsetSinCos = FixedMath_SinCosScaled
                        (footHeading,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
                               contactRadiusQ12);
@@ -3146,8 +3138,8 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     armyRuntime->ownerValue64 = ((int)steeringAngle16 >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
     if (fieldGrid != NULL) {
       if (FieldGrid_InterpolateTerrainHeightAndNormal
-                         ((int)(offsetSinCos >> 32) + armyRuntime->runtimeState98,
-                          (int)offsetSinCos + armyRuntime->runtimeState90,fieldGrid,
+                         (offsetSinCos.sinValue + armyRuntime->runtimeState98,
+                          offsetSinCos.cosValue + armyRuntime->runtimeState90,fieldGrid,
                           &terrainHeightQ12,&terrainNormalAngles)) {
         armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
         armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
@@ -3186,18 +3178,18 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     scaledOffsetProduct = (int64_t)(armyRuntime->articulatedContact).lateralOffsetQ12 * (3 * Q12_ONE / 2);
     pivotDistance = FIXED_PRODUCT_SHR(scaledOffsetProduct,Q12_SHIFT);
     offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
-    pointXOrSegment = (int)offsetSinCos + (rootNode->worldTransform).translation.x;
-    pointYOrStride = (int)(offsetSinCos >> 32) + (rootNode->worldTransform).translation.y;
+    pointXOrSegment = offsetSinCos.cosValue + (rootNode->worldTransform).translation.x;
+    pointYOrStride = offsetSinCos.sinValue + (rootNode->worldTransform).translation.y;
     footHeading = (footHeading + signedSteeringAngle) - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
     (armyRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.headingOrTurnValue =
          footHeading;
     offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
-    pointXOrSegment = pointXOrSegment + (int)offsetSinCos;
-    pointYOrStride = pointYOrStride + (int)(offsetSinCos >> 32);
+    pointXOrSegment = pointXOrSegment + offsetSinCos.cosValue;
+    pointYOrStride = pointYOrStride + offsetSinCos.sinValue;
     footHeading = footHeading - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
     offsetSinCos = FixedMath_SinCosScaled(footHeading,(armyRuntime->articulatedContact).lateralOffsetQ12);
-    armyRuntime->runtimeState94 = (int)offsetSinCos + pointXOrSegment;
-    armyRuntime->articulatedCoordinateOrState9C = (int)(offsetSinCos >> 32) + pointYOrStride;
+    armyRuntime->runtimeState94 = offsetSinCos.cosValue + pointXOrSegment;
+    armyRuntime->articulatedCoordinateOrState9C = offsetSinCos.sinValue + pointYOrStride;
     offsetSinCos = FixedMath_SinCosScaled
                        (footHeading,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
                               contactRadiusQ12);
@@ -3205,8 +3197,8 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     armyRuntime->ownerValue64 = (signedSteeringAngle >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
     if (fieldGrid != NULL) {
       if (FieldGrid_InterpolateTerrainHeightAndNormal
-                         ((int)(offsetSinCos >> 32) + armyRuntime->articulatedCoordinateOrState9C,
-                          (int)offsetSinCos + armyRuntime->runtimeState94,fieldGrid,
+                         (offsetSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C,
+                          offsetSinCos.cosValue + armyRuntime->runtimeState94,fieldGrid,
                           &terrainHeightQ12,&terrainNormalAngles)) {
         armyRuntime->runtimeStateA4 = terrainHeightQ12;
         armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;

@@ -166,19 +166,10 @@ typedef struct FrontendDisplayModeEnumerationState FrontendDisplayModeEnumeratio
 typedef struct FrontendTaskAssignmentFactionTextRow FrontendTaskAssignmentFactionTextRow, *PFrontendTaskAssignmentFactionTextRow;
 typedef union FrontendDisplayModeCandidates FrontendDisplayModeCandidates, *PFrontendDisplayModeCandidates;
 typedef struct FrontendDisplayModeSelection FrontendDisplayModeSelection, *PFrontendDisplayModeSelection;
-typedef struct GridPathNearestCellRegisterResult GridPathNearestCellRegisterResult, *PGridPathNearestCellRegisterResult;
-typedef struct ModelTechnologyHierarchyVolatileContinuityResult ModelTechnologyHierarchyVolatileContinuityResult, *PModelTechnologyHierarchyVolatileContinuityResult;
 typedef struct GridPathBacktrackRegisterResult GridPathBacktrackRegisterResult, *PGridPathBacktrackRegisterResult;
-typedef struct AiPreservedFactionIndexEdxResult AiPreservedFactionIndexEdxResult, *PAiPreservedFactionIndexEdxResult;
-typedef struct GameFactionCapabilityVolatileContinuityResult GameFactionCapabilityVolatileContinuityResult, *PGameFactionCapabilityVolatileContinuityResult;
 typedef struct EntityPathingDestinationRegisterResult EntityPathingDestinationRegisterResult, *PEntityPathingDestinationRegisterResult;
 typedef struct ModelRaycastNearestHitRegisterResult ModelRaycastNearestHitRegisterResult, *PModelRaycastNearestHitRegisterResult;
 typedef struct AiWorkspace09AnchorRegisterResult AiWorkspace09AnchorRegisterResult, *PAiWorkspace09AnchorRegisterResult;
-typedef struct AiPlanningGridScanLoopContinuityResult AiPlanningGridScanLoopContinuityResult, *PAiPlanningGridScanLoopContinuityResult;
-typedef struct AiFactionPlanningCallerLoopRegisterContinuityResult AiFactionPlanningCallerLoopRegisterContinuityResult, *PAiFactionPlanningCallerLoopRegisterContinuityResult;
-typedef struct AiPlanningDispatchRegisterContinuityResult AiPlanningDispatchRegisterContinuityResult, *PAiPlanningDispatchRegisterContinuityResult;
-typedef struct AiPlanningGridScratchEdxContinuityResult AiPlanningGridScratchEdxContinuityResult, *PAiPlanningGridScratchEdxContinuityResult;
-typedef struct GridInfluenceDiagonalScanRegisterResult GridInfluenceDiagonalScanRegisterResult, *PGridInfluenceDiagonalScanRegisterResult;
 typedef struct InGamePersistentSettingsPage3508 InGamePersistentSettingsPage3508, *PInGamePersistentSettingsPage3508;
 typedef struct UiPageStackControl UiPageStackControl, *PUiPageStackControl;
 typedef struct UiNodeBase UiNodeBase, *PUiNodeBase;
@@ -288,7 +279,6 @@ typedef struct GameEntityMovementCountdownRuntime GameEntityMovementCountdownRun
 typedef struct GameEntityMovementCountdownRuntimeCommon GameEntityMovementCountdownRuntimeCommon, *PGameEntityMovementCountdownRuntimeCommon;
 typedef struct GameEntityMovementCountdownDamageState2C GameEntityMovementCountdownDamageState2C, *PGameEntityMovementCountdownDamageState2C;
 typedef struct ArmyGraphicsBinding ArmyGraphicsBinding, *PArmyGraphicsBinding;
-typedef struct ArmyLinkedChildDispatchCallerFrame28 ArmyLinkedChildDispatchCallerFrame28, *PArmyLinkedChildDispatchCallerFrame28;
 typedef struct ArmyRuntimeWaypointCoordinateSlotView ArmyRuntimeWaypointCoordinateSlotView, *PArmyRuntimeWaypointCoordinateSlotView;
 typedef struct ArmyRuntimeWaypointCoordinateState ArmyRuntimeWaypointCoordinateState, *PArmyRuntimeWaypointCoordinateState;
 typedef struct ArmyTerrainContactDispatchTable2 ArmyTerrainContactDispatchTable2, *PArmyTerrainContactDispatchTable2;
@@ -600,7 +590,6 @@ typedef struct TerrainOccupancyResolvedMasks TerrainOccupancyResolvedMasks, *PTe
 typedef struct AiGeneralSiteDistanceSelection AiGeneralSiteDistanceSelection, *PAiGeneralSiteDistanceSelection;
 typedef struct GridPathBestUnreachableCell GridPathBestUnreachableCell, *PGridPathBestUnreachableCell;
 typedef struct AiStrategicClassSelection AiStrategicClassSelection, *PAiStrategicClassSelection;
-typedef struct DriveLetterEnumeration DriveLetterEnumeration, *PDriveLetterEnumeration;
 typedef struct FrontendCreditsUiStateView FrontendCreditsUiStateView, *PFrontendCreditsUiStateView;
 typedef struct GeneratedTextureRenderContextView GeneratedTextureRenderContextView, *PGeneratedTextureRenderContextView;
 typedef struct CursorPointerEvent CursorPointerEvent, *PCursorPointerEvent;
@@ -2660,9 +2649,11 @@ struct TH_LEGACY_GUID {
 };
 
 union EffectRuntimeOwnerReference {
-    struct ModelRuntimeNode *modelNode; 
-    struct ArmyRuntimeSlot *armyRuntime; 
-    uint32_t serializedOffset; 
+    struct ModelRuntimeNode *modelNode;
+    struct ModelRuntimeSlot *modelRuntime; /* owner of EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY */
+    struct ArmyRuntimeSlot *armyRuntime;
+    struct ShotTerrainImpactDeformationColumns *terrainImpactColumns; /* owner of a shot's terrain impact effect (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) */
+    uint32_t serializedOffset;
 };
 
 struct EffectRuntimeOwnerAndDefinitionState {
@@ -3863,27 +3854,9 @@ union FrontendUiScratch {
     uint8_t raw[640]; 
 };
 
-typedef uint64_t ArmyUnlockedArmourAggregateEaxPreservedEdxCarrier64;
-
 typedef int FieldGridCellCoordinate;
 
-struct GridPathNearestCellRegisterResult {
-    FieldGridCellCoordinate selectedColumn; 
-    FieldGridCellCoordinate selectedRow; 
-    uint32_t preservedEdxCompatibility; 
-};
-
-typedef uint64_t AiWorkspaceCountEaxPreservedEdxCarrier64;
-
 typedef int ModelDefinitionHierarchyNodeAddress32;
-
-struct ModelTechnologyHierarchyVolatileContinuityResult {
-    ModelDefinitionHierarchyNodeAddress32 preservedEaxDefinitionNodeAddress; 
-    uint32_t preservedEcxCallerValue; 
-    uint32_t preservedEdxCallerValue; 
-};
-
-typedef uint64_t AiCandidateScoreCfEaxPreservedEdxCarrier64;
 
 struct GridPathBacktrackRegisterResult {
     FieldGridCellCoordinate selectedColumn; 
@@ -3891,16 +3864,6 @@ struct GridPathBacktrackRegisterResult {
     FieldGridRegionMask routeStateMask; 
 };
 
-struct AiPreservedFactionIndexEdxResult {
-    FactionRuntimeIndex preservedEdxFactionIndex; 
-};
-
-
-struct GameFactionCapabilityVolatileContinuityResult {
-    uint32_t preservedEaxCallerValue; 
-    uint32_t preservedEcxCallerValue; 
-    uint32_t preservedEdxCallerValue; 
-};
 
 struct EntityPathingDestinationRegisterResult {
     Q12 primaryWorldXQ12; 
@@ -3908,12 +3871,6 @@ struct EntityPathingDestinationRegisterResult {
     Q12 fallbackWorldXQ12; 
     Q12 fallbackWorldYQ12; 
 };
-
-typedef uint64_t EnergyQ4AggregateEaxPreservedEdxCarrier64;
-
-typedef uint64_t DepthBinMaskEaxPreservedEdxCarrier64;
-
-typedef uint64_t AiWorkspaceEntryValueEaxPreservedEdxCarrier64;
 
 struct ModelRaycastNearestHitRegisterResult {
     Q12 nearestDistanceQ12; 
@@ -3925,35 +3882,7 @@ struct AiWorkspace09AnchorRegisterResult {
     Q12 worldXQ12; 
 };
 
-struct AiPlanningGridScanLoopContinuityResult {
-    uint32_t preservedEcxInteriorGridRowCount; 
-    uint32_t preservedEdxGridScratchRowStrideBytes; 
-};
-
-struct AiFactionPlanningCallerLoopRegisterContinuityResult {
-    FactionRuntimeIndex preservedEaxFactionIndex; 
-    uint32_t preservedEcxRemainingFactionCount; 
-};
-
 typedef uint32_t AiPlanningPhaseIndex;
-
-struct AiPlanningDispatchRegisterContinuityResult {
-    FactionRuntimeIndex preservedEdxFactionIndex; 
-    AiPlanningPhaseIndex preservedEcxPlanningPhase; 
-};
-
-typedef uint64_t AiCandidateScoreEaxPreservedEdxCarrier64;
-
-struct AiPlanningGridScratchEdxContinuityResult {
-    uint32_t preservedEdxGridScratchRowStrideBytes; 
-};
-
-struct GridInfluenceDiagonalScanRegisterResult {
-    FieldGridCellCoordinate preservedEaxGridMetric; 
-    FieldGridCellCoordinate preservedEcxGridMetric; 
-    FieldGridCellCoordinate preservedEdxGridMetric; 
-    uint32_t processedCellCount; 
-};
 
 typedef enum TerrainRelaxationMode {
     TERRAIN_RELAXATION_SIGN_GATED=0,
@@ -4624,8 +4553,6 @@ typedef int SelectionPanelCellIndex;
 
 typedef uint32_t FactionRuntimeFlags;
 
-typedef uint64_t FixedLengthAngleEdxEax8;
-
 typedef uint32_t UiTransferXorChecksum;
 
 typedef uint32_t RichTextMarkupCapacityCodeUnits;
@@ -4638,7 +4565,10 @@ typedef int UiStopMessageCode;
 
 typedef uint32_t FrontendReadyOrWaitState;
 
-typedef uint64_t UiGridDimensionsEdxEax8;
+typedef struct UiGridDimensions {
+    uint32_t columnCount;
+    uint32_t rowCount;
+} UiGridDimensions;
 
 typedef uint32_t TextResourceStringCount;
 
@@ -4700,7 +4630,10 @@ typedef uint32_t RomRecordByteSize;
 
 typedef uint32_t PersistentDisplayAdapterIndex;
 
-typedef uint64_t FixedPlanarPointEdxEax8;
+struct FieldGridCoordinates {
+    Q12 columnQ12;
+    Q12 rowQ12;
+};
 
 typedef uint32_t GraphicsCursorFrameCount;
 
@@ -5032,8 +4965,6 @@ struct UiPointerListControl {
     void **selectedRowSlot; 
 };
 
-typedef uint64_t FixedEulerPairEdxEax8;
-
 typedef uint32_t CubicSplineEquationCount;
 
 typedef int GraphicsScreenCoordinate;
@@ -5130,15 +5061,11 @@ typedef uint32_t MovieSharedStreamHandleFlag;
 
 typedef int ModelMeshGroupAddress32;
 
-typedef uint64_t GraphicsLogicalDimensionsEdxEax8;
-
 typedef uint32_t GraphicsAssetAllocationByteSize;
 
 typedef uint32_t WinMmTimerPeriodMilliseconds;
 
 typedef uint32_t FactionArmyContributionValue;
-
-typedef uint64_t FixedLengthElevationEdxEax8;
 
 typedef uint32_t GridPathUnreachableReferenceColumn32;
 
@@ -5171,8 +5098,6 @@ typedef int WideNumberSignedValue32;
 typedef uint32_t ArmyPlacementMode;
 
 typedef uint32_t ArmyMoveAuxiliaryValue0;
-
-typedef uint64_t GraphicsProjectedPointEdxEax8;
 
 typedef uint32_t GraphicsPixelChannelBitShift;
 
@@ -5311,8 +5236,6 @@ typedef uint32_t ArmyBuildDurationQ5;
 
 typedef uint32_t UiPointerButtonMask;
 
-typedef uint64_t RuntimeImagePointerByteSizeEdxEax8;
-
 typedef int FactionRelationCounter;
 
 typedef uint32_t TerrainDirectionalScanStep;
@@ -5352,7 +5275,11 @@ typedef int AiArmyAssetRecordAddress32;
 
 typedef uint32_t LocaleClockMinuteStack32;
 
-typedef uint64_t FixedSinCosEdxEax8;
+/* cos(angle) and sin(angle), scaled (FixedMath_SinCosScaled) or in Q28 (FixedMath_SinCosQ28). */
+typedef struct FixedSinCos {
+    int32_t cosValue;
+    int32_t sinValue;
+} FixedSinCos;
 
 typedef uint32_t TextResourceId;
 
@@ -5426,8 +5353,6 @@ typedef int SoftwareMaskThresholdStep;
 
 typedef uint32_t TerrainRegionCollectionCount;
 
-typedef uint64_t FixedDirectionXZEdxEax8;
-
 typedef uint16_t Win32Second16;
 
 typedef uint32_t FactionArmyAssetCount;
@@ -5480,7 +5405,10 @@ typedef uint32_t UiFrameCount;
 
 typedef uint32_t MdlChildCount;
 
-typedef uint64_t MovieFrameDimensionsEdxEax8;
+typedef struct MovieFrameDimensions {
+    AssetDimension width;
+    AssetDimension height;
+} MovieFrameDimensions;
 
 typedef int UiPixelMetric;
 
@@ -6518,7 +6446,7 @@ struct InGameRuntimeRoot {
     uint8_t reserved4B2C_4D53[552];
     uint32_t diplomacyPanelNodeFlags; // UiNodeBase.nodeFlags of the diplomacy panel (+0x4D0C).
     uint8_t reserved4D58_9A6B[19732];
-    FixedPlanarPointEdxEax8 minimapOriginGridPosition; // Minimap (UiSelectionGeometryControl at +0x9A1C) source origin: the camera target in grid coordinates.
+    FieldGridCoordinates minimapOriginGridPosition; // Minimap (UiSelectionGeometryControl at +0x9A1C) source origin: the camera target in grid coordinates.
     Q12 minimapSampleScaleQ12; // Minimap sampleScaleQ12, follows the camera distance unless automatic zoom is off.
     AngleTurn32 minimapRotationAngle; // Minimap rotationAngle, follows the camera heading unless automatic rotation is off.
     struct TerrainCompositeTextureRuntime *minimapTextureSource; // Minimap textureSource: the terrain composite texture.
@@ -6992,16 +6920,6 @@ struct ArmyGraphicsBinding {
     struct GraphicsPaletteAsset *paletteAsset; 
 };
 
-struct ArmyLinkedChildDispatchCallerFrame28 {
-    uint8_t reserved00_0B[12]; 
-    uint32_t preservedReturnLow0C; 
-    uint8_t reserved10_17[8]; 
-    uint32_t preservedReturnHigh18; 
-    uint32_t reserved1C; 
-    struct WorldRuntimeContext *worldRuntime; 
-    struct ArmyRuntimeSlot *armyRuntime; 
-};
-
 struct ArmyRuntimeWaypointCoordinateState {
     Q12 primaryCoordinateOrTargetQ12; 
     Q12 secondaryCoordinateOrTargetQ12; 
@@ -7081,8 +6999,6 @@ struct ArmyRuntimeLinkedChildDefinitionState {
     AngleTurn32 leftContactHeading; 
     AngleTurn32 rightContactHeading; 
 };
-
-typedef uint64_t ArmyLinkedChildDispatchPreservedRegisterPair8;
 
 typedef uint32_t ArmyWaypointCount;
 
@@ -8409,7 +8325,7 @@ struct InGameRuntimeRootPartialView {
     uint8_t reserved49BC_4D53[920];
     uint32_t diplomacyPanelNodeFlags;
     uint8_t reserved4D58_9A6B[19732];
-    FixedPlanarPointEdxEax8 minimapOriginGridPosition;
+    FieldGridCoordinates minimapOriginGridPosition;
     uint8_t reserved9A74_9B4B[216];
     uint32_t notificationButtonCursorFrame;
     uint32_t notificationButtonTextureSource;
@@ -9089,8 +9005,6 @@ struct FncModuleHeader {
     uint8_t reservedC0_1FF[320];
 };
 
-typedef uint64_t PreservedEaxEdxRegisterPair64;
-
 struct SoundCoefficientBlock {
     short coefficients[256]; 
 };
@@ -9721,19 +9635,14 @@ struct IDirectInputA {
     struct IDirectInputA_Vtbl *lpVtbl;
 };
 
-typedef uint64_t WorldPositionXYRegisterPairQ12;
-
 typedef uint8_t FactionRuntimeLifecycleState;
 
-typedef uint64_t ModelRuntimeAttachmentCollectionRegisterPair;
 
 /* Energy demand of a model and its directly attached models (ModelRuntimeHierarchy_ComputeEnergyDemand) */
 typedef struct ModelHierarchyEnergyDemand {
     uint32_t activeQ4; /* demand of the models not switched off */
     uint32_t totalQ4;  /* demand of all counted models */
 } ModelHierarchyEnergyDemand;
-
-typedef uint64_t ShotAimXZRegisterPairQ12;
 
 typedef uint32_t DisplayModeScratchWord;
 
@@ -10470,11 +10379,6 @@ struct PathingDestination {
     Q12 fallbackWorldYQ12; // ECX fallback Y
 };
 
-struct FieldGridCoordinates {
-    Q12 columnQ12; // EAX column coordinate
-    Q12 rowQ12; // EDX row coordinate
-};
-
 
 struct StatusResult {
     uint32_t valueOrError; // EAX value/error code
@@ -10598,11 +10502,6 @@ struct MemoryApiTable {
     uint32_t (*reserveLinear)(uint32_t bytes, void **outBase); // 0x00586750; *outBase = previous linear cursor
 };
 
-
-struct DriveLetterEnumeration {
-    uint32_t driveCount; // EAX drive count
-    uint32_t driveCountMirror; // ECX mirrored drive count
-};
 
 
 struct FrontendCreditsUiStateView {
@@ -10802,7 +10701,7 @@ struct InGameRuntimeRootUiGridView {
     struct DirectSoundVoiceSet *armyStockSoundVoiceSet; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase armyStockFrame; // embedded UI node prefix; rebuild updates layout offsets and node flags
     uint8_t reserved8D04_9A6B[3432];
-    FixedPlanarPointEdxEax8 minimapOriginGridPosition;
+    FieldGridCoordinates minimapOriginGridPosition;
     uint8_t reserved9A74_9B4B[216];
     enum InGameNotificationInteractionState notificationButtonCursorFrame;
     uint32_t notificationButtonTextureSource;

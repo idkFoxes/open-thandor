@@ -185,11 +185,12 @@ void MoviePlayback_AdvanceScheduledFrameAndTick(void)
 
 /* Part of Movie_Open (0x004A870D-0x004A87AF): picks one of the header's audio tracks at random and turns it
    into a sample voice set. The stream stands right after the initially loaded video bytes; the audio tracks
-   follow the whole video stream. CF clear returns the voice set in valueOrError (0 when the header has no
-   usable track); CF set returns the error of the failing seek/alloc/read/voice-set call. The loaded sample is
-   freed on both the success and the failure path, as in the original. */
-static StatusResult
-Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount remainingVideoBytes,void *handle)
+   follow the whole video stream. Returns 0 on success and stores the voice set in *outVoiceSet (NULL when the
+   header has no usable track); otherwise returns the error of the failing seek/alloc/read/voice-set call. The
+   loaded sample is freed on both the success and the failure path, as in the original. */
+static uint32_t
+Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount remainingVideoBytes,void *handle,
+                               DirectSoundVoiceSet **outVoiceSet)
 
 {
   uint32_t audioTrackCount;
@@ -200,16 +201,13 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   void *audioSample;
   uint32_t seekError;
   uint32_t allocError;
-  uint32_t readError;
-  uint32_t voiceSetError;
+  uint32_t loadError;
   DirectSoundVoiceSet *voiceSet;
-  StatusResult result;
 
-  result.failed = false;
-  result.valueOrError = 0;
+  *outVoiceSet = NULL;
   audioTrackCount = header->audioTrackCount;
   if ((audioTrackCount == 0) || (MOVIE_MAX_AUDIO_TRACKS < audioTrackCount)) {
-    return result;
+    return 0;
   }
   selectedTrack = 0;
   if (1 < audioTrackCount) {
@@ -222,30 +220,25 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   }
   trackBytes = header->audioTrackBytes[selectedTrack];
   if (trackBytes == 0) {
-    return result;
+    return 0;
   }
   seekError = g_FileSystemSeek(FILESYSTEM_SEEK_CURRENT,trackOffset + remainingVideoBytes,handle);
-  result.failed = seekError != 0;
-  result.valueOrError = seekError;
   if (seekError != 0) {
-    return result;
+    return seekError;
   }
   allocError = g_MemoryApi.alloc(trackBytes,&audioSample);
-  result.failed = allocError != 0;
-  result.valueOrError = allocError != 0 ? allocError : (uint32_t)audioSample;
   if (allocError != 0) {
-    return result;
+    return allocError;
   }
-  readError = g_FileSystemReadExact(trackBytes,audioSample,handle);
-  result.failed = readError != 0;
-  result.valueOrError = readError;
-  if (readError == 0) {
-    voiceSetError = g_SoundCreateSampleVoiceSet((SoundSampleAsset *)audioSample,&voiceSet);
-    result.failed = voiceSetError != 0;
-    result.valueOrError = voiceSetError != 0 ? voiceSetError : (uint32_t)voiceSet;
+  loadError = g_FileSystemReadExact(trackBytes,audioSample,handle);
+  if (loadError == 0) {
+    loadError = g_SoundCreateSampleVoiceSet((SoundSampleAsset *)audioSample,&voiceSet);
+    if (loadError == 0) {
+      *outVoiceSet = voiceSet;
+    }
   }
   g_MemoryApi.free(audioSample);
-  return result;
+  return loadError;
 }
 
 
@@ -280,7 +273,7 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
   bool gotPosition;
   uint32_t allocError;
   void *allocPayload;
-  StatusResult audioResult;
+  DirectSoundVoiceSet *audioVoiceSet;
   PckEntryHeader *packageEntry;
   EngineFileHandle packageFileHandle;
   MovieStreamByteCount remainingByteCount;
@@ -356,10 +349,9 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
           gotPosition = g_FileSystemGetPosition(handle,&streamPosition);
           status = streamPosition;
           if (gotPosition) {
-            audioResult = Movie_OpenLoadRandomAudioTrack(header,remainingByteCount,handle);
-            status = audioResult.valueOrError;
+            status = Movie_OpenLoadRandomAudioTrack(header,remainingByteCount,handle,&audioVoiceSet);
           }
-          if (gotPosition && (!audioResult.failed)) {
+          if (gotPosition && (status == 0)) {
             sizeOrValue = header->widthPixels * header->heightPixels * 4 + MOVIE_RUNTIME_PIXELS_OFFSET;
             allocError = g_MemoryApi.alloc(sizeOrValue,&allocPayload);
             status = allocError != 0 ? allocError : (uint32_t)allocPayload;
@@ -373,7 +365,7 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
               movie->textureCommon.allocationSizeBytes = sizeOrValue;
               movie->textureCommon.formatVersion = 1;
               movie->textureCommon.converterVersion = 0;
-              movie->audioVoiceSet = (DirectSoundVoiceSet *)audioResult.valueOrError;
+              movie->audioVoiceSet = audioVoiceSet;
               movie->activeAudioBuffer = NULL;
               frameWidth = header->widthPixels;
               frameHeight = header->heightPixels;
@@ -452,22 +444,21 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
 
 
 /* Address: 0x004A8A20.
-   Returns the frame size of the active movie (width in EAX, height in EDX), so callers can place and scale
-   the movie texture. Both are zero when no movie is open.
+   Returns the frame size of the active movie, so callers can place and scale the movie texture. Both are
+   zero when no movie is open.
 */
-MovieFrameDimensionsEdxEax8 Movie_GetFrameDimensions(void)
+MovieFrameDimensions Movie_GetFrameDimensions(void)
 
 {
-  AssetDimension frameWidth;
-  AssetDimension frameHeight;
+  MovieFrameDimensions dimensions;
 
-  frameWidth = 0;
-  frameHeight = 0;
+  dimensions.width = 0;
+  dimensions.height = 0;
   if (g_ActiveMovie != NULL) {
-    frameWidth = (g_ActiveMovie->sourceEntry).pixelWidth;
-    frameHeight = (g_ActiveMovie->sourceEntry).pixelHeight;
+    dimensions.width = (g_ActiveMovie->sourceEntry).pixelWidth;
+    dimensions.height = (g_ActiveMovie->sourceEntry).pixelHeight;
   }
-  return ((MovieFrameDimensionsEdxEax8)frameHeight << 32) | frameWidth; /* EDX:EAX */
+  return dimensions;
 }
 
 

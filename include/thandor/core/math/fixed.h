@@ -130,10 +130,10 @@ void __cdecl CosineDerivedLookupTables_Init(void);
 void FixedMath_WriteDirectionQ28(GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x00484B00 */
-FixedSinCosEdxEax8 FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale);
+FixedSinCos FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale);
 
 /* 0x00484B40 */
-FixedSinCosEdxEax8 FixedMath_SinCosQ28(AngleTurn32 angle);
+FixedSinCos FixedMath_SinCosQ28(AngleTurn32 angle);
 
 /* 0x00484F10 */
 void FixedTransform_ApplyDirection

@@ -102,7 +102,7 @@ void InGameRuntime_ReleaseFactionScratchBuffers(void);
 void InGameConditionRuntime_UpdateScheduledRecords(void);
 
 /* 0x00513160 */
-void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void);
+void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void);
 
 /* 0x0053D4F0 */
 void InGameRuntime_UpdateCursorGridAndViewScaleCache(void);
