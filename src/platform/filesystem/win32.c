@@ -910,8 +910,9 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   } while (FindNextFileA(findHandle,&g_Win32FindDataScratch) != 0);
   FindClose(findHandle);
   /* bubble sort; each swap goes through the whole path scratch block: the 0x200-byte record fills both
-     0x100-byte path buffers (original quirk: the original passes the first buffer, 0x00575A9C, and
-     overruns into the second, 0x00575B9C) */
+     0x100-byte path buffers (original quirk: the original's REP MOVSD of 0x80 dwords starts at the first
+     buffer, 0x00575A9C, and runs on through the second, 0x00575B9C, up to 0x00575C9C; here it is the
+     whole g_Win32PathScratch[2][256], exactly FILESYSTEM_ENUMERATION_RECORD_BYTES, nothing beyond it) */
   if (1 < recordCount) {
     for (passesRemaining = recordCount - 1; passesRemaining != 0; passesRemaining--) {
       leftRecordDwords = (uint32_t *)outputRecords;

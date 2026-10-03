@@ -992,12 +992,15 @@ static void InGameNewSession_ResetSessionState(void)
   g_EndMovieSelectionIndex = UINT32_MAX;
   g_EndMovieVariantIndex = 0;
   g_EndMoviePath = NULL;
-  /* clear 0x280 bytes from the player-removal packet on and all selection blocks (0x10230 dwords) */
-  clearCursor = (uint32_t *)&g_FrontendClientPlayerRemovalPacket10007;
-  for (remainingCount = 160; remainingCount != 0; remainingCount--) {
-    *clearCursor = 0;
-    clearCursor++;
-  }
+  /* clear the client packet buffers and all selection blocks (0x10230 dwords). The original clears the six packet
+     buffers with one REP STOSD of 0x280 bytes over their image range 0x572040..0x5722C0; they are separate
+     variables here, so each is cleared on its own, in the original address order. */
+  memset(&g_FrontendClientPlayerRemovalPacket10007,0,sizeof(g_FrontendClientPlayerRemovalPacket10007));
+  memset(g_FrontendClientPlayerCommandRecords,0,sizeof(g_FrontendClientPlayerCommandRecords));
+  memset(g_FrontendClientCommandBatchPacketBuffer,0,sizeof(g_FrontendClientCommandBatchPacketBuffer));
+  memset(&g_FrontendPacket10021Buffer,0,sizeof(g_FrontendPacket10021Buffer));
+  memset(&g_FrontendPacket10022Buffer,0,sizeof(g_FrontendPacket10022Buffer));
+  memset(&g_FrontendPacket10023Buffer,0,sizeof(g_FrontendPacket10023Buffer));
   clearCursor = (uint32_t *)g_SelectionPlayerBlocks;
   for (remainingCount = SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock) / sizeof(uint32_t);
        remainingCount != 0; remainingCount--) {

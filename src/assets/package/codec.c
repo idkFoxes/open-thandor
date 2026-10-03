@@ -268,14 +268,27 @@ typedef struct PckHuffmanBitWriter {
 } PckHuffmanBitWriter;
 
 /* Clears the symbol table and both node workspaces, then counts how often each byte value occurs in source.
-   An empty source is not guarded: the count loop would run 2^32 times. */
+   An empty source is not guarded: the count loop would run 2^32 times.
+   The original clears all three with one REP STOSD of PCK_HUFFMAN_WORKSPACE_DWORDS dwords from 0x004080C0,
+   relying on the node workspace following the symbol table directly in its image. Here they are two separate
+   objects whose distance is up to the linker (an AddressSanitizer build puts a redzone between them), so each
+   is cleared on its own. A single run through the symbol table pointer left the tail of the node workspace
+   uncleared there: the previous call's root kept its weight, joined the new tree as a stale live node and
+   made the 256-symbol tree overflow the internal node workspace (encode failure). */
 static void PckCodec_EncoderCountFrequencies(uint8_t *source,PckDecodedByteCount sourceSizeBytes)
 {
   uint32_t *workspaceClearCursor;
   int clearDwordCount;
 
   workspaceClearCursor = (uint32_t *)g_PckHuffmanSymbolWorkspace256;
-  for (clearDwordCount = PCK_HUFFMAN_WORKSPACE_DWORDS; clearDwordCount != 0; clearDwordCount--) {
+  for (clearDwordCount = sizeof(g_PckHuffmanSymbolWorkspace256) / sizeof(uint32_t); clearDwordCount != 0;
+       clearDwordCount--) {
+    *workspaceClearCursor = 0;
+    workspaceClearCursor++;
+  }
+  workspaceClearCursor = (uint32_t *)g_PckHuffmanNodeWorkspace;
+  for (clearDwordCount = sizeof(g_PckHuffmanNodeWorkspace) / sizeof(uint32_t); clearDwordCount != 0;
+       clearDwordCount--) {
     *workspaceClearCursor = 0;
     workspaceClearCursor++;
   }
