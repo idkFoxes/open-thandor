@@ -208,8 +208,8 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source);
 void InGameSelectionDetailPanel_Rebuild(void);
 
 extern uint32_t g_RenderedFrameCountSinceDebugRefresh;
-extern uint16_t u_campagne_hex_0050e068[13];
-extern uint16_t u_oldunit_hex_0050e094[12];
+extern uint16_t g_CampagneHexPathUtf16[13];
+extern uint16_t g_OldunitHexPathUtf16[12];
 extern uint8_t g_InGameResourceRegistrationBusyCount;
 extern uint32_t g_LocalPlayerRuntimeId;
 extern uint16_t *g_InGamePlayerListTextScratchUtf16;

@@ -18,11 +18,11 @@ FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeRecordPointers32[32] = {0};
 
 uint32_t g_FrontendNetworkState = 0;
 
-char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
+char g_SpielerSpielNetzwerkHostKeywordsAscii[31] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
 
 /* Original quirk: the string's terminating NUL is the
    first byte of the Package_FindEntry output buffer g_LevelPackageFoundEntry; the code passes explicit lengths. */
-char s_NAME__CLIENT__KARTE___00545e91[21] = "NAME=\"CLIENT=\"KARTE=\"";
+char g_NameClientKarteKeywordsAscii[21] = "NAME=\"CLIENT=\"KARTE=\"";
 
 UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch = {0};
 
@@ -79,7 +79,7 @@ static void FrontendNetworkSetupPage_ApplyNameOption(void)
   uint8_t *closingQuote;
   uint16_t *playerNameText;
 
-  option = g_CommandLineFindOption(6,s_NAME__CLIENT__KARTE___00545e91);
+  option = g_CommandLineFindOption(6,g_NameClientKarteKeywordsAscii);
   if (option == NULL) {
     return;
   }
@@ -106,7 +106,7 @@ static void FrontendNetworkSetupPage_ApplyClientOption(void)
   uint8_t *closingQuote;
   Bool8 endpointParseFailed;
 
-  option = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
+  option = g_CommandLineFindOption(8,g_NameClientKarteKeywordsAscii + 6);
   if (option == NULL) {
     return;
   }
@@ -304,7 +304,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
             (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   UiTransfer_SendDiscoveryProbe();
   /* -HOST opens the host setup at once; otherwise -CLIENT="host address" may join a host */
-  hostOption = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26);
+  hostOption = g_CommandLineFindOption(5,g_SpielerSpielNetzwerkHostKeywordsAscii + 26);
   if (hostOption != NULL) {
     *hostOption = 'h';
     FrontendNetworkSetupPage_InitializeFromCommandLine
@@ -437,7 +437,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
 
   appliedOptionMask = 0;
   /* -SPIELER="n", n = 2..8 */
-  option = g_CommandLineFindOption(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
+  option = g_CommandLineFindOption(9,g_SpielerSpielNetzwerkHostKeywordsAscii);
   if (option != NULL) {
     maxPlayers = CommandLineOption_ParseQuotedDigit(option,9);
     if (maxPlayers < 9 && 1 < maxPlayers) {
@@ -448,7 +448,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   }
   /* -SPIEL="game name".
      Original quirk: when more text follows the closing quote, the quote is left overwritten with a terminator. */
-  option = g_CommandLineFindOption(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
+  option = g_CommandLineFindOption(7,g_SpielerSpielNetzwerkHostKeywordsAscii + 9);
   if (option != NULL) {
     closingQuote = CommandLineOption_FindClosingQuote(option + 7,19);
     if (closingQuote != NULL) {
@@ -463,7 +463,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     }
   }
   /* -NETZWERK="n", n = 1..7 */
-  option = g_CommandLineFindOption(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 16);
+  option = g_CommandLineFindOption(10,g_SpielerSpielNetzwerkHostKeywordsAscii + 16);
   if (option != NULL) {
     optionNetworkSpeed = CommandLineOption_ParseQuotedDigit(option,10);
     if (optionNetworkSpeed < 8 && optionNetworkSpeed != 0) {

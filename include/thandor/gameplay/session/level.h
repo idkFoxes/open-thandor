@@ -40,13 +40,13 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
 
 Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError);
 
-extern uint16_t u_effect_hex_0050dfc6[11];
-extern uint16_t u_shot_hex_0050dfdc[9];
-extern uint16_t u_modul_hex_0050dfee[10];
-extern uint16_t u_field_hex_0050e002[10];
-extern uint16_t u_light_hex_0050e016[10];
-extern uint16_t u_widget_hex_0050e02a[11];
-extern uint16_t u_level_hex_0050e040[10];
+extern uint16_t g_EffectHexPathUtf16[11];
+extern uint16_t g_ShotHexPathUtf16[9];
+extern uint16_t g_ModulHexPathUtf16[10];
+extern uint16_t g_FieldHexPathUtf16[10];
+extern uint16_t g_LightHexPathUtf16[10];
+extern uint16_t g_WidgetHexPathUtf16[11];
+extern uint16_t g_LevelHexPathUtf16[10];
 extern uint16_t g_LevelEndingMovieSourcePath[256];
 extern uint32_t g_InGameLevelTitleTextResourceIndex;
 extern uint32_t g_InGameLevelCampaignAssociationIndex;
@@ -58,6 +58,6 @@ extern uint32_t g_MoviePlaybackScheduleCounter;
 extern uint32_t g_MoviePlaybackScheduleSpan;
 extern uint32_t g_SoundPackageHandle;
 
-extern uint16_t u_army_hex_0050dfb4[9];
+extern uint16_t g_ArmyHexPathUtf16[9];
 
 #endif /* THANDOR_GAMEPLAY_SESSION_LEVEL_H */

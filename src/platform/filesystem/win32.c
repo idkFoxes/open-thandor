@@ -70,9 +70,9 @@ static FileSystemCopyProc *g_FileSystemCopy = 0;
 
 static uint32_t g_EnginePackageLowPriorityMountHandle = 0;
 
-static uint16_t u_THANDOR_cfg_0040e23d[12] = L"THANDOR.cfg";
+static uint16_t g_ThandorCfgPathUtf16[12] = L"THANDOR.cfg";
 
-static uint16_t u_engine_pck_0040e255[11] = L"engine.pck";
+static uint16_t g_EnginePckPathUtf16[11] = L"engine.pck";
 
 static uint32_t g_Win32FileBytesTransferred = 0;
 
@@ -261,10 +261,10 @@ uint32_t __cdecl FileSystem_Init(void)
   if (ArenaHeap_Alloc(PACKAGE_SCRATCH_BUFFER_BYTES,(void **)&g_PackageScratchBuffer) != 0) {
     FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),true);
   }
-  openError = Win32File_Open(0,u_THANDOR_cfg_0040e23d,&configFile);
+  openError = Win32File_Open(0,g_ThandorCfgPathUtf16,&configFile);
   if (openError != 0) {
     WidePath_CombineDirectoryAndLeaf
-              (g_FileSystemCombinedPathScratchUtf16,u_THANDOR_cfg_0040e23d,
+              (g_FileSystemCombinedPathScratchUtf16,g_ThandorCfgPathUtf16,
                g_ExecutableDirectoryUtf16);
     openError = Win32File_Open(0,g_FileSystemCombinedPathScratchUtf16,&configFile);
   }
@@ -306,7 +306,7 @@ uint32_t __cdecl FileSystem_Init(void)
     Win32File_Close(configFile);
   }
   Win32File_GetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
-  if (Package_MountLowPriority(u_engine_pck_0040e255,&engineMountResult)) {
+  if (Package_MountLowPriority(g_EnginePckPathUtf16,&engineMountResult)) {
     g_EnginePackageLowPriorityMountHandle = engineMountResult;
   }
   return engineMountResult;

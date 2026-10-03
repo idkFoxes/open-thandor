@@ -68,7 +68,7 @@ static AiRuntimeWorkspaceEntry *g_AiWorkspace02VisibleHostiles = 0;
 
 static uint32_t g_AiWorkspace02Count = 0;
 
-static uint16_t u_engine_ki_dat_0053c5e4[14] = L"engine\\ki.dat";
+static uint16_t g_EngineKiDatPathUtf16[14] = L"engine\\ki.dat";
 
 /* Implementation ownership: gameplay/ai/workspaces. */
 
@@ -1156,7 +1156,7 @@ Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode)
                               allocError = g_MemoryApi.alloc(AI_WORKSPACE14_CAPACITY * sizeof(ArmyRuntimeSlot *),
                                                              (void **)&g_AiWorkspace14CollectedArmies);
                               if (allocError == 0) {
-                                knowledgeDataImage = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4,&loadErrorCode);
+                                knowledgeDataImage = Package_LoadEntry((uint16_t *)g_EngineKiDatPathUtf16,&loadErrorCode);
                                 if (knowledgeDataImage != NULL) {
                                   g_AiKnowledgeData = knowledgeDataImage;
                                   return true;

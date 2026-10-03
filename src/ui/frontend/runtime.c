@@ -2079,7 +2079,7 @@ uint32_t g_FrontendScenarioInitializationCount = 0;
 
 uint32_t g_FrontendMusicVoiceSet = 0;
 
-uint16_t u_sound_music00_sam_00545c4e[18] = L"sound\\music00.sam";
+uint16_t g_FrontendMusic00SamPathUtf16[18] = L"sound\\music00.sam";
 
 uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {0};
 
@@ -2094,7 +2094,7 @@ static const UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12 = 512;
 
 static const int g_WorldMotionPointerWheelInputScale = -64;
 
-static uint16_t u_flm_ende0000_flm_0050df4a[17] = L"flm\\ende0000.flm";
+static uint16_t g_FrontendEndMoviePathUtf16[17] = L"flm\\ende0000.flm";
 
 static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {0};
 
@@ -2115,7 +2115,7 @@ static const RuntimeModelClassPriorityTable24 g_RuntimeModelClassPriorityByModel
     .modelClass22Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM,
     .modelClass23Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM};
 
-static UiRootCallbacks g_UiRootCallbacks_0053DA70 = {
+static UiRootCallbacks g_FrontendUiRootCallbacks = {
     .frameUpdate = (void *)FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState,
     .keyboardFallback = (void *)FrontendRuntime_DispatchCommandByCodeAndModifierFlags};
 
@@ -2141,13 +2141,13 @@ static WorldObjectRecord *g_FrontendWorldObjectRecords = 0;
 
 static uint32_t g_FrontendPendingPageActionDepth = 0;
 
-static uint16_t u_gfx_texturen_zentrale_gfx_00545acc[26] = L"gfx\\texturen\\zentrale.gfx";
+static uint16_t g_GfxTexturenZentraleGfxPathUtf16[26] = L"gfx\\texturen\\zentrale.gfx";
 
-static uint16_t u_gfx_texturen_zentrale_pal_00545b00[26] = L"gfx\\texturen\\zentrale.pal";
+static uint16_t g_GfxTexturenZentralePalPathUtf16[26] = L"gfx\\texturen\\zentrale.pal";
 
-static uint16_t u_sound_menue01_sam_00545b54[18] = L"sound\\menue01.sam";
+static uint16_t g_SoundMenue01SamPathUtf16[18] = L"sound\\menue01.sam";
 
-static uint16_t u_gfx_panel_menue_gfx_00545b78[20] = L"gfx\\panel\\menue.gfx";
+static uint16_t g_GfxPanelMenueGfxPathUtf16[20] = L"gfx\\panel\\menue.gfx";
 
 /* 3 command records and the terminator record
    (commandCode 0) that ends the dispatcher's scan */
@@ -2410,7 +2410,7 @@ static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel(void)
   }
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,levelRecordView->levels[0].levelFileName,
-             (uint16_t *)u_level_0050daac);
+             (uint16_t *)g_ScenarioLevelDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   return true;
 }
@@ -2640,12 +2640,12 @@ Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
   if (Frontend_Init(frontendEntryRecordId,&initError)) {
     /* -HOST and -CLIENT= activate entry 3 of the entry menu's action table, -KARTE= (map) entry 0, without the
        click sound, and let the started camera transition end at once. */
-    if ((g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26) != NULL) || /* "HOST" */
-        (g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6) != NULL)) {       /* "CLIENT=" */
+    if ((g_CommandLineFindOption(5,g_SpielerSpielNetzwerkHostKeywordsAscii + 26) != NULL) || /* "HOST" */
+        (g_CommandLineFindOption(8,g_NameClientKarteKeywordsAscii + 6) != NULL)) {       /* "CLIENT=" */
       FrontendRomActionTable_ExecuteRecord(0,0,1,3);
       FrontendRomTransition_RequestStop();
     }
-    else if (g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14) != NULL) { /* "KARTE=" */
+    else if (g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14) != NULL) { /* "KARTE=" */
       FrontendRomActionTable_ExecuteRecord(0,0,1,0);
       FrontendRomTransition_RequestStop();
     }
@@ -3028,7 +3028,7 @@ static void FrontendModelPointerContext_DrawActiveQueue
 {
   uint32_t queuedPrimitiveCount;
 
-  PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
+  g_GraphicsPrimitiveQueueRadixSortProc
             (control->base.nodeFlags & 8,control->activePrimitiveQueue);
   g_GraphicsDrawPrimitiveQueue
             (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
@@ -4374,8 +4374,8 @@ static void FrontendEndMovie_SelectCampaignMoviePath(CampaignAsset *campaign)
       }
       /* four zero-padded digits over the "0000" of flm\ende0000.flm */
       g_WideNumberFormatUtf16
-                (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,endMovieNumber,(uint16_t *)(u_flm_ende0000_flm_0050df4a + 8));
-      g_EndMoviePath = (uint16_t *)u_flm_ende0000_flm_0050df4a;
+                (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,endMovieNumber,(uint16_t *)(g_FrontendEndMoviePathUtf16 + 8));
+      g_EndMoviePath = (uint16_t *)g_FrontendEndMoviePathUtf16;
       return;
     }
     levelRecord++;
@@ -4559,12 +4559,12 @@ static uint32_t FrontendInit_LoadMenuSounds(void)
   DirectSoundVoiceSet *menuVoiceSet;
   uint32_t voiceSetError;
 
-  u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] = L'0';
-  u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'1';
+  g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] = L'0';
+  g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'1';
   voiceSetSlot = &g_FrontendMenuSoundVoiceSets[1];
-  while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1) {
-    while ((uint16_t)u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1) {
-      if (!Resource_Load((uint16_t *)u_sound_menue01_sam_00545b54,(void **)&loadedSample,NULL,NULL)) {
+  while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] < L'9' + 1) {
+    while ((uint16_t)g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] < L'9' + 1) {
+      if (!Resource_Load((uint16_t *)g_SoundMenue01SamPathUtf16,(void **)&loadedSample,NULL,NULL)) {
         return 0;
       }
       voiceSetError = g_SoundCreateSampleVoiceSet(loadedSample,&menuVoiceSet);
@@ -4574,13 +4574,13 @@ static uint32_t FrontendInit_LoadMenuSounds(void)
       }
       *voiceSetSlot = menuVoiceSet;
       Resource_Release(loadedSample);
-      u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] =
-           u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] + 1;
+      g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] =
+           g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] + 1;
       voiceSetSlot++;
     }
-    u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] =
-         u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] + 1;
-    u_sound_menue01_sam_00545b54[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'0';
+    g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] =
+         g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_TENS_DIGIT] + 1;
+    g_SoundMenue01SamPathUtf16[FRONTEND_MENU_SOUND_PATH_ONES_DIGIT] = L'0';
   }
   return 0;
 }
@@ -4598,7 +4598,7 @@ static void FrontendInit_StartMenuMusic(void)
   soundOptions = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   musicBuffer = (IDirectSoundBuffer *)g_FrontendMusicActiveBuffer;
   if (((soundOptions & PERSISTENT_SOUND_OPTION_MUSIC) != 0) &&
-      Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e,(void **)&loadedSample,NULL,NULL)) {
+      Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&loadedSample,NULL,NULL)) {
     if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
       Resource_Release(loadedSample);
     }
@@ -4736,14 +4736,14 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   g_FrontendStateTickSpinLock = 0;
   g_TimerRegisterPeriodic(FRONTEND_PERIODIC_TIMER_HZ,FrontendRuntime_TimerCountdownTick);
   UiRuntime_SetSynchronizationHooks(Frontend_StateTick,&g_FrontendStateTickSpinLock);
-  centralTextureSet = g_GraphicsTextureSetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_gfx_00545acc,
+  centralTextureSet = g_GraphicsTextureSetLoadPackage((uint16_t *)g_GfxTexturenZentraleGfxPathUtf16,
                                                       &centralResourceErrorCode);
   if (centralTextureSet == NULL) {
     *outError = centralResourceErrorCode;
     return false;
   }
   g_FrontendCentralTextureSet = (uint32_t)centralTextureSet;
-  centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_pal_00545b00,
+  centralPaletteAsset = g_GraphicsPaletteAssetLoadPackage((uint16_t *)g_GfxTexturenZentralePalPathUtf16,
                                                           &centralResourceErrorCode);
   if (centralPaletteAsset == NULL) {
     *outError = centralResourceErrorCode;
@@ -4757,7 +4757,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     *outError = error;
     return false;
   }
-  centralRomAsset = Package_LoadEntry((uint16_t *)u_engine_zentrale_rom_00545aa4,&romLoadErrorCode);
+  centralRomAsset = Package_LoadEntry((uint16_t *)g_EngineZentraleRomPathUtf16,&romLoadErrorCode);
   if (centralRomAsset == NULL) {
     *outError = romLoadErrorCode;
     return false;
@@ -4797,7 +4797,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     rootDwords++;
   }
   FrontendMenu_BindSharedResources(frontendUiState);
-  UiRootStack_Push(&g_UiRootCallbacks_0053DA70,(UiRootNode *)frontendUiState);
+  UiRootStack_Push(&g_FrontendUiRootCallbacks,(UiRootNode *)frontendUiState);
   FrontendInit_StartMenuMusic();
   FrontendInit_FillNetworkBackendList(frontendUiState);
   /* the 3D pointer-context control of the menu room is the world runtime menuRoomModelView */
@@ -4994,7 +4994,7 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
   GraphicsTextureSourceAsset *menuTexture;
   int controlIndex;
 
-  menuTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_menue_gfx_00545b78,NULL);
+  menuTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelMenueGfxPathUtf16,NULL);
   if (menuTexture != NULL) {
     g_FrontendMenuTextureSource = menuTexture;
     frontendUiState->menuTextureSource_485C = menuTexture;

@@ -280,8 +280,8 @@ extern uint32_t g_UiCommandModeA;
 extern uint32_t g_UiCommandModeB; /* followed in the original by an all-zero dword no code reaches (dropped) */
 extern uint32_t g_UiCommandModeF;
 
-extern UiNodeVtable g_UiNodeVtable_005162C0;
-extern UiNodeVtable g_UiNodeVtable_00516310;
+extern UiNodeVtable g_UiCommandSpriteButtonWithDetailsVtable;
+extern UiNodeVtable g_UiCommandSpriteButtonControlVtable;
 extern InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11;
 extern void *g_UiCommandModeGHandlers[6];
 

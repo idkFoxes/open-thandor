@@ -301,8 +301,8 @@ void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
 }
 
 
-/* Pointer press of the command sprite buttons (nonRightPress and rightPress of g_UiNodeVtable_005162C0,
-   g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable): shows the button pressed and starts a new
+/* Pointer press of the command sprite buttons (nonRightPress and rightPress of g_UiCommandSpriteButtonWithDetailsVtable,
+   g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable): shows the button pressed and starts a new
    activationInputState, marking a double click when the node reports one.
 */
 void UiCommandSpriteButtonControl_BeginPress
@@ -326,8 +326,8 @@ void UiCommandSpriteButtonControl_BeginPress
 }
 
 
-/* Left/middle button release of the command sprite buttons (nonRightRelease of g_UiNodeVtable_005162C0 and
-   g_UiNodeVtable_00516310): when the press started on this button, adds the modifier keys held now to
+/* Left/middle button release of the command sprite buttons (nonRightRelease of g_UiCommandSpriteButtonWithDetailsVtable and
+   g_UiCommandSpriteButtonControlVtable): when the press started on this button, adds the modifier keys held now to
    activationInputState, plays the activation sound if enabled and queues the button's action; the action
    handler reads activationInputState to choose what to do.
 */
@@ -359,8 +359,8 @@ void UiCommandSpriteButtonControl_NonRightRelease
 }
 
 
-/* Right button release of the command sprite buttons (rightRelease of g_UiNodeVtable_005162C0,
-   g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable): like the left release, but replaces activationInputState
+/* Right button release of the command sprite buttons (rightRelease of g_UiCommandSpriteButtonWithDetailsVtable,
+   g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable): like the left release, but replaces activationInputState
    with the modifier keys plus UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON (which also drops the double-click marker).
 */
 void UiCommandSpriteButtonControl_RightRelease
@@ -388,7 +388,7 @@ void UiCommandSpriteButtonControl_RightRelease
 }
 
 
-/* Pointer move over an army stock slot (pointerMove of g_UiNodeVtable_005162C0, which the seven diplomacy
+/* Pointer move over an army stock slot (pointerMove of g_UiCommandSpriteButtonWithDetailsVtable, which the seven diplomacy
    relation buttons share; for them no slot matches and only the cursor frame is returned): shows the slot's
    army asset in the selection detail panel and returns the cursor frame, 12 while Ctrl is held (a click then
    sells the army, see InGameArmyStock_TakeOrSellSlotArmy), 10 otherwise.
@@ -1780,7 +1780,7 @@ InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeInd
 
 /* Class vtables. */
 
-UiNodeVtable g_UiNodeVtable_005162C0 = {
+UiNodeVtable g_UiCommandSpriteButtonWithDetailsVtable = {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
         .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
@@ -1801,7 +1801,7 @@ UiNodeVtable g_UiNodeVtable_005162C0 = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-UiNodeVtable g_UiNodeVtable_00516310 = {
+UiNodeVtable g_UiCommandSpriteButtonControlVtable = {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
         .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,

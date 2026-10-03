@@ -33,8 +33,8 @@ void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
 }
 
 
-/* Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables g_UiNodeVtable_005162C0,
-   g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable. For an animated button it first expands a serialized 8-int descriptor (node rectangle,
+/* Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable,
+   g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable. For an animated button it first expands a serialized 8-int descriptor (node rectangle,
    normal and selected frame ranges) and starts the animation on a random normal frame, so buttons of the
    same kind do not animate in lockstep; then the children are relocated.
 */
@@ -70,8 +70,8 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
 }
 
 
-/* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiNodeVtable_005162C0
-   and g_UiNodeVtable_00516310. Draws the current frame (normal or selected, plus the animation offset) twice: first as a
+/* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable
+   and g_UiCommandSpriteButtonControlVtable. Draws the current frame (normal or selected, plus the animation offset) twice: first as a
    half-transparent black shadow shifted by the state's drawOffsets, then the sprite itself, optionally
    over the normal frame (NORMAL_UNDER_SELECTED).
 */
@@ -285,7 +285,7 @@ void UiSpriteButtonControl_NonRightRelease
 
 
 /* nonRightDrag slot of g_UiSpriteButtonControlVtable, and both drag slots of the sprite-button vtables
-   g_UiNodeVtable_005162C0, g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable. While a momentary, non-animated button holds the
+   g_UiCommandSpriteButtonWithDetailsVtable, g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable. While a momentary, non-animated button holds the
    pointer, it shows the pressed state only while the pointer is over the button (opaque sprite pixel or
    node rectangle), so dragging off cancels the click.
 */
@@ -347,8 +347,8 @@ void UiSpriteButtonControl_NonRightDrag
 }
 
 
-/* hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiNodeVtable_005162C0,
-   g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable. Returns the button when the point lies on an opaque pixel of its normal frame (selected
+/* hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiCommandSpriteButtonWithDetailsVtable,
+   g_UiCommandSpriteButtonControlVtable and g_UiCatalogEntryControlVtable. Returns the button when the point lies on an opaque pixel of its normal frame (selected
    frame for SELECTED_ONLY buttons); RECT_HIT_TEST buttons accept the whole node (the caller has already
    checked the rectangle). Otherwise UI_NODE_NONE.
 */

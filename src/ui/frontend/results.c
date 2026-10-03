@@ -56,7 +56,7 @@ static uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {0};
 
 /* Implementation ownership: ui/frontend/results. */
 
-/* drawClipped of g_UiNodeVtable_00516F60, the three results charts (resultsChart1..3) of the end-of-game
+/* drawClipped of g_FrontendResultsTableVtable, the three results charts (resultsChart1..3) of the end-of-game
    results screen. Table mode (modeFlags bit 0 clear) draws the control's list of column types one after the
    other, advancing by each type's width (types 0 and 1 are empty spacers). The "columns" advance downwards
    (drawY starts at base.top) and each one lays its header and its faction entries out from left to
@@ -716,7 +716,7 @@ void FrontendResultsTable_DrawPlayerColumn
 
 /* Class vtables. */
 
-UiNodeVtable g_UiNodeVtable_00516F60 = {
+UiNodeVtable g_FrontendResultsTableVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
         .drawClipped = (void *)FrontendResultsTable_DrawColumnSequenceByType,

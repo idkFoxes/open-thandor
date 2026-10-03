@@ -110,6 +110,6 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
           FrontendResultsFactionWeightPair *factionWeights);
 
-extern UiNodeVtable g_UiNodeVtable_00516F60;
+extern UiNodeVtable g_FrontendResultsTableVtable;
 
 #endif /* THANDOR_UI_FRONTEND_RESULTS_H */

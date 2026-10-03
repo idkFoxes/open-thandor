@@ -33,7 +33,7 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton);
 
 void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl);
 
-extern uint16_t u_save_0050daa2[5];
+extern uint16_t g_SaveDirectoryUtf16[5];
 extern uint16_t g_ScenarioCatalogPathScratchUtf16[256];
 
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */

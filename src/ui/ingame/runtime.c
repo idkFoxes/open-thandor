@@ -104,17 +104,17 @@ static int32_t g_UiSevenSlotSelectionControlOffsets[7] = {8420, 8516, 8612, 8708
 /* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state; ui/ingame/runtime.c */
 static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB};
 
-static uint16_t u_gfx_panel_panel0_gfx_005630d0[21] = L"gfx\\panel\\panel0.gfx";
+static uint16_t g_GfxPanelPanel0GfxPathUtf16[21] = L"gfx\\panel\\panel0.gfx";
 
-static uint16_t u_gfx_panel_tech_gfx_005630fa[19] = L"gfx\\panel\\tech.gfx";
+static uint16_t g_GfxPanelTechGfxPathUtf16[19] = L"gfx\\panel\\tech.gfx";
 
-static uint16_t u_gfx_panel_diagram0_gfx_00563120[23] = L"gfx\\panel\\diagram0.gfx";
+static uint16_t g_GfxPanelDiagram0GfxPathUtf16[23] = L"gfx\\panel\\diagram0.gfx";
 
-static uint16_t u_gfx_panel_window_gfx_0056318e[21] = L"gfx\\panel\\window.gfx";
+static uint16_t g_GfxPanelWindowGfxPathUtf16[21] = L"gfx\\panel\\window.gfx";
 
 static uint16_t g_DeveloperChatPhraseUtf16[32] = L"Oh grosser Thomas, erl\366se mich!";
 
-static uint16_t u_Hmmm__na_gut________0056321e[20] = L"Hmmm, na gut... ;-)";
+static uint16_t g_HmmNaGutChatPhraseUtf16[20] = L"Hmmm, na gut... ;-)";
 
 static int32_t g_InGamePanelTextureSubresource00Width = 0;
 
@@ -249,9 +249,9 @@ static uint32_t g_UiCommandDragStartScreenY = 0;
 
 uint32_t g_RenderedFrameCountSinceDebugRefresh = 0;
 
-uint16_t u_campagne_hex_0050e068[13] = L"campagne.hex";
+uint16_t g_CampagneHexPathUtf16[13] = L"campagne.hex";
 
-uint16_t u_oldunit_hex_0050e094[12] = L"oldunit.hex";
+uint16_t g_OldunitHexPathUtf16[12] = L"oldunit.hex";
 
 uint8_t g_InGameResourceRegistrationBusyCount = 0;
 
@@ -441,7 +441,7 @@ static void InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(uint32_t keyboardSta
   }
 }
 
-/* Keyboard handler of the map editor (installed as g_UiRootCallbacks_0054FBC0.keyboardFallback by
+/* Keyboard handler of the map editor (installed as g_InGameUiRootCallbacks.keyboardFallback by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState while the editor is active): looks the key up in
    g_InGameKeyboardDispatchRecords and runs the matching hotkey - tool and tab selection, cycling materials and
    placement armies, moving the field origin or the light direction, saving the map, screenshots and leaving
@@ -883,7 +883,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
       if (InGameChatInput_MatchesCheatPhrase(commandTextEdit->textBuffer)) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED;
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED;
-        InGameRecentTextHistory_InsertAndRebuild8((uint16_t *)u_Hmmm__na_gut________0056321e);
+        InGameRecentTextHistory_InsertAndRebuild8((uint16_t *)g_HmmNaGutChatPhraseUtf16);
       }
     }
     else {
@@ -958,7 +958,7 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
   ArmyRuntimePool_ConvertPointersToOffsetsForSave();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (PckDecodedByteCount)(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot)),
-                              (uint32_t *)g_ArmyRuntimeSlots,(uint16_t *)u_army_hex_0050dfb4,packageHandle);
+                              (uint32_t *)g_ArmyRuntimeSlots,(uint16_t *)g_ArmyHexPathUtf16,packageHandle);
   ArmyRuntimePool_RebaseAfterLoad();
   if (!upsertOk) {
     return false;
@@ -967,42 +967,42 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
   ModelRuntimePool_UnrebaseBeforeSave();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (PckDecodedByteCount)(MODEL_RUNTIME_SLOT_COUNT * sizeof(ModelRuntimeSlot)),
-                              (uint32_t *)g_ModelRuntimeSlots,(uint16_t *)u_modul_hex_0050dfee,packageHandle);
+                              (uint32_t *)g_ModelRuntimeSlots,(uint16_t *)g_ModulHexPathUtf16,packageHandle);
   ModelRuntimePool_RebaseAfterLoad();
   if (!upsertOk) {
     return false;
   }
   domainImagePair = InGameSaveGame_PrepareShotSlots();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_shot_hex_0050dfdc,packageHandle);
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_ShotHexPathUtf16,packageHandle);
   ShotRuntime_RebaseSlotsAfterLoad();
   if (!upsertOk) {
     return false;
   }
   domainImagePair = InGameSaveGame_PrepareEffectSlots();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_effect_hex_0050dfc6,packageHandle);
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_EffectHexPathUtf16,packageHandle);
   EffectRuntime_RebaseSlotsAfterLoad();
   if (!upsertOk) {
     return false;
   }
   domainImagePair = InGameSaveGame_PrepareRegistrationRecords(worldView);
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_widget_hex_0050e02a,packageHandle);
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_WidgetHexPathUtf16,packageHandle);
   ResourceRegistrationRuntime_RebaseLoadedRecords(worldView);
   if (!upsertOk) {
     return false;
   }
   segmentImage = RuntimeHexSegment_GetLightImageAndToggleFlag();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
-                              segmentImage.image,(uint16_t *)u_light_hex_0050e016,packageHandle);
+                              segmentImage.image,(uint16_t *)g_LightHexPathUtf16,packageHandle);
   RuntimeHexSegment_ToggleLightImageFlag();
   if (!upsertOk) {
     return false;
   }
   segmentImage = RuntimeHexSegment_GetFieldImage(worldView);
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
-                              segmentImage.image,(uint16_t *)u_field_hex_0050e002,packageHandle);
+                              segmentImage.image,(uint16_t *)g_FieldHexPathUtf16,packageHandle);
   RuntimeHexSegment_AfterFieldImageNoOp(worldView);
   levelStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   if (!upsertOk) {
@@ -1012,24 +1012,24 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (levelStorage->levelImage).header.resourceTables.
                               runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)levelStorage,
-                              (uint16_t *)u_level_hex_0050e040,packageHandle);
+                              (uint16_t *)g_LevelHexPathUtf16,packageHandle);
   if (!upsertOk) {
     return false;
   }
   domainImagePair = InGameSaveGame_PrepareFactionImage();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_daten_hex_0050e054,packageHandle);
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_DatenHexPathUtf16,packageHandle);
   GameFactionRuntime_RebaseLoadedArmyReferences();
   if (!upsertOk) {
     return false;
   }
   if (g_FrontendLoadedCampaignAsset == 0) {
-    Package_DeleteEntry((uint16_t *)u_campagne_hex_0050e068,packageHandle,NULL);
+    Package_DeleteEntry((uint16_t *)g_CampagneHexPathUtf16,packageHandle,NULL);
     return true;
   }
   return Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
                              (uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset,
-                             (uint16_t *)u_campagne_hex_0050e068,packageHandle);
+                             (uint16_t *)g_CampagneHexPathUtf16,packageHandle);
 }
 
 
@@ -1076,7 +1076,7 @@ static Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
   }
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                       (PckDecodedByteCount)((uint8_t *)destinationCursor - (uint8_t *)oldUnitImage),oldUnitImage,
-                      (uint16_t *)u_oldunit_hex_0050e094,packageHandle);
+                      (uint16_t *)g_OldunitHexPathUtf16,packageHandle);
   g_MemoryApi.free(oldUnitImage);
   return true;
 }
@@ -1133,10 +1133,10 @@ static Bool8 InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
     return false;
   }
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,g_GameStatTableImage,
-                      (uint16_t *)u_stat_hex_0050e082,packageHandle);
+                      (uint16_t *)g_StatHexPathUtf16,packageHandle);
   /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
   if (InGameSaveGame_OldUnitTablesAreEmpty()) {
-    Package_DeleteEntry((uint16_t *)u_oldunit_hex_0050e094,packageHandle,NULL);
+    Package_DeleteEntry((uint16_t *)g_OldunitHexPathUtf16,packageHandle,NULL);
   }
   else if (!InGameSaveGame_WriteOldUnitEntry(packageHandle)) {
     return false;
@@ -1243,8 +1243,8 @@ static void InGameUiRuntime_SelectDisplayModeLayout(UiRootNode *inGameRoot)
   else {
     variantDigit = L'2';
   }
-  u_gfx_panel_panel0_gfx_005630d0[INGAME_PANEL_GFX_PATH_VARIANT_DIGIT] = variantDigit;
-  u_gfx_panel_diagram0_gfx_00563120[INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT] = variantDigit;
+  g_GfxPanelPanel0GfxPathUtf16[INGAME_PANEL_GFX_PATH_VARIANT_DIGIT] = variantDigit;
+  g_GfxPanelDiagram0GfxPathUtf16[INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT] = variantDigit;
   if (variantDigit == L'0') {
     InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,xeniteGauge),36,6,94,13);
     InGameUiRuntime_SetEdgeOffsets(INGAME_UI(inGameRoot,tritiumGauge),36,17,94,24);
@@ -2371,7 +2371,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
 
   InGameUiRuntime_SelectDisplayModeLayout(inGameRoot);
   panelTexture = InGameUiRuntime_ReplaceTexturePackage
-                   ((uint16_t *)u_gfx_panel_panel0_gfx_005630d0,&g_InGamePanelTextureSource,&textureLoadError);
+                   ((uint16_t *)g_GfxPanelPanel0GfxPathUtf16,&g_InGamePanelTextureSource,&textureLoadError);
   if (panelTexture == NULL) {
     *outError = textureLoadError;
     return false;
@@ -2386,7 +2386,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   InGameUiRuntime_LayoutSelectionDetailPage(inGameRoot);
 
   diagramTexture = InGameUiRuntime_ReplaceTexturePackage
-                     ((uint16_t *)u_gfx_panel_diagram0_gfx_00563120,
+                     ((uint16_t *)g_GfxPanelDiagram0GfxPathUtf16,
                       (GraphicsTextureSourceAsset **)&g_InGameDiagramTextureSource,&textureLoadError);
   if (diagramTexture == NULL) {
     *outError = textureLoadError;
@@ -2397,7 +2397,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   ((UiFormattedContainer *)INGAME_UI(inGameRoot,energyGauge))->textureSource = diagramTexture;
 
   windowTexture = InGameUiRuntime_ReplaceTexturePackage
-                    ((uint16_t *)u_gfx_panel_window_gfx_0056318e,
+                    ((uint16_t *)g_GfxPanelWindowGfxPathUtf16,
                      (GraphicsTextureSourceAsset **)&g_InGameWindowTextureSource,&textureLoadError);
   if (windowTexture == NULL) {
     *outError = textureLoadError;
@@ -2413,7 +2413,7 @@ Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint
   ((UiImagePanelControl *)INGAME_UI(inGameRoot,missionHelpWindow))->textureSource = windowTexture;
 
   techTexture = InGameUiRuntime_ReplaceTexturePackage
-                  ((uint16_t *)u_gfx_panel_tech_gfx_005630fa,
+                  ((uint16_t *)g_GfxPanelTechGfxPathUtf16,
                    (GraphicsTextureSourceAsset **)&g_InGameTechnologyTextureSource,&textureLoadError);
   if (techTexture == NULL) {
     *outError = textureLoadError;
@@ -2679,7 +2679,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
       SESSION_NETWORK_ROLE_LOCAL) {
     windowTextureSize = g_GraphicsTextureSourceGetLogicalSize(114,g_UiWindowTextureSource);
     textExtent = RichTextCommandStream_MeasureLine
-                      (g_UiTextStyleNormal,(uint16_t *)u_gfx_panel_panel0_gfx_005630d0);
+                      (g_UiTextStyleNormal,(uint16_t *)g_GfxPanelPanel0GfxPathUtf16);
     panelHalfHeight = (textExtent.heightPixels * remainingPlayers >> 1) + windowTextureSize.logicalHeightPixels;
     destination = g_InGamePlayerStatusTextSlots;
     statusBox = (UiConditionalActionControl *)INGAME_UI(inGameRoot,playerStatusBox);
@@ -4758,7 +4758,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
            UiCommandRuntime_CallbackNoOp;
       (root->worldRuntime).selection.dispatchWorldContextActionCallback =
            InGameUiCommand_ResetInteractionByMode;
-      g_UiRootCallbacks_0054FBC0.keyboardFallback =
+      g_InGameUiRootCallbacks.keyboardFallback =
            InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags;
       /* InGameCommandModeG_Select0..5, applied to the mode's tab control. */
       (*(void (*)(UiSelectableControl *))g_UiCommandModeGHandlers[editorMode])
@@ -4852,7 +4852,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
          InGameUiRuntime_DispatchWorldContextActionCallback;
     runtimeFlagsField = &(root->worldRuntime).runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS;
-    g_UiRootCallbacks_0054FBC0.keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
+    g_InGameUiRootCallbacks.keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
     /* free the cached preview textures of all army asset records */
     for (index = 0; index < ARMY_ASSET_REGISTRY_SLOT_COUNT; index++) {
       armyAsset = g_ArmyAssetRecordRegistry[index];

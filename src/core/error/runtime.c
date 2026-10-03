@@ -21,13 +21,13 @@ static uint16_t g_FatalErrorDetail3Utf16[256] = {0};
 
 static FatalErrorPassThroughProc *g_FatalErrorFallbackHandler = 0;
 
-static uint16_t u_texte_error_str_00407d20[16] = L"texte\\error.str";
+static uint16_t g_TexteErrorStrPathUtf16[16] = L"texte\\error.str";
 
 static UiRootNode *g_FatalErrorUiRootTemplate = 0;
 
 static uint32_t g_FatalErrorDialogDismissed = 0;
 
-static UiRootCallbacks g_UiRootCallbacks_00407E28 = {
+static UiRootCallbacks g_FatalErrorDialogRootCallbacks = {
     .method08 = (void *)FatalErrorDialog_BlockMissedPointerPress,
     .pointerMissPolicy = (void *)FatalErrorDialog_BlockMissedPointerMotion};
 
@@ -81,12 +81,12 @@ void __cdecl ErrorSystem_Init(void)
   g_FatalErrorExitHandler = FatalError_Exit;
   g_FatalErrorReportHandler = FatalError_Exit;
   g_FatalErrorFallbackHandler = FatalError_Exit;
-  errorTextsLoaded = TextResourcePage_Load(0,u_texte_error_str_00407d20,NULL);
+  errorTextsLoaded = TextResourcePage_Load(0,g_TexteErrorStrPathUtf16,NULL);
   FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),!errorTextsLoaded);
 }
 
 
-/* method08 of g_UiRootCallbacks_00407E28, the callbacks of the fatal-error dialog root: always returns true, so
+/* method08 of g_FatalErrorDialogRootCallbacks, the callbacks of the fatal-error dialog root: always returns true, so
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
@@ -97,7 +97,7 @@ Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
 }
 
 
-/* pointerMissPolicy of g_UiRootCallbacks_00407E28 (the fatal-error dialog root): the non-negative result
+/* pointerMissPolicy of g_FatalErrorDialogRootCallbacks (the fatal-error dialog root): the non-negative result
    stops the pointer traversal at the dialog, so the roots below it get no pointer input. The value 8 itself
    carries no meaning beyond being non-negative.
 */
@@ -179,7 +179,7 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,Bool8 fail
                      g_FatalErrorUiRootTemplateImage.errorMessageText.rightOffset) -
                     g_FatalErrorUiRootTemplateImage.errorMessageText.leftOffset);
   dialogRoot->base.topOffset = dialogRoot->base.topOffset - wrappedExtent.heightPixels;
-  UiRootStack_Push(&g_UiRootCallbacks_00407E28,g_FatalErrorUiRootTemplate);
+  UiRootStack_Push(&g_FatalErrorDialogRootCallbacks,g_FatalErrorUiRootTemplate);
   g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   UiFrame_FlushInputAndResetPendingTicks();

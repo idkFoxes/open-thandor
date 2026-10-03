@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-uint16_t u_save_0050daa2[5] = L"save";
+uint16_t g_SaveDirectoryUtf16[5] = L"save";
 
 uint16_t g_ScenarioCatalogPathScratchUtf16[256] = {0};
 
@@ -128,7 +128,7 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
     /* the row record starts with the save's name, used as the file name */
     leaf = (uint16_t *)saveList->rowSlots[selectedIndex];
     WidePath_CombineDirectoryAndLeaf
-              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
               (g_ScenarioCatalogPathScratchUtf16,leaf,
@@ -173,7 +173,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   UiListRowIndex selectedIndex;
 
   WidePath_CombineDirectoryAndLeaf
-            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
+            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveSvePatternUtf16,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   rowCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
                (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
@@ -192,7 +192,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     *rowSlot = (ScenarioCatalogByteOffset)record;
     *record = 0;
     WidePath_CombineDirectoryAndLeaf
-              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
               (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)enumRecord,
@@ -277,7 +277,7 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
     leaf = (uint16_t *)saveList->rowSlots[rowOrdinal - 1];
   }
   WidePath_CombineDirectoryAndLeaf
-            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   WidePath_CombineDirectoryAndLeaf
             (g_ScenarioCatalogPathScratchUtf16,leaf,

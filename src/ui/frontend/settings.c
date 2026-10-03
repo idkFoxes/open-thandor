@@ -1025,7 +1025,7 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   if (isSelected) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-    musicLoaded = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e,(void **)&musicSample,NULL,NULL);
+    musicLoaded = Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&musicSample,NULL,NULL);
     activeMusicBuffer = g_FrontendMusicActiveBuffer;
     if (musicLoaded) {
       if (g_SoundCreateSampleVoiceSet(musicSample,&musicVoiceSet) != 0) {

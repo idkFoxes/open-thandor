@@ -10,21 +10,21 @@
 
 /* Module data. */
 
-__declspec(align(4)) uint16_t u_army_hex_0050dfb4[9] = L"army.hex";
+__declspec(align(4)) uint16_t g_ArmyHexPathUtf16[9] = L"army.hex";
 
-uint16_t u_effect_hex_0050dfc6[11] = L"effect.hex";
+uint16_t g_EffectHexPathUtf16[11] = L"effect.hex";
 
-uint16_t u_shot_hex_0050dfdc[9] = L"shot.hex";
+uint16_t g_ShotHexPathUtf16[9] = L"shot.hex";
 
-uint16_t u_modul_hex_0050dfee[10] = L"modul.hex";
+uint16_t g_ModulHexPathUtf16[10] = L"modul.hex";
 
-uint16_t u_field_hex_0050e002[10] = L"field.hex";
+uint16_t g_FieldHexPathUtf16[10] = L"field.hex";
 
-uint16_t u_light_hex_0050e016[10] = L"light.hex";
+uint16_t g_LightHexPathUtf16[10] = L"light.hex";
 
-uint16_t u_widget_hex_0050e02a[11] = L"widget.hex";
+uint16_t g_WidgetHexPathUtf16[11] = L"widget.hex";
 
-uint16_t u_level_hex_0050e040[10] = L"level.hex";
+uint16_t g_LevelHexPathUtf16[10] = L"level.hex";
 
 uint16_t g_LevelEndingMovieSourcePath[256] = {0};
 
@@ -46,9 +46,9 @@ uint32_t g_MoviePlaybackScheduleSpan = 0;
 
 uint32_t g_SoundPackageHandle = 0;
 
-static uint16_t u_sound_level00_sam_0050df6c[18] = L"sound\\level00.sam";
+static uint16_t g_SoundLevel00SamPathUtf16[18] = L"sound\\level00.sam";
 
-static uint16_t u_sound_music00_sam_0050df90[18] = L"sound\\music00.sam";
+static uint16_t g_SessionMusic00SamPathUtf16[18] = L"sound\\music00.sam";
 
 static void **g_InGameLoadedResourcePointers = 0;
 
@@ -96,7 +96,7 @@ Bool8 LevelAsset_PrepareEndingMoviePath
     WidePath_SetExtensionCode(ASSET_MAGIC_FLM,(uint16_t *)path);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,movieNumber,
-               (uint16_t *)(u_flm_ende0000_flm_0050df06 + 8)); /* the "0000" */
+               (uint16_t *)(g_SessionEndMoviePathUtf16 + 8)); /* the "0000" */
     sourcePathCursor = g_LevelEndingMovieSourcePath;
     for (; remainingDwordCount != 0; remainingDwordCount--) {
       *(uint32_t *)sourcePathCursor = *(uint32_t *)currentLevelPath;
@@ -611,21 +611,21 @@ static void NewLevel_LoadLevelSamples(void)
   g_InGameLevelMusicVoiceSets[2] = NULL;
   g_InGameLevelMusicVoiceSets[3] = NULL;
   worldSettings = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage).worldSettings;
-  NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[0],u_sound_level00_sam_0050df6c,
+  NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[0],g_SoundLevel00SamPathUtf16,
                            &g_InGameLevelEffectVoiceSets[0]);
-  NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[1],u_sound_level00_sam_0050df6c,
+  NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[1],g_SoundLevel00SamPathUtf16,
                            &g_InGameLevelEffectVoiceSets[1]);
-  NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[2],u_sound_level00_sam_0050df6c,
+  NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[2],g_SoundLevel00SamPathUtf16,
                            &g_InGameLevelEffectVoiceSets[2]);
-  NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[3],u_sound_level00_sam_0050df6c,
+  NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[3],g_SoundLevel00SamPathUtf16,
                            &g_InGameLevelEffectVoiceSets[3]);
-  NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[0],u_sound_music00_sam_0050df90,
+  NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[0],g_SessionMusic00SamPathUtf16,
                            &g_InGameLevelMusicVoiceSets[0]);
-  NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[1],u_sound_music00_sam_0050df90,
+  NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[1],g_SessionMusic00SamPathUtf16,
                            &g_InGameLevelMusicVoiceSets[1]);
-  NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[2],u_sound_music00_sam_0050df90,
+  NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[2],g_SessionMusic00SamPathUtf16,
                            &g_InGameLevelMusicVoiceSets[2]);
-  NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[3],u_sound_music00_sam_0050df90,
+  NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[3],g_SessionMusic00SamPathUtf16,
                            &g_InGameLevelMusicVoiceSets[3]);
 }
 
@@ -986,18 +986,18 @@ static Bool8 SavedLevel_LoadRuntimePools(WorldRuntimeContext *worldRuntime,uint3
 
 {
   if (!SavedLevel_LoadRuntimePool(worldRuntime->objectCount * sizeof(WorldObjectRecord),
-                                  (uint8_t *)worldRuntime->objectArray,(uint16_t *)u_widget_hex_0050e02a,
+                                  (uint8_t *)worldRuntime->objectArray,(uint16_t *)g_WidgetHexPathUtf16,
                                   outError) ||
       !SavedLevel_LoadRuntimePool(ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot),(uint8_t *)g_ArmyRuntimeSlots,
-                                  (uint16_t *)u_army_hex_0050dfb4,outError) ||
+                                  (uint16_t *)g_ArmyHexPathUtf16,outError) ||
       !SavedLevel_LoadRuntimePool(MODEL_RUNTIME_POOL_BYTES,(uint8_t *)g_ModelRuntimeSlots,
-                                  (uint16_t *)u_modul_hex_0050dfee,outError) ||
+                                  (uint16_t *)g_ModulHexPathUtf16,outError) ||
       !SavedLevel_LoadRuntimePool(EFFECT_RUNTIME_POOL_BYTES,(uint8_t *)g_EffectRuntimeSlots,
-                                  (uint16_t *)u_effect_hex_0050dfc6,outError) ||
+                                  (uint16_t *)g_EffectHexPathUtf16,outError) ||
       !SavedLevel_LoadRuntimePool(SHOT_RUNTIME_POOL_BYTES,(uint8_t *)g_ShotRuntimeSlots,
-                                  (uint16_t *)u_shot_hex_0050dfdc,outError) ||
+                                  (uint16_t *)g_ShotHexPathUtf16,outError) ||
       !SavedLevel_LoadRuntimePool(sizeof(g_GraphicsShadingRuntimeRecords),
-                                  (uint8_t *)g_GraphicsShadingRuntimeRecords,(uint16_t *)u_light_hex_0050e016,
+                                  (uint8_t *)g_GraphicsShadingRuntimeRecords,(uint16_t *)g_LightHexPathUtf16,
                                   outError)) {
     return false;
   }

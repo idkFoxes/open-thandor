@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-GraphicsPrimitiveQueueRadixSortProc *PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 = (void *)GraphicsPrimitiveQueue_RadixSortForRendering;
+GraphicsPrimitiveQueueRadixSortProc *g_GraphicsPrimitiveQueueRadixSortProc = (void *)GraphicsPrimitiveQueue_RadixSortForRendering;
 
 GraphicsPrimitiveQueue *g_PrimitiveQueueStorage = 0;
 
@@ -100,7 +100,7 @@ static void GraphicsPrimitivePacket_HalveVertexRgb(GraphicsPrimitivePacket *pack
    byte first) move the nodes between primaryNodes and radixScratchPool and back and order them by descending
    key: opaque packets first, grouped by texture, then the blended ones from the largest depth sum down. With
    halveVertexRgb set every packet's vertex RGB is halved (alpha kept, MMX).
-   Installed in the graphics dispatch slot PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 (called
+   Installed in the graphics dispatch slot g_GraphicsPrimitiveQueueRadixSortProc (called
    by FrontendModelPointerContext_RenderWorldViewQueuesClipped with node flag 8) and called directly by the
    offscreen model renderer (graphics/render/projection.c).
 */

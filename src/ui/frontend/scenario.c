@@ -33,7 +33,7 @@ static uint16_t FrontendScenarioList_LevelAvailabilityMarker(uint32_t maskWordIn
   return FRONTEND_TEXT_STYLE_NORMAL;
 }
 
-/* Frame update of the frontend root: the frameUpdate callback of g_UiRootCallbacks_0053DA70, which Frontend_Init
+/* Frame update of the frontend root: the frameUpdate callback of g_FrontendUiRootCallbacks, which Frontend_Init
    pushes on the UI root stack. Sorts the chat history, runs the timeout tick of the current network state,
    plays the briefing movie in a loop and the movie view's mask pattern, shows the chat line only in network
    games, updates the 3D menu room and the cursor from the hovered control, and on the game selection page

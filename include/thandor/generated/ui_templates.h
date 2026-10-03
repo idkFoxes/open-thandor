@@ -735,11 +735,11 @@ typedef struct InGameUiImage {
     uint32_t resultsScreenPanel_fields[4];
     UiNodeBase resultsChartPageStack; /* +03AC g_UiLayoutContainerControlVtable: Page stack switching between the three results charts; page chosen by the chart tab buttons (action 0x101C). */
     uint32_t resultsChartPageStack_fields[4];
-    UiNodeBase resultsChart1; /* +0408 g_UiNodeVtable_00516F60: First results statistics chart (graph control); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
+    UiNodeBase resultsChart1; /* +0408 g_FrontendResultsTableVtable: First results statistics chart (graph control); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     uint32_t resultsChart1_fields[12];
-    UiNodeBase resultsChart2; /* +0484 g_UiNodeVtable_00516F60: Second results statistics chart; its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
+    UiNodeBase resultsChart2; /* +0484 g_FrontendResultsTableVtable: Second results statistics chart; its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     uint32_t resultsChart2_fields[12];
-    UiNodeBase resultsChart3; /* +0500 g_UiNodeVtable_00516F60: Third results statistics chart (8 series); its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
+    UiNodeBase resultsChart3; /* +0500 g_FrontendResultsTableVtable: Third results statistics chart (8 series); its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     uint32_t resultsChart3_fields[14];
     UiNodeBase resultsTabMilitary; /* +0584 g_UiFramedTextButtonControlVtable: Results chart tab button labelled Military (text 0x21B1); action 0x101C selects the chart page. */
     uint32_t resultsTabMilitary_fields[5];
@@ -1182,19 +1182,19 @@ typedef struct InGameUiImage {
     uint32_t diplomacyRow6PlayerNameLabel_fields[4];
     UiNodeBase diplomacyRow7PlayerNameLabel; /* +59F0 g_UiFocusProxyControlVtable: Player-name text of diplomacy row 7 (g_UiAction1012IconImageOffsets[6]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries. */
     uint32_t diplomacyRow7PlayerNameLabel_fields[4];
-    UiNodeBase diplomacyRow1RelationButton; /* +5A4C g_UiNodeVtable_005162C0: Action-0x1012 command sprite button of diplomacy row 1; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiNodeBase diplomacyRow1RelationButton; /* +5A4C g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 1; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
     uint32_t diplomacyRow1RelationButton_fields[12];
-    UiNodeBase diplomacyRow2RelationButton; /* +5AC8 g_UiNodeVtable_005162C0: Action-0x1012 command sprite button of diplomacy row 2; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiNodeBase diplomacyRow2RelationButton; /* +5AC8 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 2; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
     uint32_t diplomacyRow2RelationButton_fields[12];
-    UiNodeBase diplomacyRow3RelationButton; /* +5B44 g_UiNodeVtable_005162C0: Action-0x1012 command sprite button of diplomacy row 3; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiNodeBase diplomacyRow3RelationButton; /* +5B44 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 3; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
     uint32_t diplomacyRow3RelationButton_fields[12];
-    UiNodeBase diplomacyRow4RelationButton; /* +5BC0 g_UiNodeVtable_005162C0: Action-0x1012 command sprite button of diplomacy row 4; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiNodeBase diplomacyRow4RelationButton; /* +5BC0 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 4; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
     uint32_t diplomacyRow4RelationButton_fields[12];
-    UiNodeBase diplomacyRow5RelationButton; /* +5C3C g_UiNodeVtable_005162C0: Action-0x1012 command sprite button of diplomacy row 5; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiNodeBase diplomacyRow5RelationButton; /* +5C3C g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 5; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
     uint32_t diplomacyRow5RelationButton_fields[12];
-    UiNodeBase diplomacyRow6RelationButton; /* +5CB8 g_UiNodeVtable_005162C0: Action-0x1012 command sprite button of diplomacy row 6; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiNodeBase diplomacyRow6RelationButton; /* +5CB8 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 6; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
     uint32_t diplomacyRow6RelationButton_fields[12];
-    UiNodeBase diplomacyRow7RelationButton; /* +5D34 g_UiNodeVtable_005162C0: Action-0x1012 command sprite button of diplomacy row 7; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
+    UiNodeBase diplomacyRow7RelationButton; /* +5D34 g_UiCommandSpriteButtonWithDetailsVtable: Action-0x1012 command sprite button of diplomacy row 7; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
     uint32_t diplomacyRow7RelationButton_fields[13];
     UiNodeBase buildCatalogPanel; /* +5DB4 g_UiImageControlVtable: Image-control window (id 0xD, InGameRuntimeRootUiGridView.buildCatalogPanel) holding the 48-entry build catalog of items the selected/owned production buildings can make; suppressed when empty (UiCatalogGroup48_RebuildGrid). */
     uint32_t buildCatalogPanel_fields[8];
@@ -1388,51 +1388,51 @@ typedef struct InGameUiImage {
     uint32_t armyStockPanel_fields[8];
     UiNodeBase armyStockFrame; /* +8CB8 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 24-slot army stock grid (InGameRuntimeRootUiGridView.armyStockFrame); resized/suppressed by the rebuild. */
     uint32_t armyStockFrame_fields[4];
-    UiNodeBase armyStockSlot00; /* +8D14 g_UiNodeVtable_005162C0: Army stock slot 0 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiNodeBase armyStockSlot00; /* +8D14 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 0 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
     uint32_t armyStockSlot00_fields[12];
-    UiNodeBase armyStockSlot01; /* +8D90 g_UiNodeVtable_005162C0: Army stock slot 1 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiNodeBase armyStockSlot01; /* +8D90 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 1 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
     uint32_t armyStockSlot01_fields[12];
-    UiNodeBase armyStockSlot02; /* +8E0C g_UiNodeVtable_005162C0: Army stock slot 2 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiNodeBase armyStockSlot02; /* +8E0C g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 2 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
     uint32_t armyStockSlot02_fields[12];
-    UiNodeBase armyStockSlot03; /* +8E88 g_UiNodeVtable_005162C0: Army stock slot 3 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiNodeBase armyStockSlot03; /* +8E88 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 3 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
     uint32_t armyStockSlot03_fields[12];
-    UiNodeBase armyStockSlot04; /* +8F04 g_UiNodeVtable_005162C0: Army stock slot 4 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiNodeBase armyStockSlot04; /* +8F04 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 4 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
     uint32_t armyStockSlot04_fields[12];
-    UiNodeBase armyStockSlot05; /* +8F80 g_UiNodeVtable_005162C0: Army stock slot 5 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
+    UiNodeBase armyStockSlot05; /* +8F80 g_UiCommandSpriteButtonWithDetailsVtable: Army stock slot 5 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
     uint32_t armyStockSlot05_fields[12];
-    UiNodeBase armyStockSlot06; /* +8FFC g_UiNodeVtable_005162C0: Slot 6 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot06; /* +8FFC g_UiCommandSpriteButtonWithDetailsVtable: Slot 6 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot06_fields[12];
-    UiNodeBase armyStockSlot07; /* +9078 g_UiNodeVtable_005162C0: Slot 7 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot07; /* +9078 g_UiCommandSpriteButtonWithDetailsVtable: Slot 7 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot07_fields[12];
-    UiNodeBase armyStockSlot08; /* +90F4 g_UiNodeVtable_005162C0: Slot 8 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot08; /* +90F4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 8 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot08_fields[12];
-    UiNodeBase armyStockSlot09; /* +9170 g_UiNodeVtable_005162C0: Slot 9 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot09; /* +9170 g_UiCommandSpriteButtonWithDetailsVtable: Slot 9 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot09_fields[12];
-    UiNodeBase armyStockSlot10; /* +91EC g_UiNodeVtable_005162C0: Slot 10 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot10; /* +91EC g_UiCommandSpriteButtonWithDetailsVtable: Slot 10 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot10_fields[12];
-    UiNodeBase armyStockSlot11; /* +9268 g_UiNodeVtable_005162C0: Slot 11 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot11; /* +9268 g_UiCommandSpriteButtonWithDetailsVtable: Slot 11 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot11_fields[12];
-    UiNodeBase armyStockSlot12; /* +92E4 g_UiNodeVtable_005162C0: Slot 12 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot12; /* +92E4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 12 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot12_fields[12];
-    UiNodeBase armyStockSlot13; /* +9360 g_UiNodeVtable_005162C0: Slot 13 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot13; /* +9360 g_UiCommandSpriteButtonWithDetailsVtable: Slot 13 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot13_fields[12];
-    UiNodeBase armyStockSlot14; /* +93DC g_UiNodeVtable_005162C0: Slot 14 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot14; /* +93DC g_UiCommandSpriteButtonWithDetailsVtable: Slot 14 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot14_fields[12];
-    UiNodeBase armyStockSlot15; /* +9458 g_UiNodeVtable_005162C0: Slot 15 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot15; /* +9458 g_UiCommandSpriteButtonWithDetailsVtable: Slot 15 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot15_fields[12];
-    UiNodeBase armyStockSlot16; /* +94D4 g_UiNodeVtable_005162C0: Slot 16 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot16; /* +94D4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 16 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot16_fields[12];
-    UiNodeBase armyStockSlot17; /* +9550 g_UiNodeVtable_005162C0: Slot 17 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot17; /* +9550 g_UiCommandSpriteButtonWithDetailsVtable: Slot 17 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot17_fields[12];
-    UiNodeBase armyStockSlot18; /* +95CC g_UiNodeVtable_005162C0: Slot 18 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot18; /* +95CC g_UiCommandSpriteButtonWithDetailsVtable: Slot 18 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot18_fields[12];
-    UiNodeBase armyStockSlot19; /* +9648 g_UiNodeVtable_005162C0: Slot 19 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot19; /* +9648 g_UiCommandSpriteButtonWithDetailsVtable: Slot 19 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot19_fields[12];
-    UiNodeBase armyStockSlot20; /* +96C4 g_UiNodeVtable_005162C0: Slot 20 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot20; /* +96C4 g_UiCommandSpriteButtonWithDetailsVtable: Slot 20 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot20_fields[12];
-    UiNodeBase armyStockSlot21; /* +9740 g_UiNodeVtable_005162C0: Slot 21 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot21; /* +9740 g_UiCommandSpriteButtonWithDetailsVtable: Slot 21 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot21_fields[12];
-    UiNodeBase armyStockSlot22; /* +97BC g_UiNodeVtable_005162C0: Slot 22 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
+    UiNodeBase armyStockSlot22; /* +97BC g_UiCommandSpriteButtonWithDetailsVtable: Slot 22 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. */
     uint32_t armyStockSlot22_fields[12];
     UiNodeBase armyStockSlot23; /* +9838 g_UiCatalogEntryControlVtable: Slot 23 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. Last slot; distinct class variant with extra text id 0x180019. */
     uint32_t armyStockSlot23_fields[13];
@@ -1568,21 +1568,21 @@ typedef struct InGameUiImage {
     uint32_t regionToolPanel_fields[4];
     UiNodeBase modeCommandPageStack; /* +B19C g_UiLayoutContainerControlVtable: 8-page stack synced by mode G (tertiary index table): page 0 selection group buttons, other pages editor tool option buttons. */
     uint32_t modeCommandPageStack_fields[10];
-    UiNodeBase selectionGroupButton0; /* +B210 g_UiNodeVtable_00516310: Selection group button 0 (action 0x100A, g_UiAction100AControlOffsets[0]): store/recall/jump to faction group 0 depending on modifiers/double-click. */
+    UiNodeBase selectionGroupButton0; /* +B210 g_UiCommandSpriteButtonControlVtable: Selection group button 0 (action 0x100A, g_UiAction100AControlOffsets[0]): store/recall/jump to faction group 0 depending on modifiers/double-click. */
     uint32_t selectionGroupButton0_fields[13];
-    UiNodeBase selectionGroupButton1; /* +B290 g_UiNodeVtable_00516310: Selection group button 1 (action 0x100A, g_UiAction100AControlOffsets[1]): store/recall/jump to faction group 1 depending on modifiers/double-click. */
+    UiNodeBase selectionGroupButton1; /* +B290 g_UiCommandSpriteButtonControlVtable: Selection group button 1 (action 0x100A, g_UiAction100AControlOffsets[1]): store/recall/jump to faction group 1 depending on modifiers/double-click. */
     uint32_t selectionGroupButton1_fields[13];
-    UiNodeBase selectionGroupButton2; /* +B310 g_UiNodeVtable_00516310: Selection group button 2 (action 0x100A, g_UiAction100AControlOffsets[2]): store/recall/jump to faction group 2 depending on modifiers/double-click. */
+    UiNodeBase selectionGroupButton2; /* +B310 g_UiCommandSpriteButtonControlVtable: Selection group button 2 (action 0x100A, g_UiAction100AControlOffsets[2]): store/recall/jump to faction group 2 depending on modifiers/double-click. */
     uint32_t selectionGroupButton2_fields[13];
-    UiNodeBase selectionGroupButton3; /* +B390 g_UiNodeVtable_00516310: Selection group button 3 (action 0x100A, g_UiAction100AControlOffsets[3]): store/recall/jump to faction group 3 depending on modifiers/double-click. */
+    UiNodeBase selectionGroupButton3; /* +B390 g_UiCommandSpriteButtonControlVtable: Selection group button 3 (action 0x100A, g_UiAction100AControlOffsets[3]): store/recall/jump to faction group 3 depending on modifiers/double-click. */
     uint32_t selectionGroupButton3_fields[13];
-    UiNodeBase selectionGroupButton4; /* +B410 g_UiNodeVtable_00516310: Selection group button 4 (action 0x100A, g_UiAction100AControlOffsets[4]): store/recall/jump to faction group 4 depending on modifiers/double-click. */
+    UiNodeBase selectionGroupButton4; /* +B410 g_UiCommandSpriteButtonControlVtable: Selection group button 4 (action 0x100A, g_UiAction100AControlOffsets[4]): store/recall/jump to faction group 4 depending on modifiers/double-click. */
     uint32_t selectionGroupButton4_fields[13];
-    UiNodeBase selectionGroupButton5; /* +B490 g_UiNodeVtable_00516310: Selection group button 5 (action 0x100A, g_UiAction100AControlOffsets[5]): store/recall/jump to faction group 5 depending on modifiers/double-click. */
+    UiNodeBase selectionGroupButton5; /* +B490 g_UiCommandSpriteButtonControlVtable: Selection group button 5 (action 0x100A, g_UiAction100AControlOffsets[5]): store/recall/jump to faction group 5 depending on modifiers/double-click. */
     uint32_t selectionGroupButton5_fields[13];
-    UiNodeBase selectionGroupButton6; /* +B510 g_UiNodeVtable_00516310: Selection group button 6 (action 0x100A, g_UiAction100AControlOffsets[6]): store/recall/jump to faction group 6 depending on modifiers/double-click. */
+    UiNodeBase selectionGroupButton6; /* +B510 g_UiCommandSpriteButtonControlVtable: Selection group button 6 (action 0x100A, g_UiAction100AControlOffsets[6]): store/recall/jump to faction group 6 depending on modifiers/double-click. */
     uint32_t selectionGroupButton6_fields[13];
-    UiNodeBase selectionGroupButton7; /* +B590 g_UiNodeVtable_00516310: Selection group button 7 (action 0x100A, g_UiAction100AControlOffsets[7]): store/recall/jump to faction group 7 depending on modifiers/double-click. */
+    UiNodeBase selectionGroupButton7; /* +B590 g_UiCommandSpriteButtonControlVtable: Selection group button 7 (action 0x100A, g_UiAction100AControlOffsets[7]): store/recall/jump to faction group 7 depending on modifiers/double-click. */
     uint32_t selectionGroupButton7_fields[13];
     UiNodeBase heightToolOption0; /* +B610 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x1108) selecting mode C=0; exact option label unresolved. */
     uint32_t heightToolOption0_fields[11];

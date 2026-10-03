@@ -28,7 +28,7 @@ RomRegistrySlot *g_RomRegistrySlots = 0;
    loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
 DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {0};
 
-uint16_t u_engine_zentrale_rom_00545aa4[20] = L"engine\\zentrale.rom";
+uint16_t g_EngineZentraleRomPathUtf16[20] = L"engine\\zentrale.rom";
 
 /* Implementation ownership: assets/rom/runtime. */
 
@@ -150,7 +150,7 @@ uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
     }
     return 0;
   }
-  Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
+  Package_SetLastErrorPath((uint16_t *)g_EngineZentraleRomPathUtf16);
   /* an invalid header also fails with the registry-full code */
   return FATAL_ERROR_ROM_REGISTRY_FULL;
 }
@@ -584,7 +584,7 @@ uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAsse
     }
     slotCursor++;
   }
-  Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
+  Package_SetLastErrorPath((uint16_t *)g_EngineZentraleRomPathUtf16);
   return FATAL_ERROR_ROM_REGISTRY_FULL;
 }
 

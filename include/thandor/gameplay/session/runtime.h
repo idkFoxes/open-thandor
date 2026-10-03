@@ -102,8 +102,8 @@ uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedAr
 
 extern InGameSimulationStepBatchTicks g_InGameSimulationStepTicks;
 
-extern uint16_t u_flm_ende0000_flm_0050df06[17];
-extern uint16_t u_flm_ende0001_flm_0050df28[17];
+extern uint16_t g_SessionEndMoviePathUtf16[17];
+extern uint16_t g_FlmEnde0001FlmPathUtf16[17];
 extern uint32_t g_SessionNetworkTickCounter;
 extern TerrainRegionCollectionCount g_TerrainRegionCollectionStoredCount;
 extern TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount;
@@ -123,7 +123,7 @@ extern InGameRuntimeRoot *g_InGameRuntimeRoot;
 
 extern InGameUiImage g_InGameRuntimeDefaultImageTemplate;
 
-extern UiRootCallbacks g_UiRootCallbacks_0054FBC0;
+extern UiRootCallbacks g_InGameUiRootCallbacks;
 
 extern SessionNetworkRoleFlags g_SessionNetworkRoleFlags;
 extern uint32_t g_SessionNetworkTickInterval; /* uint32_t network lockstep interval in simulation steps (2 * the frontend speed slider value); sent in the join ack */

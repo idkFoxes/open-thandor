@@ -16,9 +16,9 @@ static PckMountSlot g_PackageMountSlots[1024] = {0};
 /* LevelPackage_ValidateAndMount's one-entry Package_FindEntry output buffer (PCK_ENTRY_HEADER_BYTES) */
 static PckEntryHeader g_LevelPackageFoundEntry = {0};
 
-static uint16_t u_level___lev_005460a6[12] = L"level\\*.lev";
+static uint16_t g_LevelLevPatternUtf16[12] = L"level\\*.lev";
 
-static uint16_t u_level___str_005460be[12] = L"level\\*.str";
+static uint16_t g_LevelStrPatternUtf16[12] = L"level\\*.str";
 
 uint8_t *g_PackageScratchBuffer = 0;
 
@@ -42,7 +42,7 @@ Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
     return true; /* nothing mounted, nothing to unmount */
   }
   if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
-                        (uint16_t *)u_level___lev_005460a6,fileHandle,&matchCount) &&
+                        (uint16_t *)g_LevelLevPatternUtf16,fileHandle,&matchCount) &&
       matchCount != 0) {
     levelAsset = Package_LoadEntry(g_LevelPackageFoundEntry.path,NULL);
     if (levelAsset != NULL) {
@@ -51,7 +51,7 @@ Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
         levelTitleTextId = levelAsset[92]; /* LEV +0x170 */
         Resource_Release(levelAsset);
         if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
-                              (uint16_t *)u_level___str_005460be,fileHandle,&matchCount) &&
+                              (uint16_t *)g_LevelStrPatternUtf16,fileHandle,&matchCount) &&
             matchCount != 0 &&
             !TextResourcePage_LoadCompatibilityAliases(levelTitleTextId,g_LevelPackageFoundEntry.path)) {
           return false; /* valid level: the package stays mounted */
@@ -70,7 +70,7 @@ Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 /* Package_UpsertEntry: copies the PCK_ENTRY_PATH_UNITS code units of path (PckEntryHeader.path) to
    nameDestination, two code units per dword.
    Original quirk: the full field is copied (0x7B whole dwords = 492 bytes) whatever the path's length,
-   so for the short save-game entry names (u_army_hex_0050dfb4 ... u_oldunit_hex_0050e094, 0x12-0x1A bytes
+   so for the short save-game entry names (g_ArmyHexPathUtf16 ... g_OldunitHexPathUtf16, 0x12-0x1A bytes
    each) it reads up to 0x1EC bytes past the string: through the following names and on into
    g_InGameResourceRegistrationBusyCount and the variables after it, which change at run time, so the
    original bytes cannot be kept by making the names one table. The extra bytes only land behind the

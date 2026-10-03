@@ -132,9 +132,9 @@ void DebugCampaign_AutoWinTick(void)
     g_EndMovieVariantIndex = chosen->movieVariantSelector ^ 1;
   }
   g_EndMovieSelectionIndex = chosen->endMovieSelectionIndex;
-  g_EndMoviePath = (uint16_t *)u_flm_ende0000_flm_0050df06;
+  g_EndMoviePath = (uint16_t *)g_SessionEndMoviePathUtf16;
   if (g_EndMovieVariantIndex == 0) {
-    g_EndMoviePath = (uint16_t *)u_flm_ende0001_flm_0050df28;
+    g_EndMoviePath = (uint16_t *)g_FlmEnde0001FlmPathUtf16;
   }
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
   Thandor_Log("test aid: auto-win: level %d, end selection %u -> level %d, exit zone radius %d, "

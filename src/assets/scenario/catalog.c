@@ -19,21 +19,21 @@ __declspec(align(4)) uint16_t g_UnreferencedCampaignPatternUtf16[12] = L"level\\
 
 __declspec(align(4)) uint32_t g_FrontendLoadedCampaignAsset = 0;
 
-static uint16_t u_level_level_dat_0050da0e[16] = L"level\\level.dat";
+static uint16_t g_LevelLevelDatPathUtf16[16] = L"level\\level.dat";
 
 static ScenarioLevelDataPathTemplate24 g_ScenarioLevelDataPathTemplateUtf16 = {
     .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x6C, 0x65, 0x76, 0x65, 0x6C},
     .decimalDigits = {.codeUnits = {0x30, 0x30}},
     .suffixCodeUnits = L".dat"};
 
-static uint16_t u_level_campagne_dat_0050da52[19] = L"level\\campagne.dat";
+static uint16_t g_LevelCampagneDatPathUtf16[19] = L"level\\campagne.dat";
 
 static ScenarioCampaignDataPathTemplate2A g_ScenarioCampaignDataPathTemplateUtf16 = {
     .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x63, 0x61, 0x6D, 0x70, 0x61, 0x67, 0x6E, 0x65},
     .decimalDigits = {.codeUnits = {0x30, 0x30}},
     .suffixCodeUnits = L".dat"};
 
-static uint16_t u_level_0050dab8[6] = L"level";
+static uint16_t g_CampaignLevelDirectoryUtf16[6] = L"level";
 
 /* list refresh handler per scenario selection tab (SCENARIO_SELECTION_TAB_*) */
 static ScenarioCatalogRefreshSelectedRecordCallback *const g_FrontendScenarioMapOptionHandlerTable[3] = {
@@ -45,9 +45,9 @@ ScenarioCatalogHeader *g_ScenarioCatalog = 0;
 
 uint32_t g_ScenarioCatalogUsedBytes = 0;
 
-uint16_t u_save___sve_0050d9c8[11] = L"save\\*.sve";
+uint16_t g_SaveSvePatternUtf16[11] = L"save\\*.sve";
 
-uint16_t u_level_0050daac[6] = L"level";
+uint16_t g_ScenarioLevelDirectoryUtf16[6] = L"level";
 
 uint16_t g_LevelResourcePathScratchUtf16[256] = {0};
 
@@ -182,7 +182,7 @@ static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelect
   int rowsRemaining;
   CommandPayload selectionIndex;
 
-  mapOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14);
+  mapOption = g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14);
   if (mapOption == NULL) {
     return false;
   }
@@ -303,7 +303,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   /* option name "KARTE=\"" (7 characters) */
-  mapOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14);
+  mapOption = g_CommandLineFindOption(7,g_NameClientKarteKeywordsAscii + 14);
   if (mapOption != NULL) {
     UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
@@ -555,7 +555,7 @@ void ScenarioCatalog_Rebuild(void)
   catalog->levelRecordCount = 0;
   catalog->campaignRecordCount = 0;
   catalog->saveRecordCount = 0;
-  loaded = Resource_Load((uint16_t *)u_level_level_dat_0050da0e,&loadedBuffer,&loadedByteCount,NULL);
+  loaded = Resource_Load((uint16_t *)g_LevelLevelDatPathUtf16,&loadedBuffer,&loadedByteCount,NULL);
   catalog = g_ScenarioCatalog;
   if (loaded) {
     recordCount = loadedByteCount / SCENARIO_CATALOG_RECORD_SIZE;
@@ -576,7 +576,7 @@ void ScenarioCatalog_Rebuild(void)
       recordCount--;
     } while (recordCount != 0);
   }
-  loaded = Resource_Load((uint16_t *)u_level_campagne_dat_0050da52,&loadedBuffer,&loadedByteCount,NULL);
+  loaded = Resource_Load((uint16_t *)g_LevelCampagneDatPathUtf16,&loadedBuffer,&loadedByteCount,NULL);
   catalog = g_ScenarioCatalog;
   if (loaded) {
     recordCount = loadedByteCount / SCENARIO_CATALOG_RECORD_SIZE;
@@ -597,7 +597,7 @@ void ScenarioCatalog_Rebuild(void)
     } while (recordCount != 0);
   }
   WidePath_CombineDirectoryAndLeaf
-            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
+            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveSvePatternUtf16,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   saveFilesRemaining = g_FileSystemEnumerateDirectoryOrVolumeEntries
                      (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
@@ -609,7 +609,7 @@ void ScenarioCatalog_Rebuild(void)
     saveFileEntry = g_PackageScratchBuffer;
     do {
       WidePath_CombineDirectoryAndLeaf
-                (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+                (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)g_SaveDirectoryUtf16,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
       WidePath_CombineDirectoryAndLeaf
                 (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)saveFileEntry,
@@ -886,7 +886,7 @@ static void FrontendScenarioTransfer_ProcessReceivedCampaignBundle(void)
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
              ((CampaignAsset *)levelRecordCursor)->levels[0].levelFileName,
-             (uint16_t *)u_level_0050daac);
+             (uint16_t *)g_ScenarioLevelDirectoryUtf16);
   WidePath_SetExtensionCode(ASSET_MAGIC_LEV,g_FrontendScenarioPathScratchUtf16);
   FrontendPlayerRuntime_InitializeFactionAssignments();
 }
@@ -1147,7 +1147,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     WidePath_CombineDirectoryAndLeaf
               (g_FrontendScenarioPathScratchUtf16,
                (uint16_t *)((UiListControl *)FRONTEND_UI(frontendRoot,campaignsList))->rowSlots[selectedRecordIndex],
-               (uint16_t *)u_level_0050dab8);
+               (uint16_t *)g_CampaignLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_CGN,g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
@@ -1173,7 +1173,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
     WidePath_CombineDirectoryAndLeaf
               (g_FrontendScenarioPathScratchUtf16,((CampaignAsset *)levelRecordCursor)->levels[0].levelFileName,
-               (uint16_t *)u_level_0050daac);
+               (uint16_t *)g_ScenarioLevelDirectoryUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&loadErrorCode);
     checkedValue = FatalError_ExitIfFailed
@@ -1553,7 +1553,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
             (g_FrontendScenarioPathScratchUtf16,
              (uint16_t *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
                      [selectedRowIndex],
-             (uint16_t *)u_level_0050daac);
+             (uint16_t *)g_ScenarioLevelDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
   ((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags =
@@ -1786,7 +1786,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
   WidePath_CombineDirectoryAndLeaf
             (g_FrontendScenarioPathScratchUtf16,
              *(uint16_t **)(scenarioPathPointerTableAddress + selectedRowIndex * 4),
-             (uint16_t *)u_save_0050daa2);
+             (uint16_t *)g_SaveDirectoryUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_FrontendScenarioPathScratchUtf16);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {

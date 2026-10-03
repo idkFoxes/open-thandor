@@ -13,13 +13,13 @@
 /* UiPackedTextStyle 0x01000000 (font 1, palette 0, left aligned) used to measure and draw the numbers in the selection panel (gameplay/selection/runtime.c) */
 static const UiPackedTextStyle g_SelectionPanelNumberTextStyle = 16777216;
 
-static uint16_t u_gfx_panel_select_gfx_0052ce18[21] = L"gfx\\panel\\select.gfx";
+static uint16_t g_GfxPanelSelectGfxPathUtf16[21] = L"gfx\\panel\\select.gfx";
 
-static uint16_t u_gfx_panel_info_gfx_0052ce42[19] = L"gfx\\panel\\info.gfx";
+static uint16_t g_GfxPanelInfoGfxPathUtf16[19] = L"gfx\\panel\\info.gfx";
 
-static uint16_t u_gfx_panel_select_dat_0052ce68[21] = L"gfx\\panel\\select.dat";
+static uint16_t g_GfxPanelSelectDatPathUtf16[21] = L"gfx\\panel\\select.dat";
 
-static uint16_t u_gfx_panel_info_dat_0052ce92[19] = L"gfx\\panel\\info.dat";
+static uint16_t g_GfxPanelInfoDatPathUtf16[19] = L"gfx\\panel\\info.dat";
 
 static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {0};
 
@@ -809,26 +809,26 @@ Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uin
   uint32_t loadErrorCode;
 
   selectionTextureSource =
-       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_select_gfx_0052ce18,&loadErrorCode);
+       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelSelectGfxPathUtf16,&loadErrorCode);
   if (selectionTextureSource == NULL) {
     *outError = loadErrorCode;
     return false;
   }
   g_SelectionPanelTextureSource = selectionTextureSource;
   infoTextureSource =
-       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_info_gfx_0052ce42,&loadErrorCode);
+       g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_GfxPanelInfoGfxPathUtf16,&loadErrorCode);
   if (infoTextureSource == NULL) {
     *outError = loadErrorCode;
     return false;
   }
   g_InfoPanelTextureSource = infoTextureSource;
-  selectionPanelData = Package_LoadEntry((uint16_t *)u_gfx_panel_select_dat_0052ce68,&loadErrorCode);
+  selectionPanelData = Package_LoadEntry((uint16_t *)g_GfxPanelSelectDatPathUtf16,&loadErrorCode);
   if (selectionPanelData == NULL) {
     *outError = loadErrorCode;
     return false;
   }
   g_SelectionPanelData = selectionPanelData;
-  infoPanelData = Package_LoadEntry((uint16_t *)u_gfx_panel_info_dat_0052ce92,&loadErrorCode);
+  infoPanelData = Package_LoadEntry((uint16_t *)g_GfxPanelInfoDatPathUtf16,&loadErrorCode);
   if (infoPanelData == NULL) {
     *outError = loadErrorCode;
     return false;

@@ -34,8 +34,8 @@ extern uint16_t g_FrontendLocalPlayerNameUtf16[20];
 extern FrontendSessionDiscoveryRecord **g_FrontendSessionListRows;
 extern FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeRecordPointers32[32];
 extern uint32_t g_FrontendNetworkState;
-extern char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31];
-extern char s_NAME__CLIENT__KARTE___00545e91[21]; /* the option names NAME=" CLIENT=" KARTE=" (used with explicit lengths); Original quirk: its terminating NUL is the first byte of g_LevelPackageFoundEntry */
+extern char g_SpielerSpielNetzwerkHostKeywordsAscii[31];
+extern char g_NameClientKarteKeywordsAscii[21]; /* the option names NAME=" CLIENT=" KARTE=" (used with explicit lengths); Original quirk: its terminating NUL is the first byte of g_LevelPackageFoundEntry */
 extern UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch;
 extern uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4]; /* decimal number of lobby players (payload 0 of the session player count text) */
 extern uint16_t g_FrontendNetworkPlayerCountTextUtf16[4]; /* decimal maximum player count (payload 1 of the session player count text, bound to a template text control) */

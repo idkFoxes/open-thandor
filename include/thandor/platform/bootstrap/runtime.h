@@ -117,8 +117,8 @@ typedef long (__stdcall *BootstrapRegQueryValueExAProc)(uint32_t key, void *valu
 typedef long (__stdcall *BootstrapRegCloseKeyProc)(uint32_t key);                               /* [7] */
 
 extern WidePathBuffer256 g_LooseMoviePathPrefix;
-extern uint16_t u_daten_hex_0050e054[10];
-extern uint16_t u_stat_hex_0050e082[9];
+extern uint16_t g_DatenHexPathUtf16[10];
+extern uint16_t g_StatHexPathUtf16[9];
 extern void *g_GameStatTableImage;
 extern GameDataAuxState g_GameDataAuxState;
 extern uint32_t g_FrontendPlayerListRows[8]; /* pointers (as uint32_t) to the eight 0x80-byte lobby player list rows */

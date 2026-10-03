@@ -38,7 +38,7 @@ static uint32_t g_RichTextSavedShadowOffset = 0;
 
 static uint32_t g_RichTextRuntimeBufferUsedWords = 0;
 
-static uint16_t u_error__TXT2STR__unknown_characte_0041afac[62] = L"error: TXT2STR: unknown character at:                        ";
+static uint16_t g_Txt2strUnknownCharacterErrorUtf16[62] = L"error: TXT2STR: unknown character at:                        ";
 
 uint32_t g_ActiveFontIndex = 0;
 
@@ -705,8 +705,8 @@ static Bool8 RichTextMarkup_ReportInvalidCharacter
   g_MemoryApi.free(memory);
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(markupCursor - markupBytes),
-             &u_error__TXT2STR__unknown_characte_0041afac[RICHTEXT_MARKUP_ERROR_OFFSET_UNIT]);
-  *outError = (uint32_t)(uintptr_t)u_error__TXT2STR__unknown_characte_0041afac;
+             &g_Txt2strUnknownCharacterErrorUtf16[RICHTEXT_MARKUP_ERROR_OFFSET_UNIT]);
+  *outError = (uint32_t)(uintptr_t)g_Txt2strUnknownCharacterErrorUtf16;
   return false;
 }
 

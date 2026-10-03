@@ -166,8 +166,8 @@ void ScenarioCatalog_SelectLevelAndShowDescription
 
 extern ScenarioCatalogHeader *g_ScenarioCatalog;
 extern uint32_t g_ScenarioCatalogUsedBytes;
-extern uint16_t u_save___sve_0050d9c8[11];
-extern uint16_t u_level_0050daac[6];
+extern uint16_t g_SaveSvePatternUtf16[11];
+extern uint16_t g_ScenarioLevelDirectoryUtf16[6];
 extern uint16_t g_LevelResourcePathScratchUtf16[256];
 extern FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset;
 extern uint32_t g_FrontendScenarioTransferState;

@@ -111,7 +111,7 @@ static uint32_t g_NetworkBackendMode = 0;
 
 static WinSockData11 g_WinSockStartupData = {0};
 
-static NetworkBackendInstanceDescriptorPrefix NetworkBackendInstanceDescriptorPrefix_00584040 = {.displayNameUtf16 = L"WinSock32 1.1 - UDP"};
+static NetworkBackendInstanceDescriptorPrefix g_NetworkBackendInstanceDescriptorPrefix = {.displayNameUtf16 = L"WinSock32 1.1 - UDP"};
 
 /* Implementation ownership: network/backend/runtime. */
 
@@ -701,7 +701,7 @@ uint32_t __cdecl Network_Init(void)
   g_NetworkBackendSlot5 = NetworkFallback_SendDatagram;
   g_NetworkBackendSlot6 = NetworkFallback_ParsePeerEndpoint;
   g_NetworkBackendSlot7 = NetworkFallback_FormatPeerAddress;
-  g_NetworkBackendInstanceTable = &NetworkBackendInstanceDescriptorPrefix_00584040;
+  g_NetworkBackendInstanceTable = &g_NetworkBackendInstanceDescriptorPrefix;
   g_NetworkBackendInstanceCount = 1;
   return 0;
 }

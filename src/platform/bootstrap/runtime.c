@@ -21,21 +21,21 @@ static CommandLineWideArguments g_CommandLineWideArguments = {0};
 
 static uint32_t g_CpuFeatureFlags = 0;
 
-static uint16_t u_texte_techno_str_0050dec4[17] = L"texte\\techno.str";
+static uint16_t g_TexteTechnoStrPathUtf16[17] = L"texte\\techno.str";
 
-static uint16_t u_texte_neterror_str_0050f104[19] = L"texte\\neterror.str";
+static uint16_t g_TexteNeterrorStrPathUtf16[19] = L"texte\\neterror.str";
 
-static uint16_t u_texte_hilfe_str_00545b34[16] = L"texte\\hilfe.str";
+static uint16_t g_TexteHilfeStrPathUtf16[16] = L"texte\\hilfe.str";
 
-static uint16_t u_texte_menue_str_00545ba0[16] = L"texte\\menue.str";
+static uint16_t g_TexteMenueStrPathUtf16[16] = L"texte\\menue.str";
 
-static uint16_t u_texte_level_str_00545bc0[16] = L"texte\\level.str";
+static uint16_t g_TexteLevelStrPathUtf16[16] = L"texte\\level.str";
 
-static uint16_t u_texte_inhalt_str_00545be0[17] = L"texte\\inhalt.str";
+static uint16_t g_TexteInhaltStrPathUtf16[17] = L"texte\\inhalt.str";
 
-static uint16_t u_texte_help_str_00563170[15] = L"texte\\help.str";
+static uint16_t g_TexteHelpStrPathUtf16[15] = L"texte\\help.str";
 
-static uint16_t u_texte_tastatur_str_005631b8[19] = L"texte\\tastatur.str";
+static uint16_t g_TexteTastaturStrPathUtf16[19] = L"texte\\tastatur.str";
 
 static uint32_t g_DataPackageHandle = 0;
 
@@ -59,24 +59,24 @@ static uint8_t g_InstallRegistryValueDataA[256] = {0};
 
 static uint16_t g_InstallDirectoryScratchUtf16[256] = {0};
 
-static uint16_t u_Thandor_00572e10[8] = L"Thandor";
+static uint16_t g_ThandorWindowTitleUtf16[8] = L"Thandor";
 
-static char s_Software_Planet4_Thandor_00572e20[25] = "Software\\Planet4\\Thandor";
+static char g_SoftwarePlanet4ThandorAscii[25] = "Software\\Planet4\\Thandor";
 
 /* registry value "CD" */
 static char g_InstallRegistryValueNameCD[3] = "CD";
 
-static uint16_t u_daten_pck_00572e56[10] = L"daten.pck";
+static uint16_t g_DatenPckPathUtf16[10] = L"daten.pck";
 
-static uint16_t u_modelle_pck_00572e6a[12] = L"modelle.pck";
+static uint16_t g_ModellePckPathUtf16[12] = L"modelle.pck";
 
-static uint16_t u_graphik_pck_00572e82[12] = L"graphik.pck";
+static uint16_t g_GraphikPckPathUtf16[12] = L"graphik.pck";
 
-static uint16_t u_sound_pck_00572e9a[10] = L"sound.pck";
+static uint16_t g_SoundPckPathUtf16[10] = L"sound.pck";
 
-static uint16_t u_filme_pck_00572eae[10] = L"filme.pck";
+static uint16_t g_FilmePckPathUtf16[10] = L"filme.pck";
 
-static uint16_t u_level_pck_00572ec2[10] = L"level.pck";
+static uint16_t g_LevelPckPathUtf16[10] = L"level.pck";
 
 static PatchArchivePathTemplate18 g_PatchArchivePathTemplateUtf16 = {
     .prefixCodeUnits = {0x70, 0x61, 0x74, 0x63, 0x68},
@@ -88,23 +88,23 @@ static LevelArchivePathTemplate18 g_LevelArchivePathTemplateUtf16 = {
     .decimalDigits = {.codeUnits = {0x30, 0x30}},
     .suffixCodeUnits = L".pck"};
 
-static uint16_t u_sound_button0_sam_00572f06[18] = L"sound\\button0.sam";
+static uint16_t g_SoundButton0SamPathUtf16[18] = L"sound\\button0.sam";
 
-static uint16_t u_sound_button1_sam_00572f2a[18] = L"sound\\button1.sam";
+static uint16_t g_SoundButton1SamPathUtf16[18] = L"sound\\button1.sam";
 
-static uint16_t u_sound_button2_sam_00572f4e[18] = L"sound\\button2.sam";
+static uint16_t g_SoundButton2SamPathUtf16[18] = L"sound\\button2.sam";
 
-static uint16_t u_sound_button3_sam_00572f72[18] = L"sound\\button3.sam";
+static uint16_t g_SoundButton3SamPathUtf16[18] = L"sound\\button3.sam";
 
-static uint16_t u_sound_button4_sam_00572f96[18] = L"sound\\button4.sam";
+static uint16_t g_SoundButton4SamPathUtf16[18] = L"sound\\button4.sam";
 
-static uint16_t u_sound_button5_sam_00572fba[18] = L"sound\\button5.sam";
+static uint16_t g_SoundButton5SamPathUtf16[18] = L"sound\\button5.sam";
 
-static uint16_t u_sound_button6_sam_00572fde[18] = L"sound\\button6.sam";
+static uint16_t g_SoundButton6SamPathUtf16[18] = L"sound\\button6.sam";
 
-static uint16_t u_gfx_panel_stat_gfx_00573002[19] = L"gfx\\panel\\stat.gfx";
+static uint16_t g_GfxPanelStatGfxPathUtf16[19] = L"gfx\\panel\\stat.gfx";
 
-static uint16_t u_flm_intro0_flm_00573046[15] = L"flm\\intro0.flm";
+static uint16_t g_FlmIntro0FlmPathUtf16[15] = L"flm\\intro0.flm";
 
 static char g_CommandLineOptionNoIntro[8] = "NOINTRO";
 
@@ -147,9 +147,9 @@ static char sz_MainWindowClass[17] = "thandorCLASS(TG)";
 
 WidePathBuffer256 g_LooseMoviePathPrefix = {0};
 
-uint16_t u_daten_hex_0050e054[10] = L"daten.hex";
+uint16_t g_DatenHexPathUtf16[10] = L"daten.hex";
 
-uint16_t u_stat_hex_0050e082[9] = L"stat.hex";
+uint16_t g_StatHexPathUtf16[9] = L"stat.hex";
 
 void *g_GameStatTableImage = 0;
 
@@ -397,10 +397,10 @@ Bool8 GameData_LoadExternalTables(void)
   }
   if (!Package_LoadEntryIntoBuffer
                     (GAME_FACTION_IMAGE_BYTES,(uint8_t *)&g_GameFactionRuntimeImage,
-                     (uint16_t *)u_daten_hex_0050e054,NULL)) {
+                     (uint16_t *)g_DatenHexPathUtf16,NULL)) {
     return true;
   }
-  statTable = Package_LoadEntry((uint16_t *)u_stat_hex_0050e082,NULL);
+  statTable = Package_LoadEntry((uint16_t *)g_StatHexPathUtf16,NULL);
   previousStatTable = g_GameStatTableImage;
   if (statTable == NULL) {
     return true;
@@ -409,7 +409,7 @@ Bool8 GameData_LoadExternalTables(void)
   UNLOCK();
   g_GameStatTableImage = statTable;
   g_MemoryApi.free(previousStatTable);
-  oldUnitBuffer = Package_LoadEntry((uint16_t *)u_oldunit_hex_0050e094,NULL);
+  oldUnitBuffer = Package_LoadEntry((uint16_t *)g_OldunitHexPathUtf16,NULL);
   if (oldUnitBuffer == NULL) {
     clearCursor = g_OldUnitPrimaryTable;
     for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
@@ -723,7 +723,7 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
     return;
   }
   status = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_OPEN_KEY_EX_A].destination)
-             (HKEY_LOCAL_MACHINE,s_Software_Planet4_Thandor_00572e20,0,KEY_READ,&g_InstallRegistryKeyHandle);
+             (HKEY_LOCAL_MACHINE,g_SoftwarePlanet4ThandorAscii,0,KEY_READ,&g_InstallRegistryKeyHandle);
   if (status != ERROR_SUCCESS) {
     return;
   }
@@ -735,7 +735,7 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
     Text_CopyNarrowToUtf16
               (sizeof g_InstallDirectoryScratchUtf16,g_InstallDirectoryScratchUtf16,g_InstallRegistryValueDataA);
     WidePath_CombineDirectoryAndLeaf
-              (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)u_Thandor_00572e10,g_InstallDirectoryScratchUtf16);
+              (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)g_ThandorWindowTitleUtf16,g_InstallDirectoryScratchUtf16);
   }
   ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_CLOSE_KEY].destination)(g_InstallRegistryKeyHandle);
 }
@@ -800,22 +800,22 @@ static void CoreAssets_MountPackages(void)
     g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP;
   } while ('0' - 1 < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
-  if (Package_Mount((uint16_t *)u_daten_pck_00572e56,&packageHandle)) {
+  if (Package_Mount((uint16_t *)g_DatenPckPathUtf16,&packageHandle)) {
     g_DataPackageHandle = packageHandle;
   }
-  if (Package_Mount((uint16_t *)u_modelle_pck_00572e6a,&packageHandle)) {
+  if (Package_Mount((uint16_t *)g_ModellePckPathUtf16,&packageHandle)) {
     g_ModelPackageHandle = packageHandle;
   }
-  if (Package_Mount((uint16_t *)u_graphik_pck_00572e82,&packageHandle)) {
+  if (Package_Mount((uint16_t *)g_GraphikPckPathUtf16,&packageHandle)) {
     g_GraphicsPackageHandle = packageHandle;
   }
-  if (Package_Mount((uint16_t *)u_sound_pck_00572e9a,&packageHandle)) {
+  if (Package_Mount((uint16_t *)g_SoundPckPathUtf16,&packageHandle)) {
     g_SoundPackageHandle = packageHandle;
   }
-  if (Package_Mount((uint16_t *)u_filme_pck_00572eae,&packageHandle)) {
+  if (Package_Mount((uint16_t *)g_FilmePckPathUtf16,&packageHandle)) {
     g_MoviePackageHandle = packageHandle;
   }
-  if (Package_Mount((uint16_t *)u_level_pck_00572ec2,&packageHandle)) {
+  if (Package_Mount((uint16_t *)g_LevelPckPathUtf16,&packageHandle)) {
     g_LevelPackageHandle = packageHandle;
   }
 }
@@ -912,14 +912,14 @@ static void CoreAssets_BindDebugOverlayTextsAndUiPages(void)
 static Bool8 CoreAssets_LoadTextPages(uint32_t *error)
 
 {
-  return TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)u_texte_neterror_str_0050f104,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_HELP,(uint16_t *)u_texte_help_str_00563170,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,(uint16_t *)u_texte_hilfe_str_00545b34,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,(uint16_t *)u_texte_menue_str_00545ba0,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,(uint16_t *)u_texte_techno_str_0050dec4,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,(uint16_t *)u_texte_level_str_00545bc0,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,(uint16_t *)u_texte_inhalt_str_00545be0,error) &&
-         TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,(uint16_t *)u_texte_tastatur_str_005631b8,error);
+  return TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)g_TexteNeterrorStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_HELP,(uint16_t *)g_TexteHelpStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,(uint16_t *)g_TexteHilfeStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,(uint16_t *)g_TexteMenueStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,(uint16_t *)g_TexteTechnoStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,(uint16_t *)g_TexteLevelStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,(uint16_t *)g_TexteInhaltStrPathUtf16,error) &&
+         TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,(uint16_t *)g_TexteTastaturStrPathUtf16,error);
 }
 
 
@@ -1160,19 +1160,19 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   CoreAssets_UseLocalMovieFolder();
   CoreAssets_MountPackages();
   if (!CoreAssets_LoadButtonSound
-         ((uint16_t *)u_sound_button0_sam_00572f06,&g_UiButtonSoundVoiceSets7[0],&buttonSoundError) ||
+         ((uint16_t *)g_SoundButton0SamPathUtf16,&g_UiButtonSoundVoiceSets7[0],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)u_sound_button1_sam_00572f2a,&g_UiButtonSoundVoiceSets7[1],&buttonSoundError) ||
+         ((uint16_t *)g_SoundButton1SamPathUtf16,&g_UiButtonSoundVoiceSets7[1],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)u_sound_button2_sam_00572f4e,&g_UiButtonSoundVoiceSets7[2],&buttonSoundError) ||
+         ((uint16_t *)g_SoundButton2SamPathUtf16,&g_UiButtonSoundVoiceSets7[2],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)u_sound_button3_sam_00572f72,&g_UiButtonSoundVoiceSets7[3],&buttonSoundError) ||
+         ((uint16_t *)g_SoundButton3SamPathUtf16,&g_UiButtonSoundVoiceSets7[3],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)u_sound_button4_sam_00572f96,&g_UiButtonSoundVoiceSets7[4],&buttonSoundError) ||
+         ((uint16_t *)g_SoundButton4SamPathUtf16,&g_UiButtonSoundVoiceSets7[4],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)u_sound_button5_sam_00572fba,&g_UiButtonSoundVoiceSets7[5],&buttonSoundError) ||
+         ((uint16_t *)g_SoundButton5SamPathUtf16,&g_UiButtonSoundVoiceSets7[5],&buttonSoundError) ||
       !CoreAssets_LoadButtonSound
-         ((uint16_t *)u_sound_button6_sam_00572fde,&g_UiButtonSoundVoiceSets7[6],&buttonSoundError)) {
+         ((uint16_t *)g_SoundButton6SamPathUtf16,&g_UiButtonSoundVoiceSets7[6],&buttonSoundError)) {
     return buttonSoundError;
   }
   CoreAssets_AdvanceScreenshotName();
@@ -1188,7 +1188,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   /* engine\pcx.fnc (machine code in ENGINE.PCK) is no longer loaded: PCX files are read and
      written in C, graphics/resources/pcx_read.c and pcx_write.c. */
   panelTexture = g_GraphicsTextureSourceLoadPackageAsset
-                     ((uint16_t *)u_gfx_panel_stat_gfx_00573002,&panelTextureError);
+                     ((uint16_t *)g_GfxPanelStatGfxPathUtf16,&panelTextureError);
   if (panelTexture == NULL) {
     return panelTextureError;
   }
@@ -1211,7 +1211,7 @@ static Bool8 IntroMovie_PollSkipRequest(void)
   if (g_KeyboardReadEvent(&keyCode,&keyStateMask)) {
     /* [9] is the digit of "flm\intro0.flm" */
     if (keyCode == KEYBOARD_KEY_CODE_ESCAPE) {
-      u_flm_intro0_flm_00573046[9] = L'8';
+      g_FlmIntro0FlmPathUtf16[9] = L'8';
     }
     return true;
   }
@@ -1290,7 +1290,7 @@ Bool8 Game_PlayIntroMovies(void)
   }
   if (g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == NULL) {
     /* playbackRateHz: the rate from Movie_Open, passed on to TimerRegisterPeriodic */
-    while (Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046,&playbackRateHz,NULL)) {
+    while (Movie_Open(1,(uint16_t *)g_FlmIntro0FlmPathUtf16,&playbackRateHz,NULL)) {
       if (!Movie_AdvanceFrame(&introMovie,NULL)) {
         Movie_Close();
         return true;
@@ -1304,7 +1304,7 @@ Bool8 Game_PlayIntroMovies(void)
       /* stop playback: key, mouse button release, movie end or framebuffer loss */
       g_TimerUnregisterPeriodic(IntroMovie_TimerTick);
       Movie_Close();
-      u_flm_intro0_flm_00573046[9] = u_flm_intro0_flm_00573046[9] + 1;
+      g_FlmIntro0FlmPathUtf16[9] = g_FlmIntro0FlmPathUtf16[9] + 1;
     }
   }
   return false;

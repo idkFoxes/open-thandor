@@ -47,9 +47,9 @@ static uint32_t g_CursorMaxWidth = 0;
 
 static uint32_t g_CursorMaxHeight = 0;
 
-static uint16_t u_engine_mouse_gfx_00416864[17] = L"engine\\mouse.gfx";
+static uint16_t g_EngineMouseGfxPathUtf16[17] = L"engine\\mouse.gfx";
 
-static uint16_t u_engine_mouse_dat_00416886[17] = L"engine\\mouse.dat";
+static uint16_t g_EngineMouseDatPathUtf16[17] = L"engine\\mouse.dat";
 
 /* g_KeyboardEvents. Original quirk: the original reserves 256 events (0x800 bytes) for the ring, but
    the read and write indices wrap at KEYBOARD_EVENT_RING_SIZE (64), so entries 64-255 are never used. */
@@ -265,7 +265,7 @@ Bool8 DirectInputMouse_Init(uint32_t *outError)
   g_PointerSetPosition = DirectInputMouse_SetPosition;
 
   /* cursor images: the largest image size sizes the cursor buffers */
-  cursorAsset = Package_LoadEntry(u_engine_mouse_gfx_00416864,&cursorLoadErrorCode);
+  cursorAsset = Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode);
   if (cursorAsset == NULL) {
     *outError = cursorLoadErrorCode;
     return false;
@@ -288,7 +288,7 @@ Bool8 DirectInputMouse_Init(uint32_t *outError)
   g_CursorMaxHeight = maxHeight;
 
   /* cursor frame table */
-  if (!Resource_Load(u_engine_mouse_dat_00416886,&cursorFrameData,&cursorFrameBytes,&cursorLoadErrorCode)) {
+  if (!Resource_Load(g_EngineMouseDatPathUtf16,&cursorFrameData,&cursorFrameBytes,&cursorLoadErrorCode)) {
     *outError = cursorLoadErrorCode;
     return false;
   }
