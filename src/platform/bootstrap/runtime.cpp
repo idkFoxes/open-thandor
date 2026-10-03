@@ -221,7 +221,7 @@ void __cdecl ProcessEntry(void)
 
   g_hInstance = GetModuleHandleA(NULL);
   processHandle = GetCurrentProcess();
-  SetPriorityClass(processHandle,REALTIME_PRIORITY_CLASS);
+  SetPriorityClass(processHandle,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
   threadHandle = GetCurrentThread();
   SetThreadPriority(threadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
@@ -558,7 +558,7 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
     }
     else {
       currentProcess = GetCurrentProcess();
-      SetPriorityClass(currentProcess,REALTIME_PRIORITY_CLASS);
+      SetPriorityClass(currentProcess,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
       if (g_MouseDevice != NULL) {
         g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
       }

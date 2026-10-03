@@ -601,14 +601,17 @@ void Movie_Close(void)
       g_ActiveMovie->streamState = MOVIE_STREAM_SHUTDOWN;
       currentProcessHandle = GetCurrentProcess();
       SetPriorityClass(currentProcessHandle,NORMAL_PRIORITY_CLASS);
-      do {
-      } while (movie->workerActive != 0);
+      /* wait for the worker to leave (an atomic read: the worker thread clears the flag; the original spun on
+         a plain read and relied on the compiler not to keep it in a register) */
+      while (*(volatile MovieWorkerActiveFlag *)&movie->workerActive != 0) {
+        Thandor_SleepMs(0);
+      }
       if (movie->refillSemaphore != NULL) {
         CloseHandle(movie->refillSemaphore);
         movie->refillSemaphore = NULL;
       }
       hProcess = GetCurrentProcess();
-      SetPriorityClass(hProcess,REALTIME_PRIORITY_CLASS);
+      SetPriorityClass(hProcess,DebugHook_ProcessPriorityClass(REALTIME_PRIORITY_CLASS));
     }
     g_ActiveMovie = NULL;
     g_MemoryApi.free(movie->fileHeader);

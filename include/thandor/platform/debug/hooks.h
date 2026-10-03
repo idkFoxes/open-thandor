@@ -38,6 +38,9 @@ void DebugHook_MessagePump(void);
 void DebugHook_BeforeIntroMovies(void);
 /* ProcessEntry: nonzero lets a second instance start although a game window exists. */
 int DebugHook_AllowSecondInstance(void);
+/* SetPriorityClass: the priority class to use instead of the original's real-time class (windowed test runs
+   keep normal priority, many instances at real-time priority starve each other). */
+unsigned long DebugHook_ProcessPriorityClass(unsigned long priorityClass);
 
 /* --- windowed mode (OPEN_THANDOR_WINDOWED) --- */
 /* Nonzero when the game runs in a normal window instead of full-screen exclusive. */
@@ -111,6 +114,7 @@ void DebugHook_NoteOutsideStepFrom(const char *what, void *caller);
 #define DebugHook_MessagePump() ((void)0)
 #define DebugHook_BeforeIntroMovies() ((void)0)
 #define DebugHook_AllowSecondInstance() 0
+#define DebugHook_ProcessPriorityClass(priorityClass) (priorityClass)
 
 #define DebugHook_Windowed() 0
 #define DebugHook_CreateMainWindow(className, title, instance) 0

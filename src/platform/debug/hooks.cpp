@@ -62,6 +62,11 @@ int DebugHook_AllowSecondInstance(void)
   return Thandor_TestAidAllowSecondInstance();
 }
 
+unsigned long DebugHook_ProcessPriorityClass(unsigned long priorityClass)
+{
+  return DebugHook_Windowed() ? NORMAL_PRIORITY_CLASS : priorityClass;
+}
+
 /* --- input --- */
 
 int DebugHook_IgnoreRealMouse(void)

@@ -205,12 +205,14 @@ def run_one(k, folder, number, label, campaign, level, levels, final_seconds):
     started = len(sessions)
     if args.mode == 'segments':
         ends_campaign = label.endswith(' end')
-        won = sum(1 for s in sessions if s['end'] and s['end'].startswith('won'))
+        # a level counts as passed when the next level started (it may end by its own script before the auto-win)
+        # or when the auto-win ended it
+        passed = max(0, len(sessions) - 1) + (1 if sessions and (sessions[-1]['end'] or '').startswith('won') else 0)
         lost = [s['level'] or '?' for s in sessions if s['end'] == 'SCRIPT END']
         if ends_campaign:
             ok = status in ('exited', 'ended') and bool(sessions) and bool(sessions[-1].get('final')) and not lost
         else:
-            ok = status in ('exited', 'ended') and won >= levels and not lost
+            ok = status in ('exited', 'ended') and passed >= levels and not lost
         verdict = ('ok' if ok else 'FAIL(%s)' % status) + ' %d levels' % min(started, levels)
     elif args.mode == 'pairs':
         ok = (status == 'exited' and len(sessions) >= levels and sessions[-1]['carried'] > 0 and
