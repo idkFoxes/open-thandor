@@ -770,7 +770,7 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
    Returns true (CF set) when the secondary workspace (workspace 01) holds an unassigned entry (no runtime
    object yet, i.e. a pending asset) of this army asset; the workspace-01 counterpart of
    AiPrimaryWorkspace_HasUnassignedEntryById. No caller and no function-pointer table entry for it was found
-   in src/ or src/generated/image_data.c.
+   in src/.
 */
 bool AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
@@ -816,7 +816,7 @@ bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 /* Address: 0x00538D40.
    Twin of AiPrimaryWorkspace_CountAssignedEntriesById (0x00538C40) with the same body: counts the
    primary-workspace (workspace 00) entries of this army asset that have a runtime object. No caller and no
-   function-pointer table entry for this copy was found in src/ or src/generated/image_data.c.
+   function-pointer table entry for this copy was found in src/.
 */
 int AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entryId)
 

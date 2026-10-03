@@ -108,8 +108,7 @@ void FontRuntime_Init(void)
 
 /* Address: 0x0041CCB0.
    Unloads text page pageIndex (the counterpart of TextResourcePage_Load): releases its 'str' asset and clears
-   the page's binding (selected locale block and asset). No caller or table slot referencing it was found in
-   src/ or src/generated/image_data.c.
+   the page's binding (selected locale block and asset). No caller or table slot referencing it was found in src/.
 */
 void TextResourcePage_Unload(TextResourcePageIndex pageIndex)
 
@@ -123,8 +122,7 @@ void TextResourcePage_Unload(TextResourcePageIndex pageIndex)
 
 /* Address: 0x0041CDB0.
    Returns the number of locale blocks (dword +0xB0) of a 'str' text asset with CF clear; CF set when the asset
-   lacks the 'str' signature. No caller or table slot referencing it was found in src/ or
-   src/generated/image_data.c.
+   lacks the 'str' signature. No caller or table slot referencing it was found in src/.
 */
 AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
 

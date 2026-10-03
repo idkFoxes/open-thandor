@@ -218,7 +218,7 @@ UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
 
 
 /* Address: 0x005174E0.
-   factionWeightRaster of resultsChart1 (set in its template in image_data.c): draws one pixel column of the
+   factionWeightRaster of resultsChart1 (set in its template): draws one pixel column of the
    stacked results graph from spanStartY to spanEndY, split among factions 1..7 in proportion to the sum of both
    metrics of the stat table sample, each in the faction's colour. When all are 0, every active faction counts
    as 1 (written back into the sample). Every pixel is stored as a 16-bit word.

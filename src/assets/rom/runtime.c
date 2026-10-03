@@ -297,7 +297,7 @@ RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue sl
 /* Address: 0x00548840.
    Returns the runtime root node registered for a ROM record in the 256-slot ROM registry, or 0 when the record
    is not registered (the reverse of RomRegistry_FindRecordBySlotValue). No caller or table slot referencing
-   it was found in src/ or src/generated/image_data.c.
+   it was found in src/.
 */
 uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
 

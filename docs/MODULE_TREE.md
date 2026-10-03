@@ -113,9 +113,6 @@ Browse the curated source by ownership. Every leaf module links directly to its 
 | [`platform/debug/script`](SOURCE_FILE_GUIDE.md#module-platform-debug-script) | 0 | [`.c`](../src/platform/debug/script.c) | [`.h`](../include/thandor/platform/debug/script.h) | - | - |
 | [`platform/debug/test_aids`](SOURCE_FILE_GUIDE.md#module-platform-debug-test-aids) | 0 | [`.c`](../src/platform/debug/test_aids.c) | [`.h`](../include/thandor/platform/debug/test_aids.h) | - | - |
 | [`platform/selftest/selftests`](SOURCE_FILE_GUIDE.md#module-platform-selftest-selftests) | 0 | [`.c`](../src/platform/selftest/selftests.c) | [`.h`](../include/thandor/platform/selftest/selftest.h) | - | - |
-| [`platform/selftest/raster`](SOURCE_FILE_GUIDE.md#module-platform-selftest-raster) | 0 | [`.c`](../src/platform/selftest/raster.c) | - | - | - |
-| [`platform/selftest/blit`](SOURCE_FILE_GUIDE.md#module-platform-selftest-blit) | 0 | [`.c`](../src/platform/selftest/blit.c) | - | - | - |
-| [`platform/selftest/blendscale`](SOURCE_FILE_GUIDE.md#module-platform-selftest-blendscale) | 0 | [`.c`](../src/platform/selftest/blendscale.c) | - | - | - |
 | [`platform/selftest/relax`](SOURCE_FILE_GUIDE.md#module-platform-selftest-relax) | 0 | [`.c`](../src/platform/selftest/relax.c) | - | - | - |
 | [`platform/debug/font`](SOURCE_FILE_GUIDE.md#module-platform-debug-font) | 0 | [`.c`](../src/platform/debug/font.c) | [`.h`](../include/thandor/platform/debug/font.h) | - | - |
 | [`platform/debug/movie_player`](SOURCE_FILE_GUIDE.md#module-platform-debug-movie-player) | 0 | [`.c`](../src/platform/debug/movie_player.c) | [`.h`](../include/thandor/platform/debug/movie_player.h) | - | - |

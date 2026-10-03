@@ -1,15 +1,16 @@
 """Evaluates scanaddr.txt from OPEN_THANDOR_SELFTEST=scanaddr: which game files (or saves, via
-OPEN_THANDOR_SCANFILES) store dwords equal to an original function entry or global start.
+OPEN_THANDOR_SCANFILES) store dwords equal to an original function entry (the Address: comments in src/) or a
+labeled data address (Ghidra labels, ghidra/export/labels.jsonl).
 Everything else in the address range is coincidence (texture, sound, text data).
 
-usage: scanaddr_analyze.py [--work DIR] path/to/scanaddr.txt"""
+usage: scanaddr_analyze.py path/to/scanaddr.txt"""
 from collections import Counter, defaultdict
 
 import common
 
 args = common.parse_arguments(__doc__, lambda p: p.add_argument('scan', help='scanaddr.txt'))
 funcs = common.function_map()
-globs = {a: n for n, (a, _) in common.global_sizes(args.work).items()}
+globs = {a: n for a, n in common.ghidra_labels() if a not in funcs}
 per_file = defaultdict(Counter)
 examples = defaultdict(list)
 for line in open(args.scan, errors='replace'):

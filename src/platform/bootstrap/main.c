@@ -7,13 +7,12 @@
 #include <stdlib.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/generated/image_data.h>
 #include <thandor/platform/selftest/selftest.h>
 
 /*
 The original image has no C runtime: its PE entry point is ProcessEntry (0x00585D40), which
 ends in ExitProcess. The rebuilt executable keeps the MSVC CRT (the Ghidra helpers use memcpy),
-has the original data compiled in (src/generated/image_data.c) and enters ProcessEntry from WinMain.
+has the original data compiled in (the modules' data.c files) and enters ProcessEntry from WinMain.
 */
 
 /* Program start (not part of the original): installs the crash and hang reports, computes the tables
@@ -26,7 +25,6 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
     (void)commandLine;
     (void)showCommand;
     Thandor_InstallCrashHandler();
-    Thandor_Log("open-thandor: generated image data, %u objects", g_ThandorImageBlockCount);
     /* tables the original executable carried precomputed */
     FixedMath_BuildSinCosTables();
     Movie_BuildChromaLumaTable();

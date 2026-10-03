@@ -1,4 +1,5 @@
-// Exports what Ghidra's "Export C" leaves out, as JSON lines, for tools/gen_globals.py:
+// Exports what Ghidra's "Export C" leaves out, as JSON lines (read by tools/gen_imports.py,
+// tools/check_layouts.py and tools/data/common.py):
 //   function_definitions.jsonl  every FunctionDefinition data type (the *Proc / *Callback types)
 //   strings.jsonl               every defined string with its label, address and value
 //   symbols.jsonl               every labeled defined data item with address, type and length

@@ -6,8 +6,8 @@ change the graphics API, fix sound and so on. I hope some of you want to join th
 ## Current state
 
 **All of `thandor.exe` is reimplemented in C.** The build runs on its own: no original machine code is executed
-and the original executable is not needed. Its data (tables, UI templates, strings) is compiled in from
-[`src/generated/image_data.c`](src/generated/image_data.c); only the game's data files (`*.PCK`, `thandor.dat`,
+and the original executable is not needed. Its data (tables, UI templates, strings) is compiled in as ordinary C
+variables of the modules (`src/<area>/<module>/data.c`); only the game's data files (`*.PCK`, `thandor.dat`,
 movies) come from an installation.
 
 ### Progress
@@ -15,7 +15,7 @@ movies) come from an installation.
 | | | |
 |---|---|---|
 | Functions reimplemented in C | `████████████████████` | **100 %** (2,068 / 2,068) |
-| Original data compiled in, verified byte for byte, still laid out like the original executable | `████████████████████` | **100 %** (885,420 bytes, 2,393 pointers) |
+| Original data compiled in as C variables (verified byte for byte against the original when it was converted) | `████████████████████` | **100 %** (885,420 bytes, 2,393 pointers) |
 | Original data typed and named (bytes with content) | `████████████████████` | **99.9 %** (171,500 / 171,692) |
 | Functions with a header comment (what, why, who calls it) | `████████████████████` | **100 %** |
 | Functions without raw memory offsets | `████████████████████` | **100 %** |
@@ -32,10 +32,10 @@ four or more set bits such as `0xff`, `0x3fffffff`, `0xffff0000`: they read best
 sample codec's MMX tables, whose offsets are genuine table positions. The 2 left are occupancy and production
 bits whose meaning is not known yet. Control flow was restructured byte-identically too (611 -> 362 gotos and
 endless loops): what is left mostly keeps one shared failure exit or jumps into shared blocks, and MSVC only emits
-the original code for that form; changing it is the next stage, checked by behaviour tests. The data share comes from
-[`tools/data/image_data_report.py`](tools/data/image_data_report.py): of the bytes that hold content (not zero storage, not the
-tables computed at startup), the part written with a real type and named fields, as text, as a UI template or as a
-jump table; the rest are code fragments between data and 16 bytes nobody uses.
+the original code for that form; changing it is the next stage, checked by behaviour tests. The data share was
+measured with the report of the former data generator (removed with it): of the bytes that hold content (not
+zero storage, not the tables computed at startup), the part written with a real type and named fields, as text, as
+a UI template or as a jump table; the rest are code fragments between data and 16 bytes nobody uses.
 
 ### What works
 
@@ -53,8 +53,9 @@ jump table; the rest are code fragments between data and 16 bytes nobody uses.
   fixed from the disassembly (for example the water flow, double clicks, the Direct3D texture binding, spinlocks
   that were not atomic). Bugs and quirks of the original game are kept and marked "Original quirk" in the code.
 - **Differential self-tests** run parts of the C code and the original machine code on the same inputs:
-  rasterizer, blitters, bilinear scaling, water simulation, movie decoder. `imagecmp` checks the compiled-in data
-  against the original executable.
+  bilinear stretching, water simulation, movie decoder (they need `thandor_original.exe` next to the exe). The
+  rasterizer, blitter and blend-scaling compares needed the original image mapped at its address and were
+  retired with it, after they had confirmed those functions.
 - **Byte-identical refactoring.** Every readability pass so far (names, constants, comments, typed structs and
   parameter types, fixed-point helpers such as `FIXED_MUL_SHR`, structured loops instead of goto) was checked
   function by function: the generated machine code of our build did not change. Restructuring that
@@ -74,9 +75,9 @@ cmake --preset release
 cmake --build --preset release
 ```
 
-The result is `cmake-build-msvc-release\thandor.exe` (32-bit). Other presets: `debug`, `test` (adds test aids:
-windowed mode, several instances, scripted input, starting any campaign level, winning a level automatically) and `mapped` (maps the original
-image; only needed for the differential self-tests, which also want `thandor_original.exe` next to the exe).
+The result is `cmake-build-msvc-release\thandor.exe` (32-bit). Other presets: `debug` and `test` (adds test aids:
+windowed mode, several instances, scripted input, starting any campaign level, winning a level automatically).
+The optional differential self-tests want `thandor_original.exe` next to the exe.
 CLion and Visual Studio pick the presets up from [`CMakePresets.json`](CMakePresets.json).
 
 To play, copy `thandor.exe` into a **copy** of an installed Thandor directory (the game data is not part of this

@@ -1353,7 +1353,7 @@ static bool UiTimedListTree_AbandonDirectoryHierarchy
    selected directory in *outSelectedRecord, or false on failure (then the blocks built so far are freed,
    see UiTimedListTree_AbandonDirectoryHierarchy; *outSelectedRecord is set to NULL, *outRootBlock left
    unchanged). No caller found
-   in src/ or image_data.c (only the function map).
+   in src/.
 */
 bool UiTimedListTree_BuildDirectoryHierarchy
           (uint16_t *selectedPathUtf16,UiTimedListTreeRecord **outRootBlock,
@@ -1575,7 +1575,7 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
    Expands or collapses a directory row of the tree list (the directory browser's recordSelectionCallback),
    then recomputes the list layout and scrolls the selection into view. Collapsing a branch that contained
    the selected row moves the selection to the collapsed row and queues the list's action. No caller found
-   in src/ or image_data.c (only the function map).
+   in src/.
 */
 void UiTimedListControl_ToggleDirectoryRecordExpansion
           (UiTimedListTreeRecord *record,UiTimedListTreeControl *control)
@@ -1612,8 +1612,7 @@ void UiTimedListControl_ToggleDirectoryRecordExpansion
 /* Address: 0x00410700.
    Writes the full path of a tree row to outputPathDwords (256 code units): the row label joined to the
    labels of its ancestor rows; a drive row gives "X:", the root "computer" row its label unchanged. CF set
-   when the ancestor chain does not end in a drive row. No caller found in src/ or image_data.c (only the
-   function map).
+   when the ancestor chain does not end in a drive row. No caller found in src/.
 */
 bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record)
 
@@ -2690,7 +2689,7 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
 
 /* Address: 0x004BA4E0.
    Returns the row pointer array of a pointer list (identical to UiPointerList_GetColumnListRowSlots). No
-   caller found in src/ or image_data.c (only the function map).
+   caller found in src/.
 */
 void ** UiPointerList_GetTextListRowSlots(UiPointerListControl *control)
 
@@ -2926,7 +2925,7 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPoin
 
 /* Address: 0x004BB460.
    Returns the row pointer array of a pointer list (identical to UiPointerList_GetTextListRowSlots). No
-   caller found in src/ or image_data.c (only the function map).
+   caller found in src/.
 */
 void ** UiPointerList_GetColumnListRowSlots(UiPointerListControl *control)
 
@@ -3620,8 +3619,7 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
 }
 
 /* Address: 0x004BC2F0.
-   Returns the root record block of the tree list. No caller found in src/ or image_data.c (only the
-   function map).
+   Returns the root record block of the tree list. No caller found in src/.
 */
 UiTimedListTreeRecord * UiTimedListControl_GetRecordTree(UiTimedListControl *control)
 

@@ -299,7 +299,7 @@ bool ModelRuntime_RaycastCandidateListNearest
 
 /* Address: 0x0051C240.
    Returns the condition ratio (Q12) of an army's model hierarchy (ModelRuntimeHierarchy_ComputeConditionRatioQ12).
-   No caller in the C code (function map only).
+   No caller in the C code.
 */
 Q12 ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix *runtimeEntry)
 

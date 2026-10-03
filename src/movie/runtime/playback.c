@@ -73,8 +73,7 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
    provider is called with NULL for the next frame and with a frame to release it; it ends the sequence with CF
    set and 0xFFFFFFFF. Returns true and stores the total byte count in *outByteCount, or returns false
    (*outByteCount untouched, the buffer already written) when the provider yields no frame at all or ends
-   with any other error. A leftover of the movie tools: no caller found in
-   src/ or src/generated/image_data.c.
+   with any other error. A leftover of the movie tools: no caller found in src/.
 */
 bool Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,

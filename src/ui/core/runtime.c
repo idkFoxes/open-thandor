@@ -355,7 +355,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
 
 /* Address: 0x004B05A0.
    Default method04 (vtable slot +0x04) of the UI node classes: does nothing. Installed statically in 40
-   UiNodeVtable tables in image_data.c; no caller of the slot is known yet.
+   UiNodeVtable tables; no caller of the slot is known yet.
 */
 void UiNode_DefaultMethod04_NoOp(void *node)
 
@@ -366,7 +366,7 @@ void UiNode_DefaultMethod04_NoOp(void *node)
 
 /* Address: 0x004B0750.
    Default nonRightPress (vtable slot +0x10, left/middle button press) of the UI node classes: ignores the
-   press. Installed statically in 14 UiNodeVtable tables in image_data.c.
+   press. Installed statically in 14 UiNodeVtable tables.
 */
 void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
@@ -378,7 +378,7 @@ void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
 
 /* Address: 0x004B0760.
    Default nonRightRelease (vtable slot +0x14, left/middle button release) of the UI node classes: ignores
-   the release. Installed statically in 25 UiNodeVtable tables in image_data.c.
+   the release. Installed statically in 25 UiNodeVtable tables.
 */
 void UiNode_DefaultNonRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
@@ -391,7 +391,7 @@ void UiNode_DefaultNonRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordin
 /* Address: 0x004B0770.
    Default rightPress (vtable slot +0x18) of the UI node classes: passes the right-button press up to the
    parent, which also takes over the pointer capture; at the root nobody takes it and the capture is
-   cleared. Installed statically in 32 UiNodeVtable tables in image_data.c.
+   cleared. Installed statically in 32 UiNodeVtable tables.
 */
 void UiNode_ForwardRightPressToParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -413,7 +413,7 @@ void UiNode_ForwardRightPressToParent
 
 /* Address: 0x004B07C0.
    Default rightRelease (vtable slot +0x1C) of the UI node classes: ignores the right-button release.
-   Installed statically in 34 UiNodeVtable tables in image_data.c.
+   Installed statically in 34 UiNodeVtable tables.
 */
 void UiNode_DefaultRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
@@ -425,7 +425,7 @@ void UiNode_DefaultRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate
 
 /* Address: 0x004B07D0.
    Default nonRightDrag (vtable slot +0x20, pointer motion while a left/middle press holds the capture) of the
-   UI node classes: ignores it. Installed statically in 25 UiNodeVtable tables in image_data.c.
+   UI node classes: ignores it. Installed statically in 25 UiNodeVtable tables.
 */
 void UiNode_DefaultNonRightDrag
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -437,7 +437,7 @@ void UiNode_DefaultNonRightDrag
 
 /* Address: 0x004B07E0.
    Default rightDrag (vtable slot +0x24, pointer motion while a right press holds the capture) of the UI
-   node classes: ignores it. Installed statically in 34 UiNodeVtable tables in image_data.c.
+   node classes: ignores it. Installed statically in 34 UiNodeVtable tables.
 */
 void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
@@ -450,7 +450,7 @@ void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate po
 /* Address: 0x004B08E0.
    Default applyFlags (vtable slot +0x34) of the UI node classes: sets nodeFlags to
    (nodeFlags & retainMask) | setMask and passes the same masks to each direct child's applyFlags, so the change
-   reaches the whole subtree. Installed statically in 39 UiNodeVtable tables in image_data.c; also called
+   reaches the whole subtree. Installed statically in 39 UiNodeVtable tables; also called
    directly by UiLayoutContainerControl_ApplyFlagsRecursive once per page.
 */
 void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
@@ -470,7 +470,7 @@ void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask
 
 /* Address: 0x004B09E0.
    Default tick (vtable slot +0x40, per-frame update) of the UI node classes: does nothing. Installed
-   statically in 30 UiNodeVtable tables in image_data.c.
+   statically in 30 UiNodeVtable tables.
 */
 void UiNode_DefaultTick(UiNodeBase *control)
 

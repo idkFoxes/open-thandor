@@ -198,8 +198,6 @@ add_executable(thandor WIN32
     src/platform/bootstrap/image.c
     src/platform/selftest/selftests.c
     src/platform/selftest/relax.c
-    src/generated/function_map.c
-    src/generated/image_data.c
 )
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)

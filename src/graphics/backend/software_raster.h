@@ -14,8 +14,8 @@ graphics/backend/software.c; see docs/software_raster.md.
 
 The original handlers are hand-written MMX. These helpers reproduce its arithmetic bit for bit in
 plain C (16-bit lanes wrap like PADDW/PSUBW, PSRAW is an arithmetic shift, PACKUSWB saturates to
-0..255, PMULHW keeps the high half of a signed 16 x 16 product). OPEN_THANDOR_SELFTEST=rastercmp
-compares every handler with the original machine code; keep it identical when changing anything.
+0..255, PMULHW keeps the high half of a signed 16 x 16 product). The former rastercmp
+self-test confirmed every handler against the original machine code; keep it identical when changing anything.
 
 Fixed-point formats:
   screen X/Y        Q12 pixels, snapped to whole pixels by SoftwareRenderer_PrepareTrianglePacket
@@ -720,7 +720,7 @@ static __inline int Raster_AlphaWritesDepth(RasterColor sourceQ4)
 /* ---- Texture-source blits and rectangle fills --------------------------------------------- */
 /*
 SoftwareTextureSource_Blit*, SoftwareFramebuffer_FillRectArgb* (see docs/software_raster.md,
-"Blits"). OPEN_THANDOR_SELFTEST=blitcmp compares them with the original machine code.
+"Blits"). The former blitcmp self-test confirmed them against the original machine code.
 
 Texture source asset: "gfx" magic, tableDescriptor at +0xB0 (subresourceCount, paletteBankCount,
 subresourceTableOffset), palette banks of 256 * 8 bytes at +0x200, and a table of 32-byte

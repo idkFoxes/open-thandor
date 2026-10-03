@@ -84,7 +84,7 @@ static __inline StatusResult StatusValue_Fail(uint32_t errorCode)
 #define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
 
 /* A field of a UI node inside a template image copy (root + byte offset), for bytes past the node's
-   UiNodeBase; the node offsets are those of the template in src/generated/image_data.c. */
+   UiNodeBase; the node offsets are those of the template layouts in generated/ui_templates.h. */
 #define THANDOR_UI_FIELD(base, offset, type) (*(type *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
 
 /* Node `node` of a UI template copy, reached from `self`, which is template node `selfNode` of the same

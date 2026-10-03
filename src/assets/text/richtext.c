@@ -303,8 +303,7 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
 /* Address: 0x0041B300.
    Sets the 32-bit payload of the commandOrdinal-th (0-based) inline-value command (0x14..0x16) of one command
    stream (nested streams are not followed) to payloadValue and returns false (CF clear); true (CF set) when
-   the stream has fewer such commands. No caller and no function-pointer table entry for it was found in src/
-   or src/generated/image_data.c.
+   the stream has fewer such commands. No caller and no function-pointer table entry for it was found in src/.
 */
 bool RichTextCommandStream_SetNthInlineValuePayload
           (RichTextCommandOrdinal commandOrdinal,RichTextCommandPayload32 payloadValue,
@@ -350,7 +349,7 @@ bool RichTextCommandStream_SetNthInlineValuePayload
    Walks one command stream (without following nested streams) and sets the stream pointer of every
    nested-stream command (0x18/0x19) to nestedStreamPointerValue, regardless of its selector (compare
    RichTextCommandStream_PatchPayloadBySelector). No caller and no function-pointer table entry for it was
-   found in src/ or src/generated/image_data.c.
+   found in src/.
 */
 void RichTextCommandStream_PatchNestedStreamPointerPayloads
           (RichTextNestedStreamPointerValue32 nestedStreamPointerValue,uint16_t *commandStream)
@@ -393,7 +392,7 @@ void RichTextCommandStream_PatchNestedStreamPointerPayloads
    Walks one command stream (without following nested streams) and sets both payload dwords of every
    inline-image command (0x1A): the texture source to textureSourceValue and the subresource to
    imageSubresourceValue (see RichTextCommandStream_BindTextureSource for the texture source alone). No caller
-   and no function-pointer table entry for it was found in src/ or src/generated/image_data.c.
+   and no function-pointer table entry for it was found in src/.
 */
 void RichTextCommandStream_PatchInlineImagePayloads(RichTextOpcode1APayloadValue32 imageSubresourceValue,
           RichTextCommandPayload32 textureSourceValue,uint16_t *commandStream)
@@ -436,7 +435,7 @@ void RichTextCommandStream_PatchInlineImagePayloads(RichTextOpcode1APayloadValue
 /* Address: 0x0041B620.
    Walks one command stream (without following nested streams) and sets the 32-bit payload of every
    inline-value command (0x14..0x16) to inlinePayloadValue. No caller and no function-pointer table entry
-   for it was found in src/ or src/generated/image_data.c.
+   for it was found in src/.
 */
 void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inlinePayloadValue,uint16_t *commandStream)
 
@@ -476,7 +475,7 @@ void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inli
    command stream: keeps RICHTEXT_COMMAND_FLAG and opcode bits 0x14, clears the variant and the other bits, ORs
    in flagBits, and returns false (CF clear); true (CF set) when the stream has fewer such commands. The dword
    access also covers the low half of the payload, which the mask 0xFFFF8014 keeps. No caller and no
-   function-pointer table entry for it was found in src/ or src/generated/image_data.c.
+   function-pointer table entry for it was found in src/.
 */
 bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream)
 
@@ -526,7 +525,7 @@ bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t fl
    Stores the variant (code & 3, i.e. 0..2 for opcodes 0x14..0x16) of the commandOrdinal-th (0-based)
    inline-value command of one command stream in *commandVariant and returns true; when the stream has fewer
    such commands, stores 0 and returns false. No caller and no function-pointer table entry for it was found
-   in src/ or src/generated/image_data.c.
+   in src/.
 */
 bool RichTextCommandStream_QueryNthInlineValueVariant
           (int commandOrdinal,uint16_t *commandStream,uint32_t *commandVariant)
@@ -945,8 +944,8 @@ static bool RichTextMarkup_ReportInvalidCharacter
 
 
 /* Address: 0x0041BCB0.
-   Leftover of the TXT2STR converter (no caller and no function-pointer table entry in src/ or
-   src/generated/image_data.c): compiles text markup into a 'str' string asset. Text between '#<' and '#>'
+   Leftover of the TXT2STR converter (no caller and no function-pointer table entry in src/): compiles text
+   markup into a 'str' string asset. Text between '#<' and '#>'
    becomes one NUL-terminated, dword-padded rich-text string keyed by the last '#ddd' number (text outside is
    ignored); further '#' escapes select a code page ('#@'..'#~'), raw command codes ('#!'), a soft hyphen
    ('#-', emitted also outside a tag), a literal '#' ('##') or a line continuation, a CR inside a tag is a line

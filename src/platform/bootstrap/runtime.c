@@ -383,7 +383,7 @@ uint32_t DynDLL_Unload(char *moduleName)
    holds its name string), passes that name to the bound LoadLibraryA and stores the result in the slot.
    Returns true on success; false when no entry matches or the call fails (the name is left in
    g_PackageLastErrorPath). The original's EAX was FATAL_ERROR_LOADER_MODULE_MISSING on both paths, so it
-   carried no information. No caller found in src/ or src/generated/image_data.c (only the function map lists it).
+   carried no information. No caller found in src/.
 */
 bool BootstrapApi_ResolveBindingByDestination(void **destination)
 

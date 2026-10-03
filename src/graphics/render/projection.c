@@ -18,7 +18,7 @@
 /* Address: 0x00486940.
    Bounding-box rejection for a projected triangle: true (CF set) when the point lies strictly to one side of
    all three vertices in X or in Y, i.e. outside the triangle's bounding box; false when it is inside or on it.
-   Nothing in the recovered code calls it (it is only listed in function_map.c).
+   No caller in the original executable.
 */
 bool GraphicsProjectedTriangle_PointOutsideBounds
           (GraphicsProjectedCoordinate vertexAY,GraphicsProjectedCoordinate vertexAX,

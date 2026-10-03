@@ -1561,7 +1561,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
    Draws a horizontal capped bar from spanStartCoordinate to spanEndCoordinate at row fixedCoordinate with a rich
    text label inside: start cap (base sprite), fill (+1), end cap (+2), text left/right border (+3/+5) and text
    background (+4). The label is placed at the start, the end or the centre (SELECTION_PANEL_CELL_FLAG_ALIGN_*)
-   and left out when the span is too short. No caller was found in src/ or src/generated/image_data.c.
+   and left out when the span is too short. No caller was found in src/.
 */
 void SelectionPanel_DrawHorizontalNumberTextCappedBar
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -1950,7 +1950,7 @@ void SelectionPanel_DrawProportionalCappedBar
 /* Address: 0x0052D9A0.
    Vertical counterpart of SelectionPanel_DrawProportionalCappedBar: caps at barStartCoordinate and
    barEndCoordinate in column fixedCoordinate, the filled part grows upwards from the end cap. No caller was found
-   in src/ or src/generated/image_data.c.
+   in src/.
 */
 void SelectionPanel_DrawVerticalProportionalCappedBar
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -2086,7 +2086,7 @@ void SelectionPanel_DrawSolidCappedBar
    spanEndCoordinate in row fixedCoordinate, filledSegmentCount full segments (+4), with
    SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS the rest of totalSegmentCount as empty segments (+3), aligned
    by SELECTION_PANEL_CELL_FLAG_ALIGN_*, and the plain fill (+1) around them; only the fill when the segments do
-   not fit. No caller was found in src/ or src/generated/image_data.c.
+   not fit. No caller was found in src/.
 */
 void SelectionPanel_DrawHorizontalSegmentedCappedBar
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

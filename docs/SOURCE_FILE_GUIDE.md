@@ -1274,35 +1274,14 @@ Project code, not in the original game. Test build aids: windowed mode, a second
 
 [Source](../src/platform/selftest/selftests.c) · [Header](../include/thandor/platform/selftest/selftest.h)
 
-Project code, not in the original game. SelfTest_Run for OPEN_THANDOR_SELFTEST (codec, path, stretch, stretchcmp, imagecmp, scanaddr, crash, and the compare tests below), plus the OPEN_THANDOR_SCANFILES / _DUMPTEXT data tools.
-
-<a id="module-platform-selftest-raster"></a>
-### `platform/selftest/raster`
-
-[Source](../src/platform/selftest/raster.c) · [Header](../include/thandor/platform/selftest/selftest.h)
-
-Project code, not in the original game. rastercmp: the software rasterizer handlers against the original machine code (mapped build).
-
-<a id="module-platform-selftest-blit"></a>
-### `platform/selftest/blit`
-
-[Source](../src/platform/selftest/blit.c) · [Header](../include/thandor/platform/selftest/selftest.h)
-
-Project code, not in the original game. blitcmp: the blitters against the original machine code (mapped build).
-
-<a id="module-platform-selftest-blendscale"></a>
-### `platform/selftest/blendscale`
-
-[Source](../src/platform/selftest/blendscale.c) · [Header](../include/thandor/platform/selftest/selftest.h)
-
-Project code, not in the original game. blendscalecmp: bilinear blend scaling against the original machine code (mapped build).
+Project code, not in the original game. SelfTest_Run for OPEN_THANDOR_SELFTEST (codec, path, stretch, stretchcmp, scanaddr, crash, and relaxcmp below), plus the OPEN_THANDOR_SCANFILES / _DUMPTEXT data tools.
 
 <a id="module-platform-selftest-relax"></a>
 ### `platform/selftest/relax`
 
 [Source](../src/platform/selftest/relax.c) · [Header](../include/thandor/platform/selftest/selftest.h)
 
-Project code, not in the original game. relaxcmp: the water relax passes against the original machine code (mapped build).
+Project code, not in the original game. relaxcmp: the water relax passes against a copy of the original machine code (read from thandor_original.exe).
 
 <a id="module-platform-debug-font"></a>
 ### `platform/debug/font`

@@ -10,7 +10,6 @@
 #include <string.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
-#include <thandor/generated/image_data.h>
 #include <thandor/platform/selftest/selftest.h>
 
 /* Self-test data */
@@ -714,82 +713,6 @@ static void Thandor_SelfTestScanAddresses(void)
     Thandor_Log("scanaddr: %u entries decoded, %u dwords in the original image range", totalEntries, totalHits);
 }
 
-/* OPEN_THANDOR_SELFTEST=imagecmp checks src/generated/image_data.c against the original file.
-   Every converted pointer (g_ThandorImagePointers) is translated back - into a generated block ->
-   original address, C function -> original entry - and must equal the recorded original value;
-   every other byte must equal the original. Bytes of original code inside a block are zero in
-   the generated data and counted separately. */
-static uint32_t ImageCompare_ToOriginal(uint32_t generated, unsigned blocks)
-{
-    unsigned k;
-    for (k = 0; k < blocks; k++) {
-        const ThandorImageBlock *block = &g_ThandorImageBlocks[k];
-        uint32_t base = (uint32_t)(uintptr_t)block->data;
-        if (generated >= base && generated < base + (block->end - block->start)) {
-            return block->start + (generated - base);
-        }
-    }
-    for (k = 0; k < g_ThandorFunctionMapCount; k++) {
-        if ((uint32_t)(uintptr_t)g_ThandorFunctionMap[k].function == generated) {
-            return g_ThandorFunctionMap[k].originalAddress;
-        }
-    }
-    return 0xFFFFFFFFu;
-}
-
-static void Thandor_SelfTestImageCompare(void)
-{
-    const uint8_t *original = (const uint8_t *)Thandor_LoadOriginalCodeCopy(ORIGINAL_TEXT_START, ORIGINAL_TEXT_SIZE);
-    unsigned blocks = g_ThandorImageBlockCount;
-    unsigned pointerCount = g_ThandorImagePointerCount;
-    unsigned b;
-    unsigned p = 0;
-    unsigned bytes = 0;
-    unsigned pointerMismatches = 0;
-    unsigned mismatches = 0;
-    unsigned zeroedCode = 0;
-    if (original == NULL) {
-        Thandor_Log("imagecmp: could not read thandor_original.exe");
-        return;
-    }
-    for (b = 0; b < blocks; b++) {
-        const ThandorImageBlock *block = &g_ThandorImageBlocks[b];
-        uint32_t address;
-        for (address = block->start; address < block->end; address++) {
-            uint8_t generated = block->data[address - block->start];
-            uint8_t expected = original[address - ORIGINAL_TEXT_START];
-            while (p < pointerCount && g_ThandorImagePointers[p].location + 4 <= address) {
-                p++;
-            }
-            if (p < pointerCount && g_ThandorImagePointers[p].location == address) {
-                uint32_t value = *(const uint32_t *)(block->data + (address - block->start));
-                uint32_t translated = ImageCompare_ToOriginal(value, blocks);
-                if (translated != g_ThandorImagePointers[p].originalValue ||
-                    translated != *(const uint32_t *)(original + address - ORIGINAL_TEXT_START)) {
-                    if (pointerMismatches++ < 10) {
-                        Thandor_Log("imagecmp: pointer at %08X is %08X (as original %08X), original %08X",
-                                    address, value, translated, g_ThandorImagePointers[p].originalValue);
-                    }
-                }
-                bytes += 4;
-                address += 3;
-                continue;
-            }
-            bytes++;
-            if (generated != expected) {
-                if (generated == 0) {
-                    zeroedCode++;
-                }
-                else if (mismatches++ < 10) {
-                    Thandor_Log("imagecmp: byte at %08X is %02X, original %02X", address, generated, expected);
-                }
-            }
-        }
-    }
-    Thandor_Log("imagecmp: %u blocks, %u bytes, %u pointers, %u pointer mismatches, %u byte mismatches, %u zeroed code bytes",
-                blocks, bytes, pointerCount, pointerMismatches, mismatches, zeroedCode);
-}
-
 /* Runs the self-test that name (the value of OPEN_THANDOR_SELFTEST, may be NULL) selects; see selftest.h. */
 int SelfTest_Run(const char *name)
 {
@@ -827,10 +750,6 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "stretch") == 0) {
         Thandor_SelfTestStretch();
-        return 1;
-    }
-    if (name != NULL && strcmp(name, "imagecmp") == 0) {
-        Thandor_SelfTestImageCompare();
         return 1;
     }
     if (name != NULL && strcmp(name, "scanaddr") == 0) {

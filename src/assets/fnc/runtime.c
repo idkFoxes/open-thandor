@@ -14,7 +14,7 @@
    Returns the binding mode (dword +0xB4) of an 'fnc' code module image with CF clear, or
    FATAL_ERROR_FNC_MODULE_INVALID with CF set when the image lacks the 'fnc' signature. Lets a caller check the
    mode before FncModule_LoadAndRelocate, which only supports mode 0. No caller or table slot referencing it was
-   found in src/ or src/generated/image_data.c.
+   found in src/.
 */
 uint32_t FncModule_GetBindingMode(FncModuleHeader *module)
 

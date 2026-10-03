@@ -1221,7 +1221,7 @@ void UiFrame_FlushInputAndResetPendingTicks(void)
 /* Address: 0x004AF950.
    Modal UI loop: with the pointer capture released and stale input flushed, runs whole UI frames until the
    root stack is empty (the last window closed), then presents one more frame with the tooltip cleared.
-   No caller in the recovered code (reached only through the function map).
+   No caller in the recovered code.
 */
 void UiFrame_RunUntilRootClosedAndPresentFinalFrame(void)
 

@@ -51,7 +51,7 @@ static bool FileSystem_CopyRecordNamesIntoTable
    is shrunk to its used size. Returns true with the table in *outTable and the entry count in *outEntryCount;
    an empty listing stores NULL and 0. Returns false (outputs untouched) when an arena block cannot be had or
    the strings do not fit; the original left only scratch values in EAX/ECX then. No caller
-   in the recovered code (reached only through the function map).
+   in the recovered code.
 */
 bool FileSystem_BuildEnumerationStringTable
           (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText,
@@ -397,7 +397,7 @@ static bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **ou
    given. Returns true with the buffer in *outBuffer, or false with the open/size/read error in *outError
    (0 when the size query failed), or FATAL_ERROR_OUT_OF_MEMORY with the file size left in
    g_FatalErrorDetail1Utf16. *outBuffer is only written on success, *outError only on failure. No caller in
-   the recovered code (reached only through the function map).
+   the recovered code.
 */
 bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
@@ -408,8 +408,7 @@ bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *out
 /* Address: 0x0040F120.
    Same whole-file load as FileSystem_LoadWholeFile (same search order and errors); the only difference in
    the original is that ECX is not preserved: it returns the file size there. Same C interface too: true
-   with the buffer in *outBuffer, or false with the error in *outError. No caller in the recovered code
-   (reached only through the function map).
+   with the buffer in *outBuffer, or false with the error in *outError. No caller in the recovered code.
 */
 bool FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 

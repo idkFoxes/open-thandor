@@ -16,9 +16,10 @@ Set `LINK=/MAP` before building to get `thandor.map` for `tools/data/symbolize.p
 
 Next to `thandor.exe` the game currently needs:
 
-- nothing from the original executable: its data (globals, tables, UI templates) is compiled in from
-  `src/generated/image_data.c`. Only the `mapped` build and the differential self-tests
-  (`rastercmp`, `blitcmp`, `blendscalecmp`, `relaxcmp`, `imagecmp`) read `thandor_original.exe`.
+- nothing from the original executable: its data (globals, tables, UI templates) is compiled in as C
+  variables of the modules (`src/<area>/<module>/data.c`). Only the optional differential self-tests that run
+  copies of original code (`relaxcmp`, `stretchcmp`, the movie decoder compare `OPEN_THANDOR_MOVIECMP=1`) read
+  `thandor_original.exe` next to the executable.
 - the game's `*.PCK` files and `thandor.dat` from the installation,
 - optionally `flm\` with the full-length movies from the CD (`Ende*.flm`, `Intro2.flm`); the
   packages hold only still-image stand-ins for them.
@@ -31,7 +32,6 @@ Environment switches for testing:
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each, with name and frame counter top left (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`; `OPEN_THANDOR_MOVIEEXPORT=<name>[,...]` writes frames and audio to `moviedump\`); the player is in [`src/platform/debug/movie_player.c`](../src/platform/debug/movie_player.c) |
 | `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` |
 | `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `keydown <vk>` / `keyup <vk>` for held keys such as Alt+P, `type <text>` types the rest of the line into a text field as the window procedure delivers it - space as VK_SPACE, letters and digits as key-down plus WM_CHAR (`Keyboard_OnChar`) -, `shot` saves the framebuffer now as `shots\script_NNNN.bmp`, `quit`) |
-| `OPEN_THANDOR_POISON=1` | overwrite all original instructions with INT3 (needs `code_starts.bin`, see below) |
 
 Unattended test: `python tools/test/run_game.py <game dir> 120 --args '-NOINTRO -KARTE="mittelpunkt"' --script tools/test/skirmish_start.txt` starts a skirmish on Ahaggar, plays two minutes, and reports the log, crashes and a contact sheet of snapshots. `tools/test/skirmish_move.txt` also selects the starting vehicle and sends it to two points (left click on the unit, then on the ground), which exercises path finding; its `ingame` line waits until the level has loaded, and the times after it count from that moment. Command-line options need a leading `-` (`-NOINTRO`, `-KARTE="<level>"`).
 
@@ -83,8 +83,7 @@ the old one), a pixel compare new vs old of the paused in-game frame and the cho
 `--old`), save and load of a skirmish (`skirmish_save.txt`, `choose_load.txt`), the text edit keys in the save
 dialog (`textedit_save.txt` turns the prefilled "Multi Ahaggar" into "Test Edit 42" with Home/End, Shift+Home/End,
 Ctrl+Left/Right, Delete, Backspace and typing; `save\Test Edit 42.sve` must exist), the two-instance multiplayer
-test, the `imagecmp` self-test of the release build (`--release`, default `build-rel/thandor.exe`; the game dir
-needs `thandor_original.exe`), the campaign carry-over pairs (`run_campaign_chain.py pairs`, 5 workers, every
+test, the campaign carry-over pairs (`run_campaign_chain.py pairs`, 5 workers, every
 target level must receive units) and the single maps (`--map-jobs`, `--map-minutes`; ENDED is only a warning, the
 strong computer opponents can win a map in time). `--new` defaults to `build-test/thandor.exe`, `--skip a,b`
 leaves checks out. It prints one table (check, result, details, duration), writes each check's output to
@@ -100,15 +99,11 @@ restart at 0. Results go to `<game dir>/chain/`; worker k uses UDP port `--port-
 | File | Produced by | Notes |
 |---|---|---|
 | `include/thandor/generated/types.h` | Ghidra export, ordered by `tools/sort_types.py` | Re-run the script after pasting a new export. |
-| `include/thandor/generated/globals.h`, `src/generated/globals.c` | `python tools/gen_globals.py ghidra/thandor.exeV537.c` | Globals, recovered function-pointer signatures (`tools/infer_signatures.py`), Ghidra-invented symbols. Hand corrections: the UI template types. |
-| `include/thandor/data/recovered.h` | hand-written | Named data the code used to reach through raw addresses. |
-| `ghidra/export/*.jsonl` | `tools/ghidra/ExportBuildData.java` (headless, see below) | Function-signature types, string values and data symbols that Ghidra's C export omits. Committed, so regenerating does not need Ghidra. |
+| `src/<area>/<module>/data.c`, `include/thandor/<area>/<module>/data.h` | hand-written | The data of the original image (globals, tables, UI templates, strings) as ordinary C variables, original addresses in the comments. `include/thandor/generated/image_data.h` includes all module data headers. |
+| `include/thandor/generated/ui_templates.h`, `proc_types.h` | hand-written (once generated) | UI template layouts; function pointer types of the data and callbacks. |
+| `include/thandor/generated/imports.h` | `python tools/gen_imports.py` | KERNEL32/USER32 import prototypes from `ghidra/export/imports.jsonl`. |
+| `ghidra/export/*.jsonl` | `tools/ghidra/ExportBuildData.java` (headless, see below) | Function-signature types, string values, labels, imports and struct layouts that Ghidra's C export omits (read by `gen_imports.py`, `check_layouts.py` and `tools/data`). Committed, so the tools do not need Ghidra. |
 | `include/thandor/core/ghidra.h` | hand-written | `CONCATxy`, `SUBxy`, `CARRYx`, partial access, `THANDOR_BITCAST`, `THANDOR_CONTAINER_OF`. |
-| `src/generated/function_map.c` | `python tools/gen_function_map.py` | Original entry address -> C function, read from the `/* Address: 0x... */` comment directly above every function in `src/` (duplicates and misplaced comments are errors; `--check` only compares). Used by the multiplayer command codes, the mapped build, the self-tests and the data tools. |
-
-After renaming or adding functions, regenerate in this order: `tools/gen_function_map.py`, then the data tools
-below (`globalmap.py`, `layout.py`, `typelayout.py`, `gen_image_data.py`), then build and run the `imagecmp`
-self-test. Never edit `function_map.c`, `image_data.c`, `image_data.h` or `ui_templates.h` by hand.
 
 One-shot rewriters used on `src/` (safe to re-run on a fresh decompiler export):
 
@@ -116,11 +111,12 @@ One-shot rewriters used on `src/` (safe to re-run on a fresh decompiler export):
 - `tools/fix_abi_casts.py <msvc.log>` — register-image struct casts flagged by C2440 → `THANDOR_BITCAST`
 - `tools/fix_stack_refs.py` — leftover `stack0x...` slots → per-function `thandor_stack_frame`
 
-## Data layout tools (`tools/data`)
+## Check tools (`tools/data`)
 
-These analyse which parts of the original image the C code still depends on. All take
-`--original <thandor.exe>`, `--asm <dir>` (per-function disassembly) and `--work <dir>` (default
-`build-data`). Produce the disassembly once with Ghidra:
+`param_ret_scan.py` and `scanaddr_analyze.py` take the original entry address of a C function from the
+`/* Address: 0x... */` comment directly above it (`common.function_map()`). `param_ret_scan.py` also
+needs `--original <thandor.exe>` and `--asm <dir>` (per-function disassembly, default `build-data\asm`).
+Produce the disassembly once with Ghidra:
 
 ```bat
 "%GHIDRA_HOME%\support\analyzeHeadless.bat" %TEMP%\ghproj thandor -import ghidra\thandor.exeV537.gzf -noanalysis ^
@@ -129,17 +125,10 @@ These analyse which parts of the original image the C code still depends on. All
 
 | Script | Output |
 |---|---|
-| `typelayout.py` | `typelayout.json`: offset, size and kind of every struct field (compiler `offsetof`); lets the generator write typed initializers |
-| `gen_image_data.py` | `src/generated/image_data.c` + `include/thandor/generated/image_data.h`: the original data as C (run `globalmap.py`, `layout.py`, `typelayout.py` first; check with the `imagecmp` self-test) |
-| `globalmap.py` | `globalmap.txt`: address and compiler `sizeof` of every address-defined object (needs `cl` from a vcvars prompt). Run first. |
-| `rawaddr.py` | check: original-image address literals left in `src/` (expected: 0) |
-| `layout.py` | `layout.tsv`, `members.tsv`: every data byte assigned to an object; globals typed too small; bytes in no object |
-| `reach.py` | `reach.tsv`: objects the C code needs, following pointers from the named roots |
-| `code_starts.py` | `code_starts.bin` for `OPEN_THANDOR_POISON=1` |
-| `scanaddr_analyze.py <scanaddr.txt>` | files (packages, saves) that store original addresses, from the `scanaddr` self-test |
+| `scanaddr_analyze.py <scanaddr.txt>` | files (packages, saves) that store original function entries or labeled data addresses, from the `scanaddr` self-test |
 | `param_ret_scan.py` | check: functions reached through pointers that take more parameters than the original pops |
+| `unresolved_registers.py` | check: functions that still read register values the decompiler could not resolve (`in_EAX`, `unaff_EBX`, ...) |
 | `symbolize.py <crash_raw.log> <thandor.map>` | names for the raw crash dump |
-| `image_data_report.py` | inventory of `image_data.c` from `image_objects.tsv` (written by `gen_image_data.py`): every object with its kind of representation (typed, UI template, string, raw dwords, zero storage), the share of bytes shown typed, and the largest untyped objects with how often the code uses them |
 
 ## Refreshing the Ghidra export
 
@@ -148,19 +137,15 @@ Needs Ghidra 12 and JDK 21+ (`JAVA_HOME`):
 ```bat
 "%GHIDRA_HOME%\support\analyzeHeadless.bat" %TEMP%\ghproj thandor -import ghidra\thandor.exeV537.gzf -noanalysis ^
     -scriptPath tools\ghidra -postScript ExportBuildData.java ghidra\export -deleteProject
-python tools\gen_globals.py ghidra\thandor.exeV537.c
+python tools\gen_imports.py
 ```
 
 ## Known TODOs
 
 Search for `TODO` in the tree. The main groups:
 
-- **Independence from the original executable**: the data still lives in the mapped image; next is
-  generating it as C definitions (see `tools/data`).
 - **Multiplayer**: network command codes are distances between original handler addresses (see
   `include/thandor/network/protocol/commands.h`); received commands are resolved to the recovered C
-  handlers through the function map (`CommandDispatch_ResolveHandler`). Not yet tested in a real
+  handlers through explicit command tables (`CommandDispatch_ResolveHandler`). Not yet tested in a real
   networked game.
-- **Five string literals** (`TODO: verify text` in `src/generated/globals.c`) have no string data in the program
-  database and are still reconstructed from their labels.
 - **Stack frames** (`thandor_stack_frame`): `richtext.c` keeps unrecovered stack locals in an unreachable function.

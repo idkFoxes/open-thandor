@@ -1,4 +1,5 @@
-"""Shared loading helpers for the data-layout tools.
+"""Shared helpers for the check tools in tools/data (param_ret_scan.py, scanaddr_analyze.py,
+unresolved_registers.py).
 
 Inputs (all given on the command line, see add_common_arguments):
   --original   the original thandor.exe (image base 0x400000)
@@ -10,14 +11,8 @@ import glob
 import json
 import os
 import re
-import shutil
-import struct
-import subprocess
 
 REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-IMAGE_BASE = 0x400000
-TEXT_START = 0x401000
-TEXT_END = 0x58C000
 
 
 def add_common_arguments(parser):
@@ -38,99 +33,35 @@ def parse_arguments(description, extra=None):
     return args
 
 
-def load_text(original):
-    """Raw bytes of the original .text section (0x401000-0x58C000)."""
-    exe = open(original, 'rb').read()
-    pe = struct.unpack_from('<I', exe, 0x3c)[0]
-    opt = struct.unpack_from('<H', exe, pe + 20)[0]
-    raw = struct.unpack_from('<I', exe, pe + 24 + opt + 20)[0]
-    return exe[raw:raw + (TEXT_END - TEXT_START)]
-
-
-def instruction_starts(asm_dir):
-    starts = set()
-    for path in glob.glob(os.path.join(asm_dir, '*.asm')):
-        for m in re.finditer(r'^\s+([0-9a-f]{8})\s+\S', open(path, errors='replace').read(), re.M):
-            starts.add(int(m.group(1), 16))
-    if not starts:
-        raise SystemExit('no disassembly in %s (run tools/ghidra/DumpDisassembly.java first)' % asm_dir)
-    return sorted(starts)
-
-
-def instruction_lengths(text, work):
-    """Instruction lengths from a linear objdump sweep (optional; cached in the work directory)."""
-    cache = os.path.join(work, 'text_objdump.txt')
-    if not os.path.exists(cache):
-        objdump = shutil.which('objdump')
-        if objdump is None:
-            return {}
-        binpath = os.path.join(work, 'text.bin')
-        open(binpath, 'wb').write(text)
-        out = subprocess.run([objdump, '-D', '-b', 'binary', '-mi386', '--adjust-vma=0x%x' % TEXT_START, binpath],
-                             capture_output=True, text=True).stdout
-        open(cache, 'w').write(out)
-    lengths = {}
-    previous = None
-    for line in open(cache):
-        m = re.match(r'\s+([0-9a-f]+):\t((?:[0-9a-f]{2} )+)\s*(\S?)', line)
-        if not m:
-            continue
-        count = len(m.group(2).split())
-        if m.group(3) == '' and previous is not None:
-            lengths[previous] += count  # objdump wraps long instructions onto a second line
-        else:
-            previous = int(m.group(1), 16)
-            lengths[previous] = count
-    return lengths
-
-
-def code_mask(text, starts, work):
-    """bytearray over .text: 1 where an original instruction byte is."""
-    lengths = instruction_lengths(text, work)
-    code = bytearray(TEXT_END - TEXT_START)
-    for i, a in enumerate(starts):
-        if not TEXT_START <= a < TEXT_END:
-            continue
-        nxt = starts[i + 1] if i + 1 < len(starts) else TEXT_END
-        n = lengths.get(a)
-        if n is None or a + n > nxt:
-            n = max(1, nxt - a) if nxt - a <= 15 else 1
-        for b in range(a, min(a + n, TEXT_END)):
-            code[b - TEXT_START] = 1
-    return code
+ADDRESS = re.compile(r'/\*\s*Address: 0x([0-9A-Fa-f]{8})\b')
+DEFINITION = re.compile(r'(?<![\w.>])([A-Za-z_]\w*)\s*\(')
+CALLING_CONVENTIONS = ('__declspec', '__cdecl', '__stdcall', '__fastcall', '__thiscall')
 
 
 def function_map():
-    """original entry address -> C function name, from src/generated/function_map.c"""
+    """original entry address -> C function name, from the `/* Address: 0x... */` comment directly above every
+    recovered function in src/ (only blank and preprocessor lines may stand between them)"""
     funcs = {}
-    for line in open(os.path.join(REPO, 'src', 'generated', 'function_map.c'), encoding='utf-8'):
-        m = re.search(r'\{0x([0-9A-Fa-f]+)u, \(void \*\)&(\w+)\}', line)
-        if m:
-            funcs[int(m.group(1), 16)] = m.group(2)
+    for path in c_sources():
+        text = open(path, encoding='utf-8', errors='replace').read()
+        for m in ADDRESS.finditer(text):
+            end = text.find('*/', m.end())
+            if end < 0:
+                continue
+            lines = text[end + 2:].split('\n')
+            k = 0 if lines[0].strip() else 1
+            while k < len(lines) and (not lines[k].strip() or lines[k].lstrip().startswith('#')
+                                      or (k > 0 and lines[k - 1].rstrip().endswith('\\'))):
+                k += 1
+            head = '\n'.join(lines[k:k + 12])
+            body = head.find('{')
+            semicolon = head.find(';')
+            if body < 0 or 0 <= semicolon < body:
+                continue
+            names = [n for n in DEFINITION.findall(head[:body]) if n not in CALLING_CONVENTIONS]
+            if names:
+                funcs[int(m.group(1), 16)] = names[0]
     return funcs
-
-
-def address_macros():
-    """name -> (type text, address) for every address-defined object in the headers."""
-    out = {}
-    for header in (os.path.join(REPO, 'include', 'thandor', 'generated', 'globals.h'),
-                   os.path.join(REPO, 'include', 'thandor', 'data', 'recovered.h')):
-        text = open(header, encoding='utf-8', errors='replace').read()
-        for m in re.finditer(r'^#define (\w+) \(\*\((.+)\)(?:THANDOR_IMAGE\()?(0x[0-9a-fA-F]+)\)?\)\s*(?:/\*.*?\*/\s*)?$', text, re.M):
-            out[m.group(1)] = (m.group(2), int(m.group(3), 16))
-    return out
-
-
-def global_sizes(work):
-    """name -> (address, sizeof) from globalmap.txt written by globalmap.py."""
-    path = os.path.join(work, 'globalmap.txt')
-    if not os.path.exists(path):
-        raise SystemExit('%s missing: run tools/data/globalmap.py first' % path)
-    sizes = {}
-    for line in open(path):
-        name, addr, size = line.split()
-        sizes[name] = (int(addr, 16), int(size))
-    return sizes
 
 
 def ghidra_labels():

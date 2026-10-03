@@ -322,7 +322,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
    (+0x3C, a repair capped at the definition's maximumHealth); at zero the army is flagged
    destroyed and the excess damage goes to its parent army. The faction relation counters of the owner and of
    sourceFactionIndex that the original would update for a root army are never reached (see below). No caller or
-   table slot referencing it was found in src/ or src/generated/image_data.c.
+   table slot referencing it was found in src/.
 */
 void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFactionIndex,DamageAmount32 damageAmount,
           ModelRuntimeSlot *modelRuntime)

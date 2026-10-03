@@ -466,7 +466,7 @@ void GraphicsBackend_RefreshActiveAdapterNoOp(void)
 /* Address: 0x004BCFE0.
    Returns the Euler angles (FixedTransform_ExtractEulerAngles) of the object's world transform
    at +0x10. Part of an object-transform helper family (0x004BCFE0-0x004BD0B0) that nothing in the executable
-   calls; it is only listed in g_ThandorFunctionMap.
+   calls.
 */
 FixedRollAzimuthElevation
 GraphicsObject_ExtractTransformEulerAngles(GraphicsObjectAddress32 graphicsObject)
@@ -482,7 +482,7 @@ GraphicsObject_ExtractTransformEulerAngles(GraphicsObjectAddress32 graphicsObjec
 /* Address: 0x004BD000.
    Converts a world direction (elevation/azimuth) into the object's local frame: inverts the object's world
    transform at +0x10 into the shared scratch matrix, applies it to the direction's unit vector and returns the
-   resulting angles. No caller in the executable (only in g_ThandorFunctionMap).
+   resulting angles. No caller in the original executable.
 */
 FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAngles
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
@@ -503,8 +503,7 @@ FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAngles
 /* Address: 0x004BD050.
    Sets the object's offset from its parent in polar form: the distance at +0x40 and the 16-bit elevation and
    azimuth packed into +0x44 (elevation in the high word), which GraphicsObject_RebuildTransformHierarchyRecursive
-   turns into the translation with FixedMath_DirectionFromAnglesScaled. No caller in the executable (only in
-   g_ThandorFunctionMap).
+   turns into the translation with FixedMath_DirectionFromAnglesScaled. No caller in the original executable.
 */
 void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
           (AngleTurn16Stored32 elevationAngle16,AngleTurn16Stored32 azimuthAngle16,
@@ -522,8 +521,8 @@ void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
 /* Address: 0x004BD080.
    Sets the object's local rotation: the azimuth at +0x48 and the 16-bit roll and elevation packed into +0x4C
    (roll in the high word), which GraphicsObject_RebuildTransformHierarchyRecursive passes to
-   FixedTransform_BuildRotationBasis (the angle names follow that function's parameters). No caller in the
-   executable (only in g_ThandorFunctionMap).
+   FixedTransform_BuildRotationBasis (the angle names follow that function's parameters). No caller in the original
+   executable.
 */
 void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleTurn16Stored32 rollAngle16,
           AngleTurn16Stored32 elevationAngle16,GraphicsObjectAddress32 graphicsObjectAddress)
@@ -541,7 +540,7 @@ void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleT
    Rebuilds the world transform at +0x10 from the packed rotation (+0x48/+0x4C) and polar translation
    (+0x40/+0x44): a root object (no parent at +0x64) gets the local transform directly, a child gets it composed
    with the parent's world transform; then the children are rebuilt recursively. No caller in the executable
-   besides itself (only in g_ThandorFunctionMap).
+   besides itself.
    As in the original, the child loop takes its count from this object (+0x0C) but reads the child pointers from
    the parent's list at +0x78, so a root object with children would read from address 0x78.
 */

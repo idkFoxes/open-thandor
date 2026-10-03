@@ -44,45 +44,6 @@ void Thandor_Log(const char *format, ...)
     fclose(out);
 }
 
-static void *find_function(unsigned address)
-{
-    unsigned lo = 0;
-    unsigned hi = g_ThandorFunctionMapCount;
-    while (lo < hi) {
-        unsigned mid = (lo + hi) / 2;
-        if (g_ThandorFunctionMap[mid].originalAddress < address) {
-            lo = mid + 1;
-        } else {
-            hi = mid;
-        }
-    }
-    if (lo < g_ThandorFunctionMapCount && g_ThandorFunctionMap[lo].originalAddress == address) {
-        return g_ThandorFunctionMap[lo].function;
-    }
-    return NULL;
-}
-
-/* Recovered C function for an original function entry address, or NULL when the address is not
-   the start of a mapped function. Network command codes are original code distances and resolve
-   through this. */
-void *Thandor_FunctionAtOriginalAddress(unsigned originalAddress)
-{
-    return find_function(originalAddress);
-}
-
-/* Reverse lookup: original entry address of a recovered C function (e.g. a handler pointer read from
-   image data that is queued as a network command code), or 0 when it is not mapped. Linear search. */
-unsigned Thandor_OriginalAddressOfFunction(const void *function)
-{
-    unsigned i;
-    for (i = 0; i < g_ThandorFunctionMapCount; i++) {
-        if (g_ThandorFunctionMap[i].function == function) {
-            return g_ThandorFunctionMap[i].originalAddress;
-        }
-    }
-    return 0;
-}
-
 /* Crash log: raw stack words below REBUILT_IMAGE_BASE + this are symbolized as code addresses (upper bound
    of the rebuilt executable's image) */
 #define CRASH_LOG_REBUILT_IMAGE_SPAN 0x400000u

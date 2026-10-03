@@ -3,7 +3,8 @@
 `src/graphics/backend/software.c` holds 60 triangle handlers,
 `SoftwareRaster{16,Non16,Aux}_ModeNN`, decompiled from hand-written MMX. This page
 explains how they are built, so they can be rewritten into readable C one group at a
-time. `OPEN_THANDOR_SELFTEST=rastercmp` checks each rewrite against the original machine code.
+time. The `rastercmp` self-test checked each rewrite against the original machine code; it needed the
+mapped original image and was retired with it (see below).
 
 Already rewritten (the reference examples): `SoftwareRaster16_Mode00/01/02/08/16/24`,
 `SoftwareRasterNon16_Mode00/02` and `SoftwareRasterAux_Mode00`. The shared helpers are in
@@ -181,52 +182,17 @@ Non16 and Aux. The existing spans are `Raster16_SpanShadedOpaque`,
 `Raster16_SpanShadedAlphaBlend`, `Raster16_SpanShadedAdd`, `Raster16_SpanTexturedOpaque`,
 `Raster32_SpanShadedOpaque` and `Raster32_SpanShadedAdd`.
 
-## rastercmp
+## rastercmp (retired)
 
-The self-test runs each C handler and a copy of the original code (0x4D1710..0x4FE620, read
-from `thandor_original.exe`) on the same random input:
+The self-test ran each C handler and a copy of the original code (0x4D1710..0x4FE620, read
+from `thandor_original.exe`) on the same random input (sizes, clip rectangles and strides, 565
+and 555 layouts, framebuffer and depth contents, partly off-screen triangles, paletted and direct
+textures from 1x1 to 256x256, scan state) and compared colour, depth, guard bytes and scan state.
+It needed the original image mapped at its address and was removed with the mapped build (step 4c),
+after every handler had passed it. Changes to the handlers are now covered by the behaviour checks
+(`tools/test/run_checks.py`: determinism, pixel compare against the previous build).
 
-- sizes, clip rectangles and strides
-- 565 and 555 pixel layouts
-- framebuffer and depth contents
-- triangles, partly off screen
-- paletted and direct textures from 1x1 to 256x256
-- scan state
-
-It then compares colour, depth, guard bytes and scan state. Harness:
-`src/platform/selftest/raster.c`. It only works in the mapped-image build.
-
-```bat
-call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars32.bat"
-cmake -S . -B build-mapped -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo -DTHANDOR_MAPPED_IMAGE=ON
-cmake --build build-mapped
-```
-
-Copy `build-mapped/thandor.exe` and its `.pdb` into `ot-run` under your own name, for example
-`thandor_rastercmp_wp3.exe`. `ot-run` needs `thandor_original.exe`. Then run it with these
-environment variables:
-
-- `OPEN_THANDOR_SELFTEST=rastercmp`
-- `OPEN_THANDOR_RASTERCMP_FILTER=RasterNon16_Mode1`: substring of the handler name
-- `OPEN_THANDOR_RASTERCMP_RUNS=2000`: default 300
-- `OPEN_THANDOR_RASTERCMP_SEED=n`
-- `OPEN_THANDOR_RASTERCMP_STATE=1`: log where the scan state differs
-
-Results go to `ot-run/thandor.log`, in lines starting with `rastercmp`. Several agents share
-that log, so filter by your handler names.
-
-A rewrite is done when all of the following hold:
-
-- Its handlers report `identical` or `identical output` with 0 faults, for at least 2000 runs on
-  two different seeds.
-- The whole 60-handler run still reports `0 with output mismatches/faults`.
-- The release build (`-DTHANDOR_MAPPED_IMAGE=OFF`, `build-rel`) compiles without new warnings in
-  `software.c`.
-
-A mismatch line gives the byte offset, the pixel and all triangle parameters. Any change to a
-walker helper affects every rewritten handler, so run the full set after one.
-
-Pitfalls, all of which rastercmp catches:
+Pitfalls, all of which rastercmp caught:
 
 - Keep the 64-bit products and truncation points exactly as the helpers do.
 - Colour lanes are 16 bit and wrap.
@@ -266,8 +232,8 @@ rectangle straight into the framebuffer. They are installed per framebuffer dept
 the Glide3 versions in `glide.c`. Like the rasterizer they were hand-written MMX, and the
 decompiled C was full of `CONCAT`/`pmulhw` emulation.
 
-`OPEN_THANDOR_SELFTEST=blitcmp` (`src/platform/selftest/blit.c`) compares each of them
-with the original machine code:
+The `blitcmp` self-test compared each of them with the original machine code (retired with the mapped
+build, see below):
 
 | function | original | C status |
 |---|---|---|
@@ -395,46 +361,16 @@ Pixel operations of the other blits, read from their asm (the rewritten code fol
 Do not clamp or "fix" anything: wrapping lanes, the logical `PSRLW` and the palette +0/+4 mix-up
 are all part of the original output.
 
-## blitcmp
+## blitcmp (retired)
 
-It needs the mapped-image build and `thandor_original.exe` next to the executable. The test copies
-0x4A93C0..0x4AD410 and 0x519270..0x519318 from `thandor_original.exe` and runs both versions on
-identical copies of random input:
-
-- **Asset**: 1 to 4 banks and 1 to 4 subresources, each 1..48 x 1..40 texels with origins -24..24.
-  Subresources are paletted or direct, and some have an invalid bank. Palette dwords and texels
-  get alpha 0, 0xFF or random, and sometimes RGB 0.
-- **Early returns**: sometimes an invalid magic, subresource index or pixel size.
-- **Framebuffer**: 16 or 32 bit, 1..160 x 1..120 pixels with random contents.
-- **Clipping**: clip rectangles partly outside, sometimes inverted. Three runs in four place the
-  image so that it overlaps the framebuffer; the rest also produce fully clipped cases.
-- **Pixel constants**: 565 or 555 `g_SoftwarePixelMmxConstants` and random `g_SoftwarePixelPackTables`.
-- **Extra arguments**: scale 1..4, palette banks (sometimes out of range), modulation colours
-  (random, opaque, or 0xFFFFFFFF) and fill colours.
-- **Mask step**: sizes of at least 32 pixels, mask bytes 0, 1..0x40, 0xD8..0xFF or random, and
-  sometimes `maskPixels == NULL`. `g_GraphicsTextureSourceGetLogicalSize` is replaced by two
-  stubs: one for the C code (struct return) and one for the original (EAX/EDX, ECX preserved).
-
-It compares the framebuffer with 1 KB guards on both sides, the mask buffer with guards, the asset,
-and the carry flag. Run it like this:
-
-- `OPEN_THANDOR_SELFTEST=blitcmp`
-- `OPEN_THANDOR_BLITCMP_RUNS`: default 500
-- `OPEN_THANDOR_BLITCMP_SEED`: default 1
-- `OPEN_THANDOR_BLITCMP_FILTER`: substring of the function name, e.g. `SaturatedAdd`
-
-Log lines start with `blitcmp`. A mismatch line gives the byte, the pixel, the framebuffer size
-and format, the clip rectangle, the draw position, the extra argument and the subresource. As a
-sanity check, a deliberately wrong alpha threshold in `BlitSourceAlpha16` produced 233
-mismatches in 2000 runs.
-
-A rewrite is done when all of the following hold:
-
-- Its functions report `identical` with 0 faults for at least 3000 runs on two seeds.
-- The whole blitcmp run still reports `0 with mismatches/faults`.
-- `build-rel` compiles without new warnings in `software.c`.
+The test copied 0x4A93C0..0x4AD410 and 0x519270..0x519318 from `thandor_original.exe` and ran both
+versions on identical copies of random input (assets with several banks and subresources, early
+returns, 16- and 32-bit framebuffers, partly outside or inverted clip rectangles, 565/555 pixel
+constants, scale, palette bank, modulation and fill arguments, the mask step), comparing the
+framebuffer with guards, the mask buffer, the asset and the carry flag. Like rastercmp it needed
+the mapped-image build and was removed with it (step 4c), after all blits had passed it.
 
 ## Remaining work
 
-None: all raster handlers and blits are rewritten and verified by rastercmp, blitcmp and
-blendscalecmp. The per-function pixel operations above describe the rewritten code.
+None: all raster handlers and blits are rewritten and were verified by rastercmp, blitcmp and
+blendscalecmp before these self-tests were retired. The per-function pixel operations above describe the rewritten code.

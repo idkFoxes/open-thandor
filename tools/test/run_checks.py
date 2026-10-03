@@ -1,11 +1,11 @@
 """Runs all behaviour checks after a build, in parallel, and prints one summary table.
 
-usage: run_checks.py GAME_DIR [--new TEST_EXE] [--old PREVIOUS_TEST_EXE] [--release RELEASE_EXE]
-                     [--map-jobs N] [--map-minutes M] [--skip determinism,aihash,...]
+usage: run_checks.py GAME_DIR [--new TEST_EXE] [--old PREVIOUS_TEST_EXE] [--map-jobs N]
+                     [--map-minutes M] [--skip determinism,aihash,...]
 
-GAME_DIR is a game directory with the game data (and thandor_original.exe for imagecmp). Every check runs in its
-own linked copy GAME_DIR_chk_<name> (hard links to the data files, own executable, settings, log and save
-folder; the tools started from here make further copies next to it), windowed, with its own UDP ports:
+GAME_DIR is a game directory with the game data. Every check runs in its own linked copy GAME_DIR_chk_<name>
+(hard links to the data files, own executable, settings, log and save folder; the tools started from here make
+further copies next to it), windowed, with its own UDP ports:
   determinism  run_determinism.py --reference tools/test/determinism_reference (3 instances, ports 960-962)
   aihash       compare_map_hash.py stromschnelle 1400: two copies of the new build, plus the --old build if
                given; all must record identical state hashes (ports 980-982)
@@ -21,14 +21,13 @@ folder; the tools started from here make further copies next to it), windowed, w
                not; no crash or hang (port 907)
   multiplayer  run_multiplayer.py 150 s with mp_host_create.txt / mp_client_join.txt: both reach the game, no
                crash, and the client log still has "net recv" lines in its last 20 lines (ports 929/930)
-  imagecmp     the release build with OPEN_THANDOR_SELFTEST=imagecmp: 0 pointer and 0 byte mismatches
   maps         run_all_maps.py --only "*[!0-9]" (the single games without a digit at the end); non-ok missions
                fail, except ENDED (the strong computer opponents can win a single map in time): a warning
                (ports 940+)
   campaign     run_campaign_chain.py pairs (tutorial 1->2, 1->3, hansolo 8->9, 12->13, 22->23, one worker each):
                every target level must receive units from the level before and run to the end of its time
                without crash or hang (ports 910-914)
---new defaults to build-test/thandor.exe, --release to build-rel/thandor.exe of this repository. The output of
+--new defaults to build-test/thandor.exe of this repository. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
 pixels/). A failed determinism, saveload, multiplayer or maps check is run once more on its own after the others
 (start-ups can stall under the full load; determinism has a rare timing-dependent one-tick shift); the table then
@@ -57,7 +56,7 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log',
            'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
-CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'imagecmp', 'campaign', 'maps']
+CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'campaign', 'maps']
 # timing sensitive: a failure in the parallel run is retried alone. Determinism: a rare one-tick shift of a single
 # effect around tick 68 (the simulation seems to read state the renderer updates between steps; see
 # ot-scratch/findings.md) - a real regression shows up again in the retry and in aihash. Saveload: a system-wide
@@ -65,10 +64,10 @@ CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplaye
 RETRY_ALONE = ('determinism', 'aihash', 'saveload', 'multiplayer', 'maps')
 GAME_BUDGET = 16  # game instances at once over all checks (the CPU gate may allow fewer)
 # start order: the longest checks first (maps, then campaign and aihash), the quick ones while those run
-START_ORDER = ['imagecmp', 'maps', 'campaign', 'aihash', 'determinism', 'multiplayer', 'pixels', 'saveload',
+START_ORDER = ['maps', 'campaign', 'aihash', 'determinism', 'multiplayer', 'pixels', 'saveload',
                'textedit']
 INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
-             'imagecmp': 0, 'campaign': 5}
+             'campaign': 5}
 
 args = None
 game = None
@@ -311,20 +310,6 @@ def check_multiplayer():
     return ('FAIL' if problems else 'PASS'), '; '.join(problems) or 'both in game, %d net recv in last 20 lines' % recv
 
 
-def check_imagecmp():
-    if not args.release or not os.path.exists(args.release):
-        return 'SKIP', 'no release exe'
-    if not os.path.exists(os.path.join(game, 'thandor_original.exe')):
-        return 'SKIP', 'GAME_DIR has no thandor_original.exe'
-    folder = make_copy('imagecmp', args.release)
-    exited, crashed, text = run_game(folder, '-NOINTRO', {'OPEN_THANDOR_SELFTEST': 'imagecmp'}, 180, 906)
-    open(os.path.join(out_dir, 'imagecmp.txt'), 'w', encoding='utf-8', errors='replace').write(text)
-    last = text.strip().splitlines()[-1] if text.strip() else 'no log'
-    ok = exited and not crashed and last.startswith('imagecmp:') and \
-        ' 0 pointer mismatches, 0 byte mismatches' in last
-    return ('PASS' if ok else 'FAIL'), last.replace('imagecmp: ', '')
-
-
 def map_jobs_file():
     return os.path.join(out_dir, 'maps_jobs.txt')
 
@@ -398,8 +383,6 @@ def main():
     parser.add_argument('--new', default=os.path.join(REPO, 'build-test', 'thandor.exe'),
                         help='test build to check (default: build-test/thandor.exe)')
     parser.add_argument('--old', help='previous test build (comparison for aihash and pixels)')
-    parser.add_argument('--release', default=os.path.join(REPO, 'build-rel', 'thandor.exe'),
-                        help='release build for imagecmp (default: build-rel/thandor.exe)')
     parser.add_argument('--map-jobs', type=int, help='parallel missions (default: 16 minus the other instances, '
                                                        'at least 4, growing to 16 as the other checks finish; a '
                                                        'given number stays fixed)')
@@ -409,7 +392,6 @@ def main():
     game = os.path.abspath(args.game_dir)
     args.new = os.path.abspath(args.new)
     args.old = os.path.abspath(args.old) if args.old else None
-    args.release = os.path.abspath(args.release) if args.release else None
     skip = set(s.strip() for s in args.skip.split(',') if s.strip())
     unknown = skip - set(CHECKS)
     if unknown:

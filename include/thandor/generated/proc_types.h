@@ -4,8 +4,8 @@
  * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/generated/proc_types.h
  */
 
-/* Function pointer types of the recovered data and callbacks (formerly generated/globals.h, which also held
-   the address macros of the original image until step 4c; edited by hand since). */
+/* Function pointer types of the recovered data and callbacks (once generated from the Ghidra export together
+   with the address macros of the original image; edited by hand since step 4c). */
 
 #ifndef THANDOR_GENERATED_PROC_TYPES_H
 #define THANDOR_GENERATED_PROC_TYPES_H
@@ -27,10 +27,8 @@ typedef uint32_t FileSystemDeleteProc(uint32_t unusedFlags, uint16_t * path); /*
 typedef bool FileSystemDriveReadyProc(uint32_t driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemEnumerateDirectoryOrVolumeEntriesProc(FileSystemEnumerationMode mode, uint32_t reserved, FileSystemOutputCapacityBytes outputCapacityBytes, uint8_t * outputRecords, uint8_t * pathOrVolumeText); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef uint32_t FileSystemEnumerateDriveLettersProc(uint8_t * lettersOut); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef FileSystemEnumerateDriveLettersProc FileSystemEnumerateDriveLettersEaxEcxProc; /* old name, still used by image_data.h until it is regenerated */
 typedef bool FileSystemGetCurrentDirectoryProc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef EngineDriveTypeCode FileSystemGetDriveTypeCodeProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef FileSystemGetDriveTypeCodeProc FileSystemGetDriveTypeCodePreserveProc; /* old name, still used by image_data.h until it is regenerated */
 typedef Win32DriveCapacity FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemGetLastWriteDosDateProc(uint16_t * path, uint32_t * outDosDateTime); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemGetLastWriteTimeHighProc(uint16_t * path, uint32_t * outLastWriteTimeHigh); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
@@ -83,7 +81,6 @@ typedef void __stdcall GrVertexLayoutImportProc(uint32_t parameter, uint32_t byt
 typedef void __stdcall GrViewportImportProc(uint32_t x, uint32_t y, uint32_t width, uint32_t height); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void GraphicsBackendRefreshActiveAdapterProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsBeginSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef GraphicsBeginSceneProc GraphicsBeginScenePreserveAllProc; /* old name, still used by image_data.h until it is regenerated */
 typedef bool GraphicsCursorConsumeEventProc(CursorPointerEvent *outEvent); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsDrawPrimitiveQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsEndSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
@@ -198,14 +195,5 @@ typedef int __stdcall WinSock_shutdownProc(uint32_t socket, int how); /* Ghidra 
 typedef uint32_t __stdcall WinSock_socketProc(int addressFamily, int socketType, int protocol); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwnerListNode * node); /* Ghidra FunctionDefinition /Thandor/World/Callbacks */
 
-
-/*
- * Globals live at their original addresses: ProcessEntry's caller maps the data image of
- * thandor_original.exe (its single RWX .text section, 0x401000-0x58C000) there first, see
- * platform/bootstrap/image.c. Neighbouring accesses, tables and absolute addresses in the
- * recovered code therefore behave exactly as in the original.
- */
-
-/* Unnamed memory cells Ghidra prints as <type>Ram<address>. */
 
 #endif /* THANDOR_GENERATED_PROC_TYPES_H */
