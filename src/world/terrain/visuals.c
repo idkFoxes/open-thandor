@@ -132,6 +132,34 @@ bool TerrainCompositeTexture_Create(uint32_t *outError)
 }
 
 
+/* Fills one 256-byte row of g_TerrainByteClampLookup: for every runtime byte 0..0xFF the byte moved one
+   TERRAIN_RUNTIME_BYTE_FADE_STEP towards targetLevel, stopping at targetLevel from either side. Returns the
+   position after the row. */
+static uint8_t *TerrainByteClampLookup_FillRow(uint8_t *rowCursor,int targetLevel)
+
+{
+  int inputValue;
+
+  for (inputValue = 0; inputValue < 256; inputValue++) {
+    if (inputValue <= targetLevel) {
+      if (inputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < targetLevel) {
+        *rowCursor = (uint8_t)(inputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
+      }
+      else {
+        *rowCursor = (uint8_t)targetLevel;
+      }
+    }
+    else if (inputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP <= targetLevel) {
+      *rowCursor = (uint8_t)targetLevel;
+    }
+    else {
+      *rowCursor = (uint8_t)(inputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
+    }
+    rowCursor++;
+  }
+  return rowCursor;
+}
+
 /* Address: 0x00503B10.
    Builds g_TerrainByteClampLookup, the 64-KiB table FieldGrid_ApplyByteClampLookupToCells uses every few ticks to
    fade each cell's runtime byte (+0x68) one step (TERRAIN_RUNTIME_BYTE_FADE_STEP) towards the level its occupancy
@@ -143,11 +171,8 @@ bool TerrainByteClampLookup_Initialize(uint32_t *outError)
 
 {
   void *lookupAllocationBase;
-  int lookupRowsRemaining;
-  int finalRowsRemaining;
-  uint8_t nextInputByte;
-  uint32_t clampInputValue;
-  uint32_t lookupInputValue;
+  int rowPair;
+  int row;
   uint8_t *lookupWriteCursor;
   uint32_t allocError;
 
@@ -157,138 +182,181 @@ bool TerrainByteClampLookup_Initialize(uint32_t *outError)
     *outError = allocError;
     return false;
   }
-  clampInputValue = 0;
-  lookupWriteCursor = (uint8_t *)((int)lookupAllocationBase + 0xffffU & 0xffff0000);
-  lookupRowsRemaining = 64; /* row pairs */
+  lookupWriteCursor = (uint8_t *)(((uintptr_t)lookupAllocationBase + 0xffff) & ~(uintptr_t)0xffff);
   g_TerrainByteClampLookup = lookupWriteCursor;
   /* rows 0x00..0x7F in pairs: even rows fade to NONE, odd rows to FULL */
-  do {
-    do {
-      if (clampInputValue == 0) {
-        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_NONE;
-      }
-      else if ((int)(clampInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 1) {
-        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_NONE;
-      }
-      else {
-        *lookupWriteCursor = (uint8_t)(clampInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
-      }
-      lookupWriteCursor++;
-      nextInputByte = (char)clampInputValue + 1;
-      clampInputValue = (uint32_t)nextInputByte;
-    } while (nextInputByte != 0);
-    lookupInputValue = 0;
-    do {
-      /* a byte is never above 0xFF: only the rising branch is reached */
-      if (lookupInputValue < 256) {
-        if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
-          *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
-        }
-        else {
-          *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
-        }
-      }
-      else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 256) {
-        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
-      }
-      else {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
-      }
-      lookupWriteCursor++;
-      nextInputByte = (char)lookupInputValue + 1;
-      lookupInputValue = (uint32_t)nextInputByte;
-    } while (nextInputByte != 0);
-    lookupRowsRemaining--;
-    clampInputValue = 0;
-  } while (lookupRowsRemaining != 0);
-  /* row 0x80: fade to PERSISTENT from either side */
-  lookupInputValue = 0;
-  do {
-    if (lookupInputValue < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT + 1) {
-      if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT) {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
-      }
-      else {
-        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT;
-      }
-    }
-    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT + 1) {
-      *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT;
-    }
-    else {
-      *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
-    }
-    lookupWriteCursor++;
-    nextInputByte = (char)lookupInputValue + 1;
-    lookupInputValue = (uint32_t)nextInputByte;
-  } while (nextInputByte != 0);
-  /* row 0x81: FULL */
-  lookupInputValue = 0;
-  do {
-    if (lookupInputValue < 256) {
-      if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
-      }
-      else {
-        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
-      }
-    }
-    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 256) {
-      *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
-    }
-    else {
-      *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
-    }
-    lookupWriteCursor++;
-    nextInputByte = (char)lookupInputValue + 1;
-    lookupInputValue = (uint32_t)nextInputByte;
-  } while (nextInputByte != 0);
-  /* row 0x82: PERSISTENT */
-  lookupInputValue = 0;
-  do {
-    if (lookupInputValue < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT + 1) {
-      if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT) {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
-      }
-      else {
-        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT;
-      }
-    }
-    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT + 1) {
-      *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT;
-    }
-    else {
-      *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
-    }
-    lookupWriteCursor++;
-    nextInputByte = (char)lookupInputValue + 1;
-    lookupInputValue = (uint32_t)nextInputByte;
-  } while (nextInputByte != 0);
-  /* rows 0x83..0xFF (125): FULL */
-  finalRowsRemaining = 125;
-  lookupInputValue = 0;
-  do {
-    if (lookupInputValue < 256) {
-      if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
-      }
-      else {
-        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
-      }
-    }
-    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 256) {
-      *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
-    }
-    else {
-      *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
-    }
-    lookupWriteCursor++;
-    nextInputByte = (char)lookupInputValue + 1;
-    lookupInputValue = (uint32_t)nextInputByte;
-  } while ((nextInputByte != 0) || (finalRowsRemaining--, finalRowsRemaining != 0));
+  for (rowPair = 0; rowPair < 64; rowPair++) {
+    lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_NONE);
+    lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_FULL);
+  }
+  /* row 0x80: PERSISTENT, row 0x81: FULL, row 0x82: PERSISTENT */
+  lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT);
+  lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_FULL);
+  lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT);
+  /* rows 0x83..0xFF: FULL */
+  for (row = 0x83; row < 0x100; row++) {
+    lookupWriteCursor = TerrainByteClampLookup_FillRow(lookupWriteCursor,TERRAIN_RUNTIME_BYTE_LEVEL_FULL);
+  }
   return true;
 }
 
+
+/* The suffix slot of a secondary resource path: its terminator, or its 256th character when there is none
+   within the first 256 (the path is scanned for at most 256 characters). The material letter and the
+   terminator are written there. */
+static TerrainMaterialSuffixEntry *TerrainVisualResources_FindPathSuffixEntry(uint16_t *resourcePath)
+
+{
+  int pathLength;
+
+  for (pathLength = 0; (pathLength < 255) && (resourcePath[pathLength] != 0); pathLength++) {
+  }
+  return (TerrainMaterialSuffixEntry *)(resourcePath + pathLength);
+}
+
+/* Loads the 26 material texture sets <secondary>a..z.gfx into g_TerrainMaterialTextureSets: those whose bit is
+   set in fieldFlags are required (advancing the loading movie before and after each), the others optional
+   (NULL when missing). Also sets the loading movie span from the number of required sets. Returns true on
+   success; false with the load error in *outError when a required set fails. */
+static bool TerrainVisualResources_LoadMaterialTextureSets
+          (uint16_t *secondaryResourcePath,TerrainMaterialSuffixEntry *pathSuffixEntry,FieldGridFlags fieldFlags,
+          uint32_t *outError)
+
+{
+  GraphicsTextureSet *materialTextureSet;
+  int requiredSetCount;
+  int materialIndex;
+  uint32_t materialFlagBits;
+  uint32_t loadErrorCode;
+
+  requiredSetCount = 0;
+  for (materialFlagBits = fieldFlags; materialFlagBits != 0; materialFlagBits = materialFlagBits >> 1) {
+    if ((materialFlagBits & 1) != 0) {
+      requiredSetCount++;
+    }
+  }
+  g_MoviePlaybackScheduleSpan = requiredSetCount * 2 + 10;
+  materialFlagBits = fieldFlags;
+  for (materialIndex = 0; materialIndex < TERRAIN_MATERIAL_TEXTURE_SET_COUNT; materialIndex++) {
+    *pathSuffixEntry = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ[materialIndex];
+    WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
+    if ((materialFlagBits & 1) == 0) {
+      /* optional material: missing is fine (NULL) */
+      g_TerrainMaterialTextureSets[materialIndex] = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,NULL);
+    }
+    else {
+      MoviePlayback_AdvanceScheduledFrameAndTick();
+      materialTextureSet = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,&loadErrorCode);
+      if (materialTextureSet == NULL) {
+        *outError = loadErrorCode;
+        return false;
+      }
+      MoviePlayback_AdvanceScheduledFrameAndTick();
+      g_TerrainMaterialTextureSets[materialIndex] = materialTextureSet;
+    }
+    materialFlagBits = materialFlagBits >> 1;
+  }
+  return true;
+}
+
+/* Loads <primary>.dat, <primary>.gfx, <primary>.pal, <secondary>.pal and <secondary>.dat (the secondary path
+   without its material letter) into the terrain globals, advancing the loading movie after each. Returns true
+   on success; false with the load error in *outError at the first failure. */
+static bool TerrainVisualResources_LoadTablesAndPalettes
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,
+          TerrainMaterialSuffixEntry *pathSuffixEntry,uint32_t *outError)
+
+{
+  void *packetTable;
+  GraphicsTextureSet *primaryTextureSet;
+  GraphicsPaletteAsset *palette;
+  uint32_t loadErrorCode;
+
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,primaryResourcePath); /* ".dat" */
+  packetTable = Package_LoadEntry(primaryResourcePath,&loadErrorCode);
+  if (packetTable == NULL) {
+    *outError = loadErrorCode;
+    return false;
+  }
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  g_TerrainSurfacePacketTablePayload = (uint8_t *)packetTable + TERRAIN_PACKET_TABLE_HEADER_BYTES;
+  WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
+  primaryTextureSet = g_GraphicsTextureSetLoadPackage(primaryResourcePath,&loadErrorCode);
+  if (primaryTextureSet == NULL) {
+    *outError = loadErrorCode;
+    return false;
+  }
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  g_TerrainPrimaryTextureSet = primaryTextureSet;
+  WidePath_SetExtensionCode(ASSET_MAGIC_PAL,primaryResourcePath);
+  palette = g_GraphicsPaletteAssetLoadPackage(primaryResourcePath,&loadErrorCode);
+  if (palette == NULL) {
+    *outError = loadErrorCode;
+    return false;
+  }
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  g_TerrainPrimaryPalette = palette;
+  pathSuffixEntry->lowercaseLetterUtf16 = 0;
+  pathSuffixEntry->terminator = 0;
+  WidePath_SetExtensionCode(ASSET_MAGIC_PAL,secondaryResourcePath);
+  palette = g_GraphicsPaletteAssetLoadPackage(secondaryResourcePath,&loadErrorCode);
+  if (palette == NULL) {
+    *outError = loadErrorCode;
+    return false;
+  }
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  g_TerrainSecondaryPalette = palette;
+  pathSuffixEntry->lowercaseLetterUtf16 = 0;
+  pathSuffixEntry->terminator = 0;
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,secondaryResourcePath); /* ".dat" */
+  packetTable = Package_LoadEntry(secondaryResourcePath,&loadErrorCode);
+  if (packetTable == NULL) {
+    *outError = loadErrorCode;
+    return false;
+  }
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  g_TerrainSoilPacketTablePayload = (uint8_t *)packetTable + TERRAIN_PACKET_TABLE_HEADER_BYTES;
+  return true;
+}
+
+/* Random animation for the 256 direction records: scales 0x80..0x9F, rates +-(0x200..0x27F) per step, random
+   start angles; the angle components are cleared. */
+static void TerrainDirectionTable_RandomizeRecords(void)
+
+{
+  TerrainDirectionRecord *directionRecord;
+  uint32_t randomValue;
+  uint16_t rotationRate;
+  int recordsRemaining;
+
+  directionRecord = g_TerrainDirectionRecordTable256;
+  for (recordsRemaining = 256; recordsRemaining != 0; recordsRemaining--) {
+    randomValue = Random_NextPrimary();
+    directionRecord->scaleA = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
+    rotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
+                   TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
+    randomValue = Random_NextPrimary();
+    if ((int)randomValue < 0) {
+      rotationRate = -rotationRate;
+    }
+    directionRecord->rateA = rotationRate;
+    ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
+    randomValue = Random_NextPrimary();
+    directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
+    rotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
+                   TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
+    randomValue = Random_NextPrimary();
+    if ((int)randomValue < 0) {
+      rotationRate = -rotationRate;
+    }
+    directionRecord->rateB = rotationRate;
+    ((short *)&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
+    directionRecord->angleAComponent0ScaledQ28 = 0;
+    directionRecord->angleAComponent1ScaledQ28 = 0;
+    directionRecord->angleBComponent0ScaledQ28 = 0;
+    directionRecord++;
+  }
+}
 
 /* Address: 0x00503F30.
    Loads the terrain graphics of a field (fld asset, else FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material
@@ -302,164 +370,28 @@ bool TerrainVisualResources_LoadPrimary
           uint32_t *outError)
 
 {
-  GraphicsPaletteAsset *loadedResourceOrError;
-  GraphicsTextureSet *materialTextureSet;
-  uint32_t randomValue;
-  int loopCounter;
-  int materialSlotsRemaining;
-  uint16_t pathCharOrRotationRate;
-  uint32_t materialFlagBits;
-  TerrainMaterialSuffixEntry *suffixLetterCursor;
-  uint16_t *pathScanCursor;
-  uint16_t *pathScanNext;
-  GraphicsTextureSet **materialTextureSetSlot;
-  TerrainDirectionRecord *directionRecord;
-  GraphicsTextureSet *primaryTextureSet;
-  uint32_t loadErrorCode;
   TerrainMaterialSuffixEntry *pathSuffixEntry;
-  
-  loopCounter = 256; /* the path is scanned for at most 256 characters */
-  pathScanCursor = secondaryResourcePath;
-  do {
-    pathScanNext = pathScanCursor;
-    if (loopCounter == 0) break;
-    loopCounter--;
-    pathScanNext = pathScanCursor + 1;
-    pathCharOrRotationRate = *pathScanCursor;
-    pathScanCursor = pathScanNext;
-  } while (pathCharOrRotationRate != 0);
-  pathSuffixEntry = (TerrainMaterialSuffixEntry *)(pathScanNext - 1);
-  loadedResourceOrError = (GraphicsPaletteAsset *)FATAL_ERROR_FIELD_ASSET_INVALID;
-  if (((field->common).magic == ASSET_MAGIC_FLD) &&
-     ((field->common).converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    materialFlagBits = field->fieldFlags;
-    loopCounter = 0;
-    do {
-      if ((materialFlagBits & 1) != 0) {
-        loopCounter++;
-      }
-      materialFlagBits = materialFlagBits >> 1;
-    } while (materialFlagBits != 0);
-    materialSlotsRemaining = TERRAIN_MATERIAL_TEXTURE_SET_COUNT;
-    materialFlagBits = field->fieldFlags;
-    g_MoviePlaybackScheduleSpan = loopCounter * 2 + 10;
-    suffixLetterCursor = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
-    materialTextureSetSlot = g_TerrainMaterialTextureSets;
-    do {
-      if ((materialFlagBits & 1) == 0) {
-        *pathSuffixEntry = *suffixLetterCursor;
-        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
-        /* optional material: missing is fine (NULL) */
-        materialTextureSet = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,NULL);
-        *materialTextureSetSlot = materialTextureSet;
-      }
-      else {
-        *pathSuffixEntry = *suffixLetterCursor;
-        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
-        MoviePlayback_AdvanceScheduledFrameAndTick();
-        materialTextureSet = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,&loadErrorCode);
-        if (materialTextureSet == NULL) {
-          *outError = loadErrorCode;
-          return false;
-        }
-        MoviePlayback_AdvanceScheduledFrameAndTick();
-        *materialTextureSetSlot = materialTextureSet;
-      }
-      suffixLetterCursor++;
-      materialTextureSetSlot++;
-      materialFlagBits = materialFlagBits >> 1;
-      materialSlotsRemaining--;
-    } while (materialSlotsRemaining != 0);
-    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,primaryResourcePath); /* ".dat" */
-    loadedResourceOrError = Package_LoadEntry(primaryResourcePath,&loadErrorCode);
-    if (loadedResourceOrError == NULL) {
-      loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-    }
-    else {
-      MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_TerrainSurfacePacketTablePayload =
-           (uint8_t *)loadedResourceOrError + TERRAIN_PACKET_TABLE_HEADER_BYTES;
-      WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
-      primaryTextureSet = g_GraphicsTextureSetLoadPackage(primaryResourcePath,&loadErrorCode);
-      if (primaryTextureSet == NULL) {
-        loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-      }
-      else {
-        MoviePlayback_AdvanceScheduledFrameAndTick();
-        g_TerrainPrimaryTextureSet = primaryTextureSet;
-        WidePath_SetExtensionCode(ASSET_MAGIC_PAL,primaryResourcePath);
-        loadedResourceOrError = g_GraphicsPaletteAssetLoadPackage(primaryResourcePath,&loadErrorCode);
-        if (loadedResourceOrError == NULL) {
-          loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-        }
-        else {
-          MoviePlayback_AdvanceScheduledFrameAndTick();
-          g_TerrainPrimaryPalette = loadedResourceOrError;
-          pathSuffixEntry->lowercaseLetterUtf16 = 0;
-          pathSuffixEntry->terminator = 0;
-          WidePath_SetExtensionCode(ASSET_MAGIC_PAL,secondaryResourcePath);
-          loadedResourceOrError = g_GraphicsPaletteAssetLoadPackage(secondaryResourcePath,&loadErrorCode);
-          if (loadedResourceOrError == NULL) {
-            loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-          }
-          else {
-            MoviePlayback_AdvanceScheduledFrameAndTick();
-            g_TerrainSecondaryPalette = loadedResourceOrError;
-            pathSuffixEntry->lowercaseLetterUtf16 = 0;
-            pathSuffixEntry->terminator = 0;
-            WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,secondaryResourcePath); /* ".dat" */
-            loadedResourceOrError = Package_LoadEntry(secondaryResourcePath,&loadErrorCode);
-            if (loadedResourceOrError == NULL) {
-              loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-            }
-            else {
-              MoviePlayback_AdvanceScheduledFrameAndTick();
-              g_TerrainSoilPacketTablePayload =
-                   (uint8_t *)loadedResourceOrError + TERRAIN_PACKET_TABLE_HEADER_BYTES;
-              FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(field);
-              MoviePlayback_AdvanceScheduledFrameAndTick();
-              /* random animation for the 256 direction records: scales 0x80..0x9F, rates +-(0x200..0x27F)
-                 per step, random start angles */
-              loopCounter = 256;
-              directionRecord = g_TerrainDirectionRecordTable256;
-              do {
-                randomValue = Random_NextPrimary();
-                directionRecord->scaleA = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
-                                         TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
-                randomValue = Random_NextPrimary();
-                if ((int)randomValue < 0) {
-                  pathCharOrRotationRate = -pathCharOrRotationRate;
-                }
-                directionRecord->rateA = pathCharOrRotationRate;
-                ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
-                randomValue = Random_NextPrimary();
-                directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
-                                         TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
-                randomValue = Random_NextPrimary();
-                if ((int)randomValue < 0) {
-                  pathCharOrRotationRate = -pathCharOrRotationRate;
-                }
-                directionRecord->rateB = pathCharOrRotationRate;
-                ((short *)&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
-                directionRecord->angleAComponent0ScaledQ28 = 0;
-                directionRecord->angleAComponent1ScaledQ28 = 0;
-                directionRecord->angleBComponent0ScaledQ28 = 0;
-                directionRecord++;
-                loopCounter--;
-              } while (loopCounter != 0);
-              MoviePlayback_AdvanceScheduledFrameAndTick();
-              TerrainDirectionTable_AdvanceAndRebuildVectors();
-              return true;
-            }
-          }
-        }
-      }
-    }
+
+  pathSuffixEntry = TerrainVisualResources_FindPathSuffixEntry(secondaryResourcePath);
+  if (((field->common).magic != ASSET_MAGIC_FLD) ||
+      ((field->common).converterVersion != PCK_CONVERTER_FLD_SHT_00060006)) {
+    *outError = (uint32_t)FATAL_ERROR_FIELD_ASSET_INVALID;
+    return false;
   }
-  *outError = (uint32_t)loadedResourceOrError;
-  return false;
+  if (!TerrainVisualResources_LoadMaterialTextureSets(secondaryResourcePath,pathSuffixEntry,field->fieldFlags,
+                                                      outError)) {
+    return false;
+  }
+  if (!TerrainVisualResources_LoadTablesAndPalettes(primaryResourcePath,secondaryResourcePath,pathSuffixEntry,
+                                                    outError)) {
+    return false;
+  }
+  FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(field);
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  TerrainDirectionTable_RandomizeRecords();
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  TerrainDirectionTable_AdvanceAndRebuildVectors();
+  return true;
 }
 
 
@@ -474,174 +406,38 @@ bool TerrainVisualResources_LoadAndClearCellOverlayFlags
           uint32_t *outError)
 
 {
-  GraphicsPaletteAsset *loadedResourceOrError;
-  GraphicsTextureSet *materialTextureSet;
-  uint32_t randomValue;
-  int loopCounter;
-  int materialSlotsRemaining;
-  uint16_t pathCharOrRotationRate;
-  uint32_t materialFlagBits;
-  TerrainMaterialSuffixEntry *suffixLetterCursor;
-  FieldGridCell *fieldCell;
-  uint16_t *pathScanCursor;
-  uint16_t *pathScanNext;
-  GraphicsTextureSet **materialTextureSetSlot;
-  TerrainDirectionRecord *directionRecord;
-  GraphicsTextureSet *primaryTextureSet;
-  uint32_t loadErrorCode;
   TerrainMaterialSuffixEntry *pathSuffixEntry;
-  
-  loopCounter = 256; /* the path is scanned for at most 256 characters */
-  pathScanCursor = secondaryResourcePath;
-  do {
-    pathScanNext = pathScanCursor;
-    if (loopCounter == 0) break;
-    loopCounter--;
-    pathScanNext = pathScanCursor + 1;
-    pathCharOrRotationRate = *pathScanCursor;
-    pathScanCursor = pathScanNext;
-  } while (pathCharOrRotationRate != 0);
-  pathSuffixEntry = (TerrainMaterialSuffixEntry *)(pathScanNext - 1);
-  loadedResourceOrError = (GraphicsPaletteAsset *)FATAL_ERROR_FIELD_ASSET_INVALID;
-  if (((field->common).magic == ASSET_MAGIC_FLD) &&
-     ((field->common).converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    materialFlagBits = field->fieldFlags;
-    loopCounter = 0;
-    do {
-      if ((materialFlagBits & 1) != 0) {
-        loopCounter++;
-      }
-      materialFlagBits = materialFlagBits >> 1;
-    } while (materialFlagBits != 0);
-    materialSlotsRemaining = TERRAIN_MATERIAL_TEXTURE_SET_COUNT;
-    materialFlagBits = field->fieldFlags;
-    g_MoviePlaybackScheduleSpan = loopCounter * 2 + 10;
-    suffixLetterCursor = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
-    materialTextureSetSlot = g_TerrainMaterialTextureSets;
-    do {
-      if ((materialFlagBits & 1) == 0) {
-        *pathSuffixEntry = *suffixLetterCursor;
-        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
-        /* optional material: missing is fine (NULL) */
-        materialTextureSet = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,NULL);
-        *materialTextureSetSlot = materialTextureSet;
-      }
-      else {
-        *pathSuffixEntry = *suffixLetterCursor;
-        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
-        MoviePlayback_AdvanceScheduledFrameAndTick();
-        materialTextureSet = g_GraphicsTextureSetLoadPackage(secondaryResourcePath,&loadErrorCode);
-        if (materialTextureSet == NULL) {
-          *outError = loadErrorCode;
-          return false;
-        }
-        MoviePlayback_AdvanceScheduledFrameAndTick();
-        *materialTextureSetSlot = materialTextureSet;
-      }
-      suffixLetterCursor++;
-      materialTextureSetSlot++;
-      materialFlagBits = materialFlagBits >> 1;
-      materialSlotsRemaining--;
-    } while (materialSlotsRemaining != 0);
-    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,primaryResourcePath); /* ".dat" */
-    loadedResourceOrError = Package_LoadEntry(primaryResourcePath,&loadErrorCode);
-    if (loadedResourceOrError == NULL) {
-      loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-    }
-    else {
-      MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_TerrainSurfacePacketTablePayload =
-           (uint8_t *)loadedResourceOrError + TERRAIN_PACKET_TABLE_HEADER_BYTES;
-      WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
-      primaryTextureSet = g_GraphicsTextureSetLoadPackage(primaryResourcePath,&loadErrorCode);
-      if (primaryTextureSet == NULL) {
-        loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-      }
-      else {
-        MoviePlayback_AdvanceScheduledFrameAndTick();
-        g_TerrainPrimaryTextureSet = primaryTextureSet;
-        WidePath_SetExtensionCode(ASSET_MAGIC_PAL,primaryResourcePath);
-        loadedResourceOrError = g_GraphicsPaletteAssetLoadPackage(primaryResourcePath,&loadErrorCode);
-        if (loadedResourceOrError == NULL) {
-          loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-        }
-        else {
-          MoviePlayback_AdvanceScheduledFrameAndTick();
-          g_TerrainPrimaryPalette = loadedResourceOrError;
-          pathSuffixEntry->lowercaseLetterUtf16 = 0;
-          pathSuffixEntry->terminator = 0;
-          WidePath_SetExtensionCode(ASSET_MAGIC_PAL,secondaryResourcePath);
-          loadedResourceOrError = g_GraphicsPaletteAssetLoadPackage(secondaryResourcePath,&loadErrorCode);
-          if (loadedResourceOrError == NULL) {
-            loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-          }
-          else {
-            MoviePlayback_AdvanceScheduledFrameAndTick();
-            g_TerrainSecondaryPalette = loadedResourceOrError;
-            pathSuffixEntry->lowercaseLetterUtf16 = 0;
-            pathSuffixEntry->terminator = 0;
-            WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,secondaryResourcePath); /* ".dat" */
-            loadedResourceOrError = Package_LoadEntry(secondaryResourcePath,&loadErrorCode);
-            if (loadedResourceOrError == NULL) {
-              loadedResourceOrError = (GraphicsPaletteAsset *)loadErrorCode;
-            }
-            else {
-              MoviePlayback_AdvanceScheduledFrameAndTick();
-              g_TerrainSoilPacketTablePayload =
-                   (uint8_t *)loadedResourceOrError + TERRAIN_PACKET_TABLE_HEADER_BYTES;
-              FieldGrid_RebuildCellLookupPointers(field);
-              MoviePlayback_AdvanceScheduledFrameAndTick();
-              /* random animation for the 256 direction records: scales 0x80..0x9F, rates +-(0x200..0x27F)
-                 per step, random start angles */
-              loopCounter = 256;
-              directionRecord = g_TerrainDirectionRecordTable256;
-              do {
-                randomValue = Random_NextPrimary();
-                directionRecord->scaleA = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
-                                         TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
-                randomValue = Random_NextPrimary();
-                if ((int)randomValue < 0) {
-                  pathCharOrRotationRate = -pathCharOrRotationRate;
-                }
-                directionRecord->rateA = pathCharOrRotationRate;
-                ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
-                randomValue = Random_NextPrimary();
-                directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
-                                         TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
-                randomValue = Random_NextPrimary();
-                if ((int)randomValue < 0) {
-                  pathCharOrRotationRate = -pathCharOrRotationRate;
-                }
-                directionRecord->rateB = pathCharOrRotationRate;
-                ((short *)&directionRecord->packedAngles)[1] = (short)randomValue; /* angle B */
-                directionRecord->angleAComponent0ScaledQ28 = 0;
-                directionRecord->angleAComponent1ScaledQ28 = 0;
-                directionRecord->angleBComponent0ScaledQ28 = 0;
-                directionRecord++;
-                loopCounter--;
-              } while (loopCounter != 0);
-              MoviePlayback_AdvanceScheduledFrameAndTick();
-              loopCounter = field->gridWidth * field->gridHeight;
-              fieldCell = field->cells;
-              do {
-                fieldCell->flagsAndMaterial =
-                     fieldCell->flagsAndMaterial &
-                     ~FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28;
-                fieldCell++;
-                loopCounter--;
-              } while (loopCounter != 0);
-              TerrainDirectionTable_AdvanceAndRebuildVectors();
-              return true;
-            }
-          }
-        }
-      }
-    }
+  FieldGridCell *fieldCell;
+  int cellsRemaining;
+
+  pathSuffixEntry = TerrainVisualResources_FindPathSuffixEntry(secondaryResourcePath);
+  if (((field->common).magic != ASSET_MAGIC_FLD) ||
+      ((field->common).converterVersion != PCK_CONVERTER_FLD_SHT_00060006)) {
+    *outError = (uint32_t)FATAL_ERROR_FIELD_ASSET_INVALID;
+    return false;
   }
-  *outError = (uint32_t)loadedResourceOrError;
-  return false;
+  if (!TerrainVisualResources_LoadMaterialTextureSets(secondaryResourcePath,pathSuffixEntry,field->fieldFlags,
+                                                      outError)) {
+    return false;
+  }
+  if (!TerrainVisualResources_LoadTablesAndPalettes(primaryResourcePath,secondaryResourcePath,pathSuffixEntry,
+                                                    outError)) {
+    return false;
+  }
+  FieldGrid_RebuildCellLookupPointers(field);
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  TerrainDirectionTable_RandomizeRecords();
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  /* runs at least once (as in the original), so a field without cells would run away */
+  cellsRemaining = field->gridWidth * field->gridHeight;
+  fieldCell = field->cells;
+  do {
+    fieldCell->flagsAndMaterial = fieldCell->flagsAndMaterial & ~FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28;
+    fieldCell++;
+    cellsRemaining--;
+  } while (cellsRemaining != 0);
+  TerrainDirectionTable_AdvanceAndRebuildVectors();
+  return true;
 }
 
 
@@ -1012,8 +808,11 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   InGameRuntimeRoot *inGameRoot;
   GraphicsTextureSourceAsset *panelTextureSource;
   uint32_t pixelArgb;
-  int cellsRemainingOrRowQ12;
-  int counterOrGridColumn;
+  int cellCount;
+  int cellsRemaining;
+  int copyRemaining;
+  FactionRuntimeIndex activeFactionIndex;
+  int gridColumn;
   int gridRow;
   int64_t roundedRowQ12;
   bool rowRoundingOverflows;
@@ -1025,7 +824,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   uint8_t *plane0WriteCursor;
   bool notSelected;
   FieldGridCoordinates gridCoordinates;
-  
+
   inGameRoot = g_InGameRuntimeRoot;
   if ((g_InGameRuntimeRoot->minimapResourceButtonStateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
     assetOffset = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
@@ -1036,19 +835,20 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
   textureHeight = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
   plane0Pixels = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[0].dataOffset;
-  cellsRemainingOrRowQ12 = textureWidth * textureHeight;
+  cellCount = textureWidth * textureHeight;
   pixelCursor = (uint8_t *)g_TerrainCompositeTexture + assetOffset;
   plane0WriteCursor = plane0Pixels;
-  for (counterOrGridColumn = cellsRemainingOrRowQ12; counterOrGridColumn != 0; counterOrGridColumn--) {
+  for (copyRemaining = cellCount; copyRemaining != 0; copyRemaining--) {
     *(uint32_t *)plane0WriteCursor = *(uint32_t *)pixelCursor;
     pixelCursor = pixelCursor + 4;
     plane0WriteCursor = plane0WriteCursor + 4;
   }
-  counterOrGridColumn = (inGameRoot->worldRuntime).activeFactionRuntimeIndex;
+  activeFactionIndex = (inGameRoot->worldRuntime).activeFactionRuntimeIndex;
   fieldCell = ((inGameRoot->worldRuntime).fieldGrid)->cells;
   pixelCursor = plane0Pixels;
+  cellsRemaining = cellCount;
   do {
-    visibilityFlags = ((uint8_t *)&fieldCell->occupancyMask)[counterOrGridColumn];
+    visibilityFlags = ((uint8_t *)&fieldCell->occupancyMask)[activeFactionIndex];
     pixelArgb = (uint32_t)visibilityFlags;
     if ((visibilityFlags & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) == 0) {
       if ((visibilityFlags & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) {
@@ -1059,22 +859,22 @@ void TerrainCompositeTexture_RebuildPlane0(void)
     }
     fieldCell++;
     pixelCursor = pixelCursor + 4;
-    cellsRemainingOrRowQ12--;
-  } while (cellsRemainingOrRowQ12 != 0);
+    cellsRemaining--;
+  } while (cellsRemaining != 0);
   for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (0xffffff < ownerNode->modelTintArgb)) {
       gridCoordinates = FieldGrid_WorldToGridQ12(ownerNode->worldYQ12,ownerNode->worldXQ12);
       panelTextureSource = g_InGamePanelTextureSource;
-      cellsRemainingOrRowQ12 = gridCoordinates.rowQ12;
-      counterOrGridColumn = gridCoordinates.columnQ12 + FIELD_GRID_CELL_Q12 / 2 >> Q12_SHIFT; /* round to the nearest cell */
+      /* round to the nearest cell */
+      gridColumn = (gridCoordinates.columnQ12 + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
+      gridRow = (gridCoordinates.rowQ12 + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
       /* exact (non-wrapping) row + half a cell. As decompiled, the column test (JL after the column's SAR)
          sees the overflow flag of the row's ADD, so it is "column >= 0" unless that ADD overflows. */
-      roundedRowQ12 = (int64_t)cellsRemainingOrRowQ12 + FIELD_GRID_CELL_Q12 / 2;
+      roundedRowQ12 = (int64_t)gridCoordinates.rowQ12 + FIELD_GRID_CELL_Q12 / 2;
       rowRoundingOverflows = INT32_MAX < roundedRowQ12;
-      if (((counterOrGridColumn < 0) == rowRoundingOverflows) &&
-         (((gridRow = cellsRemainingOrRowQ12 + FIELD_GRID_CELL_Q12 / 2 >> Q12_SHIFT, roundedRowQ12 >= 0 &&
-           (counterOrGridColumn < (int)textureWidth)) && (gridRow < (int)textureHeight)))) {
+      if (((gridColumn < 0) == rowRoundingOverflows) && (roundedRowQ12 >= 0) &&
+          (gridColumn < (int)textureWidth) && (gridRow < (int)textureHeight)) {
         ownerEntity = (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         colorVariant = g_GameFactionRuntimeImage.records[(ownerEntity->common).ownership.ownerIndex].
                  colorIndex;
@@ -1090,10 +890,11 @@ void TerrainCompositeTexture_RebuildPlane0(void)
              subresource 36 of panel0/1/2.gfx uses bank 0. */
           pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST +((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant].argb8888;
           if (ownerNode->modelTintArgb < ARGB8888_ALPHA_MASK) {
-            pixelArgb = (pixelArgb & TERRAIN_ARGB_HALVE_MASK) +
-                    (*(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) & TERRAIN_ARGB_HALVE_MASK) >> 1;
+            pixelArgb = ((pixelArgb & TERRAIN_ARGB_HALVE_MASK) +
+                         (*(uint32_t *)(plane0Pixels + (gridRow * textureWidth + gridColumn) * 4) &
+                          TERRAIN_ARGB_HALVE_MASK)) >> 1;
           }
-          *(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) = pixelArgb;
+          *(uint32_t *)(plane0Pixels + (gridRow * textureWidth + gridColumn) * 4) = pixelArgb;
         }
       }
     }

@@ -479,6 +479,88 @@ static void Thandor_SelfTestKeymap(void)
     Thandor_Log("keymap: hash %08X", hash);
 }
 
+/* OPEN_THANDOR_SELFTEST=fixedmath feeds random and edge-case inputs to the fixed-point helpers the simulation uses
+   (Atan2Angle16, SqrtQ12Approx, WriteDirectionScaled, InvertRigidQ28, SolveTriangleJointAngles, Length3,
+   Vector2AngleAndLength) and logs an FNV-1a hash per function over all results. Run it with two builds to check
+   that a rewrite kept every result bit. */
+static uint32_t SelfTest_FixedRandom(uint32_t *seed)
+{
+    *seed = *seed * 1664525u + 1013904223u;
+    return *seed;
+}
+
+static uint32_t SelfTest_HashBytes(uint32_t hash, const void *bytes, uint32_t count)
+{
+    uint32_t i;
+    for (i = 0; i < count; i++) {
+        hash = (hash ^ ((const uint8_t *)bytes)[i]) * 16777619u;
+    }
+    return hash;
+}
+
+static void Thandor_SelfTestFixedMath(void)
+{
+    static const int32_t edges[] = {0, 1, -1, 2, -2, 0x7fffffff, (int32_t)0x80000000, 0x1000, -0x1000, 0x10000,
+                                    0xffff, 0x7fff, -0x8000, 0x40000000, -0x40000000};
+    uint32_t seed = 99;
+    uint32_t hashAtan = 2166136261u, hashSqrt = 2166136261u, hashDirection = 2166136261u;
+    uint32_t hashInvert = 2166136261u, hashTriangle = 2166136261u, hashLength = 2166136261u;
+    uint32_t hashAngleLength = 2166136261u;
+    uint32_t i;
+    uint32_t j;
+    for (i = 0; i < 200000; i++) {
+        int32_t a = (int32_t)SelfTest_FixedRandom(&seed);
+        int32_t b = (int32_t)SelfTest_FixedRandom(&seed);
+        int32_t c = (int32_t)SelfTest_FixedRandom(&seed);
+        uint32_t result;
+        GraphicsFixedVec3 direction;
+        FixedLengthAngle angleAndLength;
+        if (i < 15 * 15) { /* every pair of edge values first */
+            a = edges[i / 15];
+            b = edges[i % 15];
+        }
+        else if ((i & 3) == 1) { /* small values, where rounding matters most */
+            a >>= 16;
+            b >>= 16;
+            c >>= 16;
+        }
+        result = FixedMath_Atan2Angle16(a, b);
+        hashAtan = SelfTest_HashBytes(hashAtan, &result, 4);
+        result = FixedMath_SqrtQ12Approx((uint32_t)a);
+        hashSqrt = SelfTest_HashBytes(hashSqrt, &result, 4);
+        memset(&direction, 0, sizeof direction);
+        FixedMath_WriteDirectionScaled(&direction, (AngleTurn32)a, (AngleTurn32)b, (FixedMathScale32)(c >> 4));
+        hashDirection = SelfTest_HashBytes(hashDirection, &direction, sizeof direction);
+        result = FixedMath_Length3(a >> 2, b >> 2, c >> 2);
+        hashLength = SelfTest_HashBytes(hashLength, &result, 4);
+        angleAndLength = FixedMath_Vector2AngleAndLength(a >> 1, b >> 1);
+        hashAngleLength = SelfTest_HashBytes(hashAngleLength, &angleAndLength, sizeof angleAndLength);
+        if ((i & 7) == 0) {
+            GraphicsFixedMatrix3x4 input;
+            GraphicsFixedMatrix3x4 output;
+            for (j = 0; j < sizeof input / 4; j++) {
+                ((int32_t *)&input)[j] = (int32_t)SelfTest_FixedRandom(&seed) >> (j % 3 == 0 ? 2 : 4);
+            }
+            memset(&output, 0, sizeof output);
+            FixedTransform_InvertRigidQ28(&output, &input);
+            hashInvert = SelfTest_HashBytes(hashInvert, &output, sizeof output);
+        }
+        if ((i & 3) == 0) {
+            /* a valid triangle: two random sides and a third between their difference and their sum */
+            uint32_t side0 = 0x1000 + SelfTest_FixedRandom(&seed) % 0x200000u;
+            uint32_t side1 = 0x1000 + SelfTest_FixedRandom(&seed) % 0x200000u;
+            uint32_t low = side0 > side1 ? side0 - side1 : side1 - side0;
+            uint32_t side2 = low + 1 + SelfTest_FixedRandom(&seed) % (side0 + side1 - low - 1);
+            FixedTriangleJointAngles angles = FixedGeometry_SolveTriangleJointAngles((Q12)side0, (Q12)side1, (Q12)side2);
+            hashTriangle = SelfTest_HashBytes(hashTriangle, &angles, sizeof angles);
+        }
+    }
+    Thandor_Log("fixedmath: atan2 hash %08X, sqrt hash %08X, direction hash %08X, invert hash %08X",
+                hashAtan, hashSqrt, hashDirection, hashInvert);
+    Thandor_Log("fixedmath: triangle hash %08X, length3 hash %08X, angle/length hash %08X",
+                hashTriangle, hashLength, hashAngleLength);
+}
+
 static void Thandor_SelfTestScanAddresses(void)
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
@@ -685,6 +767,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "pcx") == 0) {
         Thandor_SelfTestPcx();
+        return 1;
+    }
+    if (name != NULL && strcmp(name, "fixedmath") == 0) {
+        Thandor_SelfTestFixedMath();
         return 1;
     }
     if (name != NULL && strcmp(name, "keymap") == 0) {

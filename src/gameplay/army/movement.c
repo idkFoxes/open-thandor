@@ -499,7 +499,6 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
   Q12 aimWorldZ;
   AngleTurn32 targetPitchAngle16;
   ShotTargetModelReference targetReference;
-  bool lineOfFireBlocked;
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
@@ -585,12 +584,12 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
       else {
         pitchAimValue = ModelNodeRuntime_SmoothPitchTowardTarget
                            (pitchNode,modelRuntime,targetPitchAngle16);
-        if ((pitchAimValue == targetPitchAngle16) &&
-           (weaponDefinition = modelRuntime->modelDefinition,
-           modelRuntime->attachmentReloadCountdownTicks == 0)) {
-          lineOfFireBlocked = ArmyRuntimeCommand_UpdateTargetFollowingState
-                            (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-          if (!lineOfFireBlocked) {
+        if (pitchAimValue == targetPitchAngle16) {
+          weaponDefinition = modelRuntime->modelDefinition;
+          /* reloaded and the line of fire is free */
+          if ((modelRuntime->attachmentReloadCountdownTicks == 0) &&
+              (!ArmyRuntimeCommand_UpdateTargetFollowingState
+                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,(ModelRuntimeSlot *)modelRuntime))) {
             /* fire: reload, recoil the barrel, rock the owner back and launch the projectiles */
             recoilTicks = weaponDefinition->sharedInterShotTicks;
             recoilScale = weaponDefinition->backwardStepScale;
@@ -649,13 +648,13 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   ArmyRuntimeSlot *commandTargetArmy;
   InGameSimulationStepBatchTicks elapsedTicks;
   Q12 aimWorldX;
-  /* barrel 0 recoil countdown, later the byte offset of the firing barrel's muzzle point (0 or 4) */
-  int countdownOrPointOffset;
+  int barrel0RecoilCountdown;
+  /* index of the firing barrel's muzzle point among the muzzle node's serialized children (0 or 1) */
+  int muzzlePointIndex;
   Q12 aimWorldY;
   Q12 aimWorldZ;
   AngleTurn32 targetPitchAngle16;
   ShotTargetModelReference targetReference;
-  bool lineOfFireBlocked;
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
@@ -672,7 +671,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) {
     weaponDefinition = modelRuntime->modelDefinition;
     ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
-    countdownOrPointOffset = modelRuntime->attachment0BackwardStepCountdownTicks;
+    barrel0RecoilCountdown = modelRuntime->attachment0BackwardStepCountdownTicks;
     if (modelRuntime->attachmentReloadCountdownTicks != 0) {
       /* spin the first barrel for the reload ticks that elapsed */
       partNode = modelRuntime->rootModelNode->childNodes[0];
@@ -690,7 +689,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
       *rotationAngle = *rotationAngle & FIXED_ANGLE16_MASK;
     }
     elapsedTicks = g_InGameSimulationStepTicks;
-    if (countdownOrPointOffset != 0) {
+    if (barrel0RecoilCountdown != 0) {
       /* barrel 0 returns from its recoil */
       recoilScale = weaponDefinition->backwardStepScale;
       partNode = modelRuntime->rootModelNode->childNodes[0];
@@ -757,12 +756,13 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
       else {
         pitchAimValue = ModelNodeRuntime_SmoothPitchTowardTarget
                            (pitchNode,modelRuntime,targetPitchAngle16);
-        if ((pitchAimValue == targetPitchAngle16) &&
-           (weaponDefinition = modelRuntime->modelDefinition,
-           modelRuntime->attachmentReloadCountdownTicks == 0)) {
-          lineOfFireBlocked = ArmyRuntimeCommand_UpdateTargetFollowingState
-                            (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,(ModelRuntimeSlot *)modelRuntime);
-          if (!lineOfFireBlocked) {
+        if (pitchAimValue == targetPitchAngle16) {
+          weaponDefinition = modelRuntime->modelDefinition;
+          /* reloaded and the line of fire is free */
+          if ((modelRuntime->attachmentReloadCountdownTicks == 0) &&
+              (!ArmyRuntimeCommand_UpdateTargetFollowingState
+                  (aimWorldZ,aimWorldY,aimWorldX,worldRuntime,(ModelRuntimeSlot *)modelRuntime))) {
+            /* fire from the next barrel in turn */
             recoilTicks = weaponDefinition->sharedInterShotTicks;
             recoilScale = weaponDefinition->backwardStepScale;
             modelRuntime->attachmentReloadCountdownTicks =
@@ -771,13 +771,13 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
               modelRuntime->attachment1BackwardStepCountdownTicks =
                    modelRuntime->attachment1BackwardStepCountdownTicks + recoilTicks;
               partNode = pitchNode->childNodes[1];
-              countdownOrPointOffset = 4;
+              muzzlePointIndex = 1;
             }
             else {
               modelRuntime->attachment0BackwardStepCountdownTicks =
                    modelRuntime->attachment0BackwardStepCountdownTicks + recoilTicks;
               partNode = pitchNode->childNodes[0];
-              countdownOrPointOffset = 0;
+              muzzlePointIndex = 0;
             }
             modelRuntime->alternatingAttachmentSequence++;
             FixedVector_StepBackwardAlongOwnDirection
@@ -793,12 +793,9 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
             }
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
-                       /* countdownOrPointOffset (0 or 4) selects the muzzle node's first or second child */
-                       *(MdlSerializedNodeHeader **)
-                        (countdownOrPointOffset +
-                        (int)((MdlSerializedNodeHeader *)weaponDefinition->rootNode->
-                                                           childSerializedOffsets[0])->childSerializedOffsets),
-                       worldRuntime);
+                       (MdlSerializedNodeHeader *)
+                       ((MdlSerializedNodeHeader *)weaponDefinition->rootNode->childSerializedOffsets[0])->
+                       childSerializedOffsets[muzzlePointIndex],worldRuntime);
           }
         }
       }
@@ -1653,7 +1650,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   GraphicsWorldCoordinateQ12 currentWorldY;
   ArmyCommandGeneration standardGeneration;
   ModelRuntimeSlot *attachedModelRuntime;
-  bool stateField100Zero;
+  bool hasNoWeaponDamage;
   ModelRuntimeNode *modelNode;
 
   standardGeneration = g_ArmyCommandGenerationStandard;
@@ -1662,8 +1659,8 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
        armyRuntime->movementStateFlags &
        ~(ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_WAYPOINTS_QUEUED | ARMY_MOVEMENT_ROUTE_POINT_REACHED |
          ARMY_MOVEMENT_TARGET_FOLLOWING);
-  stateField100Zero = ArmyRuntime_TestHasNoWeaponDamage(armyRuntime);
-  if ((!stateField100Zero) &&
+  hasNoWeaponDamage = ArmyRuntime_TestHasNoWeaponDamage(armyRuntime);
+  if ((!hasNoWeaponDamage) &&
       ((armyRuntime->commandModeFlags & (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) != 0)) {
     armyRuntime->commandModeFlags =
          armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION);
@@ -2944,10 +2941,11 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   soundIndex = definition->classParameterCC;
-  if ((((soundIndex != 0) && (soundIndex < worldRuntime->dwordArrayCount)) &&
-      (worldRuntime->dwordArray != NULL)) &&
-     (voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex],
-     voiceSetRef != NULL)) {
+  voiceSetRef = NULL;
+  if ((soundIndex != 0) && (soundIndex < worldRuntime->dwordArrayCount) && (worldRuntime->dwordArray != NULL)) {
+    voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex];
+  }
+  if (voiceSetRef != NULL) {
     worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
     cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,
@@ -3846,18 +3844,18 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
           Q12 *outWorldYQ12)
 
 {
-  ArmyWaypointCount *waypointCount;
   uint32_t exceededDistance;
   Q12 movementWorldX;
   Q12 movementWorldY;
   Q12 currentWorldX;
   Q12 currentWorldY;
-  int offsetXOrCount;
-  uint32_t distanceX;
+  int offsetX;
   int offsetY;
+  int modelWorldX;
+  int modelWorldY;
+  int waypointIndex;
+  uint32_t distanceX;
   uint32_t distanceY;
-  Q12 *queuedCoordinateRead;
-  Q12 *queuedCoordinateWrite;
   bool belowThreshold;
   PathingDestination resolvedDestination;
   Q12 queuedWorldYQ12;
@@ -3876,50 +3874,42 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
   }
   else {
     movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_ROUTE_POINT_REACHED;
-    offsetXOrCount = (movementRuntime->fallbackPosition).worldXQ12 -
+    offsetX = (movementRuntime->fallbackPosition).worldXQ12 -
             (modelNode->worldTransform).translation.x;
     offsetY = (movementRuntime->fallbackPosition).worldYQ12 -
             (modelNode->worldTransform).translation.y;
-    if ((((offsetXOrCount < ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12) && (offsetY < ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12)) &&
-         (-ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 < offsetXOrCount)) && (-ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 < offsetY)) {
+    if ((offsetX < ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12) && (offsetY < ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12) &&
+        (-ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 < offsetX) && (-ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 < offsetY)) {
       if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) != 0) {
         /* pop queuedWaypoints[0] and move the other seven entries down */
         queuedWorldXQ12 = movementRuntime->queuedWaypoints[0].worldXQ12;
         queuedWorldYQ12 = movementRuntime->queuedWaypoints[0].worldYQ12;
-        waypointCount = &movementRuntime->queuedWaypointCount;
-        *waypointCount = *waypointCount - 1;
-        if (*waypointCount == 0) {
+        movementRuntime->queuedWaypointCount = movementRuntime->queuedWaypointCount - 1;
+        if (movementRuntime->queuedWaypointCount == 0) {
           movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_WAYPOINTS_QUEUED;
         }
         else {
-          offsetXOrCount = 14;
-          queuedCoordinateRead = &movementRuntime->queuedWaypoints[1].worldXQ12;
-          queuedCoordinateWrite = &movementRuntime->queuedWaypoints[0].worldXQ12;
-          for (; offsetXOrCount != 0; offsetXOrCount--) {
-            *queuedCoordinateWrite = *queuedCoordinateRead;
-            queuedCoordinateRead++;
-            queuedCoordinateWrite++;
+          for (waypointIndex = 0; waypointIndex < 7; waypointIndex++) {
+            movementRuntime->queuedWaypoints[waypointIndex] = movementRuntime->queuedWaypoints[waypointIndex + 1];
           }
         }
-        ArmyRuntime_StartNextQueuedWaypointMove(queuedWorldYQ12,queuedWorldXQ12,movementRuntime)
-        ;
+        ArmyRuntime_StartNextQueuedWaypointMove(queuedWorldYQ12,queuedWorldXQ12,movementRuntime);
         return ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,movementRuntime,outWorldXQ12,outWorldYQ12);
       }
     }
     else {
-      offsetXOrCount = (modelNode->worldTransform).translation.x;
-      offsetY = (modelNode->worldTransform).translation.y;
-      if (((movementRuntime->retryCountdown != 0) &&
-          (offsetXOrCount == movementRuntime->lastCheckedWorldXQ12)) &&
-         (offsetY == movementRuntime->lastCheckedWorldYQ12)) {
+      modelWorldX = (modelNode->worldTransform).translation.x;
+      modelWorldY = (modelNode->worldTransform).translation.y;
+      if ((movementRuntime->retryCountdown != 0) && (modelWorldX == movementRuntime->lastCheckedWorldXQ12) &&
+          (modelWorldY == movementRuntime->lastCheckedWorldYQ12)) {
         /* Still waiting at the same spot: keep the stored movement position. */
         *outWorldYQ12 = movementRuntime->movementWorldYQ12;
         *outWorldXQ12 = movementRuntime->movementWorldXQ12;
         return false;
       }
       movementRuntime->retryCountdown = ARMY_MOVEMENT_RETRY_TICKS;
-      movementRuntime->lastCheckedWorldXQ12 = offsetXOrCount;
-      movementRuntime->lastCheckedWorldYQ12 = offsetY;
+      movementRuntime->lastCheckedWorldXQ12 = modelWorldX;
+      movementRuntime->lastCheckedWorldYQ12 = modelWorldY;
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                          ((movementRuntime->fallbackPosition).worldYQ12,
                           (movementRuntime->fallbackPosition).worldXQ12,
@@ -3941,9 +3931,7 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
   if ((int)distanceY < 0) {
     distanceY = -distanceY;
   }
-  exceededDistance = distanceX;
-  if ((distanceX < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1) &&
-      (exceededDistance = distanceY, distanceY < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1)) {
+  if ((distanceX < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1) && (distanceY < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1)) {
     movementRuntime->movementStateFlags =
          movementRuntime->movementStateFlags &
          ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED |ARMY_MOVEMENT_WAYPOINTS_QUEUED |
@@ -3959,6 +3947,13 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
      locked, else the pathing call's CF); belowThreshold is always false here since
      exceededDistance > ARMY_MOVEMENT_TARGET_RADIUS_Q12. That matches: EntityPathing_ResolveDestinationAndRebuildRoutes
      has a single exit with CLC (0x00534E61), so the CF left by the direct move is always clear (not arrived). */
+  /* the first distance that is outside the target radius */
+  if (distanceX < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1) {
+    exceededDistance = distanceY;
+  }
+  else {
+    exceededDistance = distanceX;
+  }
   belowThreshold = exceededDistance < ARMY_MOVEMENT_TARGET_RADIUS_Q12;
   ArmyRuntime_StartDirectMoveCommand
             (movementRuntime->movementTargetWorldYQ12,movementRuntime->movementTargetWorldXQ12,

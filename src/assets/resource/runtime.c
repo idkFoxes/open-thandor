@@ -22,19 +22,14 @@ bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
 
 {
   uint8_t *header;
-  uint32_t packedTimeOrDate;
-  int clearDwordsRemaining;
-  uint8_t *clearCursor;
+  uint32_t packedTime;
+  uint32_t packedDate;
+  int byteIndex;
   EngineFileHandle mountedHandle;
 
   header = g_PackageScratchBuffer;
-  clearCursor = g_PackageScratchBuffer;
-  for (clearDwordsRemaining = PCK_ENTRY_HEADER_BYTES / 4; clearDwordsRemaining != 0; clearDwordsRemaining--) {
-    clearCursor[0] = 0;
-    clearCursor[1] = 0;
-    clearCursor[2] = 0;
-    clearCursor[3] = 0;
-    clearCursor = clearCursor + 4;
+  for (byteIndex = 0; byteIndex < PCK_ENTRY_HEADER_BYTES; byteIndex++) {
+    header[byteIndex] = 0;
   }
   /* PckArchiveHeader, written byte by byte (the original stores the same values as dwords):
      +0x00 magic "pck\0", +0x04 archive size 0x200 (header only), +0x08 version 1, +0x0C format 0x10000 */
@@ -55,14 +50,14 @@ bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
   header[14] = 1;
   header[15] = 0;
   /* three time/date pairs all set to now */
-  packedTimeOrDate = g_LocaleGetPackedCurrentTime();
-  ((PckArchiveHeader *)header)->timeValue0 = packedTimeOrDate;
-  ((PckArchiveHeader *)header)->timeValue1 = packedTimeOrDate;
-  ((PckArchiveHeader *)header)->timeValue2 = packedTimeOrDate;
-  packedTimeOrDate = g_LocaleGetPackedCurrentDate();
-  ((PckArchiveHeader *)header)->dateValue0 = packedTimeOrDate;
-  ((PckArchiveHeader *)header)->dateValue1 = packedTimeOrDate;
-  ((PckArchiveHeader *)header)->dateValue2 = packedTimeOrDate;
+  packedTime = g_LocaleGetPackedCurrentTime();
+  ((PckArchiveHeader *)header)->timeValue0 = packedTime;
+  ((PckArchiveHeader *)header)->timeValue1 = packedTime;
+  ((PckArchiveHeader *)header)->timeValue2 = packedTime;
+  packedDate = g_LocaleGetPackedCurrentDate();
+  ((PckArchiveHeader *)header)->dateValue0 = packedDate;
+  ((PckArchiveHeader *)header)->dateValue1 = packedDate;
+  ((PckArchiveHeader *)header)->dateValue2 = packedDate;
   g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->producerName);
   g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->sourceName);
   header[256] = 0; /* unusedText: empty */
@@ -298,45 +293,40 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void)
 
 {
   ArmyRuntimeSlot *runtimeMember;
-  int factionRecordsRemaining;
+  int factionIndex;
   FactionArmyAssetCount armyAssetPointersRemaining;
   FactionArmyAssetCount primaryArmyAssetPointersRemaining;
-  int runtimeMembersRemaining;
-  GameFactionRuntimeRecord *factionRecordCursor;
+  int memberIndex;
+  GameFactionRuntimeRecord *factionRecord;
   uint32_t *armyAssetPointerCursor;
   uint32_t *primaryArmyAssetPointerCursor;
-  ArmyRuntimeSlot **runtimeMemberCursor;
+  ArmyRuntimeSlot **runtimeMembers;
 
-  factionRecordCursor = g_GameFactionRuntimeImage.records;
-  factionRecordsRemaining = 8;
-  do {
-    armyAssetPointerCursor = factionRecordCursor->secondaryArmyAssetPointersOrIds;
-    for (armyAssetPointersRemaining = factionRecordCursor->secondaryArmyAssetCount;
+  for (factionIndex = 0; factionIndex < 8; factionIndex++) {
+    factionRecord = &g_GameFactionRuntimeImage.records[factionIndex];
+    armyAssetPointerCursor = factionRecord->secondaryArmyAssetPointersOrIds;
+    for (armyAssetPointersRemaining = factionRecord->secondaryArmyAssetCount;
         armyAssetPointersRemaining != 0; armyAssetPointersRemaining--) {
       *armyAssetPointerCursor = ((ArmyAssetRecordPrefix *)*armyAssetPointerCursor)->registryId;
       armyAssetPointerCursor = armyAssetPointerCursor + 1;
     }
-    primaryArmyAssetPointerCursor = factionRecordCursor->primaryArmyAssetPointersOrIds;
-    for (primaryArmyAssetPointersRemaining = factionRecordCursor->primaryArmyAssetCount;
+    primaryArmyAssetPointerCursor = factionRecord->primaryArmyAssetPointersOrIds;
+    for (primaryArmyAssetPointersRemaining = factionRecord->primaryArmyAssetCount;
         primaryArmyAssetPointersRemaining != 0; primaryArmyAssetPointersRemaining--) {
       *primaryArmyAssetPointerCursor = ((ArmyAssetRecordPrefix *)*primaryArmyAssetPointerCursor)->registryId;
       primaryArmyAssetPointerCursor = primaryArmyAssetPointerCursor + 1;
     }
-    runtimeMemberCursor = factionRecordCursor->runtimeGroupMembers8x32;
-    runtimeMembersRemaining = 256;
-    do {
-      runtimeMember = *runtimeMemberCursor;
+    /* the 8x32 group member pointers become saved army-slot offsets (0 stays 0) */
+    runtimeMembers = factionRecord->runtimeGroupMembers8x32;
+    for (memberIndex = 0; memberIndex < 256; memberIndex++) {
+      runtimeMember = runtimeMembers[memberIndex];
       if (runtimeMember != NULL) {
         runtimeMember =
              (ArmyRuntimeSlot *)((int)runtimeMember - (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
-      *runtimeMemberCursor = runtimeMember;
-      runtimeMemberCursor = runtimeMemberCursor + 1;
-      runtimeMembersRemaining--;
-    } while (runtimeMembersRemaining != 0);
-    factionRecordCursor++;
-    factionRecordsRemaining--;
-  } while (factionRecordsRemaining != 0);
+      runtimeMembers[memberIndex] = runtimeMember;
+    }
+  }
   return ((uint64_t)(uint32_t)(uintptr_t)&g_GameFactionRuntimeImage << 32) | sizeof(GameFactionRuntimeImage);
 }
 
@@ -353,34 +343,29 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
 {
   EffectRuntimeCompletionAction slotCompletionAction;
   EffectDefinitionReferenceOrSavedId serializedDefinitionId;
-  int clearDwordsRemaining;
-  int runtimeSlotsRemaining;
+  int slotIndex;
+  int wordIndex;
   ModelRuntimeNode *ownerModelNode;
-  EffectRuntimeSlot *runtimeSlotCursor;
-  EffectRuntimeSlot *effectRuntimeSlotsBase;
-  
-  runtimeSlotsRemaining = EFFECT_RUNTIME_SLOT_COUNT;
-  runtimeSlotCursor = g_EffectRuntimeSlots;
-  do {
-    while (slotCompletionAction = runtimeSlotCursor->completionAction,
-           ownerModelNode =
-                runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode,
-           runtimeSlotCursor->modelNodeOrSavedOffset.modelNode == NULL) {
-      /* free slot: zero its 0x10 dwords, which also advances runtimeSlotCursor to the next slot */
-      for (clearDwordsRemaining = 16; effectRuntimeSlotsBase = g_EffectRuntimeSlots,
-          clearDwordsRemaining != 0; clearDwordsRemaining--) {
-        runtimeSlotCursor->definitionOrSavedId.definition = NULL;
-        runtimeSlotCursor = (EffectRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
+  EffectRuntimeSlot *slot;
+  uint32_t *slotWords;
+
+  for (slotIndex = 0; slotIndex < EFFECT_RUNTIME_SLOT_COUNT; slotIndex++) {
+    slot = g_EffectRuntimeSlots + slotIndex;
+    if (slot->modelNodeOrSavedOffset.modelNode == NULL) {
+      /* free slot: zero its 0x10 dwords */
+      slotWords = (uint32_t *)slot;
+      for (wordIndex = 0; wordIndex < 16; wordIndex++) {
+        slotWords[wordIndex] = 0;
       }
-      runtimeSlotsRemaining--;
-      if (runtimeSlotsRemaining == 0) {
-        /* NOT [slot0 + 0x3C] only on this exit (last slot free); EffectRuntime_RebaseSlotsAfterLoad
-           inverts it on every load */
+      if (slotIndex == EFFECT_RUNTIME_SLOT_COUNT - 1) {
+        /* Original quirk: NOT [slot0 + 0x3C] only on this exit (last slot free);
+           EffectRuntime_RebaseSlotsAfterLoad inverts it on every load */
         g_EffectRuntimeSlots->effectAgeTicks = ~g_EffectRuntimeSlots->effectAgeTicks;
-        return ((uint64_t)(uint32_t)(uintptr_t)effectRuntimeSlotsBase << 32) |
-               (EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot));
       }
+      continue;
     }
+    slotCompletionAction = slot->completionAction;
+    ownerModelNode = slot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
     if (ownerModelNode != NULL) {
       if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
         ownerModelNode = (ModelRuntimeNode *)((int)ownerModelNode - g_ModelRuntimeRebaseDelta);
@@ -390,19 +375,13 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
              (ModelRuntimeNode *)((int)ownerModelNode - (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
     }
-    runtimeSlotCursor->modelNodeOrSavedOffset.modelNode =
+    slot->modelNodeOrSavedOffset.modelNode =
          (ModelRuntimeNode *)
-         ((int)runtimeSlotCursor->modelNodeOrSavedOffset.modelNode -
-         (int)g_RuntimeObjectRebaseBaseMinusOne);
-    runtimeSlotCursor->completionAction = slotCompletionAction;
-    serializedDefinitionId.savedId =
-         runtimeSlotCursor->definitionOrSavedId.definition->definitionId;
-    runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
-         ownerModelNode;
-    runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
-    runtimeSlotCursor = runtimeSlotCursor + 1;
-    runtimeSlotsRemaining--;
-  } while (runtimeSlotsRemaining != 0);
+         ((int)slot->modelNodeOrSavedOffset.modelNode - (int)g_RuntimeObjectRebaseBaseMinusOne);
+    serializedDefinitionId.savedId = slot->definitionOrSavedId.definition->definitionId;
+    slot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
+    slot->definitionOrSavedId = serializedDefinitionId;
+  }
   return ((uint64_t)(uint32_t)(uintptr_t)g_EffectRuntimeSlots << 32) |
          (EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot));
 }
@@ -420,35 +399,32 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
 {
   ShotDefinitionReferenceOrSavedId serializedDefinitionId;
   void *runtimeStateRef;
-  int clearDwordsRemaining;
-  int runtimeSlotsRemaining;
+  int slotIndex;
+  int wordIndex;
   ArmyRuntimeSlot *ownerArmyRuntime;
-  ShotRuntimeSlot *runtimeSlotCursor;
+  ShotRuntimeSlot *slot;
+  uint32_t *slotWords;
   uint32_t *terminalToggleField;
-  ShotRuntimeSlot *shotRuntimeSlotsBase;
-  
-  runtimeSlotsRemaining = SHOT_RUNTIME_SLOT_COUNT;
-  runtimeSlotCursor = g_ShotRuntimeSlots;
-  do {
-    while (runtimeStateRef = runtimeSlotCursor->runtimeStateOrSavedOffset.runtimeStatePointer,
-           ownerArmyRuntime = runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime,
-           runtimeSlotCursor->modelNodeOrSavedOffset.modelNode == NULL) {
-      /* free slot: zero its 0x10 dwords, which also advances runtimeSlotCursor to the next slot */
-      for (clearDwordsRemaining = 16; shotRuntimeSlotsBase = g_ShotRuntimeSlots,
-          clearDwordsRemaining != 0; clearDwordsRemaining--) {
-        runtimeSlotCursor->definitionOrSavedId.definition = NULL;
-        runtimeSlotCursor = (ShotRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
+
+  for (slotIndex = 0; slotIndex < SHOT_RUNTIME_SLOT_COUNT; slotIndex++) {
+    slot = g_ShotRuntimeSlots + slotIndex;
+    if (slot->modelNodeOrSavedOffset.modelNode == NULL) {
+      /* free slot: zero its 0x10 dwords */
+      slotWords = (uint32_t *)slot;
+      for (wordIndex = 0; wordIndex < 16; wordIndex++) {
+        slotWords[wordIndex] = 0;
       }
-      runtimeSlotsRemaining--;
-      if (runtimeSlotsRemaining == 0) {
-        /* NOT [slot0 + 0x3C] only on this exit (last slot free); ShotRuntime_RebaseSlotsAfterLoad
-           inverts it on every load */
+      if (slotIndex == SHOT_RUNTIME_SLOT_COUNT - 1) {
+        /* Original quirk: NOT [slot0 + 0x3C] only on this exit (last slot free);
+           ShotRuntime_RebaseSlotsAfterLoad inverts it on every load */
         terminalToggleField =
              &g_ShotRuntimeSlots->ownerAndTrajectory.secondaryEffectCountdownTicks;
         *terminalToggleField = ~*terminalToggleField;
-        return ((uint64_t)(uint32_t)(uintptr_t)shotRuntimeSlotsBase << 32) | SHOT_RUNTIME_POOL_BYTES;
       }
+      continue;
     }
+    runtimeStateRef = slot->runtimeStateOrSavedOffset.runtimeStatePointer;
+    ownerArmyRuntime = slot->ownerAndTrajectory.ownerArmyRuntime;
     if (runtimeStateRef != NULL) {
       runtimeStateRef = (void *)((int)runtimeStateRef - g_ModelRuntimeRebaseDelta);
     }
@@ -456,18 +432,14 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
       ownerArmyRuntime =
            (ArmyRuntimeSlot *)((int)ownerArmyRuntime - (int)g_ArmyRuntimeRebaseBaseMinusOne);
     }
-    runtimeSlotCursor->modelNodeOrSavedOffset.modelNode =
+    slot->modelNodeOrSavedOffset.modelNode =
          (ModelRuntimeNode *)
-         ((int)runtimeSlotCursor->modelNodeOrSavedOffset.modelNode -
-         (int)g_RuntimeObjectRebaseBaseMinusOne);
-    runtimeSlotCursor->runtimeStateOrSavedOffset.runtimeStatePointer = runtimeStateRef;
-    serializedDefinitionId.savedId =
-         runtimeSlotCursor->definitionOrSavedId.definition->definitionId;
-    runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
-    runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
-    runtimeSlotCursor = runtimeSlotCursor + 1;
-    runtimeSlotsRemaining--;
-  } while (runtimeSlotsRemaining != 0);
+         ((int)slot->modelNodeOrSavedOffset.modelNode - (int)g_RuntimeObjectRebaseBaseMinusOne);
+    slot->runtimeStateOrSavedOffset.runtimeStatePointer = runtimeStateRef;
+    serializedDefinitionId.savedId = slot->definitionOrSavedId.definition->definitionId;
+    slot->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
+    slot->definitionOrSavedId = serializedDefinitionId;
+  }
   return ((uint64_t)(uint32_t)(uintptr_t)g_ShotRuntimeSlots << 32) | SHOT_RUNTIME_POOL_BYTES;
 }
 

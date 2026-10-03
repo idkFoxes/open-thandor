@@ -7,6 +7,9 @@
 
 #include <thandor/gameplay/selection/overlay.h>
 #include <thandor/thandor.h>
+#ifdef THANDOR_TEST_AIDS
+#include <thandor/platform/debug/test_aids.h>
+#endif
 
 /* Implementation ownership: gameplay/selection/overlay. */
 
@@ -298,6 +301,12 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
 {
   int32_t pendingPlacementAsset;
 
+#ifdef THANDOR_TEST_AIDS
+  /* test aid (not in the original): no render-path objects while the determinism test hashes the simulation */
+  if (Thandor_TestAidStateHashActive()) {
+    return;
+  }
+#endif
   pendingPlacementAsset = g_InGamePendingPlacementArmyAsset;
   if (((worldRuntime->interaction).nodeFlags & 8) != 0) {
     return;

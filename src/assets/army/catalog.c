@@ -270,14 +270,12 @@ uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 
 {
-  bool missingOrDisabled;
   ArmyAssetRecordPrefix *registeredRecord;
 
-  missingOrDisabled = ArmyAssetRegistry_FindById(recordId,&registeredRecord) != 0;
-  if (!missingOrDisabled) {
-    missingOrDisabled = (((ArmyAssetRecord *)registeredRecord)->flags & ARMY_ASSET_FLAG_ENABLED) == 0;
+  if (ArmyAssetRegistry_FindById(recordId,&registeredRecord) != 0) {
+    return true; /* missing */
   }
-  return missingOrDisabled;
+  return (((ArmyAssetRecord *)registeredRecord)->flags & ARMY_ASSET_FLAG_ENABLED) == 0; /* disabled */
 }
 
 
@@ -520,28 +518,28 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
 {
   /* Rewritten from the assembly (0x0051B4A0-0x0051B5D8): the model tree walk kept its recursion on
      the machine stack, which the decompiler could not express. */
-  ArmyAssetRecordPrefix **slot;
-  int slotsRemaining;
+  int slotIndex;
   ArmyAssetRecordPrefix *existing;
+  uint32_t error;
 
   if (ArmyAssetRegistry_FindById(record->registryId,&existing) == 0) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
     return FATAL_ERROR_ARMY_ID_DUPLICATE;
   }
-  slot = g_ArmyAssetRecordRegistry;
-  for (slotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
-    if (*slot == NULL) {
-      uint32_t error = 0;
-      *slot = (ArmyAssetRecordPrefix *)record;
-      if (record->rootNodeOffsetOrPointer != 0) {
-        record->rootNodeOffsetOrPointer = record->rootNodeOffsetOrPointer + (uint32_t)(uintptr_t)assetBase;
-        error = ArmyAssetRecord_RelocateModelTree
-                          (record,(uint8_t *)assetBase,(ArmyModelTreeNode *)(uintptr_t)record->rootNodeOffsetOrPointer);
-      }
-      return error;
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    if (g_ArmyAssetRecordRegistry[slotIndex] != NULL) {
+      continue;
     }
-    slot = slot + 1;
+    g_ArmyAssetRecordRegistry[slotIndex] = (ArmyAssetRecordPrefix *)record;
+    error = 0;
+    if (record->rootNodeOffsetOrPointer != 0) {
+      /* serialized offset from assetBase -> pointer */
+      record->rootNodeOffsetOrPointer = record->rootNodeOffsetOrPointer + (uint32_t)(uintptr_t)assetBase;
+      error = ArmyAssetRecord_RelocateModelTree
+                        (record,(uint8_t *)assetBase,(ArmyModelTreeNode *)(uintptr_t)record->rootNodeOffsetOrPointer);
+    }
+    return error;
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,ARMY_ASSET_REGISTRY_SLOT_COUNT,g_PackageLastErrorPath);
   return FATAL_ERROR_ARMY_REGISTRY_FULL;
@@ -560,22 +558,18 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
 
 {
   ArmyAssetRecord *registeredRecord;
-  int registrySlotsRemaining;
-  ArmyAssetRecordPrefix **registryCursor;
+  int slotIndex;
   GraphicsTextureResource *previewTexture;
   FactionRuntimeIndex factionIndex;
 
-  registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while (registeredRecord = (ArmyAssetRecord *)*registryCursor,
-         registeredRecord == NULL || armyAssetRegistryId != registeredRecord->registryId) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      return 0;
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    registeredRecord = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
+    if (registeredRecord == NULL || armyAssetRegistryId != registeredRecord->registryId) {
+      continue;
     }
-  }
-  if (registeredRecord->previewTexture == 0) {
+    if (registeredRecord->previewTexture != 0) {
+      return registeredRecord->previewTexture;
+    }
     factionIndex = g_UiCommandModeGOwnerFactionIndex;
     if (ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID - 1 < armyAssetRegistryId) {
       factionIndex = 0;
@@ -590,7 +584,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
     registeredRecord->previewTexture = (uint32_t)previewTexture;
     return (uint32_t)previewTexture;
   }
-  return registeredRecord->previewTexture;
+  return 0; /* unknown id */
 }
 
 
@@ -605,24 +599,19 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
 uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRecordPrefix **outRecord)
 
 {
-  ArmyAssetRecordPrefix *matchedRecord;
-  int registrySlotsRemaining;
-  ArmyAssetRecordPrefix **registryCursor;
+  ArmyAssetRecordPrefix *candidateRecord;
+  int slotIndex;
 
-  registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while (matchedRecord = *registryCursor, matchedRecord == NULL || matchedRecord->registryId != registryId) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
-      *outRecord = (ArmyAssetRecordPrefix *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
-      return FATAL_ERROR_ARMY_ID_NOT_FOUND;
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    candidateRecord = g_ArmyAssetRecordRegistry[slotIndex];
+    if (candidateRecord != NULL && candidateRecord->registryId == registryId) {
+      *outRecord = candidateRecord;
+      return 0;
     }
   }
-  *outRecord = matchedRecord;
-  return 0;
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
+  *outRecord = (ArmyAssetRecordPrefix *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
+  return FATAL_ERROR_ARMY_ID_NOT_FOUND;
 }
 
 
@@ -635,22 +624,17 @@ uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRe
 uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
 
 {
-  int registrySlotsRemaining;
-  ArmyAssetRecordPrefix **registryCursor;
+  int slotIndex;
   ArmyAssetRecord *candidateAsset;
-  
-  registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while (candidateAsset = (ArmyAssetRecord *)*registryCursor,
-         candidateAsset == NULL || recordId != candidateAsset->registryId ||
-         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      return 1;
+
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    candidateAsset = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
+    if (candidateAsset != NULL && recordId == candidateAsset->registryId &&
+        (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
+      return 0; /* found a unit */
     }
   }
-  return 0;
+  return 1;
 }
 
 
@@ -662,22 +646,17 @@ uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
 uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
 
 {
-  int registrySlotsRemaining;
-  ArmyAssetRecordPrefix **registryCursor;
+  int slotIndex;
   ArmyAssetRecord *candidateAsset;
-  
-  registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while (candidateAsset = (ArmyAssetRecord *)*registryCursor,
-         candidateAsset == NULL || recordId != candidateAsset->registryId ||
-         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      return 1;
+
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    candidateAsset = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
+    if (candidateAsset != NULL && recordId == candidateAsset->registryId &&
+        (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
+      return 0; /* found an object */
     }
   }
-  return 0;
+  return 1;
 }
 
 
@@ -689,23 +668,18 @@ uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
 uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId)
 
 {
-  int registrySlotsRemaining;
-  ArmyAssetRecordPrefix **registryCursor;
+  int slotIndex;
   ArmyAssetRecord *candidateAsset;
-  
-  registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while (candidateAsset = (ArmyAssetRecord *)*registryCursor,
-         candidateAsset == NULL || recordId != candidateAsset->registryId ||
-         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0 ||
-         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      return 1;
+
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    candidateAsset = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
+    if (candidateAsset != NULL && recordId == candidateAsset->registryId &&
+        (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) != 0 &&
+        (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
+      return 0; /* found a placeable unit */
     }
   }
-  return 0;
+  return 1;
 }
 
 
@@ -717,22 +691,17 @@ uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId)
 uint8_t ArmyAssetRegistry_HasNoPlaceableObjectWithId(ArmyAssetId recordId)
 
 {
-  int registrySlotsRemaining;
-  ArmyAssetRecordPrefix **registryCursor;
+  int slotIndex;
   ArmyAssetRecord *candidateAsset;
-  
-  registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while (candidateAsset = (ArmyAssetRecord *)*registryCursor,
-         candidateAsset == NULL || recordId != candidateAsset->registryId ||
-         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0 ||
-         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      return 1;
+
+  for (slotIndex = 0; slotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; slotIndex++) {
+    candidateAsset = (ArmyAssetRecord *)g_ArmyAssetRecordRegistry[slotIndex];
+    if (candidateAsset != NULL && recordId == candidateAsset->registryId &&
+        (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) != 0 &&
+        (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
+      return 0; /* found a placeable object */
     }
   }
-  return 0;
+  return 1;
 }
 

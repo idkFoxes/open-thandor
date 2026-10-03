@@ -245,6 +245,10 @@ void DebugStateHash_AfterStep(void)
     StateHash_Add(&hash, (uint32_t)node->worldXQ12);
     StateHash_Add(&hash, (uint32_t)node->worldYQ12);
     StateHash_Add(&hash, (uint32_t)node->worldZQ12);
+    if (detail) {
+      fprintf(s_output, "  object %u class %u pos %d %d %d\n", nodes, (unsigned)node->ownerClassId,
+              (int)node->worldXQ12, (int)node->worldYQ12, (int)node->worldZQ12);
+    }
     nodes++;
   }
   /* armies by slot: identity, orders, targets (as slot indices), health of the root model */

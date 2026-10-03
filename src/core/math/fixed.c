@@ -186,31 +186,31 @@ void FixedVector_StepBackwardAlongOwnDirection
 FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
 
 {
-  int64_t projectionOrHeightSquared;
+  int64_t projectionSquared;
+  int64_t doubleHeightSquared;
   int64_t side2Squared;
   int64_t side1Squared;
   int64_t side0Squared;
-  int projectionOrSquaredLow;
+  int projection;
   uint32_t triangleHeight;
   uint32_t firstAngle16;
-  AngleTurn32 fallbackAngle0;
-  AngleTurn32 fallbackAngle1;
   FixedTriangleJointAngles solvedAngles;
   FixedTriangleJointAngles fallbackAngles;
   int64_t cosineNumerator0;
-  
-  projectionOrSquaredLow = (int)(((int64_t)sideLength0Q12 * (int64_t)sideLength0Q12 -
+
+  /* Original quirk: this divides by s2 before the s2 > 16 check below, so s2 == 0 would fault. */
+  projection = (int)(((int64_t)sideLength0Q12 * (int64_t)sideLength0Q12 -
                 (int64_t)sideLength1Q12 * (int64_t)sideLength1Q12) / (int64_t)sideLength2Q12);
-  projectionOrHeightSquared = (int64_t)projectionOrSquaredLow * (int64_t)projectionOrSquaredLow;
+  projectionSquared = (int64_t)projection * (int64_t)projection;
   side2Squared = (int64_t)sideLength2Q12 * (int64_t)sideLength2Q12;
   side1Squared = (int64_t)sideLength1Q12 * (int64_t)sideLength1Q12;
   side0Squared = (int64_t)sideLength0Q12 * (int64_t)sideLength0Q12;
   cosineNumerator0 = (side2Squared - side1Squared) + side0Squared;
   /* 64-bit -p^2 - s2^2 + 2*s1^2 + 2*s0^2, in the original's order; with p = (s0^2 - s1^2) / s2
      this is (2 * height)^2, so the square root is halved below like the two base projections */
-  projectionOrHeightSquared = (((0 - projectionOrHeightSquared) - side2Squared) + side1Squared * 2) + side0Squared * 2;
-  if (projectionOrHeightSquared > -1 && sideLength2Q12 > 16) {
-    triangleHeight = FIXED_UINT64_SQRT(projectionOrHeightSquared);
+  doubleHeightSquared = (((0 - projectionSquared) - side2Squared) + side1Squared * 2) + side0Squared * 2;
+  if (doubleHeightSquared > -1 && sideLength2Q12 > 16) {
+    triangleHeight = FIXED_UINT64_SQRT(doubleHeightSquared);
     firstAngle16 = FixedMath_Atan2Angle16((int)triangleHeight >> 1,
                                           (int)(cosineNumerator0 / (int64_t)sideLength2Q12) >> 1);
     solvedAngles.jointAngle0 =
@@ -220,15 +220,13 @@ FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q
     return solvedAngles;
   }
   if ((uint32_t)sideLength0Q12 < (uint32_t)sideLength2Q12) {
-    fallbackAngle0 = 0;
-    fallbackAngle1 = 0;
+    fallbackAngles.jointAngle0 = 0;
+    fallbackAngles.jointAngle1 = 0;
   }
   else {
-    fallbackAngle0 = FIXED_ANGLE16_HALF_TURN;
-    fallbackAngle1 = FIXED_ANGLE16_HALF_TURN;
+    fallbackAngles.jointAngle0 = FIXED_ANGLE16_HALF_TURN;
+    fallbackAngles.jointAngle1 = FIXED_ANGLE16_HALF_TURN;
   }
-  fallbackAngles.jointAngle1 = fallbackAngle1;
-  fallbackAngles.jointAngle0 = fallbackAngle0;
   return fallbackAngles;
 }
 
@@ -512,6 +510,30 @@ void FixedTransform_ApplyTransposeDirection
 }
 
 
+/* Returns (0 - xProduct - yProduct - zProduct) >> 28 (64-bit, arithmetic) as the original's XOR/SUB/SBB chain
+   computes it: the low halves are subtracted with explicit borrows into the high half, and the result is
+   high * 16 | low >> 28. */
+static uint32_t FixedTransform_NegatedProductSumShr28(int64_t xProduct,int64_t yProduct,int64_t zProduct)
+
+{
+  int productXLow;
+  uint32_t negatedProductXLow;
+  uint32_t productYLow;
+  uint32_t productZLow;
+  uint32_t partialDifferenceLow;
+
+  productXLow = (int)xProduct;
+  negatedProductXLow = -productXLow;
+  productYLow = (uint32_t)yProduct;
+  partialDifferenceLow = negatedProductXLow - productYLow;
+  productZLow = (uint32_t)zProduct;
+  return (-(uint32_t)(productXLow != 0) - (int)((uint64_t)xProduct >> 32) -
+          (int)((uint64_t)yProduct >> 32) - (uint32_t)(negatedProductXLow < productYLow) -
+          (int)((uint64_t)zProduct >> 32) - (uint32_t)(partialDifferenceLow < productZLow)) * 16 |
+         (partialDifferenceLow - productZLow) >> 28;
+}
+
+
 /* Address: 0x00485520.
    Inverts a rigid Q28 transform: the output basis is the adjugate of the input basis (each cofactor a 64-bit
    difference of products shifted right by 28), which is the inverse because a rotation has determinant 1,
@@ -521,94 +543,68 @@ void FixedTransform_ApplyTransposeDirection
 void FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input)
 
 {
-  int64_t cofactorOrTranslationProduct;
+  int64_t cofactor;
+  int64_t translationXProduct;
   int64_t translationYProduct;
   int64_t translationZProduct;
-  uint32_t negatedProductXLow;
-  int productXLow;
-  uint32_t productYLow;
-  uint32_t productZLow;
-  int componentOrProductLow;
-  uint32_t partialDifferenceLow;
-  
-  cofactorOrTranslationProduct = (int64_t)input->basisRow1[1] * (int64_t)input->basisRow2[2] -
+  int nextFactor; /* input component loaded ahead of the store, as in the original (output may alias input) */
+  int inputTranslationX;
+
+  cofactor = (int64_t)input->basisRow1[1] * (int64_t)input->basisRow2[2] -
           (int64_t)input->basisRow1[2] * (int64_t)input->basisRow2[1];
-  componentOrProductLow = input->basisRow1[2];
-  output->basisRow0[0] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[0] -
+  nextFactor = input->basisRow1[2];
+  output->basisRow0[0] = FIXED_PRODUCT_SHR(cofactor,28);
+  cofactor = (int64_t)nextFactor * (int64_t)input->basisRow2[0] -
           (int64_t)input->basisRow1[0] * (int64_t)input->basisRow2[2];
-  componentOrProductLow = input->basisRow1[0];
-  output->basisRow1[0] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[1] -
+  nextFactor = input->basisRow1[0];
+  output->basisRow1[0] = FIXED_PRODUCT_SHR(cofactor,28);
+  cofactor = (int64_t)nextFactor * (int64_t)input->basisRow2[1] -
           (int64_t)input->basisRow1[1] * (int64_t)input->basisRow2[0];
-  componentOrProductLow = input->basisRow0[2];
-  output->basisRow2[0] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[1] -
+  nextFactor = input->basisRow0[2];
+  output->basisRow2[0] = FIXED_PRODUCT_SHR(cofactor,28);
+  cofactor = (int64_t)nextFactor * (int64_t)input->basisRow2[1] -
           (int64_t)input->basisRow0[1] * (int64_t)input->basisRow2[2];
-  componentOrProductLow = input->basisRow0[0];
-  output->basisRow0[1] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[2] -
+  nextFactor = input->basisRow0[0];
+  output->basisRow0[1] = FIXED_PRODUCT_SHR(cofactor,28);
+  cofactor = (int64_t)nextFactor * (int64_t)input->basisRow2[2] -
           (int64_t)input->basisRow0[2] * (int64_t)input->basisRow2[0];
-  componentOrProductLow = input->basisRow0[1];
-  output->basisRow1[1] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[0] -
+  nextFactor = input->basisRow0[1];
+  output->basisRow1[1] = FIXED_PRODUCT_SHR(cofactor,28);
+  cofactor = (int64_t)nextFactor * (int64_t)input->basisRow2[0] -
           (int64_t)input->basisRow0[0] * (int64_t)input->basisRow2[1];
-  componentOrProductLow = input->basisRow0[1];
-  output->basisRow2[1] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[2] -
+  nextFactor = input->basisRow0[1];
+  output->basisRow2[1] = FIXED_PRODUCT_SHR(cofactor,28);
+  cofactor = (int64_t)nextFactor * (int64_t)input->basisRow1[2] -
           (int64_t)input->basisRow0[2] * (int64_t)input->basisRow1[1];
-  componentOrProductLow = input->basisRow0[2];
-  output->basisRow0[2] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[0] -
+  nextFactor = input->basisRow0[2];
+  output->basisRow0[2] = FIXED_PRODUCT_SHR(cofactor,28);
+  cofactor = (int64_t)nextFactor * (int64_t)input->basisRow1[0] -
           (int64_t)input->basisRow0[0] * (int64_t)input->basisRow1[2];
-  componentOrProductLow = input->basisRow0[0];
-  output->basisRow1[2] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[1] -
+  nextFactor = input->basisRow0[0];
+  output->basisRow1[2] = FIXED_PRODUCT_SHR(cofactor,28);
+  cofactor = (int64_t)nextFactor * (int64_t)input->basisRow1[1] -
           (int64_t)input->basisRow0[1] * (int64_t)input->basisRow1[0];
-  output->basisRow2[2] = FIXED_PRODUCT_SHR(cofactorOrTranslationProduct,28);
-  /* Each translation component is the 64-bit 0 - tx*r0 - ty*r1 - tz*r2 (XOR/SUB/SBB chain in the original),
-     written out below as low halves with explicit borrows, then shifted right by 28 (high * 16 | low >> 28). */
-  cofactorOrTranslationProduct = (int64_t)(input->translation).x * (int64_t)output->basisRow0[0];
-  productXLow = (int)cofactorOrTranslationProduct;
-  negatedProductXLow = -productXLow;
+  output->basisRow2[2] = FIXED_PRODUCT_SHR(cofactor,28);
+  /* Each translation component is -(tx*r0 + ty*r1 + tz*r2) >> 28. As in the original, the input translation x
+     for the y and z rows is the value loaded just before the previous row's store (output may alias input);
+     the y and z inputs are read in each row. */
+  translationXProduct = (int64_t)(input->translation).x * (int64_t)output->basisRow0[0];
   translationYProduct = (int64_t)(input->translation).y * (int64_t)output->basisRow0[1];
-  productYLow = (uint32_t)translationYProduct;
-  partialDifferenceLow = negatedProductXLow - productYLow;
   translationZProduct = (int64_t)(input->translation).z * (int64_t)output->basisRow0[2];
-  productZLow = (uint32_t)translationZProduct;
-  componentOrProductLow = (input->translation).x;
+  inputTranslationX = (input->translation).x;
   (output->translation).x =
-       (-(uint32_t)(productXLow != 0) - (int)((uint64_t)cofactorOrTranslationProduct >> 32) -
-        (int)((uint64_t)translationYProduct >> 32) - (uint32_t)(negatedProductXLow < productYLow) -
-        (int)((uint64_t)translationZProduct >> 32) - (uint32_t)(partialDifferenceLow < productZLow)) * 16 |
-       (partialDifferenceLow - productZLow) >> 28;
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)output->basisRow1[0];
-  productXLow = (int)cofactorOrTranslationProduct;
-  negatedProductXLow = -productXLow;
+       FixedTransform_NegatedProductSumShr28(translationXProduct,translationYProduct,translationZProduct);
+  translationXProduct = (int64_t)inputTranslationX * (int64_t)output->basisRow1[0];
   translationYProduct = (int64_t)(input->translation).y * (int64_t)output->basisRow1[1];
-  productYLow = (uint32_t)translationYProduct;
-  partialDifferenceLow = negatedProductXLow - productYLow;
   translationZProduct = (int64_t)(input->translation).z * (int64_t)output->basisRow1[2];
-  productZLow = (uint32_t)translationZProduct;
-  componentOrProductLow = (input->translation).x;
+  inputTranslationX = (input->translation).x;
   (output->translation).y =
-       (-(uint32_t)(productXLow != 0) - (int)((uint64_t)cofactorOrTranslationProduct >> 32) -
-        (int)((uint64_t)translationYProduct >> 32) - (uint32_t)(negatedProductXLow < productYLow) -
-        (int)((uint64_t)translationZProduct >> 32) - (uint32_t)(partialDifferenceLow < productZLow)) * 16 |
-       (partialDifferenceLow - productZLow) >> 28;
-  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)output->basisRow2[0];
-  componentOrProductLow = (int)cofactorOrTranslationProduct;
-  negatedProductXLow = -componentOrProductLow;
+       FixedTransform_NegatedProductSumShr28(translationXProduct,translationYProduct,translationZProduct);
+  translationXProduct = (int64_t)inputTranslationX * (int64_t)output->basisRow2[0];
   translationYProduct = (int64_t)(input->translation).y * (int64_t)output->basisRow2[1];
-  productYLow = (uint32_t)translationYProduct;
-  partialDifferenceLow = negatedProductXLow - productYLow;
   translationZProduct = (int64_t)(input->translation).z * (int64_t)output->basisRow2[2];
-  productZLow = (uint32_t)translationZProduct;
   (output->translation).z =
-       (-(uint32_t)(componentOrProductLow != 0) - (int)((uint64_t)cofactorOrTranslationProduct >> 32) -
-        (int)((uint64_t)translationYProduct >> 32) - (uint32_t)(negatedProductXLow < productYLow) -
-        (int)((uint64_t)translationZProduct >> 32) - (uint32_t)(partialDifferenceLow < productZLow)) * 16 |
-       (partialDifferenceLow - productZLow) >> 28;
+       FixedTransform_NegatedProductSumShr28(translationXProduct,translationYProduct,translationZProduct);
 }
 
 
@@ -882,21 +878,22 @@ void FixedMath_WriteDirectionScaled(GraphicsFixedVec3 *output,AngleTurn32 elevat
 
 {
   uint32_t azimuthPlusElevationAngle16;
-  uint32_t elevationOrDifferenceAngle16;
+  uint32_t elevationAngle16;
+  uint32_t azimuthMinusElevationAngle16;
   int verticalSinQ28;
   int azimuthPlusElevationSinQ28;
   int azimuthMinusElevationSinQ28;
   int64_t yComponentScaleProduct;
   int64_t horizontalComponentScaleProduct;
-  
-  elevationOrDifferenceAngle16 = elevationAngle & FIXED_ANGLE16_MASK;
-  verticalSinQ28 = g_FixedSinQ28[elevationOrDifferenceAngle16];
-  azimuthPlusElevationAngle16 = (elevationOrDifferenceAngle16 + azimuthAngle) & FIXED_ANGLE16_MASK;
-  elevationOrDifferenceAngle16 = (azimuthAngle - elevationOrDifferenceAngle16) & FIXED_ANGLE16_MASK;
+
+  elevationAngle16 = elevationAngle & FIXED_ANGLE16_MASK;
+  verticalSinQ28 = g_FixedSinQ28[elevationAngle16];
+  azimuthPlusElevationAngle16 = (elevationAngle16 + azimuthAngle) & FIXED_ANGLE16_MASK;
+  azimuthMinusElevationAngle16 = (azimuthAngle - elevationAngle16) & FIXED_ANGLE16_MASK;
   azimuthPlusElevationSinQ28 = g_FixedSinQ28[azimuthPlusElevationAngle16];
-  azimuthMinusElevationSinQ28 = g_FixedSinQ28[elevationOrDifferenceAngle16];
+  azimuthMinusElevationSinQ28 = g_FixedSinQ28[azimuthMinusElevationAngle16];
   horizontalComponentScaleProduct =
-       (int64_t)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[elevationOrDifferenceAngle16]) *
+       (int64_t)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationAngle16]) *
        (int64_t)scale;
   output->x = FIXED_PRODUCT_SHR(horizontalComponentScaleProduct,29);
   yComponentScaleProduct = (int64_t)(azimuthPlusElevationSinQ28 + azimuthMinusElevationSinQ28) * (int64_t)scale;
@@ -1103,76 +1100,76 @@ void FixedTransform_BuildRotationBasis(GraphicsFixedMatrix3x4 *output,AngleTurn3
 uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
 
 {
-  uint32_t angle16Result;
-  int denominatorOrRatio; /* the sector's denominator, later the ratio in Q31 */
+  int doubledX;
+  int doubledY;
+  int denominator;
   uint32_t reducedAngleNumerator;
-  int doubledYOrRatioSquared; /* y * 2 for the sector tests, later ratio^2 in Q30 */
+  int ratioQ31;
+  int ratioSquaredQ30;
   AngleTurn16Stored32 octantBaseAngle16;
 
   octantBaseAngle16 = 0;
-  denominatorOrRatio = x * 2;
-  doubledYOrRatioSquared = y * 2;
-  if (doubledYOrRatioSquared - x == 0 || doubledYOrRatioSquared < x) {
-    if (denominatorOrRatio < -y) {
-      if (y < denominatorOrRatio) {
+  doubledX = x * 2;
+  doubledY = y * 2;
+  if (doubledY <= x) {
+    if (doubledX < -y) {
+      if (y < doubledX) {
         octantBaseAngle16 = -FIXED_ANGLE16_QUARTER_TURN;
-        denominatorOrRatio = -y;
+        denominator = -y;
         reducedAngleNumerator = x;
       }
       else {
         reducedAngleNumerator = x - y;
         octantBaseAngle16 = -3 * FIXED_ANGLE16_EIGHTH_TURN;
-        denominatorOrRatio = -(x + y);
+        denominator = -(x + y);
       }
     }
     else {
-      denominatorOrRatio = x;
+      denominator = x;
       reducedAngleNumerator = y;
-      if (doubledYOrRatioSquared < -x) {
+      if (doubledY < -x) {
         reducedAngleNumerator = x + y;
         octantBaseAngle16 = -FIXED_ANGLE16_EIGHTH_TURN;
-        denominatorOrRatio = x - y;
+        denominator = x - y;
       }
     }
   }
-  else if (denominatorOrRatio < -y) {
-    if (doubledYOrRatioSquared < -x) {
+  else if (doubledX < -y) {
+    if (doubledY < -x) {
       octantBaseAngle16 = FIXED_ANGLE16_HALF_TURN;
-      denominatorOrRatio = -x;
+      denominator = -x;
       reducedAngleNumerator = -y;
       if (0 < (int)reducedAngleNumerator) {
         octantBaseAngle16 = -FIXED_ANGLE16_HALF_TURN;
       }
     }
     else {
-      denominatorOrRatio = y - x;
+      denominator = y - x;
       octantBaseAngle16 = 3 * FIXED_ANGLE16_EIGHTH_TURN;
       reducedAngleNumerator = -(x + y);
     }
   }
-  else if (y < denominatorOrRatio) {
-    denominatorOrRatio = x + y;
+  else if (y < doubledX) {
+    denominator = x + y;
     octantBaseAngle16 = FIXED_ANGLE16_EIGHTH_TURN;
     reducedAngleNumerator = y - x;
   }
   else {
     octantBaseAngle16 = FIXED_ANGLE16_QUARTER_TURN;
     reducedAngleNumerator = -x;
-    denominatorOrRatio = y;
+    denominator = y;
   }
-  angle16Result = 0;
-  if (denominatorOrRatio * 2 != 0) {
-    denominatorOrRatio = (int)((int64_t)((uint64_t)reducedAngleNumerator << 32) / (int64_t)(denominatorOrRatio * 2));
-    doubledYOrRatioSquared = FIXED_MUL_HIGH(denominatorOrRatio,denominatorOrRatio);
-    /* atan(t) in angle units (FIXED_ATAN_ANGLE16_C*) */
-    angle16Result =
-         octantBaseAngle16 +
-         FIXED_MUL_HIGH(denominatorOrRatio,
-                        FIXED_MUL_HIGH(doubledYOrRatioSquared,
-                                       FIXED_MUL_HIGH(doubledYOrRatioSquared,FIXED_ATAN_ANGLE16_C5) - FIXED_ATAN_ANGLE16_C3) +
+  if (denominator * 2 == 0) {
+    return 0;
+  }
+  ratioQ31 = (int)((int64_t)((uint64_t)reducedAngleNumerator << 32) / (int64_t)(denominator * 2));
+  ratioSquaredQ30 = FIXED_MUL_HIGH(ratioQ31,ratioQ31);
+  /* atan(t) in angle units (FIXED_ATAN_ANGLE16_C*) */
+  return octantBaseAngle16 +
+         FIXED_MUL_HIGH(ratioQ31,
+                        FIXED_MUL_HIGH(ratioSquaredQ30,
+                                       FIXED_MUL_HIGH(ratioSquaredQ30,FIXED_ATAN_ANGLE16_C5) - FIXED_ATAN_ANGLE16_C3) +
                         FIXED_ATAN_ANGLE16_C1);
-  }
-  return angle16Result;
 }
 
 
@@ -1186,23 +1183,23 @@ uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComp
 uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue)
 
 {
-  int highestBitOrNormalized;
+  int highestSetBitIndex;
+  int normalizedValue;
   uint32_t normalizeShift;
 
-  highestBitOrNormalized = 31;
-  if (inputValue != 0) {
-    for (; inputValue >> highestBitOrNormalized == 0; highestBitOrNormalized--) {
-    }
+  if (inputValue == 0) {
+    return 0;
   }
-  if (inputValue != 0) {
-    normalizeShift = (28U - highestBitOrNormalized) & FIXED_SQRT_EVEN_SHIFT_MASK; /* even, so the root can shift back by half */
-    highestBitOrNormalized = inputValue << (int8_t)normalizeShift;
-    return (FIXED_MUL_HIGH(highestBitOrNormalized,
-                           FIXED_MUL_HIGH(highestBitOrNormalized,
-                                          FIXED_MUL_HIGH(highestBitOrNormalized,FIXED_SQRT_POLY_C3) - FIXED_SQRT_POLY_C2) +
-                           FIXED_SQRT_POLY_C1) + FIXED_SQRT_POLY_C0) >> (int8_t)(normalizeShift >> 1);
+  highestSetBitIndex = 31;
+  while (inputValue >> highestSetBitIndex == 0) {
+    highestSetBitIndex--;
   }
-  return 0;
+  normalizeShift = (28U - highestSetBitIndex) & FIXED_SQRT_EVEN_SHIFT_MASK; /* even, so the root can shift back by half */
+  normalizedValue = inputValue << (int8_t)normalizeShift;
+  return (FIXED_MUL_HIGH(normalizedValue,
+                         FIXED_MUL_HIGH(normalizedValue,
+                                        FIXED_MUL_HIGH(normalizedValue,FIXED_SQRT_POLY_C3) - FIXED_SQRT_POLY_C2) +
+                         FIXED_SQRT_POLY_C1) + FIXED_SQRT_POLY_C0) >> (int8_t)(normalizeShift >> 1);
 }
 
 /* Address: 0x00484700.

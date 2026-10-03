@@ -26,6 +26,10 @@ extern volatile unsigned g_TestAidSessionCount;
 int Thandor_TestAidAllowSecondInstance(void);
 /* Nonzero when OPEN_THANDOR_SCRIPT is set (scripted input; the real mouse is then ignored). */
 int Thandor_TestAidScriptActive(void);
+/* Nonzero when OPEN_THANDOR_STATEHASH is set (determinism test). The world overlay then builds no transient
+   markers: they come from the render path, take effect pool slots and world objects (and possibly random
+   numbers) shared with the simulation, so how many frames fall between two steps would change the hashes. */
+int Thandor_TestAidStateHashActive(void);
 unsigned Thandor_TestAidNetworkBindPort(unsigned gamePort);
 /* OPEN_THANDOR_NETLOG=1: logs every datagram (direction, sockaddr_in, size, first dwords). */
 void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, unsigned byteCount,

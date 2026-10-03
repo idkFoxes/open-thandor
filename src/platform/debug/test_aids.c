@@ -27,6 +27,17 @@ int Thandor_TestAidScriptActive(void)
 }
 
 /* Test aid (not in the original): see test_aids.h. */
+int Thandor_TestAidStateHashActive(void)
+{
+    static int active = -1;
+    if (active < 0) {
+        const char *value = getenv("OPEN_THANDOR_STATEHASH");
+        active = value != NULL && atoi(value) > 0;
+    }
+    return active;
+}
+
+/* Test aid (not in the original): see test_aids.h. */
 int Thandor_TestAidAllowSecondInstance(void)
 {
     const char *value = getenv("OPEN_THANDOR_MULTI_INSTANCE");
