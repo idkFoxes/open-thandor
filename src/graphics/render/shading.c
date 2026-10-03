@@ -466,8 +466,7 @@ static void GraphicsShadingGeneratedTexture_ShareShadowPatchVertices(GraphicsPro
   }
 }
 
-/* Address: 0x004CDD40.
-   Casts the shadow of one model hierarchy onto the terrain (world view render pass, context flag 0x20000,
+/* Casts the shadow of one model hierarchy onto the terrain (world view render pass, context flag 0x20000,
    called per candidate model from the frontend world render in src/ui/frontend/runtime.c). While the
    generated shadow textures still have a free tile, a model inside the view frustum gets twelve sample
    points (corners and edge midpoints of its light-space bounds plus four inner points); each point is moved
@@ -548,8 +547,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
 }
 
 
-/* Address: 0x004BCF70.
-   Builds the 64 KiB intensity clamp table used by the model tint fade
+/* Builds the 64 KiB intensity clamp table used by the model tint fade
    (ModelNodeRuntime_UpdateStateTintRecursive): entry (previous << 8) | target holds target limited to previous
    +/- GRAPHICS_INTENSITY_CLAMP_MAX_STEP. The table is aligned to 64 KiB so the original can index it with a
    16-bit register pair. Returns 0, or the (non-zero) arena error code when the allocation fails.
@@ -603,8 +601,7 @@ uint32_t GraphicsIntensityClampTable_Initialize(void)
 }
 
 
-/* Address: 0x004CCA90.
-   Adds the light of every active compact light record (view space, see
+/* Adds the light of every active compact light record (view space, see
    GraphicsShadingRuntime_RebuildCompactLightingRecords) whose sphere contains worldPointQ12 to the packed
    light accumulator (four 16-bit lanes), with unsigned saturation, and returns the new accumulator. The
    strength comes from g_PackedLightingLookupTable indexed by (radius^2 - distance^2) / radius^2, so it falls
@@ -654,8 +651,7 @@ MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
 }
 
 
-/* Address: 0x004CCB40.
-   Claims the first free runtime light record (colour 0) for a point light at the given world position and
+/* Claims the first free runtime light record (colour 0) for a point light at the given world position and
    returns it. With transitionDurationTicks 0 the light starts at full radius, otherwise its squared radius
    starts at 0 and grows over that many ticks. Returns NULL when packedColorRgb is 0 or all
    GRAPHICS_SHADING_RUNTIME_RECORD_COUNT records are taken.
@@ -699,8 +695,7 @@ GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
 }
 
 
-/* Address: 0x004CCC60.
-   Zeroes the 256 runtime light records (0x40 bytes each, 0x4000 bytes in total) so that no light source is
+/* Zeroes the 256 runtime light records (0x40 bytes each, 0x4000 bytes in total) so that no light source is
    active; GraphicsShadingRuntime_RebuildCompactLightingRecords only picks up records with a colour set.
 */
 void GraphicsShadingRuntime_ClearRecordTable(void)
@@ -719,8 +714,7 @@ void GraphicsShadingRuntime_ClearRecordTable(void)
 }
 
 
-/* Address: 0x004CCD00.
-   Once per rendered world frame (frontend world render in src/ui/frontend/runtime.c): copies every active
+/* Once per rendered world frame (frontend world render in src/ui/frontend/runtime.c): copies every active
    runtime light record (colour set) into the compact table with its position transformed into view space,
    and publishes the count, so the per-vertex and per-model light queries only walk the live lights.
 */
@@ -757,8 +751,7 @@ void GraphicsShadingRuntime_RebuildCompactLightingRecords(void)
 }
 
 
-/* Address: 0x004CCD70.
-   Copies every compact light record whose sphere overlaps the query sphere (distance^2 <= (queryRadius +
+/* Copies every compact light record whose sphere overlaps the query sphere (distance^2 <= (queryRadius +
    lightRadius)^2, compared in 64 bits) into g_GraphicsShadingNearbyRecords and publishes
    g_GraphicsShadingNearbyRecordCount, so model vertex lighting (src/graphics/render/model.c) only tests
    the lights near the model. Called per model node by the hierarchy renderers in src/world/model/runtime.c.
@@ -803,8 +796,7 @@ void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ1
 }
 
 
-/* Address: 0x004CCFF0.
-   Sets up the generated shading textures: a zeroed square scratch grid of (2 * gridHalfSize)^2 bytes and
+/* Sets up the generated shading textures: a zeroed square scratch grid of (2 * gridHalfSize)^2 bytes and
    an in-memory gfx asset with one palette (white with an alpha ramp) and subresourceCount 8-bit images of
    textureDimension^2 pixels, from which a texture set is created. Also derives the grid step and origin used to
    map world positions into the textures. Returns 0 on success, otherwise the (non-zero) allocator or
@@ -911,8 +903,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
 }
 
 
-/* Address: 0x004CD1B0.
-   Counterpart of GraphicsShadingRuntime_InitializeGeneratedTexture: destroys the texture set, frees the generated
+/* Counterpart of GraphicsShadingRuntime_InitializeGeneratedTexture: destroys the texture set, frees the generated
    gfx asset and the scratch grid, and clears the three pointers.
 */
 void GraphicsShadingRuntime_Shutdown(void)
@@ -928,8 +919,7 @@ void GraphicsShadingRuntime_Shutdown(void)
 }
 
 
-/* Address: 0x004CD200.
-   Starts a shadow pass (frontend world render in src/ui/frontend/runtime.c, before the per-model
+/* Starts a shadow pass (frontend world render in src/ui/frontend/runtime.c, before the per-model
    GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy calls): puts the tile cursor on the first
    tile of subresource 0 (the pixel cursor at the tile centre), clears the tile/subresource counters and the
    "all tiles used" count, and zeroes the 8-bit pixels of every generated shadow texture.
@@ -974,8 +964,7 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
 }
 
 
-/* Address: 0x004CD360.
-   Ends a shadow pass (frontend world render in src/ui/frontend/runtime.c): uploads the alpha of every
+/* Ends a shadow pass (frontend world render in src/ui/frontend/runtime.c): uploads the alpha of every
    generated shadow texture the pass filled, i.e. all subresources before the current one plus the current
    one when it has at least one used tile (and not every tile ran out).
 */
@@ -999,8 +988,7 @@ void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
 }
 
 
-/* Address: 0x004CD880.
-   Shadow silhouette pass for a mesh record without MODEL_MESH_SOFT_SHADOW (+0x10), called per mesh record by
+/* Shadow silhouette pass for a mesh record without MODEL_MESH_SOFT_SHADOW (+0x10), called per mesh record by
    GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy after the blur: projects every vertex into the
    current shadow tile (quantized to whole texels) and fills every triangle with 0xFF. A mesh record is a
    ModelMeshHeader, then 0x40-byte vertices (position at +0, projected XY stored at +0x20) followed by
@@ -1039,8 +1027,7 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddre
 }
 
 
-/* Address: 0x004CD930.
-   Second silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy (after the blur): for
+/* Second silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy (after the blur): for
    the node and, recursively, all its children builds the node-to-shadow-tile transform (world transform taken
    relative to the shadow origin, composed with the generated texture basis) and rasterizes the node's mesh
    records without MODEL_MESH_SOFT_SHADOW.
@@ -1098,8 +1085,7 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNo
 }
 
 
-/* Address: 0x004CD9F0.
-   Counterpart of GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh for mesh records with
+/* Counterpart of GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh for mesh records with
    MODEL_MESH_SOFT_SHADOW (the parts that get the soft, filtered shadow); called per mesh record by
    GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy. Returns EBX: 0 when nothing was rasterized, 1
    when triangles were, otherwise the last transformed record address (the original leaves EBX there when
@@ -1142,8 +1128,7 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
 }
 
 
-/* Address: 0x004CDAB0.
-   First silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy: like
+/* First silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy: like
    GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy, but rasterizes the mesh records with
    MODEL_MESH_SOFT_SHADOW. Returns a value the caller tests before filtering the generated texture: the last
    mesh record's result plus the shadow mesh-group offset, plus the children's results. Nonzero whenever the
@@ -1207,8 +1192,7 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *m
 }
 
 
-/* Address: 0x004CDB80.
-   Projects every vertex of one mesh record with the current node transform (light-space rotation, see
+/* Projects every vertex of one mesh record with the current node transform (light-space rotation, see
    GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds, which calls it per mesh
    record) and widens the projected min/max X/Y of g_GeneratedTextureScratchRuntime, from which
    GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy sizes the shadow tile.
@@ -1246,8 +1230,7 @@ void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelM
 }
 
 
-/* Address: 0x004CDC20.
-   First step of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy: for the node and, recursively,
+/* First step of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy: for the node and, recursively,
    all its children composes the node transform (relative to the shadow origin) with
    g_AuxiliaryRotationMatrixFixed (the light-space rotation) and accumulates the projected bounds of all mesh
    records, i.e. the extent of the model's shadow before it is scaled into a texture tile.
@@ -1303,8 +1286,7 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBoun
 }
 
 
-/* Address: 0x00485020.
-   Transforms point by the first two rows of transform (Q28 basis, 64-bit dot products shifted right by 28)
+/* Transforms point by the first two rows of transform (Q28 basis, 64-bit dot products shifted right by 28)
    plus translation and stores only X and Y; the shadow bounds pass
    (GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords) needs no depth.
 */
@@ -1330,8 +1312,7 @@ void GraphicsShadingGeneratedTexture_TransformPointXY
 }
 
 
-/* Address: 0x004CD2B0.
-   Moves the shadow tile cursor to the next gridHalfSize x gridHalfSize tile after a model's shadow was
+/* Moves the shadow tile cursor to the next gridHalfSize x gridHalfSize tile after a model's shadow was
    drawn (end of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy): left to right, then down a
    tile row, then on to the next generated texture. When the last texture is full the completed count
    becomes nonzero and further models get no shadow until the next pass.
@@ -1411,8 +1392,7 @@ static uint64_t ShadingFilter_WeightedNeighbourhoodSum(const uint8_t *center,int
 }
 
 
-/* Address: 0x004CD3D0.
-   Softens the shadow in the current tile (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy calls it
+/* Softens the shadow in the current tile (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy calls it
    after the soft-shadow silhouette pass drew something): copies the tile's texels, reduced to 0..7 (>> 5), into
    the zero-bordered scratch grid, then writes back to every texel the byte-saturated weighted sum of its
    neighbourhood (centre x4, taps gridHalfSize / 16 texels apart), 32 texels per step with MMX.
@@ -1485,8 +1465,7 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
 }
 
 
-/* Address: 0x004CDCE0.
-   Returns true (CF set in the original) when neither the node's model resource nor any descendant has a mesh
+/* Returns true (CF set in the original) when neither the node's model resource nor any descendant has a mesh
    group (resource +0xEC), so GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy skips hierarchies
    that cannot cast a shadow. Children are probed from the last to the first; the first hit ends the search.
 */
@@ -1509,8 +1488,7 @@ bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode 
 }
 
 
-/* Address: 0x004D1060.
-   Reserves the 14 consecutive 0x80-byte primitive blocks of one shadow patch from the render context's
+/* Reserves the 14 consecutive 0x80-byte primitive blocks of one shadow patch from the render context's
    projected point pool (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy): records each block's
    address in the pool's block table and presets the first block's 0x20-byte header at +0x60 (0, flags
    0x11000 = textured, translucent); the three 0x20-byte vertices of each triangle come first. Returns the
@@ -1554,8 +1532,7 @@ GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProje
 }
 
 
-/* Address: 0x004D1150.
-   Gives back the 14 blocks of GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks when
+/* Gives back the 14 blocks of GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks when
    GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy finds a shadow point with a view depth below
    g_ProjectionScaleFixed (not projectable).
 */
@@ -1568,8 +1545,7 @@ void GraphicsShadingGeneratedTexture_RollbackFourteenProjectedPointBlocks
 }
 
 
-/* Address: 0x00484FA0.
-   Like GraphicsShadingGeneratedTexture_TransformPointXY, but for the composed node-to-tile transform: the
+/* Like GraphicsShadingGeneratedTexture_TransformPointXY, but for the composed node-to-tile transform: the
    dot products are shifted right by 12 only and the results are rounded down to whole texels (multiples of
    0x1000), ready for GraphicsShadingGeneratedTexture_RasterizeTriangleMask. Used by the silhouette passes.
 */
@@ -1597,8 +1573,7 @@ void GraphicsShadingGeneratedTexture_TransformPointXYQuantized
 }
 
 
-/* Address: 0x00485320.
-   outTransform = lhsTransform * rhsTransform for the shadow silhouette passes (lhs = generated texture basis,
+/* outTransform = lhsTransform * rhsTransform for the shadow silhouette passes (lhs = generated texture basis,
    rhs = node world transform). Unlike FixedTransform_Compose, the translation products are shifted right by
    12 instead of 28, keeping the extra precision that GraphicsShadingGeneratedTexture_TransformPointXYQuantized
    (also >> 12) expects. The original reloads lhs row elements between the dot products, as kept here.
@@ -1716,8 +1691,7 @@ static void ShadingRaster_FillSpan(uint8_t *rowPixels,int32_t edgeX,int otherEdg
   }
 }
 
-/* Address: 0x004CD690.
-   Fills one projected triangle (tile-relative Q12 texel coordinates, from
+/* Fills one projected triangle (tile-relative Q12 texel coordinates, from
    GraphicsShadingGeneratedTexture_TransformPointXYQuantized) with 0xFF in the current shadow tile: sorts the
    vertices by Y, clamps Y and the vertex X values to the tile (+/- the grid origin), then draws horizontal
    spans between the long top-to-bottom edge and the two short edges. Called per triangle by the silhouette

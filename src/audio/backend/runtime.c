@@ -11,13 +11,11 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 00417348 g_SoundPlayOneShot */
 SoundPlayVoiceProc *g_SoundPlayOneShot = (void *)SoundBackendDisabled_PlayOneShot;
 
 /* Implementation ownership: audio/backend/runtime. */
 
-/* Address: 0x00583410.
-   Shuts DirectSound down: restores the primary buffer's volume and pan saved by DirectSound_Init,
+/* Shuts DirectSound down: restores the primary buffer's volume and pan saved by DirectSound_Init,
    releases the primary buffer and the device, and frees the voice-set registry.
 */
 void DirectSound_Shutdown(void)
@@ -42,8 +40,7 @@ void DirectSound_Shutdown(void)
 }
 
 
-/* Address: 0x00417570.
-   Silent-backend stub in slot g_SoundCreateSampleVoiceSet (image 0x00417338, until DirectSound_Init
+/* Silent-backend stub in slot g_SoundCreateSampleVoiceSet (image 0x00417338, until DirectSound_Init
    switches the slots to DirectSound). Always succeeds (returns 0) with the dummy voice set 0xFFFFFFFF in
    *outVoiceSet, so callers holding a sample keep a non-NULL handle even without sound.
 */
@@ -55,8 +52,7 @@ uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset
 }
 
 
-/* Address: 0x00417580.
-   Silent-backend stub in slot g_SoundReleaseSampleVoiceSet (image 0x0041733C): nothing to release,
+/* Silent-backend stub in slot g_SoundReleaseSampleVoiceSet (image 0x0041733C): nothing to release,
    clears CF.
 */
 void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
@@ -66,8 +62,7 @@ void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 }
 
 
-/* Address: 0x004175B0.
-   Silent-backend stub in slot g_SoundPlayOneShot (image 0x00417348): plays nothing and reports
+/* Silent-backend stub in slot g_SoundPlayOneShot (image 0x00417348): plays nothing and reports
    success (returns true) with a NULL voice in *outVoice; the original leaves EAX unchanged, so its callers
    store their own leftover EAX as the voice (e.g. the random effect index at 0x005665A6, the music gain at
    0x0056666F). Those handles only ever go back to the silent stubs (the backend is chosen once at startup)
@@ -85,8 +80,7 @@ bool SoundBackendDisabled_PlayOneShot
 }
 
 
-/* Address: 0x004175C0.
-   Silent-backend stub in slot g_SoundPlayLooping (image 0x0041734C): plays nothing and reports
+/* Silent-backend stub in slot g_SoundPlayLooping (image 0x0041734C): plays nothing and reports
    success (returns true) with a NULL voice in *outVoice; the original leaves EAX unchanged (callers store
    it: the music gain at 0x0054C03B / 0x00546988, the non-zero gain at 0x0050BAC2). As for
    SoundBackendDisabled_PlayOneShot those values only reach the silent stubs again, so NULL behaves the same
@@ -104,8 +98,7 @@ bool SoundBackendDisabled_PlayLooping
 }
 
 
-/* Address: 0x004175D0.
-   Silent-backend stub in slot g_SoundStopVoice (image 0x00417350): nothing plays, so nothing to
+/* Silent-backend stub in slot g_SoundStopVoice (image 0x00417350): nothing plays, so nothing to
    stop; clears CF.
 */
 void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
@@ -115,8 +108,7 @@ void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
 }
 
 
-/* Address: 0x004175E0.
-   Silent-backend stub in slot g_SoundIsVoicePlaying (image 0x00417358): always sets CF, meaning the
+/* Silent-backend stub in slot g_SoundIsVoicePlaying (image 0x00417358): always sets CF, meaning the
    voice is not playing.
 */
 bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
@@ -126,8 +118,7 @@ bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 }
 
 
-/* Address: 0x00417610.
-   Silent-backend stub in slot g_SoundSetVoiceGains (image 0x00417360): ignores the new left/right
+/* Silent-backend stub in slot g_SoundSetVoiceGains (image 0x00417360): ignores the new left/right
    gains.
 */
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
@@ -205,8 +196,7 @@ static TH_LEGACY_HRESULT DirectSound_StartPrimaryBuffer(int32_t *passedStages)
   return g_PrimarySoundBuffer->lpVtbl->Play(g_PrimarySoundBuffer,0,0,DSBPLAY_LOOPING);
 }
 
-/* Address: 0x00583140.
-   Binds DSOUND.DLL, opens the default DirectSound device in exclusive mode and starts the looping primary
+/* Binds DSOUND.DLL, opens the default DirectSound device in exclusive mode and starts the looping primary
    buffer as 22050 Hz 16-bit stereo, then allocates the 256-entry voice-set registry and switches the
    g_Sound* backend slots from the silent stubs to DirectSound. Without a sound device it succeeds and
    leaves the silent backend in place. Returns 0 on success, otherwise the error code: FATAL_ERROR_DLL_LOAD_FAILED
@@ -311,8 +301,7 @@ static void DirectSound_InitAndRegisterVoiceSet(DirectSoundVoiceSet *voiceSet,ID
   }
 }
 
-/* Address: 0x00583490.
-   Turns a .sam sound asset into a voice set: checks the 0x200-byte header, creates a 22050 Hz 16-bit
+/* Turns a .sam sound asset into a voice set: checks the 0x200-byte header, creates a 22050 Hz 16-bit
    stereo secondary buffer of decodedBlockCount * 0x400 bytes, decodes every packed block into it and
    registers a new eight-voice set holding the buffer in voices[0]. Returns 0 and stores the set in
    *outVoiceSet; on failure returns the error code (FATAL_ERROR_SOUND_SAMPLE_INVALID,
@@ -395,8 +384,7 @@ uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSo
 }
 
 
-/* Address: 0x00583690.
-   Frees a voice set made by DirectSound_CreateSampleVoiceSet: releases its eight voices (the data
+/* Frees a voice set made by DirectSound_CreateSampleVoiceSet: releases its eight voices (the data
    buffer and its duplicates), frees the set and clears its registry slot. NULL is accepted.
 */
 void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
@@ -493,8 +481,7 @@ static bool DirectSound_PlayVoiceSet
 }
 
 
-/* Address: 0x00583940.
-   Plays a sound once on the first idle voice of the set (duplicating voices[0] into an empty slot when
+/* Plays a sound once on the first idle voice of the set (duplicating voices[0] into an empty slot when
    needed) and sets its volume/pan from the two 0..0x8000 channel gains via the 129-entry attenuation
    table. Returns true and the voice in *outVoice (outVoice may be NULL); false with a NULL voice when the
    set is NULL, all eight voices are busy or the duplication fails.
@@ -507,8 +494,7 @@ bool DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSound
 }
 
 
-/* Address: 0x00583A70.
-   Like DirectSound_PlayOneShot, but the voice plays with DSBPLAY_LOOPING until it is stopped.
+/* Like DirectSound_PlayOneShot, but the voice plays with DSBPLAY_LOOPING until it is stopped.
 */
 bool DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
@@ -518,8 +504,7 @@ bool DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSound
 }
 
 
-/* Address: 0x00583B90.
-   Stops one voice (a buffer returned by the play functions); NULL is accepted.
+/* Stops one voice (a buffer returned by the play functions); NULL is accepted.
 */
 void DirectSound_StopVoice(IDirectSoundBuffer *voice)
 
@@ -531,8 +516,7 @@ void DirectSound_StopVoice(IDirectSoundBuffer *voice)
 }
 
 
-/* Address: 0x00583BC0.
-   Tells whether a voice is still playing. The result is inverted like all CF flags here: CF clear
+/* Tells whether a voice is still playing. The result is inverted like all CF flags here: CF clear
    (false) means playing, CF set (true) means NULL or stopped; EAX is preserved.
 */
 bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
@@ -550,8 +534,7 @@ bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
 }
 
 
-/* Address: 0x00583C00.
-   Stops every voice of every voice set in the registry (empty registry slots and voices are skipped).
+/* Stops every voice of every voice set in the registry (empty registry slots and voices are skipped).
 */
 void DirectSound_StopAllVoices(void)
 
@@ -585,8 +568,7 @@ void DirectSound_StopAllVoices(void)
 }
 
 
-/* Address: 0x00583C70.
-   Updates the volume and pan of a playing voice from two new channel gains, with the same conversion as
+/* Updates the volume and pan of a playing voice from two new channel gains, with the same conversion as
    the play functions (louder channel's attenuation = volume, attenuation difference = pan). NULL is
    accepted.
 */
@@ -600,8 +582,7 @@ void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSou
 }
 
 
-/* Address: 0x004175F0.
-   Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until
+/* Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until
    DirectSound_Init installs DirectSound_StopAllVoices): there are no voices, so it only clears CF.
 */
 void SoundBackendDisabled_StopAllVoices(void)

@@ -90,8 +90,7 @@ static __inline PackedArgb32 ModelLighting_PackUnsignedMmx(uint64_t lanes)
 }
 
 
-/* Address: 0x004BDC90.
-   Draws the chosen level-of-detail mesh group of a model node (from ModelRuntime_CullAndRenderHierarchyRecursive).
+/* Draws the chosen level-of-detail mesh group of a model node (from ModelRuntime_CullAndRenderHierarchyRecursive).
    Group flag 1 turns the node towards the viewer and flag 2 makes it a billboard; the node's rotation angles and
    world transform are saved before and restored afterwards, so the turn only lasts for this draw. Every mesh
    whose mask (mesh +4) shares a bit with the node's meshGroupMask is submitted; facingThresholdQ12 is the
@@ -172,8 +171,7 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
 }
 
 
-/* Address: 0x004BE1F0.
-   The same mesh group draw for the alternate model renderer (ModelRuntime_RenderHierarchyRecursiveAlternatePath,
+/* The same mesh group draw for the alternate model renderer (ModelRuntime_RenderHierarchyRecursiveAlternatePath,
    chosen by the world views with FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY), without restoring
    the node transform and without a back-face limit: applies the facing / billboard rotation of group flags 1 / 2
    and submits every mesh that matches the node's meshGroupMask.
@@ -205,8 +203,7 @@ void ModelRender_DrawMeshGroupsAlternatePath(ModelMeshGroupAddress32 meshGroup,M
 }
 
 
-/* Address: 0x0050A5C0.
-   Grows bounds by the projected bounding boxes of a model node and all its descendants, for the selection frame
+/* Grows bounds by the projected bounding boxes of a model node and all its descendants, for the selection frame
    of SelectionOverlay_RenderSelectedArmyMetrics and the other overlay code in gameplay/selection/overlay.
 */
 void ModelProjectedBounds_AccumulateHierarchyRecursive(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
@@ -225,8 +222,7 @@ void ModelProjectedBounds_AccumulateHierarchyRecursive(ModelProjectedBoundsPixel
 }
 
 
-/* Address: 0x004BD4B0.
-   Transforms and projects one mesh vertex for ModelRender_SubmitTriangle the first time a triangle of this draw
+/* Transforms and projects one mesh vertex for ModelRender_SubmitTriangle the first time a triangle of this draw
    uses it (projected X = MODEL_VERTEX_NOT_PROJECTED); the node's depth bias and, with
    MODEL_RUNTIME_FLAG_APPLY_SCALE, its draw scale ((v * modelScaleQ12) >> 12) are applied only for the projection.
    It then computes the vertex colour (+0x2C) for the triangle's lighting flags: the node tint when unlit, else
@@ -355,8 +351,7 @@ static void ModelRender_ApplyTextureScroll(const ModelRuntimeNode *modelNode,Gra
   }
 }
 
-/* Address: 0x004BD9B0.
-   Submits one mesh triangle of ModelRender_SubmitMeshTriangles: skips it when it faces away (facing dot not
+/* Submits one mesh triangle of ModelRender_SubmitMeshTriangles: skips it when it faces away (facing dot not
    below facingThresholdQ12, unless MODEL_TRIANGLE_DOUBLE_SIDED), projects and lights its three vertices, drops it
    when all three lie beyond the same edge of g_ProjectionClipRect, and otherwise appends it to the active
    primitive queue with its vertex colours, texture (node texture set, subresource + node base index) and palette
@@ -423,8 +418,7 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
 }
 
 
-/* Address: 0x004BDC20.
-   Draws one mesh of ModelRender_DrawMeshGroupsWithTemporaryTransform: prepares the model-space view directions,
+/* Draws one mesh of ModelRender_DrawMeshGroupsWithTemporaryTransform: prepares the model-space view directions,
    marks the mesh's vertices as not projected for this draw, then submits its triangles (stored after the
    vertices) through ModelRender_SubmitTriangle.
 */
@@ -449,8 +443,7 @@ void ModelRender_SubmitMeshTriangles
 }
 
 
-/* Address: 0x004BE180.
-   Draws one mesh of ModelRender_DrawMeshGroupsAlternatePath: the same as ModelRender_SubmitMeshTriangles, but
+/* Draws one mesh of ModelRender_DrawMeshGroupsAlternatePath: the same as ModelRender_SubmitMeshTriangles, but
    through ModelRender_SubmitTriangleAlternatePath.
 */
 void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
@@ -473,8 +466,7 @@ void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGr
 }
 
 
-/* Address: 0x004BD6B0.
-   Vertex preparation of the alternate model renderer (ModelRender_SubmitTriangleAlternatePath): transforms and
+/* Vertex preparation of the alternate model renderer (ModelRender_SubmitTriangleAlternatePath): transforms and
    projects the vertex once per draw, but rejects it (CF set, projected X = 0x7FFFFFFF) when it lies in front of
    the near plane (view z < g_ProjectionScaleFixed). The colour is lit per vertex by nearby lights
    (ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath), or white with the tint's alpha when unlit,
@@ -531,8 +523,7 @@ bool ModelRender_PrepareProjectedVertexAlternatePath
 }
 
 
-/* Address: 0x004BDFB0.
-   Triangle submission of the alternate model renderer (from ModelRender_SubmitMeshTrianglesAlternatePath):
+/* Triangle submission of the alternate model renderer (from ModelRender_SubmitMeshTrianglesAlternatePath):
    no back-face test; the triangle is dropped when a vertex lies in front of the near plane or all three lie
    beyond the same edge of g_ProjectionClipRect. Otherwise it is queued with its vertex colours, texture and the
    palette's alternate modulation colour (0 without one).
@@ -595,8 +586,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
 }
 
 
-/* Address: 0x0050A4A0.
-   Grows bounds by the screen projection of the eight corners of a model node's local bounding box (for
+/* Grows bounds by the screen projection of the eight corners of a model node's local bounding box (for
    ModelProjectedBounds_AccumulateHierarchyRecursive). Nodes without a bounding radius or with
    MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST are skipped.
 */
@@ -641,8 +631,7 @@ void ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,Mode
 }
 
 
-/* Address: 0x004BD7E0.
-   Back-face measure of a triangle for ModelRender_SubmitTriangle: the Q12 dot product of its plane normal
+/* Back-face measure of a triangle for ModelRender_SubmitTriangle: the Q12 dot product of its plane normal
    (+0x24) with the model-space view direction from ModelRender_PrepareViewDirections.
 */
 int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
@@ -920,8 +909,7 @@ static uint64_t ModelLighting_ReadDistanceAttenuationRow
 }
 
 
-/* Address: 0x004CC710.
-   Lit colour of a mesh vertex for ModelRender_PrepareProjectedVertex, in MMX word lanes: the directional light
+/* Lit colour of a mesh vertex for ModelRender_PrepareProjectedVertex, in MMX word lanes: the directional light
    (scenePackedColor1, weighted by the attenuation table entry for dot(lightDirection, normal) >> 21) plus a quarter
    of the ambient colour scenePackedColor0, times materialPackedColor (the node tint); then every nearby light of
    g_GraphicsShadingNearbyRecords whose sphere contains the vertex adds its colour weighted by
@@ -1008,8 +996,7 @@ ModelRender_ComputeVertexIntensityDefaultPath
   return ModelLighting_PackUnsignedMmx(accumulatedLanes);
 }
 
-/* Address: 0x004CC820.
-   The same vertex lighting as ModelRender_ComputeVertexIntensityDefaultPath for MODEL_TRIANGLE_LIGHTING_SCALED
+/* The same vertex lighting as ModelRender_ComputeVertexIntensityDefaultPath for MODEL_TRIANGLE_LIGHTING_SCALED
    triangles: the directional weight comes from g_ModelLightingMmxMultiplierRows at MODEL_LIGHTING_SCALE_ROW0 plus
    the facing dot divided by the model resource's lightingScaleQ12 (>> 9).
    Original quirk (0x004CC833 CDQ / IDIV [EBP+0x24] / SAR EAX,9 / PMULHW MM0,[EAX*8 + 0x004CC2B0]): no range check.
@@ -1103,8 +1090,7 @@ ModelRender_ComputeVertexIntensityScaledPath
   return ModelLighting_PackUnsignedMmx(resultLanes);
 }
 
-/* Address: 0x004CC940.
-   Vertex colour of the alternate model renderer (ModelRender_PrepareProjectedVertexAlternatePath): ambient
+/* Vertex colour of the alternate model renderer (ModelRender_PrepareProjectedVertexAlternatePath): ambient
    scenePackedColor0 times the material colour, plus every nearby light whose sphere contains the vertex, weighted
    by g_PackedLightingLookupTable at (9 * r^2 / (8 * d^2 + r^2)) scaled by the facing of the view-space normal
    towards the light; the sum is modulated by the vertex's own colour.
@@ -1182,8 +1168,7 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
 }
 
 
-/* Address: 0x0050A430.
-   Transforms the point in g_GraphicsTransformInputScratchVec3 with g_GraphicsTransformScratchMatrix3x4 and, when
+/* Transforms the point in g_GraphicsTransformInputScratchVec3 with g_GraphicsTransformScratchMatrix3x4 and, when
    it lies beyond the near plane, grows bounds by its projected pixel position (Q12 >> 12). Used by
    ModelProjectedBounds_AccumulateNode for each bounding-box corner.
 */
@@ -1217,8 +1202,7 @@ void ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixe
 }
 
 
-/* Address: 0x004BD800.
-   Per-mesh setup of ModelRender_SubmitMeshTriangles and ModelRender_SubmitMeshTrianglesAlternatePath: composes
+/* Per-mesh setup of ModelRender_SubmitMeshTriangles and ModelRender_SubmitMeshTrianglesAlternatePath: composes
    the node's world transform with the view projection into g_ModelViewCompositeTransform, and brings the
    direction from the viewer to the node (for the back-face test) and the auxiliary forward direction (for the
    lighting) into model space.

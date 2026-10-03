@@ -25,10 +25,8 @@
 #define WIDE_PATH_EXTENSION_FLM 0x6D6C66
 #endif
 
-/* 0x00547D60 */
 void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext);
 
-/* 0x0054C9F0 */
 void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot);
 
 #endif /* THANDOR_UI_FRONTEND_SCENARIO_H */

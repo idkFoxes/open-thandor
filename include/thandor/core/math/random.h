@@ -21,22 +21,16 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004030B0 */
 uint32_t Random_NextPrimary(void);
 
-/* 0x004030E0 */
 uint32_t Random_NextSecondary(void);
 
-/* 0x00403110 */
 void Random_SetBothSeeds(RandomSeed seed);
 
-/* 0x00403130 */
 uint32_t __cdecl Random_GetSecondarySeed(void);
 
-/* 0x00403140 */
 void Random_SelectSecondaryStream(void);
 
-/* 0x00403150 */
 void __cdecl Random_SelectPrimaryStream(void);
 
 #endif /* THANDOR_CORE_MATH_RANDOM_H */

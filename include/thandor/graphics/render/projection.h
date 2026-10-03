@@ -14,14 +14,12 @@
 /* Submodule: graphics/render/projection. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00486B00 */
 GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
           GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputHeight,
           GraphicsPixelDimension outputWidth,ModelRuntimeCount modelCount,
           ModelRuntimeNode **modelNodes);
 
-/* 0x0050A6A0 */
 bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2);
 

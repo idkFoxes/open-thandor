@@ -37,16 +37,12 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0040F2B0 */
 bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path);
 
-/* 0x0040F320 */
 bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path);
 
-/* 0x0040F3C0 */
 void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory);
 
-/* 0x00531170 */
 uint32_t WidePath_ParseTrailingNumberBeforeExtension(uint16_t *path);
 
 #endif /* THANDOR_CORE_TEXT_PATH_H */

@@ -10,8 +10,7 @@
 
 /* Implementation ownership: audio/spatial/runtime. */
 
-/* Address: 0x0050B5D0.
-   Allocates the pool of SPATIAL_SOUND_SLOT_COUNT 0x10-byte spatial sound slots (0x1000 bytes) and zeroes it,
+/* Allocates the pool of SPATIAL_SOUND_SLOT_COUNT 0x10-byte spatial sound slots (0x1000 bytes) and zeroes it,
    so every slot starts without a voice set. Returns true on success; false with the allocator's error in
    *outError when the arena is exhausted.
 */
@@ -33,8 +32,7 @@ bool SpatialSoundPool_Init(uint32_t *outError)
 }
 
 
-/* Address: 0x0050B600.
-   Places the sound listener at the camera: g_SpatialSoundListenerTransform becomes the rotation built from
+/* Places the sound listener at the camera: g_SpatialSoundListenerTransform becomes the rotation built from
    the camera's view angles composed with a translation by -origin, i.e. world space to listener space, which
    the positioned-sound functions use to get distance and azimuth. Called directly by the frontend camera
    control setup in ui/frontend/runtime.c (no callback table).
@@ -143,8 +141,7 @@ static bool SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 m
 }
 
 
-/* Address: 0x0050B6E0.
-   Plays a sound effect once at a world position: the gain (scaled by the effects volume) fades out with
+/* Plays a sound effect once at a world position: the gain (scaled by the effects volume) fades out with
    the listener distance along a quarter cosine up to maximumDistanceQ12 and is panned by the azimuth
    around the listener (sides swapped with reverse stereo). Nothing plays when the voice set is missing,
    the position is out of range or the attenuated gain is not above SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15.
@@ -168,8 +165,7 @@ void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDi
 }
 
 
-/* Address: 0x0050B7D0.
-   Looping counterpart of SpatialSound_PlayPositionedOneShot: computes the same distance attenuation and
+/* Looping counterpart of SpatialSound_PlayPositionedOneShot: computes the same distance attenuation and
    azimuth panning and stores the result as the slot's desired gains, which SpatialSoundPool_ApplyDesiredGains
    turns into start/stop/gain updates at the end of the frame. An out-of-range or inaudible sound leaves the
    gains at the 0 that SpatialSoundPool_ClearDesiredGains set, so it stops. Called directly by the army and shot
@@ -198,8 +194,7 @@ void SpatialSound_UpdateDesiredPositionedGains
 }
 
 
-/* Address: 0x0050B8C0.
-   Creates a voice set for the 'sam' asset and gives it the first free spatial-sound slot, silent and not
+/* Creates a voice set for the 'sam' asset and gives it the first free spatial-sound slot, silent and not
    playing, so that SpatialSound_UpdateDesiredPositionedGains can drive it as a looping positioned sound.
    Returns the slot (never NULL, it lies in the pool); NULL when the voice set cannot be created or the pool
    is full (the new voice set is released again). The original's error value (voice-set error or
@@ -233,8 +228,7 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
 }
 
 
-/* Address: 0x0050B9D0.
-   Releases the sample voice set of a slot from SpatialSoundSlot_CreateFromSampleAsset and clears the slot
+/* Releases the sample voice set of a slot from SpatialSoundSlot_CreateFromSampleAsset and clears the slot
    (all four fields), which makes it free again. A NULL slot is ignored.
 */
 void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
@@ -248,8 +242,7 @@ void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
 }
 
 
-/* Address: 0x0050BA30.
-   Start of a frame's positioned-sound pass: sets the desired gains of every used slot to 0, so that only the
+/* Start of a frame's positioned-sound pass: sets the desired gains of every used slot to 0, so that only the
    sounds whose gains are set again this frame keep playing when SpatialSoundPool_ApplyDesiredGains runs.
 */
 void SpatialSoundPool_ClearDesiredGains(void)
@@ -272,8 +265,7 @@ void SpatialSoundPool_ClearDesiredGains(void)
 }
 
 
-/* Address: 0x0050BA60.
-   End of a frame's positioned-sound pass: for every used slot, starts a looping voice when it has gains but
+/* End of a frame's positioned-sound pass: for every used slot, starts a looping voice when it has gains but
    is not playing, stops the voice when both gains are 0, and otherwise updates the voice's gains.
 */
 void SpatialSoundPool_ApplyDesiredGains(void)

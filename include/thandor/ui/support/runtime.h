@@ -23,23 +23,17 @@
    the 64x64 player preview pictures of PcxPreview_Load64x64PaletteAndPixels. */
 #define WIDE_PATH_EXTENSION_PCX 0x786370
 
-/* 0x0050F220 */
 void RecentTextHistory_SortAndBuildPointerList
           (RecentTextHistoryEntryLimit maxEntries,RecentTextHistoryPointerList *output);
 
-/* 0x0050F130 */
 void RecentTextHistory_Insert(uint16_t *text);
 
-/* 0x0050F2E0 */
 void RecentTextHistory_RemoveOldest(void);
 
-/* 0x00548EC0 */
 void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView);
 
-/* 0x0054D5D0 */
 bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
 
-/* 0x0050F1A0 */
 void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex);
 
 #endif /* THANDOR_UI_SUPPORT_RUNTIME_H */

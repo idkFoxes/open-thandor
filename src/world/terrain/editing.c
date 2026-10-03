@@ -10,8 +10,7 @@
 
 /* Implementation ownership: world/terrain/editing. */
 
-/* Address: 0x005137F0.
-   Scanline flood fill over the field grid: records (TerrainRegionCollection_RecordConnectedCell, which also marks
+/* Scanline flood fill over the field grid: records (TerrainRegionCollection_RecordConnectedCell, which also marks
    them visited) the horizontal run of cells around cell that carry one of requiredCellFlags, then recurses into
    matching cells of the rows above and below that run. Edge-ring and already visited cells stop the fill.
 */
@@ -63,8 +62,7 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
 }
 
 
-/* Address: 0x00561A10.
-   Editor command INGAME_COMMAND_EDITOR_REPLACE_MATCHING (0x28E0; InGameUiCommand_* material mode, fill tool):
+/* Editor command INGAME_COMMAND_EDITOR_REPLACE_MATCHING (0x28E0; InGameUiCommand_* material mode, fill tool):
    gives the connected region of cells that share the material of the clicked cell the replacement material.
    The player's material edit plane is cleared first and receives old - new per changed cell, so
    TerrainEditBuffer_CommitFlagsAndMaterialDeltas can undo the fill.
@@ -110,8 +108,7 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
 }
 
 
-/* Address: 0x00561AE0.
-   Editor command INGAME_COMMAND_EDITOR_REPLACE_NON_TARGET (0x29B0; material mode, second fill tool): gives
+/* Editor command INGAME_COMMAND_EDITOR_REPLACE_NON_TARGET (0x29B0; material mode, second fill tool): gives
    the connected region of cells that do not have referenceMaterialByte that material, i.e. fills up to the
    borders made of it. Like the matching fill it clears the player's material edit plane and records the
    undo deltas there.
@@ -154,8 +151,7 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
 }
 
 
-/* Address: 0x005616D0.
-   Editor command INGAME_COMMAND_EDITOR_COMMIT_HEIGHTS (0x25A0; U key in height mode): toggles the last height
+/* Editor command INGAME_COMMAND_EDITOR_COMMIT_HEIGHTS (0x25A0; U key in height mode): toggles the last height
    edit. Each cell with a delta in the player's height plane is lowered by it (the water surface keeps its
    level), the delta is negated so the next call redoes the edit, and the normals and lighting of the cell and
    its lattice neighbours are recomputed.
@@ -231,8 +227,7 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
 }
 
 
-/* Address: 0x00561830.
-   Editor command INGAME_COMMAND_EDITOR_COPY_MATERIALS (0x2700; start of a material brush stroke): saves the
+/* Editor command INGAME_COMMAND_EDITOR_COPY_MATERIALS (0x2700; start of a material brush stroke): saves the
    material byte of every cell in the player's material edit plane, so TerrainEditBuffer_SubtractCurrentCellMaterialBytes
    can turn it into undo deltas when the stroke ends.
 */
@@ -261,8 +256,7 @@ void TerrainEditBuffer_CopyCellMaterialBytes
 }
 
 
-/* Address: 0x00561930.
-   Editor command INGAME_COMMAND_EDITOR_SUBTRACT_MATERIALS (0x2800; end of a material brush stroke): subtracts
+/* Editor command INGAME_COMMAND_EDITOR_SUBTRACT_MATERIALS (0x2800; end of a material brush stroke): subtracts
    each cell's current material from the byte saved at the start of the stroke, leaving old - new per cell in
    the player's material edit plane for TerrainEditBuffer_CommitFlagsAndMaterialDeltas (undo).
 */
@@ -290,8 +284,7 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
 }
 
 
-/* Address: 0x005619A0.
-   Editor command INGAME_COMMAND_EDITOR_COMMIT_MATERIALS (0x2870; U key in material mode): toggles the last
+/* Editor command INGAME_COMMAND_EDITOR_COMMIT_MATERIALS (0x2870; U key in material mode): toggles the last
    material edit by adding the player's material deltas to the cells and negating them, so the next call
    redoes the edit.
 */
@@ -324,8 +317,7 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
 }
 
 
-/* Address: 0x00561DC0.
-   Editor command INGAME_COMMAND_EDITOR_HEIGHTS_TO_DELTAS (0x2C90; end of a height brush stroke): replaces each
+/* Editor command INGAME_COMMAND_EDITOR_HEIGHTS_TO_DELTAS (0x2C90; end of a height brush stroke): replaces each
    value of the player's height plane by the cell's terrain height minus that value, leaving the deltas that
    TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting undoes.
 */
@@ -353,8 +345,7 @@ void TerrainEditBuffer_ConvertHeightsToDeltas
 }
 
 
-/* Address: 0x00513790.
-   Visit step of the mining-region flood fill (TerrainRegionCollection_CollectConnectedCellsRecursive):
+/* Visit step of the mining-region flood fill (TerrainRegionCollection_CollectConnectedCellsRecursive):
    counts and marks the cell as visited and, when its extraction descriptor matches requiredOccupancyMask,
    moves the descriptor and the extracting model's offset out of the cell into the region collection (at
    most TERRAIN_REGION_COLLECTION_CAPACITY entries), so the per-tick mining pays each extractor once.
@@ -397,8 +388,7 @@ static void TerrainMaterialEdit_ApplyCellMaterialDelta(FieldGridCell *cell,int *
 }
 
 
-/* Address: 0x00571600.
-   Scanline flood fill of TerrainMaterialEdit_SeedMatchingRegionReplacement: from cell (gridY, gridX) gives
+/* Scanline flood fill of TerrainMaterialEdit_SeedMatchingRegionReplacement: from cell (gridY, gridX) gives
    the run of cells whose material is g_TerrainMaterialEditReferenceMaterialByte the replacement material
    (adding old - new to g_TerrainMaterialEditDeltaBuffer), then recurses into the previous row over the run's
    columns and into the next row shifted one column left (triangular lattice neighbours).
@@ -472,8 +462,7 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
 }
 
 
-/* Address: 0x00571730.
-   Scanline flood fill of TerrainMaterialEdit_SeedNonTargetRegionReplacement: the same walk as
+/* Scanline flood fill of TerrainMaterialEdit_SeedNonTargetRegionReplacement: the same walk as
    TerrainMaterialEdit_PropagateMatchingRegionReplacement, but over the cells whose material differs from
    g_TerrainMaterialEditReferenceMaterialByte, which all receive that material (old - new goes to
    g_TerrainMaterialEditDeltaBuffer).

@@ -10,8 +10,7 @@
 
 /* Implementation ownership: ui/frontend/session. */
 
-/* Address: 0x00544270.
-   Handler of frontend command FRONTEND_COMMAND_RELEASE_CAMPAIGN (0x320): releases the loaded campaign asset,
+/* Handler of frontend command FRONTEND_COMMAND_RELEASE_CAMPAIGN (0x320): releases the loaded campaign asset,
    resets the scenario initialisation count and returns to the main page with ROM action record 2. Called
    directly by FrontendSessionAction_ReleaseCampaignAndReturnToMainPage in a local game, through the command queue
    in a network game. Only the player id is forwarded; the other three arguments are unused.
@@ -29,8 +28,7 @@ void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
 }
 
 
-/* Address: 0x00548FE0.
-   Handler of action 0x2048 (slot 72 of g_FrontendUiActionHandlersPage20.handlers00_54), a click on the movie
+/* Handler of action 0x2048 (slot 72 of g_FrontendUiActionHandlersPage20.handlers00_54), a click on the movie
    view: closes the playing movie, switches the view-mode stack back to the menu room, frees the movie's texture
    source and its two frame buffers, shows the pointer cursor again and returns to the main page (directly in a
    local game, as FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a network game).
@@ -67,8 +65,7 @@ void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
 }
 
 
-/* Address: 0x00549090.
-   Handler of action 0x2047 (slot 71 of g_FrontendUiActionHandlersPage20.handlers00_54), the mission briefing's
+/* Handler of action 0x2047 (slot 71 of g_FrontendUiActionHandlersPage20.handlers00_54), the mission briefing's
    "Begin" button. A host or local player applies the game-speed slider and leaves with ROM action record 1
    (FRONTEND_COMMAND_APPLY_GAME_SPEED in a network game); a client only reports that it is ready
    (FRONTEND_COMMAND_BRIEFING_READY).
@@ -97,8 +94,7 @@ void FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
 }
 
 
-/* Address: 0x0054C770.
-   Handler of action 0x2000 (slot 0 of g_FrontendUiActionHandlersPage20.handlers00_54), leaving the network
+/* Handler of action 0x2000 (slot 0 of g_FrontendUiActionHandlersPage20.handlers00_54), leaving the network
    game page: closes and cleans up the network backend, sets the frontend network state back to idle, returns
    to the main page and switches the random generator back to the primary stream.
 */
@@ -120,8 +116,7 @@ void FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
 }
 
 
-/* Address: 0x0054D0B0.
-   Handler of action FRONTEND_ACTION_START_NETWORK_GAME (0x2006, slot 6 of
+/* Handler of action FRONTEND_ACTION_START_NETWORK_GAME (0x2006, slot 6 of
    g_FrontendUiActionHandlersPage20.handlers00_54), the host lobby's start button: takes the player count from
    the lobby list, reseeds both random streams from the primary one and selects the secondary stream, clears the handshake state of all eight player blocks, arms the player-snapshot transfer and returns to the
    main page with ROM action record 1.
@@ -166,8 +161,7 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
 }
 
 
-/* Address: 0x00544250.
-   Handler of frontend command FRONTEND_COMMAND_SET_GAME_SPEED (0x300): stores the game-speed percent in the
+/* Handler of frontend command FRONTEND_COMMAND_SET_GAME_SPEED (0x300): stores the game-speed percent in the
    mission briefing's gameSpeedSlider value (+0x58). Called directly by
    FrontendGameplaySettings_SetGameSpeedPercent in a local game, through the command queue in a network game.
 */
@@ -180,8 +174,7 @@ void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unuse
 }
 
 
-/* Address: 0x0054A790.
-   Opens the "Exit programme" confirmation page (FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE from the main menu). At 640 pixels
+/* Opens the "Exit programme" confirmation page (FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE from the main menu). At 640 pixels
    width or less the page covers the menu room, so the room's 3D rendering is switched off.
 */
 void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
@@ -196,8 +189,7 @@ void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
 }
 
 
-/* Address: 0x0054D2E0.
-   Handler of action 0x200A (slot 10 of g_FrontendUiActionHandlersPage20.handlers00_54), the client lobby's
+/* Handler of action 0x200A (slot 10 of g_FrontendUiActionHandlersPage20.handlers00_54), the client lobby's
    Leave button; FrontendTransfer_TickRequestTimeoutAndResetPage also calls it when the host stops answering.
    Reopens the network game page with an empty session list and the Join button hidden, leaves the network
    session, takes a new session identity and sends a fresh discovery probe; the local player becomes the only
@@ -238,8 +230,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
 }
 
 
-/* Address: 0x0054E3A0.
-   Network game page tick (FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState while g_FrontendNetworkState
+/* Network game page tick (FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState while g_FrontendNetworkState
    is FRONTEND_NETWORK_STATE_BROWSING): counts down the expiry of every discovered session, drops the sessions
    whose expiry ran out by compacting the 0xB0-byte records in place, rebuilds the row pointers,
    keeps the selection on the same session (row 0 when the selected one went away) and refreshes the list.
@@ -308,8 +299,7 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
 }
 
 
-/* Address: 0x00565670.
-   Synchronization hook and movie-rate timer while the end movie plays (installed by
+/* Synchronization hook and movie-rate timer while the end movie plays (installed by
    InGameRuntime_RunSessionUntilExit and Frontend_PlaySelectedEndMovie): keeps the network lockstep of
    InGameRuntime_UpdateSimulationAndNetworkTick running without simulating, so peers do not time out, and counts
    one due movie frame in g_EndMoviePendingTicks per step. The host executes the staged command batch at each
@@ -389,8 +379,7 @@ void FrontendSession_PeriodicTick(void)
 }
 
 
-/* Address: 0x005725D0.
-   In-game tick on the host: counts down every client's heartbeat timeout, drops clients that
+/* In-game tick on the host: counts down every client's heartbeat timeout, drops clients that
    ran out (a notice with the player's name is posted) and compacts the player blocks and their command records,
    then tells the remaining clients about each dropped player with a 0x10007 packet and re-evaluates the ready
    consensus.
@@ -470,8 +459,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
 }
 
 
-/* Address: 0x00572960.
-   In-game tick on a client: counts down the host timeout. When it runs out the session falls
+/* In-game tick on a client: counts down the host timeout. When it runs out the session falls
    back to a local game: the network role is cleared, the socket closed, TEXT_ID_NETWORK_HOST_LOST posted, a
    pending ready vote is submitted if some player has not voted yet, and the local player becomes the only
    player, with id 0.
@@ -532,8 +520,7 @@ void FrontendClientSession_TickHostTimeout(void)
 }
 
 
-/* Address: 0x00544210.
-   Handler of frontend command FRONTEND_COMMAND_APPLY_GAME_SPEED (0x2C0), leaving the mission briefing: closes
+/* Handler of frontend command FRONTEND_COMMAND_APPLY_GAME_SPEED (0x2C0), leaving the mission briefing: closes
    any playing movie, converts the gameSpeedSlider percent into the simulation's Q8 game speed, sets flag 0x08
    of the briefing image and returns to the main page with ROM action record romActionIndex. Called directly by
    FrontendSessionAction_ApplySpeedOrToggleReady and FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage in a local
@@ -559,8 +546,7 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
 }
 
 
-/* Address: 0x00544D10.
-   Closes the dialog pages (back to FRONTEND_PAGE_MAIN, the menu room renders again) and runs entry
+/* Closes the dialog pages (back to FRONTEND_PAGE_MAIN, the menu room renders again) and runs entry
    romActionIndex of the frontend ROM action table (FrontendState_DispatchCode ->
    FrontendRomActionTable_ExecuteRecord). Command handler with four dword arguments (frontend command 0xDC0 in a
    network game); the player id and the two middle arguments are not used.

@@ -77,54 +77,42 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0041D300 */
 RichTextExtent RichTextCommandStream_MeasureWrappedBlock
           (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth);
 
-/* 0x0041D7C0 */
 void RichTextCommandStream_DrawWrappedBlock
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX);
 
-/* 0x0041D4A0 */
 bool RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX);
 
-/* 0x0041B100 */
 void RichTextCommandStream_PatchPayloadBySelector
           (RichTextCommandSelector selector,void *replacementPayload,uint16_t *stream);
 
-/* 0x0041B200 */
 void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream);
 
-/* 0x0041B950 */
 bool RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
-/* 0x0041BCB0 */
 bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError);
 
-/* 0x0041C8D0 */
 bool RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
            uint32_t *outBytesWritten);
 
-/* 0x0041CF30 */
 RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,uint16_t *commandStream);
 
-/* 0x0041D0F0 */
 bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight);
 
-/* 0x0041D9F0 */
 bool RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX,UiPixelExtent *lineAdvance);
 
-/* 0x0041D840 */
 void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream);
 
 #endif /* THANDOR_ASSETS_TEXT_RICHTEXT_H */

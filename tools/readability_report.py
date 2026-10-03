@@ -1,9 +1,9 @@
-"""Readability metrics per original function (the ones with an "Address:" header comment in src/).
+"""Readability metrics per original function (the functions listed in docs/original_addresses.txt).
 
 usage: python tools/readability_report.py [--list CATEGORY]
 
 For every function it checks:
-  documented   header comment with a description below the "Address:" line
+  documented   header comment with a description directly above the definition
   typed        no raw memory access by byte offset: *(T *)(p + 0x..), *_UI_FIELD(..., 0x.., ...),
                (int)&x + n address arithmetic
   named        no placeholder or offset-suffixed identifiers (fooXX_YY offsets, unknown*, arg0, payloadDword*,
@@ -38,25 +38,50 @@ def is_mask(digits):
 FLOW = re.compile(r"while\s*\(\s*(?:true|1)\s*\)|for\s*\(\s*;\s*;\s*\)|\bgoto\b")
 
 
+def original_function_names():
+    """The C names of the original functions (docs/original_addresses.txt)."""
+    names = set()
+    for line in (ROOT / "docs" / "original_addresses.txt").read_text(encoding="utf-8").splitlines():
+        parts = line.split()
+        if len(parts) >= 3 and parts[1] == "function":
+            names.add(parts[2])
+    return names
+
+
+# a function definition at column 0: optional return type, the name, "(" (the body follows before any ";")
+DEFINITION_LINE = re.compile(r"^(?:[A-Za-z_][\w \*]*?[\s\*])?([A-Za-z_]\w*)\s*\(", re.M)
+
+
 def functions():
+    """Each original function: its file, name, header comment (the comment right above it) and the code up to the
+    next original function's header comment."""
+    names = original_function_names()
     for path in sorted((ROOT / "src").rglob("*.c")):
         if "generated" in path.parts or "selftest" in path.parts or path.name.startswith("selftest"):
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
-        starts = [m.start() for m in re.finditer(r"/\* Address: 0x", text)] + [len(text)]
-        for a, b in zip(starts, starts[1:]):
+        starts = []
+        for m in DEFINITION_LINE.finditer(text):
+            name = m.group(1)
+            rest = text[m.end():]
+            if name not in names or not (0 <= rest.find("{") < (rest.find(";") if ";" in rest else len(rest))):
+                continue
+            before = text[:m.start()].rstrip()
+            header_start = before.rfind("/*") if before.endswith("*/") else m.start()
+            starts.append((header_start, name))
+        starts.append((len(text), None))
+        for (a, name), (b, _) in zip(starts, starts[1:]):
             chunk = text[a:b]
-            end = chunk.find("*/")
-            header, body = chunk[:end], chunk[end + 2:]
+            end = chunk.find("*/") if chunk.startswith("/*") else -2
+            header, body = chunk[:max(end, 0)], chunk[end + 2:]
             body = re.sub(r"/\*.*?\*/|//[^\n]*", " ", body, flags=re.S)
-            name = re.search(r"(\w+)\s*\n?\s*\(", body)
-            yield path.relative_to(ROOT).as_posix(), name.group(1) if name else "?", header, body
+            yield path.relative_to(ROOT).as_posix(), name, header, body
 
 
 def main():
     rows = []
     for path, name, header, body in functions():
-        documented = len([l for l in header.splitlines()[1:] if l.strip()]) >= 1
+        documented = bool(re.sub(r"^/\*", "", header).strip())
         typed = path.endswith(RAW_EXEMPT) or not RAW.search(body)
         # string-literal symbols (u_/s_<text>_<address>) are named after their text, e.g. "unknown character"
         named = not PLACEHOLDER.search(re.sub(r"\b[us]_\w+_[0-9a-f]{8}\b", " ", body))

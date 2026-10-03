@@ -23,19 +23,14 @@
 #define TEXT_ID_SAVE_GAME_NEW_ROW 0x2151
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0056C030 */
 void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList);
 
-/* 0x0056C190 */
 void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePageControlAddress32 deleteButton);
 
-/* 0x0056BDD0 */
 void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton);
 
-/* 0x0056C230 */
 void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton);
 
-/* 0x0056C2F0 */
 void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_SAVEGAME_H */

@@ -17,8 +17,7 @@ enum {
   TECHNOLOGY_COST_TEXT_XENITE = RICHTEXT_RECORD_UNITS_LITERAL_COLOR
 };
 
-/* Address: 0x0056AE70.
-   Handler of the seven technology area tabs, actions INGAME_ACTION_TECHNOLOGY_AREA_TAB1..7 (0x1014..0x101A,
+/* Handler of the seven technology area tabs, actions INGAME_ACTION_TECHNOLOGY_AREA_TAB1..7 (0x1014..0x101A,
    slots 20..26 of g_InGameUiActionHandlersPage10): a tab that is now selected deselects the other six, then the
    technology window is rebuilt for the chosen area (or the general text when the tab was deselected).
 */
@@ -49,8 +48,7 @@ void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableCon
 }
 
 
-/* Address: 0x0056B450.
-   Opens the technology panel for the first selected entity: suppresses the world view and releases its keyboard
+/* Opens the technology panel for the first selected entity: suppresses the world view and releases its keyboard
    focus, deselects the seven area tabs and, when the entity is researching (runtime flags +0xEC bit 0x40/0x80),
    selects the tab of the area that holds its current technology; then resets the shown technology to the basic
    one and rebuilds the panel.
@@ -127,8 +125,7 @@ static void BuildCatalog_FillSlots(InGameRuntimeRootUiGridView *inGameUiGridView
 }
 
 
-/* Address: 0x00569DF0.
-   Rebuilds the build catalog (48 entries): the production capabilities come from the selected buildings, or,
+/* Rebuilds the build catalog (48 entries): the production capabilities come from the selected buildings, or,
    with none selected, from all own models (class 22 adds capability 8, class 13 its definition's flags at
    +0xC4). Every registered army asset with flag 1, a texture and a matching capability that passes the
    technology and ownership/unlock tests (CF results of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction,
@@ -233,8 +230,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
 }
 
 
-/* Address: 0x0056A050.
-   Rebuilds the special build catalog (42 entries), offered only while the active faction owns a model of
+/* Rebuilds the special build catalog (42 entries), offered only while the active faction owns a model of
    runtime class 11: every registered army asset with flags 1 and 0x10 and a texture that passes the technology
    and ownership/unlock tests (CF results as in InGameBuildCatalog_RebuildGrid) gets a slot, in a grid of at most
    six columns with its texture and Xenite cost. The frame is sized to the grid (smaller margins below 800
@@ -336,8 +332,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
 }
 
 
-/* Address: 0x0056AEF0.
-   Handler of the technology window's research button, action INGAME_ACTION_TECHNOLOGY_RESEARCH (0x1013, slot 19
+/* Handler of the technology window's research button, action INGAME_ACTION_TECHNOLOGY_RESEARCH (0x1013, slot 19
    of g_InGameUiActionHandlersPage10): closes the window (world view shown again, game-window page 0) and sends
    INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE for the first selected building with the technology of the selected area
    tab, which starts that research; with no tab selected the technology argument is 0 and nothing starts.
@@ -389,8 +384,7 @@ void InGameTechnologyResearch_StartSelected(void *source)
 }
 
 
-/* Address: 0x0056B050.
-   Rebuilds the technology window for the first selected entity: the research button (off for definitions with
+/* Rebuilds the technology window for the first selected entity: the research button (off for definitions with
    flag 0x40 at +0xEC), the unit picture, and one area tab per technology the owner may research (at most seven;
    the definition's 28 technology slots are dealt out cyclically over the tab slots 6..0), each labelled with the
    technology name and its Xenite cost. With no tab selected it shows the general text; otherwise the selected

@@ -12,8 +12,7 @@
 
 /* Implementation ownership: ui/support/runtime. */
 
-/* Address: 0x0050F220.
-   Builds the list of chat messages to show (output, newest first, at most maxEntries) and ages the history:
+/* Builds the list of chat messages to show (output, newest first, at most maxEntries) and ages the history:
    sorts the slots by serial, newest first, and lists them until an empty slot, an expired one (older than
    RECENT_TEXT_HISTORY_LIFETIME) or maxEntries is reached. In the last two cases the remaining slots are
    emptied, so messages beyond maxEntries are forgotten too. Finally the serial counter advances.
@@ -67,8 +66,7 @@ void RecentTextHistory_SortAndBuildPointerList
 }
 
 
-/* Address: 0x0050F130.
-   Adds a chat message to the recent-text history: it replaces the oldest slot (lowest serial, an empty
+/* Adds a chat message to the recent-text history: it replaces the oldest slot (lowest serial, an empty
    slot has serial 0; on ties the last one) and gets the current serial, the text being copied with its
    rich-text commands expanded, truncated to the slot's 256 bytes.
 */
@@ -103,8 +101,7 @@ void RecentTextHistory_Insert(uint16_t *text)
 }
 
 
-/* Address: 0x0050F2E0.
-   Drops the oldest chat message from the recent-text history by emptying its slot (serial 0; on ties the last
+/* Drops the oldest chat message from the recent-text history by emptying its slot (serial 0; on ties the last
    one); the text itself stays. Used when the message lines are clicked away (InGameRecentText_TrimHistoryToThree,
    FrontendRecentText_TrimAndSortTopFive).
 */
@@ -136,8 +133,7 @@ void RecentTextHistory_RemoveOldest(void)
 }
 
 
-/* Address: 0x00548EC0.
-   Opens the credits screen (FRONTEND_PAGE_ACTION_CREDITS): loads gfx\panel\credits.gfx and two work buffers of
+/* Opens the credits screen (FRONTEND_PAGE_ACTION_CREDITS): loads gfx\panel\credits.gfx and two work buffers of
    its width * height bytes for the mask effect, then switches the frontend view to the credits page and hides
    the cursor. On any failure the partial resources are released and the menu stays as it was.
 */
@@ -185,8 +181,7 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 }
 
 
-/* Address: 0x0054D5D0.
-   Loads a 64x64 8-bit PCX picture named by sourcePath (a leaf name; path and wildcard characters are
+/* Loads a 64x64 8-bit PCX picture named by sourcePath (a leaf name; path and wildcard characters are
    dropped, the extension becomes .pcx, the file is looked up next to the executable) into outputPreview:
    its 256-colour palette (3 bytes per colour in the order blue, green, red) followed by the 4096 pixel
    indices. CF set when the file is missing, cannot be decoded (see Pcx_DecodeIndexed8: only 8-bit paletted
@@ -246,8 +241,7 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
 }
 
 
-/* Address: 0x0050F1A0.
-   Swaps two entries of the recent-text history, for the sort in RecentTextHistory_SortAndBuildPointerList:
+/* Swaps two entries of the recent-text history, for the sort in RecentTextHistory_SortAndBuildPointerList:
    their serials and their whole 256-byte text slots (in 32 steps of two dwords, swapped with XCHG as in the
    original: the history is rebuilt on the main thread and on the timer thread, FrontendSession_PeriodicTick).
 */

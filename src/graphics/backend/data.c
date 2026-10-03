@@ -11,13 +11,10 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0041F688 g_SoftwareBilinearPackedByteClampMask */
 __declspec(align(8)) uint64_t g_SoftwareBilinearPackedByteClampMask = 0xFFFFFFFFull;
 
-/* 0041F6E0 g_SoftwarePixelMmxConstants */
 __declspec(align(16)) SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants = {0};
 
-/* 0041FF20 g_SoftwareBilinearForwardFactors */
 __declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257] = {
     /*   0 */ {0},
     /*   1 */ {.blue = 64, .green = 64, .red = 64, .alpha = 64},
@@ -280,7 +277,6 @@ __declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257
        of g_UiScalerFirstPixelWeights, which followed the table, so its value is kept here. */
     {.blue = 16384, .green = 16384, .red = 16384, .alpha = 16384}};
 
-/* 00420F20 g_SoftwareBilinearInverseFactors */
 __declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257] = {
     /*   0 */ {.blue = 16448, .green = 16448, .red = 16448, .alpha = 16448},
     /*   1 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16383},
@@ -543,7 +539,6 @@ __declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257
        of g_SoftwareBlendAlphaFactors, which followed the table, so its value is kept here. */
     {0}};
 
-/* 00421720 g_SoftwareBlendAlphaFactors */
 __declspec(align(16)) SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256] = {
     /*   0 */ {0},
     /*   1 */ {.blue = 64, .green = 64, .red = 64},
@@ -802,7 +797,6 @@ __declspec(align(16)) SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256] = {
     /* 254 */ {.blue = 16319, .green = 16319, .red = 16319},
     /* 255 */ {.blue = 16383, .green = 16383, .red = 16383}};
 
-/* 00421F20 g_SoftwareBlendInverseAlphaFactors */
 __declspec(align(16)) SoftwareRgbWordLanes g_SoftwareBlendInverseAlphaFactors[256] = {
     /*   0 */ {.blue = 16448, .green = 16448, .red = 16448},
     /*   1 */ {.blue = 16383, .green = 16383, .red = 16383},
@@ -1061,97 +1055,70 @@ __declspec(align(16)) SoftwareRgbWordLanes g_SoftwareBlendInverseAlphaFactors[25
     /* 254 */ {.blue = 128, .green = 128, .red = 128},
     /* 255 */ {.blue = 64, .green = 64, .red = 64}};
 
-/* 00485824 g_GraphicsEndScene */
 __declspec(align(4)) GraphicsEndSceneProc *g_GraphicsEndScene = (void *)SoftwareGraphicsDispatch_NoOp;
 
-/* 00485850 g_PrimitiveDrawCallCount */
 __declspec(align(16)) GraphicsDiagnosticCounter g_PrimitiveDrawCallCount = 0;
 
-/* 00485854 g_TextureBindStateChangeCount */
 __declspec(align(4)) GraphicsDiagnosticCounter g_TextureBindStateChangeCount = 0;
 
-/* 00485858 g_TextureDeviceReloadCount */
 __declspec(align(8)) GraphicsDiagnosticCounter g_TextureDeviceReloadCount = 0;
 
-/* 004A8E80 g_SoftwarePixelPackTables */
 __declspec(align(16)) SoftwarePixelPackTables *g_SoftwarePixelPackTables = 0;
 
-/* 004A8E90 g_ActiveGraphicsAdapterIndex: uint32_t index into g_GraphicsAdapters of the active graphics adapter; 0xFFFFFFFF (GRAPHICS_ADAPTER_INDEX_NONE) before a display mode is set. */
+/* uint32_t index into g_GraphicsAdapters of the active graphics adapter; 0xFFFFFFFF (GRAPHICS_ADAPTER_INDEX_NONE) before a display mode is set. */
 __declspec(align(16)) uint32_t g_ActiveGraphicsAdapterIndex = 4294967295u;
 
-/* 004A8E94 g_SoftwareColorScaleQ16 */
 __declspec(align(4)) int32_t g_SoftwareColorScaleQ16 = 0x10000;
 
-/* 004A8E98 g_SoftwareColorBiasQ16 */
 __declspec(align(8)) int32_t g_SoftwareColorBiasQ16 = 0;
 
-/* 004A8E9C g_GraphicsDisplayModes */
 __declspec(align(4)) GraphicsDisplayMode *g_GraphicsDisplayModes = 0;
 
-/* 004A8EA0 g_GraphicsDisplayModeCount */
 __declspec(align(16)) GraphicsDisplayModeCount g_GraphicsDisplayModeCount = 0;
 
-/* 004A8EA4 g_GraphicsAdapters */
 __declspec(align(4)) GraphicsAdapterRecord *g_GraphicsAdapters = 0;
 
-/* 004A8EA8 g_GraphicsAdapterCount */
 __declspec(align(8)) uint32_t g_GraphicsAdapterCount = 0;
 
-/* 004A8EAC g_SoftwarePixelFormatConfig */
 __declspec(align(4)) SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig = {0};
 
-/* 004A8ED0 g_GraphicsSetDisplayMode */
 __declspec(align(16)) SoftwareDisplayModeHookProc *g_GraphicsSetDisplayMode = (void *)SoftwarePixelFormat_BaseDisplayModeHook;
 
-/* 004A8EDC g_SoftwareFramebufferDestroy: SoftwareFramebufferDestroyProc * hook slot, statically SoftwareFramebuffer_Destroy (graphics/backend/software.c). */
+/* SoftwareFramebufferDestroyProc * hook slot, statically SoftwareFramebuffer_Destroy (graphics/backend/software.c). */
 __declspec(align(4)) SoftwareFramebufferDestroyProc *g_SoftwareFramebufferDestroy = (void *)SoftwareFramebuffer_Destroy;
 
-/* 004A8EE4 g_GraphicsFramebufferCaptureRegion */
 __declspec(align(4)) GraphicsFramebufferCaptureRegionProc *g_GraphicsFramebufferCaptureRegion = 0;
 
-/* 004A8EE8 g_SoftwareBuildPixelPackTables */
 __declspec(align(8)) SoftwareBuildPixelPackTablesProc *g_SoftwareBuildPixelPackTables = (void *)SoftwarePixelFormat_BuildChannelPackTables;
 
-/* 004A8F04 g_GraphicsTextureSourceBlitHalfSourceRgb */
 __declspec(align(4)) GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitHalfSourceRgb = 0;
 
-/* 004A8F0C g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha */
 __declspec(align(4)) GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc *g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = 0;
 
-/* 004A8F10 g_GraphicsTextureSourceStretchDirectColorBilinear */
 __declspec(align(16)) GraphicsTextureSourceStretchDirectColorBilinearProc *g_GraphicsTextureSourceStretchDirectColorBilinear = 0;
 
-/* 004A8F14 g_GraphicsTextureSourceBlitSourceAlphaPaletteBank */
 __declspec(align(4)) GraphicsTextureSourceBlitSourceAlphaPaletteBankProc *g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = 0;
 
-/* 004A8F1C g_GraphicsTextureSourceBlitSaturatedAddRgb */
 __declspec(align(4)) GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitSaturatedAddRgb = 0;
 
-/* 004A8F24 g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd */
 __declspec(align(4)) GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = 0;
 
-/* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin: GraphicsFramebufferCopyRegionToOriginProc * hook slot, statically SoftwareFramebuffer_CopyRegionToOrigin (software.c). */
+/* GraphicsFramebufferCopyRegionToOriginProc * hook slot, statically SoftwareFramebuffer_CopyRegionToOrigin (software.c). */
 __declspec(align(4)) GraphicsFramebufferCopyRegionToOriginProc *g_GraphicsFramebufferCopyRegionToOrigin = (void *)SoftwareFramebuffer_CopyRegionToOrigin;
 
-/* 004A8F38 g_GraphicsFramebufferCopyOriginToRegion: GraphicsFramebufferCopyOriginToRegionProc * hook slot, statically SoftwareFramebuffer_CopyOriginToRegion (software.c). */
+/* GraphicsFramebufferCopyOriginToRegionProc * hook slot, statically SoftwareFramebuffer_CopyOriginToRegion (software.c). */
 __declspec(align(8)) GraphicsFramebufferCopyOriginToRegionProc *g_GraphicsFramebufferCopyOriginToRegion = (void *)SoftwareFramebuffer_CopyOriginToRegion;
 
-/* 004D1234 g_SoftwareDepthRowStrideBytes */
 __declspec(align(4)) uint32_t g_SoftwareDepthRowStrideBytes = 0;
 
-/* 004D123C g_SoftwareAuxiliaryTargetBase */
 __declspec(align(4)) void *g_SoftwareAuxiliaryTargetBase = 0;
 
-/* 004D1240 g_SoftwareDepthEpoch */
 __declspec(align(16)) int32_t g_SoftwareDepthEpoch = 0;
 
-/* 004D1244 g_SoftwareChainedSetDisplayMode */
 __declspec(align(4)) SoftwareDisplayModeHookProc *g_SoftwareChainedSetDisplayMode = 0;
 
-/* 004D1248 g_SoftwareDrawQueue */
 __declspec(align(8)) SoftwareDrawQueueProc *g_SoftwareDrawQueue = 0;
 
-/* 004D1260 g_SoftwareRasterHandlers16Bit */
 __declspec(align(16)) SoftwareRasterHandler *g_SoftwareRasterHandlers16Bit[64] = {
     /*  0 */ (void *)SoftwareRaster16_Mode00,
     /*  1 */ (void *)SoftwareRaster16_Mode01,
@@ -1217,7 +1184,6 @@ __declspec(align(16)) SoftwareRasterHandler *g_SoftwareRasterHandlers16Bit[64] =
     /* 61 */ 0,
     /* 62 */ (void *)SoftwareRaster16_Mode25};
 
-/* 004D1360 g_SoftwareRasterHandlersNon16Bit */
 __declspec(align(16)) SoftwareRasterHandler *g_SoftwareRasterHandlersNon16Bit[64] = {
     /*  0 */ (void *)SoftwareRasterNon16_Mode00,
     /*  1 */ (void *)SoftwareRasterNon16_Mode01,
@@ -1283,7 +1249,6 @@ __declspec(align(16)) SoftwareRasterHandler *g_SoftwareRasterHandlersNon16Bit[64
     /* 61 */ 0,
     /* 62 */ (void *)SoftwareRasterNon16_Mode25};
 
-/* 004D1460 g_SoftwareRasterHandlersAuxiliary */
 __declspec(align(16)) SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[64] = {
     /*  0 */ (void *)SoftwareRasterAux_Mode00,
     /*  1 */ (void *)SoftwareRasterAux_Mode01,
@@ -1349,7 +1314,7 @@ __declspec(align(16)) SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[6
     /* 61 */ 0,
     /* 62 */ (void *)SoftwareRasterAux_Mode25};
 
-/* 00518080 g_SoftwareBilinearPackedInterpolationWeights256: int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c) */
+/* int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c) */
 __declspec(align(16)) int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4] = {
     {16448, 0, 0, 0},
     {16383, 64, 0, 0},
@@ -1608,41 +1573,28 @@ __declspec(align(16)) int16_t g_SoftwareBilinearPackedInterpolationWeights256[25
     {128, 16319, 0, 0},
     {64, 16383, 0, 0}};
 
-/* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
 __declspec(align(16)) uint32_t g_SoftwarePixelIntensityToNativeColorLut256[256] = {0};
 
-/* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
 __declspec(align(16)) uint64_t g_SoftwareBlendUnityWordLanesQ14 = 0x4000400040004000ull;
 
-/* 00577C00 IID_IDirectDraw2_Local */
 __declspec(align(16)) TH_LEGACY_GUID IID_IDirectDraw2_Local = {.Data1 = 0xB3A6F3E0, .Data2 = 11075, .Data3 = 4559, .Data4 = {162, 222, 0, 170, 0, 185, 51, 86}};
 
-/* 00577C10 IID_IDirectDrawSurface3_Local */
 __declspec(align(16)) TH_LEGACY_GUID IID_IDirectDrawSurface3_Local = {.Data1 = 0xDA044E00, .Data2 = 27058, .Data3 = 4560, .Data4 = {161, 213, 0, 170, 0, 184, 223, 187}};
 
-/* 00577C40 g_DirectDraw */
 __declspec(align(16)) IDirectDraw *g_DirectDraw = 0;
 
-/* 00577C44 g_DirectDraw2 */
 __declspec(align(4)) IDirectDraw2 *g_DirectDraw2 = 0;
 
-/* 00577C48 g_PrimarySurfaceBase */
 __declspec(align(8)) IDirectDrawSurface *g_PrimarySurfaceBase = 0;
 
-/* 00577C50 g_BackSurfaceBase */
 __declspec(align(16)) IDirectDrawSurface *g_BackSurfaceBase = 0;
 
-/* 00577E30 g_GraphicsDisplayModeFinalize */
 __declspec(align(16)) SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize = 0;
 
-/* 00577E34 g_CursorCurrentVisibilityToken */
 __declspec(align(4)) int32_t g_CursorCurrentVisibilityToken = 0;
 
-/* 00577E4C g_GraphicsBackendAccessState */
 __declspec(align(4)) int32_t g_GraphicsBackendAccessState = -0x1;
 
-/* 0057805C g_GraphicsTextureSlots */
 __declspec(align(4)) GraphicsTextureResource **g_GraphicsTextureSlots = 0;
 
-/* 00578060 g_DisplayFramebufferAccess */
 __declspec(align(16)) SoftwareFramebufferAccess g_DisplayFramebufferAccess = {0};

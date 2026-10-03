@@ -28,8 +28,7 @@ static uint16_t FrontendScenarioList_LevelAvailabilityMarker(uint32_t maskWordIn
   return FRONTEND_TEXT_STYLE_NORMAL;
 }
 
-/* Address: 0x00547D60.
-   Frame update of the frontend root: the frameUpdate callback of g_UiRootCallbacks_0053DA70, which Frontend_Init
+/* Frame update of the frontend root: the frameUpdate callback of g_UiRootCallbacks_0053DA70, which Frontend_Init
    pushes on the UI root stack. Sorts the chat history, runs the timeout tick of the current network state,
    plays the briefing movie in a loop and the movie view's mask pattern, shows the chat line only in network
    games, updates the 3D menu room and the cursor from the hovered control, and on the game selection page
@@ -161,8 +160,7 @@ static bool FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
   return false;
 }
 
-/* Address: 0x0054C9F0.
-   Opens the mission briefing page (FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE) for the loaded level: the
+/* Opens the mission briefing page (FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE) for the loaded level: the
    briefing text of the local player's faction, the level title in template 0x219B, the level's briefing movie
    (level digits + .flm) as animated image, and the button set (Back/Begin from the menu; Exit instead of Back
    in a campaign or a re-initialised scenario). The opponent settings stay visible only while an active

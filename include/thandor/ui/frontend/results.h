@@ -55,69 +55,57 @@
           (((uint8_t)(lowUnit) & FACTION_COLOUR_TEXT_DIGIT_MASK) << 24 | (uint32_t)(uint8_t)(highUnit) << 28)
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00517020 */
 void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,int clipTop,int clipLeft,
           FrontendResultsColumnSequenceControl *control);
 
-/* 0x00517FB0 */
 UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
-/* 0x005177F0 */
 void FrontendResultsTable_DrawColourColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
-/* 0x005178B0 */
 void FrontendResultsTable_DrawFactionColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
-/* 0x00517960 */
 void FrontendResultsTable_DrawFormattedFactionFieldColumn
           (TextResourceId valueFormatResourceId,TextResourceId headerResourceId,
           FrontendResultsFactionFieldByteOffset factionFieldOffset,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,
           UiPixelCoordinate drawY,UiPixelCoordinate drawX,FrontendResultsRowMetrics *rowMetrics);
 
-/* 0x00517A30 */
 void FrontendResultsTable_DrawPointsColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
-/* 0x00517B10 */
 void FrontendResultsTable_DrawEconomyColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
-/* 0x00517BF0 */
 void FrontendResultsTable_DrawMilitaryColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
-/* 0x00517CD0 */
 void FrontendResultsTable_DrawPlayerColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
 
-/* 0x005174E0 */
 void FrontendResultsGraph_DrawFactionWeightSumColumn
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
           FrontendResultsFactionWeightPair *factionWeights);
 
-/* 0x005175F0 */
 void FrontendResultsGraph_DrawFactionWeightLane0Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
           FrontendResultsFactionWeightPair *factionWeights);
 
-/* 0x005176F0 */
 void FrontendResultsGraph_DrawFactionWeightLane1Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
           FrontendResultsFactionWeightPair *factionWeights);

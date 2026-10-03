@@ -11,5 +11,4 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 004BD8C8 g_SpriteAssetRegistryHead */
 __declspec(align(8)) SpriteAssetHeader * g_SpriteAssetRegistryHead = 0;

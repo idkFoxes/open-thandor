@@ -11,52 +11,37 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0041734C g_SoundPlayLooping */
 __declspec(align(4)) SoundPlayVoiceProc *g_SoundPlayLooping = (void *)SoundBackendDisabled_PlayLooping;
 
-/* 00417350 g_SoundStopVoice */
 __declspec(align(16)) SoundStopVoiceProc *g_SoundStopVoice = (void *)SoundBackendDisabled_StopVoice;
 
-/* 00417358 g_SoundIsVoicePlaying */
 __declspec(align(8)) SoundIsVoicePlayingProc *g_SoundIsVoicePlaying = (void *)SoundBackendDisabled_IsVoicePlaying;
 
-/* 00417360 g_SoundSetVoiceGains */
 __declspec(align(16)) SoundSetVoiceGainsProc *g_SoundSetVoiceGains = (void *)SoundBackendDisabled_SetVoiceGains;
 
-/* 00417364 g_SoundSampleCoefficientBlock */
 __declspec(align(4)) short g_SoundSampleCoefficientBlock[256] = {0};
 
-/* 00573FC8 pDirectSoundCreate */
 __declspec(align(8)) DirectSoundCreate *pDirectSoundCreate = 0;
 
-/* 005744C2 dynapi_4 */
 __declspec(align(4)) char dynapi_4[7] = "DSOUND";
 
-/* 0057459A dynapi_20 */
 __declspec(align(4)) char dynapi_20[18] = "DirectSoundCreate";
 
-/* 00582EE0 g_DirectSound */
 __declspec(align(16)) IDirectSound *g_DirectSound = 0;
 
-/* 00582EE4 g_PrimarySoundBuffer */
 __declspec(align(4)) IDirectSoundBuffer *g_PrimarySoundBuffer = 0;
 
-/* 00582EE8 g_PrimaryVolume */
 __declspec(align(8)) TH_LEGACY_LONG g_PrimaryVolume = 0;
 
-/* 00582EEC g_PrimaryPan */
 __declspec(align(4)) TH_LEGACY_LONG g_PrimaryPan = 0;
 
-/* 00582EF0 WaveFormat_PCM_22050_Stereo16 */
 __declspec(align(16)) WAVEFORMATEX WaveFormat_PCM_22050_Stereo16 = {0};
 
-/* 00582F10 PrimarySoundBufferDesc */
 __declspec(align(16)) DSBUFFERDESC_DX6 PrimarySoundBufferDesc = {0};
 
-/* 00582F24 g_DirectSoundVoiceSetRegistry */
 __declspec(align(4)) DirectSoundVoiceSet **g_DirectSoundVoiceSetRegistry = 0;
 
-/* 00582F2E g_DirectSoundGainAttenuation: indexed by channel gain Q15 >> 8 (0..128; the spatial gains are
+/* indexed by channel gain Q15 >> 8 (0..128; the spatial gains are
    clamped to SPATIAL_SOUND_GAIN_Q15_FULL); [128] = 0. 14 bytes of NOP fill followed in the original. */
 __declspec(align(4)) int32_t g_DirectSoundGainAttenuation[129] = {
         /*   0 */ -10000, -7000, -6000, -5415, -5000, -4678, -4415, -4193,

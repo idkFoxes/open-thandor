@@ -14,8 +14,7 @@
    original's positive stack leftover (see the quirk there). */
 #define AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER 1
 
-/* Address: 0x00536FC0.
-   Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
+/* Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases). Skipped while an
    interrupted command is pending or a target command is still running (commandGeneration > 0). Keeps the
    current target (re-stamping commandGeneration), falls back to the stored group-attack target (+0x98) when
@@ -60,8 +59,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
 }
 
 
-/* Address: 0x0053B8B0.
-   Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until
+/* Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until
    the group is strong enough (sum >= 0x200), then picks the target with the highest class base score from
    workspace 07 (or workspace 03 when 07 is empty) and sends every collected army to attack it. The target
    class is read with a single dereference from the target model's +0x4C, not from its type field.
@@ -151,8 +149,7 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
 }
 
 
-/* Address: 0x005372C0.
-   Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's
+/* Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's
    eight class counters (+0x100); a positive sum searches armies of other factions, a negative one other armies
    of the own faction (skipping entities flagged 0x400), zero searches nothing. Candidates must carry the
    source faction's bit (2 << 2 * faction) in +0x50 and are scored by AiCombatTarget_EvaluateCandidateScore
@@ -268,8 +265,7 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
 }
 
 
-/* Address: 0x00537060.
-   Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it. Requires overlapping depth-bin
+/* Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it. Requires overlapping depth-bin
    masks, a faction relation that fits the search (not friendly for sourceClassCount > 0, friendly otherwise,
    where only damaged candidates count) and a horizontal distance within the source radius (+0x4C) plus 2.0.
    The score adds weighted terms for the remaining clearance, the class base score, the two armies' class

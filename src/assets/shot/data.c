@@ -11,5 +11,4 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0052AF50 g_ShotDefinitionRegistry */
 __declspec(align(16)) ShotDefinition *g_ShotDefinitionRegistry[256] = {0};

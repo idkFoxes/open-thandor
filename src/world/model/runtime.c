@@ -13,8 +13,7 @@
 
 /* Implementation ownership: world/model/runtime. */
 
-/* Address: 0x00529360.
-   Attaches a new model to one of the attachment points of modelRuntime (recorded by
+/* Attaches a new model to one of the attachment points of modelRuntime (recorded by
    ModelNodeRuntime_CreateHierarchyRecursive): creates the model childDefinitionId for the same army, stores it in
    the attachment entry, hangs its root node into the parent node's child slot and gives it the saved local
    rotation and the attachment translation. Returns true and stores the child's model runtime in
@@ -162,8 +161,7 @@ static bool ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
 }
 
 
-/* Address: 0x004BDDB0.
-   Renders a model node and its children for the main view: clears the node's MODEL_NODE_FLAG_RENDERED, culls it
+/* Renders a model node and its children for the main view: clears the node's MODEL_NODE_FLAG_RENDERED, culls it
    against the four side planes of the view frustum and the near plane, and draws it when it lies fully in front
    of the near plane, picking the level of detail by depth. A node outside a plane by more than its subtree radius
    ends the walk; otherwise the children are visited even when the node itself was culled. Called for every
@@ -199,8 +197,7 @@ void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRun
 }
 
 
-/* Address: 0x004BE270.
-   Alternate model renderer of the frontend/in-game world view (src/ui/frontend/runtime.c, chosen when the
+/* Alternate model renderer of the frontend/in-game world view (src/ui/frontend/runtime.c, chosen when the
    pointer context compares hits by metric only): draws a node and all its children without culling. The centre
    of the node's local bounds is transformed into g_ModelCullViewRelative to collect the nearby shading
    records; every drawn node gets MODEL_NODE_FLAG_RENDERED.
@@ -242,8 +239,7 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
 }
 
 
-/* Address: 0x0050B440.
-   Casts a ray from the origin in the direction (elevationAngle, azimuthAngle), at most maximumDistanceQ12 long,
+/* Casts a ray from the origin in the direction (elevationAngle, azimuthAngle), at most maximumDistanceQ12 long,
    against the models in worldRuntime's owner list whose owner class is requiredOwnerId, skipping excludedNode and
    ray-transparent models (MODEL_NODE_FLAG_RAY_TRANSPARENT) and pre-filtering by the depth bin masks of the X and Y
    ranges the ray can reach. Returns true when a model was hit. *outNearestDistanceQ12 always receives the
@@ -297,8 +293,7 @@ bool ModelRuntime_RaycastCandidateListNearest
 }
 
 
-/* Address: 0x0051C260.
-   Returns the condition ratio (Q12, Q12_ONE = full condition) of the model hierarchy of a runtime entry (an
+/* Returns the condition ratio (Q12, Q12_ONE = full condition) of the model hierarchy of a runtime entry (an
    army).
 */
 Q12 ModelRuntime_QueryHierarchyConditionRatioQ12(RuntimeModelFactionPrefix *runtimeEntry)
@@ -308,8 +303,7 @@ Q12 ModelRuntime_QueryHierarchyConditionRatioQ12(RuntimeModelFactionPrefix *runt
 }
 
 
-/* Address: 0x0051C280.
-   Returns the active energy demand of an army's model hierarchy (ModelRuntimeHierarchy_ComputeEnergyDemand);
+/* Returns the active energy demand of an army's model hierarchy (ModelRuntimeHierarchy_ComputeEnergyDemand);
    the in-game selection detail shows it divided by 16 as the energy value.
 */
 int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime)
@@ -323,8 +317,7 @@ int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime)
 }
 
 
-/* Address: 0x0051C2A0.
-   Returns the energy demand of an army's model hierarchy (ModelRuntimeHierarchy_ComputeEnergyDemand): the
+/* Returns the energy demand of an army's model hierarchy (ModelRuntimeHierarchy_ComputeEnergyDemand): the
    active part and the total. The selection panel (src/gameplay/selection/runtime.c) draws it as a stepped meter.
 */
 ModelHierarchyEnergyDemand
@@ -335,8 +328,7 @@ ModelRuntime_QueryHierarchyEnergyDemand(RuntimeModelFactionPrefix *runtimeEntry)
 }
 
 
-/* Address: 0x00528A40.
-   Allocates and zeroes the model runtime pool (MODEL_RUNTIME_SLOT_COUNT 0x200-byte slots, 4 MiB) and records
+/* Allocates and zeroes the model runtime pool (MODEL_RUNTIME_SLOT_COUNT 0x200-byte slots, 4 MiB) and records
    its rebase delta (pool base - 1) for savegames. Returns 0, or the allocation error
    (FATAL_ERROR_ARENA_EXHAUSTED / ARENA_HEAP_CORRUPT, never 0 from the arena).
 */
@@ -391,8 +383,7 @@ static void ModelRuntimePool_ReleaseDefinitionNodeResources(MdlSerializedNodeHea
 }
 
 
-/* Address: 0x00528A70.
-   Counterpart of ModelRuntimePool_Init: frees the model runtime pool, releases the resources of every
+/* Counterpart of ModelRuntimePool_Init: frees the model runtime pool, releases the resources of every
    registered model definition's node tree (see ModelRuntimePool_ReleaseDefinitionNodeResources) and clears
    the definition registry.
 */
@@ -488,8 +479,7 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
 }
 
 
-/* Address: 0x00528B30.
-   Before the model runtime pool is written to a savegame (in-game save, src/ui/ingame/runtime.c): turns the
+/* Before the model runtime pool is written to a savegame (in-game save, src/ui/ingame/runtime.c): turns the
    pointers of every used slot into offsets (owner and linked army against g_ArmyRuntimeRebaseBaseMinusOne, root
    and attachment parent nodes against g_RuntimeObjectRebaseBaseMinusOne, linked model runtime and attachment
    children against g_ModelRuntimeRebaseDelta; NULL stays 0), replaces the definition pointer by its id and runs
@@ -561,8 +551,7 @@ static void ModelRuntime_RebaseAttachmentsAfterLoad(ModelRuntimeSlot *modelRunti
 }
 
 
-/* Address: 0x00528CF0.
-   After a savegame load, counterpart of ModelRuntimePool_UnrebaseBeforeSave: turns the saved offsets of every
+/* After a savegame load, counterpart of ModelRuntimePool_UnrebaseBeforeSave: turns the saved offsets of every
    used model runtime slot back into pointers, replaces the saved definition id by the registered definition,
    runs the class's load-repair callback and rebuilds the attachment descriptors from the definition. A slot
    whose definition is no longer registered is dropped.
@@ -628,8 +617,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
 }
 
 
-/* Address: 0x00529560.
-   Destroys a model runtime: drops player references to it, runs its class release handler, destroys the
+/* Destroys a model runtime: drops player references to it, runs its class release handler, destroys the
    attached model runtimes, clears world nodes that still point to it and releases its node tree.
    An attached part is then removed from its parent's attachment list and the army's derived metrics are
    rebuilt; a root model destroys its army instead, first spawning the army asset its definition names at
@@ -710,8 +698,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
 }
 
 
-/* Address: 0x00529690.
-   Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record
+/* Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record
    of the node's sprite asset with kind 2 (low nibble of packedLookupKey) creates a projectile from shotDefinition
    at the point's world position, aimed at the target shifted by the point's X/Y offset from the node, so that
    side-by-side launchers fire parallel shots. Called by the army weapon code (src/gameplay/army/movement.c,
@@ -755,8 +742,7 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
 }
 
 
-/* Address: 0x00529140.
-   Creates a model runtime for an army from a model definition id: takes the first free pool slot, copies the
+/* Creates a model runtime for an army from a model definition id: takes the first free pool slot, copies the
    definition's starting values (armour points at +0x3C and the values at +0x40..+0x5C), raises two of the
    army's values to the definition's, builds the model node tree, its bounding radius and transforms, and runs
    the definition class's initialize handler. Returns 0 and stores the slot in *outModelRuntime, or returns

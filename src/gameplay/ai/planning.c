@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/ai/planning. */
 
-/* Address: 0x00514350.
-   Runs the planning phase for every active AI faction (1..7, a faction without a player block) and scales its
+/* Runs the planning phase for every active AI faction (1..7, a faction without a player block) and scales its
    terrain contribution by the game speed, then rebuilds the per-faction AI pressure table: each of the eight
    pressure channels decays to about 3/4, every runtime model adds 0x100 to the channel of its definition
    (+0x5C, stock data ~0) for each other faction flagged in its faction mask, and the channel maximum is stored.
@@ -110,8 +109,7 @@ void AiFactionRuntime_RebuildPlanningCapacityState(void)
 }
 
 
-/* Address: 0x0053BA50.
-   Average faction-weighted score (AiArmyCandidate_ComputeFactionWeightedScore) of the enabled army assets
+/* Average faction-weighted score (AiArmyCandidate_ComputeFactionWeightedScore) of the enabled army assets
    that can carry the model definition of runtimeClassId: those whose own linked-definition list names it,
    or, once the technology of the asset's first linked definition is unlocked, one of its (up to two) child
    lists. Only positive scores count; 0 when the class has no definition or no asset scores. Only caller:
@@ -218,8 +216,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
 }
 
 
-/* Address: 0x005379E0.
-   Collects up to four distinct movement masks of the faction's own units (workspace 01) into
+/* Collects up to four distinct movement masks of the faction's own units (workspace 01) into
    g_AiActiveGridMaskClasses[0..3] (0xFFFFFFFF = unused): GRID_SCRATCH_BLOCKED | distance-band bit (8 +
    footprintRadiusClass) | terrain bit (24 + terrainTraversalClass), both taken from the definition of the unit's
    model runtime; only mobile units (accelerationPerTick != 0) with non-negative classes count. The site scan accepts
@@ -281,8 +278,7 @@ void AiPlanning_CollectActiveGridMaskClasses(void)
 }
 
 
-/* Address: 0x0053C810.
-   AI planning job of the simulation step for one faction. Each faction gets its turn every 64 simulation ticks
+/* AI planning job of the simulation step for one faction. Each faction gets its turn every 64 simulation ticks
    (bits 3-5 of the tick select the faction); bit 6 alternates between the unit phase (behaviour update and
    group-to-target assignment) and the economy phase (relations, pending construction requests, then the
    purchase candidates, which are reused from the faction's cache while it is valid and the anchor cooldowns
@@ -367,8 +363,7 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InG
 }
 
 
-/* Address: 0x00539070.
-   Works through the faction's pending asset requests (workspace 04) in order and hands each to its placement
+/* Works through the faction's pending asset requests (workspace 04) in order and hands each to its placement
    handler by ARM id: 300 only while no unassigned 330 exists, 330/332 at a workspace site, 333 derived from a
    330/332 site, other ids below 340 at a reachable candidate, ids from 340 on near the faction anchor.
    Returns true (CF set) as soon as a handler has placed an asset (g_AiConstructionPendingAssetConsumedCount).
@@ -426,8 +421,7 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
 }
 
 
-/* Address: 0x005378C0.
-   Buys the AI's candidates in descending weight order: each candidate's cost is taken from a running copy of
+/* Buys the AI's candidates in descending weight order: each candidate's cost is taken from a running copy of
    the faction's Xenite, and every candidate with an eligible producer is applied, until one is no longer
    affordable. The cost is deducted even when no producer is found. Returns true (CF set) when candidates
    existed but none was applied, false otherwise.
@@ -538,8 +532,7 @@ static bool AiConstructionPlanner_TryPlaceStorageAtResourceSitesOf
   return false;
 }
 
-/* Address: 0x005393F0.
-   Builds a pending ARM_0333 (the caller's only asset here, 0x14D) next to a resource site: first for each
+/* Builds a pending ARM_0333 (the caller's only asset here, 0x14D) next to a resource site: first for each
    ARM_0330 site of workspace 08, then for each ARM_0332 site, where AiPlacement_ReserveAdditionalSpecialSite
    accepts the site it creates the structure at the nearest valid workspace-09 cell, initialises it like the other
    planners, starts its effect and removes it from the pending list (a failed creation ends the attempt). Without
@@ -562,8 +555,7 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
 }
 
 
-/* Address: 0x0053A6E0.
-   Proposes the best producible army asset for base defence. Once Arms Factories is researched and the planning
+/* Proposes the best producible army asset for base defence. Once Arms Factories is researched and the planning
    capacity allows it, scores the eligible army assets of workspace 11 with weight profile A and proposes the best
    one. Its weight (armyVariantABaseWeight) is divided
    by 1 + the number of pending requests with ARM ids 340..379, then taken x3/4 while the faction's primary
@@ -632,8 +624,7 @@ void AiArmyCandidate_AddBestDefenseAsset(FactionRuntimeIndex factionIndex,WorldR
 }
 
 
-/* Address: 0x0053AC20.
-   Once the faction has an ARM 330 (0x14A) structure: while Arms Factories is still locked it proposes building
+/* Once the faction has an ARM 330 (0x14A) structure: while Arms Factories is still locked it proposes building
    ARM 301 (0x12D) if it has none and the capacity allows; after the research it proposes the best class of the
    ARM 302..306 (0x12E..0x132) family, its weight divided by twice the class's existing count (if any).
 */
@@ -674,8 +665,7 @@ void AiStrategicClass_AddArmsFactoriesStageBuilding(FactionRuntimeIndex factionI
 }
 
 
-/* Address: 0x0053B070.
-   Once the faction has an ARM 330 (0x14A) structure and the planning capacity allows it, proposes the class
+/* Once the faction has an ARM 330 (0x14A) structure and the planning capacity allows it, proposes the class
    chosen from the ARM 321..323 (0x141..0x143) family, its weight divided by twice the class's existing count
    (if any).
 */
@@ -744,8 +734,7 @@ static void AiConstructionPlanner_CreatePlacedAsset
   AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
 }
 
-/* Address: 0x005397C0.
-   Default placement of a pending building (every asset the request dispatcher does not handle specially), only
+/* Default placement of a pending building (every asset the request dispatcher does not handle specially), only
    while the faction's primary anchor cooldown is nonzero: among the workspace-09 cells at least 0x2000 from every
    active primary-workspace structure it takes the one with the lowest Manhattan distance to the primary anchor
    plus 4x the distance to the nearest workspace-02 site (at most 0x5000) or, without such a site, 2x the
@@ -822,8 +811,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
 }
 
 
-/* Address: 0x0053A800.
-   Exploration: while there are general sites (workspace 05) and workspace 01 has at most 10 entries, scores
+/* Exploration: while there are general sites (workspace 05) and workspace 01 has at most 10 entries, scores
    the eligible army assets of workspace 11 with weight profile B and proposes the best one. Its weight grows
    with the unexplored share of the terrain, (100 - explored %) * coefficient / (32 * (workspace 01 count + 1)),
    halved while there are targets (workspace 07).
@@ -872,8 +860,7 @@ void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,Wo
 }
 
 
-/* Address: 0x0053A8D0.
-   Attack: while there are targets (workspace 07) and workspace 01 has at most 10 entries, scores the eligible
+/* Attack: while there are targets (workspace 07) and workspace 01 has at most 10 entries, scores the eligible
    army assets of workspace 11 with weight profile C and proposes the best one with armyVariantCBaseWeight.
    The halving for an empty workspace 07 can never apply (the entry check requires targets); the original
    (0x0053A95D) has the same dead test.
@@ -932,8 +919,7 @@ static bool AiPurchaseCandidate_DefinitionListsResearch(ModelDefinition *definit
   return false;
 }
 
-/* Address: 0x00537630.
-   Returns false (CF clear) when an idle structure of workspace 00 can carry out a purchase candidate. A
+/* Returns false (CF clear) when an idle structure of workspace 00 can carry out a purchase candidate. A
    technology must be available to the faction and listed in the 28 research slots (+0x1C8..+0x234) of the
    definition of a structure whose runtimeFlags have none of 0x89. An army asset's producer class mask (asset +0x14) must not
    overlap g_AiPurchaseAppliedArmyClassMask (one purchase per producer class and round); bit 0x10 needs a
@@ -1008,8 +994,7 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
 }
 
 
-/* Address: 0x00537800.
-   Carries out an affordable purchase candidate. A technology starts researching at the first idle workspace-00
+/* Carries out an affordable purchase candidate. A technology starts researching at the first idle workspace-00
    structure that lists it (the checks of AiPurchaseCandidate_HasEligibleProducer), whose workspace slot is then
    cleared so it takes no second job this round. An army asset is appended once to the faction's pending asset
    list, and its producer class mask is added to g_AiPurchaseAppliedArmyClassMask.
@@ -1049,8 +1034,7 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
 }
 
 
-/* Address: 0x00539A40.
-   Sets bit 0 of the faction's runtimeFlags when the faction is active enough: one assigned workspace 00
+/* Sets bit 0 of the faction's runtimeFlags when the faction is active enough: one assigned workspace 00
    structure below ARM 340, two assigned ARM 340..379 structures, or three qualifying entries counting one such
    structure plus the armies of workspace 01 (field +0x0C >= 1 with +0x140 set, or >= 2 with +0x160 set).
    When nothing triggers but the flag is already set, re-applies the model flags of every workspace 00/01
@@ -1130,8 +1114,7 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
 }
 
 
-/* Address: 0x00539D20.
-   Proposes a resource storage building when the faction's free storage runs low (ARM 331 for Xenite, the
+/* Proposes a resource storage building when the faction's free storage runs low (ARM 331 for Xenite, the
    caller's candidate, ARM 333, for Tritium), plus extra weight per usable resource site.
    Proposes the resource structure candidateArmyAssetId unless one of it is still unassigned. ARM 331 (0x14B):
    with an ARM 330 present and the Xenite storage limit below the knowledge limit, when the free storage
@@ -1199,8 +1182,7 @@ void AiStructureCandidate_AddResourceStorage
 }
 
 
-/* Address: 0x00539E60.
-   Proposes ARM 310 (0x136) once an ARM 330 exists and no ARM 310 is unassigned, when baseline Energy supply
+/* Proposes ARM 310 (0x136) once an ARM 330 exists and no ARM 310 is unassigned, when baseline Energy supply
    plus the record's +0x358 rate (typed tritiumExtractionRateQ4PerTick) exceeds the Energy generation capacity.
    Weight: surplus * demand / capacity * resource136DeficitScoreNumerator / resource136DeficitScoreDenominator
    (Q4 values taken as integers, demand at least 1).
@@ -1241,8 +1223,7 @@ void AiResourceCandidate_AddPowerPlant(FactionRuntimeIndex factionIndex)
 }
 
 
-/* Address: 0x0053A9D0.
-   Picks which of the buildings ARM_0302..ARM_0306 (0x12E..0x132) to propose next. It measures the share (%) of
+/* Picks which of the buildings ARM_0302..ARM_0306 (0x12E..0x132) to propose next. It measures the share (%) of
    scratch-grid cells free of terrain bit 24, of bits 25-27 and of bits 28-30; every building the faction lacks
    (not in workspace 00) but may build (enabled) is scored with its row of g_AiStrategicClassTerrainWeights plus
    14 random bits (0..0x3FFF), and the best one is returned as selectedRuntimeToken (0 = none), with the number of
@@ -1378,8 +1359,7 @@ static uint32_t AiStrategicClass_ScorePressureCoefficients
           (pressure4 + 1) * pressure4Coefficient) / pressureSumPlusOne;
 }
 
-/* Address: 0x0053AF00.
-   Picks which of the buildings ARM_0321..ARM_0323 (0x141..0x143) to propose next. Each is scored from the
+/* Picks which of the buildings ARM_0321..ARM_0323 (0x141..0x143) to propose next. Each is scored from the
    faction's AI pressure values 2..4 as sum((pressure + 1) * coefficient) / (pressure2 + pressure3 + pressure4 + 1)
    with its own three ki.dat coefficients, plus 7 random bits; only buildings the faction lacks (not in workspace
    00) but may build (enabled) compete. Returns the winner in EBX (0 = none) and the number of these three
@@ -1459,8 +1439,7 @@ AiStrategicClassSelection AiStrategicClass_SelectPressureWeightedBuilding
 }
 
 
-/* Address: 0x00539600.
-   Places a pending asset at a workspace-10 cell, only while the faction's primary anchor cooldown is 0. Each cell
+/* Places a pending asset at a workspace-10 cell, only while the faction's primary anchor cooldown is 0. Each cell
    is scored by its Manhattan distance to the faction's ARM_0300 structure (g_AiWorkspaceOwnedAsset300Runtime;
    the raw cell coordinates without one) plus 16 random bits; the lowest-scoring cell where the mode-1
    placement test passes and GridReachability_RebuildConnectedRegionAroundWorldPoint (with the radius of the
@@ -1538,8 +1517,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
 }
 
 
-/* Address: 0x00539190.
-   Called after the AI has placed an army asset: counts the placement (global counter and the faction's
+/* Called after the AI has placed an army asset: counts the placement (global counter and the faction's
    relationCounterB) and removes the first entry for that asset's registry record from the faction's pending
    primary army asset list, shifting the rest down. The registry lookup's CF is not checked; an unknown id simply
    matches no entry.
@@ -1579,8 +1557,7 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
 }
 
 
-/* Address: 0x0053A980.
-   Returns true (CF set) when the faction's energy would not cover its demand plus additionalEnergyDemand
+/* Returns true (CF set) when the faction's energy would not cover its demand plus additionalEnergyDemand
    (whole units): the usable supply is the smaller of the generation capacity and baseline supply + tritium
    extraction rate, the demand is supplied + unpowered demand (Q4 values shifted down by 4).
 */
@@ -1631,8 +1608,7 @@ static int AiArmyCandidate_ScoreWeaponPressureDamage
   return damageScore;
 }
 
-/* Address: 0x0053A2A0.
-   Scores an army asset for the purchase planner with one weight profile (scoreWeights). The faction's unlocked
+/* Scores an army asset for the purchase planner with one weight profile (scoreWeights). The faction's unlocked
    variant of the asset's model definition gives baseScore (+ a bonus when +0x18 is nonzero) plus its +0x0C and
    +0x60 values scaled to their maxima, x8; for each of up to two linked child definitions (the weapons) with a
    nonzero divisor at +0x30 (and while the faction has AI pressure), the shot's impact damage against each of the 8 target classes is weighted

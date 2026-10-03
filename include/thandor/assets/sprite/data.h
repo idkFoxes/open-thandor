@@ -10,6 +10,6 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern SpriteAssetHeader * g_SpriteAssetRegistryHead; /* 004BD8C8 g_SpriteAssetRegistryHead */
+extern SpriteAssetHeader * g_SpriteAssetRegistryHead;
 
 #endif

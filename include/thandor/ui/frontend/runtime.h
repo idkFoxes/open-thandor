@@ -156,188 +156,138 @@
 #define FRONTEND_CAMERA_MOTION_PITCH 8
 #define FRONTEND_CAMERA_MOTION_MASK 15
 
-/* 0x00546BD0 */
 bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError);
 
-/* 0x0050C380 */
 GraphicsCursorFrameIndex FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
 
-/* 0x0050C5A0 */
 void FrontendModelPointerContext_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContext *callbackContext);
 
-/* 0x0050C610 */
 void FrontendModelPointerContext_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerHitContext *callbackContext);
 
-/* 0x0050C670 */
 void FrontendModelPointerContext_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContext *callbackContext);
 
-/* 0x00549B40 */
 void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl);
 
-/* 0x00549BC0 */
 void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl);
 
-/* 0x00549C40 */
 void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl);
 
-/* 0x0050BB80 */
 void FrontendModelPointerContext_Relocate
                (UiSerializedRelocationDelta relocationDelta,
                FrontendModelPointerContext *control);
 
-/* 0x0050BC30 */
 void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext);
 
-/* 0x0050BC60 */
 void FrontendModelPointerContext_RenderWorldViewQueuesClipped
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,FrontendModelPointerContext *control);
 
-/* 0x0050C6E0 */
 void FrontendModelPointerContext_RightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContext *callbackContext);
 
-/* 0x0050C730 */
 void FrontendModelPointerContext_RightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContext *callbackContext);
 
-/* 0x0050CC80 */
 void FrontendModelPointerContext_DispatchWorldCameraPointerInput
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           WorldRuntimeContext *callbackContext);
 
-/* 0x0050CED0 */
 void FrontendModelPointerContext_PointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           WorldRuntimeContext *callbackContext);
 
-/* 0x0050CF50 */
 bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerHitContext *control);
 
-/* 0x0050CF90 */
 void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext);
 
-/* 0x00514E40 */
 void FrontendRuntime_UpdateCurrentFactionMetricCache(void);
 
-/* 0x00547620 */
 void __cdecl FrontendRuntime_TimerCountdownTick(void);
 
-/* 0x00547FB0 */
 void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void);
 
-/* 0x00548030 */
 bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
 
-/* 0x00548700 */
 void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
 
-/* 0x00548910 */
 uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
           (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
           void *pointedModelNode,FrontendPointerSceneRuntimeView *frontendRuntime);
 
-/* 0x00548BE0 */
 void FrontendMenuRoom_PressNoOp
                (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
                uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
 
-/* 0x00548BF0 */
 void FrontendMenuRoom_DragNoOp
                (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
                uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
 
-/* 0x00548C00 */
 void FrontendMenuRoom_ExecuteClickedRomAction
           (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
           FrontendCallbackArgument5 pointedModelNode,uint32_t pointerContext);
 
-/* 0x00548C70 */
 void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext);
 
-/* 0x00548CB0 */
 void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);
 
-/* 0x00549100 */
 void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackArgument);
 
-/* 0x00549140 */
 void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackArgument);
 
-/* 0x00549180 */
 void FrontendCallback_NoOpArg1(void *source);
 
-/* 0x00549AB0 */
 void FrontendFactionSetupAction_ReturnToMainPage(uint32_t callbackArgument);
 
-/* 0x0054A5A0 */
 void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument);
 
-/* 0x0054A7D0 */
 void FrontendQuitDialogAction_ReturnToMainPage(uint32_t callbackArgument);
 
-/* 0x0054AAD0 */
 void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode);
 
-/* 0x0054AB70 */
 void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsPageOptionState *source);
 
-/* 0x0054BA30 */
 void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode);
 
-/* 0x0054D3F0 */
 void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *playerListControl);
 
-/* 0x0054D460 */
 void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source);
 
-/* 0x0054D4A0 */
 void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendListPtr backendList);
 
-/* 0x00565A30 */
 void Frontend_PlaySelectedEndMovie(void);
 
-/* 0x00546700 */
 bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
 
-/* 0x00547630 */
 void Frontend_StateTick(void);
 
-/* 0x00543B70 */
 void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState);
 
-/* 0x005445A0 */
 void FrontendFactionSetup_CycleFactionColour
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
-/* 0x00544640 */
 void FrontendFactionSetup_ToggleFactionActive
           (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
-/* 0x005446A0 */
 void FrontendFactionSetup_ChooseFaction
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
-/* 0x00546190 */
 void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void);
 
-/* 0x005474E0 */
 void FrontendRuntime_ShutdownAndReleaseResources(void);
 
-/* 0x0050AD90 */
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
 
 #endif /* THANDOR_UI_FRONTEND_RUNTIME_H */

@@ -11,8 +11,7 @@
 
 /* Implementation ownership: assets/scenario/catalog. */
 
-/* Address: 0x00549E50.
-   Handler of action 0x2039, the saved-games list (slot 57 of g_FrontendUiActionHandlersPage20.handlers00_54):
+/* Handler of action 0x2039, the saved-games list (slot 57 of g_FrontendUiActionHandlersPage20.handlers00_54):
    a changed selection shows the saved game's description, locally or on every peer through the frontend
    command queue; a confirmed row (double click) starts it like the Start button.
 */
@@ -40,8 +39,7 @@ void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *list
 }
 
 
-/* Address: 0x00549EB0.
-   Handler of FRONTEND_ACTION_SELECT_SINGLE_GAME, the single-games list (slot 58 of
+/* Handler of FRONTEND_ACTION_SELECT_SINGLE_GAME, the single-games list (slot 58 of
    g_FrontendUiActionHandlersPage20.handlers00_54): a changed selection shows the level's description, locally
    or on every peer through the frontend command queue; a confirmed row (double click) starts it like the
    Start button.
@@ -71,8 +69,7 @@ void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listCont
 }
 
 
-/* Address: 0x00549F10.
-   Handler of FRONTEND_ACTION_SELECT_CAMPAIGN, the campaigns list (slot 59 of
+/* Handler of FRONTEND_ACTION_SELECT_CAMPAIGN, the campaigns list (slot 59 of
    g_FrontendUiActionHandlersPage20.handlers00_54): a changed selection shows the campaign's description,
    locally or on every peer through the frontend command queue; a confirmed row (double click) starts it
    like the Start button.
@@ -223,8 +220,7 @@ static bool FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelecti
 }
 
 
-/* Address: 0x0054A280.
-   Opens page 10 "Choose game" (tabs Load game / Single game / Campaigns) and fills the list of the active tab;
+/* Opens page 10 "Choose game" (tabs Load game / Single game / Campaigns) and fills the list of the active tab;
    network sessions always use the Single game tab. Network clients only watch: all buttons are hidden. With
    the command-line option KARTE="<level>" matching a single mission, that mission is selected and loaded
    directly; network hosts never get the Load game tab.
@@ -313,8 +309,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
 }
 
 
-/* Address: 0x0054A610.
-   Handler of the "Load game" tab (actions 0x2035 and 0x2052, slots 53 and 82 of
+/* Handler of the "Load game" tab (actions 0x2035 and 0x2052, slots 53 and 82 of
    g_FrontendUiActionHandlersPage20.handlers00_54): clears the description box, switches to the saved-games
    list and shows the description of its first row, locally or on every peer through the frontend command
    queue.
@@ -347,8 +342,7 @@ void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x0054A690.
-   Handler of the "Single game" tab (actions 0x2036 and 0x2053, slots 54 and 83 of
+/* Handler of the "Single game" tab (actions 0x2036 and 0x2053, slots 54 and 83 of
    g_FrontendUiActionHandlersPage20.handlers00_54): clears the description box, switches to the single-games
    list and shows the description of its first row, locally or on every peer through the frontend command
    queue.
@@ -381,8 +375,7 @@ void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x0054A710.
-   Handler of the "Campaigns" tab (actions 0x2037 and 0x2054, slots 55 and 84 of
+/* Handler of the "Campaigns" tab (actions 0x2037 and 0x2054, slots 55 and 84 of
    g_FrontendUiActionHandlersPage20.handlers00_54): clears the description box, switches to the campaigns list
    and shows the description of its first row, locally or on every peer through the frontend command queue.
 */
@@ -414,8 +407,7 @@ void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x00549A70.
-   Handler of action 0x2041 (slot 65 of g_FrontendUiActionHandlersPage20.handlers00_54): loads the selected
+/* Handler of action 0x2041 (slot 65 of g_FrontendUiActionHandlersPage20.handlers00_54): loads the selected
    level's field grid (FrontendScenarioSession_LoadOrRequestFieldGrid), directly in a local game or on every
    peer through the frontend command queue.
 */
@@ -480,8 +472,7 @@ static ScenarioCatalogRecordCount ScenarioCatalog_MergeAddOnFiles
 }
 
 
-/* Address: 0x00549FD0.
-   Rebuilds g_ScenarioCatalog, the list behind the "Choose game" tabs: the single missions of level\level.dat
+/* Rebuilds g_ScenarioCatalog, the list behind the "Choose game" tabs: the single missions of level\level.dat
    and the campaigns of level\campagne.dat, each updated by the add-on files level00..99.dat /
    campagne00..99.dat (records merged by name), followed by the header record of every save\*.sve.
    The catalog is also what a network host sends to its clients.
@@ -603,8 +594,7 @@ void ScenarioCatalog_Rebuild(void)
 }
 
 
-/* Address: 0x00545290.
-   Handler of FRONTEND_COMMAND_STOP_ROM_TRANSITION (frontend command signature: player id and three arguments,
+/* Handler of FRONTEND_COMMAND_STOP_ROM_TRANSITION (frontend command signature: player id and three arguments,
    all ignored): skips the running menu-room camera flight via FrontendRomTransition_RequestStop.
 */
 void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
@@ -893,8 +883,7 @@ static void FrontendScenarioTransfer_ProcessReceivedLevelBundle(void)
 }
 
 
-/* Address: 0x00547860.
-   Network client, once per frontend frame: when the asset announced in g_FrontendScenarioTransferState has
+/* Network client, once per frontend frame: when the asset announced in g_FrontendScenarioTransferState has
    arrived in the transfer mailbox, unpacks it (scenario catalog, level, field grid, or a level/campaign bundle),
    frees the mailbox buffer and reports the new state to the host through the frontend command queue (or
    directly when no network session runs). Every packet starts with the unpacked size(s), then the packed data.
@@ -1017,8 +1006,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
 }
 
 
-/* Address: 0x005443B0.
-   Loads the field grid (.fld) of g_FrontendLoadedLevelAsset once (while some player still lacks
+/* Loads the field grid (.fld) of g_FrontendLoadedLevelAsset once (while some player still lacks
    FRONTEND_PLAYER_STATE_LEVEL_RECEIVED): the host or a local game loads it from its package, a host also
    publishes it (PckCodec_EncodeFieldGrid) in the transfer mailbox; a client loads it itself when it has the level
    locally and otherwise requests it through the mailbox (SCENARIO_TRANSFER_FIELD_GRID). Every other player
@@ -1068,8 +1056,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
 }
 
 
-/* Address: 0x00544AC0.
-   Starts the campaign in row selectedRecordIndex of the campaigns list. The host (or a local game) loads
+/* Starts the campaign in row selectedRecordIndex of the campaigns list. The host (or a local game) loads
    level\<name>.cgn as g_FrontendLoadedCampaignAsset, finds the record of the campaign's current level, loads
    that level (replacing g_FrontendLoadedLevelAsset) and its field grid, publishes level, campaign and grid
    as one encoded transfer bundle when hosting, and sets up the faction assignments; a client instead waits
@@ -1218,8 +1205,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
 }
 
 
-/* Address: 0x00544DC0.
-   Shows the "Load game" tab: selects its tab button and page and fills the saved-games list with the save
+/* Shows the "Load game" tab: selects its tab button and page and fills the saved-games list with the save
    records of g_ScenarioCatalog, sorted descending by the record's dword pair at +0xF0. The Start button
    is shown only when there is a saved game. Reached as frontend command FRONTEND_COMMAND_SHOW_SAVED_GAMES and
    through scenarioCatalogRebuildCallbacks[SCENARIO_SELECTION_TAB_SAVED_GAMES] of
@@ -1272,8 +1258,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
 }
 
 
-/* Address: 0x00544EA0.
-   Shows the "Single game" tab: selects its tab button and page and fills the single-games list with the level
+/* Shows the "Single game" tab: selects its tab button and page and fills the single-games list with the level
    records of g_ScenarioCatalog, sorted by the level title. Each record's four text columns are made
    displayable in place: the text id is resolved and stored behind a rich-text jump command. The Start button
    and the list stay usable only for a non-client with at least one level. Reached as frontend command
@@ -1355,8 +1340,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
 }
 
 
-/* Address: 0x00545020.
-   Shows the "Campaigns" tab: selects its tab button and page and fills the campaigns list with the campaign
+/* Shows the "Campaigns" tab: selects its tab button and page and fills the campaigns list with the campaign
    records of g_ScenarioCatalog, sorted by their title index (+0x50); each title is resolved and stored behind
    a rich-text jump command in the record. The Start button and the list stay usable only for a non-client
    with at least one campaign. Reached as frontend command FRONTEND_COMMAND_SHOW_CAMPAIGNS and through
@@ -1445,8 +1429,7 @@ static bool ScenarioCatalog_RecordIdentifiersEqual
 }
 
 
-/* Address: 0x00549F70.
-   Merges sourceByteCount / 0x100 catalog records into destinationRecords, matching them by their 0x40-byte
+/* Merges sourceByteCount / 0x100 catalog records into destinationRecords, matching them by their 0x40-byte
    UTF-16 identifier: a match is overwritten, a new identifier is appended. Returns the new destination
    record count (EDX in the original). The original scans with REPE CMPSD and copies with REP MOVSD; like it,
    the loops assume at least one source and one existing destination record.
@@ -1483,8 +1466,7 @@ ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
 }
 
 
-/* Address: 0x00544870.
-   Handler for starting a single-game level (frontend command 0x920 in a network game): builds the level path,
+/* Handler for starting a single-game level (frontend command 0x920 in a network game): builds the level path,
    returns the frontend to the main page, drops the previously loaded level and its field grid, then loads the
    level. The host also packs it into the transfer mailbox for the clients; a client loads it from its own disk
    only when its catalog level mask has it, otherwise it requests it (SCENARIO_TRANSFER_LEVEL). Every other
@@ -1618,8 +1600,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
 }
 
 
-/* Address: 0x00545140.
-   Selection callback of the saved-games list: selects the row and shows the saved game's description, the
+/* Selection callback of the saved-games list: selects the row and shows the saved game's description, the
    text of the save record's +0x70 id alone, or (when the +0x90 id is not negative) both texts inserted into
    the TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE; the box keeps the empty placeholder while the list has no rows.
    Reached as frontend command FRONTEND_COMMAND_SELECT_SAVED_GAME and through
@@ -1668,8 +1649,7 @@ void ScenarioCatalog_SelectSavedGameAndShowDescription
 }
 
 
-/* Address: 0x00545240.
-   Selection callback of the campaigns list: selects the row and shows the campaign's description text
+/* Selection callback of the campaigns list: selects the row and shows the campaign's description text
    (TEXT_ID_CAMPAIGN_DESCRIPTION_BASE + the record's title index at +0x50) in the description box, which keeps
    the empty placeholder while the list has no rows. Reached as frontend command FRONTEND_COMMAND_SELECT_CAMPAIGN
    and through g_FrontendScenarioMapOptionHandlerTable[SCENARIO_SELECTION_TAB_CAMPAIGNS].
@@ -1698,8 +1678,7 @@ void ScenarioCatalog_SelectCampaignAndShowDescription
 }
 
 
-/* Address: 0x00549CC0.
-   Handler of FRONTEND_ACTION_START_SELECTED_GAME, the Start button of the "Choose game" page (slot 56 of
+/* Handler of FRONTEND_ACTION_START_SELECTED_GAME, the Start button of the "Choose game" page (slot 56 of
    g_FrontendUiActionHandlersPage20.handlers00_54; the three list handlers call it directly for a confirmed
    row). Drops a loaded campaign and starts the selection of the active tab: loads the single game's level or
    the campaign bundle (locally or on every peer through the frontend command queue), or, for a saved game,
@@ -1774,8 +1753,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
 }
 
 
-/* Address: 0x005451F0.
-   Selection callback of the single-game (missions) list: selects the row and shows the level's description
+/* Selection callback of the single-game (missions) list: selects the row and shows the level's description
    text (TEXT_ID_LEVEL_DESCRIPTION_BASE + TEXT_ID_LEVEL_DESCRIPTION_STRIDE * the record's title index at +0x70) in
    the description box, which keeps the empty placeholder while the list has no rows.
 */

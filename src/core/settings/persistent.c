@@ -10,8 +10,7 @@
 
 /* Implementation ownership: core/settings/persistent. */
 
-/* Address: 0x00402C00.
-   Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the
+/* Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the
    last load or save, writes the 200-byte image back to the settings file. The save result is not checked.
 */
 void PersistentSettings_Flush(void)
@@ -28,8 +27,7 @@ void PersistentSettings_Flush(void)
 }
 
 
-/* Address: 0x00402B00.
-   Loads the settings file into a fresh zeroed 200-byte image; a shorter file leaves the rest zero, so every
+/* Loads the settings file into a fresh zeroed 200-byte image; a shorter file leaves the rest zero, so every
    PersistentSettings_Read beyond the loaded bytes falls back to its default. When the file is not found at
    its path it is looked up in the executable directory. Any failure leaves the image null (all defaults).
 */
@@ -98,8 +96,7 @@ void PersistentSettings_Load(void)
 }
 
 
-/* Address: 0x00402C50.
-   Returns the setting dword at settingsOffsetBytes, or defaultValue when no settings file was loaded or the
+/* Returns the setting dword at settingsOffsetBytes, or defaultValue when no settings file was loaded or the
    file was too short to contain it.
 */
 uint32_t PersistentSettings_Read(PersistentSettingsValue defaultValue,
@@ -114,8 +111,7 @@ uint32_t PersistentSettings_Read(PersistentSettingsValue defaultValue,
 }
 
 
-/* Address: 0x00402CC0.
-   Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when no settings
+/* Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when no settings
    file was loaded or the file was too short to contain the whole region. Used for the stored names.
 */
 void * PersistentSettings_GetRegionOrFallback(PersistentSettingsByteCount regionByteCount,void *fallback,
@@ -130,8 +126,7 @@ void * PersistentSettings_GetRegionOrFallback(PersistentSettingsByteCount region
 }
 
 
-/* Address: 0x00402CF0.
-   Copies a block (whole dwords only; trailing 1-3 bytes are dropped) into the settings image and marks it
+/* Copies a block (whole dwords only; trailing 1-3 bytes are dropped) into the settings image and marks it
    dirty, even when nothing changed. The bound is the image capacity, not the loaded size, and the loaded
    size is not extended, so a block past the end of a short file is saved but not read back until reload.
 */
@@ -158,8 +153,7 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
 }
 
 
-/* Address: 0x00402C80.
-   Stores one setting dword in the image and marks it dirty, but only when the value actually changes. Like
+/* Stores one setting dword in the image and marks it dirty, but only when the value actually changes. Like
    WriteBlock it checks against the image capacity, not the loaded size.
 */
 void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)

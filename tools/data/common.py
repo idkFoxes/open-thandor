@@ -39,6 +39,20 @@ CALLING_CONVENTIONS = ('__declspec', '__cdecl', '__stdcall', '__fastcall', '__th
 
 
 def function_map():
+    """original entry address -> C function name, from docs/original_addresses.txt (written in step 5c, when
+    the `/* Address: 0x... */` comments were removed from src/)"""
+    listing = os.path.join(REPO, 'docs', 'original_addresses.txt')
+    if os.path.exists(listing):
+        funcs = {}
+        for line in open(listing, encoding='utf-8'):
+            parts = line.split()
+            if len(parts) >= 3 and parts[1] == 'function':
+                funcs[int(parts[0], 16)] = parts[2]
+        return funcs
+    return function_map_from_comments()
+
+
+def function_map_from_comments():
     """original entry address -> C function name, from the `/* Address: 0x... */` comment directly above every
     recovered function in src/ (only blank and preprocessor lines may stand between them)"""
     funcs = {}

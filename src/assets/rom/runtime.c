@@ -10,8 +10,7 @@
 
 /* Implementation ownership: assets/rom/runtime. */
 
-/* Address: 0x005452A0.
-   Executes entry recordIndex of the active frontend ROM action table (a menu-room hotspot or a scripted entry
+/* Executes entry recordIndex of the active frontend ROM action table (a menu-room hotspot or a scripted entry
    from the frontend main loop): plays its click sound, then either posts its page action / a close request, or
    starts a camera flight from the current menu-room camera pose to the pose of its target ROM record.
    Gameplay settings, page 9, credits and closing are refused in network sessions, network setup without a
@@ -103,8 +102,7 @@ void FrontendRomActionTable_ExecuteRecord
 }
 
 
-/* Address: 0x00546450.
-   Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size
+/* Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size
    records (from +0x200, each advanced by its leading byteSize) with RomAssetRecord_RegisterAndRelocate. An
    invalid header leaves "engine\zentrale.rom" in g_PackageLastErrorPath and fails with
    FATAL_ERROR_ROM_REGISTRY_FULL. Returns 0 on success, otherwise the error code (the original's success EAX was
@@ -136,8 +134,7 @@ uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
 }
 
 
-/* Address: 0x005466A0.
-   Builds the runtime node tree of every registered ROM record (tinted with the record's nodeTintArgb), stores
+/* Builds the runtime node tree of every registered ROM record (tinted with the record's nodeTintArgb), stores
    its root in the registry slot, links it into its world's owner list and computes its transforms. Returns
    true (CF) when a node allocation fails.
 */
@@ -169,8 +166,7 @@ bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
 }
 
 
-/* Address: 0x00547FC0.
-   Once per frontend frame: while a menu-room camera flight is pending, moves the camera along the flight
+/* Once per frontend frame: while a menu-room camera flight is pending, moves the camera along the flight
    spline for the elapsed ticks; when the spline has ended, clears the pending value and, if it is a record id
    (not negative), activates that ROM record. The elapsed ticks are advanced by the frontend timer callback
    FrontendRomTransition_AdvanceElapsedTicks; the body runs under the frontend tick spin lock.
@@ -233,8 +229,7 @@ static void RomSerializedNodeTree_ReleaseSprites(RomSerializedNodeHeader *node)
   } while (depth != 0);
 }
 
-/* Address: 0x00547400.
-   Releases the sprite asset of every node of every registered ROM record and empties all 256 registry slots.
+/* Releases the sprite asset of every node of every registered ROM record and empties all 256 registry slots.
    All saved registers and EAX are preserved.
 */
 void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
@@ -259,8 +254,7 @@ void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
 }
 
 
-/* Address: 0x00548720.
-   Skips a running menu-room camera flight: sets the elapsed ticks far past the last keyframe time, so the next
+/* Skips a running menu-room camera flight: sets the elapsed ticks far past the last keyframe time, so the next
    FrontendRomTransition_ProcessPendingRecord finds the spline finished and activates the target record.
 */
 void FrontendRomTransition_RequestStop(void)
@@ -273,8 +267,7 @@ void FrontendRomTransition_RequestStop(void)
 }
 
 
-/* Address: 0x005487F0.
-   Reverse lookup in the ROM registry: returns the ROM record whose slot holds the given runtime root node, or
+/* Reverse lookup in the ROM registry: returns the ROM record whose slot holds the given runtime root node, or
    NULL when no slot does.
 */
 RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue)
@@ -294,8 +287,7 @@ RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue sl
 }
 
 
-/* Address: 0x00548890.
-   Returns the entry of a ROM record table (0x200-byte header with the entry count, then 0x200-byte entries)
+/* Returns the entry of a ROM record table (0x200-byte header with the entry count, then 0x200-byte entries)
    whose record id matches, or NULL. Used to find the target record of a frontend camera flight.
 */
 void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
@@ -316,8 +308,7 @@ void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
 }
 
 
-/* Address: 0x005488D0.
-   Same scan as RomRecordTable_FindRecordById, but returns the zero-based entry index, or -1 when no entry of
+/* Same scan as RomRecordTable_FindRecordById, but returns the zero-based entry index, or -1 when no entry of
    the table has the record id.
 */
 RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *table)
@@ -354,8 +345,7 @@ static void RomRecord_ShowNodeAndCreateLights(RomAssetRecordPrefix *record,World
   }
 }
 
-/* Address: 0x005484D0.
-   Makes a ROM record the active menu-room location: clears the shading lights, marks the runtime nodes of the
+/* Makes a ROM record the active menu-room location: clears the shading lights, marks the runtime nodes of the
    records linked from its entries (ROM_NODE_FLAG_ACTION_TARGET), hides every record node except the active
    record and those in its visibleRecordMask (whose lights are created), then moves the camera to the record's
    pose. Afterwards the pending transition value (g_FrontendRomTransitionPageAction) is applied: negative
@@ -426,8 +416,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
 }
 
 
-/* Address: 0x00548600.
-   Clears ROM_NODE_FLAG_ACTION_TARGET on every registry node, stores frontendValue as the pending transition
+/* Clears ROM_NODE_FLAG_ACTION_TARGET on every registry node, stores frontendValue as the pending transition
    value and, when recordId is registered, shows only the target record, the active record and the records in
    either one's visibleRecordMask, creating their lights. Returns true (CF) when recordId is not registered.
 */
@@ -547,8 +536,7 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
   return 0;
 }
 
-/* Address: 0x00546330.
-   Registers a ROM record in the first free slot of g_RomRegistrySlots and relocates its serialized node tree:
+/* Registers a ROM record in the first free slot of g_RomRegistrySlots and relocates its serialized node tree:
    child offsets become pointers, and every node's ".spr" sprite is loaded, or an already registered sprite with
    the same registry id is reused. Returns 0 on success, otherwise FATAL_ERROR_ROM_REGISTRY_FULL or the
    loader's error (the original's success EAX, assetBase, was never used by its caller).
@@ -598,8 +586,7 @@ static ModelPackedPointRecord *RomModel_FindChildAttachmentPoint(ModelResource *
   return NULL;
 }
 
-/* Address: 0x005464C0.
-   Allocates the runtime node for one serialized ROM sprite node and its children: the node takes the local
+/* Allocates the runtime node for one serialized ROM sprite node and its children: the node takes the local
    rotation of the serialized node, the central frontend palette and texture set, the given tint and the
    sprite's model resource; each child is placed at the matching attachment point (packed point key class 0,
    key index = child index) of the sprite, children without one are dropped. Returns the node, or NULL when no
@@ -688,8 +675,7 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
 }
 
 
-/* Address: 0x005483C0.
-   Starts a camera flight along the keyframes of a frontend ROM action entry: resets the elapsed ticks, stores
+/* Starts a camera flight along the keyframes of a frontend ROM action entry: resets the elapsed ticks, stores
    the keyframe count and keyframes and transitionEnabled (the record to activate at the end, see
    FrontendRomTransition_ProcessPendingRecord) and builds the spline curves. EAX is preserved.
 */
@@ -707,8 +693,7 @@ void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitio
 }
 
 
-/* Address: 0x005487A0.
-   Looks up the runtime root node registered for the ROM record with the given id: returns true and stores it
+/* Looks up the runtime root node registered for the ROM record with the given id: returns true and stores it
    (NULL while the record's tree is not built) in *outRootNode, or returns false when no registry slot holds
    such a record (the original's error code FATAL_ERROR_ROM_RECORD_NOT_REGISTERED was read by no caller).
 */
@@ -732,8 +717,7 @@ bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode *
 }
 
 
-/* Address: 0x00548410.
-   Creates light entryIndex of a ROM record: finds the point-light descriptor with that index in the sprite of
+/* Creates light entryIndex of a ROM record: finds the point-light descriptor with that index in the sprite of
    the record's root node and allocates a shading light at its world position, using the colour and radius the
    record stores for the entry (0x10-byte entries from +0x50). Indices beyond the record's count (+0x38) are
    ignored.
@@ -769,8 +753,7 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
 }
 
 
-/* Address: 0x00548740.
-   Returns the registered ROM record with this record id, or NULL when no registry slot holds one (the
+/* Returns the registered ROM record with this record id, or NULL when no registry slot holds one (the
    original's error code FATAL_ERROR_ROM_RECORD_NOT_REGISTERED; FrontendRomTransition_ActivateRecordById
    reports it).
 */

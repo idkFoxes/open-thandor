@@ -10,8 +10,8 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern uint32_t g_LocaleCountryCodeOverride; /* 004027C0 g_LocaleCountryCodeOverride */
+extern uint32_t g_LocaleCountryCodeOverride;
 
-extern PersistentSettingsRuntime g_PersistentSettings; /* 004028D0 g_PersistentSettings */
+extern PersistentSettingsRuntime g_PersistentSettings;
 
 #endif

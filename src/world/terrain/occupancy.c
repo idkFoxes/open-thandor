@@ -10,8 +10,7 @@
 
 /* Implementation ownership: world/terrain/occupancy. */
 
-/* Address: 0x00507460.
-   Sets occupancy bit 1 (FIELD_CELL_OCCUPANCY_BIT1) in one faction slot's byte for every cell within the given
+/* Sets occupancy bit 1 (FIELD_CELL_OCCUPANCY_BIT1) in one faction slot's byte for every cell within the given
    radius of a world point: the centre cell here, the rest through the six hexagon sectors. Part of the occupancy
    rebuild that runs over every owned army (the army's radius at +0x90). Nothing happens when the centre is outside
    the grid or on a map-edge cell.
@@ -115,8 +114,7 @@ static uint64_t TerrainOccupancyMask_OrRay(uint64_t mask,const FieldGridCell *ce
 }
 
 
-/* Address: 0x00507610.
-   Answers "which factions are around this point": ORs the occupancy masks of the centre cell and of six straight
+/* Answers "which factions are around this point": ORs the occupancy masks of the centre cell and of six straight
    rays (right, left, up-right, up, down-left, down; length from the radius, 1..255 cells, stopping at map-edge
    cells) and packs two bits per faction slot i: bit 2i+1 = a current presence bit is set, bit 2i = only the
    persistent bit 7 is (bits 1 and 2 are ignored). TerrainOccupancyMask_ResolveRuntimeClassFlags consumes the
@@ -191,8 +189,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 }
 
 
-/* Address: 0x005138F0.
-   Turns a neighbourhood classification (primaryOccupancyMask, two bits per faction slot from
+/* Turns a neighbourhood classification (primaryOccupancyMask, two bits per faction slot from
    TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint) into model-node flags for the active faction:
    TERRAIN_OCCUPANCY_FLAG_PRESENT when that faction is present around the object now, otherwise
    TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE when its persistent bit is there and the object's history
@@ -233,8 +230,7 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
 }
 
 
-/* Address: 0x005070A0.
-   Sets occupancy bit 1 in the scan's faction byte for every cell of the 60-degree sector between directions 0
+/* Sets occupancy bit 1 in the scan's faction byte for every cell of the 60-degree sector between directions 0
    (C+1) and 1 (C+1-W) of TerrainOccupancyBit2_MarkAroundWorldPoint. The sector's spine steps by C+2-W (scan step
    +7); from every spine cell a straight leg runs along each bounding direction, and the sector ends at the step
    limit or at a map-edge cell.
@@ -278,8 +274,7 @@ void TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGr
 }
 
 
-/* Address: 0x00507140.
-   Sets occupancy bit 1 for the sector between directions 1 (C+1-W) and 2 (C-W), built like
+/* Sets occupancy bit 1 for the sector between directions 1 (C+1-W) and 2 (C-W), built like
    TerrainOccupancyBit2_MarkWedge0: spine step C+1-2W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
@@ -322,8 +317,7 @@ void TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGr
 }
 
 
-/* Address: 0x005071E0.
-   Sets occupancy bit 1 for the sector between directions 2 (C-W) and 3 (C-1), built like
+/* Sets occupancy bit 1 for the sector between directions 2 (C-W) and 3 (C-1), built like
    TerrainOccupancyBit2_MarkWedge0: spine step C-1-W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
@@ -361,8 +355,7 @@ void TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGr
 }
 
 
-/* Address: 0x00507280.
-   Sets occupancy bit 1 for the sector between directions 3 (C-1) and 4 (C-1+W), built like
+/* Sets occupancy bit 1 for the sector between directions 3 (C-1) and 4 (C-1+W), built like
    TerrainOccupancyBit2_MarkWedge0: spine step C-2+W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
@@ -406,8 +399,7 @@ void TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGr
 }
 
 
-/* Address: 0x00507320.
-   Sets occupancy bit 1 for the sector between directions 4 (C-1+W) and 5 (C+W), built like
+/* Sets occupancy bit 1 for the sector between directions 4 (C-1+W) and 5 (C+W), built like
    TerrainOccupancyBit2_MarkWedge0: spine step C-1+2W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
@@ -448,8 +440,7 @@ void TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGr
 }
 
 
-/* Address: 0x005073C0.
-   Sets occupancy bit 1 for the sector between directions 5 (C+W) and 0 (C+1), built like
+/* Sets occupancy bit 1 for the sector between directions 5 (C+W) and 0 (C+1), built like
    TerrainOccupancyBit2_MarkWedge0: spine step C+1+W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
@@ -486,8 +477,7 @@ void TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGr
 }
 
 
-/* Address: 0x00506EA0.
-   Straight leg of the occupancy scan along direction 0 (C+1, right): sets occupancy bit 1 in the scan's faction
+/* Straight leg of the occupancy scan along direction 0 (C+1, right): sets occupancy bit 1 in the scan's faction
    byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -511,8 +501,7 @@ void TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,Fie
 }
 
 
-/* Address: 0x00506EF0.
-   Straight leg of the occupancy scan along direction 1 (C+1-W, up and right): sets occupancy bit 1 in the scan's
+/* Straight leg of the occupancy scan along direction 1 (C+1-W, up and right): sets occupancy bit 1 in the scan's
    faction byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -536,8 +525,7 @@ void TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,Fie
 }
 
 
-/* Address: 0x00506F50.
-   Straight leg of the occupancy scan along direction 2 (C-W, up): sets occupancy bit 1 in the scan's faction
+/* Straight leg of the occupancy scan along direction 2 (C-W, up): sets occupancy bit 1 in the scan's faction
    byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -561,8 +549,7 @@ void TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,Fie
 }
 
 
-/* Address: 0x00506FA0.
-   Straight leg of the occupancy scan along direction 3 (C-1, left): sets occupancy bit 1 in the scan's faction
+/* Straight leg of the occupancy scan along direction 3 (C-1, left): sets occupancy bit 1 in the scan's faction
    byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -586,8 +573,7 @@ void TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,Fie
 }
 
 
-/* Address: 0x00506FF0.
-   Straight leg of the occupancy scan along direction 4 (C-1+W, down and left): sets occupancy bit 1 in the
+/* Straight leg of the occupancy scan along direction 4 (C-1+W, down and left): sets occupancy bit 1 in the
    scan's faction byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -611,8 +597,7 @@ void TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,Fie
 }
 
 
-/* Address: 0x00507050.
-   Straight leg of the occupancy scan along direction 5 (C+W, down): sets occupancy bit 1 in the scan's faction
+/* Straight leg of the occupancy scan along direction 5 (C+W, down): sets occupancy bit 1 in the scan's faction
    byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)

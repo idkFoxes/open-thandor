@@ -17,8 +17,7 @@ typedef void InGamePointerModeHandler
           (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
           SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
 
-/* Address: 0x0056D2D0.
-   "Go to" action of the active in-game notification. In state 27 it only cancels (restores the camera, see
+/* "Go to" action of the active in-game notification. In state 27 it only cancels (restores the camera, see
    InGameTargetingContext_CancelAndRestoreState). In state 7 it saves the camera state (unless bit 0x10 of the
    world runtimeFlags is set) and then, by payload kind: TECHNOLOGY_UNLOCK_POSITION selects the own model standing at
    the payload position (locally or as INGAME_COMMAND_SELECT_MODEL_AND_ARMY) and ends the interaction;
@@ -148,8 +147,7 @@ static uint32_t InGameWorldInput_ResolveCandidateConditionCursor(GameEntityRunti
 }
 
 
-/* Address: 0x005688A0.
-   Hover callback of the world view: picks the cursor frame for the pointer position (placement valid/blocked,
+/* Hover callback of the world view: picks the cursor frame for the pointer position (placement valid/blocked,
    command-mode preview, own/foreign army, move or target) and records the hovered army as the selected entity,
    so the cursor always shows what a click at this point would do.
 */
@@ -296,8 +294,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
 }
 
 
-/* Address: 0x00568CB0.
-   Pointer-press callback of the world view: restores a saved camera, remembers the press position for the
+/* Pointer-press callback of the world view: restores a saved camera, remembers the press position for the
    placement or command-mode heading drag, marks a selection-mode capture, or in command mode selects an own
    army under the pointer right away. The release is handled by InGameWorldInput_CommitPointerAction.
 */
@@ -538,8 +535,7 @@ static void InGameWorldInput_RotateHeadingByPointerTravel
 }
 
 
-/* Address: 0x00568E10.
-   Pointer-move callback while the pointer is captured. In selection mode a press that moved more than 23 pixels
+/* Pointer-move callback while the pointer is captured. In selection mode a press that moved more than 23 pixels
    becomes a drag selection: every own army inside the rectangle is inserted, every one outside removed (in
    batches of three per command, skipping armies already queued). In placement and command mode, horizontal
    travel rotates the placement/command heading and the pointer is snapped back to the press position.
@@ -906,8 +902,7 @@ static void InGameWorldInput_DispatchPointerRelease
 }
 
 
-/* Address: 0x005691B0.
-   Pointer-release callback of the world view: places the pending army, issues the command-mode command chosen by
+/* Pointer-release callback of the world view: places the pending army, issues the command-mode command chosen by
    the modifier keys, ends a drag selection, or (selection mode) turns the click into select / add / remove,
    move, target-position or target-army commands. Every action goes through the command queue in network games
    and calls the handler directly in single player. Always ends the selection-mode capture.
@@ -925,8 +920,7 @@ void InGameWorldInput_CommitPointerAction
 }
 
 
-/* Address: 0x0056F230.
-   Camera key commands of the world view while the interaction subsystem is active (game paused): installed as
+/* Camera key commands of the world view while the interaction subsystem is active (game paused): installed as
    the world view's dispatchCommandCallback by the activating path of
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState (0x005609F0), in place of
    InGameUiRuntime_DispatchCommandByCodeAndModifierFlags. The first g_InGameCameraCommandDispatchRecords16 record
@@ -1120,8 +1114,7 @@ bool InGameCameraCommand_DispatchByCodeAndModifierFlags
 }
 
 
-/* Address: 0x0056D4B0.
-   Ends a notification "go to" (state 27): resets the state to idle, walks up to the in-game root, clears bit 0x10
+/* Ends a notification "go to" (state 27): resets the state to idle, walks up to the in-game root, clears bit 0x10
    of its world runtimeFlags and restores the camera saved by InGameTargetingContext_AdvanceOrResolveTarget.
    Also the queued UI action handler for INGAME_PAGE10[14] (0x100E).
 */

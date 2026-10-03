@@ -10,8 +10,7 @@
 
 /* Implementation ownership: assets/resource/runtime. */
 
-/* Address: 0x0040E2E0.
-   Creates a new, empty PCK package at packagePath and mounts it: builds a fresh 0x200-byte archive header
+/* Creates a new, empty PCK package at packagePath and mounts it: builds a fresh 0x200-byte archive header
    (magic "pck", timestamps of now, the computer label as producer and source name, no entries) in the
    package scratch buffer, writes it as the whole file and mounts it. Returns true and the mounted package's
    file handle in *outHandle, or false (outHandle untouched) when Package_Mount fails.
@@ -75,8 +74,7 @@ bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
 }
 
 
-/* Address: 0x0040F000.
-   Loads a whole resource into a fresh arena buffer. A mounted package entry is decoded into the buffer;
+/* Loads a whole resource into a fresh arena buffer. A mounted package entry is decoded into the buffer;
    otherwise the loose file is read, first from the executable's directory, then from the path as given.
    Returns true with the buffer in *outBuffer and its byte count in *outByteCount. On failure returns false
    with the file-system, decoder or out-of-memory code in *outErrorCode and leaves *outBuffer and
@@ -151,8 +149,7 @@ bool Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32
 }
 
 
-/* Address: 0x0040F1D0.
-   Frees a buffer returned by Resource_Load (or Package_LoadEntry) back to the arena heap. Unlike a direct
+/* Frees a buffer returned by Resource_Load (or Package_LoadEntry) back to the arena heap. Unlike a direct
    g_MemoryApi.free call it keeps EAX, ECX and EDX, so register-convention callers need not save them.
 */
 void Resource_Release(void *resourceBuffer)
@@ -162,8 +159,7 @@ void Resource_Release(void *resourceBuffer)
 }
 
 
-/* Address: 0x0050E890.
-   Save-game preparation of the runtime registration records (the "widget.hex" entry): turns the pointers of
+/* Save-game preparation of the runtime registration records (the "widget.hex" entry): turns the pointers of
    every allocated 0x100-byte record into saved offsets or ids, zeroes the free records and returns the record
    array with its byte size (recordCount * 0x100) for Package_UpsertEntry. The payload pointer is rebased per
    domain (0 army/model, 1 shot, 2 effect). ResourceRegistrationRuntime_RebaseLoadedRecords undoes it.
@@ -276,8 +272,7 @@ InGameSaveGame_PrepareRegistrationRecords
          (uint32_t)(recordCount * sizeof(ResourceRegistrationRecordSavedView));
 }
 
-/* Address: 0x00513020.
-   Save-game preparation of the faction runtime image (the "daten.hex" entry): for each of the 8 faction
+/* Save-game preparation of the faction runtime image (the "daten.hex" entry): for each of the 8 faction
    records the army asset pointers are replaced by the asset ids (+8 of each asset) and the 8x32 group member
    pointers by saved army-slot offsets. Returns the image with its byte size 0x3A20 for Package_UpsertEntry;
    GameFactionRuntime_RebaseLoadedArmyReferences undoes it. Called directly by the save-game writer
@@ -325,8 +320,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void)
   return ((uint64_t)(uint32_t)(uintptr_t)&g_GameFactionRuntimeImage << 32) | sizeof(GameFactionRuntimeImage);
 }
 
-/* Address: 0x0051E2B0.
-   Save-game preparation of the 0x1000 effect runtime slots (the "effect.hex" entry): in every used slot the
+/* Save-game preparation of the 0x1000 effect runtime slots (the "effect.hex" entry): in every used slot the
    model node and owner pointers become saved offsets (the owner is a model node or an army slot depending on
    the completion action) and the definition pointer becomes the definition id; free slots are zeroed.
    Returns the slot array with its byte size 0x40000; EffectRuntime_RebaseSlotsAfterLoad undoes it. Called
@@ -381,8 +375,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
          (EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot));
 }
 
-/* Address: 0x0052B6D0.
-   Save-game preparation of the 0x1000 shot runtime slots (the "shot.hex" entry): in every used slot the model
+/* Save-game preparation of the 0x1000 shot runtime slots (the "shot.hex" entry): in every used slot the model
    node, runtime state and owner army pointers become saved offsets and the definition pointer becomes the
    definition id; free slots are zeroed. Returns the slot array with its byte size 0x40000;
    ShotRuntime_RebaseSlotsAfterLoad undoes it. Called directly by the save-game writer
@@ -438,8 +431,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
   return ((uint64_t)(uint32_t)(uintptr_t)g_ShotRuntimeSlots << 32) | SHOT_RUNTIME_POOL_BYTES;
 }
 
-/* Address: 0x00532B00.
-   Before the level image is saved: stores the current camera (orientation as magnitude plus packed
+/* Before the level image is saved: stores the current camera (orientation as magnitude plus packed
    heading/pitch, and position) into the start-camera fields of the level player slot selected by
    runtimeImage->factionAssignmentIndex, so a loaded game starts with the camera where it was.
    Called directly by the save-game writer InGameSaveGame_WritePackage.

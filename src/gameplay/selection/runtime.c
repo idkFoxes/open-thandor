@@ -310,8 +310,7 @@ static bool SelectionPanelMetrics_DrawKindFrame
   return false;
 }
 
-/* Address: 0x0052E350.
-   Draws the metric frame of one selected entity around its projected screen bounds (panelTop..panelBottom,
+/* Draws the metric frame of one selected entity around its projected screen bounds (panelTop..panelBottom,
    panelLeft..panelRight): four corner cells (hierarchy meter, group number), a bar along the top and bottom edge
    and bars or segment rows on the left and right edge, all from the SELECTION_PANEL_CELL_* layout. What the bars
    show depends on the entity kind (runtimeLinkOrKind08) and its definition class; entities of other factions
@@ -367,8 +366,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
 }
 
 
-/* Address: 0x0055FA20.
-   In-game command handler (code 0x8F0, key A): replaces the player's selection with every world model of
+/* In-game command handler (code 0x8F0, key A): replaces the player's selection with every world model of
    definition class 0x16 that the player owns, then rebuilds the selection panels when the player is the local
    one.
 */
@@ -407,8 +405,7 @@ void InGameSelection_SelectAllOwnAircraftPads
 }
 
 
-/* Address: 0x0055FB30.
-   In-game command handler INGAME_COMMAND_REPLACE_SELECTION: replaces the player's selection with all world
+/* In-game command handler INGAME_COMMAND_REPLACE_SELECTION: replaces the player's selection with all world
    entries matching the army at the rebased index (byte offset from g_ArmyRuntimeRebaseBaseMinusOne, 0 = none)
    and refreshes the local selection panels. Nothing is added when the army has no model node.
 */
@@ -435,8 +432,7 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
 }
 
 
-/* Address: 0x0055FE70.
-   In-game command handler INGAME_COMMAND_MOVE (plain click on the ground): sends the player's
+/* In-game command handler INGAME_COMMAND_MOVE (plain click on the ground): sends the player's
    selection to the world point, each entry keeping its formation offset unless the selection is spread too wide.
    A lone class-0x0D entry takes the point into its definition record instead and the selection is cleared.
 */
@@ -452,8 +448,7 @@ void InGamePlayerSelection_ApplyMoveCommand
 }
 
 
-/* Address: 0x0055FEA0.
-   In-game command handler INGAME_COMMAND_POSITION (Shift/Alt-click on the ground): queues the world point as a
+/* In-game command handler INGAME_COMMAND_POSITION (Shift/Alt-click on the ground): queues the world point as a
    waypoint for every entry of the player's selection (formation offsets as in the plain move).
 */
 void InGamePlayerSelection_ApplyPositionCommand
@@ -468,8 +463,7 @@ void InGamePlayerSelection_ApplyPositionCommand
 }
 
 
-/* Address: 0x0055FED0.
-   In-game command handler INGAME_COMMAND_SELECT_ARMY (click on an army as an order target): makes the army at
+/* In-game command handler INGAME_COMMAND_SELECT_ARMY (click on an army as an order target): makes the army at
    the rebased index the command target of every eligible entry of the player's selection. Ignored for index 0
    and for armies without a model node.
 */
@@ -489,8 +483,7 @@ void InGamePlayerSelection_SelectArmyRuntimeIndex
 }
 
 
-/* Address: 0x0055FF10.
-   In-game command handler INGAME_COMMAND_TARGET_POSITION (Ctrl-click on the ground): gives every eligible
+/* In-game command handler INGAME_COMMAND_TARGET_POSITION (Ctrl-click on the ground): gives every eligible
    entry of the player's selection the terrain point (surface height, x, y) as its target position.
 */
 void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,CommandPayload surfaceHeightQ12,
@@ -504,8 +497,7 @@ void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,C
 }
 
 
-/* Address: 0x0055FF40.
-   In-game command handler 0xE10 (key S, stop): resets the movement of the player's selection, drops its
+/* In-game command handler 0xE10 (key S, stop): resets the movement of the player's selection, drops its
    class-0x16 entries and recenters the formation offsets (SelectionRuntime_ResetMovementPruneAndRecenterEntries).
 */
 void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayload unusedPayload1,
@@ -518,8 +510,7 @@ void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId player
 }
 
 
-/* Address: 0x0055FF60.
-   In-game command handler 0xE30 (Shift+S): resets the movement anchors of the eligible entries of the player's
+/* In-game command handler 0xE30 (Shift+S): resets the movement anchors of the eligible entries of the player's
    selection and clears their command flag 0x200. The block pointer doubles as its selection array (first
    member).
 */
@@ -534,8 +525,7 @@ void PlayerSelection_StopMovement
 }
 
 
-/* Address: 0x0055FF80.
-   In-game command handler 0xE50 (Alt+S): interrupts the active targets of the eligible entries of the player's
+/* In-game command handler 0xE50 (Alt+S): interrupts the active targets of the eligible entries of the player's
    selection and clears flag 0x10 of their dword +0x2C.
 */
 void PlayerSelection_CancelTargets
@@ -549,8 +539,7 @@ void PlayerSelection_CancelTargets
 }
 
 
-/* Address: 0x0055FFA0.
-   In-game command handler 0xE70 (Alt+D): applies the model hierarchy flags 0x418 to the eligible entries of the
+/* In-game command handler 0xE70 (Alt+D): applies the model hierarchy flags 0x418 to the eligible entries of the
    player's selection (SelectionRuntime_SelfDestruct).
 */
 void PlayerSelection_SelfDestruct
@@ -564,8 +553,7 @@ void PlayerSelection_SelfDestruct
 }
 
 
-/* Address: 0x0055FFC0.
-   Pointer-mode handler for lane 1 (g_InGamePointerModeHandlers[1], chosen in gameplay/input/world.c when the
+/* Pointer-mode handler for lane 1 (g_InGamePointerModeHandlers[1], chosen in gameplay/input/world.c when the
    modifier mask (no modifier = 7, Shift = 1) and the attachment variant mask leave 1; networked as command code
    0xE90): stores the pointed world point and preview heading as marker lane 1 of every class-0x16 entity in
    the player's selection (SelectionPointerArray_SetAircraftPadTargets).
@@ -582,8 +570,7 @@ void InGameSelection_SetAircraftPadTargetLane1
 }
 
 
-/* Address: 0x0055FFF0.
-   Pointer-mode handler for lane 2 (g_InGamePointerModeHandlers[2]: modifier mask & attachment variant mask
+/* Pointer-mode handler for lane 2 (g_InGamePointerModeHandlers[2]: modifier mask & attachment variant mask
    == 2, Alt = 2; networked as command code 0xEC0): like InGameSelection_SetAircraftPadTargetLane1, for marker lane 2.
 */
 void InGameSelection_SetAircraftPadTargetLane2
@@ -598,8 +585,7 @@ void InGameSelection_SetAircraftPadTargetLane2
 }
 
 
-/* Address: 0x00562050.
-   In-game command handler 0x2F20: moves the player's primary selected model (block +0x8094, rebased offset, 0 =
+/* In-game command handler 0x2F20: moves the player's primary selected model (block +0x8094, rebased offset, 0 =
    none) by a pointer-drag delta, writes the new point into its path and tracked coordinates and the model
    transform, and lets the definition's placement contact kind (+0x278) set its height before the transforms and
    depth bins are rebuilt. Sent by InGameUiCommand_UpdateInteractionByMode (ui/ingame/runtime.c) while the
@@ -650,8 +636,7 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
 }
 
 
-/* Address: 0x00562220.
-   In-game command handler 0x30F0: turns the player's primary selected model (block +0x8094) by angleDelta
+/* In-game command handler 0x30F0: turns the player's primary selected model (block +0x8094) by angleDelta
    (16-bit angle, wraps) and rebuilds its transforms. Sent by InGameUiCommand_UpdateInteractionByMode
    (ui/ingame/runtime.c) with the horizontal pointer drag * 64.
 */
@@ -780,8 +765,7 @@ static void SelectionInfoPanel_PatchInfoTexture(GraphicsTextureSourceAsset *info
 }
 
 
-/* Address: 0x0052CEE0.
-   Loads the selection and information panel graphics (gfx\panel\select.gfx, info.gfx) and their 0x1A4-byte .dat
+/* Loads the selection and information panel graphics (gfx\panel\select.gfx, info.gfx) and their 0x1A4-byte .dat
    tables, empties the selection of all eight player blocks and stores the caller's entity-slot table. Then it
    patches sequence descriptors inside the loaded textures (swaps two select.gfx entries, rewrites frames of
    info.gfx) - the exact meaning of these patches is not known. Returns true on success; on failure returns false
@@ -830,8 +814,7 @@ bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint
 }
 
 
-/* Address: 0x0052D0F0.
-   Counterpart of SelectionInfoPanel_InitResources: releases both panel textures and both .dat tables and clears
+/* Counterpart of SelectionInfoPanel_InitResources: releases both panel textures and both .dat tables and clears
    the four resource pointers.
 */
 void SelectionInfoPanel_ShutdownResources(void)
@@ -849,8 +832,7 @@ void SelectionInfoPanel_ShutdownResources(void)
 }
 
 
-/* Address: 0x0052FB20.
-   Removes an entity from the selections of all eight players (every matching entry of each player block's
+/* Removes an entity from the selections of all eight players (every matching entry of each player block's
    32-entry selection becomes NULL), so no selection keeps pointing at an entity that is being destroyed.
 */
 void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
@@ -885,8 +867,7 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
 }
 
 
-/* Address: 0x0052FB70.
-   Writes the average world position (model node translation) of the local selection's entities to
+/* Writes the average world position (model node translation) of the local selection's entities to
    *outPosition and returns true; returns false when the selection is empty (*outPosition is then all 0).
 */
 bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition)
@@ -929,8 +910,7 @@ bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPos
 }
 
 
-/* Address: 0x0052FD60.
-   Removes an entity from one 32-entry selection array: only the first matching entry is set to NULL
+/* Removes an entity from one 32-entry selection array: only the first matching entry is set to NULL
    (an entity is in a selection at most once).
 */
 void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array)
@@ -948,8 +928,7 @@ void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionP
 }
 
 
-/* Address: 0x0052FDC0.
-   Returns true (CF set) when the local selection holds at least one entity, false when it is empty.
+/* Returns true (CF set) when the local selection holds at least one entity, false when it is empty.
 */
 bool SelectionInfo_HasAnyEntry(void)
 
@@ -974,8 +953,7 @@ bool SelectionInfo_HasAnyEntry(void)
 }
 
 
-/* Address: 0x0052FDE0.
-   Returns false (CF clear) when every entity of the local selection belongs to the faction ownerIndex (an empty
+/* Returns false (CF clear) when every entity of the local selection belongs to the faction ownerIndex (an empty
    selection passes), true as soon as one belongs to another faction.
 */
 bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
@@ -998,8 +976,7 @@ bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 }
 
 
-/* Address: 0x0052FE30.
-   Returns false (CF clear) when the local selection consists only of class-0x16 entities of faction ownerIndex
+/* Returns false (CF clear) when the local selection consists only of class-0x16 entities of faction ownerIndex
    and at least one of them has a non-zero dword +0x70 in its runtime record; true otherwise (also for an empty
    selection).
 */
@@ -1032,8 +1009,7 @@ bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerI
 }
 
 
-/* Address: 0x0052FEB0.
-   Returns false (CF clear) when the local selection can take a ground position order: some entity's
+/* Returns false (CF clear) when the local selection can take a ground position order: some entity's
    definition has a non-zero dword +0x18, or the selection is a single entity of definition class 0x0D (13).
    True otherwise; the world input then ignores the ground click.
 */
@@ -1104,8 +1080,7 @@ static bool SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 wor
 }
 
 
-/* Address: 0x0052FF30.
-   Tests whether the local selection could be ordered to a world point (CF = result of the test). The first
+/* Tests whether the local selection could be ordered to a world point (CF = result of the test). The first
    entity whose definition has a non-zero dword +0x18 is temporarily moved to the point and asked through its
    typed callback; without such an entity the first class-0x0D entity tests the grid cell mask bands selected by
    its capability flags (0x80 -> band 3, 4 -> band 1, else 6). CF is set when neither exists.
@@ -1149,8 +1124,7 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
 }
 
 
-/* Address: 0x00530050.
-   Returns false (CF clear) as soon as one entity of the local selection passes
+/* Returns false (CF clear) as soon as one entity of the local selection passes
    ArmyRuntime_TestWeaponDamageNonnegative but fails ArmyRuntime_TestHasNoWeaponDamage (its state value at
    +0x100 is positive); true when none does.
 */
@@ -1182,8 +1156,7 @@ bool SelectionInfo_TestNoEntryHasWeaponDamage(void)
 }
 
 
-/* Address: 0x005300A0.
-   Returns true (CF set) when ArmyRuntime_TestWeaponDamageNonnegative holds for any entity of the local
+/* Returns true (CF set) when ArmyRuntime_TestWeaponDamageNonnegative holds for any entity of the local
    selection, false otherwise.
 */
 bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
@@ -1209,8 +1182,7 @@ bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
 }
 
 
-/* Address: 0x005300E0.
-   Returns the first entity of the local player's selection (the first non-NULL entry), or NULL when nothing is
+/* Returns the first entity of the local player's selection (the first non-NULL entry), or NULL when nothing is
    selected; the in-game panels use it as the representative of the selection.
 */
 GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
@@ -1241,8 +1213,7 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
   return firstEntry;
 }
 
-/* Address: 0x00530100.
-   Tests whether entry is missing from the local selection: true (CF set) when absent, false (CF clear) when it is selected.
+/* Tests whether entry is missing from the local selection: true (CF set) when absent, false (CF clear) when it is selected.
 */
 bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
 
@@ -1259,8 +1230,7 @@ bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
 }
 
 
-/* Address: 0x00530770.
-   Returns the OR of the attachment effect variant masks of all entities in the local selection (per entity from
+/* Returns the OR of the attachment effect variant masks of all entities in the local selection (per entity from
    ArmyRuntime_GetAttachmentEffectVariantMask).
 */
 uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
@@ -1282,8 +1252,7 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
 }
 
 
-/* Address: 0x005307C0.
-   Returns the OR of the capability flags of the local selection: definition class 0x16 contributes 8, class
+/* Returns the OR of the capability flags of the local selection: definition class 0x16 contributes 8, class
    0x0D the capability dword +0xC4 of its definition; other classes contribute nothing.
 */
 uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
@@ -1311,8 +1280,7 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
   return capabilityMask;
 }
 
-/* Address: 0x00561000.
-   In-game command handler 0x1ED0: empties the player's marked-cell list (the field cells collected by
+/* In-game command handler 0x1ED0: empties the player's marked-cell list (the field cells collected by
    PlayerPairList_InsertRange) and, for the local player, the in-game root's copy of its count (+0xBA4). Sent by
    InGameUiCommand_BeginInteractionByMode and InGameUiCommand_ResetInteractionByMode (ui/ingame/runtime.c).
 */
@@ -1332,8 +1300,7 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
 }
 
 
-/* Address: 0x00571020.
-   Tells whether the field cell (worldXQ12, worldYQ12) is in the player's marked-cell list (see
+/* Tells whether the field cell (worldXQ12, worldYQ12) is in the player's marked-cell list (see
    PlayerPairList_InsertUnique): CF clear (false) when listed, CF set (true) when not. Used by the FieldGrid cell
    updates in world/terrain/grid.c.
 */
@@ -1356,8 +1323,7 @@ bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,Sel
 }
 
 
-/* Address: 0x005302B0.
-   Move command for a selection (ArmyRuntime_StartRoutedMoveCommand per entity): each entity is sent to
+/* Move command for a selection (ArmyRuntime_StartRoutedMoveCommand per entity): each entity is sent to
    the target shifted by its offset from the selection's centre, so the group keeps its formation, unless the
    selection is spread too widely, then all go to the target itself. If the selection is exactly one class-0xD
    entity (a production structure, cf. gameplay/faction/runtime.c), the target becomes its point at model
@@ -1424,8 +1390,7 @@ void SelectionPointerArray_ApplyMoveCommand
 }
 
 
-/* Address: 0x00530420.
-   Stops the selected entities: every entity without command flag 0x2 has its movement reset to its current
+/* Stops the selected entities: every entity without command flag 0x2 has its movement reset to its current
    model position and command-mode bit 0x10 and movement bit 0x200 cleared; class-0x16 entities are dropped
    from the selection. The formation offsets are then recomputed, and a selection of exactly one class-0xD
    entity gets its point at model runtime +0x78/+0x7C reset to its model's lookup point (1,5) (flag 0x800
@@ -1492,8 +1457,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
 }
 
 
-/* Address: 0x0052FCE0.
-   Adds to a selection every entity in the world of the same army type (army asset id) and faction as
+/* Adds to a selection every entity in the world of the same army type (army asset id) and faction as
    sourceArmyRuntime, i.e. "select all units of this kind"; each insertion recomputes the formation offsets.
 */
 void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
@@ -1523,8 +1487,7 @@ void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
 }
 
 
-/* Address: 0x005303A0.
-   Waypoint move for a selection (ArmyRuntime_AppendWaypointOrStartMove per entity): like
+/* Waypoint move for a selection (ArmyRuntime_AppendWaypointOrStartMove per entity): like
    SelectionPointerArray_ApplyMoveCommand each entity gets the target shifted by its formation
    offset, unless the selection is spread too widely, but without the class-0xD special case.
 */
@@ -1591,8 +1554,7 @@ static SelectionPanelCellAdvance SelectionPanel_AdvancePastCell
 }
 
 
-/* Address: 0x0052D600.
-   Draws a number cell: the cell's sprite at (originY, originX) plus the cell offsets, with value formatted as
+/* Draws a number cell: the cell's sprite at (originY, originX) plus the cell offsets, with value formatted as
    signed decimal text centred on it. Returns the coordinates after the cell (see SelectionPanelCellAdvance;
    SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_* keep an axis at the origin plus offset). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the group number.
@@ -1632,8 +1594,7 @@ SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
 }
 
 
-/* Address: 0x0052D6F0.
-   Draws an icon cell: the cell's sprite at (originY, originX) plus the cell offsets. Returns the coordinates
+/* Draws an icon cell: the cell's sprite at (originY, originX) plus the cell offsets. Returns the coordinates
    after the cell (see SelectionPanel_DrawNumberCellAndAdvance). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the frame corners.
 */
@@ -1661,8 +1622,7 @@ SelectionPanelCellAdvance SelectionPanel_DrawIconCellAndAdvance
 }
 
 
-/* Address: 0x0052D770.
-   Draws a meter cell: the cell's base sprite at (originY, originX) plus the cell offsets and over it frame
+/* Draws a meter cell: the cell's base sprite at (originY, originX) plus the cell offsets and over it frame
    1..17 of the meter (currentValue clamped to 0..maximumValue, rounded to sixteenths; 17 when maximumValue is
    0). Returns the coordinates after the cell (see SelectionPanel_DrawNumberCellAndAdvance). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the hierarchy meter.
@@ -1724,8 +1684,7 @@ static int SelectionPanel_DivideRounded(int64_t numerator,UiNumericValue32 maxim
 }
 
 
-/* Address: 0x0052D850.
-   Draws a horizontal value bar in row fixedCoordinate: start cap (base sprite) at barStartCoordinate, end cap
+/* Draws a horizontal value bar in row fixedCoordinate: start cap (base sprite) at barStartCoordinate, end cap
    (+2) ending at barEndCoordinate, and between them a filled part of rounded currentValue / maximumValue of the
    width (currentValue clamped to 0..maximumValue) in fill colour +3..+9 (by rounded sixths of the value, full
    when maximumValue is 0), the rest in the plain fill (+1). Called by SelectionPanel_RenderArmyRuntimeMetrics
@@ -1787,8 +1746,7 @@ void SelectionPanel_DrawProportionalCappedBar
 }
 
 
-/* Address: 0x0052DAF0.
-   Draws a horizontal bar without a value in row fixedCoordinate: start cap (base sprite) at barStartCoordinate,
+/* Draws a horizontal bar without a value in row fixedCoordinate: start cap (base sprite) at barStartCoordinate,
    end cap (+2) ending at barEndCoordinate and the plain fill (+1) between them. Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the top edge when there is no value to show.
 */
@@ -1824,8 +1782,7 @@ void SelectionPanel_DrawForwardCappedBar
 }
 
 
-/* Address: 0x0052DBC0.
-   Vertical counterpart of SelectionPanel_DrawForwardCappedBar: start cap (base sprite) at barStartCoordinate,
+/* Vertical counterpart of SelectionPanel_DrawForwardCappedBar: start cap (base sprite) at barStartCoordinate,
    end cap (+2) ending at barEndCoordinate and the plain fill (+1) between them, in column fixedCoordinate.
    Called by SelectionPanel_RenderArmyRuntimeMetrics for the left and right edge.
 */
@@ -1861,8 +1818,7 @@ void SelectionPanel_DrawSolidCappedBar
 }
 
 
-/* Address: 0x0052DFF0.
-   Draws a vertical segment row in column fixedCoordinate: caps at barStartCoordinate and barEndCoordinate,
+/* Draws a vertical segment row in column fixedCoordinate: caps at barStartCoordinate and barEndCoordinate,
    filledSegmentCount full segments (+4) and, with SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS, the rest of
    totalSegmentCount as empty segments (+3), stacked from the top (ALIGN_START), from the bottom (ALIGN_END) or
    upwards from the centre, with the plain fill (+1) around them; only the fill when the segments do not fit.
@@ -1983,8 +1939,7 @@ void SelectionPanel_DrawSegmentedCappedBar
 }
 
 
-/* Address: 0x00530130.
-   Orders a selection onto a target entity: every entity with a non-zero state (+0x100) gets targetArmyRuntime as
+/* Orders a selection onto a target entity: every entity with a non-zero state (+0x100) gets targetArmyRuntime as
    its command target (ArmyRuntime_ResolveCommandTarget), stored again at +0x98, command-mode bits 0x14 set and
    movement bit 0x200 cleared.
 */
@@ -2015,8 +1970,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
 }
 
 
-/* Address: 0x00530190.
-   Orders a selection onto a target position: every entity with a non-zero state (+0x100) gets the three
+/* Orders a selection onto a target position: every entity with a non-zero state (+0x100) gets the three
    command coordinates (ArmyRuntime_ApplyTargetPositionCommand), command-mode bits 0x14 set, movement bit 0x200
    cleared and its command generation shifted left by 2.
 */
@@ -2048,8 +2002,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
 }
 
 
-/* Address: 0x00530540.
-   For every selected entity without command flag 0x2: resets its movement flags and anchor coordinates to the
+/* For every selected entity without command flag 0x2: resets its movement flags and anchor coordinates to the
    current model position (GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel) and clears command
    flag 0x200.
 */
@@ -2075,8 +2028,7 @@ void SelectionRuntime_StopMovement(GameEntityRuntime **selectionEntries)
 }
 
 
-/* Address: 0x005305A0.
-   For every selected entity without command flag 0x2: drops an active attack/follow target
+/* For every selected entity without command flag 0x2: drops an active attack/follow target
    (ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration) and clears command-mode bit 0x10.
 */
 void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries)
@@ -2100,8 +2052,7 @@ void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries)
 }
 
 
-/* Address: 0x00530600.
-   For every selected entity without command flag 0x2: sets runtime flags 0x418 on all nodes of its model
+/* For every selected entity without command flag 0x2: sets runtime flags 0x418 on all nodes of its model
    hierarchy that do not have flag 0x08 yet (ModelRuntimeHierarchy_MarkDestroyedRecursive).
 */
 void SelectionRuntime_SelfDestruct(GameEntityRuntime **selectionEntries)
@@ -2125,8 +2076,7 @@ void SelectionRuntime_SelfDestruct(GameEntityRuntime **selectionEntries)
 }
 
 
-/* Address: 0x0052FCA0.
-   Adds an entity to a 32-entry selection (into the first free entry, unless it is already in it or the
+/* Adds an entity to a 32-entry selection (into the first free entry, unless it is already in it or the
    selection is full) and recomputes every entry's formation offset from the new centre.
 */
 void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection)
@@ -2150,8 +2100,7 @@ void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRunt
 }
 
 
-/* Address: 0x0052FBF0.
-   Computes the centre (average model world X/Y) of a selection and stores for every entity its offset
+/* Computes the centre (average model world X/Y) of a selection and stores for every entity its offset
    centre - position in common.selectionOffsetXQ12/YQ12 (+0x60/+0x64); move orders subtract that offset from
    the target so the group keeps its formation.
 */
@@ -2193,8 +2142,7 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
 }
 
 
-/* Address: 0x0052FD90.
-   Tells whether target is one of the 32 entries of a selection array: CF clear (false) when found, CF set (true)
+/* Tells whether target is one of the 32 entries of a selection array: CF clear (false) when found, CF set (true)
    when not. Used by FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.c); the primary-selection
    move/rotate handlers call it and ignore the result.
 */
@@ -2213,8 +2161,7 @@ bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerAr
 }
 
 
-/* Address: 0x005301F0.
-   Tells the move commands whether a selection is too scattered to keep its formation: true (CF) when the
+/* Tells the move commands whether a selection is too scattered to keep its formation: true (CF) when the
    bounding box of the entities' selection offsets (common.selectionOffsetXQ12/YQ12, +0x60/+0x64) is wider
    than 5.0 (Q12 0x5000) on either axis or the two extents add up to more than 7.0 (0x7000). An empty
    selection returns false.
@@ -2268,8 +2215,7 @@ bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *sele
 }
 
 
-/* Address: 0x00530650.
-   For every selected entity whose definition class is 0x16, counts how often each of the three lane asset ids
+/* For every selected entity whose definition class is 0x16, counts how often each of the three lane asset ids
    (g_InGamePointerModePreviewArmyIds[1], [2] and [4]) occurs among the
    13 child asset ids at model runtime +0x78..+0xA8. For every lane bit set in laneMask (1, 2, 4) it stores that
    lane's count byte (+0xDC + lane) and the point (worldYQ12, worldXQ12, heading16) at +0xB8 + lane * 0xC.
@@ -2336,8 +2282,7 @@ void SelectionPointerArray_SetAircraftPadTargets
 }
 
 
-/* Address: 0x0052FB00.
-   Empties a 32-entry selection array (all entries NULL).
+/* Empties a 32-entry selection array (all entries NULL).
 */
 void SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
 

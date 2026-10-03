@@ -40,8 +40,7 @@ static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
   return packed;
 }
 
-/* Address: 0x0052CC60.
-   Diplomatic side effects of a shot hitting an army (called by the projectile maintenance in
+/* Diplomatic side effects of a shot hitting an army (called by the projectile maintenance in
    world/shots/maintenance.c). A repair shot (negative impact damage) that finds its target fully repaired
    ends the shooter's command on it. Any other hit adds to the pair pressure of target and shooter faction;
    if the target's faction already treats the shooter as hostile, the pair's relation tick is renewed and
@@ -128,8 +127,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
 }
 
 
-/* Address: 0x0052B540.
-   Loads the shot graphics of a level (mutableBasePath with its extension replaced by .gfx and .pal) and
+/* Loads the shot graphics of a level (mutableBasePath with its extension replaced by .gfx and .pal) and
    allocates the zeroed shot runtime pool; g_ShotRuntimeRebaseBaseMinusOne is set for the 1-based saved slot
    offsets. The movie playback is advanced between the steps so that a running movie keeps going. Returns true
    with *outError = 0 on success, or false with the error code of the first failing load or allocation in
@@ -181,8 +179,7 @@ bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outEr
 }
 
 
-/* Address: 0x0052B5C0.
-   Counterpart of ShotRuntime_InitGraphicsResources at level end: frees the shot runtime pool, releases the
+/* Counterpart of ShotRuntime_InitGraphicsResources at level end: frees the shot runtime pool, releases the
    shot texture set and palette, releases the nested resource each shot definition owns and empties the shot
    definition registry.
 */
@@ -217,8 +214,7 @@ void ShotRuntime_ShutdownGraphicsResources(void)
 }
 
 
-/* Address: 0x0052B660.
-   Looks a shot definition up by id in the 256-slot registry (a second copy of
+/* Looks a shot definition up by id in the 256-slot registry (a second copy of
    ShotDefinitionRegistry_FindByIdWithError, used by ShotDefinition registration to reject duplicates).
    Returns the registered definition (never NULL), or NULL on a miss; then a number is also formatted into
    g_PackageLastErrorPath (the original returned FATAL_ERROR_SHOT_ID_NOT_FOUND as its error value).
@@ -248,8 +244,7 @@ ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog defini
 }
 
 
-/* Address: 0x0052B750.
-   Turns the saved form of the shot slots back into pointers after a savegame load (and after writing one):
+/* Turns the saved form of the shot slots back into pointers after a savegame load (and after writing one):
    for every live shot (non-zero model node) the 1-based model node, runtime state and owner army offsets are
    rebased and the saved definition id is replaced by the registered ShotDefinition. A shot whose id is no
    longer registered is dropped (model node cleared).
@@ -312,8 +307,7 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
 }
 
 
-/* Address: 0x0052BDB0.
-   Fires one projectile of shotDefinition from the launch point towards the target point: takes the first
+/* Fires one projectile of shotDefinition from the launch point towards the target point: takes the first
    free slot of the shot pool and a world object record for its model node, links the node into the world's
    owner list and seeds position, launch angles, velocity (plus half the ballistic divisor upwards for
    ballistic shots), lifetime, animation, optional shading light, occupancy class flags and tint; a launch
@@ -466,8 +460,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
 }
 
 
-/* Address: 0x00514710.
-   Hook called by ShotRuntime_ApplyArmyHitRelationAndNotifications after the "under attack" alert of a hit on
+/* Hook called by ShotRuntime_ApplyArmyHitRelationAndNotifications after the "under attack" alert of a hit on
    a hostile army; it does nothing.
 */
 void ShotRuntime_PostImpactRelationNotificationNoOp(ShotRuntimeSlot *shotRuntime,WorldRuntimeContext *worldRuntime)

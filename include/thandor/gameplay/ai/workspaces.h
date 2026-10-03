@@ -43,84 +43,60 @@
 #define AI_SITE_SCRATCH_BANDS_CLASSES_0_TO_5 (0x3f * GRID_SCRATCH_LOW_BAND0) /* 0x3f00 */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0053A1E0 */
 void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-/* 0x00538230 */
 void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispatchIndex,
           FactionRuntimeIndex factionRuntimeIndexRegisterCopy,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
 
-/* 0x0053BF30 */
 void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-/* 0x00537420 */
 void AiCandidateWorkspace_Clear(void);
 
-/* 0x00537430 */
 void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImageByteOffset);
 
-/* 0x00537470 */
 void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByteOffset);
 
-/* 0x00537570 */
 void AiCandidateWorkspace_SortDescending(void);
 
-/* 0x005375D0 */
 int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry);
 
-/* 0x00538CF0 */
 bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
-/* 0x00538D90 */
 int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
-/* 0x00538E00 */
 int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
-/* 0x00538E80 */
 int AiHostileWorkspace_GetNearestVisibleHostileDistance(Q12 worldY,Q12 worldX);
 
-/* 0x00538EF0 */
 int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX);
 
-/* 0x00538F60 */
 int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
-/* 0x00539240 */
 void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
 
-/* 0x0053BCB0 */
 AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
-/* 0x0053C6C0 */
 bool AiRuntime_InitWorkspace(uint32_t *outErrorCode);
 
-/* 0x00537F80 */
 void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell);
 
-/* 0x00537FC0 */
 void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell);
 
-/* 0x00538B90 */
 bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
 
-/* 0x00538BF0 */
 bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
-/* 0x00538C40 */
 int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId);
 
-/* 0x005374B0 */
 void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
           (RuntimeToken entityId,uint32_t weightRange,AiCandidateEntryKind entryKind);
 
-/* 0x00538FD0 */
 bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
 
 #endif /* THANDOR_GAMEPLAY_AI_WORKSPACES_H */

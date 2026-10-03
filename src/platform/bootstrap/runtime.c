@@ -15,8 +15,7 @@
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 
-/* Address: 0x00585D40.
-   Process entry: raises the process to real-time priority, creates the full-screen main window (only
+/* Process entry: raises the process to real-time priority, creates the full-screen main window (only
    one instance may run), initialises every subsystem, sets the initial 640x480 display mode from the
    saved adapter and colour depth, runs the game and shuts down. Any failed step ends in the
    fatal-error dispatcher; a missing sound device is tolerated when -SOUND is not on the command line.
@@ -115,8 +114,7 @@ void __cdecl ProcessEntry(void)
 }
 
 
-/* Address: 0x00512E70.
-   Resets the game data to the defaults of a new game: clears the auxiliary state and the eight faction
+/* Resets the game data to the defaults of a new game: clears the auxiliary state and the eight faction
    records, gives every faction its own capability bit, the base technology, a rotated relation pattern
    (0xF for itself, 1 for everyone else) and the starting economy limits, and replaces the stat table with a
    fresh zeroed one. Returns 0, or the allocator's (non-zero) error code when the stat table cannot be
@@ -196,8 +194,7 @@ uint32_t GameData_ResetDefaults(void)
 }
 
 
-/* Address: 0x00512F60.
-   Loads the game data of a level or savegame from the mounted packages: daten.hex is the faction image,
+/* Loads the game data of a level or savegame from the mounted packages: daten.hex is the faction image,
    stat.hex replaces the stat table and oldunit.hex (record count, primary table, secondary table) fills the
    old-unit tables; without oldunit.hex both tables and the count are cleared. Returns true (failure) when
    daten.hex or stat.hex cannot be loaded, false otherwise.
@@ -268,8 +265,7 @@ bool GameData_LoadExternalTables(void)
 }
 
 
-/* Address: 0x00573BC0.
-   Resolves procedureName in module with GetProcAddress and stores it in *destination; returns 0. The name is
+/* Resolves procedureName in module with GetProcAddress and stores it in *destination; returns 0. The name is
    left in g_PackageLastErrorPath and, on failure, the name of the module (when it is one of g_DynamicModules)
    in g_FatalErrorDetail1Utf16 for the fatal-error message; returns FATAL_ERROR_DLL_PROCEDURE_MISSING then
    (*destination untouched).
@@ -302,8 +298,7 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 }
 
 
-/* Address: 0x00573C50.
-   Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that
+/* Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that
    DynDLL_UnloadAll frees it; returns the (non-NULL) module. Returns NULL (the name left in
    g_PackageLastErrorPath) when LoadLibraryA is not bound yet, the table is full or the load fails; the
    original reported FATAL_ERROR_DLL_LOAD_FAILED then, which the callers now supply themselves.
@@ -332,8 +327,7 @@ HINSTANCE DynDLL_Load(char *moduleName)
 }
 
 
-/* Address: 0x00573EB0.
-   Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared
+/* Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared
    before the call so a module is never freed twice. The count is left unchanged.
 */
 void DynDLL_UnloadAll(void)
@@ -357,8 +351,7 @@ void DynDLL_UnloadAll(void)
 }
 
 
-/* Address: 0x00585F50.
-   Window procedure of the main window (g_MainMessageStorage.overlay.windowClass.windowProc, registered by ProcessEntry). Counts
+/* Window procedure of the main window (g_MainMessageStorage.overlay.windowClass.windowProc, registered by ProcessEntry). Counts
    WM_CLOSE/WM_DESTROY, hides the cursor and forwards keys and characters to the keyboard layer. On
    WM_ACTIVATEAPP it drops to normal priority and releases the mouse when deactivated (the original also let
    its hardware renderer give up the display then), and on reactivation returns to real-time priority,
@@ -439,8 +432,7 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
 }
 
 
-/* Address: 0x00587370.
-   Sets CPU_FEATURE_MMX in g_CpuFeatureFlags when CPUID reports MMX; ProcessEntry refuses to run without it
+/* Sets CPU_FEATURE_MMX in g_CpuFeatureFlags when CPUID reports MMX; ProcessEntry refuses to run without it
    (FATAL_ERROR_CPU_WITHOUT_MMX). The constant return value 5 has no known use.
 */
 uint32_t __cdecl CPU_DetectFeatures(void)
@@ -456,8 +448,7 @@ uint32_t __cdecl CPU_DetectFeatures(void)
   return 5;
 }
 
-/* Address: 0x00573070.
-   Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and
+/* Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and
    rendering, loads the core assets and plays the intro movies (each failure is fatal). It then switches
    from the 640x480x16 start mode to the saved display mode if that differs, runs the frontend main loop and
    finally closes and cleans up the network backend.
@@ -513,8 +504,7 @@ void __cdecl Game_Run(void)
 }
 
 
-/* Address: 0x0050BB10.
-   Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables,
+/* Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables,
    the software renderer's display-mode hook and the global primitive queue (0xA000 packets), in that order.
    Stops at the first step that fails and returns its (non-zero) error code; returns 0 when all succeed.
    The original returned g_PrimitiveQueueStorage in EAX on success; its only caller (Game_Run) discards it.
@@ -971,8 +961,7 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
 }
 
 
-/* Address: 0x00573140.
-   Loads everything the frontend needs once at startup: takes the CD path from the registry, mounts the patch,
+/* Loads everything the frontend needs once at startup: takes the CD path from the registry, mounts the patch,
    level and core packages, creates the seven UI button sounds, moves the screenshot name past the existing
    screen??.pcx files, loads the text pages, applies the sound settings and allocates the fixed runtime
    buffers. (The original also loaded and bound the PCX codec module engine\pcx.fnc here; open-thandor
@@ -1091,8 +1080,7 @@ static bool IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
 }
 
 
-/* Address: 0x005739D0.
-   Plays the intro movies flm\intro0.flm, intro1.flm, ... until one cannot be opened, unless -NOINTRO is given.
+/* Plays the intro movies flm\intro0.flm, intro1.flm, ... until one cannot be opened, unless -NOINTRO is given.
    Each movie runs at its own rate from IntroMovie_TimerTick, centred on the screen;
    a key or mouse-button release skips to the next one, Escape skips all of them (the number jumps to 9).
    CF is set only when the first frame of an opened movie cannot be decoded.
@@ -1144,8 +1132,7 @@ bool Game_PlayIntroMovies(void)
 }
 
 
-/* Address: 0x00573DB0.
-   Binds the bootstrap API table: every entry starts out holding a procedure name and its DLL name and
+/* Binds the bootstrap API table: every entry starts out holding a procedure name and its DLL name and
    has the name replaced by the resolved procedure address. DLLs that are not mapped yet are loaded with
    the table's first entry (LoadLibraryA, resolved first) and recorded in g_DynamicModules. On failure the
    DLL/procedure name is stored for the fatal-error message and a FATAL_ERROR_* code is returned; 0 when
@@ -1195,8 +1182,7 @@ uint32_t DynAPI_Bootstrap(void)
 }
 
 
-/* Address: 0x00586110.
-   Looks up a command-line option (stored uppercased without its '/' or '-' by CommandLine_Parse) in
+/* Looks up a command-line option (stored uppercased without its '/' or '-' by CommandLine_Parse) in
    g_CommandLine.optionBuffer, a list of NUL-terminated strings ending with an empty one. Only the first
    length bytes are compared (case-sensitive): a length including the NUL asks for an exact match, a shorter
    one for a prefix such as an option name followed by its value. Returns the stored option (never NULL)
@@ -1433,8 +1419,7 @@ static uint8_t *CommandLine_CopyArgument(uint8_t firstChar,uint8_t *cursor)
 }
 
 
-/* Address: 0x00586170.
-   Splits the process command line (GetCommandLineA) into g_CommandLine and installs CommandLine_FindOption
+/* Splits the process command line (GetCommandLineA) into g_CommandLine and installs CommandLine_FindOption
    as the lookup hook: the executable path without quotes, up to three positional arguments (quotes
    removed, further ones skipped) and every '/' or '-' option without its prefix, NUL-separated in
    optionBuffer (quoted parts kept verbatim with their quotes). Everything else is uppercased (ASCII a-z

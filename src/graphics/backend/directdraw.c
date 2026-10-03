@@ -11,8 +11,7 @@
 
 /* Implementation ownership: graphics/backend/directdraw. */
 
-/* Address: 0x00423CF0.
-   Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
+/* Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
    (g_GraphicsDisplayModes, filled by DirectDraw_EnumDisplayModeCallback): CF clear (false) when it was, CF set
    (true) when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/controls/misc.c) to offer only
    available modes. The table is assumed non-empty: the first entry is compared before the count is checked.
@@ -38,8 +37,7 @@ bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,F
 }
 
 
-/* Address: 0x0054B0E0.
-   Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: CF clear (false) when
+/* Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: CF clear (false) when
    the mode was enumerated. Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
    (ui/frontend/settings.c).
 */
@@ -65,8 +63,7 @@ bool DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,Fron
 }
 
 
-/* Address: 0x00578080.
-   DirectDrawEnumerateA callback: appends a zeroed adapter record with the driver's GUID (all zero for the
+/* DirectDrawEnumerateA callback: appends a zeroed adapter record with the driver's GUID (all zero for the
    primary display driver, which DirectDraw passes as NULL) and its description, while fewer than 16 adapters are
    known. Always continues the enumeration (returns 1).
 */
@@ -104,8 +101,7 @@ int __stdcall DirectDraw_EnumAdapterCallback
   return 1;
 }
 
-/* Address: 0x005780F0.
-   IDirectDraw2::EnumDisplayModes callback (the context is the adapter index): records every plain RGB mode of at
+/* IDirectDraw2::EnumDisplayModes callback (the context is the adapter index): records every plain RGB mode of at
    least 640x480 with 16 or 32 bits per pixel (the depths the software renderer draws) while fewer than 256 modes
    are known. Always continues (returns 1).
 */
@@ -389,8 +385,7 @@ static void GraphicsDirectDraw_PublishFramebuffer
   g_GraphicsFramebufferPresent = GraphicsFramebuffer_Present;
 }
 
-/* Address: 0x00578920.
-   g_GraphicsSetDisplayMode for DirectDraw: releases the surfaces of the current mode (and DirectDraw itself when
+/* g_GraphicsSetDisplayMode for DirectDraw: releases the surfaces of the current mode (and DirectDraw itself when
    the adapter changes), creates DirectDraw and the primary and back surfaces, then publishes the framebuffer,
    selects the 16- or 32-bit software blitters and calls the chained finalize hook. Returns true on success. A
    failing step returns false with its FATAL_ERROR_DIRECTDRAW_... code in *errorCode and leaves the number of

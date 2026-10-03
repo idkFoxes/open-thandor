@@ -95,95 +95,72 @@ typedef struct UiFourValueDialogCountdownText {
 #define UI_POINTER_FAR_OUTSIDE 0x70000000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00422910 */
 void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root);
 
-/* 0x00423C40 */
 void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode);
 
-/* 0x00423C80 */
 void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode);
 
-/* 0x00423CB0 */
 void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode);
 
-/* 0x00424590 */
 void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode);
 
-/* 0x004BC8B0 */
 void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageControl *control);
 
-/* 0x004BCB50 */
 void UiImageControl_TickHover(UiImageControl *control);
 
-/* 0x00423B30 */
 void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode);
 
-/* 0x00423C00 */
 void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode);
 
-/* 0x004242D0 */
 void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root);
 
-/* 0x004B3F40 */
 void UiRangeSliderControl_DrawTrackAndThumb
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiRangeSliderControl *control);
 
-/* 0x004B41C0 */
 void UiRangeSliderControl_BeginThumbDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiRangeSliderControl *control);
 
-/* 0x004B4280 */
 void UiRangeSliderControl_EndThumbDrag
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
                ,UiRangeSliderControl *control);
 
-/* 0x004B45F0 */
 void UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control);
 
-/* 0x004B4620 */
 void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control);
 
-/* 0x004BC5C0 */
 void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiImageControl *control);
 
-/* 0x004BC6E0 */
 void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageControl *control);
 
-/* 0x004BC7E0 */
 void UiImageControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageControl *control);
 
-/* 0x004BD2A0 */
 void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode);
 
-/* 0x00517E30 */
 void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
           (int clipBottom,int clipRight,int clipTop,int clipLeft,UiHorizontalGaugeControl *control);
 
-/* 0x00423600 */
 void UiDisplaySettings_OpenAndPopulateModeSelection(void);
 
-/* 0x004BC9B0 */
 UiNodeBase * UiImageControl_HitTestOpaque
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control);
 
-/* 0x00423D70 */
 void UiDisplayModeSelection_RefreshEnumeratedOptions
           (FrontendDisplayAdapterIndex adapterIndex,UiNodeBase *selectedModeValue,
           FrontendDisplayDimensionPixels modeHeight,FrontendDisplayDimensionPixels modeWidth,
           UiNodeBase *displaySettingsRoot);
 
-extern UiNodeVtable g_UiRangeSliderControlVtable; /* 004B3EF0 g_UiRangeSliderControlVtable */
-extern UiNodeVtable g_UiImageControlVtable; /* 004BC570 g_UiImageControlVtable */
-extern UiNodeVtable g_UiTransferProgressGaugeVtable; /* 00517DE0 g_UiTransferProgressGaugeVtable: UiHorizontalGaugeControl subclass of the transfer progress gauge; followed by 0x90 code alignment fill */
+extern UiNodeVtable g_UiRangeSliderControlVtable;
+extern UiNodeVtable g_UiImageControlVtable;
+extern UiNodeVtable g_UiTransferProgressGaugeVtable; /* UiHorizontalGaugeControl subclass of the transfer progress gauge; followed by 0x90 code alignment fill */
 
-extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
+extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate;
 
 #endif /* THANDOR_UI_CONTROLS_MISC_H */

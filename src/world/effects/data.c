@@ -11,11 +11,8 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0051DBC0 g_EffectTextureSet */
 __declspec(align(16)) GraphicsTextureSet *g_EffectTextureSet = 0;
 
-/* 0051DBC4 g_EffectPalette */
 __declspec(align(4)) GraphicsPaletteAsset *g_EffectPalette = 0;
 
-/* 0051DBC8 g_EffectRuntimeSlots */
 __declspec(align(8)) EffectRuntimeSlot *g_EffectRuntimeSlots = 0;

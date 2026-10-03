@@ -11,19 +11,15 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004B0E3C g_UiPointerCaptureTarget */
 UiNodeBase *g_UiPointerCaptureTarget = UI_NODE_NONE;
 
-/* 004B0E40 g_UiKeyboardFocusNode */
 UiNodeBase *g_UiKeyboardFocusNode = UI_NODE_NONE;
 
-/* 004B0F24 g_UiPointerCaptureButton */
 UiPointerCaptureButton g_UiPointerCaptureButton = 255;
 
-/* 004B0F28 g_UiImageControlHoverTarget */
 UiImageControl * g_UiImageControlHoverTarget = 0;
 
-/* 004B0E58 g_UiRangeSliderDragScale: int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider (src/ui/controls/input.c). */
+/* int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider (src/ui/controls/input.c). */
 static const int32_t g_UiRangeSliderDragScale = 1;
 
 /* Diagnostics (open-thandor only): a UI link that is neither UI_NODE_NONE nor a readable node ends the
@@ -69,8 +65,7 @@ static bool UiPointer_ReleaseCapture
   return true;
 }
 
-/* Address: 0x004AF500.
-   Delivers the queued mouse events to the UI under the frame lock (polling DirectInput first when it is
+/* Delivers the queued mouse events to the UI under the frame lock (polling DirectInput first when it is
    the active mouse). Presses and motion go to the node under the pointer; a release goes to the node
    that captured the pointer with that button, which then loses the capture and the pointer position is
    dispatched again as motion. A release without a matching capture is dropped.
@@ -146,8 +141,7 @@ void UiPointer_DispatchPendingEvents(void)
 }
 
 
-/* Address: 0x004B00F0.
-   Takes the keyboard focus away from node (e.g. before it is hidden or removed): the focus moves on to the
+/* Takes the keyboard focus away from node (e.g. before it is hidden or removed): the focus moves on to the
    next focus target, or is cleared when node is the only one.
 */
 void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
@@ -221,8 +215,7 @@ static bool UiKeyboard_PassToFollowingFocusTargets
   return false;
 }
 
-/* Address: 0x004AF3D0.
-   Delivers the queued key events to the UI under the frame lock. A key goes to the focused node; if it
+/* Delivers the queued key events to the UI under the frame lock. A key goes to the focused node; if it
    passes the key on (keyboardEvent returns true, CF in the original), the next focus targets in tree order
    get it and the first one that takes it receives the focus. Keys nobody takes, or pressed with no focus, go
    to the top root's keyboard fallback. While a node has captured the pointer (a mouse button is held), keys
@@ -280,8 +273,7 @@ static UiNodeBase *UiKeyboardFocus_NextInPreOrderOrNone(UiNodeBase *node)
   return UI_NODE_NONE;
 }
 
-/* Address: 0x004B0030.
-   Gives the keyboard focus to the first node from root on that is a preferred focus target, else to the
+/* Gives the keyboard focus to the first node from root on that is a preferred focus target, else to the
    last fallback focus target found (suppressed nodes are skipped); without any the focus stays as it is.
 */
 void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
@@ -313,8 +305,7 @@ void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
 }
 
 
-/* Address: 0x004B0120.
-   Called when a control is unsuppressed or its page becomes active: gives it the keyboard focus if no node
+/* Called when a control is unsuppressed or its page becomes active: gives it the keyboard focus if no node
    holds the focus yet and the control is a focus target.
 */
 void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
@@ -328,8 +319,7 @@ void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
 }
 
 
-/* Address: 0x004B4420.
-   keyboardEvent slot of g_UiRangeSliderControlVtable. Left/Right (Down/Up for a vertical slider) move the
+/* keyboardEvent slot of g_UiRangeSliderControlVtable. Left/Right (Down/Up for a vertical slider) move the
    value by stepValue, with Ctrl straight to the minimum/maximum; each step plays the click sound, queues
    actionId and redraws. Other keys, and all keys while suppressed, go to the default handler, which passes
    them on. CF clear when the key was consumed.
@@ -388,8 +378,7 @@ bool UiRangeSliderControl_HandleKeyboard
 }
 
 
-/* Address: 0x004B9CB0.
-   keyboardEvent slot of g_UiFocusProxyControlVtable. Hands the key to the framed focus child and redraws
+/* keyboardEvent slot of g_UiFocusProxyControlVtable. Hands the key to the framed focus child and redraws
    when the child consumed it. Tab goes to the default handler (passed on); with UI_LABEL_SWALLOW_CHARACTERS
    typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. CF clear when
    consumed.
@@ -423,8 +412,7 @@ bool UiSingleLineTextControl_ForwardKeyboardEventToChild
 }
 
 
-/* Address: 0x004B9DA0.
-   pointerWheel slot of g_UiFocusProxyControlVtable. Forwards the wheel to the focus child, lending it the
+/* pointerWheel slot of g_UiFocusProxyControlVtable. Forwards the wheel to the focus child, lending it the
    keyboard focus for the call, and redraws. UI_LABEL_WHEEL_FORWARD_ACTIVE guards against re-entry: a
    wheel event that comes back while forwarding (a child passing it to its parent) goes on to this
    control's parent instead.
@@ -459,8 +447,7 @@ void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
 }
 
 
-/* Address: 0x004B07F0.
-   Default pointerMove slot of most UI vtables (range sliders, labels, lists, ...): the node asks for
+/* Default pointerMove slot of most UI vtables (range sliders, labels, lists, ...): the node asks for
    cursor frame 0 (GRAPHICS_CURSOR_FRAME_ARROW).
 */
 GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -471,8 +458,7 @@ GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,Ui
 }
 
 
-/* Address: 0x004B42D0.
-   nonRightDrag slot of g_UiRangeSliderControlVtable. While the thumb is dragged, maps the pointer position
+/* nonRightDrag slot of g_UiRangeSliderControlVtable. While the thumb is dragged, maps the pointer position
    (thumb centre) along the track onto minimumValue..maximumValue, rounded to nearest and mirrored for
    reversed sliders, then queues actionId and redraws.
 */
@@ -545,8 +531,7 @@ void UiRangeSliderControl_UpdateValueFromPointer
 }
 
 
-/* Address: 0x004B4570.
-   pointerWheel slot of g_UiRangeSliderControlVtable. Unless the thumb is being dragged, each wheel notch
+/* pointerWheel slot of g_UiRangeSliderControlVtable. Unless the thumb is being dragged, each wheel notch
    moves the value by stepValue * g_UiRangeSliderDragScale, clamped to the range; then actionId is queued
    and the slider redrawn.
 */
@@ -575,8 +560,7 @@ void UiRangeSliderControl_HandlePointerWheel
 }
 
 
-/* Address: 0x004B9580.
-   relocate slot of g_UiFocusProxyControlVtable and g_UiCommandVisibilitySingleLineTextVtable. A label with
+/* relocate slot of g_UiFocusProxyControlVtable and g_UiCommandVisibilitySingleLineTextVtable. A label with
    a focus child becomes a fallback focus target in the child's place (the child loses its focus-target
    flags), the children and the focusChild offset are relocated, and a serialized text offset
    (UI_LABEL_TEXT_NEEDS_RELOCATION) is turned into a pointer once.
@@ -609,8 +593,7 @@ void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocatio
 }
 
 
-/* Address: 0x004B99A0.
-   nonRightPress slot of g_UiFocusProxyControlVtable. Forwards the left press to the focus child; if this
+/* nonRightPress slot of g_UiFocusProxyControlVtable. Forwards the left press to the focus child; if this
    control has the keyboard focus, the child holds it for the duration of the call so it acts as focused.
    Redraws afterwards.
 */
@@ -638,8 +621,7 @@ void UiSingleLineTextControl_ForwardNonRightPressToChild
 }
 
 
-/* Address: 0x004B9A00.
-   nonRightRelease slot of g_UiFocusProxyControlVtable. Forwards the left release to the focus child,
+/* nonRightRelease slot of g_UiFocusProxyControlVtable. Forwards the left release to the focus child,
    lending it the keyboard focus for the call like UiSingleLineTextControl_ForwardNonRightPressToChild.
 */
 void UiSingleLineTextControl_ForwardNonRightReleaseToChild
@@ -666,8 +648,7 @@ void UiSingleLineTextControl_ForwardNonRightReleaseToChild
 }
 
 
-/* Address: 0x004B9A60.
-   rightPress slot of g_UiFocusProxyControlVtable. Forwards the right press to the focus child (lending it
+/* rightPress slot of g_UiFocusProxyControlVtable. Forwards the right press to the focus child (lending it
    the keyboard focus), but not when the child's parent is this control: most rightPress handlers
    (UiNode_ForwardRightPressToParent) would hand the press straight back.
 */
@@ -697,8 +678,7 @@ void UiSingleLineTextControl_ForwardRightPressToChild
 }
 
 
-/* Address: 0x004B9AD0.
-   rightRelease slot of g_UiFocusProxyControlVtable. Forwards the right release to the focus child,
+/* rightRelease slot of g_UiFocusProxyControlVtable. Forwards the right release to the focus child,
    lending it the keyboard focus for the call.
 */
 void UiSingleLineTextControl_ForwardRightReleaseToChild
@@ -725,8 +705,7 @@ void UiSingleLineTextControl_ForwardRightReleaseToChild
 }
 
 
-/* Address: 0x004B9B30.
-   nonRightDrag slot of g_UiFocusProxyControlVtable. Forwards the left-button drag to the focus child,
+/* nonRightDrag slot of g_UiFocusProxyControlVtable. Forwards the left-button drag to the focus child,
    lending it the keyboard focus for the call.
 */
 void UiSingleLineTextControl_ForwardNonRightDragToChild
@@ -753,8 +732,7 @@ void UiSingleLineTextControl_ForwardNonRightDragToChild
 }
 
 
-/* Address: 0x004B9B90.
-   rightDrag slot of g_UiFocusProxyControlVtable. Forwards the right-button drag to the focus child,
+/* rightDrag slot of g_UiFocusProxyControlVtable. Forwards the right-button drag to the focus child,
    lending it the keyboard focus for the call.
 */
 void UiSingleLineTextControl_ForwardRightDragToChild
@@ -781,8 +759,7 @@ void UiSingleLineTextControl_ForwardRightDragToChild
 }
 
 
-/* Address: 0x004B9BF0.
-   pointerMove slot of g_UiFocusProxyControlVtable. Returns the focus child's cursor frame (asked with the
+/* pointerMove slot of g_UiFocusProxyControlVtable. Returns the focus child's cursor frame (asked with the
    keyboard focus lent to it), or the arrow (0) without a child.
 */
 GraphicsCursorFrameIndex UiSingleLineTextControl_ForwardPointerMoveToChild
@@ -810,8 +787,7 @@ GraphicsCursorFrameIndex UiSingleLineTextControl_ForwardPointerMoveToChild
 }
 
 
-/* Address: 0x004B9C50.
-   hitTest slot of g_UiFocusProxyControlVtable. A hit on the focus child is reported as this control, so
+/* hitTest slot of g_UiFocusProxyControlVtable. A hit on the focus child is reported as this control, so
    the proxy receives the input and forwards it; hits on the child or the control itself count as
    misses (UI_NODE_NONE) while the child is suppressed.
 */
@@ -840,8 +816,7 @@ UiNodeBase * UiSingleLineTextControl_HitTestChildProxy
 }
 
 
-/* Address: 0x004B9D40.
-   tick slot of g_UiFocusProxyControlVtable. Forwards the per-frame tick to the focus child, lending it the
+/* tick slot of g_UiFocusProxyControlVtable. Forwards the per-frame tick to the focus child, lending it the
    keyboard focus for the call, and redraws.
 */
 void UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control)
@@ -866,8 +841,7 @@ void UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control
 }
 
 
-/* Address: 0x004BCA70.
-   pointerMove slot of the image-control vtable at 0x004BC570. Over an opaque pixel of the image the arrow
+/* pointerMove slot of the image-control vtable at 0x004BC570. Over an opaque pixel of the image the arrow
    is shown. Over a transparent pixel of a persistent-activation image, a child under the pointer supplies
    the cursor; without one, UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE while no image control is hovered.
 */
@@ -1074,8 +1048,7 @@ static PackedArgb32 UiSelectionGeometryControl_SampleBilinear
                                 (int)(sourceU & Q12_FRACTION_MASK) >> 4,(int)(sourceV & Q12_FRACTION_MASK) >> 4);
 }
 
-/* Address: 0x00515CC0.
-   drawClipped slot of g_UiSelectionGeometryControlVtable. Fills the node (clipped) with its texture,
+/* drawClipped slot of g_UiSelectionGeometryControlVtable. Fills the node (clipped) with its texture,
    rotated by rotationAngle and scaled by sampleScaleQ12 about sourceOrigin: every screen pixel is mapped
    back to a Q12 source position and bilinearly filtered from the 2x2 texels around it (texels outside the
    texture count as 0), for 16- and 32-bit framebuffers. Only direct-colour subresources (negative
@@ -1254,8 +1227,7 @@ void UiSelectionGeometryControl_DrawClipped
 }
 
 
-/* Address: 0x005161A0.
-   nonRightPress slot of g_UiSelectionGeometryControlVtable. Maps the clicked screen point back into
+/* nonRightPress slot of g_UiSelectionGeometryControlVtable. Maps the clicked screen point back into
    texture space with the same rotation/scale as UiSelectionGeometryControl_DrawClipped, stores it in
    selectedSourceXQ12/YQ12 and queues actionId so the handler can read the picked source position.
 */
@@ -1405,8 +1377,7 @@ static void UiPointer_CaptureAndPress
   }
 }
 
-/* Address: 0x004AFA60.
-   Left button press: the node under the pointer (a hovered image control on an opaque pixel, else the hit
+/* Left button press: the node under the pointer (a hovered image control on an opaque pixel, else the hit
    test of the topmost root containing the pointer; pressing into a lower root brings it to the front
    first) captures the pointer for the left button, takes the keyboard focus when it is a focus target and
    gets nonRightPress followed by nonRightDrag. Ignored while any button holds a capture.
@@ -1435,8 +1406,7 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
 }
 
 
-/* Address: 0x004AFBC0.
-   Middle button press: like UiPointer_DispatchLeftPress (same node selection, focus and nonRightPress /
+/* Middle button press: like UiPointer_DispatchLeftPress (same node selection, focus and nonRightPress /
    nonRightDrag), but captures the pointer for the middle button and always marks the node's press as a
    repeated click (UI_NODE_REPEAT_OR_DOUBLE_CLICK), whatever buttonMask says.
 */
@@ -1463,8 +1433,7 @@ void UiPointer_DispatchMiddlePress
 }
 
 
-/* Address: 0x004AFD10.
-   Right button press: the hit test of the topmost root containing the pointer (a hovered image control
+/* Right button press: the hit test of the topmost root containing the pointer (a hovered image control
    only loses its hover state, it gets no opaque-pixel check) picks the node, which captures the pointer for
    the right button, takes the keyboard focus when it is a focus target and gets rightPress followed by
    rightDrag. Ignored while any button holds a capture.
@@ -1515,8 +1484,7 @@ static UiNodeBase *UiKeyboardFocus_NextInPreOrderWrapping(UiNodeBase *node)
   return nextNode;
 }
 
-/* Address: 0x004AFFA0.
-   Moves the keyboard focus to the next focus target after the current one in depth-first tree order,
+/* Moves the keyboard focus to the next focus target after the current one in depth-first tree order,
    wrapping around through the topmost ancestor and skipping suppressed nodes. Nothing changes when there is
    no focus or no other focus target.
 */
@@ -1543,8 +1511,7 @@ void UiKeyboardFocus_MoveNext(void)
 }
 
 
-/* Address: 0x004AFE40.
-   Pointer motion (and wheel): drops a hovered in-game selection record (rebuilding the detail panel) and
+/* Pointer motion (and wheel): drops a hovered in-game selection record (rebuilding the detail panel) and
    updates the tooltip target. While a node holds the pointer capture it gets the drag for its button;
    otherwise the node under the pointer in the topmost root containing it gets pointerMove and, for a
    non-zero wheel delta, pointerWheel. A root the pointer misses passes it on to the root below only when
@@ -1605,8 +1572,7 @@ void UiPointer_DispatchMotionAndWheel
 }
 
 
-/* Address: 0x004B09F0.
-   Default pointerWheel slot of most UI vtables: passes the wheel event up to the parent node (if any), so
+/* Default pointerWheel slot of most UI vtables: passes the wheel event up to the parent node (if any), so
    it reaches the nearest ancestor that handles the wheel.
 */
 void UiNode_ForwardPointerWheelToParent
@@ -1624,8 +1590,7 @@ void UiNode_ForwardPointerWheelToParent
 }
 
 
-/* Address: 0x004B08C0.
-   Default keyboardEvent slot of many UI vtables, also the fallback of the slider and focus-proxy handlers.
+/* Default keyboardEvent slot of many UI vtables, also the fallback of the slider and focus-proxy handlers.
    It always returns CF set (key not consumed): the original compares the key with KEYBOARD_KEY_CODE_TAB but
    then sets CF unconditionally (CMP; STC; RET 0xc), so the focus move its name suggests never happens.
 */
@@ -1637,8 +1602,7 @@ bool UiNode_DefaultKeyboardEventMoveFocusNext
 }
 
 
-/* Address: 0x004AFF60.
-   Moves the keyboard focus to node (UI_NODE_NONE clears it), keeping UI_NODE_HAS_KEYBOARD_FOCUS on the
+/* Moves the keyboard focus to node (UI_NODE_NONE clears it), keeping UI_NODE_HAS_KEYBOARD_FOCUS on the
    focused node only, and redraws every root (also when the focus did not change).
 */
 void UiKeyboardFocus_Set(UiNodeBase *node)
@@ -1661,7 +1625,6 @@ void UiKeyboardFocus_Set(UiNodeBase *node)
 
 /* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004B9530 g_UiFocusProxyControlVtable */
 UiNodeVtable g_UiFocusProxyControlVtable = {
         .relocate = (void *)UiSingleLineTextControl_RelocateChild,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -1682,7 +1645,6 @@ UiNodeVtable g_UiFocusProxyControlVtable = {
         .tick = (void *)UiSingleLineTextControl_ForwardTickToChild,
         .pointerWheel = (void *)UiSingleLineTextControl_ForwardPointerWheelToChildOrParent};
 
-/* 00515C70 g_UiSelectionGeometryControlVtable (followed by 0x90 code filler) */
 UiNodeVtable g_UiSelectionGeometryControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -1704,7 +1666,6 @@ UiNodeVtable g_UiSelectionGeometryControlVtable = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
 UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable = {
     .relocate = (void *)UiSingleLineTextControl_RelocateChild,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,

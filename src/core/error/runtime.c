@@ -11,8 +11,7 @@
 
 /* Implementation ownership: core/error/runtime. */
 
-/* Address: 0x00575890.
-   Points all three fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and
+/* Points all three fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and
    loads the error texts (texte\error.str) as text page 0. If they cannot be loaded the game exits with
    the built-in I/O error message; otherwise FatalError_Exit returns at once because failed is false.
 */
@@ -29,8 +28,7 @@ void __cdecl ErrorSystem_Init(void)
 }
 
 
-/* Address: 0x00407F50.
-   method08 of g_UiRootCallbacks_00407E28, the callbacks of the fatal-error dialog root: always sets CF, so
+/* method08 of g_UiRootCallbacks_00407E28, the callbacks of the fatal-error dialog root: always sets CF, so
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
@@ -41,8 +39,7 @@ bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
 }
 
 
-/* Address: 0x00407F60.
-   pointerMissPolicy of g_UiRootCallbacks_00407E28 (the fatal-error dialog root): the non-negative result
+/* pointerMissPolicy of g_UiRootCallbacks_00407E28 (the fatal-error dialog root): the non-negative result
    stops the pointer traversal at the dialog, so the roots below it get no pointer input. The value 8 itself
    carries no meaning beyond being non-negative.
 */
@@ -53,8 +50,7 @@ int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root)
 }
 
 
-/* Address: 0x00407F70.
-   Handler of UI action 1 (slot 1 of g_UiRootStackActionHandlerPage, installed as action page 0 by the UI
+/* Handler of UI action 1 (slot 1 of g_UiRootStackActionHandlerPage, installed as action page 0 by the UI
    setup in ui/controls/layout.c): closes the fatal-error dialog root and counts the dismissal, which ends
    the modal frame loop in FatalErrorRuntime_DispatchPendingError.
 */
@@ -67,8 +63,7 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
 }
 
 
-/* Address: 0x00407F90.
-   The in-game fatal-error handler behind FatalError_ReportIfFailed (installed by
+/* The in-game fatal-error handler behind FatalError_ReportIfFailed (installed by
    ErrorRuntime_InstallUiHandlerAndAllocateState): returns valueOrError unchanged. When failed is set it first
    builds the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames
    until the dialog is dismissed, so the caller can carry on (the caller knows the failure from its own flag).
@@ -140,8 +135,7 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
 }
 
 
-/* Address: 0x00408090.
-   Allocates the 0x110-byte root node of the fatal-error dialog (FatalErrorRuntime_DispatchPendingError
+/* Allocates the 0x110-byte root node of the fatal-error dialog (FatalErrorRuntime_DispatchPendingError
    fills it from g_FatalErrorUiRootTemplateImage) and, if that worked, switches FatalError_ReportIfFailed
    from FatalError_Exit to the in-game dialog. Without the allocation errors keep ending the process.
 */
@@ -158,8 +152,7 @@ void ErrorRuntime_InstallUiHandlerAndAllocateState(void)
 }
 
 
-/* Address: 0x005758D0.
-   The fatal-error handler: without failed it returns valueOrError unchanged; with failed it builds the error
+/* The fatal-error handler: without failed it returns valueOrError unchanged; with failed it builds the error
    message (a code below 0x100 selects a text of the error page, anything else is a rich-text stream), fills
    in the last path and the three detail strings, shuts everything down, shows the text in a message box and
    exits the process (it does not return then).
@@ -205,8 +198,7 @@ static int FatalError_TerminateCutNarrowText(uint8_t *destination)
   return FATAL_ERROR_GENERAL_FAILURE;
 }
 
-/* Address: 0x0041BB00.
-   Converts a rich-text command stream into plain narrow text for the fatal-error MessageBoxA: glyphs below
+/* Converts a rich-text command stream into plain narrow text for the fatal-error MessageBoxA: glyphs below
    0x100 are copied as bytes, fixed spaces become ' ', line breaks CR LF, nested streams are followed and
    every other command is skipped. Returns the bytes written including the terminator, or
    FATAL_ERROR_GENERAL_FAILURE (output cut and terminated) when capacityBytes runs out.

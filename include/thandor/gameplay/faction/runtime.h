@@ -25,110 +25,82 @@
 #define FACTION_MERGE_RANDOM_DIRECTION_BIT 0x2000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0055F790 */
 void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
-/* 0x0055F910 */
 void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
-/* 0x00565320 */
 void OldUnitRuntime_RebuildScenarioReplayTables(void);
 
-/* 0x005130B0 */
 void GameFactionRuntime_RebaseLoadedArmyReferences(void);
 
-/* 0x00513960 */
 void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember);
 
-/* 0x00513CA0 */
 bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
 
-/* 0x00513CD0 */
 FactionRelationState GameFactionRuntime_GetPackedStateNibble
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);
 
-/* 0x00513D70 */
 void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void);
 
-/* 0x00514510 */
 void GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
           (ModelRuntimeSlot *hitModelRuntime,WorldRuntimeContext *worldRuntime);
 
-/* 0x00514730 */
 void GameFactionRuntime_RecomputeProgressAndScoreMetrics
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-/* 0x00514900 */
 uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *runtimeEntry);
 
-/* 0x0051B800 */
 bool FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord);
 
-/* 0x0051C4C0 */
 void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime);
 
-/* 0x0051C680 */
 bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition);
 
-/* 0x0052A4D0 */
 void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
           (AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
           ImpactDamageValue32 impactValue,GameEntityRuntime *targetEntityRuntime);
 
-/* 0x00560110 */
 void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount repetitionCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex);
 
-/* 0x00560160 */
 void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
           (uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount requestedCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex);
 
-/* 0x00560400 */
 void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
           (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex);
 
-/* 0x00560620 */
 void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
           (PlayerRuntimeId playerRuntimeId,uint32_t unusedConsumeArgument0,uint32_t unusedConsumeArgument1
           ,FactionRuntimeIndex factionIndex);
 
-/* 0x005606A0 */
 void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           (uint32_t unusedPlayerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex);
 
-/* 0x00561F80 */
 void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
           PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId);
 
-/* 0x00561FF0 */
 void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlacementFactionIndex placementFactionIndex);
 
-/* 0x00562020 */
 void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlacedArmyToken armyToken);
 
-/* 0x005622C0 */
 void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           uint32_t unusedZero2);
 
-/* 0x00565590 */
 void OldUnitRuntime_MergeMasksAndReplayRecords(void);
 
-/* 0x00513D00 */
 bool GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);
 
-/* 0x00565650 */
 void OldUnitRuntime_ResetPendingTables(void);
 
-/* 0x00513EE0 */
 void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeBase activeFactionCodeForFirst,
           FactionNotificationCodeBase activeFactionCodeForSecond,
           FactionRelationStateNibble stateFirstTowardSecond,

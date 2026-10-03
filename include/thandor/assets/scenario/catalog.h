@@ -108,81 +108,59 @@ typedef struct ScenarioLevelBundleHeader {
     uint32_t fieldGridEncodedBytes;      /* +0x0C */
 } ScenarioLevelBundleHeader;
 
-/* 0x00549E50 */
 void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *listControl);
 
-/* 0x00549EB0 */
 void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listControl);
 
-/* 0x00549F10 */
 void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listControl);
 
-/* 0x0054A280 */
 void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
           (FrontendScenarioSelectionPageView *scenarioSelectionPage);
 
-/* 0x0054A610 */
 void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode);
 
-/* 0x0054A690 */
 void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode);
 
-/* 0x0054A710 */
 void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode);
 
-/* 0x00549A70 */
 void FrontendScenarioAction_StartFieldGridLoad(void *source);
 
-/* 0x00549FD0 */
 void ScenarioCatalog_Rebuild(void);
 
-/* 0x00545290 */
 void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
                                                  uint32_t unusedArg3);
 
-/* 0x00547860 */
 void FrontendScenarioTransfer_ProcessReceivedAsset(void);
 
-/* 0x005443B0 */
 void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId);
 
-/* 0x00544AC0 */
 void FrontendScenarioSession_LoadOrRequestCampaignBundle
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRecordIndex);
 
-/* 0x00544DC0 */
 void ScenarioCatalog_RebuildSaveRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
-/* 0x00544EA0 */
 void ScenarioCatalog_RebuildLevelRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
-/* 0x00545020 */
 void ScenarioCatalog_RebuildCampaignRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
-/* 0x00549F70 */
 ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
           (ScenarioCatalogSourceByteCount sourceByteCount,ScenarioCatalogRecord *sourceRecords,
           ScenarioCatalogRecordCount existingRecordCount,ScenarioCatalogRecord *destinationRecords);
 
-/* 0x00544870 */
 void FrontendScenarioSession_LoadOrRequestLevelAsset
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRowIndex);
 
-/* 0x00545140 */
 void ScenarioCatalog_SelectSavedGameAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
-/* 0x00545240 */
 void ScenarioCatalog_SelectCampaignAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
-/* 0x00549CC0 */
 void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionControlAddress32 selectionControl);
 
-/* 0x005451F0 */
 void ScenarioCatalog_SelectLevelAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 

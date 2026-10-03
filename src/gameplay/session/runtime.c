@@ -22,8 +22,7 @@ static bool InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
 }
 
 
-/* Address: 0x00564F70.
-   Runs one in-game session from the frontend: starts a new level or loads a saved game (bit 0 of
+/* Runs one in-game session from the frontend: starts a new level or loads a saved game (bit 0 of
    loadExistingSessionFlag), then renders frames until the session is closed, the end movie is due or the local
    player left, tears the session down along the matching path and returns true. A failed start or an emptied UI
    root stack returns false with the error code in *outError, which the caller hands to the fatal-error dispatcher.
@@ -401,8 +400,7 @@ static void InGameUiRoot_UpdateCountdownText(InGameRuntimeRootFrameView *inGameR
 }
 
 
-/* Address: 0x00566290.
-   Frame update of the in-game UI root for the whole session: network session upkeep, the
+/* Frame update of the in-game UI root for the whole session: network session upkeep, the
    placement overlay, cursor frame and edge scrolling, keeping the camera target near the field, and, unless the
    interaction subsystem is active, ambient effect sounds, music selection, the camera keys, the countdown text and
    the terrain texture refresh. Nothing but the network upkeep runs while waiting for players.
@@ -487,8 +485,7 @@ void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
 }
 
 
-/* Address: 0x0050EA90.
-   Turns the saved form of the resource registration records (widget.hex) back into pointers, after a savegame
+/* Turns the saved form of the resource registration records (widget.hex) back into pointers, after a savegame
    load and after writing a savegame: the 1-based offsets become runtime-object, shading-record, army/shot/effect
    slot pointers, texture set and palette are re-selected per domain, and the sprite id is resolved again. Also
    restores the tail record pointer and the local player's faction assignment.
@@ -598,8 +595,7 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
 }
 
 
-/* Address: 0x00565E10.
-   Periodic timer callback of the in-game session: counts the network tick countdown down to zero and advances the
+/* Periodic timer callback of the in-game session: counts the network tick countdown down to zero and advances the
    periodic clock while no resource registration is in progress.
 */
 void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
@@ -614,8 +610,7 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
   return;
 }
 
-/* Address: 0x00567060.
-   Keyboard fallback of the in-game UI root: looks the key up in the hotkey table (key code plus required Ctrl/Alt
+/* Keyboard fallback of the in-game UI root: looks the key up in the hotkey table (key code plus required Ctrl/Alt
    combination) and runs its action: chat, message window, menus, save, pause, game speed, side panel,
    screenshot, leaving the game and the three cheat keys (only while cheats are enabled).
 */
@@ -901,8 +896,7 @@ static void InGameNotification_PopQueueHead(InGameRuntimeRoot *inGameRoot)
 }
 
 
-/* Address: 0x00569920.
-   Periodic timer that plays the queued in-game notification movies: while one plays it advances a frame and, at
+/* Periodic timer that plays the queued in-game notification movies: while one plays it advances a frame and, at
    the end, closes it and keeps the notification's map target clickable for 0x280 more ticks; otherwise it starts
    the movie of the queue head ("flm\movie%03d.flm"), makes its payload the active notification and pops the
    four-entry queue.
@@ -1407,8 +1401,7 @@ static void InGameNewSession_QueueIntroNotifications(void)
 }
 
 
-/* Address: 0x005641D0.
-   Starts a new game on a level: resets the session counters and the per-player blocks, installs the step timer
+/* Starts a new game on a level: resets the session counters and the per-player blocks, installs the step timer
    and InGameRuntime_UpdateSimulationAndNetworkTick as the UI synchronization hook, builds the in-game UI root from
    its template, opens the level movie that plays while loading and loads the level (world, terrain, shading,
    technologies, units). It then reports itself ready to the other players and keeps drawing the player-status
@@ -1777,8 +1770,7 @@ static bool InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGa
 }
 
 
-/* Address: 0x00564920.
-   Continues a saved game: mounts the save package, takes the session name from its header, loads the campaign
+/* Continues a saved game: mounts the save package, takes the session name from its header, loads the campaign
    and level entries, and then follows the same steps as InGameRuntime_InitializeNewSession, except that the local
    player is always player 0 of a single block, the world comes from the saved external tables and field grid
    (InGameLevelRuntime_LoadResourcesAfterExternalTables) instead of a fresh level, and no intro notifications are
@@ -1855,8 +1847,7 @@ bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *o
 }
 
 
-/* Address: 0x005651D0.
-   Ends an in-game session (counterpart of InGameRuntime_InitializeNewSession/InitializeLoadedSession): stops the
+/* Ends an in-game session (counterpart of InGameRuntime_InitializeNewSession/InitializeLoadedSession): stops the
    step timer, shows a black screen with the busy cursor, then releases the world (every entity's bindings, the
    level assets), the in-game UI root, the faction scratch buffers, the object pool, the level movie, the terrain
    texture and the four panel texture packages, and resets the sprite registry and pending input so the frontend
@@ -1916,8 +1907,7 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
 }
 
 
-/* Address: 0x0050E0D0.
-   Frees the two scratch buffers of each of the eight factions (sets A and B) at session shutdown and clears the
+/* Frees the two scratch buffers of each of the eight factions (sets A and B) at session shutdown and clears the
    pointers.
 */
 void InGameRuntime_ReleaseFactionScratchBuffers(void)
@@ -2219,8 +2209,7 @@ static void InGameConditionRuntime_EndTriggerFaction(const InGameEndConditionTri
 }
 
 
-/* Address: 0x0050E120.
-   The level script, evaluated every 20 simulation steps: first promotes factions that were marked as ending to
+/* The level script, evaluated every 20 simulation steps: first promotes factions that were marked as ending to
    ended, then re-evaluates the level's 64 scheduled conditions (bit 0 of each record's kind = satisfied: unit
    counts, resource amounts, map share, countdowns, boolean expressions over other conditions), and finally checks
    the 16 end triggers. The first active trigger whose condition holds ends its faction: its units are disabled,
@@ -2620,8 +2609,7 @@ static void InGameFactionEconomy_StoreStatTableSample(void)
   }
 }
 
-/* Address: 0x00513160.
-   The faction economy, run every 8th simulation step (job 0 of InGameRuntime_UpdateSimulationAndNetworkTick):
+/* The faction economy, run every 8th simulation step (job 0 of InGameRuntime_UpdateSimulationAndNetworkTick):
    1. per faction: reset the step's energy demand and extraction rates, decay the pair-pressure matrix by 7/8,
       count the notification/anchor cooldowns down;
    2. mining: every connected region of Xenite cells (FIELD_CELL_XENITE_SUPPORT), then of Tritium cells
@@ -2670,8 +2658,7 @@ void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void)
 }
 
 
-/* Address: 0x0053D4F0.
-   Stores the field-grid cell under the target position of the in-game world motion (the cursor/view target)
+/* Stores the field-grid cell under the target position of the in-game world motion (the cursor/view target)
    and, unless automatic rotation or zoom is switched off in the map settings,
         copies its heading and a zoom value derived from the committed distance
    (distance * 3/128) into the in-game root's view cache.
@@ -2704,8 +2691,7 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
 }
 
 
-/* Address: 0x005651A0.
-   Called before the session shutdown: remembers which info text the world view shows (text resource
+/* Called before the session shutdown: remembers which info text the world view shows (text resource
    0x112..0x117, cycled by the player) in the in-game template and in the frontend template's status text, so the
    choice survives the next copy of the templates.
 */
@@ -2934,8 +2920,7 @@ static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
 }
 
 
-/* Address: 0x00565E30.
-   One simulation step of the running game: the heart of the game loop. It is not called from a fixed place in
+/* One simulation step of the running game: the heart of the game loop. It is not called from a fixed place in
    the frame; the UI runtime calls it as its synchronization hook (UiRuntime_SetSynchronizationHooks) every time
    it releases the in-game tick lock, and the loading loops and movie playback call it directly. Pacing therefore
    happens here: the call is ignored while the lock is held, while the simulation is more than two steps ahead of
@@ -3013,8 +2998,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
 }
 
 
-/* Address: 0x0050E0B0.
-   Optional initialisation step of new and loaded sessions; it always succeeds (CF clear), so the callers' failure
+/* Optional initialisation step of new and loaded sessions; it always succeeds (CF clear), so the callers' failure
    branches never run. The unreachable CF-set epilogue at 0x0050E0C4 is not part of the function.
 */
 uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument)

@@ -54,34 +54,25 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0057E970 */
 GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 
-/* 0x0057EAF0 */
 GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
 
-/* 0x00485E40 */
 GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode);
 
-/* 0x00485E80 */
 void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set);
 
-/* 0x00485FC0 */
 void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
 
-/* 0x00486070 */
 void __cdecl GraphicsTexture_RebuildNoOp(void);
 
-/* 0x004A9270 */
 GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
-/* 0x004A92C0 */
 bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
-/* 0x004A9A50 */
 void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
@@ -89,7 +80,6 @@ void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMax
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-/* 0x004AA0A0 */
 void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
@@ -97,7 +87,6 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-/* 0x004AB9A0 */
 void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
@@ -105,7 +94,6 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate cli
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-/* 0x004ABF70 */
 void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -114,42 +102,32 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-/* 0x004AD630 */
 GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16,uint32_t *outError);
 
-/* 0x004AD670 */
 GraphicsTextureSourceAsset * GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset);
 
-/* 0x004AD6C0 */
 uint32_t GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset);
 
-/* 0x004AD770 */
 void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset);
 
-/* 0x004AD790 */
 void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset);
 
-/* 0x004AD7B0 */
 GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset);
 
-/* 0x00485EA0 */
 GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 
-/* 0x00485F90 */
 GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set);
 
-/* 0x0057E870 */
 bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
 
-/* 0x004AC8E0 */
 bool GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
           GraphicsTextureSourceAsset **outAsset,uint32_t *outError);
 
-extern GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize; /* 004A8EF4 g_GraphicsTextureSourceGetLogicalSize */
-extern GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel; /* 004A8EF8 g_GraphicsTextureSourceTestOpaquePixel */
-extern GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha; /* 004A8EFC g_GraphicsTextureSourceBlitSourceAlpha */
-extern GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha; /* 004A8F00 g_GraphicsTextureSourceBlitTiledSourceAlpha */
-extern GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha; /* 004A8F18 g_GraphicsTextureSourceBlitModulatedSourceAlpha */
+extern GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize;
+extern GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel;
+extern GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha;
+extern GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha;
+extern GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha;
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_TEXTURE_H */

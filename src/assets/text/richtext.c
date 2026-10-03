@@ -16,8 +16,7 @@
 
 /* Implementation ownership: assets/text/richtext. */
 
-/* Address: 0x0041D300.
-   Measures a text block wrapped to maximumWidth: flattens the stream into the font runtime buffer, sets the
+/* Measures a text block wrapped to maximumWidth: flattens the stream into the font runtime buffer, sets the
    style's font and colour, and sums the heights of all wrapped lines. Returns maximumWidth itself as the width
    (not the widest line) and the total height.
 */
@@ -47,8 +46,7 @@ RichTextExtent RichTextCommandStream_MeasureWrappedBlock
 }
 
 
-/* Address: 0x0041D7C0.
-   Draws a rich-text block wrapped to maximumWidth with its top-left corner at (drawX, drawY), clipped to the
+/* Draws a rich-text block wrapped to maximumWidth with its top-left corner at (drawX, drawY), clipped to the
    given rectangle: flattens the stream into the font runtime buffer, sets the style's font and colour, and
    draws line after line (RichTextCommandStream_DrawNextWrappedLine) until the end of the text. Called directly
    by UiWrappedTextControl_DrawClipped.
@@ -77,8 +75,7 @@ void RichTextCommandStream_DrawWrappedBlock
 }
 
 
-/* Address: 0x0041D4A0.
-   Draws one rich-text line: measures it first to align it (right or centred on penX, per the packed style) and
+/* Draws one rich-text line: measures it first to align it (right or centred on penX, per the packed style) and
    to place the baseline below lineTopY, then interprets glyphs, colour, font, nested-stream and inline-image
    commands until the end of the stream or a line break.
 */
@@ -221,8 +218,7 @@ bool RichTextCommandStream_DrawSingleLine
 }
 
 
-/* Address: 0x0041B100.
-   Walks one command stream (without following nested streams) and points every nested-stream command
+/* Walks one command stream (without following nested streams) and points every nested-stream command
    (0x18/0x19) whose selector matches at replacementPayload, so a text can have its placeholders bound to
    concrete sub-streams at run time.
 */
@@ -261,8 +257,7 @@ void RichTextCommandStream_PatchPayloadBySelector
 }
 
 
-/* Address: 0x0041B200.
-   Walks one command stream (without following nested streams) and sets the texture source of every inline
+/* Walks one command stream (without following nested streams) and sets the texture source of every inline
    image command to textureSource, so a text's icons can be bound to the texture they are drawn from.
 */
 void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream)
@@ -300,8 +295,7 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
 }
 
 
-/* Address: 0x0041B950.
-   Converts a rich-text command stream into a NUL-terminated 8-bit string (for Win32 text such as message boxes):
+/* Converts a rich-text command stream into a NUL-terminated 8-bit string (for Win32 text such as message boxes):
    follows nested streams, turns the fixed-space and line-break commands into ' ' and CR LF, drops all other
    commands and every code unit above 0xFF. Returns true when the whole text fit; on overflow (or nesting deeper
    than RICHTEXT_NESTING_LIMIT) the output is cut and terminated and false is returned. (The original also
@@ -676,8 +670,7 @@ static bool RichTextMarkup_ReportInvalidCharacter
 }
 
 
-/* Address: 0x0041BCB0.
-   Leftover of the TXT2STR converter (no caller and no function-pointer table entry in src/): compiles text
+/* Leftover of the TXT2STR converter (no caller and no function-pointer table entry in src/): compiles text
    markup into a 'str' string asset. Text between '#<' and '#>'
    becomes one NUL-terminated, dword-padded rich-text string keyed by the last '#ddd' number (text outside is
    ignored); further '#' escapes select a code page ('#@'..'#~'), raw command codes ('#!'), a soft hyphen
@@ -783,8 +776,7 @@ bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsse
 }
 
 
-/* Address: 0x0041C8D0.
-   Copies a rich-text command stream into a bounded buffer with every nested stream (0x18/0x19) inlined, so the
+/* Copies a rich-text command stream into a bounded buffer with every nested stream (0x18/0x19) inlined, so the
    copy no longer depends on the streams it referenced. Commands are normalised to RICHTEXT_COMMAND_FLAG | opcode;
    payload records are copied unchanged. Returns true when the whole text fit and stores the byte count without
    the terminator in *outBytesWritten (may be NULL); on overflow (or nesting deeper than RICHTEXT_NESTING_LIMIT)
@@ -884,8 +876,7 @@ bool RichTextCommandStream_CopyExpanded
 }
 
 
-/* Address: 0x0041CF30.
-   Measures one line of a rich-text command stream (up to its end or the first line break), following nested
+/* Measures one line of a rich-text command stream (up to its end or the first line break), following nested
    streams and font changes and including inline images. Returns the total width and the height of the tallest
    glyph or image; used to align a line before it is drawn.
 */
@@ -1071,8 +1062,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
 }
 
 
-/* Address: 0x0041D0F0.
-   Measures the next line of the flattened rich-text runtime buffer that fits into maximumWidth, wrapping after
+/* Measures the next line of the flattened rich-text runtime buffer that fits into maximumWidth, wrapping after
    the last space or soft hyphen that still fits (or at a line break), and advances
    g_RichTextRuntimeBufferUsedWords past it. Font commands are applied on the way. Stores the tallest glyph or
    image height of the line in *lineHeight (also for the last line) and returns true while more lines follow,
@@ -1108,8 +1098,7 @@ static bool RichTextCommandStream_EndWrappedLine
 }
 
 
-/* Address: 0x0041D9F0.
-   Draws the next line of the flattened rich-text runtime buffer at (drawX, drawY), wrapped to maximumWidth:
+/* Draws the next line of the flattened rich-text runtime buffer at (drawX, drawY), wrapped to maximumWidth:
    a measure pass with the rules of RichTextCommandStream_MeasureNextWrappedLine finds the wrap point and the
    line height, then the draw pass renders glyphs, images and colour/font commands up to it (drawing the hyphen
    when the line wraps at a soft hyphen) and advances g_RichTextRuntimeBufferUsedWords. Stores the line height in
@@ -1246,8 +1235,7 @@ bool RichTextCommandStream_DrawNextWrappedLine
 }
 
 
-/* Address: 0x0041D840.
-   Copies commandStream into g_FontRuntimeBuffer with every nested stream inlined, so the line measuring and
+/* Copies commandStream into g_FontRuntimeBuffer with every nested stream inlined, so the line measuring and
    drawing code can walk one flat stream: glyphs and most commands are copied, literal colours and inline images
    with their payload, nested-stream commands are followed instead of copied and the reserved and inline-value
    commands are dropped. Output beyond RICHTEXT_RUNTIME_BUFFER_UNITS is discarded; the read position

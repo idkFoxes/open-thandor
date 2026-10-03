@@ -10,25 +10,19 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004A8EF4 g_GraphicsTextureSourceGetLogicalSize */
 GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize = (void *)GraphicsTextureSource_GetLogicalSize;
 
-/* 004A8EF8 g_GraphicsTextureSourceTestOpaquePixel */
 GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel = (void *)GraphicsTextureSource_TestOpaquePixel;
 
-/* 004A8EFC g_GraphicsTextureSourceBlitSourceAlpha */
 GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha = 0;
 
-/* 004A8F00 g_GraphicsTextureSourceBlitTiledSourceAlpha */
 GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = (void *)GraphicsTextureSource_BlitTiledSourceAlpha;
 
-/* 004A8F18 g_GraphicsTextureSourceBlitModulatedSourceAlpha */
 GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha = 0;
 
 /* Implementation ownership: graphics/resources/texture. */
 
-/* Address: 0x0057E970.
-   Creates the renderer textures of a texture asset: allocates the set metadata, then one texture resource per
+/* Creates the renderer textures of a texture asset: allocates the set metadata, then one texture resource per
    subresource, registered in g_GraphicsTextureSlots. Nothing reads the resources any more (they held the
    surfaces of the original's hardware renderers); they are still allocated and registered so the arena layout,
    and with it the texture-set addresses GraphicsPrimitiveQueue_RadixSortForRendering sorts opaque packets by,
@@ -69,8 +63,7 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
 }
 
 
-/* Address: 0x0057EAF0.
-   Destroys a texture set made by GraphicsTextureSet_Create: every texture resource is removed from
+/* Destroys a texture set made by GraphicsTextureSet_Create: every texture resource is removed from
    g_GraphicsTextureSlots and freed, then the set metadata is freed. Returns the source asset the set was
    built from, so the caller can release it too.
 */
@@ -113,8 +106,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
 }
 
 
-/* Address: 0x00485E40.
-   Loads a 'gfx' texture source from the package and builds a renderer texture set from it through
+/* Loads a 'gfx' texture source from the package and builds a renderer texture set from it through
    g_GraphicsCreateTextureSet (installed as g_GraphicsTextureSetLoadPackage). When the set cannot be created the
    loaded asset is released again. Returns the set (never NULL), or NULL with the load or creation error in
    *outErrorCode (outErrorCode may be NULL).
@@ -141,8 +133,7 @@ GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t
 }
 
 
-/* Address: 0x00485E80.
-   Counterpart of GraphicsTextureSet_LoadPackage (installed as g_GraphicsTextureSetReleasePackage): destroys the
+/* Counterpart of GraphicsTextureSet_LoadPackage (installed as g_GraphicsTextureSetReleasePackage): destroys the
    texture set through g_GraphicsDestroyTextureSet and releases the 'gfx' source asset that call hands back.
 */
 void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
@@ -156,8 +147,7 @@ void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
 }
 
 
-/* Address: 0x00485FC0.
-   g_GraphicsRefreshTextureColor and g_GraphicsRefreshTextureAlpha: the software renderer reads the source pixels
+/* g_GraphicsRefreshTextureColor and g_GraphicsRefreshTextureAlpha: the software renderer reads the source pixels
    directly, so there is nothing to re-upload after they changed (the original's hardware renderers installed
    their own re-uploads here).
 */
@@ -168,8 +158,7 @@ void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,Gr
 }
 
 
-/* Address: 0x00486070.
-   g_GraphicsRebuildAllStagingTextures: the software renderer keeps no device textures, so there is nothing to
+/* g_GraphicsRebuildAllStagingTextures: the software renderer keeps no device textures, so there is nothing to
    rebuild after a display mode or texture detail change (the original's hardware renderers installed their own
    rebuild here).
 */
@@ -179,8 +168,7 @@ void __cdecl GraphicsTexture_RebuildNoOp(void)
   return;
 }
 
-/* Address: 0x004A9270.
-   Returns the logical width and height of one subresource of a 'gfx' texture source, i.e. the extent the
+/* Returns the logical width and height of one subresource of a 'gfx' texture source, i.e. the extent the
    tiled blits repeat (installed as g_GraphicsTextureSourceGetLogicalSize), or 0 x 0 when the asset is not a
    'gfx' asset or the index is out of range (the original signalled that with CF and left the size registers
    untouched; the only callers that test it, the glyph size queries, use width 0 then).
@@ -205,8 +193,7 @@ GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
 }
 
 
-/* Address: 0x004A92C0.
-   Hit test of a sprite drawn at (drawX, drawY) (installed as g_GraphicsTextureSourceTestOpaquePixel): maps the
+/* Hit test of a sprite drawn at (drawX, drawY) (installed as g_GraphicsTextureSourceTestOpaquePixel): maps the
    query point into the stored pixels of the subresource and returns true when that pixel has a non-zero
    alpha, for direct ARGB and paletted subresources alike. Returns false for transparent pixels, points
    outside the stored pixels and invalid input.
@@ -260,8 +247,7 @@ bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Graph
 }
 
 
-/* Address: 0x004A9A50.
-   Fills a rectangle with copies of one subresource laid out on its logical-size grid anchored at the tile
+/* Fills a rectangle with copies of one subresource laid out on its logical-size grid anchored at the tile
    origin, drawing each copy with g_GraphicsTextureSourceBlitSourceAlpha (installed as
    g_GraphicsTextureSourceBlitTiledSourceAlpha; also called directly by the text controls). The area ends at
    repeatEnd (GRAPHICS_TILED_BLIT_ONE_TILE: one tile past the origin), clipped to clipMax and the framebuffer;
@@ -333,8 +319,7 @@ void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMax
 }
 
 
-/* Address: 0x004AA0A0.
-   GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitHalfSourceRgb as the per-tile
+/* GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitHalfSourceRgb as the per-tile
    blit (installed as g_GraphicsTextureSourceBlitTiledHalfSourceRgb).
 */
 void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -403,8 +388,7 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
 }
 
 
-/* Address: 0x004AB9A0.
-   GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitSaturatedAddRgb as the per-tile
+/* GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitSaturatedAddRgb as the per-tile
    blit (installed as g_GraphicsTextureSourceBlitTiledSaturatedAddRgb).
 */
 void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -473,8 +457,7 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate cli
 }
 
 
-/* Address: 0x004ABF70.
-   GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd as the
+/* GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd as the
    per-tile blit (installed as g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd).
 */
 void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
@@ -1024,8 +1007,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
   return 0;
 }
 
-/* Address: 0x004AC8E0.
-   Cuts one subresource of a 'gfx' texture source (a sheet of sprites) into its separate sprites and returns
+/* Cuts one subresource of a 'gfx' texture source (a sheet of sprites) into its separate sprites and returns
    them as a new 'gfx' asset, one subresource per sprite (installed as
    g_GraphicsTextureSourceDecomposeSubresourceRegionsCf). The first pixel is the background; each block of
    other pixels (as wide as the run in its first row, as high as the run in its first column) becomes one
@@ -1102,8 +1084,7 @@ bool GraphicsTextureSource_DecomposeSubresourceRegions
   return false;
 }
 
-/* Address: 0x004AD630.
-   Loads a 'gfx' texture source for the software renderer (installed as g_GraphicsTextureSourceLoadPackageAsset;
+/* Loads a 'gfx' texture source for the software renderer (installed as g_GraphicsTextureSourceLoadPackageAsset;
    used for the UI, text and selection-panel graphics): the package entry is loaded and its palettes are converted
    to the current framebuffer format. Returns the texture source (never NULL: the conversion rejects NULL).
    If the conversion fails the entry is released again; on failure returns NULL and stores the load or
@@ -1130,8 +1111,7 @@ GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pat
 }
 
 
-/* Address: 0x004AD670.
-   Makes a private heap copy of a 'gfx' texture source with its palettes converted to the current framebuffer
+/* Makes a private heap copy of a 'gfx' texture source with its palettes converted to the current framebuffer
    format, so it can be modified independently (g_GraphicsTextureSourceLifecycleCallbacks3.clone). Returns the
    copy; the original sets CF on failure and returns the allocation error, or after a failed conversion the
    result of freeing the copy again (this C signature has no CF).
@@ -1168,8 +1148,7 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
 }
 
 
-/* Address: 0x004AD6C0.
-   Fills the framebuffer-pixel half of every palette entry of a 'gfx' texture source from its ARGB8888 half,
+/* Fills the framebuffer-pixel half of every palette entry of a 'gfx' texture source from its ARGB8888 half,
    packed for the current framebuffer format through g_SoftwarePixelPackTables (alpha is kept in the top byte),
    so the software blits can copy palette colours directly (installed as
    g_GraphicsTextureSourceConvertPaletteEntries). Returns 0 on success, FATAL_ERROR_GFX_ASSET_INVALID for a
@@ -1202,8 +1181,7 @@ uint32_t GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourc
 }
 
 
-/* Address: 0x004AD770.
-   Releases a texture source loaded by GraphicsTextureSource_LoadPackageAsset back to the resource cache
+/* Releases a texture source loaded by GraphicsTextureSource_LoadPackageAsset back to the resource cache
    (g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage).
 */
 void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset)
@@ -1217,8 +1195,7 @@ void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourc
 }
 
 
-/* Address: 0x004AD790.
-   Frees a copy made by GraphicsTextureSource_CloneAsset (g_GraphicsTextureSourceLifecycleCallbacks3.releaseClone).
+/* Frees a copy made by GraphicsTextureSource_CloneAsset (g_GraphicsTextureSourceLifecycleCallbacks3.releaseClone).
 */
 void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset)
 
@@ -1231,8 +1208,7 @@ void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *source
 }
 
 
-/* Address: 0x004AD7B0.
-   Returns the allocation that holds a texture source (installed as g_GraphicsTextureSourceResolveAllocationBase);
+/* Returns the allocation that holds a texture source (installed as g_GraphicsTextureSourceResolveAllocationBase);
    the asset is its own allocation, but both release callbacks ask this slot first.
 */
 GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset)
@@ -1293,8 +1269,7 @@ static bool GraphicsTextureSet_FillEntries
   return true;
 }
 
-/* Address: 0x00485EA0.
-   Builds a texture set for a 'gfx' asset: converts its palettes to the display format, then allocates the
+/* Builds a texture set for a 'gfx' asset: converts its palettes to the display format, then allocates the
    set (an 8-byte header with the source asset and image count, then one 0x20-byte GraphicsTextureSetEntry
    per image) and fills each entry with the image index, source entry and log2 of its width and height.
    Returns the set (never NULL), or NULL with the conversion/arena error or FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO
@@ -1330,8 +1305,7 @@ GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAs
 }
 
 
-/* Address: 0x00485F90.
-   Counterpart of GraphicsTextureSet_AllocateMetadata: frees the set and returns its source asset so the
+/* Counterpart of GraphicsTextureSet_AllocateMetadata: frees the set and returns its source asset so the
    caller can release that too. NULL for a NULL set.
 */
 GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
@@ -1348,8 +1322,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet 
 }
 
 
-/* Address: 0x0057E870.
-   Enters a texture into the first free slot of g_GraphicsTextureSlots (the registry the original used to evict
+/* Enters a texture into the first free slot of g_GraphicsTextureSlots (the registry the original used to evict
    and rebuild device textures). CF set when all GRAPHICS_TEXTURE_SLOT_CAPACITY slots are taken.
 */
 bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)

@@ -82,136 +82,100 @@
   FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)(value) >> 32),(UInt64Half32)(value))
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004BECB0 */
 FixedAzimuthElevationRoll FixedTransform_ComposeEulerAngles
           (AngleTurn32 inputAngle0,AngleTurn32 inputAngle1,AngleTurn32 inputAngle2,
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2);
 
-/* 0x00484930 */
 FixedLengthAzimuthElevation
 FixedMath_VectorToAnglesAndLength(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z);
 
-/* 0x00484A10 */
 FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3(GraphicsFixedVec3 *vector);
 
-/* 0x00484B70 */
 FixedLengthAngle FixedMath_Vector2AngleAndLength
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1);
 
-/* 0x004BEB20 */
 FixedVectorQ12
 FixedTransform_RotateVectorByEulerAngles
           (Q12 inputXQ12,Q12 inputYQ12,Q12 inputZQ12,AngleTurn32 rotationAngle0,
           AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
-/* 0x004BED10 */
 void FixedVector_StepBackwardAlongOwnDirection
           (FixedVectorStepMultiplier32 stepMultiplier,FixedMathScale32 directionScale,
           FixedVectorStateAddress32 vectorState);
 
-/* 0x00521FA0 */
 FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12);
 
-/* 0x004849D0 */
 uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z);
 
-/* 0x004857A0 */
 void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input);
 
-/* 0x004BEC20 */
 FixedVectorQ12
 FixedTransform_RotateScaledDirection
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
-/* 0x00417620 */
 void __cdecl CosineDerivedLookupTables_Init(void);
 
-/* 0x004848C0 */
 void FixedMath_WriteDirectionQ28(GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
-/* 0x00484B00 */
 FixedSinCos FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale);
 
-/* 0x00484B40 */
 FixedSinCos FixedMath_SinCosQ28(AngleTurn32 angle);
 
-/* 0x00484F10 */
 void FixedTransform_ApplyDirection
           (GraphicsFixedVec3 *output,GraphicsFixedVec3 *direction,GraphicsFixedMatrix3x4 *transform);
 
-/* 0x00485090 */
 void FixedTransform_ApplyTransposeDirection
           (GraphicsFixedVec3 *output,GraphicsFixedMatrix3x4 *transform,GraphicsFixedVec3 *direction);
 
-/* 0x00485520 */
 void FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input);
 
-/* 0x004856B0 */
 int32_t FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right);
 
-/* 0x004856F0 */
 int32_t FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right);
 
-/* 0x00485730 */
 void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
                   GraphicsFixedVec3 *leftOperand);
 
-/* 0x0052AD50 */
 FixedPlanarPointQ12 FixedTrig_ProjectPlanarPoint(Q12 baseX,Q12 baseY,Q12 distance,AngleTurn32 angle16);
 
-/* 0x004BEC50 */
 FixedVectorQ12 FixedTransform_RotateScaledDirectionCore
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
-/* 0x00484A70 */
 FixedElevationAzimuth FixedMath_VectorToAnglesVec3(GraphicsFixedVec3 *vector);
 
-/* 0x00484E00 */
 FixedRollAzimuthElevation FixedTransform_ExtractEulerAngles(GraphicsFixedMatrix3x4 *transform);
 
-/* 0x00484AC0 */
 uint32_t FixedMath_LengthVec3(GraphicsFixedVec3 *vector);
 
-/* 0x00484CF0 */
 uint32_t FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y);
 
-/* 0x00484770 */
 FixedDirection FixedMath_DirectionFromAnglesScaled(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           FixedMathScale32 scale);
 
-/* 0x004847E0 */
 FixedDirection FixedMath_DirectionFromAnglesQ28(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
-/* 0x00484840 */
 void FixedMath_WriteDirectionScaled(GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           FixedMathScale32 scale);
 
-/* 0x00485120 */
 void FixedTransform_Compose(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *innerTransform,
           GraphicsFixedMatrix3x4 *outerTransform);
 
-/* 0x00484990 */
 FixedVectorAngles FixedMath_VectorToAngles
           (FixedMathVectorComponent32 z,FixedMathVectorComponent32 y,FixedMathVectorComponent32 x);
 
-/* 0x00484E70 */
 void FixedTransform_ApplyPoint(GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform);
 
-/* 0x00484D20 */
 void FixedTransform_BuildRotationBasis(GraphicsFixedMatrix3x4 *output,AngleTurn32 rollAngle,AngleTurn32 elevationAngle,
           AngleTurn32 azimuthAngle);
 
-/* 0x00484BA0 */
 uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x);
 
-/* 0x00484700 */
 uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low);
 
 
-/* 0x004846A0 */
 uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue);
 
 /* Not in the original: fills g_FixedSineQ28 (the original shipped it precomputed). */

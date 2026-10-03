@@ -122,278 +122,216 @@
 #define UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK 0x1c
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004B0200 */
 void UiTooltip_TickCountdown(void);
 
-/* 0x004B5F20 */
 bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiNumericTextControl *control);
 
-/* 0x004B68C0 */
 bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiPathTextEditControl *control);
 
-/* 0x004B7110 */
 bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control);
 
-/* 0x004227B0 */
 void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiTextButtonControl *control);
 
-/* 0x004B58F0 */
 void UiNumericTextEditControl_RelocateAndRebuildText
           (UiSerializedRelocationDelta relocationDelta,UiNumericTextControl *control);
 
-/* 0x004B5960 */
 void UiTextEditControl_DrawTextSelectionAndCaret
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiTextEditControl *control);
 
-/* 0x004B5DF0 */
 void UiTextEditControl_BeginSelectionAtPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextEditControl *control);
 
-/* 0x004B5EA0 */
 void UiTextEditControl_UpdateSelectionFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextEditControl *control);
 
-/* 0x004B6850 */
 void UiPathTextEditControl_RelocateAndValidateDos83
           (UiSerializedRelocationDelta relocationDelta,UiPathTextEditControl *control);
 
-/* 0x004B70A0 */
 void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
           (UiSerializedRelocationDelta relocationDelta,UiRequiredTextEditControl *control);
 
-/* 0x004BB5C0 */
 void UiPointerList_SortByExpandedTextFieldAscending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
-/* 0x005156A0 */
 void UiNumericPairTextButton_DrawFormattedValues
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiNumericPairTextButton *control);
 
-/* 0x00515780 */
 void UiPayloadPairTextButton_DrawFormattedPayloads
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPayloadPairTextButton *control);
 
-/* 0x004B0320 */
 void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
               UiPixelCoordinate clipLeft);
 
-/* 0x004B0F90 */
 bool UiRootStack_PopUntilWindowTextureBoundary(void);
 
-/* 0x004B1DD0 */
 void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiFramedTextButtonControl *control);
 
-/* 0x004B1E10 */
 void UiFramedTextButtonControl_DrawClipped
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiFramedTextButtonControl *control);
 
-/* 0x004B22A0 */
 void UiFramedTextButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control);
 
-/* 0x004B2380 */
 void UiFramedTextButtonControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control);
 
-/* 0x004B23F0 */
 void UiFramedTextButtonControl_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control);
 
-/* 0x004B24C0 */
 UiNodeBase * UiFramedTextButtonControl_HitTestRect
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control);
 
-/* 0x004B27D0 */
 void UiWindowControl_DrawFramedTextAndChrome
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiWindowControl *control);
 
-/* 0x004B2E40 */
 void UiTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiTextButtonControl *control);
 
-/* 0x004B31B0 */
 void UiTextButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextButtonControl *control);
 
-/* 0x004B32C0 */
 bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control);
 
-/* 0x004B37C0 */
 void UiImagePanelControl_DrawAlignedTextureAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiImagePanelControl *control);
 
-/* 0x004B3960 */
 UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiImagePanelControl *control);
 
-/* 0x004B3AA0 */
 void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiFillPanelControl *control);
 
-/* 0x004B5E60 */
 void UiTextEditControl_EndSelection
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
                ,UiTextEditControl *control);
 
-/* 0x004B6480 */
 void UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl *control);
 
-/* 0x004B64B0 */
 void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditControl *control);
 
-/* 0x004B64E0 */
 void UiTextEditControl_TickCaretBlink(UiTextEditControl *control);
 
-/* 0x004B95E0 */
 void UiSingleLineTextControl_DrawClipped
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiSingleLineTextControl *control);
 
-/* 0x004B9E90 */
 void UiTextListControl_DrawRowsAndSelection
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiTextListControl *control);
 
-/* 0x004BA040 */
 void UiTextListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextListControl *control);
 
-/* 0x004BA130 */
 bool UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control);
 
-/* 0x004BA390 */
 void UiTextListControl_TickActivationPulse(UiTextListControl *control);
 
-/* 0x004BA3D0 */
 void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control);
 
-/* 0x004BA400 */
 void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control);
 
-/* 0x004BA430 */
 void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
 
-/* 0x004BC490 */
 void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiWrappedTextControl *control);
 
-/* 0x004BCC80 */
 void UiNineSlicePanelControl_DrawTextureFrameAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiNineSlicePanelControl *control);
 
-/* 0x00515830 */
 void UiFormattedContainer_RelocateWithPatchedTextPayloads
           (UiSerializedRelocationDelta relocationDelta,UiFormattedContainer *control);
 
-/* 0x005158B0 */
 void UiFormattedContainer_DrawClipped
           (int clipBottom,int clipRight,int clipTop,int clipLeft,UiFormattedContainer *control);
 
-/* 0x00516D10 */
 void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiArmyMetricsPanel *control);
 
-/* 0x00519110 */
 void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiSoftwareTexturePreviewControl *control);
 
-/* 0x00519190 */
 void UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSoftwareTexturePreviewControl *control);
 
-/* 0x005191B0 */
 void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSoftwareTexturePreviewControl *control);
 
-/* 0x005191D0 */
 bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control);
 
-/* 0x004B0150 */
 void UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);
 
-/* 0x004B6520 */
 void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control);
 
-/* 0x004B65F0 */
 void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control);
 
-/* 0x004B0250 */
 void UiTooltip_PrepareTargetText(UiNodeBase *node);
 
-/* 0x004B66E0 */
 void UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control);
 
-/* 0x004B6740 */
 UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefixLength,UiTextEditControl *control);
 
-/* 0x004B6790 */
 UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditControl *control);
 
-/* 0x004B7010 */
 void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control);
 
-/* 0x004B78F0 */
 void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control);
 
-/* 0x004BB570 */
 int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText);
 
-/* 0x004B5D00 */
 void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control);
 
-/* 0x004B2E60 */
 void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiTextButtonControl *control);
 
-extern UiNodeVtable g_UiGraphicsAdapterTextButtonVtable; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
-extern UiNodeVtable g_UiFramedTextButtonControlVtable; /* 004B1D80 g_UiFramedTextButtonControlVtable (framed text button) */
-extern UiNodeVtable g_UiWindowControlVtable; /* 004B2740 g_UiWindowControlVtable */
-extern UiNodeVtable g_UiTextButtonControlVtable; /* 004B2CE0 g_UiTextButtonControlVtable (text button) */
-extern UiNodeVtable g_UiImagePanelControlVtable; /* 004B3770 g_UiImagePanelControlVtable */
-extern UiNodeVtable g_UiNumericTextEditControlVtable; /* 004B58A0 g_UiNumericTextEditControlVtable */
-extern UiNodeVtable g_UiPathTextEditControlVtable; /* 004B6800 g_UiPathTextEditControlVtable */
-extern UiNodeVtable g_UiRequiredTextEditControlVtable; /* 004B7050 g_UiRequiredTextEditControlVtable */
-extern UiNodeVtable g_UiTextListControlVtable; /* 004B9E40 g_UiTextListControlVtable */
-extern UiNodeVtable g_UiNineSlicePanelControlVtable; /* 004BCC30 g_UiNineSlicePanelControlVtable */
-extern UiNodeVtable g_UiNumericPairTextButtonVtable; /* 00515610 g_UiNumericPairTextButtonVtable */
-extern UiNodeVtable g_UiPayloadPairTextButtonVtable; /* 00515730 g_UiPayloadPairTextButtonVtable */
-extern UiNodeVtable g_UiFormattedContainerVtable; /* 005157E0 g_UiFormattedContainerVtable */
-extern UiNodeVtable g_UiArmyMetricsPanelVtable; /* 00516CC0 g_UiArmyMetricsPanelVtable */
+extern UiNodeVtable g_UiGraphicsAdapterTextButtonVtable;
+extern UiNodeVtable g_UiFramedTextButtonControlVtable; /* (framed text button) */
+extern UiNodeVtable g_UiWindowControlVtable;
+extern UiNodeVtable g_UiTextButtonControlVtable; /* (text button) */
+extern UiNodeVtable g_UiImagePanelControlVtable;
+extern UiNodeVtable g_UiNumericTextEditControlVtable;
+extern UiNodeVtable g_UiPathTextEditControlVtable;
+extern UiNodeVtable g_UiRequiredTextEditControlVtable;
+extern UiNodeVtable g_UiTextListControlVtable;
+extern UiNodeVtable g_UiNineSlicePanelControlVtable;
+extern UiNodeVtable g_UiNumericPairTextButtonVtable;
+extern UiNodeVtable g_UiPayloadPairTextButtonVtable;
+extern UiNodeVtable g_UiFormattedContainerVtable;
+extern UiNodeVtable g_UiArmyMetricsPanelVtable;
 extern UiNodeVtable g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable; followed by 0x90 code alignment fill */
 
-extern UiTooltipState g_UiTooltipState; /* 004AF1E0 g_UiTooltipState */
-extern AudioMixerGainQ15 g_UiSoundGainQ15; /* 004B0E44 g_UiSoundGainQ15 */
-extern const UiFrameDelayFrames g_UiListActivationPulseFrames; /* 004B0E60 g_UiListActivationPulseFrames: UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
-extern const uint32_t g_UiTextStyleNormal; /* 004B0E78 g_UiTextStyleNormal */
-extern const int32_t g_UiWindowFrameInset; /* 004B0E8C g_UiWindowFrameInset */
-extern const uint32_t g_UiListTextStyle; /* 004B0E90 g_UiListTextStyle */
+extern UiTooltipState g_UiTooltipState;
+extern AudioMixerGainQ15 g_UiSoundGainQ15;
+extern const UiFrameDelayFrames g_UiListActivationPulseFrames; /* UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+extern const uint32_t g_UiTextStyleNormal;
+extern const int32_t g_UiWindowFrameInset;
+extern const uint32_t g_UiListTextStyle;
 
 /* Read live by the blend overread emulation (graphics/backend/software_raster.h). */
 extern uint16_t g_GraphicsAdapterFormatScratch0Utf16[16];

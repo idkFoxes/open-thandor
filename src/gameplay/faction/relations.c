@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/faction/relations. */
 
-/* Address: 0x0053C010.
-   Random drift of the diplomatic relations between sourceFactionIndex and every other active faction 7..1
+/* Random drift of the diplomatic relations between sourceFactionIndex and every other active faction 7..1
    (faction 0 is never visited). When the pair may change state and sits in state 3, 6 or 10, the relation may
    be reset (GameFactionRelations_IsNotResetEligibleState returns false for exactly those states); otherwise it may
    advance: rarely from the other states, more often from 3, 6 and 10.
@@ -53,8 +52,7 @@ void GameFactionRelations_UpdateAllPairsForFaction
 }
 
 
-/* Address: 0x00560E30.
-   Adds one row of field cells (world X from firstWorldXQ12 to lastWorldXQ12 inclusive, one cell apart, at
+/* Adds one row of field cells (world X from firstWorldXQ12 to lastWorldXQ12 inclusive, one cell apart, at
    worldYQ12) to the player's marked-cell list. Called per row by the in-game command UI when an area is dragged
    out in a local session (ui/ingame/runtime.c; networked sessions queue command 0x1D00 instead).
 */
@@ -69,8 +67,7 @@ void PlayerPairList_InsertRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
 }
 
 
-/* Address: 0x00560E70.
-   Counterpart of PlayerPairList_InsertRange: removes one row of field cells (world X from firstWorldXQ12 to
+/* Counterpart of PlayerPairList_InsertRange: removes one row of field cells (world X from firstWorldXQ12 to
    lastWorldXQ12 inclusive, at worldYQ12) from the player's marked-cell list. Called per row by the in-game
    command UI in a local session (ui/ingame/runtime.c; networked sessions queue command 0x1D40 instead).
 */
@@ -85,8 +82,7 @@ void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
 }
 
 
-/* Address: 0x0053C3D0.
-   Decides which random drift GameFactionRelations_UpdateAllPairsForFaction applies to a pair. CF set (true)
+/* Decides which random drift GameFactionRelations_UpdateAllPairsForFaction applies to a pair. CF set (true)
    selects the reset path: the pending states 2, 5 and 9, relations frozen by relationUiFlags, or a state
    below 4 for which GameFactionRelations_EvaluateTransitionRules holds for either faction. CF clear lets the pair advance.
 */
@@ -130,8 +126,7 @@ bool GameFactionRelations_TestPairTransitionAllowed
 }
 
 
-/* Address: 0x0053C090.
-   Returns the bloc of sourceFactionIndex as a faction bit mask (bit n = faction n, factions 1..7): every active
+/* Returns the bloc of sourceFactionIndex as a faction bit mask (bit n = faction n, factions 1..7): every active
    faction whose relation state towards it is 4 or higher (friendly), plus the faction itself when active.
 */
 FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex)
@@ -225,8 +220,7 @@ static bool GameFactionRelations_PredictConditionHolds
 }
 
 
-/* Address: 0x0053C0F0.
-   Predicts the level's end conditions for the case that only the factions in activeFactionMask were left
+/* Predicts the level's end conditions for the case that only the factions in activeFactionMask were left
    (used to judge whether two blocs may draw closer): unless the mask equals the currently active factions, the
    64 scheduled conditions are re-evaluated with faction presence taken from the mask, and the first active end
    trigger that then fires for an active faction decides: its movie variant, flipped when that faction is
@@ -293,8 +287,7 @@ bool GameFactionRelations_EvaluateTransitionRules
 }
 
 
-/* Address: 0x0053C490.
-   Returns true (CF set) when the pair's relation state is none of 3, 6 and 10, the top state of each tier
+/* Returns true (CF set) when the pair's relation state is none of 3, 6 and 10, the top state of each tier
    below the merge; only from those states does the random drift reset the relation
    (GameFactionRuntime_ResetPairwiseRelationState).
 */
@@ -313,8 +306,7 @@ bool GameFactionRelations_IsNotResetEligibleState
 }
 
 
-/* Address: 0x0053C4D0.
-   Random drift for a pair outside the states 3, 6 and 10: advances the relation with a chance of 1 in 256
+/* Random drift for a pair outside the states 3, 6 and 10: advances the relation with a chance of 1 in 256
    while the pair pressure is 0, otherwise 1 in 1024 and only while the pressure (below 32) is smaller than
    the random value's top four bits.
 */
@@ -348,8 +340,7 @@ void GameFactionRelations_MaybeAdvancePairStateRare
 }
 
 
-/* Address: 0x0053C540.
-   Random drift for a pair in state 3, 6 or 10: advances the relation to the next tier with a chance of 1 in
+/* Random drift for a pair in state 3, 6 or 10: advances the relation to the next tier with a chance of 1 in
    128 while the pair pressure is 0, otherwise 1 in 512 and only while the pressure (below 32) is smaller than
    the random value's top four bits.
 */
@@ -383,8 +374,7 @@ void GameFactionRelations_MaybeAdvancePairStateCommon
 }
 
 
-/* Address: 0x0053C5B0.
-   Random drift for a pair whose change is blocked: resets the relation state with a chance of 1 in 4.
+/* Random drift for a pair whose change is blocked: resets the relation state with a chance of 1 in 4.
 */
 void GameFactionRelations_MaybeResetPairState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
@@ -401,8 +391,7 @@ void GameFactionRelations_MaybeResetPairState
 }
 
 
-/* Address: 0x00560EB0.
-   Appends the field cell (worldXQ12, worldYQ12) to the player's marked-cell list unless it is already listed or
+/* Appends the field cell (worldXQ12, worldYQ12) to the player's marked-cell list unless it is already listed or
    the list is full (PLAYER_PAIR_LIST_CAPACITY). For the local player the in-game root's count at +0xBA4 (its
    records pointer at +0xBA0 aliases this list) is raised too. Called by PlayerPairList_InsertRange.
 */
@@ -440,8 +429,7 @@ void PlayerPairList_InsertUnique
 }
 
 
-/* Address: 0x00560F50.
-   Removes the field cell (worldXQ12, worldYQ12) from the player's marked-cell list, moving the later records
+/* Removes the field cell (worldXQ12, worldYQ12) from the player's marked-cell list, moving the later records
    down so the order is kept, and lowers the in-game root's count at +0xBA4 for the local player. A list at
    PLAYER_PAIR_LIST_CAPACITY or above is left untouched. Called by PlayerPairList_RemoveRange.
 */

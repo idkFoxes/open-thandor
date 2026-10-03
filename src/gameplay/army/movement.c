@@ -307,8 +307,7 @@ static bool ArticulatedWalker_ChooseNextStep(WorldRuntimeContext *worldRuntime,
   return (worldRuntime->fieldGrid->runtimeStateFlags & 1) != 0;
 }
 
-/* Address: 0x00520F60.
-   Runtime update of the two-legged articulated walker (runtimeUpdate slot 3 of
+/* Runtime update of the two-legged articulated walker (runtimeUpdate slot 3 of
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by model class from
    ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). While a foot is moving it advances that
    step (walking speed rises in the first half of the step and falls in the second); when no step is running
@@ -400,8 +399,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
 }
 
 
-/* Address: 0x0051C5A0.
-   Makes targetRuntime the army's command target: a running movement (movement flag 0x20) is reset first, then
+/* Makes targetRuntime the army's command target: a running movement (movement flag 0x20) is reset first, then
    the army starts a route to the target's current world position under the standard command generation.
    A null target clears the command instead.
 */
@@ -437,8 +435,7 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
 }
 
 
-/* Address: 0x00520DF0.
-   Runtime update of model class 18 (runtimeUpdate slot 18 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
+/* Runtime update of model class 18 (runtimeUpdate slot 18 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): runs the AI special
    behaviour while the owner has movement flag 0x100 (set by that behaviour), then moves the unit with ground
    ArmyRuntimeClass_UpdateWaterSurfaceMovement when it sits on the water surface, otherwise with
@@ -470,8 +467,7 @@ void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
 }
 
 
-/* Address: 0x00523410.
-   Turret with one barrel (runtimeUpdate slot 7 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by
+/* Turret with one barrel (runtimeUpdate slot 7 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by
    model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). The root node yaws, its first
    child pitches, and that child's first child is the barrel: while reloading it spins by the definition's step
    per tick, after a shot it recoils back and returns over the recoil countdown. With an aim point the turret
@@ -626,8 +622,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
 }
 
 
-/* Address: 0x00523690.
-   Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
+/* Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). Same as
    ArmyRuntimeClass_UpdateSingleBarrelTurret, but the pitch node has two barrels (children 0 and
    1) with their own recoil countdowns; the shots alternate between them, the even sequence numbers firing from
@@ -1109,8 +1104,7 @@ static void TrackedMovement_ScrollTrackTextures
 }
 
 
-/* Address: 0x00520140.
-   Ground movement of tracked vehicles (runtimeUpdate slot 2 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
+/* Ground movement of tracked vehicles (runtimeUpdate slot 2 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). Moves exactly like
    ArmyRuntimeClass_UpdateGroundMovement and then scrolls the texture of the left and right track by the
    signed distance each track side travelled this tick (so the tracks also run while turning on the spot),
@@ -1548,8 +1542,7 @@ static void ArmyRuntimeClass_UpdateBankAngle
   }
 }
 
-/* Address: 0x00522C00.
-   Movement of banking units with three animated child parts (runtimeUpdate slot 17 of
+/* Movement of banking units with three animated child parts (runtimeUpdate slot 17 of
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by model class from
    ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). The unit slides straight towards the route
    point while it turns (turning like ArmyRuntimeClass_UpdateGroundMovement, but it keeps its heading
@@ -1637,8 +1630,7 @@ static void ArmyRuntime_ClearModelTreeFlags218(ModelRuntimeSlot *node)
   }
 }
 
-/* Address: 0x0051C3E0.
-   Stops the army where its model currently stands: clears the move flags, cancels an active target
+/* Stops the army where its model currently stands: clears the move flags, cancels an active target
    command (unless state field 0x100 is zero), and sets every move target to the current model position.
    If the attached model has class-state bit 0x10 and a non-zero definition value +0x3C, state bits 0x218
    are cleared on its whole model tree.
@@ -1687,8 +1679,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
 }
 
 
-/* Address: 0x0051C500.
-   Cancels an active target command (army or position): marks the command as interrupted, stamps the
+/* Cancels an active target command (army or position): marks the command as interrupted, stamps the
    standard command generation and drops the target army. Also used by the 32-slot command reset traversal.
 */
 void ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot *armyRuntime)
@@ -1708,8 +1699,7 @@ void ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot 
 }
 
 
-/* Address: 0x0051CAF0.
-   Starts a locked, routed move to the target with exactly one queued waypoint, whose position is given
+/* Starts a locked, routed move to the target with exactly one queued waypoint, whose position is given
    separately by the two auxiliary values (x = auxiliaryValue0, y = auxiliaryValue1). The target becomes both
    the route end and the final movement target. Called directly from gameplay/army/runtime.c.
 */
@@ -1751,8 +1741,7 @@ void ArmyRuntime_StartMoveCommandWithAuxiliaryValues
 }
 
 
-/* Address: 0x0051CDB0.
-   Sets a new immediate move position without path finding (ignored while the movement is locked). The
+/* Sets a new immediate move position without path finding (ignored while the movement is locked). The
    fallback position only follows when no move was active, the final target only when mirroring is enabled;
    the current model position is recorded for the route-retry check.
 */
@@ -1788,8 +1777,7 @@ void ArmyRuntime_SetPendingMoveTarget(Q12 targetWorldY,Q12 targetWorldX,ArmyMove
 }
 
 
-/* Address: 0x00521680.
-   Puts the two feet of an articulated walker at rest beside its root: both feet (current position and step
+/* Puts the two feet of an articulated walker at rest beside its root: both feet (current position and step
    target) lateralOffsetQ12 to the left and right of the root at the terrain height under the root, all
    headings equal to the root heading, and both ground normals pointing straight up. Called by
    ArmyPlacementContact_InitializeArticulatedSuspension (gameplay/army/placement.c, placement contact kind 3)
@@ -1869,8 +1857,7 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
 }
 
 
-/* Address: 0x00527BC0.
-   Class command that does nothing (RET 0x08): model classes without their own command handling. It fills the
+/* Class command that does nothing (RET 0x08): model classes without their own command handling. It fills the
    classCommand slots 0-3, 5-9, 12, 17-19 and 21 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, which
    ArmyRuntime_DispatchClassCommand calls by model class.
 */
@@ -1880,8 +1867,7 @@ void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ModelRuntime
   return;
 }
 
-/* Address: 0x0051C8E0.
-   Starts a new routed move order to the target (path finding via EntityPathing), dropping any waypoint
+/* Starts a new routed move order to the target (path finding via EntityPathing), dropping any waypoint
    queue and target mirroring. While the movement is locked the target replaces the waypoint queue instead.
    Entities whose definition record has zero at +0x18 ignore the order.
 */
@@ -1927,8 +1913,7 @@ void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
 }
 
 
-/* Address: 0x0051C9A0.
-   Same as ArmyRuntime_StartRoutedMoveCommand, but keeps the waypoint queue and target mirroring:
+/* Same as ArmyRuntime_StartRoutedMoveCommand, but keeps the waypoint queue and target mirroring:
    used by ArmyRuntime_UpdateMovementAndWaypoints to start the next queued waypoint.
 */
 void ArmyRuntime_StartNextQueuedWaypointMove(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
@@ -2181,8 +2166,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   return rootNode;
 }
 
-/* Address: 0x00520840.
-   Standard ground movement (runtimeUpdate slot 1 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, and
+/* Standard ground movement (runtimeUpdate slot 1 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, and
    the land case of slot 18 via ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement). Turns the model
    towards the current route point with accelerated turning, drives forward only while the heading error is
    within the definition's limit (the limit narrows near the target), stops at blocking armies, puts the
@@ -2362,8 +2346,7 @@ static void ArticulatedContact_PlaceLeftFootBesideRightFoot(AngleTurn32 headingA
 }
 
 
-/* Address: 0x00522090.
-   Plans a walking step of the left foot towards heading headingAngle16 (routeDistanceQ12 = distance to the
+/* Plans a walking step of the left foot towards heading headingAngle16 (routeDistanceQ12 = distance to the
    route point). The foot target is one stride (definition +0xC0) past the spot beside the right foot, or on
    the route point itself when that is closer, offset to the left side. When the target is blocked by an army
    (whose owner is notified) or has no ground sample, the foot is set down right beside the right foot instead,
@@ -2518,8 +2501,7 @@ static void ArticulatedContact_PlaceRightFootBesideLeftFoot(AngleTurn32 headingA
 }
 
 
-/* Address: 0x005222F0.
-   Mirror of ArmyArticulatedRuntime_UpdateLeftTerrainContact for the right foot (side angle heading - 90
+/* Mirror of ArmyArticulatedRuntime_UpdateLeftTerrainContact for the right foot (side angle heading - 90
    degrees, placed relative to the left foot). Called by ArmyRuntimeClass_UpdateArticulatedMovement.
 */
 void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16,Q12 routeDistanceQ12,
@@ -2763,8 +2745,7 @@ static ModelRuntimeNode *ArmyWaterSurfaceMovement_SteerAndDrive
   return rootNode;
 }
 
-/* Address: 0x005254F0.
-   Ground movement without water damage and without notifying the blocking army on a collision (the unit just
+/* Ground movement without water damage and without notifying the blocking army on a collision (the unit just
    stops); otherwise identical to ArmyRuntimeClass_UpdateGroundMovement. Used by runtimeUpdate slot 19
    of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes and, for units on the water surface, by slot 18
    (ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement).
@@ -2833,8 +2814,7 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
 }
 
 
-/* Address: 0x0051CC60.
-   Starts a target-following move (only when no move is active, the movement is not locked and the route-retry
+/* Starts a target-following move (only when no move is active, the movement is not locked and the route-retry
    countdown has run out). The step away from the current final target is clamped to 2.0 world units, so a
    following army re-routes in short hops; the final target itself stays unchanged. Called by
    ArmyRuntimeCommand_UpdateTargetFollowingState.
@@ -2883,8 +2863,7 @@ void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyM
 }
 
 
-/* Address: 0x0051CD30.
-   Starts a direct move to the target (unless the movement is locked): drops the waypoint queue and
+/* Starts a direct move to the target (unless the movement is locked): drops the waypoint queue and
    routes to the target, but leaves the final movement target unchanged. Used by
    ArmyRuntime_UpdateMovementAndWaypoints to re-approach the final target.
 */
@@ -2919,8 +2898,7 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
 }
 
 
-/* Address: 0x00521580.
-   Footfall of an articulated walker, called by ArmyRuntimeClass_UpdateArticulatedMovement when a foot has
+/* Footfall of an articulated walker, called by ArmyRuntimeClass_UpdateArticulatedMovement when a foot has
    finished its step (legNode = root child 0 for the left leg, 1 for the right). Plays the definition's
    footstep sound at the walker unless its cell is masked, and spawns the footprint effect at the foot node
    (three levels below the leg): one effect on dry ground, another where the nearest water is above ground.
@@ -3051,8 +3029,7 @@ static void ArticulatedWalker_SetFootLocalOrientation
   (footNode->modelPayload).localRotationAngle2 = extractedAngles.rollAngle;
 }
 
-/* Address: 0x005217A0.
-   Poses the two-legged articulated walker from its foot state (layout at
+/* Poses the two-legged articulated walker from its foot state (layout at
    ArmyArticulatedRuntime_InitializeTerrainContactGeometry). Each foot node (four levels below root child 0 =
    left leg, child 1 = right leg) is interpolated from its position to its step target by the step progress,
    lifted in an arc by the lift height (definition +0xC4), and tilted by the blended ground normals. The body
@@ -3351,8 +3328,7 @@ static bool ArmyArticulatedRuntime_SetStepRate(ArmyArticulatedRuntimeSlotView *a
   return true;
 }
 
-/* Address: 0x00522550.
-   Plans a closing step of the left foot: the body heading target and the left foot heading become
+/* Plans a closing step of the left foot: the body heading target and the left foot heading become
    headingAngle16, and the left foot target is set right beside the right foot's target (2 * lateralOffsetQ12
    to the left) at the ground height there. The step rate uses the foot travel plus 4 * lift height. Called by
    ArmyRuntimeClass_UpdateArticulatedMovement for the second half of a turn and for closing steps; the walker
@@ -3400,8 +3376,7 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
 }
 
 
-/* Address: 0x00522660.
-   Mirror of ArmyArticulatedRuntime_InitializeLeftTerrainContact for the right foot (set beside the left
+/* Mirror of ArmyArticulatedRuntime_InitializeLeftTerrainContact for the right foot (set beside the left
    foot's target, side angle heading - 90 degrees). Called by ArmyRuntimeClass_UpdateArticulatedMovement.
 */
 void ArmyArticulatedRuntime_InitializeRightTerrainContact
@@ -3601,8 +3576,7 @@ static void ArmyArticulatedRuntime_PlanRightTurnStep
   ArmyArticulatedRuntime_SetStepRate(armyRuntime,footTravel);
 }
 
-/* Address: 0x00522770.
-   Plans the first step of a turn on the spot. steeringAngle16 (0..0xFFFF, clamped to +-the maximum turn per
+/* Plans the first step of a turn on the spot. steeringAngle16 (0..0xFFFF, clamped to +-the maximum turn per
    step at definition +0xC8) selects the foot: up to 0x8000 the left foot (turning left), otherwise the right
    foot. The foot target is found by turning the root position about a pivot 1.5 * lateralOffsetQ12 behind it
    by the full steering angle and stepping out to that side; the body heading target becomes the start heading
@@ -3626,8 +3600,7 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
 }
 
 
-/* Address: 0x00523340.
-   Called by a weapon that is aimed and ready to fire. When the shot to the target is blocked, the owning army
+/* Called by a weapon that is aimed and ready to fire. When the shot to the target is blocked, the owning army
    (if this weapon is its primary weapon or it has none, and it is not already following) starts a
    target-following move towards the target, clamped for AI combat targets, and CF (true) tells the weapon not
    to fire. With a clear line of fire a running target-following move is stopped and false is returned. Called
@@ -3675,8 +3648,7 @@ bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targe
 }
 
 
-/* Address: 0x0051CA60.
-   While a non-direct move is active or the movement is locked, appends the target to the waypoint queue
+/* While a non-direct move is active or the movement is locked, appends the target to the waypoint queue
    (starting a new queue if none is in use; when full the last entry is overwritten); otherwise starts it
    at once with ArmyRuntime_StartRoutedMoveCommand.
 */
@@ -3709,8 +3681,7 @@ void ArmyRuntime_AppendWaypointOrStartMove
 }
 
 
-/* Address: 0x0051CB90.
-   Target-following move (ArmyRuntimeCommand_UpdateTargetFollowingState): unless the movement is locked,
+/* Target-following move (ArmyRuntimeCommand_UpdateTargetFollowingState): unless the movement is locked,
    routed or still waiting for its retry countdown, routes to the target. If a move was active, its
    fallback position is first saved into the waypoint queue (apparently so the army resumes it afterwards).
 */
@@ -3769,8 +3740,7 @@ void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
 }
 
 
-/* Address: 0x0051CE30.
-   Ends a target-following move: the move stays active only if waypoints are queued, and unless a routed
+/* Ends a target-following move: the move stays active only if waypoints are queued, and unless a routed
    move is in progress all targets are set to the current model position so the army stops where it is.
    Bits 0x10-0x80 are cleared.
 */
@@ -3800,8 +3770,7 @@ void ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *mov
 }
 
 
-/* Address: 0x0051CE90.
-   Ends a clamped target-following move: without queued waypoints the move just stops being active;
+/* Ends a clamped target-following move: without queued waypoints the move just stops being active;
    with queued waypoints the current and fallback positions are set to the model position (the final
    target is kept). Bits 0x10-0x80 are cleared.
 */
@@ -3829,8 +3798,7 @@ void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *move
 }
 
 
-/* Address: 0x0051CEE0.
-   Per-tick movement step; always stores the position to steer to in *outWorldXQ12 / *outWorldYQ12 and
+/* Per-tick movement step; always stores the position to steer to in *outWorldXQ12 / *outWorldYQ12 and
    returns true when the unit has arrived. While a move is active the stored movement position is returned.
    When bit 0x10 is set, the route end is checked: once reached, the next queued waypoint is started (and the
    step repeated); otherwise the route is rebuilt when the model moved or the retry countdown ran out. Near

@@ -11,8 +11,7 @@
 
 /* Implementation ownership: core/math/fixed. */
 
-/* Address: 0x004BECB0.
-   Composes two orientations given as angle triples: builds the rotation basis of each (basis angles into
+/* Composes two orientations given as angle triples: builds the rotation basis of each (basis angles into
    g_ModelTransformScratchMatrix, input angles into the input scratch), multiplies them and extracts the angles
    of the product again. Used by the army movement code to add a local rotation to a heading.
    Returns the azimuth, elevation and roll of the composed rotation.
@@ -37,8 +36,7 @@ FixedAzimuthElevationRoll FixedTransform_ComposeEulerAngles
 }
 
 
-/* Address: 0x00484930.
-   Converts the vector (x, y, z) into its length and two 16-bit angles: the elevation of x over the (y, z) plane
+/* Converts the vector (x, y, z) into its length and two 16-bit angles: the elevation of x over the (y, z) plane
    and the azimuth within that plane (masked to 16 bits); squares are summed in 64 bits so Q12 components
    cannot overflow.
 */
@@ -67,8 +65,7 @@ FixedMath_VectorToAnglesAndLength(FixedMathVectorComponent32 x,FixedMathVectorCo
 }
 
 
-/* Address: 0x00484A10.
-   Converts a vector into its length and two 16-bit angles: the elevation of z over the (x, y) plane and the
+/* Converts a vector into its length and two 16-bit angles: the elevation of z over the (x, y) plane and the
    azimuth atan2(y, x) within it (the component roles differ from FixedMath_VectorToAnglesAndLength).
    The azimuth is masked to 16 bits; squares are summed in 64 bits.
    Used by the shot maintenance code for ballistic angles.
@@ -103,8 +100,7 @@ FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3(GraphicsFixedV
 }
 
 
-/* Address: 0x00484B70.
-   Angle and length of a 2D vector: angle = atan2(component0, component1) as a 16-bit angle (65536 = full
+/* Angle and length of a 2D vector: angle = atan2(component0, component1) as a 16-bit angle (65536 = full
    turn), length = floor(sqrt(component0^2 + component1^2)). Used by the army movement and combat code and the
    shot catalog for planar headings and distances.
 */
@@ -124,8 +120,7 @@ FixedLengthAngle FixedMath_Vector2AngleAndLength
 }
 
 
-/* Address: 0x004BEB20.
-   Rotates the Q12 vector (x, y, z) by the rotation basis built from three angles and returns the rotated
+/* Rotates the Q12 vector (x, y, z) by the rotation basis built from three angles and returns the rotated
    vector (the original pushed the components z first). Works through the shared model-transform scratch
    globals; used by the model hierarchy for view-relative vectors.
 */
@@ -152,8 +147,7 @@ FixedTransform_RotateVectorByEulerAngles
 }
 
 
-/* Address: 0x004BED10.
-   Moves the local translation of the model node at vectorState along its own direction:
+/* Moves the local translation of the model node at vectorState along its own direction:
    vector -= direction(vector) * directionScale * stepMultiplier. The army movement code uses it for weapon
    attachment nodes with the weapon's backward-step scale and -elapsedTicks, which moves the offset outward
    along its direction.
@@ -176,8 +170,7 @@ void FixedVector_StepBackwardAlongOwnDirection
 }
 
 
-/* Address: 0x00521FA0.
-   Two-bone joint solver for the leg suspension: for a triangle with sides s0, s1 and base s2 it returns
+/* Two-bone joint solver for the leg suspension: for a triangle with sides s0, s1 and base s2 it returns
    jointAngle0 = the angle between s2 and s1 and jointAngle1 = that angle plus the one between s2 and s0 (the
    bend at the joint of s0 and s1). The height over the base comes from 64-bit sums of squares; when the
    triangle cannot close or the base is at most 0x10, both angles are 0 when s0 < s2 (unsigned) and 0x8000
@@ -231,8 +224,7 @@ FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q
 }
 
 
-/* Address: 0x004849D0.
-   Returns the length floor(sqrt(x*x + y*y + z*z)) of a 3D vector; the squares are summed in 64 bits so Q12
+/* Returns the length floor(sqrt(x*x + y*y + z*z)) of a 3D vector; the squares are summed in 64 bits so Q12
    world coordinates cannot overflow, and the result has the same fixed-point scale as the components.
 */
 uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
@@ -246,8 +238,7 @@ uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent
 }
 
 
-/* Address: 0x004857A0.
-   Writes input / |input| as a Q28 unit vector (output may alias input). Each component is multiplied by
+/* Writes input / |input| as a Q28 unit vector (output may alias input). Each component is multiplied by
    2^32 / length (unsigned 64/32 DIV) and shifted right by 4. Vectors shorter than 2 give {0, 0, 0}.
    Used to normalize the frustum plane normals and model light directions.
 */
@@ -279,8 +270,7 @@ void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
 }
 
 
-/* Address: 0x004BEC20.
-   Wrapper around FixedTransform_RotateScaledDirectionCore; the original only moved the result into a
+/* Wrapper around FixedTransform_RotateScaledDirectionCore; the original only moved the result into a
    different register layout, so it returns the same rotated direction. Used by the model hierarchy.
 */
 FixedVectorQ12
@@ -295,8 +285,7 @@ FixedTransform_RotateScaledDirection
 }
 
 
-/* Address: 0x00417620.
-   Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by
+/* Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by
    DirectSound_Init). The first (g_CosineDerivedLookupAllocation, Q12) has row u, entry k =
    cos((2k+1) * u * pi / 512), row 0 being 1/sqrt(2); the second (g_CosineDerivedLookupSecondTable, Q14) is
    its transpose, row m, entry k = cos(k * (2m+1) * pi / 512), entry 0 being 1/sqrt(2). Angles are 16-bit
@@ -367,8 +356,7 @@ void __cdecl CosineDerivedLookupTables_Init(void)
 }
 
 
-/* Address: 0x004848C0.
-   Writes the Q28 unit direction for an elevation and an azimuth angle (16-bit turns, 65536 = full circle):
+/* Writes the Q28 unit direction for an elevation and an azimuth angle (16-bit turns, 65536 = full circle):
    x = cos(az)cos(el), y = sin(az)cos(el), z = sin(el). The products are formed with the sum-to-product
    identities, e.g. cos(az)cos(el) = (cos(az+el) + cos(az-el)) / 2, so only table lookups are needed.
 */
@@ -395,8 +383,7 @@ void FixedMath_WriteDirectionQ28(GraphicsFixedVec3 *output,AngleTurn32 elevation
 }
 
 
-/* Address: 0x00484B00.
-   Returns cos(angle) * scale and sin(angle) * scale for a 16-bit angle (65536 = full turn),
+/* Returns cos(angle) * scale and sin(angle) * scale for a 16-bit angle (65536 = full turn),
    using the Q28 tables, so the results keep the scale's fixed-point format. Used for terrain direction
    records and by the rotation basis builder.
 */
@@ -414,8 +401,7 @@ FixedSinCos FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 }
 
 
-/* Address: 0x00484B40.
-   Table lookup of a 16-bit angle (65536 = full turn): returns cos(angle) and sin(angle) in Q28.
+/* Table lookup of a 16-bit angle (65536 = full turn): returns cos(angle) and sin(angle) in Q28.
    Used by the graphics projection setup (g_ProjectionAngleFactors).
 */
 FixedSinCos FixedMath_SinCosQ28(AngleTurn32 angle)
@@ -428,8 +414,7 @@ FixedSinCos FixedMath_SinCosQ28(AngleTurn32 angle)
   return result;
 }
 
-/* Address: 0x00484F10.
-   Rotates a direction by the transform's 3x3 Q28 basis (output = basis * direction, each dot product summed
+/* Rotates a direction by the transform's 3x3 Q28 basis (output = basis * direction, each dot product summed
    in 64 bits and shifted right by 28); the translation is ignored, so the direction keeps its scale.
    Used by the model lighting to rotate surface normals.
 */
@@ -462,8 +447,7 @@ void FixedTransform_ApplyDirection
 }
 
 
-/* Address: 0x00485090.
-   Multiplies a direction by the transpose of the transform's 3x3 Q28 basis (for a rotation this is the inverse
+/* Multiplies a direction by the transpose of the transform's 3x3 Q28 basis (for a rotation this is the inverse
    rotation, i.e. world to local), summing in 64 bits and shifting right by 28; the translation is ignored.
    Used by ModelRender_PrepareViewDirections to bring the view and auxiliary directions into model space.
 */
@@ -520,8 +504,7 @@ static uint32_t FixedTransform_NegatedProductSumShr28(int64_t xProduct,int64_t y
 }
 
 
-/* Address: 0x00485520.
-   Inverts a rigid Q28 transform: the output basis is the adjugate of the input basis (each cofactor a 64-bit
+/* Inverts a rigid Q28 transform: the output basis is the adjugate of the input basis (each cofactor a 64-bit
    difference of products shifted right by 28), which is the inverse because a rotation has determinant 1,
    and the output translation is -(outputBasis * inputTranslation). Used for the view transform and the
    leg suspension.
@@ -594,8 +577,7 @@ void FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedM
 }
 
 
-/* Address: 0x004856B0.
-   Dot product of two Q12 vectors, summed in 64 bits and shifted right by 12 (SHRD), so the result is Q12.
+/* Dot product of two Q12 vectors, summed in 64 bits and shifted right by 12 (SHRD), so the result is Q12.
    Used by the model renderer for back-face and light-facing tests.
 */
 int32_t FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
@@ -610,8 +592,7 @@ int32_t FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 }
 
 
-/* Address: 0x004856F0.
-   Dot product summed in 64 bits and shifted right by 28: with one Q28 unit vector (a frustum plane normal or
+/* Dot product summed in 64 bits and shifted right by 28: with one Q28 unit vector (a frustum plane normal or
    a direction) the result keeps the other vector's scale. Used for frustum culling and effect motion.
 */
 int32_t FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
@@ -626,8 +607,7 @@ int32_t FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 }
 
 
-/* Address: 0x00485730.
-   Writes leftOperand x rightOperand (cross product of two Q12 vectors, 64-bit differences shifted right by 12).
+/* Writes leftOperand x rightOperand (cross product of two Q12 vectors, 64-bit differences shifted right by 12).
    The parameters are in the original's stack order: output, rightOperand, leftOperand. Used to build the
    frustum plane normals from the corner rays.
 */
@@ -657,8 +637,7 @@ void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperan
 }
 
 
-/* Address: 0x0052AD50.
-   Moves a planar point by distance in the direction of a 16-bit angle: returns x = baseX + cos(angle) *
+/* Moves a planar point by distance in the direction of a 16-bit angle: returns x = baseX + cos(angle) *
    distance and y = baseY + sin(angle) * distance (Q28 table products shifted right by 28). Used by the
    army movement code to step a unit along its heading.
 */
@@ -676,8 +655,7 @@ FixedTrig_ProjectPlanarPoint(Q12 baseX,Q12 baseY,Q12 distance,AngleTurn32 angle1
   return point;
 }
 
-/* Address: 0x004BEC50.
-   Builds the direction of (elevationAngle, azimuthAngle) with length directionScale, rotates it by the
+/* Builds the direction of (elevationAngle, azimuthAngle) with length directionScale, rotates it by the
    rotation basis of the three rotation angles and returns the rotated vector. Works through the shared
    model-transform scratch globals; called only by FixedTransform_RotateScaledDirection.
 */
@@ -703,8 +681,7 @@ FixedVectorQ12 FixedTransform_RotateScaledDirectionCore
 }
 
 
-/* Address: 0x00484A70.
-   Direction angles of a vector without its length: elevation = atan2(z, |(x, y)|) and azimuth = atan2(y, x)
+/* Direction angles of a vector without its length: elevation = atan2(z, |(x, y)|) and azimuth = atan2(y, x)
    as 16-bit angles (the horizontal length is summed in 64 bits). Used by the army suspension, the graphics
    direction setup and FixedVector_StepBackwardAlongOwnDirection.
 */
@@ -731,8 +708,7 @@ FixedElevationAzimuth FixedMath_VectorToAnglesVec3(GraphicsFixedVec3 *vector)
 }
 
 
-/* Address: 0x00484E00.
-   Inverse of FixedTransform_BuildRotationBasis: recovers the angles from a rotation basis, elevation
+/* Inverse of FixedTransform_BuildRotationBasis: recovers the angles from a rotation basis, elevation
    and azimuth from the third column and the roll from the upper 2x2 block. Used to turn a composed
    suspension rotation back into a model node's local angles.
 */
@@ -766,8 +742,7 @@ FixedRollAzimuthElevation FixedTransform_ExtractEulerAngles(GraphicsFixedMatrix3
 }
 
 
-/* Address: 0x00484AC0.
-   Length of a 3D vector: floor(sqrt(x*x + y*y + z*z)), with the squares summed in 64 bits so Q12 components
+/* Length of a 3D vector: floor(sqrt(x*x + y*y + z*z)), with the squares summed in 64 bits so Q12 components
    cannot overflow. The result has the components' fixed-point scale.
 */
 uint32_t FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
@@ -784,8 +759,7 @@ uint32_t FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
 }
 
 
-/* Address: 0x00484CF0.
-   Length of the 2D vector (x, y): floor(sqrt(x*x + y*y)), with the squares summed in 64 bits so Q12
+/* Length of the 2D vector (x, y): floor(sqrt(x*x + y*y)), with the squares summed in 64 bits so Q12
    components cannot overflow. The result has the components' fixed-point scale.
 */
 uint32_t FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
@@ -800,8 +774,7 @@ uint32_t FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent
 }
 
 
-/* Address: 0x00484770.
-   Returns the direction of an elevation and an azimuth angle (16-bit turns) multiplied by scale:
+/* Returns the direction of an elevation and an azimuth angle (16-bit turns) multiplied by scale:
    x = cos(az)cos(el) * scale, y = sin(az)cos(el) * scale, z = sin(el) * scale. The shot creator uses it to
    seed projectile velocities. As in FixedMath_WriteDirectionQ28 the products come from sum-to-product
    identities; the halving is folded into the shift (29 instead of 28).
@@ -836,8 +809,7 @@ FixedDirection FixedMath_DirectionFromAnglesScaled(AngleTurn32 elevationAngle,An
 }
 
 
-/* Address: 0x004847E0.
-   Returns the Q28 unit direction of an elevation and an azimuth angle (16-bit turns): x = cos(az)cos(el),
+/* Returns the Q28 unit direction of an elevation and an azimuth angle (16-bit turns): x = cos(az)cos(el),
    y = sin(az)cos(el), z = sin(el), formed like FixedMath_WriteDirectionQ28. The rotation-basis builder uses
    it for its rows.
 */
@@ -861,8 +833,7 @@ FixedDirection FixedMath_DirectionFromAnglesQ28(AngleTurn32 elevationAngle,Angle
 }
 
 
-/* Address: 0x00484840.
-   Scaled form of FixedMath_WriteDirectionQ28: writes {cos(el)cos(az), cos(el)sin(az), sin(el)} * scale, so the
+/* Scaled form of FixedMath_WriteDirectionQ28: writes {cos(el)cos(az), cos(el)sin(az), sin(el)} * scale, so the
    output has the scale's fixed-point format. x and y use the sum-to-product sums (twice the value), hence the
    shift by 29 instead of 28. Used for the frustum corner rays and by FixedTransform_RotateScaledDirectionCore.
 */
@@ -896,8 +867,7 @@ void FixedMath_WriteDirectionScaled(GraphicsFixedVec3 *output,AngleTurn32 elevat
 }
 
 
-/* Address: 0x00485120.
-   Concatenates two rigid transforms: output = outerTransform * innerTransform, i.e. a point is moved by
+/* Concatenates two rigid transforms: output = outerTransform * innerTransform, i.e. a point is moved by
    innerTransform first and then by outerTransform. Each Q28 basis product is summed in 64 bits and
    shifted back by 28; the inner translation is rotated by the outer basis and the outer translation added.
 */
@@ -974,8 +944,7 @@ void FixedTransform_Compose(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x
 }
 
 
-/* Address: 0x00484990.
-   Converts a vector, passed in the order z, y, x, into its direction angles (16-bit turns): elevation
+/* Converts a vector, passed in the order z, y, x, into its direction angles (16-bit turns): elevation
    atan2(z, sqrt(x*x + y*y)) and azimuth atan2(y, x). It is the inverse of FixedMath_WriteDirectionQ28 and is
    used for aiming and view angles.
 */
@@ -999,8 +968,7 @@ FixedVectorAngles FixedMath_VectorToAngles
 }
 
 
-/* Address: 0x00484E70.
-   Moves a point through a rigid transform: output = basis * point + translation, where each row is a Q28
+/* Moves a point through a rigid transform: output = basis * point + translation, where each row is a Q28
    dot product summed in 64 bits and shifted back by 28 (SHLD 4), so the point keeps its own scale.
 */
 void FixedTransform_ApplyPoint(GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
@@ -1032,8 +1000,7 @@ void FixedTransform_ApplyPoint(GraphicsFixedVec3 *output,GraphicsFixedVec3 *poin
 }
 
 
-/* Address: 0x00484D20.
-   Builds the Q28 rotation basis of an orientation given as roll, elevation and azimuth angle16s: the
+/* Builds the Q28 rotation basis of an orientation given as roll, elevation and azimuth angle16s: the
    third column is the forward direction (elevation, azimuth), the rest follows from the roll about it.
    Only the nine basis coefficients are written; callers set the translation themselves.
 */
@@ -1090,8 +1057,7 @@ void FixedTransform_BuildRotationBasis(GraphicsFixedMatrix3x4 *output,AngleTurn3
 }
 
 
-/* Address: 0x00484BA0.
-   atan2(y, x) as an engine angle (1/65536 turns, not masked to 16 bits). The plane is split into
+/* atan2(y, x) as an engine angle (1/65536 turns, not masked to 16 bits). The plane is split into
    eighth-turn sectors, rotating (x, y) so the remaining angle is within +-1/16 turn, which an odd
    polynomial in the ratio numerator/denominator approximates. (0, 0) yields 0.
 */
@@ -1171,8 +1137,7 @@ uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComp
 }
 
 
-/* Address: 0x004846A0.
-   Approximate square root of a Q12 value, returned in Q12 (about 0.6% low): the input is shifted left by an
+/* Approximate square root of a Q12 value, returned in Q12 (about 0.6% low): the input is shifted left by an
    even amount so its top bit lands on bit 27 or 28 (BSR), a cubic polynomial in the normalized value is
    evaluated with the high halves of IMULs, and the result is shifted right by half the normalizing shift.
    Inputs of 2^29 or more give wrong results (the shift wraps). No caller, function-pointer table or data
@@ -1200,8 +1165,7 @@ uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue)
                          FIXED_SQRT_POLY_C1) + FIXED_SQRT_POLY_C0) >> (int8_t)(normalizeShift >> 1);
 }
 
-/* Address: 0x00484700.
-   Integer square root of the 64-bit value high:low, used for vector lengths from 64-bit sums of squares.
+/* Integer square root of the 64-bit value high:low, used for vector lengths from 64-bit sums of squares.
    The start value is the power of two just above the root (from the highest set bit, BSR); three Newton
    steps x = (x + value / x) / 2 follow, the divisions being 64/32-bit DIVs.
 */

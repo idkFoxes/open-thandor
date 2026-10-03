@@ -74,8 +74,7 @@ static uint32_t WorldLighting_BlendPackedLow16(uint32_t primaryValue,uint32_t al
   return (uint32_t)(primaryWeighted + alternateWeighted) >> 7 & 0xffff;
 }
 
-/* Address: 0x00532FA0.
-   Periodic terrain lighting cycle (tick-wheel case 0, plus two session setup paths): when the level
+/* Periodic terrain lighting cycle (tick-wheel case 0, plus two session setup paths): when the level
    defines a cycle duration, the simulation tick's phase in the cycle picks a cosine blend between the
    level's primary and alternate terrain colour sets and between two packed 16-bit parameter pairs,
    installs the blended colours and recomputes the terrain normals and lighting with the blended pairs.
@@ -173,8 +172,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
 }
 
 
-/* Address: 0x0050D100.
-   Moves the camera (motion.position, +0x60) to the given point and keeps its target point (+0x80): the
+/* Moves the camera (motion.position, +0x60) to the given point and keeps its target point (+0x80): the
    target and committed distances become the new distance between the two.
 */
 void WorldRuntime_SetCameraPositionKeepingTarget
@@ -197,8 +195,7 @@ void WorldRuntime_SetCameraPositionKeepingTarget
 }
 
 
-/* Address: 0x0050D150.
-   Sets the camera's magnitude (at least 0x400 = 0.25 in Q12), heading (16-bit turn) and pitch and the
+/* Sets the camera's magnitude (at least 0x400 = 0.25 in Q12), heading (16-bit turn) and pitch and the
    projection shift (motion.projectionShift). The pitch is clamped to the world's pitch limits (unless the camera is unlimited)
    and always to a quarter turn up or down (+-0x4000).
 */
@@ -235,8 +232,7 @@ void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
 }
 
 
-/* Address: 0x0050D1E0.
-   Points the camera at a target: stores the target point (motion.targetPosition, +0x80), pitch, heading and
+/* Points the camera at a target: stores the target point (motion.targetPosition, +0x80), pitch, heading and
    distance, and places the camera (motion.position, +0x60) that distance away from the target, looking at it
    along the given angles (the offset uses the reversed direction: negated pitch, heading + half a turn).
 */
@@ -264,8 +260,7 @@ void WorldRuntime_PointCameraAtTarget
 }
 
 
-/* Address: 0x0050D2C0.
-   Restores the camera saved by WorldRuntime_CaptureMotionStateToSnapshot (position, magnitude, angles,
+/* Restores the camera saved by WorldRuntime_CaptureMotionStateToSnapshot (position, magnitude, angles,
    distance) and recomputes its target point where the view ray meets the field.
 */
 void WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime)
@@ -295,8 +290,7 @@ void WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRunti
 }
 
 
-/* Address: 0x0050D670.
-   Attaches a field grid ('fld' asset) to the world and computes its triangle normals; any other asset is
+/* Attaches a field grid ('fld' asset) to the world and computes its triangle normals; any other asset is
    ignored.
 */
 void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world)
@@ -311,8 +305,7 @@ void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext
 }
 
 
-/* Address: 0x00561E30.
-   Keyboard command of the in-game root (called directly in a local game, in a networked one queued as
+/* Keyboard command of the in-game root (called directly in a local game, in a networked one queued as
    command 0x2D00 from InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags): turns the
    auxiliary angle pair (stored in fieldRegion.auxiliaryElevationAngle/auxiliaryAzimuthAngle, see
    WorldRuntime_RecomputeFieldRegionNormalsAndLighting) by the given deltas, the elevation clamped to
@@ -343,8 +336,7 @@ void WorldRuntime_TurnAuxiliaryAnglesClamped
 }
 
 
-/* Address: 0x004BE7C0.
-   Returns the field grid's top surface height (terrain plus the water above it) at a world point, or
+/* Returns the field grid's top surface height (terrain plus the water above it) at a world point, or
    WORLD_HEIGHT_NO_FIELD_GRID when the world has no field grid.
 */
 uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
@@ -361,8 +353,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
 }
 
 
-/* Address: 0x0050A610.
-   Drag selection test: projects the node's world position to the screen and returns CF set when that pixel
+/* Drag selection test: projects the node's world position to the screen and returns CF set when that pixel
    lies inside the rectangle spanned by the pointer press position and the current pointer position of
    boundsControl (inclusive, in either corner order).
 */
@@ -409,8 +400,7 @@ bool WorldRuntimeNode_IsPositionInsideBounds
 }
 
 
-/* Address: 0x0050D260.
-   Saves the camera (position, magnitude, heading, pitch and committed distance) into worldRuntime->snapshot,
+/* Saves the camera (position, magnitude, heading, pitch and committed distance) into worldRuntime->snapshot,
    to be restored later by WorldRuntime_RestoreMotionStateFromSnapshot.
 */
 void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime)
@@ -438,8 +428,7 @@ void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime
 }
 
 
-/* Address: 0x0050D4F0.
-   Commits the camera's target distance (+0x8C) as its committed distance (+0x7C), the base that later
+/* Commits the camera's target distance (+0x8C) as its committed distance (+0x7C), the base that later
    distance input is added to.
 */
 void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world)
@@ -450,8 +439,7 @@ void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world)
 }
 
 
-/* Address: 0x0050D510.
-   Attaches the pool of 0x100-byte object records that WorldObjectArray_AllocateFreeRecord hands out (callers
+/* Attaches the pool of 0x100-byte object records that WorldObjectArray_AllocateFreeRecord hands out (callers
    attach 0x100 or 0x4000 records).
 */
 void WorldRuntime_AttachObjectArray
@@ -464,8 +452,7 @@ void WorldRuntime_AttachObjectArray
 }
 
 
-/* Address: 0x0050D610.
-   Returns the camera position (motion.positionX/Y/ZQ12, context +0x60..+0x68).
+/* Returns the camera position (motion.positionX/Y/ZQ12, context +0x60..+0x68).
 */
 WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world)
 
@@ -479,8 +466,7 @@ WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world)
 }
 
 
-/* Address: 0x0050D630.
-   Returns the camera orientation (motion.positionMagnitudeQ12, headingAngle, pitchAngle, context
+/* Returns the camera orientation (motion.positionMagnitudeQ12, headingAngle, pitchAngle, context
    +0x6C..+0x74).
 */
 WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *world)
@@ -495,8 +481,7 @@ WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *wo
 }
 
 
-/* Address: 0x0050D710.
-   Attaches a caller-owned workspace of count dwords to the world runtime and zeroes it.
+/* Attaches a caller-owned workspace of count dwords to the world runtime and zeroes it.
 */
 void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world)
 
@@ -511,8 +496,7 @@ void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint
 }
 
 
-/* Address: 0x0050D7D0.
-   Takes the first free record of the world's object pool (WorldRuntime_AttachObjectArray): marks it allocated
+/* Takes the first free record of the world's object pool (WorldRuntime_AttachObjectArray): marks it allocated
    (which also resets its other flag bits) and stores the owning world. Returns the record, or NULL when the
    pool is exhausted (the original returned FATAL_ERROR_GENERAL_FAILURE with CF set; callers that pass an error
    code on use that constant).
@@ -539,8 +523,7 @@ WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worl
 }
 
 
-/* Address: 0x0050D830.
-   Marks node as linked and puts it at the head of its world's owner list (head at +0xD8; the head is
+/* Marks node as linked and puts it at the head of its world's owner list (head at +0xD8; the head is
    swapped with XCHG, the neighbour links are then set without a lock).
 */
 void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
@@ -566,8 +549,7 @@ void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
 }
 
 
-/* Address: 0x0050D880.
-   Takes a linked node out of its world's owner list (fixing the neighbours or the list head) and clears all
+/* Takes a linked node out of its world's owner list (fixing the neighbours or the list head) and clears all
    of its runtime flags, the linked mark included.
 */
 void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
@@ -594,8 +576,7 @@ void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
 }
 
 
-/* Address: 0x0050D8F0.
-   Calls callback(callbackContext, node) for every node of the world's owner list (head at +0xD8), from the most
+/* Calls callback(callbackContext, node) for every node of the world's owner list (head at +0xD8), from the most
    recently linked one on.
 */
 void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
@@ -611,8 +592,7 @@ void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTra
 }
 
 
-/* Address: 0x0050EC80.
-   Pre-serializer provider of the light.hex save segment (called by
+/* Pre-serializer provider of the light.hex save segment (called by
    InGameSaveGame_WritePackage): returns the shading runtime records and their byte
    size 0x4000, and inverts serializationToggleDword of record 0 so the saved image carries the
    inverted value; RuntimeHexSegment_ToggleLightImageFlag inverts it back after saving.
@@ -629,8 +609,7 @@ RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void
   return segment;
 }
 
-/* Address: 0x0050ECA0.
-   Post-serializer hook of the light.hex save segment: inverts serializationToggleDword of shading record 0
+/* Post-serializer hook of the light.hex save segment: inverts serializationToggleDword of shading record 0
    back (RuntimeHexSegment_GetLightImageAndToggleFlag inverted it before), so the saved image carries the
    inverted value while the live one is unchanged. The caller keeps the serializer flags.
 */
@@ -642,8 +621,7 @@ void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void)
   return;
 }
 
-/* Address: 0x0050ECB0.
-   Pre-serializer provider of the field.hex save segment (called by
+/* Pre-serializer provider of the field.hex save segment (called by
    InGameSaveGame_WritePackage): returns the attached field grid (+0x54) and its whole
    allocation size (asset +0x04), so the field image is saved as one block.
 */
@@ -657,8 +635,7 @@ RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveConte
   return segment;
 }
 
-/* Address: 0x0050ECD0.
-   Post-serializer hook of the field.hex save segment (called by InGameSaveGame_WritePackage):
+/* Post-serializer hook of the field.hex save segment (called by InGameSaveGame_WritePackage):
    does nothing; the field image needs no restoring after saving. The caller keeps the serializer flags.
 */
 void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext)
@@ -667,8 +644,7 @@ void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldI
   return;
 }
 
-/* Address: 0x0051BFA0.
-   Callback of WorldRuntime_ForEachOwnerListNode from ArmyRuntime_DestroyInstanceAndRefreshUi: removes
+/* Callback of WorldRuntime_ForEachOwnerListNode from ArmyRuntime_DestroyInstanceAndRefreshUi: removes
    every reference to the destroyed object from one world node, so nothing keeps targeting it. For a model
    node: its hierarchy's targets and two fields of the entity linked at payload dword 2; for an effect node:
    its target at +0x1C.
@@ -708,8 +684,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
 }
 
 
-/* Address: 0x0051D500.
-   Applies the terrain-class overlay of sourceRuntime's model definition at every model of the world's active
+/* Applies the terrain-class overlay of sourceRuntime's model definition at every model of the world's active
    faction: for each such owner-list node whose model has an overlay base (+0x19C of its first payload
    record), the overlay callback of the definition's terrain class runs at the node's position on the field
    grid. The extent is 0x800 << n for definitions of kind 0xE, else unlimited (-1).
@@ -764,8 +739,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
 }
 
 
-/* Address: 0x005233F0.
-   Per-tick update of army class 5 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[5]):
+/* Per-tick update of army class 5 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[5]):
    that class has nothing to update, so this does nothing.
 */
 void ArmyRuntimeClass_NoOpTickUpdateForClass5
@@ -776,8 +750,7 @@ void ArmyRuntimeClass_NoOpTickUpdateForClass5
 }
 
 
-/* Address: 0x00523400.
-   Per-tick update of army class 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[6]):
+/* Per-tick update of army class 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[6]):
    that class has nothing to update, so this does nothing.
 */
 void ArmyRuntimeClass_NoOpTickUpdateForClass6
@@ -788,8 +761,7 @@ void ArmyRuntimeClass_NoOpTickUpdateForClass6
 }
 
 
-/* Address: 0x00527B70.
-   Default model-unrebase handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase, every class
+/* Default model-unrebase handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase, every class
    except 13 and 21): those classes keep no pointers that need unrebasing, so this does nothing.
 */
 void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
@@ -799,8 +771,7 @@ void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
 }
 
 
-/* Address: 0x00527BA0.
-   Default model release/commit handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit,
+/* Default model release/commit handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit,
    every class except 14-16 and 21): those classes hold no faction capacity or placement reservation to release,
    so this does nothing.
 */
@@ -811,8 +782,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
   return;
 }
 
-/* Address: 0x00527BE0.
-   Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
+/* Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
    0, 5-9, 12 and 21): accepts every placement (CF clear).
 */
 bool UnifiedRuntimeDefault_TwoArgSuccess
@@ -823,8 +793,7 @@ bool UnifiedRuntimeDefault_TwoArgSuccess
 }
 
 
-/* Address: 0x00527BF0.
-   Default class method D (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD, classes 0, 9, 12,
+/* Default class method D (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD, classes 0, 9, 12,
    15, 20 and 23), the slot where the other classes update their looping and positioned sounds: these classes
    have none, so this does nothing.
 */
@@ -835,8 +804,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRu
 }
 
 
-/* Address: 0x00529430.
-   WorldRuntime_ForEachOwnerListNode callback run while a model runtime is destroyed
+/* WorldRuntime_ForEachOwnerListNode callback run while a model runtime is destroyed
    (detachedObject = that model runtime): every effect (+0x1C), shot (+0x14) or entity (+0xF0, and +0x60 for
    definition class 0x15) that still points at it gets the pointer cleared, so nothing keeps a dangling reference.
 */
@@ -872,8 +840,7 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
 }
 
 
-/* Address: 0x00565110.
-   WorldRuntime_ForEachOwnerListNode callback used when an in-game session shuts down, before the level
+/* WorldRuntime_ForEachOwnerListNode callback used when an in-game session shuts down, before the level
    resources are destroyed: destroys the army of every model node; for shot and effect nodes it clears flag bits
    31 (linked into the owner list) and 30 (record allocated) and zeroes one back-reference field of their runtime payload (+0x10 for
    shots, +4 for effects).
@@ -899,8 +866,7 @@ void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutd
 }
 
 
-/* Address: 0x0050D3B0.
-   Recomputes the camera's target point: the first point where the view ray (from the camera along its
+/* Recomputes the camera's target point: the first point where the view ray (from the camera along its
    pitch and heading, up to four times the maximum camera distance) meets the field, i.e. the terrain or a
    nearer secondary surface (only the secondary surface with WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY).
    Without a hit the ray is intersected with the ground plane z = 0. Also updates the target distance.
@@ -975,8 +941,7 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
 }
 
 
-/* Address: 0x0050D760.
-   Stores the eight terrain lighting colours of the level (or of the current lighting-cycle blend) in the world
+/* Stores the eight terrain lighting colours of the level (or of the current lighting-cycle blend) in the world
    runtime and rebuilds the terrain colour ramp from the base colour, the ramp-step colour and the secondary colour.
 */
 void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CArgb,PackedArgb32 lightingColor138Argb,
@@ -999,8 +964,7 @@ void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CA
 }
 
 
-/* Address: 0x0050D5C0.
-   Sets the terrain light direction (elevation, azimuth) and relights the field: recomputes the triangle normals
+/* Sets the terrain light direction (elevation, azimuth) and relights the field: recomputes the triangle normals
    and the directional lighting of the field grid. The auxiliary angle pair is only stored (in
    fieldRegion.auxiliaryElevationAngle/auxiliaryAzimuthAngle; callers clamp and wrap it like the light direction, elevation
    -0x4000..-0x1000, azimuth & 0xFFFF). Callers: level load, the periodic lighting cycle and the light-direction
@@ -1025,8 +989,7 @@ void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
 }
 
 
-/* Address: 0x0050D6B0.
-   Clears WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY; called after every change of the camera state and when a
+/* Clears WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY; called after every change of the camera state and when a
    field grid is attached.
 */
 void WorldRuntime_ClearFieldGridDirtyFlag(WorldRuntimeContext *world)

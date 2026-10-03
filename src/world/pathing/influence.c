@@ -10,8 +10,7 @@
 
 /* Implementation ownership: world/pathing/influence. */
 
-/* Address: 0x00527330.
-   gridInfluenceAdd handler of the runtime classes 4, 10..16, 20 and 22
+/* gridInfluenceAdd handler of the runtime classes 4, 10..16, 20 and 22
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd): stamps the low distance bands around the
    model's current position, unless its definition has no influence radius.
 */
@@ -31,8 +30,7 @@ void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
 }
 
 
-/* Address: 0x00527380.
-   gridInfluenceRemove handler of the runtime classes 4, 10..16, 20 and 22
+/* gridInfluenceRemove handler of the runtime classes 4, 10..16, 20 and 22
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove): clears the low distance bands around the
    model's current position, the counterpart of GridInfluence_AddLowDistanceBands.
 */
@@ -52,8 +50,7 @@ void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
 }
 
 
-/* Address: 0x00528070.
-   gridInfluenceAdd handler of the runtime classes 0..3, 17..19 and 23
+/* gridInfluenceAdd handler of the runtime classes 0..3, 17..19 and 23
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd): stamps the high distance bands around the
    model's position and remembers that position in the linked runtime (+0x68/+0x6C), so the removal clears the
    same disc even after the model has moved.
@@ -80,8 +77,7 @@ void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
 }
 
 
-/* Address: 0x005280D0.
-   gridInfluenceRemove handler of the runtime classes 0..3, 17..19 and 23
+/* gridInfluenceRemove handler of the runtime classes 0..3, 17..19 and 23
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove): clears the high distance bands around
    the position GridInfluence_AddHighDistanceBands stored in the linked runtime.
 */
@@ -101,8 +97,7 @@ void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
 }
 
 
-/* Address: 0x00527B50.
-   gridInfluenceAdd handler of the runtime classes 5..9 and 21, which leave no influence in the scratch grid
+/* gridInfluenceAdd handler of the runtime classes 5..9 and 21, which leave no influence in the scratch grid
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd). Returns with RET 4 and keeps EAX and the
    flags.
 */
@@ -113,8 +108,7 @@ void GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
 }
 
 
-/* Address: 0x00527B60.
-   gridInfluenceRemove handler of the runtime classes 5..9 and 21 (the counterpart of GridInfluence_AddNoOp).
+/* gridInfluenceRemove handler of the runtime classes 5..9 and 21 (the counterpart of GridInfluence_AddNoOp).
    Returns with RET 4 and keeps EAX and the flags.
 */
 void GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
@@ -124,8 +118,7 @@ void GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
 }
 
 
-/* Address: 0x00535A30.
-   Clears the low and high distance bands (scratch bits 8..23) of every scratch cell, then lets every runtime
+/* Clears the low and high distance bands (scratch bits 8..23) of every scratch cell, then lets every runtime
    model re-add its influence through the gridInfluenceAdd handler of its runtime class. Runs on tick-wheel
    case 4 and, on the other simulation-tick path, every 16th tick.
 */
@@ -282,8 +275,7 @@ static void GridInfluence_WalkDistanceBandsAroundWorldPoint
 }
 
 
-/* Address: 0x00535330.
-   Stamps a model's influence into the scratch grid: eight concentric rings (radiusMetric plus
+/* Stamps a model's influence into the scratch grid: eight concentric rings (radiusMetric plus
    g_GridInfluenceRadiusOffset[0..7] plus the margin, squared into g_GridInfluenceSquaredThreshold[0..7]) around the
    world point set low distance band bit n (scratch bit 8 + n) in every cell whose centre lies within ring n.
    The disc is covered like GridFootprint_ClearTraversalFlagsAroundWorldPoint: vertical walks from the centre row
@@ -299,8 +291,7 @@ void GridInfluence_SetLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits radi
 }
 
 
-/* Address: 0x00535780.
-   High-band twin of GridInfluence_SetLowDistanceBandsAroundWorldPoint: builds the same eight ring thresholds and
+/* High-band twin of GridInfluence_SetLowDistanceBandsAroundWorldPoint: builds the same eight ring thresholds and
    covers the disc the same way, but sets high distance band bit n (scratch bit 16 + n). Called by
    GridInfluence_AddHighDistanceBands.
 */
@@ -313,8 +304,7 @@ void GridInfluence_SetHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits rad
 }
 
 
-/* Address: 0x00535CC0.
-   Undoes GridInfluence_SetLowDistanceBandsAroundWorldPoint: walks the same eight rings around the world point and
+/* Undoes GridInfluence_SetLowDistanceBandsAroundWorldPoint: walks the same eight rings around the world point and
    clears low distance band bit n (scratch bit 8 + n) in every cell inside ring n. Called by
    GridInfluence_RemoveLowDistanceBands.
 */
@@ -327,8 +317,7 @@ void GridInfluence_ClearLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits ra
 }
 
 
-/* Address: 0x00536110.
-   Undoes GridInfluence_SetHighDistanceBandsAroundWorldPoint: walks the same eight rings around the world point and
+/* Undoes GridInfluence_SetHighDistanceBandsAroundWorldPoint: walks the same eight rings around the world point and
    clears high distance band bit n (scratch bit 16 + n) in every cell inside ring n. Called by
    GridInfluence_RemoveHighDistanceBands.
 */
@@ -356,8 +345,7 @@ static uint32_t GridInfluence_RingBandMask(uint32_t squaredDistance)
 }
 
 
-/* Address: 0x00535190.
-   Band walker for GridInfluence_SetLowDistanceBandsAroundWorldPoint: from scratchCell (a cell whose centre is at
+/* Band walker for GridInfluence_SetLowDistanceBandsAroundWorldPoint: from scratchCell (a cell whose centre is at
    cellWorldY/X) it walks downwards, two scratch rows and one column left per step (straight down in world space),
    and ORs low distance band bit n (scratch bit 8 + n) into each cell whose centre lies within
    g_GridInfluenceSquaredThreshold[n] of the centre point. Stops at the first cell inside no ring or before a
@@ -395,8 +383,7 @@ int GridInfluence_SetLowDistanceBandsDiagonalNegative
 }
 
 
-/* Address: 0x00535260.
-   Mirror of GridInfluence_SetLowDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
+/* Mirror of GridInfluence_SetLowDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
    right per step), with the same band bits and the same return value.
 */
 int GridInfluence_SetLowDistanceBandsDiagonalPositive
@@ -429,8 +416,7 @@ int GridInfluence_SetLowDistanceBandsDiagonalPositive
 }
 
 
-/* Address: 0x005355E0.
-   High-band twin of GridInfluence_SetLowDistanceBandsDiagonalNegative: walks downwards from scratchCell and ORs
+/* High-band twin of GridInfluence_SetLowDistanceBandsDiagonalNegative: walks downwards from scratchCell and ORs
    high distance band bit n (scratch bit 16 + n) into each cell inside ring n. Same stop rule and return value.
 */
 int GridInfluence_SetHighDistanceBandsDiagonalNegative
@@ -463,8 +449,7 @@ int GridInfluence_SetHighDistanceBandsDiagonalNegative
 }
 
 
-/* Address: 0x005356B0.
-   Mirror of GridInfluence_SetHighDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
+/* Mirror of GridInfluence_SetHighDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
    right per step).
 */
 int GridInfluence_SetHighDistanceBandsDiagonalPositive
@@ -497,8 +482,7 @@ int GridInfluence_SetHighDistanceBandsDiagonalPositive
 }
 
 
-/* Address: 0x00535B20.
-   Clearing twin of GridInfluence_SetLowDistanceBandsDiagonalNegative: walks downwards from scratchCell and clears
+/* Clearing twin of GridInfluence_SetLowDistanceBandsDiagonalNegative: walks downwards from scratchCell and clears
    low distance band bit n (scratch bit 8 + n) in each cell inside ring n. Same stop rule and return value.
 */
 int GridInfluence_ClearLowDistanceBandsDiagonalNegative
@@ -531,8 +515,7 @@ int GridInfluence_ClearLowDistanceBandsDiagonalNegative
 }
 
 
-/* Address: 0x00535BF0.
-   Mirror of GridInfluence_ClearLowDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
+/* Mirror of GridInfluence_ClearLowDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
    right per step).
 */
 int GridInfluence_ClearLowDistanceBandsDiagonalPositive
@@ -565,8 +548,7 @@ int GridInfluence_ClearLowDistanceBandsDiagonalPositive
 }
 
 
-/* Address: 0x00535F70.
-   Clearing twin of GridInfluence_SetHighDistanceBandsDiagonalNegative: walks downwards from scratchCell and clears
+/* Clearing twin of GridInfluence_SetHighDistanceBandsDiagonalNegative: walks downwards from scratchCell and clears
    high distance band bit n (scratch bit 16 + n) in each cell inside ring n. Same stop rule and return value.
 */
 int GridInfluence_ClearHighDistanceBandsDiagonalNegative
@@ -599,8 +581,7 @@ int GridInfluence_ClearHighDistanceBandsDiagonalNegative
 }
 
 
-/* Address: 0x00536040.
-   Mirror of GridInfluence_ClearHighDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one
+/* Mirror of GridInfluence_ClearHighDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one
    column right per step).
 */
 int GridInfluence_ClearHighDistanceBandsDiagonalPositive

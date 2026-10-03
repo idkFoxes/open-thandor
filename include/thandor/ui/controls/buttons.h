@@ -58,82 +58,65 @@
 #define UI_TEXT_BOX_WIDE_HEIGHT 58
 #define UI_TEXT_BOX_WIDE_MAX_LINES 4
 
-/* 0x004B1D20 */
 void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root);
 
-/* 0x004B1620 */
 void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiSpriteButtonControl *control);
 
-/* 0x004B16E0 */
 void UiSpriteButtonControl_DrawClipped
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiSpriteButtonControl *control);
 
-/* 0x004B1890 */
 void UiSpriteButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSpriteButtonControl *control);
 
-/* 0x004B1A30 */
 void UiSpriteButtonControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSpriteButtonControl *control);
 
-/* 0x004B1AE0 */
 void UiSpriteButtonControl_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSpriteButtonControl *control);
 
-/* 0x004B1BF0 */
 UiNodeBase * UiSpriteButtonControl_HitTestOpaque
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSpriteButtonControl *control);
 
-/* 0x00515010 */
 void UiImageActionControl_DrawImageAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiImageActionControl *control);
 
-/* 0x005151F0 */
 GraphicsCursorFrameIndex UiImageActionControl_QueryPointerCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageActionControl *control);
 
-/* 0x00515210 */
 void UiImageActionControl_EnqueuePrimaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageActionControl *control);
 
-/* 0x00515230 */
 void UiImageActionControl_EnqueueSecondaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageActionControl *control);
 
-/* 0x00515250 */
 bool UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control);
 
-/* 0x005152E0 */
 void UiConditionalActionControl_DrawClipped
           (int clipBottom,int clipRight,int clipTop,int clipLeft,UiConditionalActionControl *control);
 
-/* 0x005155A0 */
 GraphicsCursorFrameIndex UiConditionalActionControl_QueryPointerCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control);
 
-/* 0x005155C0 */
 UiNodeBase * UiConditionalActionControl_HitTestWhenEnabled
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control);
 
-/* 0x005155F0 */
 void UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiConditionalActionControl *control);
 
-/* 0x004B1C80 */
 void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control);
 
-extern UiNodeVtable g_UiSpriteButtonControlVtable; /* 004B15D0 g_UiSpriteButtonControlVtable */
-extern UiNodeVtable g_UiImageActionControlVtable; /* 00514FC0 g_UiImageActionControlVtable */
-extern UiNodeVtable g_UiConditionalActionControlVtable; /* 00515290 g_UiConditionalActionControlVtable */
-extern UiNodeVtable g_UiCatalogEntryControlVtable; /* 00516530 g_UiCatalogEntryControlVtable */
+extern UiNodeVtable g_UiSpriteButtonControlVtable;
+extern UiNodeVtable g_UiImageActionControlVtable;
+extern UiNodeVtable g_UiConditionalActionControlVtable;
+extern UiNodeVtable g_UiCatalogEntryControlVtable;
 
 #endif /* THANDOR_UI_CONTROLS_BUTTONS_H */

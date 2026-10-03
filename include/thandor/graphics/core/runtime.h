@@ -65,66 +65,49 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00576C30 */
 void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
 
-/* 0x004168B0 */
 bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
-/* 0x004168E0 */
 bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
 
-/* 0x00486430 */
 GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint);
 
-/* 0x00486490 */
 void Graphics_SetProjectionClipRect
           (GraphicsScreenCoordinate maxY,GraphicsScreenCoordinate maxX,GraphicsScreenCoordinate minY
           ,GraphicsScreenCoordinate minX);
 
-/* 0x004864D0 */
 void Graphics_SetViewProjectionParameters
           (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewElevationAngle,
           GraphicsViewAngle16 viewAzimuthAngle,GraphicsProjectionScale projectionScale,
           GraphicsWorldCoordinateQ12 originZ,GraphicsWorldCoordinateQ12 originY,
           GraphicsWorldCoordinateQ12 originX);
 
-/* 0x00486640 */
 void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
           GraphicsScreenCoordinate top,GraphicsScreenCoordinate left);
 
-/* 0x004866C0 */
 void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
-/* 0x00486730 */
 void Graphics_SetSceneBoundsAndColors(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
           GraphicsSceneExtentFixed bound5,GraphicsSceneExtentFixed bound4,
           GraphicsSceneExtentFixed bound3,GraphicsSceneExtentFixed bound2,
           GraphicsSceneExtentFixed bound1,GraphicsSceneExtentFixed bound0);
 
-/* 0x00486790 */
 void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue);
 
-/* 0x004867B0 */
 void Graphics_RebuildFrustumPlanes(void);
 
-/* 0x00578560 */
 uint32_t __cdecl Graphics_Init(void);
 
-/* 0x00579520 */
 void Graphics_Shutdown(void);
 
-/* 0x0057A330 */
 void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface);
 
-/* 0x0057A2C0 */
 void GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface);
 
-/* 0x00579EC0 */
 void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destinationBuffer,GraphicsScreenCoordinate drawY,
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *sourceSurface);
 
-/* 0x0057A0C0 */
 void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface);
 

@@ -11,21 +11,18 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 004229A0 g_UiDisplaySettingsRootCallbacks */
 __declspec(align(16)) UiRootCallbacks g_UiDisplaySettingsRootCallbacks = {
     .vetoClose = (void *)UiRootCallbacks_Free,
     .frameUpdate = (void *)UiDisplaySettingsRoot_RefreshModeSelection,
     .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
     .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion};
 
-/* 00424324 g_UiFourValueDialogRootCallbacks */
 __declspec(align(4)) UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
     .vetoClose = (void *)UiRootCallbacks_Free,
     .frameUpdate = (void *)UiFourValueDialog_TickCountdownAndRequestClose,
     .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
     .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion};
 
-/* 00424338 g_UiFourValueDialogTemplateImage */
 __declspec(align(8)) FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
         { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
@@ -61,38 +58,26 @@ __declspec(align(8)) FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
             0x00000004, 0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014},
 };
 
-/* 004AE960 g_UiRuntimeRecordRing */
 __declspec(align(16)) UiRuntimeRecord *g_UiRuntimeRecordRing = 0;
 
-/* 004AE964 g_UiRuntimeRecordEndpointSlots */
 __declspec(align(4)) uint32_t g_UiRuntimeRecordEndpointSlots = 0;
 
-/* 004AE968 g_UiTransferDataBuffer */
 __declspec(align(8)) uint8_t *g_UiTransferDataBuffer = 0;
 
-/* 004AE96C g_UiTransferEndpointBuffer */
 __declspec(align(4)) UiTransferEndpointDescriptor *g_UiTransferEndpointBuffer = 0;
 
-/* 004AE970 g_UiRuntimeRecordReadIndex */
 __declspec(align(16)) uint32_t g_UiRuntimeRecordReadIndex = 0;
 
-/* 004AE98C g_UiRuntimeRecordRingLock */
 __declspec(align(4)) RuntimeSpinLockValue g_UiRuntimeRecordRingLock = 0;
 
-/* 004AF1F4 g_UiDirtyRectCount */
 __declspec(align(4)) UiDirtyRectCount g_UiDirtyRectCount = 0;
 
-/* 004AF1F8 g_UiDirtyRectEntries */
 __declspec(align(8)) UiDirtyRectEntry *g_UiDirtyRectEntries = 0;
 
-/* 004AF1FC g_UiActionQueueUsedBytes */
 __declspec(align(4)) UiActionQueueUsedBytes g_UiActionQueueUsedBytes = 0;
 
-/* 004AF200 g_UiActionQueueEntries */
 __declspec(align(16)) UiActionQueueEntry *g_UiActionQueueEntries = 0;
 
-/* 004AF204 g_UiRuntimeInitializationCount */
 __declspec(align(4)) uint32_t g_UiRuntimeInitializationCount = 0;
 
-/* 004B0A30 g_UiActionHandlerPages */
 __declspec(align(16)) UiActionHandlerPage *g_UiActionHandlerPages[256] = {0};

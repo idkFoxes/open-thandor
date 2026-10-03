@@ -10,8 +10,7 @@
 
 /* Implementation ownership: assets/army/catalog. */
 
-/* Address: 0x005719F0.
-   Keeps the editor's unit-placement army id when it names a placeable unit (flag 0x0100 set, 0x0200 clear),
+/* Keeps the editor's unit-placement army id when it names a placeable unit (flag 0x0100 set, 0x0200 clear),
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
    Returns the placeable unit id.
@@ -26,8 +25,7 @@ ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog r
 }
 
 
-/* Address: 0x00571A10.
-   Steps the editor's unit-placement army id to the next placeable unit (flag 0x0100 set, 0x0200 clear). Ids of
+/* Steps the editor's unit-placement army id to the next placeable unit (flag 0x0100 set, 0x0200 clear). Ids of
    other units (0x0200 clear) are skipped; at the end of the run of unit ids it goes back to the first id of that
    run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in unit-placement mode.
@@ -60,8 +58,7 @@ ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x00571A60.
-   Steps the editor's unit-placement army id to the previous placeable unit (flag 0x0100 set, 0x0200 clear).
+/* Steps the editor's unit-placement army id to the previous placeable unit (flag 0x0100 set, 0x0200 clear).
    Ids of other units are skipped; at the start of the run of unit ids it goes forward to the last id of that
    run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in unit-placement mode.
@@ -94,8 +91,7 @@ ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x00571B00.
-   Moves the editor's unit-placement army id back out of its current run of unit ids (flag 0x0200 clear) and
+/* Moves the editor's unit-placement army id back out of its current run of unit ids (flag 0x0200 clear) and
    returns the nearest placeable unit (0x0100 set, 0x0200 clear) below it, wrapping from below 0 to 0x1000. Unlike
    the step functions this jumps between id blocks. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014) in unit-placement mode.
@@ -122,8 +118,7 @@ ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyAssetId recor
 }
 
 
-/* Address: 0x00571C30.
-   Keeps the editor's object-placement army id when it names a placeable object (flags 0x0100 and 0x0200 set),
+/* Keeps the editor's object-placement army id when it names a placeable object (flags 0x0100 and 0x0200 set),
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
    Returns the placeable object id.
@@ -138,8 +133,7 @@ ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableObject(PckArmyAssetIdCatalog
 }
 
 
-/* Address: 0x00571C50.
-   Steps the editor's object-placement army id to the next placeable object (flags 0x0100 and 0x0200 set). Other
+/* Steps the editor's object-placement army id to the next placeable object (flags 0x0100 and 0x0200 set). Other
    objects (0x0200 set) are skipped; at the end of the run of object ids it goes back to the first id of that run,
    so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in object-placement mode.
@@ -172,8 +166,7 @@ ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x00571CA0.
-   Steps the editor's object-placement army id to the previous placeable object (flags 0x0100 and 0x0200 set).
+/* Steps the editor's object-placement army id to the previous placeable object (flags 0x0100 and 0x0200 set).
    Other objects are skipped; at the start of the run of object ids it goes forward to the last id of that run,
    so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in object-placement mode.
@@ -206,8 +199,7 @@ ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x00571D40.
-   Moves the editor's object-placement army id back out of its current run of object ids (flag 0x0200 set) and
+/* Moves the editor's object-placement army id back out of its current run of object ids (flag 0x0200 set) and
    returns the nearest placeable object (0x0100 and 0x0200 set) below it, wrapping from below 0 to 0x1000. Called
    from the in-game keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014)
    in object-placement mode.
@@ -234,8 +226,7 @@ ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId rec
 }
 
 
-/* Address: 0x0051B5E0.
-   Checks that a loaded asset is an 'arm' file of converter version 0x20008 and registers every army record
+/* Checks that a loaded asset is an 'arm' file of converter version 0x20008 and registers every army record
    in it (the variable-size records follow the 0x200-byte header, each starting with its byte size). A wrong
    header stores the asset path as the error detail and fails with FATAL_ERROR_ARMY_ASSET_INVALID; a failed
    registration fails with that step's error code. Returns 0 on success, otherwise that (non-zero) error code.
@@ -263,8 +254,7 @@ uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 }
 
 
-/* Address: 0x0051B740.
-   Checks whether an army asset id is registered and enabled: returns false (CF clear) only when the record
+/* Checks whether an army asset id is registered and enabled: returns false (CF clear) only when the record
    exists and bit 0 of its flags dword (+0x14) is set, true when it is missing or disabled.
 */
 bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
@@ -279,8 +269,7 @@ bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 }
 
 
-/* Address: 0x0051B770.
-   Checks the 16 army-asset ids linked from an army record (dwords at +0x30) and returns true (CF set) as soon as
+/* Checks the 16 army-asset ids linked from an army record (dwords at +0x30) and returns true (CF set) as soon as
    one names a registered, enabled asset whose technology is fully unlocked for the faction (every definition of
    its model tree, rootNodeOffsetOrPointer +0x0C), whose selectionDetailValue (+0x1C) is non-zero and whose flags (+0x14) share a bit with requiredDefinitionFlags.
 */
@@ -316,8 +305,7 @@ bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
 }
 
 
-/* Address: 0x00571E40.
-   Frees the cached preview texture of every registered army record and re-renders the previews of the editor's
+/* Frees the cached preview texture of every registered army record and re-renders the previews of the editor's
    unit- and object-placement selections into their image panels on the in-game UI root. Needed because the
    previews are drawn in the unit-placement owner faction's colours: called from the in-game keyboard dispatch
    table g_InGameKeyboardDispatchRecords (handlers 0x0056ED80 / 0x0056EDC0, commands 0x10012 / 0x1001A) after
@@ -370,8 +358,7 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
   return armourSum;
 }
 
-/* Address: 0x0051C170.
-   Sums the armour (model-definition dword +0x60) over an army record's whole model tree, taking at each node
+/* Sums the armour (model-definition dword +0x60) over an army record's whole model tree, taking at each node
    the linked definition the faction has unlocked, so the in-game detail display shows the armour of the
    current upgrades.
 */
@@ -408,8 +395,7 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
   return energySum;
 }
 
-/* Address: 0x0051C2C0.
-   Sums the displayed energy value (model-definition Q4 dword +0x18C) over an army record's model tree, taking
+/* Sums the displayed energy value (model-definition Q4 dword +0x18C) over an army record's model tree, taking
    at each node the linked definition the faction has unlocked; children only count below definitions with
    flag 0x80. Used by the in-game detail display.
 */
@@ -424,8 +410,7 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 }
 
 
-/* Address: 0x00571AB0.
-   Moves the editor's unit-placement army id forward out of its current run of unit ids (flag 0x0200 clear) and
+/* Moves the editor's unit-placement army id forward out of its current run of unit ids (flag 0x0200 clear) and
    returns the next placeable unit (0x0100 set, 0x0200 clear), wrapping from 0x1000 to 0. Unlike the step
    functions this jumps between id blocks. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in unit-placement mode, and by
@@ -449,8 +434,7 @@ ArmyAssetId ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x00571CF0.
-   Moves the editor's object-placement army id forward out of its current run of object ids (flag 0x0200 set) and
+/* Moves the editor's object-placement army id forward out of its current run of object ids (flag 0x0200 set) and
    returns the next placeable object (0x0100 and 0x0200 set), wrapping from 0x1000 to 0. Called from the in-game
    keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in
    object-placement mode, and by ArmyAssetRegistry_NormalizeIdToPlaceableObject. Returns the found id; the scan
@@ -506,8 +490,7 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
   return error;
 }
 
-/* Address: 0x0051B4A0.
-   Registers a loaded army record: rejects an id that is already registered (FATAL_ERROR_ARMY_ID_DUPLICATE), puts
+/* Registers a loaded army record: rejects an id that is already registered (FATAL_ERROR_ARMY_ID_DUPLICATE), puts
    the record into the first free slot of the 768-slot army registry (FATAL_ERROR_ARMY_REGISTRY_FULL when none is
    left), turns its model-tree offsets into pointers against assetBase and adds the build costs of every node's
    model definition to the record. Returns 0 on success, otherwise the FATAL_ERROR_* code (a failed
@@ -546,8 +529,7 @@ uint32_t ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHe
 }
 
 
-/* Address: 0x00571D90.
-   Returns the preview texture of a registered army asset for the editor's placement panels. The texture is
+/* Returns the preview texture of a registered army asset for the editor's placement panels. The texture is
    cached in the record (previewTexture); on the first request it is rendered in the unit-placement
    owner faction's colours (faction 0 for ids from 400 up). Returns 0 for an unknown id or a failed render.
    Called directly by the in-game keyboard dispatch handlers (g_InGameKeyboardDispatchRecords),
@@ -588,8 +570,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
 }
 
 
-/* Address: 0x0051B6D0.
-   Looks an army asset up by its registry id in the 768-slot army registry. Returns 0 and stores the record in
+/* Looks an army asset up by its registry id in the 768-slot army registry. Returns 0 and stores the record in
    *outRecord; an unknown id is written as decimal text to g_PackageLastErrorPath and returns
    FATAL_ERROR_ARMY_ID_NOT_FOUND.
    Original quirk: on failure *outRecord is set to FATAL_ERROR_ARMY_ID_NOT_FOUND cast to a pointer (the original
@@ -615,8 +596,7 @@ uint32_t ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId,ArmyAssetRe
 }
 
 
-/* Address: 0x00571910.
-   Returns 0 (CF clear) when some registered army record with this id is a unit, i.e. has flag 0x0200 of its flags
+/* Returns 0 (CF clear) when some registered army record with this id is a unit, i.e. has flag 0x0200 of its flags
    dword (+0x14) clear; 1 (CF set) otherwise. Several records may share an id, so the scan goes on past a match
    with the wrong flags. Predicate of the editor's unit-placement id searches
    (FindNext/FindPrevious/Step*Flag0100Without0200).
@@ -638,8 +618,7 @@ uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x00571B50.
-   Returns 0 (CF clear) when some registered army record with this id is an object, i.e. has flag 0x0200 of its
+/* Returns 0 (CF clear) when some registered army record with this id is an object, i.e. has flag 0x0200 of its
    flags dword (+0x14) set; 1 (CF set) otherwise. Predicate of the editor's object-placement id searches
    (FindNext/FindPrevious/Step*Flags0100And0200).
 */
@@ -660,8 +639,7 @@ uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x00571980.
-   Returns 0 (CF clear) when some registered army record with this id is a placeable unit (flags dword +0x14 with
+/* Returns 0 (CF clear) when some registered army record with this id is a placeable unit (flags dword +0x14 with
    0x0100 set and 0x0200 clear); 1 (CF set) otherwise. The id test of the editor's unit-placement list
    (NormalizeIdFor/FindNext/FindPrevious/Step*Flag0100Without0200).
 */
@@ -683,8 +661,7 @@ uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x00571BC0.
-   Returns 0 (CF clear) when some registered army record with this id is a placeable object (flags dword +0x14
+/* Returns 0 (CF clear) when some registered army record with this id is a placeable object (flags dword +0x14
    with 0x0100 and 0x0200 set); 1 (CF set) otherwise. The id test of the editor's object-placement list
    (NormalizeIdFor/FindNext/FindPrevious/Step*Flags0100And0200).
 */

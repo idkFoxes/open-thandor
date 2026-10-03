@@ -13,8 +13,7 @@
 
 /* Implementation ownership: audio/codec/sam. */
 
-/* Address: 0x00417700.
-   Mono variant of SoundSample_DecodeCoefficientBlockToPcmMmx: the same inverse cosine transform of 256
+/* Mono variant of SoundSample_DecodeCoefficientBlockToPcmMmx: the same inverse cosine transform of 256
    coefficients with g_CosineDerivedLookupSecondTable (each sample is bits 16..31 of the wrapping 256-tap dot
    product x32, doubled with saturation), written as 256 mono 16-bit samples (0x200 bytes). Nothing in the
    executable calls it or stores its address in a function-pointer table.
@@ -955,8 +954,7 @@ void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoe
 }
 
 
-/* Address: 0x00418560.
-   Synthesizes one SAM block: transforms 256 decoded coefficients into 256 PCM samples with the MMX cosine
+/* Synthesizes one SAM block: transforms 256 decoded coefficients into 256 PCM samples with the MMX cosine
    tables (each sample is bits 16..31 of the wrapping 256-tap dot product x32, doubled with saturation) and
    writes them as a 0x400-byte interleaved stereo 16-bit block with the same value on both channels. No state
    is kept between blocks.
@@ -1884,8 +1882,7 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
 }
 
 
-/* Address: 0x004193D0.
-   Forward cosine transform of the .sam codec (the encoder side; the decoders run the transposed matrix in the
+/* Forward cosine transform of the .sam codec (the encoder side; the decoders run the transposed matrix in the
    other direction): turns 256 mono 16-bit PCM samples into 256 coefficients,
    coefficient u = sum over k of (sample[k] >> 4) * cos((2k+1) * u * pi / 512) with g_CosineDerivedLookupAllocation
    (Q12), bits 16..31 of the wrapping 32-bit sum, >> 3. Nothing in the executable calls it or stores its
@@ -2882,8 +2879,7 @@ void SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,sh
 }
 
 
-/* Address: 0x0041A320.
-   Packs 256 transform coefficients into one SAM block, the exact format SoundSample_DecodePackedCoefficientBlock
+/* Packs 256 transform coefficients into one SAM block, the exact format SoundSample_DecodePackedCoefficientBlock
    reads: prefix codes in a little-endian bit stream (prefix bits from bit 0): 0 -> zero (1 bit), 1,0 -> 3-bit
    value -4..3 (5 bits), 1,1,0 -> 6-bit value -32..31 (9 bits), 1,1,1 -> 12-bit value (15 bits, clamped to
    -2048..2047). Lossy: -1 and +1 are stored as zero. Returns the bytes written, rounded up to a multiple of 4.
@@ -2978,8 +2974,7 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
   return ((uint32_t)((int)outputCursor + 3U) & 0xfffffffc) - (int)encodedBlock;
 }
 
-/* Address: 0x0041A430.
-   Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of
+/* Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of
    SoundSample_EncodePackedCoefficientBlock). Each coefficient is prefix-coded from the low bits of a 32-bit
    little-endian bit accumulator (prefix bits listed from bit 0): 0 -> zero (1 bit), 1,0 -> 3-bit value (5 bits),
    1,1,0 -> 6-bit value (9 bits), 1,1,1 -> 12-bit value (15 bits). Returns the encoded byte count consumed,

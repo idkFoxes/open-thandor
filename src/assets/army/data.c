@@ -11,10 +11,8 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 00519778 g_ArmyAssetRecordRegistry */
 __declspec(align(8)) ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768] = {0};
 
-/* 0056E410 g_InGameKeyboardDispatchRecords */
 __declspec(align(16)) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37] = {
     /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56F1C0},
     /*  1 */ {.commandCode = 0x30069, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E670},

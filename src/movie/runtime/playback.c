@@ -66,8 +66,7 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
                 ((GraphicsTextureSourceEntry *)((uint8_t *)(frame) + \
                   ((GraphicsTextureSourceAsset *)(frame))->tableDescriptor.subresourceTableOffset))->dataOffset))
 
-/* Address: 0x004A8040.
-   Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame
+/* Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame
    the provider returns as a keyframe and every further frame as a delta against it (the delta encoder keeps
    the first frame's pixels up to date as its reference), then fills in the frame count and sizes. The
    provider is called with NULL for the next frame and with a frame to release it; it ends the sequence with CF
@@ -155,8 +154,7 @@ bool Movie_EncodeFlmBufferFromFrameProvider
 }
 
 
-/* Address: 0x00563FF0.
-   Per-tick callback of a movie played inside a session: counts the tick, works out which frame the movie
+/* Per-tick callback of a movie played inside a session: counts the tick, works out which frame the movie
    should show by now (8 frames per g_MoviePlaybackScheduleSpan ticks, offset by the base frame group), catches
    up to it, presenting at least every 8th frame on the way, then runs the regular simulation and network tick
    so the session keeps going under the movie.
@@ -260,8 +258,7 @@ static bool Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPack
 }
 
 
-/* Address: 0x004A8590.
-   Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a
+/* Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a
    mounted package, the executable directory or the plain path, in that order. Loads the header and the video
    stream (only its start when streaming), picks one of the embedded audio tracks at random and builds a
    MovieRuntime that looks like a one-frame gfx texture, so the ARGB frame can be drawn like any other texture.
@@ -457,8 +454,7 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
 }
 
 
-/* Address: 0x004A8A20.
-   Returns the frame size of the active movie, so callers can place and scale the movie texture. Both are
+/* Returns the frame size of the active movie, so callers can place and scale the movie texture. Both are
    zero when no movie is open.
 */
 MovieFrameDimensions Movie_GetFrameDimensions(void)
@@ -476,8 +472,7 @@ MovieFrameDimensions Movie_GetFrameDimensions(void)
 }
 
 
-/* Address: 0x004A8A40.
-   Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame
+/* Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame
    with this gain on both channels). Does nothing when no movie is open.
 */
 void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
@@ -490,8 +485,7 @@ void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
 }
 
 
-/* Address: 0x004A8C00.
-   Background thread of a streamed movie: whenever Movie_AdvanceFrame signals the refill semaphore (or every
+/* Background thread of a streamed movie: whenever Movie_AdvanceFrame signals the refill semaphore (or every
    256 ms), appends the next MOVIE_REFILL_CHUNK_BYTES of video to the buffer while it stays below
    MOVIE_REFILL_LIMIT_BYTES, so playback does not stall on disk reads. Ends when the movie is closed, fully
    loaded or a read fails (MOVIE_STREAM_READ_FAILED), and clears workerActive on the way out.
@@ -542,8 +536,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 }
 
 
-/* Address: 0x004A8D50.
-   Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice,
+/* Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice,
    so the movie plays again from the start. It does not rebuild a discarded streaming prefix. Called by
    FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState when the movie of a frontend page has ended (when the
    page enables movie playback), which makes it loop.
@@ -565,8 +558,7 @@ void Movie_Rewind(void)
   return;
 }
 
-/* Address: 0x004A8D90.
-   Closes g_ActiveMovie. With the arena allocator a refill worker may run: it is told to stop and waited for
+/* Closes g_ActiveMovie. With the arena allocator a refill worker may run: it is told to stop and waited for
    (with the process dropped from real-time to normal priority so the worker gets CPU time while this thread
    spins), then the semaphore is closed. Frees the FLM buffer, the soundtrack voice set, a still-open own
    stream handle and the MovieRuntime.
@@ -607,8 +599,7 @@ void Movie_Close(void)
 }
 
 
-/* Address: 0x005657D0.
-   Update callback of the end-movie UI in a network game: keeps the frontend session alive while the end
+/* Update callback of the end-movie UI in a network game: keeps the frontend session alive while the end
    movie plays by running the session tick of the local role. Does nothing in a local game. Note that the
    SESSION_NETWORK_ROLE_CLIENT bit selects the host tick and the HOST bit the client tick: either the enum or
    the two tick functions are named the wrong way round.
@@ -628,8 +619,7 @@ void EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime)
 }
 
 
-/* Address: 0x00565810.
-   Keyboard handler of the end-movie UI: looks the key up in the end-movie command table, whose records also
+/* Keyboard handler of the end-movie UI: looks the key up in the end-movie command table, whose records also
    say which Ctrl/Alt combination they need, and runs the matching action: save a numbered PCX screenshot, or
    skip the end movie (marks the local player done with the results; in a network game as a queued command).
    endMovieRuntime is the active UI root, i.e. the in-game runtime root (g_InGameRuntimeRoot) whose callbacks
@@ -732,8 +722,7 @@ void EndMovieUiRuntime_DispatchCommandByFlags
 }
 
 
-/* Address: 0x005739C0.
-   Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in
+/* Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in
    g_IntroMoviePendingTicks. The intro loop consumes the count and decodes at most three pending frames per
    iteration, which keeps the movie in time on slow machines.
 */
@@ -748,8 +737,7 @@ void IntroMovie_TimerTick(void)
    encoder writes inline in the original. */
 static void MovieDeltaEncode_Block(uint32_t *output,const PackedRgb24 *blockPixels,uint32_t rowStridePixels);
 
-/* Address: 0x004A7030.
-   Encodes a whole frame as FLM 4x4 colour blocks of 8 bytes each (no skip tokens), for the first frame in
+/* Encodes a whole frame as FLM 4x4 colour blocks of 8 bytes each (no skip tokens), for the first frame in
    Movie_EncodeFlmBufferFromFrameProvider, its only caller. A block stores the chroma code of its average
    colour and 16 per-pixel luma levels above a base luma, the base being the low 5 bits (a token 0..24) of
    the first dword. A block whose luma range is below 12 uses 3-bit levels in steps of 1 above
@@ -959,8 +947,7 @@ static void MovieDeltaEncode_Block(uint32_t *output,const PackedRgb24 *blockPixe
   }
 }
 
-/* Address: 0x004A7770.
-   Encodes currentFramePixels as an FLM delta frame against previousFramePixels (called by
+/* Encodes currentFramePixels as an FLM delta frame against previousFramePixels (called by
    Movie_EncodeFlmBufferFromFrameProvider for every frame after the first). A 4x4 block that does not differ
    from the reference under g_MovieDeltaRgbHighNibbleMask2Pixels is skipped, runs of skipped blocks being
    written as MOVIE_TOKEN_SKIP_* tokens; a changed block is copied into the reference, so the reference keeps
@@ -1052,8 +1039,7 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
   }
 }
 
-/* Address: 0x004A8A60.
-   Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
+/* Decodes the next frame of g_ActiveMovie into its ARGB image, returns true and stores the movie in *outMovie.
    Asks the worker for more data when the buffer has room, starts the soundtrack with the first frame, and
    waits (returns true without decoding) while a streamed movie has less than one refill chunk buffered. A
    streamed movie drops played bytes from the buffer front in MOVIE_COMPACT_SHIFT_BYTES steps. Returns false
@@ -1138,8 +1124,7 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
 }
 
 
-/* Address: 0x00564080.
-   Decodes movie frames until g_MoviePlaybackCurrentFrame reaches targetFrame, then redraws the whole UI (which
+/* Decodes movie frames until g_MoviePlaybackCurrentFrame reaches targetFrame, then redraws the whole UI (which
    shows the movie texture) and presents it once. Stops without drawing, and without updating the frame
    counter, when the movie ends or cannot deliver a frame.
 */
@@ -1196,8 +1181,7 @@ static void Movie_DecodeColorBlock(uint32_t *blockTopLeft,MoviePixelDimension wi
   }
 }
 
-/* Address: 0x004A81C0.
-   Decodes one FLM frame over the previous one in the ARGB image, 4x4 blocks in row order. A colour block
+/* Decodes one FLM frame over the previous one in the ARGB image, 4x4 blocks in row order. A colour block
    (token 0..24 = base luma) holds a 10-bit chroma code and sixteen 3-bit luma steps that index
    g_MovieChromaLumaToArgb; the skip tokens leave runs of blocks unchanged. Returns the encoded bytes consumed,
    rounded up to eight, so the caller can advance the stream.
@@ -1256,8 +1240,7 @@ uint32_t Movie_DecodeFrame4x4Delta
 }
 
 
-/* Address: 0x004A6FB0.
-   FLM chroma code of a colour for the block encoders, already shifted left by 5 so the 5-bit luma fits below
+/* FLM chroma code of a colour for the block encoders, already shifted left by 5 so the 5-bit luma fits below
    it: saturation in bits 10-14 and hue in bits 5-9, from the length and angle of the opponent-colour vector
    ((blue - green) * sqrt(3), green + blue - 2 * red), both scaled by 0x8000. The bytes of PackedRgb24 are
    blue, green, red from the lowest. Called by Movie_EncodeFrame4x4Keyframe and Movie_EncodeFrame4x4Delta.
@@ -1277,8 +1260,7 @@ uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 }
 
 
-/* Address: 0x004A7000.
-   FLM luma of a colour for the block encoders: the channel sum divided by 24 (the average divided by 8),
+/* FLM luma of a colour for the block encoders: the channel sum divided by 24 (the average divided by 8),
    rounded: ((red + green + blue) * 0x5555 + 2^18) >> 19. A channel sum of 757 or more (near white) gives
    32, one more than 5 bits; the encoders clamp their per-pixel levels, so it never reaches the stream. Called by
    Movie_EncodeFrame4x4Keyframe and Movie_EncodeFrame4x4Delta.

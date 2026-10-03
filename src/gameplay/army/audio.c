@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/army/audio. */
 
-/* Address: 0x0051D5F0.
-   Replaces one image of a freshly loaded faction graphics ('gfx') asset with the image a frontend player sent in
+/* Replaces one image of a freshly loaded faction graphics ('gfx') asset with the image a frontend player sent in
    his snapshot payload, so the player's own picture shows in the game: the payload's 256 RGB palette entries
    become opaque ARGB entries (pure black stays transparent), followed by 0x1000 bytes of pixel data. Nothing
    changes when no player with a complete snapshot has frontendPlayerRuntimeId as faction assignment.
@@ -102,8 +101,7 @@ static void ArmyRuntimeAudio_UpdateSoundAtModel(WorldRuntimeContext *worldRuntim
 }
 
 
-/* Address: 0x00520740.
-   Per-tick sound update of a turning/moving unit: while it turns, the turn sound (sound slot index at +0xD8
+/* Per-tick sound update of a turning/moving unit: while it turns, the turn sound (sound slot index at +0xD8
    of the model's definition) and the movement sound (+0xD0) follow the unit's position; while it only
    moves, just the movement sound does. A sound is fed only when TerrainGrid_TestProjectedCellMaskBits01
    reports occupancy bit 0 or 1 of the active faction at the unit's cell (CF clear).
@@ -132,8 +130,7 @@ void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
 }
 
 
-/* Address: 0x00520E60.
-   Picks the positioned-sound update by the placement contact kind at +0x278 of the model's definition:
+/* Picks the positioned-sound update by the placement contact kind at +0x278 of the model's definition:
    kind 1 (water surface, see g_ArmyPlacementContactKindDispatchTable) uses
    ArmyRuntimeClass_UpdateWaterPositionedSounds, every other kind ArmyRuntimeClass_UpdateGroundPositionedSounds.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[18] (0x0051FCF8), which
@@ -154,8 +151,7 @@ void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldR
 }
 
 
-/* Address: 0x00523240.
-   Byte-for-byte duplicate of ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds for another class:
+/* Byte-for-byte duplicate of ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds for another class:
    turn sound (+0xD8) and movement sound (+0xD0) of the definition follow a turning or moving unit.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[17] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
@@ -182,8 +178,7 @@ void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
 }
 
 
-/* Address: 0x00523DD0.
-   Turret sound: moves the turning sound (definition turningLoopSoundSlotIndex, +0xD8) with the turret while it
+/* Turret sound: moves the turning sound (definition turningLoopSoundSlotIndex, +0xD8) with the turret while it
    turns in pitch (+0x18) or yaw (+0x14), if its cell passes TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[5..8] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
@@ -204,8 +199,7 @@ void ArmyRuntimeAudio_UpdateTurretTurnSound
 }
 
 
-/* Address: 0x00524410.
-   Structure factory sound (class 11): moves the looping sound (definition +0x1AC) with the model unless it is
+/* Structure factory sound (class 11): moves the looping sound (definition +0x1AC) with the model unless it is
    switched off (state flag 0x1), and only while it researches (flag 0x40) or builds (behaviorState
    ARMY_FACTORY_STATE_BUILDING); the model's cell must pass TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[11] (0x0051FCF8), which
@@ -228,8 +222,7 @@ void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRunt
 }
 
 
-/* Address: 0x00524DA0.
-   Unit factory sounds (class 13), two sounds that follow the model: the looping one (definition +0x1AC) under
+/* Unit factory sounds (class 13), two sounds that follow the model: the looping one (definition +0x1AC) under
    the same condition as ArmyRuntimeAudio_UpdateStructureFactorySound (not switched off, researching or
    building), the positioned one (+0x274) while the factory is neither idle nor building (door opening, waiting
    for the exit, closing). Each is fed only when the model's cell passes TerrainGrid_TestProjectedCellMaskBits01.
@@ -259,8 +252,7 @@ void ArmyRuntimeAudio_UpdateUnitFactorySounds
 }
 
 
-/* Address: 0x00526490.
-   Unconditionally moves the sound whose slot index is at +0x1AC of the definition with the unit, when
+/* Unconditionally moves the sound whose slot index is at +0x1AC of the definition with the unit, when
    the unit's cell passes TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[21] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
@@ -278,8 +270,7 @@ void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntim
 }
 
 
-/* Address: 0x00526EB0.
-   Sounds of the class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView), two sounds that follow the model:
+/* Sounds of the class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView), two sounds that follow the model:
    the looping one (definition +0x1AC) while it is not switched off and researches (flag 0x40) or builds
    (+0xAC secondaryArmyAssetBuildState == 1), the positioned one (+0x274) while its linked-child transition
    state (+0xB0) is neither 0 nor 6. Each is fed only when the model's cell passes
@@ -309,8 +300,7 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
 }
 
 
-/* Address: 0x00527B20.
-   Runs the looping positioned-sound update only while the model researches (state flag 0x40).
+/* Runs the looping positioned-sound update only while the model researches (state flag 0x40).
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[4] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */

@@ -65,55 +65,39 @@
 #define RESOURCE_EXTRACTION_SHARE_SHIFT 24
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00564F70 */
 bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError);
 
-/* 0x00566290 */
 void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot);
 
-/* 0x0050EA90 */
 void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage);
 
-/* 0x00565E10 */
 void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void);
 
-/* 0x00567060 */
 bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           InGameRuntimeRootFrameView *inGameRoot);
 
-/* 0x00569920 */
 void InGameRuntime_ProcessQueuedSessionNotificationTimer(void);
 
-/* 0x005641D0 */
 bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                         uint32_t *outError);
 
-/* 0x00564920 */
 bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError);
 
-/* 0x005651D0 */
 void InGameRuntime_ShutdownAndReleaseResources(void);
 
-/* 0x0050E0D0 */
 void InGameRuntime_ReleaseFactionScratchBuffers(void);
 
-/* 0x0050E120 */
 void InGameConditionRuntime_UpdateScheduledRecords(void);
 
-/* 0x00513160 */
 void InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void);
 
-/* 0x0053D4F0 */
 void InGameRuntime_UpdateCursorGridAndViewScaleCache(void);
 
-/* 0x005651A0 */
 void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot);
 
-/* 0x00565E30 */
 void InGameRuntime_UpdateSimulationAndNetworkTick(void);
 
-/* 0x0050E0B0 */
 uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_RUNTIME_H */

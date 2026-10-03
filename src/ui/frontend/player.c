@@ -10,8 +10,7 @@
 
 /* Implementation ownership: ui/frontend/player. */
 
-/* Address: 0x00548CD0.
-   Handler of UI action 0x204C (slot 76 of g_UiActionPage20InitializedHandlers), the lobby's chatInputEdit:
+/* Handler of UI action 0x204C (slot 76 of g_UiActionPage20InitializedHandlers), the lobby's chatInputEdit:
    when the typed line is valid, converts it to 0x30 narrow bytes and sends it to every player as
    FRONTEND_COMMAND_CHAT_BEGIN, four FRONTEND_COMMAND_CHAT_APPEND (12 bytes each) and
    FRONTEND_COMMAND_CHAT_PUBLISH (without a network session the handlers are called directly), then empties
@@ -109,8 +108,7 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
 }
 
 
-/* Address: 0x00560750.
-   Handler of INGAME_COMMAND_SELECT_MODEL_AND_ARMY: when both tokens still name live objects, selects the
+/* Handler of INGAME_COMMAND_SELECT_MODEL_AND_ARMY: when both tokens still name live objects, selects the
    object for the player (FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection), shows the technology
    page of the game window for the local player and records the definition token
    (FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch). Tokens are pointer offsets so they can travel in
@@ -143,8 +141,7 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
 }
 
 
-/* Address: 0x00549AF0.
-   Handler of UI action 0x2042 (slot 66 of g_UiActionPage20InitializedHandlers), the factionSetupFinishButton
+/* Handler of UI action 0x2042 (slot 66 of g_UiActionPage20InitializedHandlers), the factionSetupFinishButton
    check box of the faction setup page: sends its checked state (UI_SELECTABLE_SELECTED_OR_CHECKED or 0) as
    this player's consensus value with FRONTEND_COMMAND_SET_CONSENSUS_VALUE, or applies it directly without a
    network session.
@@ -166,8 +163,7 @@ void FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress3
 }
 
 
-/* Address: 0x0054D3A0.
-   Handler of FRONTEND_ACTION_KICK_PLAYER (slot 11 of g_UiActionPage20InitializedHandlers), the host lobby's
+/* Handler of FRONTEND_ACTION_KICK_PLAYER (slot 11 of g_UiActionPage20InitializedHandlers), the host lobby's
    hostLobbyKickPlayerButton: sets the heartbeat expiry of the player selected in the player list to 1 and runs
    the lobby's expiry pass at once, which removes that player (and counts one extra tick for every other
    joined player). The first row, the host itself, cannot be kicked.
@@ -197,8 +193,7 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
 }
 
 
-/* Address: 0x0054F540.
-   Host after the session start (FRONTEND_NETWORK_STATE_HOST_STARTING), from the frontend root's tick
+/* Host after the session start (FRONTEND_NETWORK_STATE_HOST_STARTING), from the frontend root's tick
    (FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState): counts down every client's heartbeat expiry. A
    client that timed out is announced with TEXT_ID_NETWORK_PLAYER_REMOVED and dropped by compacting the player
    blocks and their 0x20-byte command records. Every remaining client is then sent one
@@ -272,8 +267,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 }
 
 
-/* Address: 0x00514EF0.
-   Tells whether any player other than excludedPlayerId has assignmentToken recorded in technologyPageBuilding
+/* Tells whether any player other than excludedPlayerId has assignmentToken recorded in technologyPageBuilding
    (see FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch); the in-game HUD uses it to decide whether the
    technology window of a selected object is offered. CF set when such a player exists.
 */
@@ -299,8 +293,7 @@ bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
 }
 
 
-/* Address: 0x00514F60.
-   Releases an assignment token: every frontend player whose selection player block (+0x80A0) still holds
+/* Releases an assignment token: every frontend player whose selection player block (+0x80A0) still holds
    the token gets it cleared to 0. Assumes at least one frontend player block (do/while as in the original).
 */
 void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
@@ -343,8 +336,7 @@ static bool FrontendPlayerRuntime_AreAllClientsReady(void)
 }
 
 
-/* Address: 0x00544130.
-   Handler of FRONTEND_COMMAND_BRIEFING_READY, which a client sends when it presses the mission briefing's
+/* Handler of FRONTEND_COMMAND_BRIEFING_READY, which a client sends when it presses the mission briefing's
    "Begin" button (FrontendSessionAction_ApplySpeedOrToggleReady). On the client that pressed it, the button is
    switched off (UI_NODE_SUPPRESSED). On the host the player is marked ready (readyOrWaitState 1); once every
    client (player blocks 1..n-1) is ready, the host's own "Begin" button is switched on.
@@ -385,8 +377,7 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
 }
 
 
-/* Address: 0x005442B0.
-   Sets FRONTEND_PLAYER_STATE_LEVEL_RECEIVED in the roleStateFlags of the player block with this player id (the level's field grid arrived).
+/* Sets FRONTEND_PLAYER_STATE_LEVEL_RECEIVED in the roleStateFlags of the player block with this player id (the level's field grid arrived).
    Command handler with four dword arguments (local command 0x360, run on every peer in a network session);
    only the player id is used.
 */
@@ -411,8 +402,7 @@ void FrontendPlayerRuntime_MarkLevelReceivedById
 }
 
 
-/* Address: 0x00544300.
-   Command handler FRONTEND_COMMAND_XOR_PLAYER_STATE (run on every peer): toggles the stateMask bits in
+/* Command handler FRONTEND_COMMAND_XOR_PLAYER_STATE (run on every peer): toggles the stateMask bits in
    colourCycleFlags of the player block with this player id. The two middle command arguments are unused.
 */
 void FrontendPlayerRuntime_XorStateMaskByPlayerId
@@ -436,8 +426,7 @@ void FrontendPlayerRuntime_XorStateMaskByPlayerId
 }
 
 
-/* Address: 0x00544360.
-   Sets FRONTEND_PLAYER_STATE_LEVEL_LOADED in the roleStateFlags of the player block with this player id (the level package was loaded from disk).
+/* Sets FRONTEND_PLAYER_STATE_LEVEL_LOADED in the roleStateFlags of the player block with this player id (the level package was loaded from disk).
    Command handler with four dword arguments (local command 0x410, run on every peer in a network session);
    only the player id is used.
 */
@@ -462,8 +451,7 @@ void FrontendPlayerRuntime_MarkLevelLoadedById
 }
 
 
-/* Address: 0x00544820.
-   Sets FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT in the roleStateFlags of the player block with this player id (the level arrived, the player can go on to task assignment).
+/* Sets FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT in the roleStateFlags of the player block with this player id (the level arrived, the player can go on to task assignment).
    Command handler with four dword arguments (local command 0x8D0, run on every peer in a network session);
    only the player id is used.
 */
@@ -488,8 +476,7 @@ void FrontendPlayerRuntime_MarkTaskAssignmentReadyById
 }
 
 
-/* Address: 0x00544D50.
-   Handler of FRONTEND_COMMAND_SCENARIO_CATALOG_RECEIVED, which a client sends once it has unpacked the host's
+/* Handler of FRONTEND_COMMAND_SCENARIO_CATALOG_RECEIVED, which a client sends once it has unpacked the host's
    scenario catalogue (FrontendScenarioTransfer_ProcessReceivedAsset): sets FRONTEND_PLAYER_STATE_SCENARIO_CATALOG
    for the player and stores its 96-bit level mask (bit n = level record n, mask 0 holds records 0..31), which
    FrontendScenarioSession_LoadOrRequestLevelAsset consults later. The command sends the dwords high first.
@@ -523,8 +510,7 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
 }
 
 
-/* Address: 0x00549190.
-   Default faction line-up for a freshly loaded level (scenario catalogue, frontend main loop): marks factions
+/* Default faction line-up for a freshly loaded level (scenario catalogue, frontend main loop): marks factions
    1..active count as active and clears the slots above, then hands the players the assignable factions
    round-robin (player n gets faction (n mod assignable count) + 1) and clears their ready and consensus state.
    The original also computes the local player's zero-based faction in EDX but restores EDX before returning.
@@ -580,8 +566,7 @@ void FrontendPlayerRuntime_InitializeFactionAssignments(void)
 }
 
 
-/* Address: 0x0054D000.
-   Handler of UI action 0x2005 (slot 5 of g_UiActionPage20InitializedHandlers), the host lobby's "Back" button
+/* Handler of UI action 0x2005 (slot 5 of g_UiActionPage20InitializedHandlers), the host lobby's "Back" button
    (hostLobbyBackButton): returns to the host game setup page, stops the menu room rendering on compact
    layouts, leaves the network session (local mode, FRONTEND_NETWORK_STATE_IDLE) and shrinks the roster to the
    local player alone (id 0, empty name, cleared state). The speed slider is reset from
@@ -621,8 +606,7 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
 }
 
 
-/* Address: 0x0054D1B0.
-   Handler of UI action 0x204D (slot 77 of g_UiActionPage20InitializedHandlers), the host game setup page's
+/* Handler of UI action 0x204D (slot 77 of g_UiActionPage20InitializedHandlers), the host game setup page's
    networkSpeedSlider (1..7): shows the speed's name (TEXT_ID_NETWORK_SPEED_BASE + value) in the label beside it
    and sets g_SessionNetworkTickInterval to twice the slider value. The label buffer is the one named
    g_FrontendNetworkSpeedLabelUtf16.
@@ -641,8 +625,7 @@ void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
 }
 
 
-/* Address: 0x0054D720.
-   Host lobby: shows the start button (FRONTEND_ACTION_START_NETWORK_GAME) only while at least a third of the
+/* Host lobby: shows the start button (FRONTEND_ACTION_START_NETWORK_GAME) only while at least a third of the
    players report FRONTEND_CAPABILITY_CD, i.e. run the game from the CD; otherwise hides it. Called whenever a
    player joins or a heartbeat updates the capabilities.
 */
@@ -673,8 +656,7 @@ void FrontendPlayerRuntime_UpdateStartButtonByCdShare(void)
 }
 
 
-/* Address: 0x0055F470.
-   Handler of INGAME_COMMAND_SET_SLOW_RENDERING: sets or clears PLAYER_SESSION_FLAG_SLOW_RENDERING of a player
+/* Handler of INGAME_COMMAND_SET_SLOW_RENDERING: sets or clears PLAYER_SESSION_FLAG_SLOW_RENDERING of a player
    (slowRenderingFlag is that bit or 0), which the player roster shows as a highlighted "W". Other session
    flags are kept.
 */
@@ -694,8 +676,7 @@ void FrontendPlayerRuntime_SetSlowRenderingFlagById
 }
 
 
-/* Address: 0x0055F5A0.
-   Results screen of a network game: a client that pressed continue (command 0x470) is marked ready on the
+/* Results screen of a network game: a client that pressed continue (command 0x470) is marked ready on the
    host, and the host's own continue button (INGAME_ACTION_RESULTS_CONTINUE) appears once every other player
    is ready; the host re-checks with player id 0xFFFFFFFF every frame. On a client the local player's own
    continue button disappears after pressing it (it then waits for the host).
@@ -766,8 +747,7 @@ static void FrontendPlayerRuntime_EndInGameStartPause(void)
 }
 
 
-/* Address: 0x0055F680.
-   Handler of INGAME_COMMAND_PLAYER_READY (a player has loaded the level): counts the report in the player's
+/* Handler of INGAME_COMMAND_PLAYER_READY (a player has loaded the level): counts the report in the player's
    readyOrWaitState. When every player has reported, the host sends the command a second time; once the host's
    count reaches 2 (or at once in a local game), the session's start pause ends
    (UI_COMMAND_RUNTIME_FLAG_PAUSED and _WAITING_FOR_PLAYERS cleared). A client ends it when the host's
@@ -821,8 +801,7 @@ void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
 }
 
 
-/* Address: 0x0055FB90.
-   Command handler INGAME_COMMAND_SELECTION_INSERT: adds up to three armies (saved offsets, 0 = none; armies
+/* Command handler INGAME_COMMAND_SELECTION_INSERT: adds up to three armies (saved offsets, 0 = none; armies
    without a model are skipped) to the player's selection and rebuilds the selection panels for the local player.
 */
 void FrontendPlayerSelection_InsertThreeEntriesAndRefresh
@@ -859,8 +838,7 @@ void FrontendPlayerSelection_InsertThreeEntriesAndRefresh
 }
 
 
-/* Address: 0x0055FC30.
-   Command handler INGAME_COMMAND_SELECTION_REMOVE: removes up to three armies (saved offsets, 0 = none) from the
+/* Command handler INGAME_COMMAND_SELECTION_REMOVE: removes up to three armies (saved offsets, 0 = none) from the
    player's selection and rebuilds the selection panels for the local player. Like the original it calls the
    removal once more for the last argument after the three checks (see the comment there).
 */
@@ -906,8 +884,7 @@ void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
 }
 
 
-/* Address: 0x0055FCD0.
-   Command handler INGAME_COMMAND_SELECTION_CLEAR: empties the player's 32-entry selection and rebuilds the
+/* Command handler INGAME_COMMAND_SELECTION_CLEAR: empties the player's 32-entry selection and rebuilds the
    selection panels for the local player. Only the first command argument is used.
 */
 void FrontendPlayerSelection_ClearAndRefreshLocalPanels
@@ -923,8 +900,7 @@ void FrontendPlayerSelection_ClearAndRefreshLocalPanels
 }
 
 
-/* Address: 0x0055FD10.
-   Selection groups (keys 1..8, command 0xBE0): copies or merges between the player's selection and one of the
+/* Selection groups (keys 1..8, command 0xBE0): copies or merges between the player's selection and one of the
    faction's 8 groups of 32 armies, direction and merge chosen by the SELECTION_TRANSFER_* flags. Storing a
    selection first removes its armies from all groups of the faction. For the local player it rebuilds the
    selection panels and, with SELECTION_TRANSFER_CENTER_VIEW, moves the camera to the selection's centre.
@@ -1013,8 +989,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
 }
 
 
-/* Address: 0x00560830.
-   Handler of INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE, sent when the technology page of a selected building closes:
+/* Handler of INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE, sent when the technology page of a selected building closes:
    modelOffset is the building's record as an offset from g_ModelRuntimeRebaseDelta. While the record is live the
    player's technologyPageBuilding is cleared, then a positive technologyIndexOrRestore starts that research
    (Technology_ApplyRecordToEntity, InGameTechnologyResearch_StartSelected), a negative one (cancel,
@@ -1052,8 +1027,7 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
 }
 
 
-/* Address: 0x005608A0.
-   Handler of INGAME_COMMAND_CHAT_SET_RECIPIENTS, the first command of an in-game chat line
+/* Handler of INGAME_COMMAND_CHAT_SET_RECIPIENTS, the first command of an in-game chat line
    (InGameChatInput_SendLineOrCheckCheatPhrase): stores the recipient mask (bits 8+faction and 16+player, 0xFFFFFF00 for all)
    in the player's chatRecipientMaskAndWriteOffset and resets the staging write offset in its low byte to 0.
 */
@@ -1066,8 +1040,7 @@ void FrontendPlayerTextCommand_SetPackedState(FrontendPlayerIndex playerIndex,ui
 }
 
 
-/* Address: 0x005608D0.
-   Handler of INGAME_COMMAND_CHAT_APPEND: writes 12 more bytes of the player's chat line (value0 first) into the
+/* Handler of INGAME_COMMAND_CHAT_APPEND: writes 12 more bytes of the player's chat line (value0 first) into the
    staging text at +0x80C0, at the write offset kept in the low byte of chatRecipientMaskAndWriteOffset, and advances
    the offset. The offset stops at 0x24, the last of the four 12-byte pieces of the 0x30-byte line, so extra
    pieces overwrite it instead of running past the buffer.
@@ -1095,8 +1068,7 @@ void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerInd
 }
 
 
-/* Address: 0x00560940.
-   Handler of INGAME_COMMAND_CHAT_PUBLISH, the last command of an in-game chat line: in a network session, when
+/* Handler of INGAME_COMMAND_CHAT_PUBLISH, the last command of an in-game chat line: in a network session, when
    the sender's recipient mask includes the local faction (bit 8 + faction) or the local player (bit 16 +
    player), shows "<sender>: <text>" (TEXT_ID_CHAT_MESSAGE) from the staged text in the in-game message
    history. The sender's name is the one kept at +0x80F0 of its block.
@@ -1131,8 +1103,7 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
 }
 
 
-/* Address: 0x00561F10.
-   Handler of INGAME_COMMAND_DESTROY_ARMIES (army placement sub-mode 1, clicking an army on the map): an army
+/* Handler of INGAME_COMMAND_DESTROY_ARMIES (army placement sub-mode 1, clicking an army on the map): an army
    outside the player's selection is destroyed alone; clicking one of the selected armies destroys every army
    of the 32-entry selection (ArmyRuntime_DestroyInstanceAndRefreshUi). The army is sent as a saved offset from
    g_ArmyRuntimeRebaseBaseMinusOne.
@@ -1183,8 +1154,7 @@ static void FrontendPlayerRuntime_EndFrontendPlayerWait(void)
 }
 
 
-/* Address: 0x00544020.
-   Handler of FRONTEND_COMMAND_PLAYER_READY: counts the player's report in its readyOrWaitState. When every
+/* Handler of FRONTEND_COMMAND_PLAYER_READY: counts the player's report in its readyOrWaitState. When every
    player has reported, the host sends the command a second time; once the host's count reaches 2 (or at once
    in a local game), FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS is cleared, which ends Frontend_Init's wait loop.
    A client ends it when the host's (id 0) second report arrives. Same scheme as
@@ -1238,8 +1208,7 @@ void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
 }
 
 
-/* Address: 0x00544770.
-   Handler of FRONTEND_COMMAND_SET_CONSENSUS_VALUE (FrontendPlayerConsensus_SubmitSelectedValue): stores the
+/* Handler of FRONTEND_COMMAND_SET_CONSENSUS_VALUE (FrontendPlayerConsensus_SubmitSelectedValue): stores the
    player's "Finish" check box state on the faction setup page. When any player has it unchecked the "Next"
    button is switched off; when all have it checked the host's "Next" button is switched on. Then the page's
    faction and player controls are refreshed.
@@ -1322,8 +1291,7 @@ static bool FrontendPlayerMessageBuffer_FindRecordById
 }
 
 
-/* Address: 0x00545490.
-   Handler of FRONTEND_COMMAND_CHAT_BEGIN, the first command of a lobby chat line
+/* Handler of FRONTEND_COMMAND_CHAT_BEGIN, the first command of a lobby chat line
    (FrontendPlayerMessage_SubmitSevenSlotText): rewinds the sender's message record so the following
    FRONTEND_COMMAND_CHAT_APPEND pieces fill its text from the start. In the lobby states (hosting, joined) the
    players are counted with g_FrontendPlayerRuntimeCount, otherwise with g_FrontendPlayerRuntimeBlockCount.
@@ -1344,8 +1312,7 @@ void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
 }
 
 
-/* Address: 0x00545500.
-   Handler of FRONTEND_COMMAND_CHAT_APPEND: appends 12 bytes of a lobby chat line (valueC first) to the
+/* Handler of FRONTEND_COMMAND_CHAT_APPEND: appends 12 bytes of a lobby chat line (valueC first) to the
    sender's message record and advances its write offset. Unlike the in-game FrontendPlayerTextCommand_
    AppendTripleClamped the offset is not clamped: a ninth piece would run past the 100-byte record.
 */
@@ -1371,8 +1338,7 @@ void FrontendPlayerMessageBuffer_AppendTripleById
 }
 
 
-/* Address: 0x00545590.
-   Handler of FRONTEND_COMMAND_CHAT_PUBLISH, the last command of a lobby chat line: widens the sender's collected
+/* Handler of FRONTEND_COMMAND_CHAT_PUBLISH, the last command of a lobby chat line: widens the sender's collected
    text to UTF-16 and shows "<sender>: <text>" (TEXT_ID_CHAT_MESSAGE, the sender's player name) in the lobby's
    message history.
 */
@@ -1398,8 +1364,7 @@ void FrontendPlayerMessageBuffer_PublishTextById
 }
 
 
-/* Address: 0x0054EBD0.
-   Host lobby (FRONTEND_NETWORK_STATE_HOSTING), from the frontend root's tick
+/* Host lobby (FRONTEND_NETWORK_STATE_HOSTING), from the frontend root's tick
    (FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState) and from the kick button
    (FrontendPlayerSetup_ExpireSelectedRuntimeBlock): counts down the heartbeat expiry of every joined
    player (rows 1..n-1; row 0 is the host) and drops those that reached 0 by compacting the 0x13B0-byte player
@@ -1476,8 +1441,7 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsR
 }
 
 
-/* Address: 0x0055FAD0.
-   Command handler INGAME_COMMAND_SELECT_SINGLE_ARMY: replaces the player's selection with one army (saved offset;
+/* Command handler INGAME_COMMAND_SELECT_SINGLE_ARMY: replaces the player's selection with one army (saved offset;
    0 does nothing, an army without a model leaves the selection empty) and rebuilds the selection panels for the
    local player. The two middle command arguments are unused.
 */
@@ -1504,8 +1468,7 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 }
 
 
-/* Address: 0x005607E0.
-   Handler of INGAME_COMMAND_ASSIGN_ARMY_TOKEN: turns modelOffset (the offset from g_ModelRuntimeRebaseDelta of
+/* Handler of INGAME_COMMAND_ASSIGN_ARMY_TOKEN: turns modelOffset (the offset from g_ModelRuntimeRebaseDelta of
    the building whose technology page opened) back into a pointer and, if it is live (dword +4 non-zero),
    records it for the player in technologyPageBuilding. Its ARMY_MODEL_STATE_RESEARCH_UNPAID flag (bit 0x80 of
    the state flags at +0xEC) is moved into heldResearchUnpaidFlag and cleared on the building until the page

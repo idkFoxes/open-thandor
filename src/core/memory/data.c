@@ -11,12 +11,11 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 00407D84 g_ErrorTextHeapAllocationFailed (its address doubles as the error code) */
+/* its address doubles as the error code */
 __declspec(align(4)) uint16_t g_ErrorTextHeapAllocationFailed[71] = L"error: HEAP: cannot allocate heap memory! Please check your swap-file.";
 
-/* 00585708 g_Arena */
 __declspec(align(8)) ArenaState g_Arena = {.linearCursor = &g_ArenaLinearStorage[0], .linearLimit = &g_ArenaLinearStorage[0x4000]};
 
-/* 00587400 g_ArenaLinearStorage: linear region of g_Arena (cursor at [0] = Ghidra g_Arena_3, limit at
+/* linear region of g_Arena (cursor at [0] = Ghidra g_Arena_3, limit at
    [0x4000] = Ghidra g_Arena_4 0058B400); the 0xC00 bytes past the limit run to the end of the image */
 __declspec(align(16)) uint8_t g_ArenaLinearStorage[0x4C00] = {0};

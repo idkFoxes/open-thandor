@@ -11,8 +11,7 @@
 
 /* Implementation ownership: network/backend/fallback_udp. */
 
-/* Address: 0x0041A580.
-   Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init
+/* Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init
    installs the WinSock backend: every backend index fails, returning FATAL_ERROR_NETWORK_UNAVAILABLE.
 */
 uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
@@ -22,8 +21,7 @@ uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
 }
 
 
-/* Address: 0x0041A590.
-   Default g_NetworkBackendSlot1 (backend cleanup) in the image data: nothing to clean up without a backend.
+/* Default g_NetworkBackendSlot1 (backend cleanup) in the image data: nothing to clean up without a backend.
 */
 void __cdecl NetworkBackendFallback_Cleanup(void)
 
@@ -31,8 +29,7 @@ void __cdecl NetworkBackendFallback_Cleanup(void)
   return;
 }
 
-/* Address: 0x0041A5A0.
-   Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can
+/* Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can
    be opened, so it returns FATAL_ERROR_NETWORK_UNAVAILABLE.
 */
 uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
@@ -42,8 +39,7 @@ uint32_t NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
 }
 
 
-/* Address: 0x0041A5B0.
-   Default g_NetworkBackendSlot3 (close the socket) in the image data: there is no socket to close.
+/* Default g_NetworkBackendSlot3 (close the socket) in the image data: there is no socket to close.
 */
 void __cdecl NetworkBackendFallback_CloseActiveSocket(void)
 
@@ -51,8 +47,7 @@ void __cdecl NetworkBackendFallback_CloseActiveSocket(void)
   return;
 }
 
-/* Address: 0x0041A5C0.
-   Default g_NetworkBackendSlot4 (receive a datagram) in the image data: returns false (nothing received), so
+/* Default g_NetworkBackendSlot4 (receive a datagram) in the image data: returns false (nothing received), so
    UiTransfer receive loops stop at once.
 */
 bool NetworkBackendFallback_ReceiveDatagram
@@ -62,8 +57,7 @@ bool NetworkBackendFallback_ReceiveDatagram
   return false;
 }
 
-/* Address: 0x0041A5D0.
-   Default g_NetworkBackendSlot5 (send a datagram) in the image data, called by UiTransfer_StagePacketAndSend:
+/* Default g_NetworkBackendSlot5 (send a datagram) in the image data, called by UiTransfer_StagePacketAndSend:
    drops the packet and returns true (success) so a session without network keeps running.
 */
 bool NetworkBackendFallback_SendDatagram
@@ -73,8 +67,7 @@ bool NetworkBackendFallback_SendDatagram
   return true;
 }
 
-/* Address: 0x0041A5E0.
-   Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (CF set).
+/* Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (CF set).
 */
 bool NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText)
 
@@ -83,8 +76,7 @@ bool NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endp
 }
 
 
-/* Address: 0x0041A5F0.
-   Default g_NetworkBackendSlot7 (format a peer address as text) in the image data: writes an empty UTF-16
+/* Default g_NetworkBackendSlot7 (format a peer address as text) in the image data: writes an empty UTF-16
    string (one zero dword) to outputText and ignores the address.
 */
 void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)
@@ -97,8 +89,7 @@ void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *s
   return;
 }
 
-/* Address: 0x00584E70.
-   Cleanup slot of the WinSock UDP backend. Nothing to release here: the socket is closed by
+/* Cleanup slot of the WinSock UDP backend. Nothing to release here: the socket is closed by
    NetworkFallback_CloseActiveSocket and WinSock itself by Network_Shutdown.
 */
 void NetworkFallback_NoOpBackendCleanup(void)
@@ -173,8 +164,7 @@ static uint32_t NetworkFallback_FailSocketSetup(uint32_t socketToClose)
   return FATAL_ERROR_NETWORK_SOCKET;
 }
 
-/* Address: 0x00584E80.
-   Opens the game's UDP socket: bound to localPort on all interfaces, or on the address given as
+/* Opens the game's UDP socket: bound to localPort on all interfaces, or on the address given as
    -IP="host" on the command line (dotted address or host name), with broadcast allowed and non-blocking
    I/O. Also presets the local endpoint descriptor to the IPv4 broadcast address on that port, used for
    session discovery. On failure the WinSock error code is left in g_PackageLastErrorPath and
@@ -238,8 +228,7 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
 }
 
 
-/* Address: 0x00585030.
-   Closes the UDP socket, if one is open. The handle is swapped out (XCHG in the original) before
+/* Closes the UDP socket, if one is open. The handle is swapped out (XCHG in the original) before
    closesocket so that nobody uses the socket while it is being closed.
 */
 void NetworkFallback_CloseActiveSocket(void)
@@ -256,8 +245,7 @@ void NetworkFallback_CloseActiveSocket(void)
 }
 
 
-/* Address: 0x00585060.
-   Receives one datagram (non-blocking) into buffer and the sender's address into sourceAddress
+/* Receives one datagram (non-blocking) into buffer and the sender's address into sourceAddress
    (16-byte sockaddr_in). Returns true when a datagram was received (callers do not need the byte count:
    the packet header carries its size); false when no socket is open or recvfrom fails, including
    WSAEWOULDBLOCK when nothing is pending.
@@ -284,8 +272,7 @@ bool NetworkFallback_ReceiveDatagram
 }
 
 
-/* Address: 0x005850B0.
-   Sends one datagram to destinationAddress (16-byte sockaddr_in) and returns true. Without an open
+/* Sends one datagram to destinationAddress (16-byte sockaddr_in) and returns true. Without an open
    socket nothing is sent and the call still succeeds. A sendto error leaves the WinSock error code in
    g_PackageLastErrorPath and returns false (the original returned FATAL_ERROR_NETWORK_SOCKET with CF set,
    but no caller reads the code).
@@ -312,8 +299,7 @@ bool NetworkFallback_SendDatagram
 }
 
 
-/* Address: 0x00585120.
-   Turns the UTF-16 peer address typed by the player (dotted address or host name) into a 16-byte
+/* Turns the UTF-16 peer address typed by the player (dotted address or host name) into a 16-byte
    sockaddr_in with the game's port. An empty text yields the broadcast address from the local
    endpoint descriptor. Returns true (CF in the original) when the text does not convert or the host is
    unknown, false on success.
@@ -357,8 +343,7 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
 }
 
 
-/* Address: 0x005851C0.
-   Writes the IPv4 address of socketAddress as dotted UTF-16 text (at most 0x200 bytes) into
+/* Writes the IPv4 address of socketAddress as dotted UTF-16 text (at most 0x200 bytes) into
    outputText, for showing a peer's address; an empty string when inet_ntoa fails.
 */
 void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)

@@ -11,14 +11,10 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0052AF40 g_ShotTextureSet */
 __declspec(align(16)) GraphicsTextureSet *g_ShotTextureSet = 0;
 
-/* 0052AF44 g_ShotPalette */
 __declspec(align(4)) GraphicsPaletteAsset *g_ShotPalette = 0;
 
-/* 0052AF48 g_ShotRuntimeSlots */
 __declspec(align(8)) ShotRuntimeSlot *g_ShotRuntimeSlots = 0;
 
-/* 0052AF4C g_ShotRuntimeRebaseBaseMinusOne */
 __declspec(align(4)) uint8_t *g_ShotRuntimeRebaseBaseMinusOne = 0;

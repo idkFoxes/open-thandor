@@ -18,18 +18,14 @@
 #define AI_UNIT_GROUP_ATTACK_STRENGTH 0x200
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00536FC0 */
 void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
-/* 0x0053B8B0 */
 void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void);
 
-/* 0x005372C0 */
 ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *sourceArmyRuntime,
           AiSourceClassCount *outSourceClassCount);
 
-/* 0x00537060 */
 AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
           (AiCandidateScore32 currentBestScore,AiSourceClassCount sourceClassCount,
           DepthBinMask32 sourceDepthMask0,DepthBinMask32 sourceDepthMask1,

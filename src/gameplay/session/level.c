@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/session/level. */
 
-/* Address: 0x00531080.
-   Prepares the movies of a level before it is loaded: stores the level's loading movie (the path at LEV +0xCC
+/* Prepares the movies of a level before it is loaded: stores the level's loading movie (the path at LEV +0xCC
    with its extension set to "flm") in *outMoviePath and writes the matching end movie number into
    "flm\ende0000.flm" from the 5th and 6th characters of that path ('w' 0xFC -> 2, "ei" -> 3, "la" -> 4, anything
    else 0). It keeps a copy of the level path in g_LevelEndingMovieSourcePath, which the loaders report on errors.
@@ -719,8 +718,7 @@ static void NewLevel_ApplyInitialRelations(void)
 }
 
 
-/* Address: 0x005311D0.
-   Loads a new level (after GameData_ResetDefaults): copies the level prefix, loads the technology file and all
+/* Loads a new level (after GameData_ResetDefaults): copies the level prefix, loads the technology file and all
    listed EFF/SHT/MDL/ARM files, initialises terrain, graphics pools, camera bookmarks, start resources and
    factions, spawns the initial armies, loads the level sounds, gives factions that start without a structure a
    default build list and applies the initial faction relations.
@@ -1055,8 +1053,7 @@ static bool SavedLevel_LoadSpatialSounds
 }
 
 
-/* Address: 0x00532020.
-   Loads the level of a saved game (after GameData_LoadExternalTables): the same LEV steps as
+/* Loads the level of a saved game (after GameData_LoadExternalTables): the same LEV steps as
    InGameLevelRuntime_LoadResourcesAfterDefaultReset (see the layout above it) up to the camera, but instead of
    spawning the initial armies it restores the saved runtime pools from widget.hex, army.hex, modul.hex,
    effect.hex, shot.hex and light.hex and rebases their pointers. The player-slot copies, default build lists
@@ -1142,8 +1139,7 @@ bool InGameLevelRuntime_LoadResourcesAfterExternalTables
 }
 
 
-/* Address: 0x005329C0.
-   Releases everything a level loader set up: the effect, shot, model, army and terrain graphics, the spatial
+/* Releases everything a level loader set up: the effect, shot, model, army and terrain graphics, the spatial
    sound slots, the level's effect and music voices, every loaded EFF/SHT/MDL/ARM file, the copied level prefix
    and the technology file.
 */
@@ -1198,8 +1194,7 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
 }
 
 
-/* Address: 0x00532CA0.
-   Editor save of the current level: reloads the level asset (g_LevelEndingMovieSourcePath) into the package
+/* Editor save of the current level: reloads the level asset (g_LevelEndingMovieSourcePath) into the package
    scratch buffer, replaces its placement table with one 0x20-byte record per live world model, stores the
    field region and the seven camera bookmarks and writes the image back to the same path. Returns true on
    success; on failure returns false with the load or write error in *outError. Called by

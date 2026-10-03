@@ -20,40 +20,30 @@
 #define ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS 0x400     /* 0x1000 bytes of pixel data */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0051D5F0 */
 void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId frontendPlayerRuntimeId,
           ArmyGraphicsAssetAddress32 armyGraphicsAsset);
 
-/* 0x00520740 */
 void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00520E60 */
 void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00523240 */
 void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00523DD0 */
 void ArmyRuntimeAudio_UpdateTurretTurnSound
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00524410 */
 void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00524DA0 */
 void ArmyRuntimeAudio_UpdateUnitFactorySounds
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00526490 */
 void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00526EB0 */
 void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00527B20 */
 void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_AUDIO_H */

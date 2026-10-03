@@ -40,28 +40,21 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0054EF60 */
 void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg);
 
-/* 0x0054F240 */
 bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg);
 
-/* 0x0054FA10 */
 void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void);
 
-/* 0x00572710 */
 bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet);
 
-/* 0x00584080 */
 uint32_t __cdecl Network_Init(void);
 
-/* 0x00584DF0 */
 void Network_Shutdown(void);
 
-/* 0x00584E50 */
 uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex);
 
 #endif /* THANDOR_NETWORK_BACKEND_RUNTIME_H */

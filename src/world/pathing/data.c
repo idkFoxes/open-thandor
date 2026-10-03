@@ -11,52 +11,38 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 005332A0 g_GridScratchPrimary */
 __declspec(align(16)) GridScratchCell *g_GridScratchPrimary = 0;
 
-/* 005332A4 g_GridScratchSecondary */
 __declspec(align(4)) GridScratchCell *g_GridScratchSecondary = 0;
 
-/* 005332A8 g_GridPathCostQueueBegin */
 __declspec(align(8)) GridScratchCell **g_GridPathCostQueueBegin = 0;
 
-/* 005332AC g_GridPathCostQueueEnd */
 __declspec(align(4)) GridScratchCell **g_GridPathCostQueueEnd = 0;
 
-/* 005332B0 g_GridPathCostQueuePassBoundary */
 __declspec(align(16)) GridScratchCell **g_GridPathCostQueuePassBoundary = 0;
 
-/* 005332B4 g_GridScratchWidth */
 __declspec(align(4)) uint32_t g_GridScratchWidth = 0;
 
-/* 005332B8 g_GridScratchHeight */
 __declspec(align(8)) int32_t g_GridScratchHeight = 0;
 
-/* 00533ED0 g_GridPathEntityClassMask */
 __declspec(align(16)) uint32_t g_GridPathEntityClassMask = 0;
 
-/* 00533ED4 g_GridPathBlockingMask */
 __declspec(align(4)) uint32_t g_GridPathBlockingMask = 0;
 
-/* 00533ED8 g_GridPathHighCostMask */
 __declspec(align(8)) uint32_t g_GridPathHighCostMask = 0;
 
-/* 00533EDC g_GridPathUnreachableRegionReferenceColumn */
 __declspec(align(4)) uint32_t g_GridPathUnreachableRegionReferenceColumn = 0;
 
-/* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
 __declspec(align(16)) uint32_t g_GridPathUnreachableRegionReferenceRow = 0;
 
-/* 005367D0 g_EntityPathingPriorityPairs */
 __declspec(align(16)) EntityPathingPriorityPair *g_EntityPathingPriorityPairs = g_EntityPathingPriorityPairStorage;
 
-/* 005367D4 g_EntityPathingPriorityPairStorage (Ghidra had split it at [0].priority, [1].entity, [1].priority) */
+/* Ghidra had split it at [0].priority, [1].entity, [1].priority */
 __declspec(align(4)) EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY] = {0};
 
-/* 005368D4 g_EntityPathingPriorityPairCount */
 __declspec(align(4)) uint32_t g_EntityPathingPriorityPairCount = 0;
 
-/* 00536F10 g_GridTerrainClassThresholds: int32_t[17] terrain-class thresholds, one table in the original
+/* int32_t[17] terrain-class thresholds, one table in the original
    (indexed by GRID_TERRAIN_THRESHOLD_*). GridScratch classification reads each entry by name;
    ModelDefinition_CopyTerrainClassValues indexes from several entries into their neighbours by the model's
    terrainTraversalClass (assets/model/definitions.c). Followed by 12 bytes of 0x90 padding (0x536F54). */
@@ -80,7 +66,7 @@ __declspec(align(16)) int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOL
     14500, /* 00536F50 [16] fallback traversal secondary threshold, class 6 */
 };
 
-/* 00536F60 g_GridInfluenceRadiusOffset: uint32_t[8] grid influence ring radius offsets */
+/* uint32_t[8] grid influence ring radius offsets */
 __declspec(align(16)) uint32_t g_GridInfluenceRadiusOffset[8] = {
     1000, /* 00536F60 [0] */
     1250, /* 00536F64 [1] */
@@ -92,7 +78,7 @@ __declspec(align(16)) uint32_t g_GridInfluenceRadiusOffset[8] = {
     4100, /* 00536F7C [7] */
 };
 
-/* 00536F80 g_GridInfluenceSquaredThreshold: uint32_t[8] squared ring radii (g_GridInfluenceRadiusOffset[n] + radius + margin)^2 */
+/* uint32_t[8] squared ring radii (g_GridInfluenceRadiusOffset[n] + radius + margin)^2 */
 __declspec(align(16)) uint32_t g_GridInfluenceSquaredThreshold[8] = {
     0, /* 00536F80 [0] */
     0, /* 00536F84 [1] */

@@ -27,39 +27,28 @@
 #define WORLD_MOTION_MINIMUM_DISTANCE_Q12 0x400
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0050D050 */
 uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime);
 
-/* 0x0050C7F0 */
 void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
           (AngleTurn32 elevationAngle,int screenDelta,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050C850 */
 void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050C8C0 */
 void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
           (int screenDelta,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050C920 */
 void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050C990 */
 void WorldMotion_AdjustHeadingAndClearFieldGridDirty(int headingDeltaInput,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050C9C0 */
 void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050CA80 */
 void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050CB10 */
 void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050CBE0 */
 void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050C770 */
 void WorldRuntime_TranslateCameraByScreenDelta
           (CameraScreenDeltaPixels screenDeltaDown,uint32_t screenDeltaRight,WorldRuntimeContext *worldRuntime
           );

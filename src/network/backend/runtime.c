@@ -33,8 +33,7 @@ static FrontendPlayerRuntimeRecord *FrontendNetwork_FindPlayerBySender
 }
 
 
-/* Address: 0x0054EF60.
-   Host-side packet handler of the frontend session, for packets from known players (matched by sequence token
+/* Host-side packet handler of the frontend session, for packets from known players (matched by sequence token
    and IPv4 address): 0x10011 stores the player's next command record (and marks it pending when new), 0x10013
    only refreshes the player's timeout, 0x10004 answers with the requested player's 0x30005 snapshot, and 0x8000A
    stores one chunk of the player's snapshot payload and requests the next one with 0x10009.
@@ -321,8 +320,7 @@ static void FrontendNetwork_TickSnapshotExchange(void)
 }
 
 
-/* Address: 0x0054F240.
-   Host tick of the frontend session. While a client's command record is missing it re-sends the last batch to
+/* Host tick of the frontend session. While a client's command record is missing it re-sends the last batch to
    clients without a new record and 0x10012 (wait) to the others and returns true (CF set). Otherwise it
    broadcasts all non-empty command records as one lobby command batch, executes the batch locally, and drives
    the snapshot exchange: re-requests a missing chunk, or once every snapshot is complete packs all of them,
@@ -365,8 +363,7 @@ bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
 }
 
 
-/* Address: 0x0054FA10.
-   Host timeout of a client while the session starts, called by
+/* Host timeout of a client while the session starts, called by
    FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState while g_FrontendNetworkState is
    FRONTEND_NETWORK_STATE_CLIENT_STARTING: when g_SessionTransferTimeoutTicks runs out the host is lost. The session is dropped to a
    local one (mailbox cleared, network role cleared, backend socket closed), the frontend returns to its
@@ -433,8 +430,7 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
 }
 
 
-/* Address: 0x00572710.
-   Client side of the in-game command exchange, for one received packet from the host of this session. A
+/* Client side of the in-game command exchange, for one received packet from the host of this session. A
    new COMMAND_BATCH is executed and answered with the client's next COMMAND_SUBMIT (returns true, CF set);
    a repeated batch (same sender context) resends the last submit. COMMAND_WAIT is answered with
    COMMAND_WAIT_ACK, and a player-removal packet drops that player's record and shows a notice. Every
@@ -545,8 +541,7 @@ bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
 }
 
 
-/* Address: 0x00584080.
-   Binds the 14 exports of wsock32.dll that the code calls (the original binds 45), starts WinSock 1.1 and
+/* Binds the 14 exports of wsock32.dll that the code calls (the original binds 45), starts WinSock 1.1 and
    installs the UDP fallback backend
    (NetworkFallback_*) as the only network backend instance. Returns 0 on success, otherwise the
    DynDLL/DynAPI error code or the WSAStartup error; the original returns with CF clear in every case,
@@ -607,8 +602,7 @@ uint32_t __cdecl Network_Init(void)
 }
 
 
-/* Address: 0x00584DF0.
-   Stops WinSock at program end: WSACleanup of the DLL that Network_Init started.
+/* Stops WinSock at program end: WSACleanup of the DLL that Network_Init started.
 */
 void Network_Shutdown(void)
 
@@ -622,8 +616,7 @@ void Network_Shutdown(void)
 }
 
 
-/* Address: 0x00584E50.
-   Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it
+/* Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it
    accepts any backendIndex and always returns 0 (success). The original stores ECX, not the index, in
    g_NetworkBackendSessionContext; the callers pass the index on the stack only. Like the previous C version (which received the
    index in its sessionContext parameter), this stores the index; nothing reads the global.

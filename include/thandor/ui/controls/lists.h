@@ -97,250 +97,188 @@
 #define UI_CATALOG_TEXT_STYLE_ALERT 0x1050000
 #define UI_CATALOG_TEXT_STYLE_MEASURE 0x1000000
 
-/* 0x004BBE60 */
 bool UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control);
 
-/* 0x004BB100 */
 bool UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control);
 
-/* 0x004BB480 */
 void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control);
 
-/* 0x004B87A0 */
 void UiScrollableControl_BeginPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
-/* 0x004B8A20 */
 void UiScrollableControl_EndPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
-/* 0x004B8BF0 */
 void UiScrollableControl_UpdatePrimaryScrollDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
-/* 0x004B8F90 */
 void UiScrollableControl_UpdateSecondaryScrollDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
-/* 0x004B9070 */
 void UiScrollableControl_TickAutoScroll(UiScrollableControl *control);
 
-/* 0x004B90E0 */
 void UiScrollableControl_HandlePointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
-/* 0x004BA500 */
 void UiPointerList_SelectTextListIndex(UiListRowIndex index,UiPointerListControl *control);
 
-/* 0x004BB020 */
 void UiListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiListControl *control);
 
-/* 0x004BB7A0 */
 void UiPointerList_SortByDwordPairFieldDescending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
-/* 0x004BB8A0 */
 void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
-/* 0x004BBCD0 */
 void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int pointerX,UiNodeBase *control);
 
-/* 0x004B11C0 */
 void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
 
-/* 0x004B1200 */
 void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
 
-/* 0x004B2550 */
 bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control);
 
-/* 0x004B26E0 */
 void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
-/* 0x004B2710 */
 void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
-/* 0x004B2D30 */
 bool UiSelectableGroup_FindVisibleSelected
           (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...);
 
-/* 0x004B2D70 */
 uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...);
 
-/* 0x004B2DA0 */
 void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...);
 
-/* 0x004B2DE0 */
 uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control);
 
-/* 0x004B2E10 */
 void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control);
 
-/* 0x004B4920 */
 uint32_t UiPageStack_ActivePageIndex(UiPageStackControl *stack);
 
-/* 0x004B7970 */
 void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiScrollableControl *control);
 
-/* 0x004B79D0 */
 void UiScrollableControl_DrawFrameContentAndScrollbars
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiScrollableControl *control);
 
-/* 0x004B8310 */
 void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control);
 
-/* 0x004B8AC0 */
 GraphicsCursorFrameIndex UiScrollableControl_QueryPointerRegion
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control);
 
-/* 0x004B8B10 */
 void UiScrollableControl_BeginSecondaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
-/* 0x004B8BC0 */
 void UiScrollableControl_EndSecondaryScrollInteraction
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
                ,UiScrollableControl *control);
 
-/* 0x004B9000 */
 UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control);
 
-/* 0x004BA560 */
 UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control);
 
-/* 0x004BADE0 */
 void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop,int clipLeft,UiListControl *control);
 
-/* 0x004BB310 */
 void UiListControl_TickActivationPulse(UiListControl *control);
 
-/* 0x004BB350 */
 void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control);
 
-/* 0x004BB380 */
 void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control);
 
-/* 0x004BB3B0 */
 void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
 
-/* 0x004BB9E0 */
 void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control);
 
-/* 0x004BBA00 */
 void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop,int clipLeft,UiNodeBase *control);
 
-/* 0x004BC180 */
 void UiTimedListControl_TickActionDelay(UiTimedListControl *control);
 
-/* 0x004BC460 */
 void UiWrappedTextControl_RelocateAndApplyDeferredOffset
           (UiSerializedRelocationDelta relocationDelta,UiWrappedTextControl *control);
 
-/* 0x00516580 */
 void UiCatalogEntryControl_DrawClipped
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiCatalogEntryControl *control);
 
-/* 0x00516B90 */
 GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiCatalogEntryControl *control);
 
-/* 0x00516C50 */
 void UiCatalogEntryControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCatalogEntryControl *control);
 
-/* 0x004BC360 */
 void UiTimedListControl_SelectRecordAndScrollIntoView
           (UiTimedListTreeRecord *selectedRecord,UiTimedListTreeControl *control);
 
-/* 0x004BB4E0 */
 void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListControl *control);
 
-/* 0x004BB540 */
 UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed);
 
-/* 0x004B9460 */
 UiScrollableViewportSize UiScrollableControl_GetViewportSize(UiScrollableControl *control);
 
-/* 0x004BC310 */
 uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord *recordBlock);
 
-/* 0x004B9170 */
 void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control);
 
-/* 0x004B9490 */
 void UiScrollableControl_ClampOffsetsToViewport
           (UiPixelCoordinate targetBottom,UiPixelCoordinate targetRight,UiPixelCoordinate targetTop,
           UiPixelCoordinate targetLeft,UiScrollableControl *control);
 
 
-/* 0x0040FF70 */
 UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord *recordBlock);
 
-/* 0x0040FFE0 */
 bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTreeRecord **outRecordBlock);
 
-/* 0x00410380 */
 bool UiTimedListTree_BuildDirectoryHierarchy
           (uint16_t *selectedPathUtf16,UiTimedListTreeRecord **outRootBlock,
           UiTimedListTreeRecord **outSelectedRecord);
 
-/* 0x004104B0 */
 bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
           (UiTimedListTreeRecord *targetRecord,UiTimedListTreeRecord *recordBlock);
 
-/* 0x00410520 */
 bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record);
 
-/* 0x00410670 */
 void UiTimedListControl_ToggleDirectoryRecordExpansion
           (UiTimedListTreeRecord *record,UiTimedListTreeControl *control);
 
-/* 0x00410700 */
 bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record);
 
-/* 0x004BC1C0 */
 void UiTimedListControl_SetRecordTreeAndRecomputeLayout
           (UiTimedListTreeRecord *recordTree,UiTimedListTreeControl *control);
 
-/* 0x004BC2F0 */
 UiTimedListTreeRecord * UiTimedListControl_GetRecordTree(UiTimedListControl *control);
 
-/* 0x004BC3F0 */
 UiTimedListTreeRecord *
 UiTimedListControl_GetSelectedRecord(UiTimedListTreeControl *control);
 
-extern UiNodeVtable g_UiScrollableControlVtable; /* 004B7920 g_UiScrollableControlVtable */
-extern UiNodeVtable g_UiListControlVtable; /* 004BA590 g_UiListControlVtable */
-extern UiNodeVtable g_UiTimedListControlVtable; /* 004BB990 g_UiTimedListControlVtable */
-extern UiNodeVtable g_UiListOffsetControlVtable; /* 004BC410 g_UiListOffsetControlVtable */
+extern UiNodeVtable g_UiScrollableControlVtable;
+extern UiNodeVtable g_UiListControlVtable;
+extern UiNodeVtable g_UiTimedListControlVtable;
+extern UiNodeVtable g_UiListOffsetControlVtable;
 extern UiNodeVtable g_UiCommandVisibilityWrappedTextVtable; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable; followed by 0x90 code alignment fill */
 
-extern uint32_t g_UiCatalogGroup48ColumnCount; /* 00562648 g_UiCatalogGroup48ColumnCount */
-extern uint32_t g_UiCatalogGroup42ColumnCount; /* 0056264C g_UiCatalogGroup42ColumnCount */
-extern int32_t *g_UiCatalogGroup48OffsetTables[9]; /* 00562654 g_UiCatalogGroup48OffsetTables */
-extern int32_t *g_UiCatalogGroup42OffsetTables[7]; /* 00562678 g_UiCatalogGroup42OffsetTables */
-extern int32_t g_UiCatalogGroup48OffsetsDefault[48]; /* 005626A8 g_UiCatalogGroup48OffsetsDefault */
-extern int32_t g_UiCatalogGroup48Offsets5Columns[48]; /* 00562768 g_UiCatalogGroup48Offsets5Columns */
-extern int32_t g_UiCatalogGroup48Offsets6Columns[48]; /* 00562828 g_UiCatalogGroup48Offsets6Columns */
-extern int32_t g_UiCatalogGroup48Offsets7Columns[48]; /* 005628E8 g_UiCatalogGroup48Offsets7Columns */
-extern int32_t g_UiCatalogGroup48Offsets8Columns[48]; /* 005629A8 g_UiCatalogGroup48Offsets8Columns */
-extern int32_t g_UiCatalogGroup42OffsetsDefault[42]; /* 00562A68 g_UiCatalogGroup42OffsetsDefault */
-extern int32_t g_UiCatalogGroup42Offsets5Columns[42]; /* 00562B10 g_UiCatalogGroup42Offsets5Columns */
-extern int32_t g_UiCatalogGroup42Offsets6Columns[42]; /* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
+extern uint32_t g_UiCatalogGroup48ColumnCount;
+extern uint32_t g_UiCatalogGroup42ColumnCount;
+extern int32_t *g_UiCatalogGroup48OffsetTables[9];
+extern int32_t *g_UiCatalogGroup42OffsetTables[7];
+extern int32_t g_UiCatalogGroup48OffsetsDefault[48];
+extern int32_t g_UiCatalogGroup48Offsets5Columns[48];
+extern int32_t g_UiCatalogGroup48Offsets6Columns[48];
+extern int32_t g_UiCatalogGroup48Offsets7Columns[48];
+extern int32_t g_UiCatalogGroup48Offsets8Columns[48];
+extern int32_t g_UiCatalogGroup42OffsetsDefault[42];
+extern int32_t g_UiCatalogGroup42Offsets5Columns[42];
+extern int32_t g_UiCatalogGroup42Offsets6Columns[42];
 
 #endif /* THANDOR_UI_CONTROLS_LISTS_H */

@@ -130,8 +130,7 @@ static void InGameEditorKeyboard_TurnLightOrAuxiliaryAngles(uint32_t keyboardSta
   }
 }
 
-/* Address: 0x0056E3C0.
-   Keyboard handler of the map editor (installed as g_UiRootCallbacks_0054FBC0.keyboardFallback by
+/* Keyboard handler of the map editor (installed as g_UiRootCallbacks_0054FBC0.keyboardFallback by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState while the editor is active): looks the key up in
    g_InGameKeyboardDispatchRecords and runs the matching hotkey - tool and tab selection, cycling materials and
    placement armies, moving the field origin or the light direction, saving the map, screenshots and leaving
@@ -459,8 +458,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
 }
 
 
-/* Address: 0x0056BAD0.
-   UI action 0x1005 (g_InGameUiActionHandlersPage10[5], InGameUiImage.messageSendAndCloseButton): sends the
+/* UI action 0x1005 (g_InGameUiActionHandlersPage10[5], InGameUiImage.messageSendAndCloseButton): sends the
    typed message to the chosen recipients (InGameSevenSlotCommand_SubmitTextAndSelectionMask) and closes the
    message window.
 */
@@ -554,8 +552,7 @@ static void InGameChatInput_SendPayloadText(CommandPayload recipientMask)
   }
 }
 
-/* Address: 0x0056A610.
-   UI action 0x1024 (g_InGameUiActionHandlersPage10[36]): Enter in the in-game chat line. In a local game the
+/* UI action 0x1024 (g_InGameUiActionHandlersPage10[36]): Enter in the in-game chat line. In a local game the
    line is only compared with the cheat phrase g_DeveloperChatPhraseUtf16, which toggles the cheats and answers
    with a message. In a network game the text is sent to the recipients chosen in the message window (all, the
    ticked factions or the ticked session players) and the line is cleared. Either way the command page closes.
@@ -841,8 +838,7 @@ static bool InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
 }
 
 
-/* Address: 0x0050ECE0.
-   Writes a save game (called by InGameSaveGame_SaveSelectedOrTypedName with the world view): opens or creates
+/* Writes a save game (called by InGameSaveGame_SaveSelectedOrTypedName with the world view): opens or creates
    the package at savePath (creating its directory if needed) and stores every runtime segment as a
    Huffman/RLE entry - army, modul, shot, effect, widget, light, field, level, daten, campagne (deleted without
    a campaign), stat and oldunit (deleted when empty). Pointer-holding images are converted to offsets for
@@ -872,8 +868,7 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
 }
 
 
-/* Address: 0x0053D9F0.
-   UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView,
+/* UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView,
    root+0x9A1C). Latches the clicked grid
    cell (selectedSourceX/YQ12 = grid column/row into sourceOriginX/YQ12), converts it to world coordinates and
    moves both camera points of the
@@ -2043,8 +2038,7 @@ static GraphicsTextureSourceAsset *InGameUiRuntime_ReplaceTexturePackage
 }
 
 
-/* Address: 0x0055C990.
-   Lays out the freshly copied in-game UI template for the current display mode (called by both session
+/* Lays out the freshly copied in-game UI template for the current display mode (called by both session
    initialisers): picks the panel/diagram graphics variant (gfx\panel\panel0/diagram0 with the digit 0, 1 or 2
    for below 800x600, below 1024x768, or larger) and the resource gauge geometry, loads panel0.gfx and caches the
    subresource sizes the layout needs, binds the texture to the side panel controls and positions them (frame
@@ -2192,8 +2186,7 @@ static int InGameHud_FormatFactionRoster(uint32_t factionIndex)
   return rosterCount;
 }
 
-/* Address: 0x00563BD0.
-   Per-tick HUD text update. Every 20 ticks (one second) it formats the render statistics into the debug overlay
+/* Per-tick HUD text update. Every 20 ticks (one second) it formats the render statistics into the debug overlay
    and reports the local player as slow (fewer than 13 frames in that second) or no longer slow; every tick it
    formats the camera pose, the selection point, free memory and the elapsed game time, and builds the faction
    status lines (name, player roster with pause/speed/slow marks, a counter) for the active factions 1..7.
@@ -2350,8 +2343,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
 }
 
 
-/* Address: 0x005640E0.
-   Network games only: resizes the in-game player status box to one text line per player and formats each
+/* Network games only: resizes the in-game player status box to one text line per player and formats each
    line into g_InGamePlayerStatusTextSlots (text 0xFF05 or 0xFF06 depending on the player's ready/wait state,
    with the player's name patched in). Runs under the in-game tick spin lock because the network code updates
    the player records.
@@ -2454,8 +2446,7 @@ static bool InGameKeyCommand_ModifiersMatch(uint32_t classFlags,UiKeyboardStateM
   return ((modifierFlags & KEYBOARD_STATE_CTRL) != 0) && ((modifierFlags & KEYBOARD_STATE_ALT) != 0);
 }
 
-/* Address: 0x005678C0.
-   In-game key commands (the world view's dispatchCommandCallback): the first record of
+/* In-game key commands (the world view's dispatchCommandCallback): the first record of
    g_InGameCommandDispatchRecords whose key code matches and whose modifier class
    (Shift / Ctrl / Alt, left or right) equals the held modifiers selects the command. Selection commands are
    ignored while the game is paused or the world input is disabled; network games queue them as player
@@ -2673,8 +2664,7 @@ bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
 }
 
 
-/* Address: 0x00569750.
-   The world view's fieldRegion.clearTransientStateCallback: resets the notification target button's cursor
+/* The world view's fieldRegion.clearTransientStateCallback: resets the notification target button's cursor
    frame to 0 when it still shows frame 0x1B.
 */
 void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView)
@@ -2690,8 +2680,7 @@ void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView)
   return;
 }
 
-/* Address: 0x00569780.
-   The world view's dispatchWorldContextActionCallback, unless the game is paused or the world input is
+/* The world view's dispatchWorldContextActionCallback, unless the game is paused or the world input is
    blocked: a running camera move (runtimeFlags 0x10) is aborted and the saved camera restored; otherwise a
    pending unit placement is dropped (GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid, network command
    0x14F0), or else the selection is cleared (network command 0xBA0). Both outcomes of the
@@ -2745,8 +2734,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
 }
 
 
-/* Address: 0x00569890.
-   Queues an in-game notification (movie id, priority and position/orientation payload) in the four-slot
+/* Queues an in-game notification (movie id, priority and position/orientation payload) in the four-slot
    queue g_InGameRuntimeRoot->notificationQueue, which is kept sorted by descending priority: every slot
    of lower priority is swapped (XCHG) with the carried record, so lower entries move down one slot and the
    lowest falls out. A notification with movie id 0 is ignored.
@@ -2851,8 +2839,7 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
   }
 }
 
-/* Address: 0x00569B00.
-   Rebuilds the diplomacy panel: one row (at most seven) per other active faction with its faction name,
+/* Rebuilds the diplomacy panel: one row (at most seven) per other active faction with its faction name,
    player number, relation state text and icon, and the name of the network player who controls it. The
    frame is sized for the row count (smaller offsets below 800 pixels width); the panel stays hidden with no
    other faction, while the world input is disabled, or when relationUiFlags bit 4 is set, and unused rows
@@ -2936,8 +2923,7 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
 }
 
 
-/* Address: 0x0056A460.
-   Scores how well one of the level's music tracks (by sample number) fits the situation of the active faction:
+/* Scores how well one of the level's music tracks (by sample number) fits the situation of the active faction:
    sums three army definition values over the faction's armies (+0x78 weighted 3 for armies with flag bit 0 at
    +0x2C) plus 50 per army with definition flag 0x10, and weights them by the track's number band (below 20, 50,
    70, or above). Track number 0 scores 0. The in-game music picks the best of the level's four tracks.
@@ -3008,8 +2994,7 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
 }
 
 
-/* Address: 0x0056A8A0.
-   UI action 0x101F (mission help toggle button): opening shows the mission help window (page 8) with the
+/* UI action 0x101F (mission help toggle button): opening shows the mission help window (page 8) with the
    active faction's help text for this level, re-measures its three text panels and blocks the world input; a local
    game is paused meanwhile. Closing hides the window, re-enables the world input and resumes the game unless it
    was already paused before the window opened.
@@ -3090,8 +3075,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056AD00.
-   UI action 0x101C (g_InGameUiActionHandlersPage10[28]): one of the three chart tabs of the results screen
+/* UI action 0x101C (g_InGameUiActionHandlersPage10[28]): one of the three chart tabs of the results screen
    (resultsTabThird / Economy / Military) was clicked. Selects it exclusively and shows the chart page of the
    selected tab.
 */
@@ -3125,8 +3109,7 @@ void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
 }
 
 
-/* Address: 0x0056AD80.
-   UI action 0x1012 (g_InGameUiActionHandlersPage10[18]): one of the seven relation buttons of the diplomacy
+/* UI action 0x1012 (g_InGameUiActionHandlersPage10[18]): one of the seven relation buttons of the diplomacy
    rows. Finds the button's row through g_UiAction1012ControlOffsets and advances the relation of the local
    faction towards that row's faction (g_UiAction1012TargetPlayerIndices), or resets it when the activation
    carries UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK. Ignored while paused or with world input disabled.
@@ -3184,8 +3167,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
 }
 
 
-/* Address: 0x0056B520.
-   UI action 0x1010 (also key F): toggles the in-game technology window (page 2 of the window page stack).
+/* UI action 0x1010 (also key F): toggles the in-game technology window (page 2 of the window page stack).
    When it opens with a selection, the technology panel is reset to the current area and the first selected
    entity's definition is assigned to the player (command INGAME_COMMAND_ASSIGN_ARMY_TOKEN). Ignored while the
    game is paused or the world input is disabled.
@@ -3238,8 +3220,7 @@ void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056B5D0.
-   UI action 0x1006 (g_InGameUiActionHandlersPage10[6]): the recipient tab InGameUiImage.messageRecipientPlayersTab
+/* UI action 0x1006 (g_InGameUiActionHandlersPage10[6]): the recipient tab InGameUiImage.messageRecipientPlayersTab
    of the message window. Selects the tab, shows the check box page and gives one check box to each faction
    still in the game (factions 1..7),
    labelled with the faction name (label texts 0x216D.. patched with name text 0x2173 + name index); the list
@@ -3301,8 +3282,7 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056B6E0.
-   UI action 0x1007 (g_InGameUiActionHandlersPage10[7]): the recipient tab InGameUiImage.messageRecipientGroupsTab
+/* UI action 0x1007 (g_InGameUiActionHandlersPage10[7]): the recipient tab InGameUiImage.messageRecipientGroupsTab
    of the message window. Like action 0x1006, but gives one check box to each of the first seven session
    players (g_FrontendPlayerRuntimeBlocks), labelled with the player name from the player's selection block.
 */
@@ -3351,8 +3331,7 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056B7E0.
-   UI action 0x1008 (g_InGameUiActionHandlersPage10[8]): the recipient tab InGameUiImage.messageRecipientAllTab
+/* UI action 0x1008 (g_InGameUiActionHandlersPage10[8]): the recipient tab InGameUiImage.messageRecipientAllTab
    of the message window (send to everyone). Selects the tab and shows page 1 of the recipient page stack,
    which has no check boxes.
 */
@@ -3374,8 +3353,7 @@ void InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056D500.
-   UI action 0x100F (g_InGameUiActionHandlersPage10[15], InGameUiImage.messageHistoryPanel): a click on the
+/* UI action 0x100F (g_InGameUiActionHandlersPage10[15], InGameUiImage.messageHistoryPanel): a click on the
    message lines drops the oldest ones so that at most three remain - and always at least one, even when
    three or fewer are shown - then rebuilds the eight-line list.
 */
@@ -3394,8 +3372,7 @@ void InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
 }
 
 
-/* Address: 0x0056F7F0.
-   Map editor pointer callback (installed as both selection.resolveContextAction*Callback of the world
+/* Map editor pointer callback (installed as both selection.resolveContextAction*Callback of the world
    runtime by InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState): returns the cursor frame for the
    active editor tab and tool. For placing, a temporary army instance is created at the pointer and tested
    with ArmyRuntimeNode_DispatchTypedCallback to show whether it fits; with an army already picked up the
@@ -3790,8 +3767,7 @@ static void InGameEditorPointer_BeginRegionToggle
   g_UiCommandCallerMaskHighBit = 0;
 }
 
-/* Address: 0x0056FA70.
-   Map editor pointer press (selection.beginPointerCaptureCallback of the world runtime while the editor is
+/* Map editor pointer press (selection.beginPointerCaptureCallback of the world runtime while the editor is
    active): starts the action of the active tab and tool - anchors a height or smoothing drag at the grid
    point under the pointer, seeds a material replacement, samples the fluid or region flag the drag will
    toggle, places, deletes or picks up an army, or (other tools) starts a rectangle selection. Editor
@@ -4080,8 +4056,7 @@ static void InGameEditorPointer_ResizeCellRectangle(GraphicsScreenCoordinate poi
 }
 
 
-/* Address: 0x005703D0.
-   Map editor pointer drag (selection.updateDragSelectionCallback of the world runtime while the editor is
+/* Map editor pointer drag (selection.updateDragSelectionCallback of the world runtime while the editor is
    active). During an army drag selection it adds the own armies inside the rectangle to the selection and
    removes those outside, three per command and skipping armies already queued. Otherwise it continues the
    action of the active tool: raises, lowers or smooths heights by the screen drag, paints material,
@@ -4295,8 +4270,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
 }
 
 
-/* Address: 0x00570D60.
-   Map editor pointer release (selection.commitPointerActionCallback of the world runtime while the editor is
+/* Map editor pointer release (selection.commitPointerActionCallback of the world runtime while the editor is
    active): ends the drag selection and finishes the tool's action - shows the surface point marker again
    after a height drag, converts the influence edit to height deltas, subtracts the painted materials, or drops the
    placed or moved army.
@@ -4362,8 +4336,7 @@ void InGameUiCommand_EndInteractionByMode
 }
 
 
-/* Address: 0x00570F30.
-   Map editor context action (selection.dispatchWorldContextActionCallback of the world runtime while the
+/* Map editor context action (selection.dispatchWorldContextActionCallback of the world runtime while the
    editor is active): clears the cell selection on the height and material tabs and the army selection on
    the unit placement tab.
 */
@@ -4402,8 +4375,7 @@ void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
 }
 
 
-/* Address: 0x005609F0.
-   In-game command INGAME_COMMAND_EDITOR_ACTIVE_STATE: enters or (EDITOR_ACTIVE_STATE_LEAVE) leaves the map
+/* In-game command INGAME_COMMAND_EDITOR_ACTIVE_STATE: enters or (EDITOR_ACTIVE_STATE_LEAVE) leaves the map
    editor. Entering pauses the game, switches the side panel, resource bar and game panels to the editor
    pages, installs the editor callbacks (InGameUiCommand_*ByMode, camera keys, editor hotkeys) on the world
    runtime and the UI root, selects the current editor tab, clears the notification queue, stops the movie,
@@ -4606,8 +4578,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
 }
 
 
-/* Address: 0x005622F0.
-   In-game command INGAME_COMMAND_EDITOR_SAVE_MAP (editor hotkey F2): writes the edited map back - the field
+/* In-game command INGAME_COMMAND_EDITOR_SAVE_MAP (editor hotkey F2): writes the edited map back - the field
    grid asset image and the level asset image - from the current world state. A failure of either is
    reported through FatalError_ReportIfFailed without stopping the game.
 */
@@ -4632,8 +4603,7 @@ void InGameUiCommand_SaveFieldAndLevelAssetImages
 }
 
 
-/* Address: 0x00567040.
-   Shows an in-game message line (chat, player departure, network notices): adds the UTF-16 text to the
+/* Shows an in-game message line (chat, player departure, network notices): adds the UTF-16 text to the
    recent-text history and rebuilds the eight-line pointer list the in-game UI displays
    (g_InGameRuntimeRoot->recentTextHistory).
 */
@@ -4649,8 +4619,7 @@ void InGameRecentTextHistory_InsertAndRebuild8(uint16_t *text)
 }
 
 
-/* Address: 0x0056B850.
-   UI action 0x1002 (g_InGameUiActionHandlersPage10[2], InGameUiImage.messageCancelButton): closes the message
+/* UI action 0x1002 (g_InGameUiActionHandlersPage10[2], InGameUiImage.messageCancelButton): closes the message
    window - shows the world view again and switches the game window page stack back to page 0.
 */
 void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
@@ -4666,8 +4635,7 @@ void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056B890.
-   UI action 0x1004 (g_InGameUiActionHandlersPage10[4], InGameUiImage.messageSendButton; also called by
+/* UI action 0x1004 (g_InGameUiActionHandlersPage10[4], InGameUiImage.messageSendButton; also called by
    InGameSevenSlotCommand_SubmitAndClosePage): sends the text of the message window. The text is narrowed to
    48 bytes, the recipient mask is built from the selected tab and its check boxes (as in
    InGameChatInput_SendLineOrCheckCheatPhrase), then the mask, the text as four 12-byte chat commands and the publish command
@@ -5004,8 +4972,7 @@ static void InGameSelectionDetailPanel_ShowHoverRecord
              linkedDefinitionListView);
 }
 
-/* Address: 0x005669B0.
-   Rebuilds the selection detail panel (page stack: 0 empty, 1 one own entity, 2 grid of up to 12 own entities,
+/* Rebuilds the selection detail panel (page stack: 0 empty, 1 one own entity, 2 grid of up to 12 own entities,
    3 the hovered stock/build record). Page 1 shows armour, energy, name and up to three weapon names of the
    entity plus the name of its linked army asset (definition classes 0x0B/0x0D/0x16), and enables the technology button only when a technology is
    available; page 3 shows the hovered record's armour, costs, build time, energy, name and weapons.

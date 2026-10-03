@@ -24,21 +24,16 @@
 #define TECHNOLOGY_RECIPROCAL_Q24_ONE 0x1000000u
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x005139C0 */
 void Technology_UnlockForFaction
           (GraphicsWorldCoordinateQ12 notificationXQ12,GraphicsWorldCoordinateQ12 notificationYQ12,
           TechnologyId technologyIndex,FactionRuntimeIndex factionIndex);
 
-/* 0x00513AE0 */
 bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
 
-/* 0x00513B20 */
 bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
 
-/* 0x0052AE10 */
 void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity);
 
-/* 0x00539BB0 */
 void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void);
 
 #endif /* THANDOR_GAMEPLAY_TECHNOLOGY_RUNTIME_H */

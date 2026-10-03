@@ -10,7 +10,7 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004229B4 g_UiDisplaySettingsRootTemplate: the display settings dialog, copied and linked by
+/* the display settings dialog, copied and linked by
    UiDisplaySettings_OpenAndPopulateModeSelection. */
 DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
     .displaySettingsWindow = { /* g_UiResizableWindowControlVtable */
@@ -210,7 +210,6 @@ DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
 };
 _Static_assert(sizeof(DisplaySettingsUiImage) == 0xBD4, "DisplaySettingsUiImage size");
 
-/* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
 static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20 = {
     .handlers = {
         /*  0 */ (void *)UiDisplayModeAction_ApplyPendingMode,
@@ -235,14 +234,13 @@ static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHa
         /* 19 */ (void *)UiDisplayModeAction_UpdateAdapterSelection
     }};
 
-/* 004235D8 g_UiDisplayModeDistinctValueScratch: the ascending list of distinct values (bit depths,
+/* the ascending list of distinct values (bit depths,
    resolutions, adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
 static DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {0};
 
 /* Implementation ownership: ui/controls/misc. */
 
-/* Address: 0x00422910.
-   frameUpdate of g_UiDisplaySettingsRootCallbacks (the display settings dialog): when the colour bias or
+/* frameUpdate of g_UiDisplaySettingsRootCallbacks (the display settings dialog): when the colour bias or
    colour scale slider has moved, stores the new values, rebuilds the pixel packing tables at once (a live
    preview), refreshes which mode buttons are available and rewrites the two number readouts.
 */
@@ -273,8 +271,7 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
 }
 
 
-/* Address: 0x00423C40.
-   Handler of the four colour-depth buttons (actions 0x201..0x204, g_UiDisplayModeSelectionActionHandlers20[1..4])
+/* Handler of the four colour-depth buttons (actions 0x201..0x204, g_UiDisplayModeSelectionActionHandlers20[1..4])
    of the display settings dialog: selects the button's bit depth, keeps the selected adapter and resolution
    and refreshes the available buttons. Each option button keeps its value in the dword 8 bytes before it
    (UiDisplayModeOptionPrefix.modeValue). UiDisplayModeAction_UpdateAdapterSelection is its mirror image for the
@@ -297,8 +294,7 @@ void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x00423C80.
-   Handler of the eight resolution buttons (actions 0x205..0x20C, g_UiDisplayModeSelectionActionHandlers20[5..12])
+/* Handler of the eight resolution buttons (actions 0x205..0x20C, g_UiDisplayModeSelectionActionHandlers20[5..12])
    of the display settings dialog: selects the button's resolution (height 12 bytes and width 8 bytes before
    the button), keeps the selected adapter and bit depth and refreshes the available buttons.
 */
@@ -319,8 +315,7 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x00423CB0.
-   Handler of the five adapter buttons (actions 0x20F..0x213, g_UiDisplayModeSelectionActionHandlers20[15..19])
+/* Handler of the five adapter buttons (actions 0x20F..0x213, g_UiDisplayModeSelectionActionHandlers20[15..19])
    of the display settings dialog: selects the button's adapter (the dword 8 bytes before the button), keeps
    the selected resolution and bit depth and refreshes the available buttons. See
    UiDisplayModeAction_UpdateColorDepthSelection.
@@ -342,8 +337,7 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x00424590.
-   Revert action (UI_DISPLAY_MODE_ACTION_REVERT, g_UiDisplayModeSelectionActionHandlers20[13]) of the "keep
+/* Revert action (UI_DISPLAY_MODE_ACTION_REVERT, g_UiDisplayModeSelectionActionHandlers20[13]) of the "keep
    the new display mode?" dialog, from its button or from the expired countdown: closes the dialog, switches
    back to the previous display mode stored in it (a failure is fatal), lays out every open root for the
    restored framebuffer size and opens the display settings dialog again. The name is misleading: nothing is
@@ -397,8 +391,7 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x004BC8B0.
-   nonRightDrag of the image control (g_UiImageControlVtable): only for an image in persistent activation
+/* nonRightDrag of the image control (g_UiImageControlVtable): only for an image in persistent activation
    mode, whose children act like a menu. Moving onto another child hands the pointer over: the new child
    gets a synthetic press and the drag, becomes activeChild, and the previous one gets a synthetic drag and
    release far outside (UI_POINTER_FAR_OUTSIDE). A drag over the current child is simply forwarded.
@@ -450,8 +443,7 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
 }
 
 
-/* Address: 0x004BCB50.
-   tick of the image control (g_UiImageControlVtable): when the right mouse button goes down (latched in
+/* tick of the image control (g_UiImageControlVtable): when the right mouse button goes down (latched in
    UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED until it is released), an opaque child under the cursor gets a
    release, press and drag at the current cursor position, so that it re-evaluates the pointer;
    UI_IMAGE_CONTROL_PRESS_STARTED is cleared then.
@@ -495,8 +487,7 @@ void UiImageControl_TickHover(UiImageControl *control)
 }
 
 
-/* Address: 0x00423B30.
-   Apply action (UI_DISPLAY_MODE_ACTION_APPLY, g_UiDisplayModeSelectionActionHandlers20[0]) of the display
+/* Apply action (UI_DISPLAY_MODE_ACTION_APPLY, g_UiDisplayModeSelectionActionHandlers20[0]) of the display
    settings dialog: closes the dialog and, when the selected mode differs from the current one, switches to
    it. If the switch fails, the current mode is restored (a failure there is fatal) and the error is
    reported; otherwise every root is laid out again and the "keep the new display mode?" dialog opens with
@@ -554,8 +545,7 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x00423C00.
-   Cancel action (UI_DISPLAY_MODE_ACTION_CANCEL, g_UiDisplayModeSelectionActionHandlers20[14]) of the display
+/* Cancel action (UI_DISPLAY_MODE_ACTION_CANCEL, g_UiDisplayModeSelectionActionHandlers20[14]) of the display
    settings dialog: closes it and rebuilds the pixel packing tables from the colour bias and scale the
    dialog opened with, undoing the slider preview.
 */
@@ -577,8 +567,7 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x004242D0.
-   frameUpdate of g_UiFourValueDialogRootCallbacks (the "keep the new display mode?" dialog): every
+/* frameUpdate of g_UiFourValueDialogRootCallbacks (the "keep the new display mode?" dialog): every
    UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS frame updates the shown countdown drops by one; at zero the revert
    action is queued, otherwise the new number is written into the message.
 */
@@ -645,8 +634,7 @@ static uint32_t UiRangeSliderControl_ThumbOffset(const UiRangeSliderControl *con
          (uint32_t)(range < (uint32_t)((int)(scaledOffset % (uint64_t)range) * 2));
 }
 
-/* Address: 0x004B3F40.
-   drawClipped of the range slider (g_UiRangeSliderControlVtable): draws the track from three
+/* drawClipped of the range slider (g_UiRangeSliderControlVtable): draws the track from three
    g_UiWindowTextureSource pieces (start cap, tiled middle, end cap) and the thumb at the position of value
    within minimumValue..maximumValue, rounded to the nearest pixel. Horizontal or vertical after
    UI_RANGE_SLIDER_VERTICAL; a suppressed slider uses the greyed pieces.
@@ -724,8 +712,7 @@ void UiRangeSliderControl_DrawTrackAndThumb
 }
 
 
-/* Address: 0x004B41C0.
-   nonRightPress of the range slider (g_UiRangeSliderControlVtable): a press inside the slider, within the
+/* nonRightPress of the range slider (g_UiRangeSliderControlVtable): a press inside the slider, within the
    thumb's cross size (its height for a horizontal slider, its width for a vertical one), starts a thumb
    drag and plays the click sound when UI_RANGE_SLIDER_CLICK_SOUND is set.
 */
@@ -771,8 +758,7 @@ void UiRangeSliderControl_BeginThumbDrag
 }
 
 
-/* Address: 0x004B4280.
-   nonRightRelease of the range slider (g_UiRangeSliderControlVtable): ends a thumb drag and plays the click
+/* nonRightRelease of the range slider (g_UiRangeSliderControlVtable): ends a thumb drag and plays the click
    sound when UI_RANGE_SLIDER_CLICK_SOUND is set and the slider is not suppressed.
 */
 void UiRangeSliderControl_EndThumbDrag
@@ -789,8 +775,7 @@ void UiRangeSliderControl_EndThumbDrag
 }
 
 
-/* Address: 0x004B45F0.
-   suppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
+/* suppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
    greyed out (UI_NODE_SUPPRESSED), gives up the keyboard focus and is redrawn.
 */
 void UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
@@ -805,8 +790,7 @@ void UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderCo
 }
 
 
-/* Address: 0x004B4620.
-   unsuppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
+/* unsuppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
    enabled again, takes the keyboard focus if nobody has it and is redrawn.
 */
 void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
@@ -821,8 +805,7 @@ void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSlider
 }
 
 
-/* Address: 0x004BC5C0.
-   drawClipped of the image control (g_UiImageControlVtable): in persistent activation mode the children
+/* drawClipped of the image control (g_UiImageControlVtable): in persistent activation mode the children
    are drawn first, then the image itself: alternateSubresource while selected, else normalSubresource. An
    image with UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE is only drawn while selected.
 */
@@ -859,8 +842,7 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate c
 }
 
 
-/* Address: 0x004BC6E0.
-   nonRightPress of the image control (g_UiImageControlVtable): plays the pointer sound
+/* nonRightPress of the image control (g_UiImageControlVtable): plays the pointer sound
    (UI_IMAGE_CONTROL_POINTER_SOUND, unless the image is already OPEN), drops the active child and the hover
    target, then toggles: a press on an opaque pixel of an already selected image clears
    UI_IMAGE_CONTROL_PRESS_STATE_BITS, any other press sets them.
@@ -914,8 +896,7 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
 }
 
 
-/* Address: 0x004BC7E0.
-   nonRightRelease of the image control (g_UiImageControlVtable). A release while
+/* nonRightRelease of the image control (g_UiImageControlVtable). A release while
    UI_IMAGE_CONTROL_PRESSED_ON_IMAGE is set keeps it open: UI_IMAGE_CONTROL_OPEN, and the image becomes
    g_UiImageControlHoverTarget. Otherwise an active child gets the release first, and the image stays open
    only if it had one and OPEN was not yet set or PRESS_STARTED is set; else it closes: hover target
@@ -968,8 +949,7 @@ void UiImageControl_NonRightRelease
 }
 
 
-/* Address: 0x004BD2A0.
-   Re-tints a world model (army, effect or shot) after its runtime state bits changed: the tint chosen by
+/* Re-tints a world model (army, effect or shot) after its runtime state bits changed: the tint chosen by
    ModelRuntimeNode_GetStateTintArgb from runtimeFlags 0x04/0x08/0x10 is applied to the whole hierarchy only when it
    differs from the tint the model already has.
 */
@@ -986,8 +966,7 @@ void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
 }
 
 
-/* Address: 0x00517E30.
-   drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
+/* drawClipped of the transfer progress gauge (g_UiTransferProgressGaugeVtable) shown while the player snapshots
    are exchanged at session start: on the host (or in a local game) the range is the outgoing byte count
    and the value the smallest progress any client has reported (transferProgressBytes of player blocks 1..n); on a
    client it is the received byte count and the bytes received so far. Draws nothing unless a transfer is
@@ -1063,8 +1042,7 @@ static DisplayModeScratchWord UiDisplaySettings_InsertIntoSortedSlot(DisplayMode
   return carriedValue;
 }
 
-/* Address: 0x00423600.
-   Opens the display settings dialog (only when more than one display mode was enumerated): copies
+/* Opens the display settings dialog (only when more than one display mode was enumerated): copies
    g_UiDisplaySettingsRootTemplate to the heap, records the current mode and colour bias/scale as both the
    selected and the original values, installs its action handlers and pushes it. The option buttons are then
    labelled with the enumerated values in ascending order: up to 4 distinct bit depths, 8 resolutions and 5
@@ -1244,8 +1222,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
 }
 
 
-/* Address: 0x004BC9B0.
-   Hit test of an image control: only opaque pixels of its current image count, so irregular shapes react
+/* Hit test of an image control: only opaque pixels of its current image count, so irregular shapes react
    precisely. A miss clears UI_IMAGE_CONTROL_PRESSED_ON_IMAGE and, in persistent activation mode, passes the
    test on to the children. Returns the hit node or UI_NODE_NONE.
 */
@@ -1287,8 +1264,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
 }
 
 
-/* Address: 0x00423D70.
-   Refreshes the display settings dialog for a selected mode (adapterIndex, bit depth, height, width): every
+/* Refreshes the display settings dialog for a selected mode (adapterIndex, bit depth, height, width): every
    colour-depth, resolution and adapter button whose combination with the other selected values was not
    enumerated (GraphicsDisplayMode_IsEnumerated) is suppressed, the others are enabled; the buttons matching
    the selection are selected in their groups; the tuple is stored as the selected one, and the apply button
@@ -1406,7 +1382,6 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
 
 /* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004B3EF0 g_UiRangeSliderControlVtable */
 UiNodeVtable g_UiRangeSliderControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -1427,7 +1402,6 @@ UiNodeVtable g_UiRangeSliderControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiRangeSliderControl_HandlePointerWheel};
 
-/* 004BC570 g_UiImageControlVtable */
 UiNodeVtable g_UiImageControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -1448,7 +1422,6 @@ UiNodeVtable g_UiImageControlVtable = {
         .tick = (void *)UiImageControl_TickHover,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 00517DE0 g_UiTransferProgressGaugeVtable */
 UiNodeVtable g_UiTransferProgressGaugeVtable = {
     .relocate = (void *)UiContainer_RelocateChildren,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,

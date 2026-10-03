@@ -220,8 +220,7 @@ static void UiTransferMailbox_StorePingRoundTrip
   }
 }
 
-/* Address: 0x004AEB10.
-   Network receive timer (125 Hz, so one tick is 8 ms). Drains the UDP socket into the record ring: each
+/* Network receive timer (125 Hz, so one tick is 8 ms). Drains the UDP socket into the record ring: each
    datagram is descrambled and its XOR checksum verified. The transfer and ping packets are answered right
    here; every other valid packet is kept in the ring for the frontend/in-game handlers. Transfer: the host
    sends a data blob (g_UiTransferMailbox) in chunks of UI_TRANSFER_CHUNK_PAYLOAD_BYTES as 0x80030 packets,
@@ -354,8 +353,7 @@ static void FrontendTransfer_ExecuteLobbyCommandRecords
   } while (commandCount != 0);
 }
 
-/* Address: 0x0054ECB0.
-   Client side of the host lobby: accepts the host's 0x40008 session packet (one player-list row and the
+/* Client side of the host lobby: accepts the host's 0x40008 session packet (one player-list row and the
    player's name; a non-zero expected block count starts the session and switches to
    FRONTEND_NETWORK_STATE_CLIENT_STARTING) and the host's lobby command batches, whose commands it executes
    before answering with its own next queued command (packet 0x10011). Packets from other hosts or sessions
@@ -443,8 +441,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
 }
 
 
-/* Address: 0x0054F680.
-   Client side of the session start: executes a new command batch from the host (a repeated batch only
+/* Client side of the session start: executes a new command batch from the host (a repeated batch only
    re-sends the last 0x10011 answer), answers 0x10012 with 0x10013, removes a player on 0x10007, stores the
    next player snapshot (0x30005, which also seeds the random streams) and serves chunks of the local
    player's PCX preview on 0x10009. Only packets of the selected host and session count; CF is set only when
@@ -576,8 +573,7 @@ bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
 }
 
 
-/* Address: 0x00545640.
-   Frontend command handler FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE, queued by
+/* Frontend command handler FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE, queued by
    FrontendNetwork_HostTickCommandAndSnapshotTransfer once the host has published the packed player
    snapshots and executed on every peer: a client marks its receive mailbox unavailable, so it waits for
    the new transfer instead of reading an old one. The host and a local game do nothing.
@@ -592,8 +588,7 @@ void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,
 }
 
 
-/* Address: 0x00545660.
-   Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in
+/* Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in
    Frontend_MainLoop once it has unpacked the host's published player snapshots, and executed on every
    peer: marks that player FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY. On the host, once every player is
    marked, the published block is no longer needed: its allocation is freed and the outgoing mailbox
@@ -635,8 +630,7 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
 }
 
 
-/* Address: 0x0054E230.
-   Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to
+/* Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to
    g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address. Hosts answer
    with a 0x50001 session advertisement. CF is the send result.
 */
@@ -653,8 +647,7 @@ bool UiTransfer_SendDiscoveryProbe(void)
 }
 
 
-/* Address: 0x0054E470.
-   Introduces the local player to the host (0x20002 player descriptor): the player name (20 UTF-16 units)
+/* Introduces the local player to the host (0x20002 player descriptor): the player name (20 UTF-16 units)
    whose last unit is replaced by flags: bit 0 = a 64x64 picture <name>.pcx was found (loaded into
    g_FrontendLocalPlayerPcxPreview), bit 8 = shown as "CD" in the lobby list (always set). CF is the send
    result.
@@ -920,8 +913,7 @@ static void FrontendTransfer_CollectLobbyCommand
   FrontendTransfer_BroadcastAndExecuteLobbyCommands();
 }
 
-/* Address: 0x0054E4E0.
-   Host side of the lobby. Answers a discovery probe (0x10000) with the session advertisement (0x50001:
+/* Host side of the lobby. Answers a discovery probe (0x10000) with the session advertisement (0x50001:
    title, host description, player count; joinable while the lobby is not full), admits a joining player
    (0x20002: new player-list row, lowest free player id, join ack 0x10003), stores a player's capability
    heartbeat (0x10006), and collects each player's next command (0x10011), broadcasting the non-empty ones
@@ -1014,8 +1006,7 @@ static void FrontendTransfer_SendSessionPlayerRowToPeers(uint32_t roundRobinCoun
   }
 }
 
-/* Address: 0x0054E9B0.
-   Host lobby tick. Sends every joined player the session packet 0x40008 for one player-list row, chosen
+/* Host lobby tick. Sends every joined player the session packet 0x40008 for one player-list row, chosen
    round robin (with its row, name and ping text "<n>ms"), plus a 0x10032 tick stamp; a pending session start
    switches to FRONTEND_NETWORK_STATE_HOST_STARTING. Then it adds the host's own next queued command to the
    players' collected ones, broadcasts the non-empty ones as one lobby command batch and executes them.
@@ -1041,8 +1032,7 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRu
 }
 
 
-/* Address: 0x0054EEF0.
-   Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat
+/* Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat
    value of 0x40, which the host stores in this player's record.
 */
 void FrontendTransfer_SendCapabilityHeartbeat(void)
@@ -1082,8 +1072,7 @@ static void FrontendTransfer_ResendBatchOrWaitToClients(void)
   }
 }
 
-/* Address: 0x005723F0.
-   Host side of the in-game command exchange. When every client (player records 1..n-1) has submitted its
+/* Host side of the in-game command exchange. When every client (player records 1..n-1) has submitted its
    command, clears their ready flags, takes the host's own next command into slot 0, packs all non-empty
    command slots into g_FrontendClientCommandBatchPacketBuffer (at least one record) and sends that
    COMMAND_BATCH to every client; returns false (CF clear). Otherwise returns true (CF set) and, with
@@ -1154,8 +1143,7 @@ bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanSt
 }
 
 
-/* Address: 0x00572920.
-   Client side of the lockstep exchange: sends the host its next in-game command (FRONTEND_PACKET_COMMAND_SUBMIT)
+/* Client side of the lockstep exchange: sends the host its next in-game command (FRONTEND_PACKET_COMMAND_SUBMIT)
    with the oldest queued command, or an empty record when none is queued. The sender context counts the
    submissions.
 */
@@ -1171,8 +1159,7 @@ void FrontendTransfer_SendCommandSubmit(void)
 }
 
 
-/* Address: 0x004AF110.
-   Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a
+/* Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a
    new transfer can be received; the outgoing buffer is left alone. Consumers call it after taking a buffer.
 */
 void UiTransferMailbox_ClearReceivedState(void)
@@ -1186,8 +1173,7 @@ void UiTransferMailbox_ClearReceivedState(void)
 }
 
 
-/* Address: 0x004AF170.
-   Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in
+/* Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in
    *outByteCount once an allocation exists and no bytes are outstanding. An empty, unavailable or still
    incomplete mailbox returns NULL and leaves *outByteCount untouched (the original left the caller's EAX/ECX
    as they were; every caller reads them only on success).
@@ -1205,8 +1191,7 @@ void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount)
 }
 
 
-/* Address: 0x004AF1C0.
-   Gives this machine a new random session identity before it opens or looks for a session: XORs a random
+/* Gives this machine a new random session identity before it opens or looks for a session: XORs a random
    16-bit value into the low word of the transfer sequence token. The high word stays (a host answers the
    discovery probe only for 0x1234).
 */
@@ -1271,8 +1256,7 @@ static void FrontendTransfer_StoreSessionAdvertisement
   UiPointerList_RefreshSelectionAndQueueAction(sessionList);
 }
 
-/* Address: 0x0054E260.
-   Network game page (browsing): a session advertisement (0x50001) updates its row in the session list or
+/* Network game page (browsing): a session advertisement (0x50001) updates its row in the session list or
    appends one (at most 0x20 sessions); the join ack (0x10003) from the selected host takes over the assigned
    player id and network tick interval, switches to the host-lobby page and FRONTEND_NETWORK_STATE_JOINED and
    marks this machine as a network client.
@@ -1311,8 +1295,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
 }
 
 
-/* Address: 0x0054EF30.
-   Host timeout of a client in the host's lobby, called by FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState
+/* Host timeout of a client in the host's lobby, called by FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState
    while g_FrontendNetworkState is FRONTEND_NETWORK_STATE_JOINED: when g_SessionTransferTimeoutTicks runs out
    (nothing heard from the host), the client leaves as if its lobby Leave button had been pressed and goes
    back to the session list.
@@ -1328,8 +1311,7 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
 }
 
 
-/* Address: 0x0054FBA0.
-   Frontend copy of FrontendTransfer_ConsumeProcessedFlag: atomically takes and clears
+/* Frontend copy of FrontendTransfer_ConsumeProcessedFlag: atomically takes and clears
    g_FrontendTransferResponsePending (set by FrontendTransfer_HandleGameplayCommandAndRosterPackets after a new
    command batch). Returns true (CF set) when no batch arrived, so Frontend_StateTick ends its tick early.
 */
@@ -1344,8 +1326,7 @@ bool FrontendTransfer_ConsumeProcessedFlagForMenuTick(void)
 }
 
 
-/* Address: 0x005722C0.
-   Host side of the in-game command exchange: finds the player the packet came from (sequence token and
+/* Host side of the in-game command exchange: finds the player the packet came from (sequence token and
    IPv4 address) and refreshes its timeout. A COMMAND_SUBMIT with a new sender context is stored in that
    player's command slot and marks the player ready for the next batch; a repeated one (retransmit) and a
    COMMAND_WAIT_ACK only refresh the timeout.
@@ -1413,8 +1394,7 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
 }
 
 
-/* Address: 0x00572560.
-   Host side: executes the command batch it has just broadcast (g_FrontendClientCommandBatchPacketBuffer) on
+/* Host side: executes the command batch it has just broadcast (g_FrontendClientCommandBatchPacketBuffer) on
    the local simulation, so host and clients run the same commands in the same tick. The high 24 bits of
    each packed command are the handler's offset from InGameCommandQueue_AppendLocalPlayerCommand, the low
    8 bits the player id; offsets beyond the handler code region are ignored. The original handler address
@@ -1451,8 +1431,7 @@ void FrontendTransfer_DispatchStagedCommandRecords(void)
 }
 
 
-/* Address: 0x00572AA0.
-   Client side: atomically takes and clears g_FrontendTransferResponsePending, which
+/* Client side: atomically takes and clears g_FrontendTransferResponsePending, which
    FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch. Returns true
    (CF set) when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
 */
@@ -1467,8 +1446,7 @@ bool FrontendTransfer_ConsumeProcessedFlag(void)
 }
 
 
-/* Address: 0x00407160.
-   Encrypts an outgoing packet: byteCount/8 64-bit blocks in CBC mode (each input block is XORed with the
+/* Encrypts an outgoing packet: byteCount/8 64-bit blocks in CBC mode (each input block is XORed with the
    previous output block, starting from zero), each through 16 rounds keyed by roundKeys16 and the eight
    nibble substitution tables at 0x00403160. UiTransfer_DecryptPacketBlocks is the
    matching decryption used on receive.
@@ -1546,8 +1524,7 @@ void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks
 }
 
 
-/* Address: 0x004072F0.
-   Decrypts a received packet in place or into destination (they may alias): the inverse of
+/* Decrypts a received packet in place or into destination (they may alias): the inverse of
    UiTransfer_EncryptPacketBlocks, running the 16 rounds backwards with the second table set
    (g_UiTransferDecryptSboxes, 0x00405160) and XORing each result with the previous ciphertext block (CBC).
 */
@@ -1607,8 +1584,7 @@ void UiTransfer_DecryptPacketBlocks
 }
 
 
-/* Address: 0x004AF140.
-   Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the
+/* Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the
    byte count, remaining bytes and retry ticks to one, so the mailbox is neither empty nor receivable.
 */
 void UiTransferMailbox_MarkUnavailable(void)
@@ -1622,8 +1598,7 @@ void UiTransferMailbox_MarkUnavailable(void)
 }
 
 
-/* Address: 0x004AF1A0.
-   Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it). The allocation is later
+/* Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it). The allocation is later
    released through g_MemoryApi.free by the frontend transfer consumers.
 */
 void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *allocation)
@@ -1635,8 +1610,7 @@ void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,vo
 }
 
 
-/* Address: 0x0054F9A0.
-   Client answer to the host while the session starts and after each lobby command batch: sends the oldest
+/* Client answer to the host while the session starts and after each lobby command batch: sends the oldest
    queued lobby command in packet 0x10011 (a new sender sequence number each time) and, while player snapshots
    are still missing, requests the next one with packet 0x10004.
 */
@@ -1663,8 +1637,7 @@ void FrontendTransfer_SendLobbyCommandAndSnapshotRequest(void)
 }
 
 
-/* Address: 0x004AEF70.
-   Sends one packet to endpoint; every packet of the game goes through here. Stamps the header with this
+/* Sends one packet to endpoint; every packet of the game goes through here. Stamps the header with this
    machine's sequence token and sender context and the XOR checksum over all dwords, then writes a scrambled
    copy (UiTransfer_EncryptPacketBlocks) into the next free units of a 256-unit ring (0x20 bytes per unit,
    with a parallel ring of 16-byte endpoint copies) and hands that copy to the backend send slot. The unit

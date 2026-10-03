@@ -10,38 +10,38 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern GridScratchCell *g_GridScratchPrimary; /* 005332A0 g_GridScratchPrimary */
+extern GridScratchCell *g_GridScratchPrimary;
 
-extern GridScratchCell *g_GridScratchSecondary; /* 005332A4 g_GridScratchSecondary */
+extern GridScratchCell *g_GridScratchSecondary;
 
-extern GridScratchCell **g_GridPathCostQueueBegin; /* 005332A8 g_GridPathCostQueueBegin */
+extern GridScratchCell **g_GridPathCostQueueBegin;
 
-extern GridScratchCell **g_GridPathCostQueueEnd; /* 005332AC g_GridPathCostQueueEnd */
+extern GridScratchCell **g_GridPathCostQueueEnd;
 
-extern GridScratchCell **g_GridPathCostQueuePassBoundary; /* 005332B0 g_GridPathCostQueuePassBoundary */
+extern GridScratchCell **g_GridPathCostQueuePassBoundary;
 
-extern uint32_t g_GridScratchWidth; /* 005332B4 g_GridScratchWidth */
+extern uint32_t g_GridScratchWidth;
 
-extern int32_t g_GridScratchHeight; /* 005332B8 g_GridScratchHeight */
+extern int32_t g_GridScratchHeight;
 
-extern uint32_t g_GridPathEntityClassMask; /* 00533ED0 g_GridPathEntityClassMask */
+extern uint32_t g_GridPathEntityClassMask;
 
-extern uint32_t g_GridPathBlockingMask; /* 00533ED4 g_GridPathBlockingMask */
+extern uint32_t g_GridPathBlockingMask;
 
-extern uint32_t g_GridPathHighCostMask; /* 00533ED8 g_GridPathHighCostMask */
+extern uint32_t g_GridPathHighCostMask;
 
-extern uint32_t g_GridPathUnreachableRegionReferenceColumn; /* 00533EDC g_GridPathUnreachableRegionReferenceColumn */
+extern uint32_t g_GridPathUnreachableRegionReferenceColumn;
 
-extern uint32_t g_GridPathUnreachableRegionReferenceRow; /* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
+extern uint32_t g_GridPathUnreachableRegionReferenceRow;
 
-extern EntityPathingPriorityPair *g_EntityPathingPriorityPairs; /* 005367D0 g_EntityPathingPriorityPairs */
+extern EntityPathingPriorityPair *g_EntityPathingPriorityPairs;
 
 /* 005367D4-005368D4: the 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
    fills at most ENTITY_PATHING_PRIORITY_PAIR_CAPACITY of them and heap-sorts them in place) */
 #define ENTITY_PATHING_PRIORITY_PAIR_CAPACITY 32
-extern EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY]; /* 005367D4 g_EntityPathingPriorityPairStorage */
+extern EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY];
 
-extern uint32_t g_EntityPathingPriorityPairCount; /* 005368D4 g_EntityPathingPriorityPairCount */
+extern uint32_t g_EntityPathingPriorityPairCount;
 
 /* Indices into g_GridTerrainClassThresholds (one table at 0x536F10-0x536F54 in the original). Water surface
    deltas are Q12, normal angles are the high 16 bits of the cell's packed normal angles. */
@@ -61,10 +61,10 @@ enum {
     GRID_TERRAIN_THRESHOLD_FALLBACK_SECONDARY = 14, /* [3] 12500/13500/14500, other contact kinds, class 4..6 */
     GRID_TERRAIN_THRESHOLD_COUNT = 17
 };
-extern int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT]; /* 00536F10 g_GridTerrainClassThresholds: int32_t[17] terrain-class thresholds of the grid classification and the model definition terrain-class values, one table (ModelDefinition_CopyTerrainClassValues indexes across entries); followed by 12 bytes of 0x90 padding */
+extern int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT]; /* int32_t[17] terrain-class thresholds of the grid classification and the model definition terrain-class values, one table (ModelDefinition_CopyTerrainClassValues indexes across entries); followed by 12 bytes of 0x90 padding */
 
-extern uint32_t g_GridInfluenceRadiusOffset[8]; /* 00536F60 g_GridInfluenceRadiusOffset: uint32_t[8] grid influence ring radius offsets 1000..4100, indexed by ring / footprint radius class (world/pathing/influence.c, assets/model/definitions.c) */
+extern uint32_t g_GridInfluenceRadiusOffset[8]; /* uint32_t[8] grid influence ring radius offsets 1000..4100, indexed by ring / footprint radius class (world/pathing/influence.c, assets/model/definitions.c) */
 
-extern uint32_t g_GridInfluenceSquaredThreshold[8]; /* 00536F80 g_GridInfluenceSquaredThreshold: uint32_t[8] squared influence ring radii, ring n = (g_GridInfluenceRadiusOffset[n] + radius + margin)^2; [6] is also reused as the footprint clearance disc (world/pathing/influence.c, world/pathing/grid.c) */
+extern uint32_t g_GridInfluenceSquaredThreshold[8]; /* uint32_t[8] squared influence ring radii, ring n = (g_GridInfluenceRadiusOffset[n] + radius + margin)^2; [6] is also reused as the footprint clearance disc (world/pathing/influence.c, world/pathing/grid.c) */
 
 #endif

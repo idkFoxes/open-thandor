@@ -10,61 +10,47 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004AF1F0 g_UiPendingFrameTicks */
 uint32_t g_UiPendingFrameTicks = 0;
 
-/* 004AF208 g_UiInvalidationSuppressed */
 uint32_t g_UiInvalidationSuppressed = 0;
 
-/* 004B0E30 g_UiRootNode */
 UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
 
-/* 004B0E34 g_UiWindowTextureSource */
 GraphicsTextureSourceAsset *g_UiWindowTextureSource = (void *)(intptr_t)-1; /* 0xFFFFFFFF in the original */
 
-/* 004B0E38 g_UiWindowClassTextureSource */
 GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = 0;
 
-/* 004B0E64 g_UiResizableWindowTitleTextTopOffset: int32_t, 5: pixels from the window top to the title text line of a resizable window (src/ui/controls/layout.c). */
+/* int32_t, 5: pixels from the window top to the title text line of a resizable window (src/ui/controls/layout.c). */
 static const int32_t g_UiResizableWindowTitleTextTopOffset = 5;
 
-/* 004B0E68 g_UiResizableWindowTitleTextStyle: UiPackedTextStyle, 2: packed rich-text style of the resizable window title (src/ui/controls/layout.c). */
+/* UiPackedTextStyle, 2: packed rich-text style of the resizable window title (src/ui/controls/layout.c). */
 static const UiPackedTextStyle g_UiResizableWindowTitleTextStyle = 2;
 
-/* 004B0E6C g_UiWindowMoveHandleWidth: int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window (src/ui/controls/layout.c). */
+/* int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window (src/ui/controls/layout.c). */
 static const int32_t g_UiWindowMoveHandleWidth = 19;
 
-/* 004B0E70 g_UiWindowResizeBorderThickness */
 static const int32_t g_UiWindowResizeBorderThickness = 19;
 
-/* 004B0E88 g_UiWindowTitleTextStyle */
 static const uint32_t g_UiWindowTitleTextStyle = 0;
 
-/* 004B0EA8 g_UiHorizontalGaugeLabelTopInset: int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
+/* int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
 static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
 
-/* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
 static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
 
-/* 004B0EB8 g_UiWindowClassTexturePathUtf16 */
 static uint16_t g_UiWindowClassTexturePathUtf16[20] = L"engine\\winclass.gfx";
 
-/* 004B0EE0 g_UiWindowClassTextPathUtf16 */
 static uint16_t g_UiWindowClassTextPathUtf16[19] = L"texte\\winclass.str";
 
-/* 004B0F06 g_UiWindowTexturePathUtf16 */
 static uint16_t g_UiWindowTexturePathUtf16[15] = L"engine\\win.gfx";
 
-/* 004B3C68 g_UiWindowPercentTextUtf16 */
 static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
 
-/* 00576C24 g_DirectInputMouseRefreshCountdown */
 static UiFrameRefreshCountdownFrames g_DirectInputMouseRefreshCountdown = 16;
 
 /* Implementation ownership: ui/controls/layout. */
 
-/* Address: 0x004B49A0.
-   drawClipped of g_UiPanelControlVtable: draws the panel's optional tiled background (UI_ROOT_TILED_BACKGROUND)
+/* drawClipped of g_UiPanelControlVtable: draws the panel's optional tiled background (UI_ROOT_TILED_BACKGROUND)
    and frame (UI_ROOT_FRAME); UI_ROOT_ALTERNATE_BACKGROUND switches to the second background and adds the
    second frame on top. Then draws the children. A frame is four corners and four tiled edges between them.
 */
@@ -178,8 +164,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
 }
 
 
-/* Address: 0x004B4D40.
-   drawClipped of g_UiResizableWindowControlVtable: draws the window chrome selected by rootFlags (tiled
+/* drawClipped of g_UiResizableWindowControlVtable: draws the window chrome selected by rootFlags (tiled
    background, frame, title bar with the centred title text, close button top left, maximize/restore button
    top right) and then the children. Title bar and buttons use their inactive pieces while the window is not
    in the front root, the buttons their armed pieces while pressed under the pointer.
@@ -309,8 +294,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
 }
 
 
-/* Address: 0x004B3420.
-   drawClipped of g_UiTitledWindowControlVtable: draws the group-box frame with the title text set into its
+/* drawClipped of g_UiTitledWindowControlVtable: draws the group-box frame with the title text set into its
    top edge (between two caps, centred when titleFlags bit 0 is set, otherwise after the top-left corner),
    then the children. The top edge is tiled left of the title only when it is centred.
 */
@@ -408,8 +392,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
 }
 
 
-/* Address: 0x004AF890.
-   Runs one complete UI frame (events, frame ticks, queued actions, draw, present) from code that may or may
+/* Runs one complete UI frame (events, frame ticks, queued actions, draw, present) from code that may or may
    not hold the UI frame lock, e.g. modal loops and the fatal-error box: the lock is released for the frame
    and taken again afterwards only when it was held on entry.
 */
@@ -442,8 +425,7 @@ void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
 }
 
 
-/* Address: 0x004AF920.
-   Runs one complete UI frame: dispatches pending keyboard and pointer events, runs the pending frame ticks,
+/* Runs one complete UI frame: dispatches pending keyboard and pointer events, runs the pending frame ticks,
    dispatches queued UI actions, draws and presents. Unlike UiFrame_ProcessAndPresentWithLockTransition it does
    not touch the UI frame lock itself.
 */
@@ -460,8 +442,7 @@ void UiFrame_ProcessAndPresent(void)
 }
 
 
-/* Address: 0x004B48D0.
-   Shows page pageIndex of a page stack (tabbed dialog pages): the visible page is the stack's only child
+/* Shows page pageIndex of a page stack (tabbed dialog pages): the visible page is the stack's only child
    (firstChild), so switching replaces that link, moving the keyboard focus out of the old page and into the
    new one, and redraws. Out-of-range indices and the already shown page are ignored.
 */
@@ -515,8 +496,7 @@ static void UiResizableWindowControl_SaveRectangleAndCoverFramebuffer(UiResizabl
 }
 
 
-/* Address: 0x004B52D0.
-   nonRightRelease of g_UiResizableWindowControlVtable: ends a move or resize and completes a button press.
+/* nonRightRelease of g_UiResizableWindowControlVtable: ends a move or resize and completes a button press.
    Releasing over the armed close button closes the window, but only when the press was a double click
    (or a middle-button press), like the control-menu box of old Windows versions. Releasing over the
    armed maximize button toggles between the full framebuffer and the saved rectangle.
@@ -549,8 +529,7 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
 }
 
 
-/* Address: 0x004B5770.
-   keyboardEvent of g_UiResizableWindowControlVtable: Alt+C closes the window (with a close button), Alt+Z
+/* keyboardEvent of g_UiResizableWindowControlVtable: Alt+C closes the window (with a close button), Alt+Z
    toggles maximize (with a maximize button), both returning CF clear; every other key goes to the default
    focus-moving handler. The key events of Keyboard_OnKeyDown carry letters as KEYBOARD_KEY_CODE_CHAR
    (0x30000 + code), so the plain 'c' / 'z' compared here never arrive and the hotkeys do not fire.
@@ -584,8 +563,7 @@ bool UiResizableWindowControl_HandleWindowHotkeys
 }
 
 
-/* Address: 0x004B1000.
-   Opens a dialog or screen: puts the serialized UI tree root on top of the root stack. Its rectangle is
+/* Opens a dialog or screen: puts the serialized UI tree root on top of the root stack. Its rectangle is
    computed from the framebuffer size and its anchors, its callbacks are attached and its tree pointers
    relocated. The previous top root loses UI_NODE_IN_FRONT_ROOT (windows draw as inactive), the new one is
    laid out, gets the flag and the initial keyboard focus; pointer capture and tooltip are reset.
@@ -638,8 +616,7 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
 }
 
 
-/* Address: 0x004B1110.
-   Closes the dialog or screen that contains root (any node of it may be passed): its close callback may
+/* Closes the dialog or screen that contains root (any node of it may be passed): its close callback may
    veto (CF set, returned). Otherwise the root below becomes the top again with UI_NODE_IN_FRONT_ROOT and its
    initial focus, pointer capture and hover are reset and the whole screen is redrawn. The closed root is
    assumed to be the top one: only g_UiRootNode is replaced.
@@ -680,8 +657,7 @@ bool UiRootStack_Pop(UiRootNode *root)
 }
 
 
-/* Address: 0x004B2790.
-   relocate of g_UiWindowControlVtable, the same as UiFramedTextButtonControl_Relocate: an inset-framed
+/* relocate of g_UiWindowControlVtable, the same as UiFramedTextButtonControl_Relocate: an inset-framed
    control (UI_BUTTON_FRAME_INSET) grows its layout offsets by g_UiWindowFrameInset on every side, so the
    frame lies outside the authored box; then the children are relocated.
 */
@@ -702,8 +678,7 @@ void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocati
 }
 
 
-/* Address: 0x004B36C0.
-   layout of g_UiTitledWindowControlVtable: lays out the children inside the frame, i.e. with the rectangle
+/* layout of g_UiTitledWindowControlVtable: lays out the children inside the frame, i.e. with the rectangle
    shrunk by the top-left corner (or the title height when that is taller) and the bottom-right corner,
    then restores the rectangle and grows layoutWidth/layoutHeight back to the full box.
 */
@@ -751,8 +726,7 @@ void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *co
 }
 
 
-/* Address: 0x004B3C00.
-   hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never
+/* hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never
    hit (UI_NODE_NONE instead), so the pointer passes through the panel to what lies below it.
 */
 UiNodeBase * UiFillPanelControl_HitTestChildrenOnly
@@ -769,8 +743,7 @@ UiNodeBase * UiFillPanelControl_HitTestChildrenOnly
 }
 
 
-/* Address: 0x004B3C80.
-   drawClipped of g_UiHorizontalGaugeControlVtable (progress bar): draws the track, a fill proportional to
+/* drawClipped of g_UiHorizontalGaugeControlVtable (progress bar): draws the track, a fill proportional to
    (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue, and with
    gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than
    its two caps. Children are not drawn.
@@ -883,8 +856,7 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
 }
 
 
-/* Address: 0x004B46A0.
-   relocate of g_UiLayoutContainerControlVtable (the page stack, UiPageStackControl): turns the page links
+/* relocate of g_UiLayoutContainerControlVtable (the page stack, UiPageStackControl): turns the page links
    from image offsets into pointers, relocates every page's tree by making it the stack's firstChild in
    turn, and leaves page 0 as the shown page. Like the other page-stack methods it assumes at least one page.
 */
@@ -917,8 +889,7 @@ void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta reloc
 }
 
 
-/* Address: 0x004B4700.
-   layout of g_UiLayoutContainerControlVtable: lays out every page of the page stack, hidden ones included,
+/* layout of g_UiLayoutContainerControlVtable: lays out every page of the page stack, hidden ones included,
    by making each the stack's firstChild in turn; the shown page is restored afterwards.
 */
 void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
@@ -942,8 +913,7 @@ void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
 }
 
 
-/* Address: 0x004B4790.
-   hitTest of g_UiLayoutContainerControlVtable (the page stack): hit-tests the shown page like
+/* hitTest of g_UiLayoutContainerControlVtable (the page stack): hit-tests the shown page like
    UiContainer_HitTestChildren, but the stack itself is never hit (UI_NODE_NONE instead).
 */
 UiNodeBase * UiLayoutContainerControl_HitTestChildrenOnly
@@ -960,8 +930,7 @@ UiNodeBase * UiLayoutContainerControl_HitTestChildrenOnly
 }
 
 
-/* Address: 0x004B47B0.
-   suppressActionId of g_UiLayoutContainerControlVtable: suppresses the controls carrying actionId on every
+/* suppressActionId of g_UiLayoutContainerControlVtable: suppresses the controls carrying actionId on every
    page of the page stack, hidden ones included (each page is made firstChild in turn).
 */
 void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
@@ -985,8 +954,7 @@ void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPa
 }
 
 
-/* Address: 0x004B4800.
-   unsuppressActionId of g_UiLayoutContainerControlVtable: the counterpart of
+/* unsuppressActionId of g_UiLayoutContainerControlVtable: the counterpart of
    UiLayoutContainerControl_SuppressActionIdRecursive for every page of the page stack.
 */
 void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
@@ -1010,8 +978,7 @@ void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,Ui
 }
 
 
-/* Address: 0x004B4D10.
-   relocate of g_UiResizableWindowControlVtable: relocates the children, then makes the window a keyboard
+/* relocate of g_UiResizableWindowControlVtable: relocates the children, then makes the window a keyboard
    focus target only when it has a close or maximize button, i.e. hotkeys for
    UiResizableWindowControl_HandleWindowHotkeys.
 */
@@ -1142,8 +1109,7 @@ static void UiResizableWindowControl_ResizeToPointer
 }
 
 
-/* Address: 0x004B53E0.
-   nonRightDrag of g_UiResizableWindowControlVtable: while moving, shifts the window by the pointer's
+/* nonRightDrag of g_UiResizableWindowControlVtable: while moving, shifts the window by the pointer's
    movement since the grab; while resizing, moves the grabbed edges to the pointer, keeping the window at
    least UI_WINDOW_MINIMUM_SIZE wide and high, and relays it out when the rectangle changed. While the close
    or maximize button is pressed it only tracks whether the pointer is still over it (armed).
@@ -1204,8 +1170,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
 }
 
 
-/* Address: 0x004BC660.
-   layout of g_UiImageControlVtable (image toggles of the in-game resource panel): lays out the children
+/* layout of g_UiImageControlVtable (image toggles of the in-game resource panel): lays out the children
    relative to the parent's rectangle instead of the control's own by swapping the parent's edges in for
    the call; afterwards the own rectangle is restored and its size stored as layoutWidth/layoutHeight.
 */
@@ -1257,8 +1222,7 @@ void UiImageControl_LayoutChildrenToParent(UiImageControl *control)
 }
 
 
-/* Address: 0x004AF3B0.
-   Discards all buffered keyboard and pointer input and the frame ticks that piled up, so a UI loop that starts
+/* Discards all buffered keyboard and pointer input and the frame ticks that piled up, so a UI loop that starts
    (or resumes after a movie, session or error box) neither reacts to stale input nor catches up on old ticks.
 */
 void UiFrame_FlushInputAndResetPendingTicks(void)
@@ -1271,8 +1235,7 @@ void UiFrame_FlushInputAndResetPendingTicks(void)
 }
 
 
-/* Address: 0x004AF9D0.
-   Moves an open root (window) to the top of the root stack: unlinks it from its position, links it above
+/* Moves an open root (window) to the top of the root stack: unlinks it from its position, links it above
    the current front root, gives it the initial keyboard focus, moves the in-front flag from the old front
    root to it and invalidates both. Always returns false (CF clear).
 */
@@ -1307,8 +1270,7 @@ bool UiRootStack_BringToFront(UiRootNode *root)
 }
 
 
-/* Address: 0x004B0F30.
-   Loads what every window needs: the frame graphics (engine\win.gfx, engine\winclass.gfx) and their texts
+/* Loads what every window needs: the frame graphics (engine\win.gfx, engine\winclass.gfx) and their texts
    (texte\winclass.str as text page 1), installs the root-stack actions as action-handler page 0 and starts
    with an empty root stack. A missing file is fatal.
 */
@@ -1338,8 +1300,7 @@ void UiWindowResources_Init(void)
 }
 
 
-/* Address: 0x004B1240.
-   After a display mode change (UiDisplayModeAction_ApplyPendingMode, FrontendDisplaySettings_ApplyMode):
+/* After a display mode change (UiDisplayModeAction_ApplyPendingMode, FrontendDisplaySettings_ApplyMode):
    recomputes the rectangle of every open root from the new framebuffer size, its Q31 anchors and pixel
    offsets (as UiRootStack_Push does) and lays it out again, from the front root down. Assumes at least one
    open root.
@@ -1379,8 +1340,7 @@ void UiRootStack_Relayout(void)
 }
 
 
-/* Address: 0x004B3EE0.
-   pointerMove of g_UiHorizontalGaugeControlVtable: returns the busy cursor as cursor frame, so a progress
+/* pointerMove of g_UiHorizontalGaugeControlVtable: returns the busy cursor as cursor frame, so a progress
    bar under the pointer shows it where the caller applies the frame (the in-game and scenario hover code
    pass it to g_GraphicsCursorSetFrame; the generic pointer-move dispatch ignores it).
 */
@@ -1392,8 +1352,7 @@ GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
 }
 
 
-/* Address: 0x004B4740.
-   applyFlags of g_UiLayoutContainerControlVtable: applies the node-flag masks (UiNode_ApplyFlagsRecursive)
+/* applyFlags of g_UiLayoutContainerControlVtable: applies the node-flag masks (UiNode_ApplyFlagsRecursive)
    to every page of the page stack, hidden ones included, by making each the stack's firstChild in turn.
 */
 void UiLayoutContainerControl_ApplyFlagsRecursive
@@ -1418,8 +1377,7 @@ void UiLayoutContainerControl_ApplyFlagsRecursive
 }
 
 
-/* Address: 0x004B5120.
-   nonRightPress of g_UiResizableWindowControlVtable: a press on the close or maximize button (its opaque
+/* nonRightPress of g_UiResizableWindowControlVtable: a press on the close or maximize button (its opaque
    pixels) marks that button pressed. Otherwise, unless maximized, a press on the border of a resizable
    window (outside the inner area left by the frame corners) starts a resize of the grabbed edge or corner,
    and a press in the top UiWindowMoveHandleWidth rows of a movable window starts a move with the move cursor.
@@ -1511,8 +1469,7 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
 }
 
 
-/* Address: 0x004B5660.
-   pointerMove of g_UiResizableWindowControlVtable: returns the cursor frame for the pointer position, a
+/* pointerMove of g_UiResizableWindowControlVtable: returns the cursor frame for the pointer position, a
    resize cursor over the border of a resizable, non-maximized window (the same border zones as
    UiResizableWindowControl_BeginMoveResizeOrWindowAction), otherwise the arrow.
 */
@@ -1566,8 +1523,7 @@ GraphicsCursorFrameIndex UiResizableWindowControl_QueryResizeCursorCode
 }
 
 
-/* Address: 0x00569A80.
-   Picks a grid (columns and rows) for itemCount items: up to 4 items in one row, up to
+/* Picks a grid (columns and rows) for itemCount items: up to 4 items in one row, up to
    4 * maxRows items in rows of 4, more in maxRows rows (fewer when the last rows would stay empty) of as
    many columns as needed.
 */
@@ -1601,8 +1557,7 @@ UiGridDimensions UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControl
 }
 
 
-/* Address: 0x00569AE0.
-   The single-column counterpart of UiGrid_ComputeDimensionsPacked: itemCount rows, 1 column.
+/* The single-column counterpart of UiGrid_ComputeDimensionsPacked: itemCount rows, 1 column.
 */
 UiGridDimensions UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
 
@@ -1615,8 +1570,7 @@ UiGridDimensions UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
 }
 
 
-/* Address: 0x004B0940.
-   suppressActionId of the plain containers (g_UiPanelControlVtable, g_UiTitledWindowControlVtable,
+/* suppressActionId of the plain containers (g_UiPanelControlVtable, g_UiTitledWindowControlVtable,
    g_UiResizableWindowControlVtable and most other container vtables): passes the request on to every child;
    the controls that carry an action id suppress themselves when it matches.
 */
@@ -1633,8 +1587,7 @@ void UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
 }
 
 
-/* Address: 0x004B0990.
-   unsuppressActionId of the same container vtables as UiContainer_SuppressActionId: passes the request on to
+/* unsuppressActionId of the same container vtables as UiContainer_SuppressActionId: passes the request on to
    every child.
 */
 void UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
@@ -1650,8 +1603,7 @@ void UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
 }
 
 
-/* Address: 0x004B1420.
-   Relocates a UI tree loaded from a serialized image: for each node of the sibling chain from firstNode
+/* Relocates a UI tree loaded from a serialized image: for each node of the sibling chain from firstNode
    that is still unrelocated (layoutWidth -1, reset to 0 here) the sibling/child/parent links are turned
    from image offsets into pointers by adding imageDelta, the transient click and focus flags are cleared,
    and the node's own relocate method runs (containers relocate their children from there).
@@ -1679,8 +1631,7 @@ void UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeB
 }
 
 
-/* Address: 0x004B4850.
-   Gives the keyboard focus, if nothing has it, to the first focus target below root (depth first), e.g. when
+/* Gives the keyboard focus, if nothing has it, to the first focus target below root (depth first), e.g. when
    a page becomes active.
 */
 void UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
@@ -1696,8 +1647,7 @@ void UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
 }
 
 
-/* Address: 0x004B4890.
-   Takes the keyboard focus away from every node below root (depth first; see UiKeyboardFocus_ReleaseNode)
+/* Takes the keyboard focus away from every node below root (depth first; see UiKeyboardFocus_ReleaseNode)
    before that subtree, e.g. a page, is deactivated.
 */
 void UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
@@ -1713,8 +1663,7 @@ void UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
 }
 
 
-/* Address: 0x004B50D0.
-   layout of g_UiResizableWindowControlVtable (also called after maximize/restore): lays out the children
+/* layout of g_UiResizableWindowControlVtable (also called after maximize/restore): lays out the children
    below the title bar when the window has one (UI_ROOT_TITLE_BAR), i.e. with top moved down by the bar
    height for the call, and adds that height back to layoutHeight afterwards.
 */
@@ -1740,8 +1689,7 @@ void UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *
 }
 
 
-/* Address: 0x004AF680.
-   One UI frame step under the UI frame lock: pumps Win32 messages, then runs every pending frame tick
+/* One UI frame step under the UI frame lock: pumps Win32 messages, then runs every pending frame tick
    (sprite-button animations and frame callback of the front root, tick of the pointer-capture and
    keyboard-focus nodes, tooltip countdown) and refreshes the DirectInput mouse every 48 calls.
 */
@@ -1791,8 +1739,7 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
 }
 
 
-/* Address: 0x004AF7E0.
-   Draws the UI root stack from the bottom root up to the front root, each clipped to its rectangle within
+/* Draws the UI root stack from the bottom root up to the front root, each clipped to its rectangle within
    the framebuffer, and the tooltip on top.
 */
 void UiFrame_Draw(void)
@@ -1870,8 +1817,7 @@ static UiNodeBase *UiContainer_HitTestEligibleSiblings
   return UI_NODE_NONE;
 }
 
-/* Address: 0x004B0800.
-   Finds the UI node under the pointer: every non-suppressed child that contains the pointer (or may be hit
+/* Finds the UI node under the pointer: every non-suppressed child that contains the pointer (or may be hit
    outside its bounds) is asked via its hitTest method, the last sibling (drawn on top) first. Returns the
    first hit, or the container itself when no child claims the pointer.
 */
@@ -1891,8 +1837,7 @@ UiNodeBase * UiContainer_HitTestChildren(UiPixelCoordinate pointerY,UiPixelCoord
 }
 
 
-/* Address: 0x004B13B0.
-   Tiles a piece of g_UiWindowTextureSource over the rectangle (tileLeft, tileTop)..(tileRight, tileBottom),
+/* Tiles a piece of g_UiWindowTextureSource over the rectangle (tileLeft, tileTop)..(tileRight, tileBottom),
    given relative to node (a UiNodeBase), clipped to the clip rectangle. Like
    GraphicsTextureSource_BlitTiledSourceAlpha, which it forwards to, it takes the bottom/right values first.
    Called by the window, panel and button draw methods.
@@ -1912,8 +1857,7 @@ void UiWindow_BlitTiledInterior(UiPixelCoordinate clipBottom,UiPixelCoordinate c
 }
 
 
-/* Address: 0x004B0510.
-   relocate of the plain containers (g_UiPanelControlVtable, g_UiTitledWindowControlVtable and most other
+/* relocate of the plain containers (g_UiPanelControlVtable, g_UiTitledWindowControlVtable and most other
    container vtables): relocates the children like UiSerializedTree_Relocate does for a root's siblings.
    Every child still unrelocated (layoutWidth -1, reset to 0 here) gets its sibling/child/parent links turned
    from image offsets into pointers and its transient click and focus flags cleared, then relocates its own
@@ -1945,8 +1889,7 @@ void UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,Ui
 }
 
 
-/* Address: 0x004B05B0.
-   drawClipped of g_UiLayoutContainerControlVtable and the tail of the container draw methods: draws each
+/* drawClipped of g_UiLayoutContainerControlVtable and the tail of the container draw methods: draws each
    child whose rectangle intersects the clip rectangle, first child first (later siblings on top). The clip
    rectangle is passed on unchanged.
 */
@@ -1968,8 +1911,7 @@ void UiContainer_DrawIntersectingChildren
 }
 
 
-/* Address: 0x004B1350.
-   Tiles a piece of g_UiWindowTextureSource downwards from tileTop to tileBottom in one column at tileLeft
+/* Tiles a piece of g_UiWindowTextureSource downwards from tileTop to tileBottom in one column at tileLeft
    (relative to node, a UiNodeBase), one piece wide (INT32_MIN as right edge), clipped to the clip rectangle:
    the vertical edges of window and button frames. Bottom/right values come first, as in
    GraphicsTextureSource_BlitTiledSourceAlpha.
@@ -1987,8 +1929,7 @@ void UiWindow_BlitTiledVerticalEdge(UiPixelCoordinate clipBottom,UiPixelCoordina
 }
 
 
-/* Address: 0x004B0640.
-   Default layout of a container: stores its own width/height, then places every child. Each child edge is
+/* Default layout of a container: stores its own width/height, then places every child. Each child edge is
    (parent extent * anchorQ31) >> 31 + offset from the parent's left/top, i.e. a fraction of the parent plus
    a pixel offset; then the child lays out its own children.
 */
@@ -2038,8 +1979,7 @@ void UiContainer_LayoutChildren(UiNodeBase *control)
 }
 
 
-/* Address: 0x004B12F0.
-   Tiles a piece of g_UiWindowTextureSource rightwards from tileLeft to tileRight in one row at tileTop
+/* Tiles a piece of g_UiWindowTextureSource rightwards from tileLeft to tileRight in one row at tileTop
    (relative to node, a UiNodeBase), one piece high (INT32_MIN as bottom edge), clipped to the clip
    rectangle: horizontal frame edges, title bars and gauge tracks. Bottom/right values come first, as in
    GraphicsTextureSource_BlitTiledSourceAlpha.
@@ -2059,8 +1999,7 @@ void UiWindow_BlitTiledHorizontalEdge
 }
 
 
-/* Address: 0x004B14D0.
-   Marks the whole screen for redraw: drops the collected dirty rectangles and invalidates every root on the UI
+/* Marks the whole screen for redraw: drops the collected dirty rectangles and invalidates every root on the UI
    root stack, top to bottom. Does nothing while invalidation is suppressed.
 */
 void UiRootStack_InvalidateAll(void)
@@ -2080,7 +2019,6 @@ void UiRootStack_InvalidateAll(void)
 
 /* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004B33D0 g_UiTitledWindowControlVtable */
 UiNodeVtable g_UiTitledWindowControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -2101,7 +2039,6 @@ UiNodeVtable g_UiTitledWindowControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B3A50 g_UiFillPanelControlVtable */
 UiNodeVtable g_UiFillPanelControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -2122,7 +2059,6 @@ UiNodeVtable g_UiFillPanelControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B3C20 g_UiHorizontalGaugeControlVtable */
 UiNodeVtable g_UiHorizontalGaugeControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -2143,7 +2079,6 @@ UiNodeVtable g_UiHorizontalGaugeControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B4650 g_UiLayoutContainerControlVtable */
 UiNodeVtable g_UiLayoutContainerControlVtable = {
         .relocate = (void *)UiLayoutContainerControl_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -2164,7 +2099,6 @@ UiNodeVtable g_UiLayoutContainerControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B4950 g_UiPanelControlVtable */
 UiNodeVtable g_UiPanelControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -2185,7 +2119,6 @@ UiNodeVtable g_UiPanelControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B4CC0 g_UiResizableWindowControlVtable */
 UiNodeVtable g_UiResizableWindowControlVtable = {
         .relocate = (void *)UiResizableWindowControl_RelocateAndRefreshInteractionState,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,

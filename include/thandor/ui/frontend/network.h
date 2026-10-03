@@ -18,22 +18,16 @@
    the terminator or a control character first). */
 #define FRONTEND_CLIENT_OPTION_SCAN_LIMIT 0x7FFFFF
 
-/* 0x0054C260 */
 void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi);
 
-/* 0x005474A0 */
 void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root);
 
-/* 0x0054C7D0 */
 void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit);
 
-/* 0x0054CE10 */
 void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source);
 
-/* 0x0054C830 */
 void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton);
 
-/* 0x0054CE80 */
 void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton);
 
 #endif /* THANDOR_UI_FRONTEND_NETWORK_H */

@@ -193,8 +193,7 @@ static void GraphicsPaletteTextureSource_PackUsedEntriesOfBank(GraphicsTextureSo
   }
 }
 
-/* Address: 0x004AE520.
-   Shrinks the palette banks of a palette texture source in place: marks every entry unused, clears the mark
+/* Shrinks the palette banks of a palette texture source in place: marks every entry unused, clears the mark
    on each entry a subresource pixel references, removes banks without a used colour, folds duplicate colours
    within a bank, merges bank pairs whose used colours fit into one bank and finally packs the used entries of
    every bank to its front (zeroing the rest), remapping the pixel indices at each step. CF set (true) when the
@@ -246,8 +245,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
 }
 
 
-/* Address: 0x004AD800.
-   Checks the 'pal' signature: returns true and stores paletteBankCount (+0xB0) in *outBankCount, or returns
+/* Checks the 'pal' signature: returns true and stores paletteBankCount (+0xB0) in *outBankCount, or returns
    false (leaving *outBankCount untouched) for a wrong signature. No caller or table reference is known.
 */
 bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount)
@@ -260,8 +258,7 @@ bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32
   return true;
 }
 
-/* Address: 0x004AD820.
-   Loads a 'pal' palette asset from pathUtf16 (Package_LoadEntry) and validates it through
+/* Loads a 'pal' palette asset from pathUtf16 (Package_LoadEntry) and validates it through
    g_GraphicsPaletteAssetValidate; an invalid asset is released again. Returns the asset (never NULL), or NULL
    with the load or validation error in *outErrorCode (outErrorCode may be NULL).
    Installed as g_GraphicsPaletteAssetLoadPackage (used by the army graphics and frontend palette loaders).
@@ -288,8 +285,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint
 }
 
 
-/* Address: 0x004AD860.
-   Releases a palette asset loaded by GraphicsPaletteAsset_LoadPackage: resolves its allocation through
+/* Releases a palette asset loaded by GraphicsPaletteAsset_LoadPackage: resolves its allocation through
    g_GraphicsPaletteAssetResolveAllocationBase and hands it to Resource_Release. Installed as
    g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage.
 */
@@ -304,8 +300,7 @@ void GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
 }
 
 
-/* Address: 0x004AD880.
-   Makes an independently owned heap copy of a palette asset (allocationSizeBytes, copied dword by dword) and
+/* Makes an independently owned heap copy of a palette asset (allocationSizeBytes, copied dword by dword) and
    validates it; an invalid copy is freed again and the free result returned. Installed as
    g_GraphicsPaletteAssetLifecycleCallbacks3.clone.
 */
@@ -342,8 +337,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
 }
 
 
-/* Address: 0x004AD8D0.
-   Frees a palette asset made by GraphicsPaletteAsset_Clone: resolves its allocation through
+/* Frees a palette asset made by GraphicsPaletteAsset_Clone: resolves its allocation through
    g_GraphicsPaletteAssetResolveAllocationBase and frees it with g_MemoryApi.free. Installed as
    g_GraphicsPaletteAssetLifecycleCallbacks3.releaseClone.
 */
@@ -358,8 +352,7 @@ void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
 }
 
 
-/* Address: 0x004AD8F0.
-   Returns paletteAsset when it starts with the 'pal' signature, otherwise NULL with
+/* Returns paletteAsset when it starts with the 'pal' signature, otherwise NULL with
    FATAL_ERROR_PALETTE_ASSET_INVALID in *outErrorCode (outErrorCode may be NULL). Installed as
    g_GraphicsPaletteAssetValidate.
 */
@@ -376,8 +369,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *palet
 }
 
 
-/* Address: 0x004AD920.
-   Returns the allocation that owns a palette asset, which is the asset itself; both release callbacks go
+/* Returns the allocation that owns a palette asset, which is the asset itself; both release callbacks go
    through this slot. Installed as g_GraphicsPaletteAssetResolveAllocationBase.
 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset)
@@ -399,8 +391,7 @@ static uint32_t *GraphicsPaletteTextureSource_CopyDwords(uint32_t *destination,c
   return destination;
 }
 
-/* Address: 0x004AE7E0.
-   Builds a new palette texture source from baseAsset followed by appendedAsset: one header (base's, with the
+/* Builds a new palette texture source from baseAsset followed by appendedAsset: one header (base's, with the
    size and the bank and subresource counts summed), base banks, appended banks, base subresource entries,
    appended entries, base pixel data, appended pixel data. Pixel offsets of both entry sets and the bank index
    of appended entries are rebased. Returns the new asset, or NULL when the allocation fails.
@@ -492,8 +483,7 @@ GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAn
 }
 
 
-/* Address: 0x004AE3F0.
-   Moves the used colours of bank sourcePaletteBank into bank destinationPaletteBank (reusing identical colours,
+/* Moves the used colours of bank sourcePaletteBank into bank destinationPaletteBank (reusing identical colours,
    otherwise taking free entries), rewrites the pixels of every subresource that used the source bank to the
    destination bank and its new indices, then removes the source bank. Called by
    GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices once the pair is known to fit.
@@ -572,8 +562,7 @@ void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
 }
 
 
-/* Address: 0x004AE2E0.
-   Replaces colour index oldColorIndex by newColorIndex in the pixels of every subresource that uses palette
+/* Replaces colour index oldColorIndex by newColorIndex in the pixels of every subresource that uses palette
    bank paletteBank (nothing to do when both are equal). Called by
    GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices.
 */
@@ -611,8 +600,7 @@ void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
 }
 
 
-/* Address: 0x004AE370.
-   Returns how many entries one bank would need to hold the used colours of both destinationPaletteBank and
+/* Returns how many entries one bank would need to hold the used colours of both destinationPaletteBank and
    candidatePaletteBank (colours present in both counted once). Called by
    GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices to find bank pairs that can be merged.
 */
@@ -664,8 +652,7 @@ uint32_t GraphicsPaletteTextureSource_CountCombinedUsedColors
 }
 
 
-/* Address: 0x004AE230.
-   Deletes palette bank paletteIndex: moves everything behind it 0x800 bytes down, lowers the bank count, the
+/* Deletes palette bank paletteIndex: moves everything behind it 0x800 bytes down, lowers the bank count, the
    subresource table offset, the allocation size and every subresource's pixel offset accordingly, renumbers
    the subresources of later banks and drops the bank's slot from g_GraphicsPaletteBankSlots. Called by the
    palette optimiser (GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices/MergePaletteBank...).

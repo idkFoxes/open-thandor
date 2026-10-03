@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/ai/technology. */
 
-/* Address: 0x0053BD80.
-   Technology score callback for score kind 3 (g_AiTechnologyCandidateScoreCallbackTable[3], image
+/* Technology score callback for score kind 3 (g_AiTechnologyCandidateScoreCallbackTable[3], image
    0x0053B9EC; technologies researched in class 13/22 structures). Looks up the model definition that
    ModelDefinitionRegistry_FindByRuntimeClassId finds for the technology id and scores the technology by
    how many own units share that definition's family (AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8).
@@ -74,8 +73,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
 }
 
 
-/* Address: 0x00538000.
-   Returns false (CF clear) when the AI may plan this technology: no workspace-00 structure is already working
+/* Returns false (CF clear) when the AI may plan this technology: no workspace-00 structure is already working
    on it (runtimeFlags & 0xC0 with the technology id at +0x100), the faction (factionRecordOffset = faction *
    0x740) has not unlocked it yet, and all eight prerequisite mask words are covered by its unlocked technologies.
    Note the inverted sense despite the name: true means NOT available (callers rely on it).
@@ -149,8 +147,7 @@ static enum AiTechnologyCandidateScoreKind AiTechnologyPlanning_SelectScoreKind
 }
 
 
-/* Address: 0x00538140.
-   Appends a technology that the source structure can research to the technology candidate list (workspace 12,
+/* Appends a technology that the source structure can research to the technology candidate list (workspace 12,
    at most 32; the pioneer vehicle is never added) and picks its score function: walls 0, mine and pump
    improvements 1, source of runtime class 11 2, of class 13 or 22 3, radar and AR-M silo technologies 4,
    everything else 5. (The original preserved the caller's loop registers EAX/ECX/EDX; those were
@@ -175,8 +172,7 @@ void AiTechnologyPlanning_AddCandidateRecord(ModelRuntimeSlot *sourceModelRuntim
 }
 
 
-/* Address: 0x0053BCC0.
-   Technology score callback for score kind 1 (g_AiTechnologyCandidateScoreCallbackTable[1], image
+/* Technology score callback for score kind 1 (g_AiTechnologyCandidateScoreCallbackTable[1], image
    0x0053B9E4; xenite-mine and tritium-pump improvements). Nothing while the faction's xenite is below the
    ki.dat minimum; mine improvements then score their base value, pump improvements their base value
    scaled by energy demand / energy supply (Q8), but only once demand reaches 0xF0/0x100 (about 94%)
@@ -218,8 +214,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
 }
 
 
-/* Address: 0x0053BD60.
-   Technology score callback for score kind 2 (g_AiTechnologyCandidateScoreCallbackTable[2], image
+/* Technology score callback for score kind 2 (g_AiTechnologyCandidateScoreCallbackTable[2], image
    0x0053B9E8; technologies researched in class 11 structures): the technology's base candidate score
    from the technology asset, unconditionally.
 */
@@ -232,8 +227,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind2
 }
 
 
-/* Address: 0x0053BEA0.
-   Technology score callback for score kind 4 (g_AiTechnologyCandidateScoreCallbackTable[4], image
+/* Technology score callback for score kind 4 (g_AiTechnologyCandidateScoreCallbackTable[4], image
    0x0053B9F0; radar and AR-M silo technologies): the technology's base candidate score, unconditionally.
 */
 AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind4
@@ -253,8 +247,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
           (AiTechnologyCategoryMask categoryMask,FactionRuntimeIndex factionIndex,
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
 
-/* Address: 0x0053BEC0.
-   Technology score callback for score kind 5 (g_AiTechnologyCandidateScoreCallbackTable[5], image
+/* Technology score callback for score kind 5 (g_AiTechnologyCandidateScoreCallbackTable[5], image
    0x0053B9F4; every technology not caught by kinds 0-4). Hands the category mask (a global set by the
    caller) to the body below, which holds the original code.
 */
@@ -304,8 +297,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
 }
 
 
-/* Address: 0x0053BC00.
-   Veto hook of AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue (its only caller, called
+/* Veto hook of AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue (its only caller, called
    directly): would return true (CF set) to reject the candidate definition, but always accepts (CF clear).
    The caller passes candidateDefinition in EAX as well as on the stack; EAX is preserved.
 */
@@ -317,8 +309,7 @@ bool AiTechnologyCompatibility_AcceptRuntimeClassCandidate
 }
 
 
-/* Address: 0x0053BC20.
-   Relation scale (Q8) of a candidate definition to the faction's units in the secondary workspace
+/* Relation scale (Q8) of a candidate definition to the faction's units in the secondary workspace
    (workspace 01): (1.0 + 2.0 per assigned unit whose definition id equals the candidate's or differs by
    1000 or 2000, i.e. the same unit in another id block) / number of assigned units; 1.0 when there is
    none. Called directly by AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue.

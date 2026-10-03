@@ -25,54 +25,43 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x005137F0 */
 void TerrainRegionCollection_CollectConnectedCellsRecursive
           (FieldGridRegionMask requiredCellFlags,FieldGridRowStrideBytes rowStrideBytes,
           FieldGridCell *cell);
 
-/* 0x00561A10 */
 void TerrainMaterialEdit_SeedMatchingRegionReplacement
           (FrontendPlayerIndex playerIndex,TerrainMaterialByteValue replacementMaterialByte,
           Q12 worldYQ12,Q12 worldXQ12);
 
-/* 0x00561AE0 */
 void TerrainMaterialEdit_SeedNonTargetRegionReplacement
           (FrontendPlayerIndex playerIndex,TerrainMaterialByteValue referenceMaterialByte,
           Q12 worldYQ12,Q12 worldXQ12);
 
-/* 0x005616D0 */
 void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
           (uint32_t playerRuntimeId,uint32_t unusedCommandValue1,uint32_t unusedCommandValue2,
           uint32_t unusedCommandValue3);
 
-/* 0x00561830 */
 void TerrainEditBuffer_CopyCellMaterialBytes
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2);
 
-/* 0x00561930 */
 void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2);
 
-/* 0x005619A0 */
 void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
           (uint32_t playerRuntimeId,uint32_t unusedCommandValue1,uint32_t unusedCommandValue2,
           uint32_t unusedCommandValue3);
 
-/* 0x00561DC0 */
 void TerrainEditBuffer_ConvertHeightsToDeltas
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2);
 
-/* 0x00513790 */
 void TerrainRegionCollection_RecordConnectedCell(FieldGridRegionMask requiredOccupancyMask,FieldGridCell *cell);
 
-/* 0x00571600 */
 void TerrainMaterialEdit_PropagateMatchingRegionReplacement
           (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX);
 
-/* 0x00571730 */
 void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
           (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX);
 

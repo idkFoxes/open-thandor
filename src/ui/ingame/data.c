@@ -11,31 +11,24 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0048584C g_RenderedFrameCountSinceDebugRefresh */
 __declspec(align(4)) uint32_t g_RenderedFrameCountSinceDebugRefresh = 0;
 
-/* 005039DC g_TerrainMaterialTextureSets: one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the original's object runs on to 0x00503A74 with 12 more NULL entries. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
+/* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the original's object runs on to 0x00503A74 with 12 more NULL entries. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
 __declspec(align(4)) GraphicsTextureSet *g_TerrainMaterialTextureSets[38] = {0};
 
-/* 00503A88 g_UiCommandModeGColorVariantFlags: uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
+/* uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
 __declspec(align(8)) uint32_t g_UiCommandModeGColorVariantFlags = 0x10000;
 
-/* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
 __declspec(align(4)) uint16_t g_ResourceRegistrationDirectoryUtf16[256] = {0};
 
-/* 0050E068 u_campagne_hex_0050e068 */
 __declspec(align(8)) uint16_t u_campagne_hex_0050e068[13] = L"campagne.hex";
 
-/* 0050E094 u_oldunit_hex_0050e094 */
 __declspec(align(4)) uint16_t u_oldunit_hex_0050e094[12] = L"oldunit.hex";
 
-/* 0050E0AC g_InGameResourceRegistrationBusyCount */
 __declspec(align(4)) uint8_t g_InGameResourceRegistrationBusyCount = 0;
 
-/* 0050F0AC g_LocalPlayerRuntimeId */
 __declspec(align(4)) uint32_t g_LocalPlayerRuntimeId = 0;
 
-/* 005162C0 g_UiNodeVtable_005162C0 (followed by 0x90 code filler) */
 __declspec(align(16)) UiNodeVtable g_UiNodeVtable_005162C0 = {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -57,7 +50,6 @@ __declspec(align(16)) UiNodeVtable g_UiNodeVtable_005162C0 = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 00516310 g_UiNodeVtable_00516310 (followed by 0x90 code filler) */
 __declspec(align(16)) UiNodeVtable g_UiNodeVtable_00516310 = {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -79,72 +71,52 @@ __declspec(align(16)) UiNodeVtable g_UiNodeVtable_00516310 = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
 __declspec(align(16)) UiRootCallbacks g_UiRootCallbacks_0054FBC0 = {
     .frameUpdate = (void *)InGameUiRoot_UpdateFrame,
     .keyboardFallback = (void *)InGameHotkeys_DispatchCommandByFlags};
 
-/* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
 __declspec(align(8)) uint16_t *g_InGamePlayerListTextScratchUtf16 = 0;
 
-/* 0054FBDC g_InGamePlayerStatusTextSlots */
 __declspec(align(4)) InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {0};
 
-/* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailNameTextUtf16 = {0};
 
-/* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailArmourTextUtf16 = {0};
 
-/* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName0TextUtf16 = {0};
 
-/* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName1TextUtf16 = {0};
 
-/* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName2TextUtf16 = {0};
 
-/* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot05Utf16 = {0};
 
-/* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildXeniteCostTextUtf16 = {0};
 
-/* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildTimeTextUtf16 = {0};
 
-/* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16 = {0};
 
-/* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
 __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16 = {0};
 
-/* 005504FC g_InGameTechnologyCostRichText: one rich-text stream, patched in as payload 0 of the technology label
+/* one rich-text stream, patched in as payload 0 of the technology label
    (ui/ingame/technology.c): [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
    (005504FE), [9..24] the xenite cost text (0055050E); the interpreter reads on from the colour command into the
    text */
 __declspec(align(4)) uint16_t g_InGameTechnologyCostRichText[25] = {32774};
 
-/* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
 __declspec(align(4)) UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 = {0};
 
-/* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
 __declspec(align(4)) UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {0};
 
-/* 0055056E g_InGameHudNumberTextUtf16 */
 __declspec(align(4)) uint16_t g_InGameHudNumberTextUtf16[16] = {0};
 
-/* 0055058E g_EmptyFrontendPlayerNameUtf16 */
 __declspec(align(4)) uint16_t g_EmptyFrontendPlayerNameUtf16[1] = {0};
 
-/* 0055F124 g_InGameSelectionInsertTripletDwordCount */
 __declspec(align(4)) int32_t g_InGameSelectionInsertTripletDwordCount = 0;
 
-/* 0055F128 g_InGameSelectionRemoveTripletDwordCount */
 __declspec(align(8)) int32_t g_InGameSelectionRemoveTripletDwordCount = 0;
 
-/* 005624A0 g_InGameUiActionHandlersPage10 */
 __declspec(align(16)) InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10 = {
         .handlers = {
             /*  0 */ (void *)InGameMapAction_RecenterViewFromGridCoordinates,
@@ -189,7 +161,6 @@ __declspec(align(16)) InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandle
             /* 39 */ (void *)InGameQuitMenu_RestartMission
         }};
 
-/* 00562540 g_InGameUiActionHandlersPage11 */
 __declspec(align(16)) InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11 = {
         .handlers = {
             /*  0 */ (void *)InGameCommandModeG_Select0,
@@ -224,7 +195,6 @@ __declspec(align(16)) InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHan
             /* 29 */ (void *)InGameCommandModeF_Select1
         }};
 
-/* 005625B8 g_InGameUiActionHandlersPage12 */
 __declspec(align(8)) InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12 = {
         .handlers = {
             /*  0 */ (void *)InGameQuitMenu_OpenAndRefreshButtons,
@@ -257,13 +227,10 @@ __declspec(align(8)) InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandler
             /* 27 */ (void *)InGameGameplaySettings_SetHidePanel
         }};
 
-/* 00562628 g_UiAction100AControlOffsets */
 __declspec(align(8)) int32_t g_UiAction100AControlOffsets[8] = {45584, 45712, 45840, 45968, 46096, 46224, 46352, 46480};
 
-/* 00562650 g_UiCommandSpriteVariantAColumnCount */
 __declspec(align(16)) uint32_t g_UiCommandSpriteVariantAColumnCount = 0;
 
-/* 00562694 g_UiCommandSpriteVariantAOffsetTables */
 __declspec(align(4)) int32_t *g_UiCommandSpriteVariantAOffsetTables[5] = {
     /* 0 */ (void *)&g_UiCommandSpriteVariantAOffsets,
     /* 1 */ (void *)&g_UiCommandSpriteVariantAOffsets,
@@ -271,175 +238,121 @@ __declspec(align(4)) int32_t *g_UiCommandSpriteVariantAOffsetTables[5] = {
     /* 3 */ (void *)&g_UiCommandSpriteVariantAOffsets,
     /* 4 */ (void *)&g_UiCommandSpriteVariantAOffsets};
 
-/* 00562C60 g_UiCommandSpriteVariantAOffsets */
 __declspec(align(16)) int32_t g_UiCommandSpriteVariantAOffsets[24] = {
     /*  0 */ 36116, 36240, 36364, 36488, 36612, 36736, 36860, 36984,
     /*  8 */ 37108, 37232, 37356, 37480, 37604, 37728, 37852, 37976,
     /* 16 */ 38100, 38224, 38348, 38472, 38596, 38720, 38844, 38968};
 
-/* 00562CC0 g_UiAction1012PlayerIndexTextOffsets */
 __declspec(align(16)) int32_t g_UiAction1012PlayerIndexTextOffsets[7] = {20540, 20632, 20724, 20816, 20908, 21000, 21092};
 
-/* 00562CDC g_UiAction1012PlayerLabelTextOffsets */
 __declspec(align(4)) int32_t g_UiAction1012PlayerLabelTextOffsets[7] = {21184, 21276, 21368, 21460, 21552, 21644, 21736};
 
-/* 00562CF8 g_UiAction1012IconImageOffsets */
 __declspec(align(8)) int32_t g_UiAction1012IconImageOffsets[7] = {22472, 22564, 22656, 22748, 22840, 22932, 23024};
 
-/* 00562D14 g_UiAction1012StateTextOffsets */
 __declspec(align(4)) int32_t g_UiAction1012StateTextOffsets[7] = {0x5544, 0x55A0, 0x55FC, 0x5658, 0x56B4, 0x5710, 0x576C};
 
-/* 00562D30 g_UiAction1012ControlOffsets */
 __declspec(align(16)) int32_t g_UiAction1012ControlOffsets[7] = {23116, 23240, 23364, 23488, 23612, 23736, 23860};
 
-/* 00562D4C g_UiAction1012SlotPageOffsets */
 __declspec(align(4)) int32_t g_UiAction1012SlotPageOffsets[7] = {19924, 20012, 20100, 20188, 20276, 20364, 20452};
 
-/* 00562D68 g_TechnologyPanelRowFlagOffsets */
 __declspec(align(8)) int g_TechnologyPanelRowFlagOffsets[7] = {5444, 5548, 5652, 5756, 5860, 5964, 6068};
 
-/* 00562D84 g_TechnologyPanelRowValueOffsets */
 __declspec(align(4)) int g_TechnologyPanelRowValueOffsets[7] = {6164, 6256, 6348, 6440, 6532, 6624, 6716};
 
-/* 00562DA0 g_InGameSelectionDetailGridCellOffsets */
 __declspec(align(16)) int g_InGameSelectionDetailGridCellOffsets[12] = {41464, 41560, 41656, 41752, 41848, 41944, 42040, 42136, 42232, 42328, 42424, 42520};
 
-/* 00562DD0 g_UiSevenSlotSelectionControlOffsets */
 __declspec(align(16)) int32_t g_UiSevenSlotSelectionControlOffsets[7] = {8420, 8516, 8612, 8708, 8804, 8900, 8996};
 
-/* 00562E1C g_UiAction1012SubresourceByState: uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state; ui/ingame/runtime.c */
+/* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state; ui/ingame/runtime.c */
 __declspec(align(4)) uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB};
 
-/* 005630D0 u_gfx_panel_panel0_gfx_005630d0 */
 __declspec(align(16)) uint16_t u_gfx_panel_panel0_gfx_005630d0[21] = L"gfx\\panel\\panel0.gfx";
 
-/* 005630FA u_gfx_panel_tech_gfx_005630fa */
 __declspec(align(4)) uint16_t u_gfx_panel_tech_gfx_005630fa[19] = L"gfx\\panel\\tech.gfx";
 
-/* 00563120 u_gfx_panel_diagram0_gfx_00563120 */
 __declspec(align(16)) uint16_t u_gfx_panel_diagram0_gfx_00563120[23] = L"gfx\\panel\\diagram0.gfx";
 
-/* 0056318E u_gfx_panel_window_gfx_0056318e */
 __declspec(align(4)) uint16_t u_gfx_panel_window_gfx_0056318e[21] = L"gfx\\panel\\window.gfx";
 
-/* 005631DE g_DeveloperChatPhraseUtf16 */
 __declspec(align(4)) uint16_t g_DeveloperChatPhraseUtf16[32] = L"Oh grosser Thomas, erl\366se mich!";
 
-/* 0056321E u_Hmmm__na_gut________0056321e */
 __declspec(align(4)) uint16_t u_Hmmm__na_gut________0056321e[20] = L"Hmmm, na gut... ;-)";
 
-/* 00563260 g_UiCommandRuntimeFlags */
 __declspec(align(16)) uint32_t g_UiCommandRuntimeFlags = 0;
 
-/* 00563290 g_InGamePanelTextureSubresource00Width */
 __declspec(align(16)) int32_t g_InGamePanelTextureSubresource00Width = 0;
 
-/* 00563294 g_InGamePanelTextureSubresource01Width */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource01Width = 0;
 
-/* 00563298 g_InGamePanelTextureSubresource02Width */
 __declspec(align(8)) int32_t g_InGamePanelTextureSubresource02Width = 0;
 
-/* 0056329C g_InGamePanelTextureSubresource06Width */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource06Width = 0;
 
-/* 005632A0 g_InGamePanelTextureSubresource07Width */
 __declspec(align(16)) int32_t g_InGamePanelTextureSubresource07Width = 0;
 
-/* 005632A4 g_InGamePanelTextureSubresource27Width */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource27Width = 0;
 
-/* 005632A8 g_InGamePanelTextureSubresource28Width */
 __declspec(align(8)) int32_t g_InGamePanelTextureSubresource28Width = 0;
 
-/* 005632AC g_InGamePanelTextureSubresource19Width */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource19Width = 0;
 
-/* 005632B0 g_InGamePanelTextureSubresource20Width */
 __declspec(align(16)) int32_t g_InGamePanelTextureSubresource20Width = 0;
 
-/* 005632B4 g_InGamePanelTextureSubresource34Width */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource34Width = 0;
 
-/* 005632B8 g_InGamePanelTextureSubresource32Width */
 __declspec(align(8)) int32_t g_InGamePanelTextureSubresource32Width = 0;
 
-/* 005632BC g_InGamePanelTextureSubresource33Width */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource33Width = 0;
 
-/* 005632C0 g_InGamePanelTextureSubresource02Height */
 __declspec(align(16)) int32_t g_InGamePanelTextureSubresource02Height = 0;
 
-/* 005632C4 g_InGamePanelTextureSubresource03Height */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource03Height = 0;
 
-/* 005632C8 g_InGamePanelTextureSubresource04Height */
 __declspec(align(8)) int32_t g_InGamePanelTextureSubresource04Height = 0;
 
-/* 005632CC g_InGamePanelTextureSubresource05Height */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource05Height = 0;
 
-/* 005632D0 g_InGamePanelTextureSubresource36Height */
 __declspec(align(16)) int32_t g_InGamePanelTextureSubresource36Height = 0;
 
-/* 005632D4 g_InGamePanelTextureSubresource37Height */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource37Height = 0;
 
-/* 005632D8 g_InGamePanelTextureSubresource06Height */
 __declspec(align(8)) int32_t g_InGamePanelTextureSubresource06Height = 0;
 
-/* 005632DC g_InGamePanelTextureSubresource00Height */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource00Height = 0;
 
-/* 005632E0 g_InGamePanelTextureSubresource07Height */
 __declspec(align(16)) int32_t g_InGamePanelTextureSubresource07Height = 0;
 
-/* 005632E4 g_InGamePanelTextureSubresource26Height */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource26Height = 0;
 
-/* 005632E8 g_InGamePanelTextureSubresource31Height */
 __declspec(align(8)) int32_t g_InGamePanelTextureSubresource31Height = 0;
 
-/* 005632EC g_InGamePanelTextureSubresource18Height */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource18Height = 0;
 
-/* 005632F0 g_InGamePanelTextureSubresource23Height */
 __declspec(align(16)) int32_t g_InGamePanelTextureSubresource23Height = 0;
 
-/* 005632F4 g_InGamePanelTextureSubresource34Height */
 __declspec(align(4)) int32_t g_InGamePanelTextureSubresource34Height = 0;
 
-/* 005632F8 g_InGamePanelTextureSubresource32Height */
 __declspec(align(8)) int32_t g_InGamePanelTextureSubresource32Height = 0;
 
-/* 005632FC g_UiHoverSelectionRecord */
 __declspec(align(4)) UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord = 0;
 
-/* 00563300 g_InGameSelectedTechnologyId */
 __declspec(align(16)) PckTechnologyIdCatalog g_InGameSelectedTechnologyId = 0;
 
-/* 00563474 g_FrontendDebugOverlayTextSlot10Utf16 */
 __declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16] = {0};
 
-/* 00563494 g_FrontendDebugOverlayTextSlot11Utf16 */
 __declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
 
-/* 00563514 g_InGameReadyStateToggleFlags */
 __declspec(align(4)) uint32_t g_InGameReadyStateToggleFlags = 0;
 
-/* 00563518 g_UiCatalogGroup48Records */
 __declspec(align(8)) UiCommandRuntimeRecordPrefix *g_UiCatalogGroup48Records[48] = {0};
 
-/* 005635D8 g_UiCatalogGroup42Records */
 __declspec(align(8)) UiCommandRuntimeRecordPrefix *g_UiCatalogGroup42Records[42] = {0};
 
-/* 00563680 g_UiCommandSpriteVariantARecords */
 __declspec(align(16)) UiCommandRuntimeRecordPrefix *g_UiCommandSpriteVariantARecords[24] = {0};
 
-/* 005636E0 g_UiAction1012TargetPlayerIndices */
 __declspec(align(16)) uint32_t g_UiAction1012TargetPlayerIndices[7] = {0};
 
-/* 005679B0 g_InGameCommandDispatchRecords: 63 key command records and the terminator record (commandCode 0) at
+/* 63 key command records and the terminator record (commandCode 0) at
    00567CA4 that ends the dispatcher's scan */
 __declspec(align(16)) UiCommandDispatchRecord g_InGameCommandDispatchRecords[64] = {
     /*  0 */ {.commandCode = 0x30073, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567F60},
@@ -505,69 +418,51 @@ __declspec(align(16)) UiCommandDispatchRecord g_InGameCommandDispatchRecords[64]
     /* 60 */ {.commandCode = 0x30063, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568190},
     /* 61 */ {.commandCode = 0x10015, .continuationEntryAddress = 0x567EA0},
     /* 62 */ {.commandCode = 0x30064, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568130},
-    /* 63 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* 00567CA4 terminator: commandCode 0, the rest is the original's NOP fill */
+    /* 63 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
 
-/* 0056D720 g_UiCommandModeG */
 __declspec(align(16)) uint32_t g_UiCommandModeG = 0;
 
-/* 0056D724 g_UiCommandModeC */
 __declspec(align(4)) uint32_t g_UiCommandModeC = 0;
 
-/* 0056D728 g_UiCommandModeD */
 __declspec(align(8)) uint32_t g_UiCommandModeD = 0;
 
-/* 0056D72C g_UiCommandModeE */
 __declspec(align(4)) uint32_t g_UiCommandModeE = 0;
 
-/* 0056D730 g_UiCommandModeA */
 __declspec(align(16)) uint32_t g_UiCommandModeA = 0;
 
-/* 0056D734 g_UiCommandModeB */
 __declspec(align(4)) uint32_t g_UiCommandModeB = 0;
 
-/* 0056D73C g_UiCommandModeF */
 __declspec(align(4)) uint32_t g_UiCommandModeF = 0;
 
-/* 0056D740 g_UiCommandAbsoluteSelectionIndex */
 __declspec(align(16)) uint32_t g_UiCommandAbsoluteSelectionIndex = 0;
 
-/* 0056D744 g_UiCommandSelectionPageBaseIndex */
 __declspec(align(4)) uint32_t g_UiCommandSelectionPageBaseIndex = 0;
 
-/* 0056D748 g_UiCommandTerrainMaskToggleValue */
 __declspec(align(8)) uint32_t g_UiCommandTerrainMaskToggleValue = 0;
 
-/* 0056D74C g_UiCommandModeGOwnerFactionIndex */
 __declspec(align(4)) FactionRuntimeIndex g_UiCommandModeGOwnerFactionIndex = 1;
 
-/* 0056D750 g_UiCommandModeGArmyAssetId */
 __declspec(align(16)) uint32_t g_UiCommandModeGArmyAssetId = 0;
 
-/* 0056D754 g_UiCommandDragReferenceX */
 __declspec(align(4)) int32_t g_UiCommandDragReferenceX = 0;
 
-/* 0056D758 g_UiCommandDragReferenceY */
 __declspec(align(8)) int32_t g_UiCommandDragReferenceY = 0;
 
-/* 0056D75C g_UiCommandMode4ArmyAssetId */
 __declspec(align(4)) PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId = ARM_0500_LBAUM_MDL0500;
 
-/* 0056D760 g_UiCommandCallerMaskHighBit */
 __declspec(align(16)) uint32_t g_UiCommandCallerMaskHighBit = 0;
 
-/* 0056D764 g_UiCommandModeGPrimaryPageIndices: uint32_t[6]: active page of the mode preview page stack per command mode G; ui/ingame commands/runtime */
+/* uint32_t[6]: active page of the mode preview page stack per command mode G; ui/ingame commands/runtime */
 __declspec(align(4)) uint32_t g_UiCommandModeGPrimaryPageIndices[6] = {1, 2, 3, 4, 5, 7};
 
-/* 0056D77C g_UiCommandModeGSecondaryPageIndices: uint32_t[6]: active page of the mode detail page stack per command mode G; ui/ingame commands/runtime */
+/* uint32_t[6]: active page of the mode detail page stack per command mode G; ui/ingame commands/runtime */
 __declspec(align(4)) uint32_t g_UiCommandModeGSecondaryPageIndices[6] = {1, 2, 3, 4, 5, 7};
 
-/* 0056D794 g_UiCommandModeGTertiaryPageIndices: uint32_t[6]: active page of the mode command page stack per command mode G; ui/ingame commands/runtime */
+/* uint32_t[6]: active page of the mode command page stack per command mode G; ui/ingame commands/runtime */
 __declspec(align(4)) uint32_t g_UiCommandModeGTertiaryPageIndices[6] = {1, 2, 3, 4, 5, 7};
 
-/* 0056D7AC g_UiCommandModeGControlOffsets */
 __declspec(align(4)) int32_t g_UiCommandModeGControlOffsets[6] = {19364, 19484, 19604, 39216, 39336, 39096};
 
-/* 0056D7C4 g_UiCommandModeGHandlers */
 __declspec(align(4)) void *g_UiCommandModeGHandlers[6] = {
     /* 0 */ (void *)InGameCommandModeG_Select0,
     /* 1 */ (void *)InGameCommandModeG_Select1,
@@ -576,32 +471,22 @@ __declspec(align(4)) void *g_UiCommandModeGHandlers[6] = {
     /* 4 */ (void *)InGameCommandModeG_Select4,
     /* 5 */ (void *)InGameCommandModeG_Select5};
 
-/* 0056D7DC g_UiMappedCommandControlOffsets */
 __declspec(align(4)) int32_t g_UiMappedCommandControlOffsets[12] = {42892, 43076, 43260, 43444, 43628, 43812, 43996, 44180, 44364, 44548, 44732, 44916};
 
-/* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
 __declspec(align(4)) int32_t g_UiCommandSelectionAnchorWorldXQ12 = 0;
 
-/* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
 __declspec(align(16)) int32_t g_UiCommandSelectionAnchorWorldYQ12 = 0;
 
-/* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
 __declspec(align(4)) int32_t g_UiCommandSelectionCurrentWorldXQ12 = 0;
 
-/* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
 __declspec(align(8)) int32_t g_UiCommandSelectionCurrentWorldYQ12 = 0;
 
-/* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
 __declspec(align(4)) uint32_t g_UiCommandDragAnchorWorldXQ12 = 0;
 
-/* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
 __declspec(align(16)) uint32_t g_UiCommandDragAnchorWorldYQ12 = 0;
 
-/* 0056D824 g_UiCommandDragStartScreenX */
 __declspec(align(4)) uint32_t g_UiCommandDragStartScreenX = 0;
 
-/* 0056D828 g_UiCommandDragStartScreenY */
 __declspec(align(8)) uint32_t g_UiCommandDragStartScreenY = 0;
 
-/* 00572AD8 g_UiButtonSoundVoiceSets7 */
 __declspec(align(8)) DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {0};

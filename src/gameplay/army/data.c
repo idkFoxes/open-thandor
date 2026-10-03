@@ -11,10 +11,8 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 00485848 g_GraphicsOffscreenRenderModelListToTextureSource */
 __declspec(align(8)) GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderModelListToTextureSource = (void *)GraphicsOffscreen_RenderModelListToTextureSource;
 
-/* 00485A08 g_ArmyPreviewViewParameters */
 __declspec(align(8)) GraphicsOffscreenViewParameters g_ArmyPreviewViewParameters = {
     0, /* 00485A08 originX */
     0, /* 00485A0C originY */
@@ -25,40 +23,30 @@ __declspec(align(8)) GraphicsOffscreenViewParameters g_ArmyPreviewViewParameters
     0, /* 00485A20 projectionShift */
 };
 
-/* 00485A24 g_ArmyPreviewAuxiliaryOrientation */
 __declspec(align(4)) AngleTurn32 g_ArmyPreviewAuxiliaryOrientation[2] = {
     0, /* 00485A24 */
     0, /* 00485A28 */
 };
 
-/* 00485A2C g_ArmyPreviewSceneExtents */
 __declspec(align(4)) GraphicsOffscreenSceneExtents g_ArmyPreviewSceneExtents = {
     0, /* 00485A2C horizontalExtent (primary colour ARGB) */
     0, /* 00485A30 verticalExtent (secondary colour ARGB) */
 };
 
-/* 00485A34 g_ArmyPreviewModelNode */
 __declspec(align(4)) ModelRuntimeNode *g_ArmyPreviewModelNode = 0;
 
-/* 004BD2E0 g_ModelBoundsMinimumX */
 __declspec(align(16)) int32_t g_ModelBoundsMinimumX = 0;
 
-/* 004BD2E4 g_ModelBoundsMaximumX */
 __declspec(align(4)) int32_t g_ModelBoundsMaximumX = 0;
 
-/* 004BD2E8 g_ModelBoundsMinimumY */
 __declspec(align(8)) int32_t g_ModelBoundsMinimumY = 0;
 
-/* 004BD2EC g_ModelBoundsMaximumY */
 __declspec(align(4)) int32_t g_ModelBoundsMaximumY = 0;
 
-/* 004BD2F0 g_ModelBoundsMinimumZ */
 __declspec(align(16)) int32_t g_ModelBoundsMinimumZ = 0;
 
-/* 004BD2F4 g_ModelBoundsMaximumZ */
 __declspec(align(4)) int32_t g_ModelBoundsMaximumZ = 0;
 
-/* 004BD890 g_ArmyPlacementContactKindDispatchTable */
 __declspec(align(16)) ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable = {
     .callbacks = {
         /* 0 */ (void *)ArmyPlacementContact_ApplyTerrainHeight,
@@ -68,13 +56,11 @@ __declspec(align(16)) ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactK
         /* 4 */ (void *)ArmyPlacementContact_ApplyTopSurfaceHeight
     }};
 
-/* 00519730 g_ArmyRuntimeSlots */
 __declspec(align(16)) ArmyRuntimeSlot *g_ArmyRuntimeSlots = 0;
 
-/* 00519738 g_ArmyGraphicsBindings */
 __declspec(align(8)) ArmyGraphicsBinding g_ArmyGraphicsBindings[8] = {0};
 
-/* 0051A380 g_ArmyPreviewAlphaPremultiplyMmxLut256: uint64_t[256] MMX qword per alpha a: three 16-bit lanes (a * 0x101) >> 4, alpha lane 0; PMULHW premultiply of the 2x2 downsample in the army preview (gameplay/army/runtime.c) */
+/* uint64_t[256] MMX qword per alpha a: three 16-bit lanes (a * 0x101) >> 4, alpha lane 0; PMULHW premultiply of the 2x2 downsample in the army preview (gameplay/army/runtime.c) */
 __declspec(align(16)) uint64_t g_ArmyPreviewAlphaPremultiplyMmxLut256[256] = {
     /*   0 */ 0, 0x1000100010ull, 0x2000200020ull, 0x3000300030ull, 0x4000400040ull, 0x5000500050ull, 0x6000600060ull, 0x7000700070ull,
     /*   8 */ 0x8000800080ull, 0x9000900090ull, 0xA000A000A0ull, 0xB000B000B0ull, 0xC000C000C0ull, 0xD000D000D0ull, 0xE000E000E0ull, 0xF000F000F0ull,
@@ -109,7 +95,7 @@ __declspec(align(16)) uint64_t g_ArmyPreviewAlphaPremultiplyMmxLut256[256] = {
     /* 240 */ 0xF0F0F0F0F0Full, 0xF1F0F1F0F1Full, 0xF2F0F2F0F2Full, 0xF3F0F3F0F3Full, 0xF4F0F4F0F4Full, 0xF5F0F5F0F5Full, 0xF6F0F6F0F6Full, 0xF7F0F7F0F7Full,
     /* 248 */ 0xF8F0F8F0F8Full, 0xF9F0F9F0F9Full, 0xFAF0FAF0FAFull, 0xFBF0FBF0FBFull, 0xFCF0FCF0FCFull, 0xFDF0FDF0FDFull, 0xFEF0FEF0FEFull, 0xFFF0FFF0FFFull};
 
-/* 0051AB80 g_ArmyPreviewAverageAlphaReciprocalMmxLut256: uint64_t[256] MMX qword per average alpha a: three lanes ~0x3FF0/a (reciprocal), fourth lane a; un-premultiplies the averaged army preview pixel (gameplay/army/runtime.c) */
+/* uint64_t[256] MMX qword per average alpha a: three lanes ~0x3FF0/a (reciprocal), fourth lane a; un-premultiplies the averaged army preview pixel (gameplay/army/runtime.c) */
 __declspec(align(16)) uint64_t g_ArmyPreviewAverageAlphaReciprocalMmxLut256[256] = {
     /*   0 */ 0, 0x13FF03FF03FF0ull, 0x21FF81FF81FF8ull, 0x3155015501550ull, 0x40FFC0FFC0FFCull, 0x50CC90CC90CC9ull, 0x60AA80AA80AA8ull, 0x7092209220922ull,
     /*   8 */ 0x807FE07FE07FEull, 0x9071A071A071Aull, 0xA066406640664ull, 0xB05D005D005D0ull, 0xC055405540554ull, 0xD04EB04EB04EBull, 0xE049104910491ull, 0xF044304430443ull,
@@ -144,18 +130,15 @@ __declspec(align(16)) uint64_t g_ArmyPreviewAverageAlphaReciprocalMmxLut256[256]
     /* 240 */ 0xF0004400440044ull, 0xF1004300430043ull, 0xF2004300430043ull, 0xF3004300430043ull, 0xF4004300430043ull, 0xF5004200420042ull, 0xF6004200420042ull, 0xF7004200420042ull,
     /* 248 */ 0xF8004200420042ull, 0xF9004100410041ull, 0xFA004100410041ull, 0xFB004100410041ull, 0xFC004000400040ull, 0xFD004000400040ull, 0xFE004000400040ull, 0xFF004000400040ull};
 
-/* 0051B380 g_ArmyPreviewDownsampleAlphaRoundingBiasMmx */
 __declspec(align(16)) uint64_t g_ArmyPreviewDownsampleAlphaRoundingBiasMmx = 0x100000000000000ull;
 
-/* 0051B388 g_ArmyCommandGenerationStandard */
 __declspec(align(8)) ArmyCommandGeneration g_ArmyCommandGenerationStandard = 1024;
 
-/* 0051FC38 g_ArmyRuntimeDepthBinClassByModelClass: uint32_t[24] depth-bin/occupancy class per model runtime class (0x88/0x90/0xA0/0xC0; 0x90 = structure), copied to ArmyRuntimeSlot.depthBinClass; gameplay/army runtime and placement */
+/* uint32_t[24] depth-bin/occupancy class per model runtime class (0x88/0x90/0xA0/0xC0; 0x90 = structure), copied to ArmyRuntimeSlot.depthBinClass; gameplay/army runtime and placement */
 __declspec(align(8)) uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24] = {
     /*  0 */ 136, 192, 192, 192, 144, 136, 136, 136, 136, 136, 136, 144, 136, 144, 144, 144,
     /* 16 */ 144, 192, 160, 192, 144, 192, 144, 144};
 
-/* 0051FC98 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes */
 __declspec(align(8)) ArmyRuntimeOrderHandlerMatrix11x24 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes = {
     .runtimeUpdate = {
         /*  0 */ (void *)ArmyRuntime_UpdateTimedShotAndEffectEmitters,
@@ -444,33 +427,26 @@ __declspec(align(8)) ArmyRuntimeOrderHandlerMatrix11x24 g_ArmyRuntimeOrderHandle
         /* 23 */ (void *)GridInfluence_RemoveHighDistanceBands
     }};
 
-/* 00520EB0 g_ArmySuspensionBlendVectorA */
 __declspec(align(16)) GraphicsFixedVec3 g_ArmySuspensionBlendVectorA = {0, 0, 0};
 
-/* 00520EBC g_ArmySuspensionBlendVectorB */
 __declspec(align(4)) GraphicsFixedVec3 g_ArmySuspensionBlendVectorB = {0, 0, 0};
 
-/* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
 __declspec(align(8)) GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchA = {0};
 
-/* 00520EF8 g_ArmySuspensionRotationMatrixScratchB */
 __declspec(align(8)) GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchB = {0};
 
 /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch; followed by 0x90 code alignment fill up to 00520F60 */
 __declspec(align(8)) GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixComposedScratch = {0};
 
-/* 00562DEC g_RuntimeMaintenanceCallbackPhases */
 __declspec(align(4)) RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases = {
     .primaryUpdate = {.army = (void *)ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers, .shot = (void *)ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects, .effect = (void *)EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions},
     .terrainStateRefresh = {.army = (void *)ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint, .shot = (void *)ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint, .effect = (void *)EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint},
     .occupancyRebuild = {.army = (void *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback, .shot = (void *)ShotRuntimeMaintenance_OccupancyRebuildNoOp, .effect = (void *)EffectRuntimeMaintenance_OccupancyRebuildNoOp},
     .audioRefresh = {.army = (void *)ArmyRuntimeMaintenance_DispatchClassMethodDRecursive, .shot = (void *)ShotRuntimeMaintenance_UpdateHierarchyProjectedSound, .effect = (void *)EffectRuntimeMaintenance_AudioRefreshNoOp}};
 
-/* 00563264 g_InGameSimulationStepTicks */
 __declspec(align(4)) InGameSimulationStepBatchTicks g_InGameSimulationStepTicks = 0;
 
-/* 00563788 g_InGamePointerModePreviewArmyIds: uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
+/* uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
 __declspec(align(8)) uint32_t g_InGamePointerModePreviewArmyIds[8] = {0, 240, 242, 240, 244, 240, 242, 240};
 
-/* 005637A8 g_ArmyPlacementLateRejectionCount */
 __declspec(align(8)) ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount = 0;

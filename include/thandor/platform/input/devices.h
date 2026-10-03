@@ -86,54 +86,39 @@
 #define MOUSE_POLL_MAX_ERRORS 16
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00417280 */
 bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
 
-/* 0x00417230 */
 void Keyboard_FlushEvents(void);
 
-/* 0x00417240 */
 bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask);
 
-/* 0x004172D0 */
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
-/* 0x00576CF0 */
 bool DirectInputMouse_Init(uint32_t *outError);
 
-/* 0x00576F20 */
 void DirectInputMouse_RefreshDeviceIfIdle(void);
 
-/* 0x00577000 */
 void DirectInputMouse_Shutdown(void);
 
-/* 0x00577080 */
 void DirectInputMouse_PollBufferedEvents(void);
 
-/* 0x005772F0 */
 bool DirectInputMouse_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode);
 
-/* 0x00577420 */
 void DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX);
 
-/* 0x00577460 */
 void DirectInputMouse_FlushBufferedEvents(void);
 
-/* 0x005774A0 */
 void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey);
 
-/* 0x00577880 */
 void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey);
 
-/* 0x00577B30 */
 void Keyboard_OnChar(KeyboardCharacterCode character);
 
-/* 0x004172B0 */
 uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit);
 
-extern uint32_t g_CursorUseOverridePosition; /* 00416818 g_CursorUseOverridePosition */
-extern UiPointerWheelDelta g_CursorWheelDelta; /* 00416830 g_CursorWheelDelta */
+extern uint32_t g_CursorUseOverridePosition;
+extern UiPointerWheelDelta g_CursorWheelDelta;
 
 #endif /* THANDOR_PLATFORM_INPUT_DEVICES_H */

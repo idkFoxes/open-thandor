@@ -41,38 +41,31 @@
 #define WORLD_POINTER_STATE_SELECTION_CAPTURE 0x2 /* selection mode: the pointer was captured on press */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0056D2D0 */
 void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView *targetingContext);
 
-/* 0x005688A0 */
 uint32_t InGameWorldInput_ResolveContextActionAndCursor
                 (InGamePointerCallbackValue0 pickedHeightQ12,InGamePointerCallbackValue1 pointerWorldXQ12
                 ,InGamePointerCallbackValue2 pointerWorldYQ12,InGamePointerCallbackValue3 candidateHeightQ12
                 ,WorldOwnerListNode *candidateNode,WorldRuntimeContext *inGameRuntime);
 
-/* 0x00568CB0 */
 void InGameWorldInput_BeginPointerCapture
           (InGamePointerCallbackValue0 pickedHeightQ12,uint32_t pointerWorldXQ12,uint32_t pointerWorldYQ12,
           InGamePointerCallbackValue3 candidateHeightQ12,WorldOwnerListNode *candidateNode,
           WorldRuntimeContext *inGameRuntime);
 
-/* 0x00568E10 */
 void InGameWorldInput_UpdateDragSelectionAndCamera
           (InGamePointerCallbackValue0 pickedHeightQ12,uint32_t pointerWorldXQ12,uint32_t pointerWorldYQ12,
           uint32_t candidateHeightQ12,WorldOwnerListNode *candidateNode,
           WorldRuntimeContext *inGameRuntime);
 
-/* 0x005691B0 */
 void InGameWorldInput_CommitPointerAction
           (InGamePointerCallbackValue0 pickedHeightQ12,InGamePointerCallbackValue1 pointerWorldXQ12,
           InGamePointerCallbackValue2 pointerWorldYQ12,InGamePointerCallbackValue3 candidateHeightQ12,
           WorldOwnerListNode *candidateNode,WorldRuntimeContext *inGameRuntime);
 
-/* 0x0056F230 */
 bool InGameCameraCommand_DispatchByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime);
 
-/* 0x0056D4B0 */
 void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView *targetingContext);
 
 #endif /* THANDOR_GAMEPLAY_INPUT_WORLD_H */

@@ -11,8 +11,7 @@
 
 /* Implementation ownership: network/protocol/commands. */
 
-/* Address: 0x00543F50.
-   Queues a lobby (frontend) command of the local player for the next network command batch: one 16-byte
+/* Queues a lobby (frontend) command of the local player for the next network command batch: one 16-byte
    record of (commandCode << 8 | local player id) and three payload dwords. The queue holds 16 records;
    further commands are dropped. The lobby chat command (0x1540) is sent this way.
 */
@@ -36,8 +35,7 @@ void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,Comma
 }
 
 
-/* Address: 0x00543FB0.
-   Takes the oldest queued lobby command for the outgoing network batch: copies the first 16-byte queue
+/* Takes the oldest queued lobby command for the outgoing network batch: copies the first 16-byte queue
    record into outputRecord->command and shifts the remaining records down by one. An empty queue only
    writes a zero packed command dword.
 */
@@ -78,8 +76,7 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
 }
 
 
-/* Address: 0x0055F130.
-   Queues an in-game command of the local player for the next lockstep command batch: one 16-byte record
+/* Queues an in-game command of the local player for the next lockstep command batch: one 16-byte record
    of (commandCode << 8 | local player id) and three payload dwords. commandCode is one of the
    INGAME_COMMAND_* handler offsets (relative to this function's address). The queue holds 16 records;
    further commands are dropped.
@@ -104,8 +101,7 @@ void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandP
 }
 
 
-/* Address: 0x0055F190.
-   Takes the oldest queued in-game command into outputRecord->command (offset 0x10 of the packet record)
+/* Takes the oldest queued in-game command into outputRecord->command (offset 0x10 of the packet record)
    and moves the remaining records one slot down. With an empty queue only the packed command dword is
    cleared, which marks "no command" in the batch.
 */
@@ -146,8 +142,7 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
 }
 
 
-/* Address: 0x0055F200.
-   Tells whether the local player already queued the command whose handler lives at commandHandlerAddress
+/* Tells whether the local player already queued the command whose handler lives at commandHandlerAddress
    with payloadValue in any of its three payload dwords, so input handlers do not queue a selection change
    twice. Single player has no queue and always answers no.
 */

@@ -98,8 +98,7 @@ static void TerrainProjectedScan_SelectNearestGridVertex
   *gridColumnOut = gridColumn;
 }
 
-/* Address: 0x00506CD0.
-   Line-of-sight marking for one army (occupancy rebuild): from the grid vertex nearest to the world point, ORs
+/* Line-of-sight marking for one army (occupancy rebuild): from the grid vertex nearest to the world point, ORs
    occupancyMaskBits (the bits of the factions that share the army's sight) into every cell the terrain does not
    hide from an eye at referenceHeightQ12 within the radius. The centre cell is marked here, the rest by the six
    sector traces, each seeded with the height of the next sector's first cell. Nothing happens outside the grid or
@@ -163,8 +162,7 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
 }
 
 
-/* Address: 0x005099D0.
-   Terrain-class overlay callback for land classes (g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
+/* Terrain-class overlay callback for land classes (g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
    slots 0, 2, 3 and 4, called by WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries): stores cellValue into
    overlayColor of every cell within the radius around the world point that has a bit of
    cellFlagMask and no water above it; the centre cell here, the rest by the six sector walks (the same hexagon
@@ -226,8 +224,7 @@ bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
 }
 
 
-/* Address: 0x0050A190.
-   Terrain-class overlay callback for the water class (g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
+/* Terrain-class overlay callback for the water class (g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
    slot 1, called by WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries): like
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, but only for cells with water above them; the centre
    cell also needs a bit of cellFlagMask, the sector walks ignore the mask.
@@ -287,8 +284,7 @@ bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
 }
 
 
-/* Address: 0x00500F50.
-   Terrain pass of the world view (called by FrontendModelPointerContext_RenderWorldViewQueuesClipped): unless
+/* Terrain pass of the world view (called by FrontendModelPointerContext_RenderWorldViewQueuesClipped): unless
    the previous projection can be reused (TERRAIN_RENDER_REUSE_PROJECTION), rebuilds the visible column span of
    every grid row from the four frustum side planes, marks all vertices as not projected and widens each span to
    cover its neighbour rows. Then projects and shades the vertices inside the spans, fully (VariantA) when the
@@ -450,8 +446,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
 }
 
 
-/* Address: 0x005066D0.
-   Line-of-sight marking for the sector between directions 0 (C+1) and 1 (C+1-W) of
+/* Line-of-sight marking for the sector between directions 0 (C+1) and 1 (C+1-W) of
    TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint. Walks the sector's spine (step C+2-W, scan step +7)
    with a running horizon like TerrainProjectedOcclusion_ScanDirection0, tests the direction-1 neighbour between
    two spine cells, and hands the current horizon to a straight leg along each bounding direction. The first spine
@@ -528,8 +523,7 @@ void TerrainProjectedOcclusion_TraceWedge0(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x005067D0.
-   Line-of-sight marking for the sector between directions 1 (C+1-W) and 2 (C-W), built like
+/* Line-of-sight marking for the sector between directions 1 (C+1-W) and 2 (C-W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C+1-2W (scan step +7), the direction-2 neighbour between two
    spine cells, a straight leg along each bounding direction.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
@@ -603,8 +597,7 @@ void TerrainProjectedOcclusion_TraceWedge1(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x005068D0.
-   Line-of-sight marking for the sector between directions 2 (C-W) and 3 (C-1), built like
+/* Line-of-sight marking for the sector between directions 2 (C-W) and 3 (C-1), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-1-W (scan step +7), the direction-3 neighbour between two
    spine cells, a straight leg along each bounding direction.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
@@ -674,8 +667,7 @@ void TerrainProjectedOcclusion_TraceWedge2(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x005069D0.
-   Line-of-sight marking for the sector between directions 3 (C-1) and 4 (C-1+W), built like
+/* Line-of-sight marking for the sector between directions 3 (C-1) and 4 (C-1+W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-2+W (scan step +7), the direction-4 neighbour between two
    spine cells, a straight leg along each bounding direction.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
@@ -750,8 +742,7 @@ void TerrainProjectedOcclusion_TraceWedge3(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x00506AD0.
-   Line-of-sight marking for the sector between directions 4 (C-1+W) and 5 (C+W), built like
+/* Line-of-sight marking for the sector between directions 4 (C-1+W) and 5 (C+W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-1+2W (scan step +7), the direction-5 neighbour between two
    spine cells, a straight leg along each bounding direction.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
@@ -826,8 +817,7 @@ void TerrainProjectedOcclusion_TraceWedge4(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x00506BD0.
-   Line-of-sight marking for the sector between directions 5 (C+W) and 0 (C+1), built like
+/* Line-of-sight marking for the sector between directions 5 (C+W) and 0 (C+1), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C+1+W (scan step +7), the direction-0 neighbour between two
    spine cells, a straight leg along each bounding direction.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
@@ -897,8 +887,7 @@ void TerrainProjectedOcclusion_TraceWedge5(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x00509580.
-   Overlay sector between directions 0 (C+1, right) and 1 (C+1-W, up and right) of
+/* Overlay sector between directions 0 (C+1, right) and 1 (C+1-W, up and right) of
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge0
    but without a horizon: spine step C+2-W (scan step +7), each spine cell and the direction-1 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -945,8 +934,7 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge0(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x00509640.
-   Overlay sector between directions 1 (C+1-W, up and right) and 2 (C-W, up) of
+/* Overlay sector between directions 1 (C+1-W, up and right) and 2 (C-W, up) of
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge1
    but without a horizon: spine step C+1-2W (scan step +7), each spine cell and the direction-2 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -994,8 +982,7 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge1(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x005096F0.
-   Overlay sector between directions 2 (C-W, up) and 3 (C-1, left) of
+/* Overlay sector between directions 2 (C-W, up) and 3 (C-1, left) of
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge2
    but without a horizon: spine step C-1-W (scan step +7), each spine cell and the direction-3 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1037,8 +1024,7 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge2(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x005097A0.
-   Overlay sector between directions 3 (C-1, left) and 4 (C-1+W, down and left) of
+/* Overlay sector between directions 3 (C-1, left) and 4 (C-1+W, down and left) of
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge3
    but without a horizon: spine step C-2+W (scan step +7), each spine cell and the direction-4 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1085,8 +1071,7 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge3(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x00509860.
-   Overlay sector between directions 4 (C-1+W, down and left) and 5 (C+W, down) of
+/* Overlay sector between directions 4 (C-1+W, down and left) and 5 (C+W, down) of
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge4
    but without a horizon: spine step C-1+2W (scan step +7), each spine cell and the direction-5 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1135,8 +1120,7 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge4(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x00509910.
-   Overlay sector between directions 5 (C+W, down) and 0 (C+1, right) of
+/* Overlay sector between directions 5 (C+W, down) and 0 (C+1, right) of
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge5
    but without a horizon: spine step C+1+W (scan step +7), each spine cell and the direction-0 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1179,8 +1163,7 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge5(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x00509DD0.
-   Overlay sector between directions 0 (C+1, right) and 1 (C+1-W, up and right) of
+/* Overlay sector between directions 0 (C+1, right) and 1 (C+1-W, up and right) of
    FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge0
    but without a horizon: spine step C+2-W (scan step +7), each spine cell and the direction-1 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1223,8 +1206,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge0(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x00509E70.
-   Overlay sector between directions 1 (C+1-W, up and right) and 2 (C-W, up) of
+/* Overlay sector between directions 1 (C+1-W, up and right) and 2 (C-W, up) of
    FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge1
    but without a horizon: spine step C+1-2W (scan step +7), each spine cell and the direction-2 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1268,8 +1250,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge1(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x00509F10.
-   Overlay sector between directions 2 (C-W, up) and 3 (C-1, left) of
+/* Overlay sector between directions 2 (C-W, up) and 3 (C-1, left) of
    FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge2
    but without a horizon: spine step C-1-W (scan step +7), each spine cell and the direction-3 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1309,8 +1290,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge2(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x00509FB0.
-   Overlay sector between directions 3 (C-1, left) and 4 (C-1+W, down and left) of
+/* Overlay sector between directions 3 (C-1, left) and 4 (C-1+W, down and left) of
    FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge3
    but without a horizon: spine step C-2+W (scan step +7), each spine cell and the direction-4 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1354,8 +1334,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge3(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x0050A050.
-   Overlay sector between directions 4 (C-1+W, down and left) and 5 (C+W, down) of
+/* Overlay sector between directions 4 (C-1+W, down and left) and 5 (C+W, down) of
    FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge4
    but without a horizon: spine step C-1+2W (scan step +7), each spine cell and the direction-5 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1402,8 +1381,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge4(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x0050A0F0.
-   Overlay sector between directions 5 (C+W, down) and 0 (C+1, right) of
+/* Overlay sector between directions 5 (C+W, down) and 0 (C+1, right) of
    FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint, walked like TerrainProjectedOcclusion_TraceWedge5
    but without a horizon: spine step C+1+W (scan step +7), each spine cell and the direction-0 neighbour
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
@@ -1444,8 +1422,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge5(TerrainDirectionalScanStep scan
 }
 
 
-/* Address: 0x00500CE0.
-   Queues the grid quad whose top-left vertex is topLeftVertex as two triangles, (top-left, bottom-left,
+/* Queues the grid quad whose top-left vertex is topLeftVertex as two triangles, (top-left, bottom-left,
    top-right) and (bottom-left, bottom-right, top-right) as vertex0..2, both with the top-left vertex's
    secondary-surface packet; rowStrideBytes is one grid row of vertex records. Called for every quad of the
    visible spans by TerrainProjectedGrid_TransformShadeAndQueue.
@@ -1535,8 +1512,7 @@ static uint32_t TerrainProjectedVertex_TransformAndProjectPointB
   return resultFlags;
 }
 
-/* Address: 0x005004A0.
-   Full per-frame update of one terrain vertex (a field cell): transforms the terrain point to view space,
+/* Full per-frame update of one terrain vertex (a field cell): transforms the terrain point to view space,
    projects it when it lies beyond the near plane and records on which sides of the clip rectangle it lies,
    and shades its colour with the base colour (plus the dynamic lights when lightingLookupIndexOrSentinel is
    0xFF). Does the same for point B, the secondary surface point (terrain point + secondaryOffset, raised by
@@ -1585,8 +1561,7 @@ void TerrainProjectedVertex_TransformProjectAndShade(TerrainProjectedVertexWorkR
 }
 
 
-/* Address: 0x005006A0.
-   Cheap per-frame update of one terrain vertex while the view and grid are unchanged: keeps the projection of
+/* Cheap per-frame update of one terrain vertex while the view and grid are unchanged: keeps the projection of
    the terrain point and only re-shades it; point B (the secondary surface point) is projected and shaded again
    only when the vertex belonged to a visible secondary-surface triangle last frame.
 */
@@ -1768,8 +1743,7 @@ static void TerrainProjectedTriangle_QueueSoilTriangles
   }
 }
 
-/* Address: 0x00500820.
-   Queues one terrain triangle. When its screen bounds can overlap the clip rectangle, the terrain triangle is
+/* Queues one terrain triangle. When its screen bounds can overlap the clip rectangle, the terrain triangle is
    queued with the soil texture of vertex0's material (vertex colours darkened by the water depth); if the
    vertices have different materials, one or two blend triangles of the other materials follow. When any vertex
    lies under water (or WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY is set) and the secondary points can be
@@ -1840,8 +1814,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
 }
 
 
-/* Address: 0x00500D30.
-   Narrows the per-row visible column spans (g_TerrainProjectedRowSpans) by one frustum side plane through the
+/* Narrows the per-row visible column spans (g_TerrainProjectedRowSpans) by one frustum side plane through the
    view origin: a plane with an x component moves the first or end column of every row to the column where the
    plane crosses that row (skewed by half a column per row); a plane parallel to the columns empties the rows
    on its far side.
@@ -1943,8 +1916,7 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
 }
 
 
-/* Address: 0x005063B0.
-   Line-of-sight leg along direction 0 (C+1, right): each cell's surface height (terrain plus positive water)
+/* Line-of-sight leg along direction 0 (C+1, right): each cell's surface height (terrain plus positive water)
    above the eye (g_TerrainScanReferenceHeight) is scaled by the per-step table g_TerrainHeightDeltaScaleByStepQ12;
    a cell whose value reaches the highest value seen so far on this line is visible and gets occupancyMaskBits,
    and its value becomes the new horizon. 4 scan steps per cell, until the step limit or a map-edge cell.
@@ -1984,8 +1956,7 @@ void TerrainProjectedOcclusion_ScanDirection0(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x00506430.
-   Line-of-sight leg along direction 1 (C+1-W, up and right); works like TerrainProjectedOcclusion_ScanDirection0.
+/* Line-of-sight leg along direction 1 (C+1-W, up and right); works like TerrainProjectedOcclusion_ScanDirection0.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection1(uint64_t occupancyMaskBits,
@@ -2021,8 +1992,7 @@ void TerrainProjectedOcclusion_ScanDirection1(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x005064C0.
-   Line-of-sight leg along direction 2 (C-W, up); works like TerrainProjectedOcclusion_ScanDirection0.
+/* Line-of-sight leg along direction 2 (C-W, up); works like TerrainProjectedOcclusion_ScanDirection0.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection2(uint64_t occupancyMaskBits,
@@ -2058,8 +2028,7 @@ void TerrainProjectedOcclusion_ScanDirection2(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x00506540.
-   Line-of-sight leg along direction 3 (C-1, left); works like TerrainProjectedOcclusion_ScanDirection0.
+/* Line-of-sight leg along direction 3 (C-1, left); works like TerrainProjectedOcclusion_ScanDirection0.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection3(uint64_t occupancyMaskBits,
@@ -2095,8 +2064,7 @@ void TerrainProjectedOcclusion_ScanDirection3(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x005065C0.
-   Line-of-sight leg along direction 4 (C-1+W, down and left); works like TerrainProjectedOcclusion_ScanDirection0.
+/* Line-of-sight leg along direction 4 (C-1+W, down and left); works like TerrainProjectedOcclusion_ScanDirection0.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection4(uint64_t occupancyMaskBits,
@@ -2132,8 +2100,7 @@ void TerrainProjectedOcclusion_ScanDirection4(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x00506650.
-   Line-of-sight leg along direction 5 (C+W, down); works like TerrainProjectedOcclusion_ScanDirection0.
+/* Line-of-sight leg along direction 5 (C+W, down); works like TerrainProjectedOcclusion_ScanDirection0.
    Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection5(uint64_t occupancyMaskBits,
@@ -2169,8 +2136,7 @@ void TerrainProjectedOcclusion_ScanDirection5(uint64_t occupancyMaskBits,
 }
 
 
-/* Address: 0x00509320.
-   Overlay leg along direction 0 (C+1, right) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint:
+/* Overlay leg along direction 0 (C+1, right) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint:
    stores the overlay value (g_TerrainScanReferenceHeight) into overlayColor of every cell
    that has a bit of the overlay's cell flag mask and no water above it (waterSurfaceDelta < 0), 4 scan steps per cell, until the step limit or a map-edge cell.
 */
@@ -2194,8 +2160,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection0(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509380.
-   Overlay leg along direction 1 (C+1-W, up and right) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
+/* Overlay leg along direction 1 (C+1-W, up and right) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantA_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2218,8 +2183,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection1(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x005093F0.
-   Overlay leg along direction 2 (C-W, up) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
+/* Overlay leg along direction 2 (C-W, up) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantA_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2242,8 +2206,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection2(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509450.
-   Overlay leg along direction 3 (C-1, left) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
+/* Overlay leg along direction 3 (C-1, left) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantA_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2266,8 +2229,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection3(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x005094B0.
-   Overlay leg along direction 4 (C-1+W, down and left) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
+/* Overlay leg along direction 4 (C-1+W, down and left) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantA_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2290,8 +2252,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection4(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509520.
-   Overlay leg along direction 5 (C+W, down) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
+/* Overlay leg along direction 5 (C+W, down) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantA_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2314,8 +2275,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection5(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509B90.
-   Overlay leg along direction 0 (C+1, right) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint:
+/* Overlay leg along direction 0 (C+1, right) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint:
    stores the overlay value (g_TerrainScanReferenceHeight) into overlayColor of every cell
    with water above it (waterSurfaceDelta > 0), whatever its flags, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
@@ -2338,8 +2298,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection0(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509BF0.
-   Overlay leg along direction 1 (C+1-W, up and right) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
+/* Overlay leg along direction 1 (C+1-W, up and right) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantB_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2361,8 +2320,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection1(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509C50.
-   Overlay leg along direction 2 (C-W, up) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
+/* Overlay leg along direction 2 (C-W, up) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantB_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2384,8 +2342,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection2(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509CB0.
-   Overlay leg along direction 3 (C-1, left) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
+/* Overlay leg along direction 3 (C-1, left) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantB_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2407,8 +2364,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection3(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509D10.
-   Overlay leg along direction 4 (C-1+W, down and left) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
+/* Overlay leg along direction 4 (C-1+W, down and left) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantB_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2430,8 +2386,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection4(TerrainDirectionalScanStep 
 }
 
 
-/* Address: 0x00509D70.
-   Overlay leg along direction 5 (C+W, down) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
+/* Overlay leg along direction 5 (C+W, down) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
 void FieldGridTerrainOverlayVariantB_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)

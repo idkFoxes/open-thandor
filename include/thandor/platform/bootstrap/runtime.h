@@ -63,49 +63,39 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00585D40 */
 void __cdecl ProcessEntry(void);
 
-/* 0x00512E70: 0, or the allocator's error code */
+/* 0, or the allocator's error code */
 uint32_t GameData_ResetDefaults(void);
 
-/* 0x00512F60 */
 bool GameData_LoadExternalTables(void);
 
-/* 0x00573BC0: 0 when resolved into *destination, else FATAL_ERROR_DLL_PROCEDURE_MISSING */
+/* 0 when resolved into *destination, else FATAL_ERROR_DLL_PROCEDURE_MISSING */
 uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
 
-/* 0x00573C50: the loaded module, or NULL (callers report FATAL_ERROR_DLL_LOAD_FAILED) */
+/* the loaded module, or NULL (callers report FATAL_ERROR_DLL_LOAD_FAILED) */
 HINSTANCE DynDLL_Load(char *moduleName);
 
-/* 0x00573EB0 */
 void DynDLL_UnloadAll(void);
 
-/* 0x00585F50 */
 LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam);
 
-/* 0x00587370 */
 uint32_t __cdecl CPU_DetectFeatures(void);
 
-/* 0x00573070 */
 void __cdecl Game_Run(void);
 
-/* 0x0050BB10: 0, or the error code of the first failing step */
+/* 0, or the error code of the first failing step */
 uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void);
 
-/* 0x00573140 */
 uint32_t __cdecl Game_LoadCoreAssets(void);
 
-/* 0x005739D0 */
 bool Game_PlayIntroMovies(void);
 
-/* 0x00573DB0: 0, or a FATAL_ERROR_* code */
+/* 0, or a FATAL_ERROR_* code */
 uint32_t DynAPI_Bootstrap(void);
 
-/* 0x00586110 */
 uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
 
-/* 0x00586170 */
 void CommandLine_Parse(void);
 
 /*

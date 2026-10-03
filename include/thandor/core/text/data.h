@@ -10,6 +10,6 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern WideNumberFormatState g_WideNumberFormatState; /* 0040262C g_WideNumberFormatState */
+extern WideNumberFormatState g_WideNumberFormatState;
 
 #endif

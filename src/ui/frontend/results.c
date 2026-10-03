@@ -10,8 +10,7 @@
 
 /* Implementation ownership: ui/frontend/results. */
 
-/* Address: 0x00517020.
-   drawClipped of g_UiNodeVtable_00516F60, the three results charts (resultsChart1..3) of the end-of-game
+/* drawClipped of g_UiNodeVtable_00516F60, the three results charts (resultsChart1..3) of the end-of-game
    results screen. Table mode (modeFlags bit 0 clear) draws the control's list of column types one after the
    other, advancing by each type's width (types 0 and 1 are empty spacers). The "columns" advance downwards
    (drawY starts at base.top) and each one lays its header and its faction entries out from left to
@@ -205,8 +204,7 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
 }
 
 
-/* Address: 0x00517FB0.
-   hitTest of g_UiCommandVisibilityWrappedTextVtable and g_UiCommandVisibilitySingleLineTextVtable: these text
+/* hitTest of g_UiCommandVisibilityWrappedTextVtable and g_UiCommandVisibilitySingleLineTextVtable: these text
    controls are never hit, so the pointer passes through them (UI_NODE_NONE).
 */
 UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
@@ -217,8 +215,7 @@ UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
 }
 
 
-/* Address: 0x005174E0.
-   factionWeightRaster of resultsChart1 (set in its template): draws one pixel column of the
+/* factionWeightRaster of resultsChart1 (set in its template): draws one pixel column of the
    stacked results graph from spanStartY to spanEndY, split among factions 1..7 in proportion to the sum of both
    metrics of the stat table sample, each in the faction's colour. When all are 0, every active faction counts
    as 1 (written back into the sample). Every pixel is stored as a 16-bit word.
@@ -279,8 +276,7 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
   return;
 }
 
-/* Address: 0x005175F0.
-   factionWeightRaster of resultsChart2: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
+/* factionWeightRaster of resultsChart2: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
    sample's first metric (lane 0, faction record +0x88 when sampled) only.
 */
 void FrontendResultsGraph_DrawFactionWeightLane0Column
@@ -336,8 +332,7 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
   return;
 }
 
-/* Address: 0x005176F0.
-   factionWeightRaster of resultsChart3: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
+/* factionWeightRaster of resultsChart3: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
    sample's second metric (lane 1, faction record +0x8C when sampled) only.
 */
 void FrontendResultsGraph_DrawFactionWeightLane1Column
@@ -411,8 +406,7 @@ static int FrontendResultsTable_DrawColumnHeader
   return drawX + rowMetrics->headerBaselineOffsetPixels;
 }
 
-/* Address: 0x005177F0.
-   Results table column type 2 (FrontendResultsTable_DrawColumnSequenceByType): header TEXT_ID_RESULTS_COLOUR,
+/* Results table column type 2 (FrontendResultsTable_DrawColumnSequenceByType): header TEXT_ID_RESULTS_COLOUR,
    then one row per active faction 1..7 with its colour name (TEXT_ID_FACTION_NAME_BASE + colour index at record
    +0x38).
 */
@@ -443,8 +437,7 @@ void FrontendResultsTable_DrawColourColumn
 }
 
 
-/* Address: 0x005178B0.
-   Results table column type 7: header TEXT_ID_RESULTS_FACTION, then the name of each active faction 1..7
+/* Results table column type 7: header TEXT_ID_RESULTS_FACTION, then the name of each active faction 1..7
    (TEXT_ID_PLAYER_NUMBER_BASE + faction index).
 */
 void FrontendResultsTable_DrawFactionColumn
@@ -471,8 +464,7 @@ void FrontendResultsTable_DrawFactionColumn
 }
 
 
-/* Address: 0x00517960.
-   Results table column types 8..0x11: header headerResourceId, then for each active faction 1..7 the signed
+/* Results table column types 8..0x11: header headerResourceId, then for each active faction 1..7 the signed
    dword at factionFieldOffset of its faction record, patched into the valueFormatResourceId template.
 */
 void FrontendResultsTable_DrawFormattedFactionFieldColumn
@@ -508,8 +500,7 @@ void FrontendResultsTable_DrawFormattedFactionFieldColumn
 }
 
 
-/* Address: 0x00517A30.
-   Results table column type 5: header TEXT_ID_RESULTS_POINTS, then for each active faction 1..7 its points,
+/* Results table column type 5: header TEXT_ID_RESULTS_POINTS, then for each active faction 1..7 its points,
    the sum of the economy (+0x90) and military (+0x94) values of its faction record.
 */
 void FrontendResultsTable_DrawPointsColumn
@@ -544,8 +535,7 @@ void FrontendResultsTable_DrawPointsColumn
 }
 
 
-/* Address: 0x00517B10.
-   Results table column type 3: header TEXT_ID_RESULTS_ECONOMY, then for each active faction 1..7 the economy
+/* Results table column type 3: header TEXT_ID_RESULTS_ECONOMY, then for each active faction 1..7 the economy
    value at +0x90 of its faction record.
 */
 void FrontendResultsTable_DrawEconomyColumn
@@ -579,8 +569,7 @@ void FrontendResultsTable_DrawEconomyColumn
 }
 
 
-/* Address: 0x00517BF0.
-   Results table column type 4: header TEXT_ID_RESULTS_MILITARY, then for each active faction 1..7 the military
+/* Results table column type 4: header TEXT_ID_RESULTS_MILITARY, then for each active faction 1..7 the military
    value at +0x94 of its faction record.
 */
 void FrontendResultsTable_DrawMilitaryColumn
@@ -614,8 +603,7 @@ void FrontendResultsTable_DrawMilitaryColumn
 }
 
 
-/* Address: 0x00517CD0.
-   Results table column type 6: header TEXT_ID_RESULTS_PLAYER, then for each active faction 1..7 the names of
+/* Results table column type 6: header TEXT_ID_RESULTS_PLAYER, then for each active faction 1..7 the names of
    up to three players assigned to it, 26 pixels apart downwards. The right and left clip bounds of each name
    are narrowed to the faction's cell (cellRightX, cellLeftX), so the names are clipped to their cell.
 */

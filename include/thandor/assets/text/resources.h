@@ -34,32 +34,23 @@
 #endif
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0041CD30 */
 bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 
-/* 0x0041B080 */
 void FontRuntime_Init(void);
 
-/* 0x0041CEB0 */
 uint32_t FontGlyph_GetLogicalSizeActiveFont(GraphicsSubresourceIndex glyphSubresource,uint32_t *outLineHeight);
 
-/* 0x0041CEF0 */
 uint32_t FontGlyph_GetLogicalSizeForStyle
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource,uint32_t *outLineHeight);
 
-/* 0x0041D370 */
 uint32_t FontGlyph_DrawBottomAligned (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate baselineY,int32_t drawX);
 
-/* 0x0041D400 */
 uint32_t FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineHeight,UiPixelCoordinate lineBottom,int32_t drawX);
 
-/* 0x0041CA50 */
 bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32_t *outLocaleBlockOrError);
 
-/* 0x0041CCF0 */
 void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
 
-/* 0x0041CDE0 */
 bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
 
 /* TextResource_TryResolve without the found flag (a missing text gives TEXT_RESOURCE_MISSING_SENTINEL_0x33) */

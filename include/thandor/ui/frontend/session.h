@@ -18,51 +18,37 @@
    percent * 256 / 100 (0x28F5C = 2.56 in Q16, truncated). */
 #define FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16 0x28F5C
 
-/* 0x00544270 */
 void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
           (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           uint32_t unusedArgument3);
 
-/* 0x00548FE0 */
 void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source);
 
-/* 0x00549090 */
 void FrontendSessionAction_ApplySpeedOrToggleReady(void *source);
 
-/* 0x0054C770 */
 void FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source);
 
-/* 0x0054D0B0 */
 void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source);
 
-/* 0x00544250 */
 void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           GameSpeedPercent gameSpeedPercent);
 
-/* 0x0054A790 */
 void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi);
 
-/* 0x0054D2E0 */
 void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source);
 
-/* 0x0054E3A0 */
 void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView *frontendRuntime);
 
-/* 0x00565670 */
 void FrontendSession_PeriodicTick(void);
 
-/* 0x005725D0 */
 void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void);
 
-/* 0x00572960 */
 void FrontendClientSession_TickHostTimeout(void);
 
-/* 0x00544210 */
 void FrontendSession_ApplyGameSpeedAndReturnToMainPage
           (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendStatusCode romActionIndex);
 
-/* 0x00544D10 */
 void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendStatusCode romActionIndex);
 

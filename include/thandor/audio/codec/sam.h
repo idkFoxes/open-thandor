@@ -19,20 +19,15 @@
 /* The MMX cosine transforms compute 4 outputs (one qword, four 256-entry cosine rows) per loop pass. */
 #define SAM_MMX_OUTPUTS_PER_PASS 4
 
-/* 0x00417700 */
 void SoundCoefficientTransform_ApplyCosineBanksMmx(short *outputMonoPcm,SoundCoefficientBlock *coefficientBlock);
 
-/* 0x00418560 */
 void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients);
 
-/* 0x004193D0 */
 void SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,short *inputPcm);
 
-/* 0x0041A430 */
 uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock);
 
 
-/* 0x0041A320 */
 uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients);
 
 #endif /* THANDOR_AUDIO_CODEC_SAM_H */

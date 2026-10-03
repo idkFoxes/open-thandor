@@ -24,58 +24,44 @@
 #define MODEL_POINT_CLASS_LIGHT 4 /* shading light position */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0051B3C0 */
 ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
-/* 0x0051DB00 */
 void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
-/* 0x0051DA60 */
 bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
-/* 0x00528950 */
 bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError);
 
-/* 0x004BE670 */
 bool ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,GraphicsFixedVec3 *outLocalPosition);
 
-/* 0x004BE6F0 */
 bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,ModelPackedPointRecord **outEntry);
 
-/* 0x0050AEA0 */
 bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12);
 
-/* 0x005289C0 */
 uint32_t ModelDefinitionRegistry_FindBuildCostsById
           (PckModelDefinitionIdCatalog definitionId,uint32_t *outEnergyLoadQ4,uint32_t *outBuildTicks,
            uint32_t *outXeniteCostQ4);
 
-/* 0x0053BA00 */
 ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId);
 
-/* 0x0051B430 */
 PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
-/* 0x00528600 */
 bool ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError);
 
-/* 0x0052ADE0 */
 void ModelDefinition_UnlockLinkedTechnologyForFaction
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId);
 
-/* 0x0052AD90 */
 bool ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
 
-/* 0x00528E20 */
 ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId);
 
 #endif /* THANDOR_ASSETS_MODEL_DEFINITIONS_H */

@@ -76,45 +76,34 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0053D370 */
 bool TerrainCompositeTexture_Create(uint32_t *outError);
 
-/* 0x00503B10 */
 bool TerrainByteClampLookup_Initialize(uint32_t *outError);
 
-/* 0x00503F30 */
 bool TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError);
 
-/* 0x005041C0 */
 bool TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError);
 
-/* 0x00504470 */
 void TerrainVisualResources_Shutdown(void);
 
-/* 0x00505780 */
 void TerrainLighting_BuildColorRampAndSetBaseColor
           (PackedArgb32 secondaryColorArgb,PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb
           );
 
-/* 0x0053D4D0 */
 void TerrainCompositeTexture_Destroy(void);
 
-/* 0x00561EA0 */
 void TerrainLighting_AdjustDirectionAndRecomputeField
           (uint32_t playerRuntimeId,uint32_t reservedZero,uint32_t deltaElevationAngle,
           uint32_t deltaAzimuthAngle);
 
-/* 0x0053D560 */
 void TerrainCompositeTexture_FillPlane1(void);
 
-/* 0x0053D680 */
 void TerrainCompositeTexture_FillPlane2(void);
 
-/* 0x0053D840 */
 void TerrainCompositeTexture_RebuildPlane0(void);
 
 #endif /* THANDOR_WORLD_TERRAIN_VISUALS_H */

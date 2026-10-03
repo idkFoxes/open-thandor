@@ -10,13 +10,10 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 00562648 g_UiCatalogGroup48ColumnCount */
 uint32_t g_UiCatalogGroup48ColumnCount = 0;
 
-/* 0056264C g_UiCatalogGroup42ColumnCount */
 uint32_t g_UiCatalogGroup42ColumnCount = 0;
 
-/* 00562654 g_UiCatalogGroup48OffsetTables */
 int32_t *g_UiCatalogGroup48OffsetTables[9] = {
     /* 0 */ (void *)&g_UiCatalogGroup48OffsetsDefault,
     /* 1 */ (void *)&g_UiCatalogGroup48OffsetsDefault,
@@ -28,7 +25,6 @@ int32_t *g_UiCatalogGroup48OffsetTables[9] = {
     /* 7 */ (void *)&g_UiCatalogGroup48Offsets7Columns,
     /* 8 */ (void *)&g_UiCatalogGroup48Offsets8Columns};
 
-/* 00562678 g_UiCatalogGroup42OffsetTables */
 int32_t *g_UiCatalogGroup42OffsetTables[7] = {
     /* 0 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
     /* 1 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
@@ -38,7 +34,6 @@ int32_t *g_UiCatalogGroup42OffsetTables[7] = {
     /* 5 */ (void *)&g_UiCatalogGroup42Offsets5Columns,
     /* 6 */ (void *)&g_UiCatalogGroup42Offsets6Columns};
 
-/* 005626A8 g_UiCatalogGroup48OffsetsDefault */
 int32_t g_UiCatalogGroup48OffsetsDefault[48] = {
     /*  0 */ 24188, 24316, 24444, 24572, 24700, 24828, 24956, 25084,
     /*  8 */ 25212, 25340, 25468, 25596, 25724, 25852, 25980, 26108,
@@ -47,7 +42,6 @@ int32_t g_UiCatalogGroup48OffsetsDefault[48] = {
     /* 32 */ 28284, 28412, 28540, 28668, 28796, 28924, 29052, 29180,
     /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204};
 
-/* 00562768 g_UiCatalogGroup48Offsets5Columns */
 int32_t g_UiCatalogGroup48Offsets5Columns[48] = {
     /*  0 */ 24188, 24316, 24444, 24572, 27260, 24700, 24828, 24956,
     /*  8 */ 25084, 27388, 25212, 25340, 25468, 25596, 27516, 25724,
@@ -56,7 +50,6 @@ int32_t g_UiCatalogGroup48Offsets5Columns[48] = {
     /* 32 */ 28284, 28412, 28540, 28668, 28796, 28924, 29052, 29180,
     /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204};
 
-/* 00562828 g_UiCatalogGroup48Offsets6Columns */
 int32_t g_UiCatalogGroup48Offsets6Columns[48] = {
     /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 24700, 24828,
     /*  8 */ 24956, 25084, 27388, 28156, 25212, 25340, 25468, 25596,
@@ -65,7 +58,6 @@ int32_t g_UiCatalogGroup48Offsets6Columns[48] = {
     /* 32 */ 27004, 27132, 27900, 28668, 28796, 28924, 29052, 29180,
     /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204};
 
-/* 005628E8 g_UiCatalogGroup48Offsets7Columns */
 int32_t g_UiCatalogGroup48Offsets7Columns[48] = {
     /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 28796, 24700,
     /*  8 */ 24828, 24956, 25084, 27388, 28156, 28924, 25212, 25340,
@@ -74,7 +66,6 @@ int32_t g_UiCatalogGroup48Offsets7Columns[48] = {
     /* 32 */ 27772, 28540, 29308, 26748, 26876, 27004, 27132, 27900,
     /* 40 */ 28668, 29436, 29564, 29692, 29820, 29948, 30076, 30204};
 
-/* 005629A8 g_UiCatalogGroup48Offsets8Columns */
 int32_t g_UiCatalogGroup48Offsets8Columns[48] = {
     /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 28796, 29564,
     /*  8 */ 24700, 24828, 24956, 25084, 27388, 28156, 28924, 29692,
@@ -83,7 +74,6 @@ int32_t g_UiCatalogGroup48Offsets8Columns[48] = {
     /* 32 */ 26236, 26364, 26492, 26620, 27772, 28540, 29308, 30076,
     /* 40 */ 26748, 26876, 27004, 27132, 27900, 28668, 29436, 30204};
 
-/* 00562A68 g_UiCatalogGroup42OffsetsDefault */
 int32_t g_UiCatalogGroup42OffsetsDefault[42] = {
     /*  0 */ 30536, 30664, 30792, 30920, 31048, 31176, 31304, 31432,
     /*  8 */ 31560, 31688, 31816, 31944, 32072, 32200, 32328, 32456,
@@ -92,7 +82,6 @@ int32_t g_UiCatalogGroup42OffsetsDefault[42] = {
     /* 32 */ 34632, 34760, 34888, 35016, 35144, 35272, 35400, 35528,
     /* 40 */ 35656, 35784};
 
-/* 00562B10 g_UiCatalogGroup42Offsets5Columns */
 int32_t g_UiCatalogGroup42Offsets5Columns[42] = {
     /*  0 */ 30536, 30664, 30792, 30920, 34120, 31048, 31176, 31304,
     /*  8 */ 31432, 34248, 31560, 31688, 31816, 31944, 34376, 32072,
@@ -101,7 +90,6 @@ int32_t g_UiCatalogGroup42Offsets5Columns[42] = {
     /* 32 */ 33864, 33992, 34888, 35016, 35144, 35272, 35400, 35528,
     /* 40 */ 35656, 35784};
 
-/* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
 int32_t g_UiCatalogGroup42Offsets6Columns[42] = {
     /*  0 */ 30536, 30664, 30792, 30920, 34120, 35016, 31048, 31176,
     /*  8 */ 31304, 31432, 34248, 35144, 31560, 31688, 31816, 31944,
@@ -110,46 +98,35 @@ int32_t g_UiCatalogGroup42Offsets6Columns[42] = {
     /* 32 */ 33352, 33480, 34760, 35656, 33608, 33736, 33864, 33992,
     /* 40 */ 34888, 35784};
 
-/* 0040F530 g_UiTimedListDriveLetters */
 static uint8_t g_UiTimedListDriveLetters[32] = {0};
 
-/* 0040F550 g_UiTimedListRecordPathScratch */
 static WidePathBuffer256 g_UiTimedListRecordPathScratch = {0};
 
-/* 0040F750 g_UiTimedListCombinedPathScratch */
 static WidePathBuffer256 g_UiTimedListCombinedPathScratch = {0};
 
-/* 0040F950 g_UiTimedListSecondaryPathScratch */
 static WidePathBuffer256 g_UiTimedListSecondaryPathScratch = {0};
 
-/* 0040FB50 g_UiTimedListHierarchyPathScratch */
 static WidePathBuffer256 g_UiTimedListHierarchyPathScratch = {0};
 
-/* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
 static WidePathBuffer256 g_UiTimedListHierarchyParentPathScratch = {0};
 
-/* 0040FF50 g_WildcardAllFilesUtf16 */
 static uint16_t g_WildcardAllFilesUtf16[4] = L"*.*";
 
-/* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
 static uint16_t g_UiTimedListDriveWildcardUtf16[7] = L"?:\\*.*";
 
-/* 004B0E50 g_UiScrollWheelDefaultStep: int32_t, 14: pixels scrolled per mouse-wheel step in a scrollable control whose child is not a list (UiScrollableControl wheel handler, src/ui/controls/lists.c). */
+/* int32_t, 14: pixels scrolled per mouse-wheel step in a scrollable control whose child is not a list (UiScrollableControl wheel handler, src/ui/controls/lists.c). */
 static const int32_t g_UiScrollWheelDefaultStep = 14;
 
-/* 004B0E54 g_UiScrollWheelListStep: int32_t, 15: pixels per mouse-wheel step when the scrollable control's child is a list/text list/timed list control (src/ui/controls/lists.c). */
+/* int32_t, 15: pixels per mouse-wheel step when the scrollable control's child is a list/text list/timed list control (src/ui/controls/lists.c). */
 static const int32_t g_UiScrollWheelListStep = 15;
 
-/* 004B0E5C g_UiTimedListActionDelayFrames */
 static const UiFrameDelayFrames g_UiTimedListActionDelayFrames = 8;
 
-/* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
 static uint16_t g_UiCatalogEntryRichTextScratchUtf16[16] = {0};
 
 /* Implementation ownership: ui/controls/lists. */
 
-/* Address: 0x004BBE60.
-   Keyboard handler of the tree list (g_UiTimedListControlVtable keyboardEvent): Home/End, Up/Down and
+/* Keyboard handler of the tree list (g_UiTimedListControlVtable keyboardEvent): Home/End, Up/Down and
    Page Up/Down walk the visible rows of the record tree, Left/Right collapse/expand the selected row through
    recordSelectionCallback. A moved selection is scrolled into view and its action queued after
    g_UiTimedListActionDelayFrames frames (UiTimedListControl_TickActionDelay). Other keys go to the default
@@ -341,8 +318,7 @@ bool UiTimedListControl_HandleKeyboardNavigation
 }
 
 
-/* Address: 0x004BB100.
-   Keyboard handler of the column list (g_UiListControlVtable keyboardEvent): Enter confirms the selection
+/* Keyboard handler of the column list (g_UiListControlVtable keyboardEvent): Enter confirms the selection
    and queues the list's action at once; Home/End, Up/Down and Page Up/Down (one row less than the view
    holds) move the selection, play the selection sound, scroll the row into view and queue the action after
    g_UiListActivationPulseFrames frames (UiListControl_TickActivationPulse). Other keys go to the default
@@ -426,8 +402,7 @@ bool UiListControl_HandleKeyboardNavigation
 }
 
 
-/* Address: 0x004BB480.
-   After the rows of a pointer list changed: sets the content height to rowCount rows (+1 pixel), lets the
+/* After the rows of a pointer list changed: sets the content height to rowCount rows (+1 pixel), lets the
    parent re-layout (scroll range), re-applies the current selection so it stays visible and queues the
    list's action so its owner refreshes.
 */
@@ -449,8 +424,7 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
 }
 
 
-/* Address: 0x004B87A0.
-   Left-button press on a scroll frame (g_UiScrollableControlVtable nonRightPress): finds the scrollbar part
+/* Left-button press on a scroll frame (g_UiScrollableControlVtable nonRightPress): finds the scrollbar part
    under the pointer and starts that interaction. An arrow is held (auto-repeat in
    UiScrollableControl_TickAutoScroll), a thumb is grabbed for dragging, a track click pages by half a view
    at once and again on release. Pointer outside both bars: nothing happens.
@@ -606,8 +580,7 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
 }
 
 
-/* Address: 0x004B8A20.
-   Left-button release on a scroll frame (g_UiScrollableControlVtable nonRightRelease): a held track pages by
+/* Left-button release on a scroll frame (g_UiScrollableControlVtable nonRightRelease): a held track pages by
    another half view, then every scrollbar interaction ends and the frame is redrawn.
 */
 void UiScrollableControl_EndPrimaryScrollInteraction
@@ -638,8 +611,7 @@ void UiScrollableControl_EndPrimaryScrollInteraction
 }
 
 
-/* Address: 0x004B8BF0.
-   Left-button drag on a scroll frame (g_UiScrollableControlVtable nonRightDrag): a grabbed thumb follows the
+/* Left-button drag on a scroll frame (g_UiScrollableControlVtable nonRightDrag): a grabbed thumb follows the
    pointer (the scroll offset is the thumb position scaled from the free track to the scroll range); a held
    arrow repeats (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) only while the pointer stays on it. A held track
    ignores the drag.
@@ -818,8 +790,7 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
 }
 
 
-/* Address: 0x004B8F90.
-   Right-button drag on a scroll frame (g_UiScrollableControlVtable rightDrag): pans the content by the
+/* Right-button drag on a scroll frame (g_UiScrollableControlVtable rightDrag): pans the content by the
    pointer movement since the press (on the axes that have a bar) and puts the pointer back to the press
    position, so the pointer stays in place while the content moves.
 */
@@ -848,8 +819,7 @@ void UiScrollableControl_UpdateSecondaryScrollDrag
 }
 
 
-/* Address: 0x004B9070.
-   Per-frame tick of a scroll frame (g_UiScrollableControlVtable tick): while an arrow is held under the
+/* Per-frame tick of a scroll frame (g_UiScrollableControlVtable tick): while an arrow is held under the
    pointer, scrolls by autoScrollStepX/Y in the arrow's direction and redraws.
 */
 void UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
@@ -875,8 +845,7 @@ void UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
 }
 
 
-/* Address: 0x004B90E0.
-   Mouse wheel over a scroll frame (g_UiScrollableControlVtable pointerWheel): scrolls vertically by
+/* Mouse wheel over a scroll frame (g_UiScrollableControlVtable pointerWheel): scrolls vertically by
    wheelDelta steps, g_UiScrollWheelListStep pixels per step when the content is a list control, else
    g_UiScrollWheelDefaultStep. Ignored without a vertical bar, during a button interaction or when suppressed.
 */
@@ -916,8 +885,7 @@ void UiScrollableControl_HandlePointerWheel
 }
 
 
-/* Address: 0x004BA500.
-   Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
+/* Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
    parent so the row is visible. Out-of-range indices are ignored.
 */
 void UiPointerList_SelectTextListIndex(UiListRowIndex index,UiPointerListControl *control)
@@ -936,8 +904,7 @@ void UiPointerList_SelectTextListIndex(UiListRowIndex index,UiPointerListControl
 }
 
 
-/* Address: 0x004BB020.
-   Left-button press on the column list (g_UiListControlVtable nonRightPress): selects the row under the
+/* Left-button press on the column list (g_UiListControlVtable nonRightPress): selects the row under the
    pointer, scrolls it into view, queues the list's action and plays the selection sound. A double click
    also marks the selection confirmed (UI_LIST_SELECTION_CONFIRMED) and re-queues even for the same row; a
    single click on the already selected row does nothing.
@@ -980,8 +947,7 @@ void UiListControl_SelectRowFromPointer
 }
 
 
-/* Address: 0x004BB7A0.
-   Sorts the rows of a pointer list by a 64-bit key at fieldOffset in each row entry (high dword first, then
+/* Sorts the rows of a pointer list by a 64-bit key at fieldOffset in each row entry (high dword first, then
    low dword; unsigned, descending) with an exchange sort, then selects the previously selected entry again
    and scrolls it into view. Equal keys are swapped too, so the sort is not stable.
 */
@@ -1043,8 +1009,7 @@ void UiPointerList_SortByDwordPairFieldDescending
 }
 
 
-/* Address: 0x004BB8A0.
-   Sorts the rows of a pointer list by the unsigned dword at fieldOffset in each row entry with an exchange
+/* Sorts the rows of a pointer list by the unsigned dword at fieldOffset in each row entry with an exchange
    sort, then selects the previously selected entry again and scrolls it into view. Equal keys are swapped
    too, so the sort is not stable. Called by the scenario catalog (src/assets/scenario/catalog.c, field 0x50).
 */
@@ -1101,8 +1066,7 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
 }
 
 
-/* Address: 0x004BBCD0.
-   Left-button press on the tree list (g_UiTimedListControlVtable nonRightPress): walks the visible rows to
+/* Left-button press on the tree list (g_UiTimedListControlVtable nonRightPress): walks the visible rows to
    the one under the pointer. A hit on the expand/collapse icon in the indentation (opaque pixel) calls
    recordSelectionCallback; a hit on the row icon or label (up to 6 pixels past the text) selects the row,
    scrolls it into view and queues the list's action, and a double click also calls recordSelectionCallback
@@ -1198,8 +1162,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
 }
 
 
-/* Address: 0x0040FF70.
-   Returns the row of recordBlock whose label equals labelUtf16 (exact, case-sensitive compare of at most
+/* Returns the row of recordBlock whose label equals labelUtf16 (exact, case-sensitive compare of at most
    256 code units including the terminator), or NULL. Used by UiTimedListTree_BuildDirectoryHierarchy to find
    the directory row of each path level.
 */
@@ -1243,8 +1206,7 @@ UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,U
   return NULL;
 }
 
-/* Address: 0x0040FFE0.
-   Builds one level of the directory tree for the tree list: for an empty path the root block with the
+/* Builds one level of the directory tree for the tree list: for an empty path the root block with the
    single "computer" row; for a drive root ("X:" or "X:\") the list of drives, labelled "X:[volume label]"
    with their drive type as icon; otherwise the subdirectories of pathUtf16. The block (header record, rows,
    then the 0x200-byte labels) is allocated from the arena; a row gets flag bit 0 when it has
@@ -1484,8 +1446,7 @@ static bool UiTimedListTree_AbandonDirectoryHierarchy
   return false;
 }
 
-/* Address: 0x00410380.
-   Builds the directory tree from the root ("computer") down to selectedPathUtf16: one record block per path
+/* Builds the directory tree from the root ("computer") down to selectedPathUtf16: one record block per path
    level (UiTimedListTree_BuildDirectoryRecordBlock), each linked to its parent block and opened (expanded)
    from the parent row that names it. Returns true with the root block in *outRootBlock and the row of the
    selected directory in *outSelectedRecord, or false on failure (then the blocks built so far are freed,
@@ -1583,8 +1544,7 @@ bool UiTimedListTree_BuildDirectoryHierarchy
   return true;
 }
 
-/* Address: 0x004104B0.
-   Frees a record block and every expanded child block below it (collapsing a directory row) and tells in
+/* Frees a record block and every expanded child block below it (collapsing a directory row) and tells in
    CF whether targetRecord (the list's selected row) was one of the freed rows, so the caller can move the
    selection to the collapsed row.
 */
@@ -1644,8 +1604,7 @@ static UiTimedListTreeRecord *UiTimedListTree_FindBlockHeader(UiTimedListTreeRec
   return header;
 }
 
-/* Address: 0x00410520.
-   Expands a directory row of the tree: builds the full path of the row (its label joined to the labels of
+/* Expands a directory row of the tree: builds the full path of the row (its label joined to the labels of
    its ancestor rows, a drive row gives "X:"), enumerates its subdirectories into a new record block and
    links the block below the row (the block header points back to the row and to the row's own block).
    The root "computer" row lists the drives. Returns true when the path or the block cannot be built.
@@ -1709,8 +1668,7 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
   return false;
 }
 
-/* Address: 0x00410670.
-   Expands or collapses a directory row of the tree list (the directory browser's recordSelectionCallback),
+/* Expands or collapses a directory row of the tree list (the directory browser's recordSelectionCallback),
    then recomputes the list layout and scrolls the selection into view. Collapsing a branch that contained
    the selected row moves the selection to the collapsed row and queues the list's action. No caller found
    in src/.
@@ -1747,8 +1705,7 @@ void UiTimedListControl_ToggleDirectoryRecordExpansion
   return;
 }
 
-/* Address: 0x00410700.
-   Writes the full path of a tree row to outputPathDwords (256 code units): the row label joined to the
+/* Writes the full path of a tree row to outputPathDwords (256 code units): the row label joined to the
    labels of its ancestor rows; a drive row gives "X:", the root "computer" row its label unchanged. CF set
    when the ancestor chain does not end in a drive row. No caller found in src/.
 */
@@ -1796,8 +1753,7 @@ bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeR
   return false;
 }
 
-/* Address: 0x004B11C0.
-   Re-enables the controls bound to actionId among firstNode and its following siblings: each node's
+/* Re-enables the controls bound to actionId among firstNode and its following siblings: each node's
    unsuppressActionId method clears UI_NODE_SUPPRESSED when the action matches (containers recurse).
 */
 void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
@@ -1810,8 +1766,7 @@ void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 }
 
 
-/* Address: 0x004B1200.
-   Disables (greys out) the controls bound to actionId among firstNode and its following siblings: each
+/* Disables (greys out) the controls bound to actionId among firstNode and its following siblings: each
    node's suppressActionId method sets UI_NODE_SUPPRESSED when the action matches (containers recurse).
 */
 void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
@@ -1824,8 +1779,7 @@ void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 }
 
 
-/* Address: 0x004B2550.
-   Keyboard handler shared by the buttons, check boxes and similar selectable controls (keyboardEvent of
+/* Keyboard handler shared by the buttons, check boxes and similar selectable controls (keyboardEvent of
    g_UiSpriteButtonControlVtable, g_UiWindowControlVtable, g_UiFramedTextButtonControlVtable, _004BC570, _005162C0,
    _00516310 and _00516530). Space on the focused control, or Enter / Escape when the control binds them,
    activates it: a push button queues its action, a toggle flips its selected state, a radio-style control
@@ -1896,8 +1850,7 @@ bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
 }
 
 
-/* Address: 0x004B26E0.
-   Disables (greys out) a selectable control bound to actionId: sets UI_NODE_SUPPRESSED and gives up the
+/* Disables (greys out) a selectable control bound to actionId: sets UI_NODE_SUPPRESSED and gives up the
    keyboard focus if it had it. suppressActionId of g_UiGraphicsAdapterTextButtonVtable,
    g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
    g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiFramedTextButtonControlVtable, _004B2CE0,
@@ -1917,8 +1870,7 @@ void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableCont
 }
 
 
-/* Address: 0x004B2710.
-   Re-enables a selectable control bound to actionId: clears UI_NODE_SUPPRESSED and takes the keyboard focus
+/* Re-enables a selectable control bound to actionId: clears UI_NODE_SUPPRESSED and takes the keyboard focus
    when no node has it. unsuppressActionId of g_UiGraphicsAdapterTextButtonVtable,
    g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
    g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiFramedTextButtonControlVtable, _004B2CE0,
@@ -1938,8 +1890,7 @@ void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableCo
 }
 
 
-/* Address: 0x004B2D30.
-   Finds the first enabled (not suppressed), selected control of a group (controlCount control pointers
+/* Finds the first enabled (not suppressed), selected control of a group (controlCount control pointers
    follow controlCount on the stack). Returns true when there is one, with its node in *outNode and its
    index in *outIndex; false when none is. Both out-parameters are optional (NULL) and written in either case.
    Original quirk: when none is selected, *outNode is the last control of the group and *outIndex is
@@ -1978,8 +1929,7 @@ bool UiSelectableGroup_FindVisibleSelected
 }
 
 
-/* Address: 0x004B2D70.
-   Returns the index of the first selected control of a group (controlCount control pointers follow on the
+/* Returns the index of the first selected control of a group (controlCount control pointers follow on the
    stack), suppressed ones included, or controlCount when none is selected. Called by the frontend scenario
    page (src/ui/frontend/scenario.c).
 */
@@ -2003,8 +1953,7 @@ uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...)
 }
 
 
-/* Address: 0x004B2DA0.
-   Radio-button behaviour for a group (controlCount control pointers follow selectedControl on the stack):
+/* Radio-button behaviour for a group (controlCount control pointers follow selectedControl on the stack):
    selects selectedControl, deselects all other group members and redraws them.
 */
 void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...)
@@ -2032,8 +1981,7 @@ void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *s
 }
 
 
-/* Address: 0x004B2DE0.
-   Tells (in CF) whether a selectable control counts as selected/checked: only a visible (not suppressed)
+/* Tells (in CF) whether a selectable control counts as selected/checked: only a visible (not suppressed)
    control can be.
 */
 uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control)
@@ -2047,8 +1995,7 @@ uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control)
 }
 
 
-/* Address: 0x004B2E10.
-   Sets or clears the selected/checked state of a selectable control (checkbox, radio or toggle button)
+/* Sets or clears the selected/checked state of a selectable control (checkbox, radio or toggle button)
    from code, without queueing its action, and redraws it.
 */
 void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control)
@@ -2063,8 +2010,7 @@ void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableContr
 }
 
 
-/* Address: 0x004B4920.
-   Looks up the page stack's shown page (its first child) in its page array and returns the page's index;
+/* Looks up the page stack's shown page (its first child) in its page array and returns the page's index;
    when the shown page is none of the stack's pages it returns pageCount (1 for an empty stack).
 */
 uint32_t UiPageStack_ActivePageIndex(UiPageStackControl *stack)
@@ -2082,8 +2028,7 @@ uint32_t UiPageStack_ActivePageIndex(UiPageStackControl *stack)
 }
 
 
-/* Address: 0x004B7970.
-   Relocation of a scroll frame loaded from a serialized UI tree (g_UiScrollableControlVtable relocate):
+/* Relocation of a scroll frame loaded from a serialized UI tree (g_UiScrollableControlVtable relocate):
    relocates the children, takes the content size from the content child's right/bottom offsets and scrolls
    back to the origin.
 */
@@ -2379,8 +2324,7 @@ static void UiScrollableControl_DrawFrameStyle
              content->right,content->bottom,content->left,control);
 }
 
-/* Address: 0x004B79D0.
-   Draws a scroll frame (g_UiScrollableControlVtable drawClipped) from g_UiWindowTextureSource pieces: the
+/* Draws a scroll frame (g_UiScrollableControlVtable drawClipped) from g_UiWindowTextureSource pieces: the
    horizontal and vertical bars (arrows, track and thumb, pressed/active pieces while held), the optional
    frame style and interior fill, then the content child clipped to the remaining view.
 */
@@ -2448,8 +2392,7 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
 
 
 
-/* Address: 0x004B8310.
-   Layout of a scroll frame (list boxes, text views): the single child is the content, its size is taken from
+/* Layout of a scroll frame (list boxes, text views): the single child is the content, its size is taken from
    its right/bottom offsets. Decides which scroll bars are needed (a bar can reduce the room for the content
    and so make the other one necessary; bits 4..7 of scrollStateFlags say which bar positions are allowed),
    clamps the scroll offsets so no empty space shows, places the content (shifted by the scroll offsets, the
@@ -2698,8 +2641,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
 }
 
 
-/* Address: 0x004B8AC0.
-   Cursor of a scroll frame (g_UiScrollableControlVtable pointerMove): while a right-button pan that started
+/* Cursor of a scroll frame (g_UiScrollableControlVtable pointerMove): while a right-button pan that started
    inside the content is active, the pan cursor for the axes that can scroll; otherwise the arrow.
 */
 GraphicsCursorFrameIndex UiScrollableControl_QueryPointerRegion
@@ -2727,8 +2669,7 @@ GraphicsCursorFrameIndex UiScrollableControl_QueryPointerRegion
 }
 
 
-/* Address: 0x004B8B10.
-   Right-button press on a scroll frame (g_UiScrollableControlVtable rightPress): starts panning. Pins the
+/* Right-button press on a scroll frame (g_UiScrollableControlVtable rightPress): starts panning. Pins the
    cursor (g_CursorUseOverridePosition), remembers the press position as the pan anchor and, when the press is
    inside the content view and the frame has a bar, shows the pan cursor for the axes that can scroll.
 */
@@ -2783,8 +2724,7 @@ void UiScrollableControl_BeginSecondaryScrollInteraction
 }
 
 
-/* Address: 0x004B8BC0.
-   Right-button release on a scroll frame (g_UiScrollableControlVtable rightRelease): ends panning, releases
+/* Right-button release on a scroll frame (g_UiScrollableControlVtable rightRelease): ends panning, releases
    the pinned cursor and restores the arrow cursor.
 */
 void UiScrollableControl_EndSecondaryScrollInteraction
@@ -2800,8 +2740,7 @@ void UiScrollableControl_EndSecondaryScrollInteraction
 }
 
 
-/* Address: 0x004B9000.
-   Hit test of a scroll frame (g_UiScrollableControlVtable hitTest): a pointer inside the content view hits
+/* Hit test of a scroll frame (g_UiScrollableControlVtable hitTest): a pointer inside the content view hits
    the content's children, anywhere else (bars, frame) or during a right-button pan of the content the frame
    itself.
 */
@@ -2825,8 +2764,7 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
 }
 
 
-/* Address: 0x004BA560.
-   Returns the index of the selected row of a pointer list. The original also reports
+/* Returns the index of the selected row of a pointer list. The original also reports
    UI_LIST_SELECTION_CONFIRMED in CF (CLC 0x004BA57F / STC 0x004BA587), which this C signature does not carry
    (both branches return the index). No caller reads it: FrontendNetworkSetupPage_InitializeBackendMode
    (0x0054C29C) passes EAX straight to the backend call, FrontendNetworkSetup_OpenSelectedBackend (0x0054D4AD) overwrites
@@ -2844,8 +2782,7 @@ UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control)
   return selectedRowIndex;
 }
 
-/* Address: 0x004BADE0.
-   Draws the visible rows of the column list (g_UiListControlVtable drawClipped): the highlight bar behind
+/* Draws the visible rows of the column list (g_UiListControlVtable drawClipped): the highlight bar behind
    the selected row (with end caps while the list has the keyboard focus), then each column's text of the
    row record. A column with a negative width is right-aligned in |width| pixels.
 */
@@ -2944,8 +2881,7 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
 }
 
 
-/* Address: 0x004BB310.
-   Per-frame tick of the column list (g_UiListControlVtable tick): counts down the deferred action of a
+/* Per-frame tick of the column list (g_UiListControlVtable tick): counts down the deferred action of a
    keyboard selection change and queues the list's action when it reaches zero (clearing the pending and
    confirmed flags).
 */
@@ -2966,8 +2902,7 @@ void UiListControl_TickActivationPulse(UiListControl *control)
 }
 
 
-/* Address: 0x004BB350.
-   Re-enables the column list when it is bound to actionId (g_UiListControlVtable unsuppressActionId), then
+/* Re-enables the column list when it is bound to actionId (g_UiListControlVtable unsuppressActionId), then
    passes the request on to its children like any container.
 */
 void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
@@ -2984,8 +2919,7 @@ void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *contr
 }
 
 
-/* Address: 0x004BB380.
-   Disables the column list when it is bound to actionId (g_UiListControlVtable suppressActionId), then
+/* Disables the column list when it is bound to actionId (g_UiListControlVtable suppressActionId), then
    passes the request on to its children like any container. Unlike the selectable controls it keeps the
    keyboard focus.
 */
@@ -3003,8 +2937,7 @@ void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control
 }
 
 
-/* Address: 0x004BB3B0.
-   Fills a pointer list with rowCount rows (rowPointers, one record pointer per row) and selects row 0.
+/* Fills a pointer list with rowCount rows (rowPointers, one record pointer per row) and selects row 0.
    The list's size follows its content: one list-font line plus 1 pixel per row, and the sum of the column
    widths (negative widths count by their magnitude) plus 6 pixels; the parent (the scrollable frame) is
    laid out again for the new size.
@@ -3051,8 +2984,7 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPoin
 
 
 
-/* Address: 0x004BB9E0.
-   Relocation of the tree list loaded from a serialized UI tree (g_UiTimedListControlVtable relocate): only
+/* Relocation of the tree list loaded from a serialized UI tree (g_UiTimedListControlVtable relocate): only
    relocates the children like any container.
 */
 void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control)
@@ -3063,8 +2995,7 @@ void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationD
 }
 
 
-/* Address: 0x004BBA00.
-   Draws the tree list (g_UiTimedListControlVtable drawClipped): for every visible row the connector lines
+/* Draws the tree list (g_UiTimedListControlVtable drawClipped): for every visible row the connector lines
    of its ancestor levels, its branch and expand/collapse icons, its row icon, the highlight behind the
    selected row's label (with end caps while the list has the keyboard focus) and the label.
 */
@@ -3185,8 +3116,7 @@ void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int cl
 }
 
 
-/* Address: 0x004BC180.
-   Per-frame tick of the tree list (g_UiTimedListControlVtable tick): counts down the deferred action of a
+/* Per-frame tick of the tree list (g_UiTimedListControlVtable tick): counts down the deferred action of a
    keyboard selection change and queues the list's action when it reaches zero.
 */
 void UiTimedListControl_TickActionDelay(UiTimedListControl *control)
@@ -3205,8 +3135,7 @@ void UiTimedListControl_TickActionDelay(UiTimedListControl *control)
 }
 
 
-/* Address: 0x004BC3F0.
-   Returns the selected row of the tree list. Called by UiTimedListControl_ToggleDirectoryRecordExpansion.
+/* Returns the selected row of the tree list. Called by UiTimedListControl_ToggleDirectoryRecordExpansion.
 */
 UiTimedListTreeRecord *
 UiTimedListControl_GetSelectedRecord(UiTimedListTreeControl *control)
@@ -3215,8 +3144,7 @@ UiTimedListControl_GetSelectedRecord(UiTimedListTreeControl *control)
   return (control->base).selectedRecord;
 }
 
-/* Address: 0x004BC460.
-   Relocation of a wrapped text control loaded from a serialized UI tree (relocate of
+/* Relocation of a wrapped text control loaded from a serialized UI tree (relocate of
    g_UiListOffsetControlVtable and g_UiCommandVisibilityWrappedTextVtable): relocates the children and, when
    UI_LABEL_TEXT_NEEDS_RELOCATION marks the text pointer as a serialized offset, turns it into a pointer once.
 */
@@ -3381,8 +3309,7 @@ static void UiCatalogEntryControl_DrawBuildPercent
              (control->command).sprite.selectable.base.right - textExtent.widthPixels);
 }
 
-/* Address: 0x00516580.
-   Draws a build catalog entry of the in-game command panel (g_UiCatalogEntryControlVtable drawClipped): the
+/* Draws a build catalog entry of the in-game command panel (g_UiCatalogEntryControlVtable drawClipped): the
    sprite button, its price (runtimeDisplayValueQ4 in whole units, in the alert colour when the active
    faction's xenite does not cover it), how many of this army asset the faction already owns (top left) and
    the highest build progress (elapsed / required ticks at model runtime +0x64 / +0x68) among the faction's
@@ -3498,8 +3425,7 @@ void UiCatalogEntryControl_DrawClipped
 }
 
 
-/* Address: 0x00516B90.
-   Pointer over a build catalog entry (g_UiCatalogEntryControlVtable pointerMove): finds the entry in the group-42
+/* Pointer over a build catalog entry (g_UiCatalogEntryControlVtable pointerMove): finds the entry in the group-42
    or group-48 catalog tables, makes its record the hover selection and rebuilds the selection detail panel,
    so the panel describes the hovered asset. Returns cursor frame 10, or 12 while Ctrl is held.
 */
@@ -3543,8 +3469,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
 }
 
 
-/* Address: 0x00516C50.
-   Left-button release on a pressed build catalog entry (g_UiCatalogEntryControlVtable nonRightRelease): releases
+/* Left-button release on a pressed build catalog entry (g_UiCatalogEntryControlVtable nonRightRelease): releases
    the button, records the modifier keys held (g_KeyboardStateMask into activationInputState) for the action
    handler, plays the activation sound and queues the entry's action.
 */
@@ -3575,8 +3500,7 @@ void UiCatalogEntryControl_NonRightRelease
 }
 
 
-/* Address: 0x004BC360.
-   Selects a row of the tree list and scrolls it into view: counts the visible rows above it (walking back
+/* Selects a row of the tree list and scrolls it into view: counts the visible rows above it (walking back
    through its block and up through the ancestor rows, adding the rows of expanded blocks) to get its y.
    Does not queue the list's action.
 */
@@ -3614,8 +3538,7 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
 }
 
 
-/* Address: 0x004BB4E0.
-   Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
+/* Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
    parent so the row is visible; the same as UiPointerList_SelectTextListIndex. Out-of-range indices are
    ignored.
 */
@@ -3635,8 +3558,7 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
 }
 
 
-/* Address: 0x004BB540.
-   Returns the index of the selected row of a pointer list. *outConfirmed (optional, may be NULL) tells
+/* Returns the index of the selected row of a pointer list. *outConfirmed (optional, may be NULL) tells
    whether the selection was confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
 */
 UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed)
@@ -3649,8 +3571,7 @@ UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *
 }
 
 
-/* Address: 0x004B9460.
-   Returns the size of the view of a scroll frame, or 0/0 when control is not a scroll frame. The lists use it
+/* Returns the size of the view of a scroll frame, or 0/0 when control is not a scroll frame. The lists use it
    on their parent to page by a view's height.
 */
 UiScrollableViewportSize UiScrollableControl_GetViewportSize(UiScrollableControl *control)
@@ -3667,8 +3588,7 @@ UiScrollableViewportSize UiScrollableControl_GetViewportSize(UiScrollableControl
   return viewportSize;
 }
 
-/* Address: 0x004BC1C0.
-   Gives the tree list a new record tree (or NULL) and selects its first row: row height from the list font,
+/* Gives the tree list a new record tree (or NULL) and selects its first row: row height from the list font,
    row count over all expanded blocks, width from the widest indented row label plus icon; then the parent
    scroll frame is laid out again for the new content size.
 */
@@ -3735,8 +3655,7 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
   return;
 }
 
-/* Address: 0x004BC2F0.
-   Returns the root record block of the tree list. No caller found in src/.
+/* Returns the root record block of the tree list. No caller found in src/.
 */
 UiTimedListTreeRecord * UiTimedListControl_GetRecordTree(UiTimedListControl *control)
 
@@ -3744,8 +3663,7 @@ UiTimedListTreeRecord * UiTimedListControl_GetRecordTree(UiTimedListControl *con
   return control->recordTree;
 }
 
-/* Address: 0x004BC310.
-   Counts the visible rows of a record block: its rows plus, recursively, the rows of every expanded child
+/* Counts the visible rows of a record block: its rows plus, recursively, the rows of every expanded child
    block (0 for NULL). Used to turn a row position into a row index for scrolling.
 */
 uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord *recordBlock)
@@ -3773,8 +3691,7 @@ uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord
 }
 
 
-/* Address: 0x004B9170.
-   Places the scrolled content (the first child) at the current scroll offsets, clamps the offsets so the
+/* Places the scrolled content (the first child) at the current scroll offsets, clamps the offsets so the
    content neither ends inside the viewport nor starts after its origin, lays the content out and
    recomputes the thumb rectangles of the enabled scrollbars (thumb length proportional to the visible
    part, at least two thumb pieces). Scrolled content has offsets <= 0.
@@ -3920,8 +3837,7 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
 }
 
 
-/* Address: 0x004B9490.
-   Scrolls a scrollable control just far enough that the target rectangle (content coordinates, e.g. a
+/* Scrolls a scrollable control just far enough that the target rectangle (content coordinates, e.g. a
    selected list row) is visible, on the axes that have a scroll bar: first so its right/bottom edge is
    inside the view, then so its left/top edge is (that one wins when the target is larger than the view).
    Relayouts when an offset changed and redraws. Does nothing unless control really is a
@@ -3984,7 +3900,6 @@ void UiScrollableControl_ClampOffsetsToViewport
 
 /* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004B7920 g_UiScrollableControlVtable */
 UiNodeVtable g_UiScrollableControlVtable = {
     .relocate = (void *)UiScrollableControl_RelocateChildren,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4005,7 +3920,6 @@ UiNodeVtable g_UiScrollableControlVtable = {
     .tick = (void *)UiScrollableControl_TickAutoScroll,
     .pointerWheel = (void *)UiScrollableControl_HandlePointerWheel};
 
-/* 004BA590 g_UiListControlVtable */
 UiNodeVtable g_UiListControlVtable = {
     .relocate = (void *)UiContainer_RelocateChildren,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4026,7 +3940,6 @@ UiNodeVtable g_UiListControlVtable = {
     .tick = (void *)UiListControl_TickActivationPulse,
     .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004BB990 g_UiTimedListControlVtable */
 UiNodeVtable g_UiTimedListControlVtable = {
     .relocate = (void *)UiTimedListControl_RelocateChildren,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4047,7 +3960,6 @@ UiNodeVtable g_UiTimedListControlVtable = {
     .tick = (void *)UiTimedListControl_TickActionDelay,
     .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004BC410 g_UiListOffsetControlVtable */
 UiNodeVtable g_UiListOffsetControlVtable = {
         .relocate = (void *)UiWrappedTextControl_RelocateAndApplyDeferredOffset,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4068,7 +3980,6 @@ UiNodeVtable g_UiListOffsetControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
 UiNodeVtable g_UiCommandVisibilityWrappedTextVtable = {
     .relocate = (void *)UiWrappedTextControl_RelocateAndApplyDeferredOffset,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,

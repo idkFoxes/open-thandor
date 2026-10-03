@@ -11,7 +11,7 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 00403160 g_UiTransferEncryptSboxes: Encryption S-boxes of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[8][16][16], table n (0x400 bytes each, 0x00403160-0x00405160) indexed [round-key nibble n][data nibble n], each entry a 4-bit output (each row a permutation of 0..15). k_SpatialSoundStereoCosineSecondHalfBaseBias (0x004046A0) is only an address inside table 5 (+0x140). */
+/* Encryption S-boxes of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[8][16][16], table n (0x400 bytes each, 0x00403160-0x00405160) indexed [round-key nibble n][data nibble n], each entry a 4-bit output (each row a permutation of 0..15). k_SpatialSoundStereoCosineSecondHalfBaseBias (0x004046A0) is only an address inside table 5 (+0x140). */
 __declspec(align(16)) uint32_t g_UiTransferEncryptSboxes[8][16][16] = {
     /* 00403160 table 0 */
     {
@@ -159,7 +159,7 @@ __declspec(align(16)) uint32_t g_UiTransferEncryptSboxes[8][16][16] = {
         {1, 0, 11, 13, 4, 8, 15, 5, 3, 10, 6, 2, 14, 9, 12, 7}},
 };
 
-/* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSboxes); used by UiTransfer_DecryptPacketBlocks. */
+/* Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSboxes); used by UiTransfer_DecryptPacketBlocks. */
 __declspec(align(16)) uint32_t g_UiTransferDecryptSboxes[8][16][16] = {
     {
         {2, 3, 11, 13, 8, 6, 9, 15, 12, 14, 1, 5, 7, 0, 10, 4},
@@ -298,113 +298,81 @@ __declspec(align(16)) uint32_t g_UiTransferDecryptSboxes[8][16][16] = {
         {3, 11, 10, 0, 1, 6, 4, 5, 7, 12, 15, 14, 13, 8, 9, 2},
         {1, 0, 11, 8, 4, 7, 10, 15, 5, 13, 9, 2, 14, 3, 12, 6}}};
 
-/* 004AE974 g_UiRuntimeRecordWriteIndex */
 __declspec(align(4)) uint32_t g_UiRuntimeRecordWriteIndex = 0;
 
-/* 004AE978 g_UiTransferUnitCursor */
 __declspec(align(8)) uint32_t g_UiTransferUnitCursor = 0;
 
-/* 004AE97C g_UiTransferSequenceToken: uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
+/* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
 __declspec(align(4)) uint32_t g_UiTransferSequenceToken = 0x12340000;
 
-/* 004AE980 g_UiTransferSenderContext */
 __declspec(align(16)) uint32_t g_UiTransferSenderContext = 0;
 
-/* 004AE990 g_UiTransferMailbox */
 __declspec(align(16)) UiTransferMailboxState g_UiTransferMailbox = {0};
 
-/* 004AE9A8 g_UiTransferRoundKeys: uint32_t[16] packet cipher round keys (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table). Keys 12..15 (0x004AE9D8) were read by Ghidra as the text "mohTG sakere!!!e". */
+/* uint32_t[16] packet cipher round keys (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table). Keys 12..15 (0x004AE9D8) were read by Ghidra as the text "mohTG sakere!!!e". */
 __declspec(align(8)) uint32_t g_UiTransferRoundKeys[16] = {
     /*  0 */ 0x1234567, 0x13579BDF, 0x76543210, 0xFDB97531, 0x2468ACE, 0x2357BD23, 0xECA86420, 0x32DB7532,
     /*  8 */ 0xF1E2D3C, 0x4B5A6978, 0xC3D2E1F0, 0x8796A5B4, 0x54686F6D, 0x61732047, 0x6572656B, 0x65212121,
 };
 
-/* 004AE9E8 g_UiTransferChunkPacket: mailbox chunk packet (0x10031 request / 0x80030 chunk); payload = chunk offset (0x004AE9F8), transfer byte count (0x004AE9FC), chunk data (0x004AEA00). */
+/* mailbox chunk packet (0x10031 request / 0x80030 chunk); payload = chunk offset (0x004AE9F8), transfer byte count (0x004AE9FC), chunk data (0x004AEA00). */
 __declspec(align(8)) UiRuntimeRecord g_UiTransferChunkPacket = {0};
 
-/* 004AEAE8 g_UiTransferPingEchoPacket: ping answer packet 0x10033; echoed tick at 0x004AEAF8. */
+/* ping answer packet 0x10033; echoed tick at 0x004AEAF8. */
 __declspec(align(8)) FrontendPacket10032HostValue g_UiTransferPingEchoPacket = {0};
 
-/* 004AEB08 g_UiTransferMailboxTickCounter */
 __declspec(align(8)) UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter = 0;
 
-/* 0050F07C g_GameVersionUtf16 (followed by 0x90 filler up to 0050F090) */
 __declspec(align(4)) uint16_t g_GameVersionUtf16[7] = L"1.5.45";
 
-/* 0050F090 g_FrontendSelectedNetworkEndpoint */
 __declspec(align(16)) UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint = {0};
 
-/* 0050F0A0 g_FrontendSessionToken */
 __declspec(align(16)) uint32_t g_FrontendSessionToken = 0;
 
-/* 0050F0A4 g_SessionTransferTimeoutTicks */
 __declspec(align(4)) SessionTransferTimeoutTicks g_SessionTransferTimeoutTicks = 0;
 
-/* 0050F0A8 g_FrontendTransferResponsePending */
 __declspec(align(8)) uint32_t g_FrontendTransferResponsePending = 0;
 
-/* 00543E40 g_FrontendCommandQueueRecords */
 __declspec(align(16)) UiCommandQueueRecord g_FrontendCommandQueueRecords[16] = {0};
 
-/* 00543F40 g_FrontendCommandQueueEnd */
 __declspec(align(16)) UiCommandQueueRecord *g_FrontendCommandQueueEnd = g_FrontendCommandQueueRecords;
 
-/* 00545920 g_FrontendLocalPlayerPcxPreview */
 __declspec(align(16)) uint32_t g_FrontendLocalPlayerPcxPreview = 0;
 
-/* 0054D7A0 g_FrontendPacket10000Buffer */
 __declspec(align(16)) FrontendPacket10000Handshake g_FrontendPacket10000Buffer = {0};
 
-/* 0054D7C0 g_FrontendPacket50001Buffer */
 __declspec(align(16)) FrontendPacket50001SessionAdvertisement g_FrontendPacket50001Buffer = {0};
 
-/* 0054D860 g_FrontendPacket20002Buffer */
 __declspec(align(16)) FrontendPacket20002PlayerDescriptor g_FrontendPacket20002Buffer = {0};
 
-/* 0054D8A0 g_FrontendPacket10003Buffer */
 __declspec(align(16)) FrontendPacket10003JoinAck g_FrontendPacket10003Buffer = {0};
 
-/* 0054D8C0 g_FrontendPacket10004Buffer */
 __declspec(align(16)) FrontendPacket10004PlayerSnapshotRequest g_FrontendPacket10004Buffer = {0};
 
-/* 0054D940 g_FrontendPacket10006Buffer */
 __declspec(align(16)) FrontendPacket10006CapabilityHeartbeat g_FrontendPacket10006Buffer = {0};
 
-/* 0054D960 g_FrontendPacket40008Buffer */
 __declspec(align(16)) FrontendPacket40008LobbyRosterSnapshot g_FrontendPacket40008Buffer = {0};
 
-/* 0054DA00 g_FrontendPacket8000ABuffer */
 __declspec(align(16)) FrontendPacket8000ASnapshotChunk g_FrontendPacket8000ABuffer = {0};
 
-/* 0054DD20 g_FrontendPacket10011Buffer */
 __declspec(align(16)) FrontendCommandPacketRecord g_FrontendPacket10011Buffer = {0};
 
-/* 0054DD60 g_FrontendPacket10013Buffer */
 __declspec(align(16)) FrontendPacket10013HeartbeatAck g_FrontendPacket10013Buffer = {0};
 
-/* 0054DD80 g_FrontendPacket10032Buffer */
 __declspec(align(16)) FrontendPacket10032HostValue g_FrontendPacket10032Buffer = {0};
 
-/* 0054DDA0 g_FrontendPendingSessionPlayerCount */
 __declspec(align(16)) uint32_t g_FrontendPendingSessionPlayerCount = 0;
 
-/* 0054DDA8 g_FrontendExpectedPlayerRuntimeBlockCount */
 __declspec(align(8)) uint32_t g_FrontendExpectedPlayerRuntimeBlockCount = 0;
 
-/* 0054DDAC g_FrontendHostPublishRoundRobinCounter */
 __declspec(align(4)) uint32_t g_FrontendHostPublishRoundRobinCounter = 0;
 
-/* 0055EFC0 g_InGameCommandQueueRecords */
 __declspec(align(16)) UiCommandQueueRecord g_InGameCommandQueueRecords[16] = {0};
 
-/* 0055F0C0 g_InGameCommandQueueEnd */
 __declspec(align(16)) UiCommandQueueRecord *g_InGameCommandQueueEnd = (void *)&g_InGameCommandQueueRecords;
 
-/* 00572060 g_FrontendClientPlayerCommandRecords */
 __declspec(align(16)) FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8] = {0};
 
-/* 00572160 g_FrontendClientCommandBatchPacketBuffer */
 __declspec(align(16)) FrontendCommandPacketRecord g_FrontendClientCommandBatchPacketBuffer[8] = {0};
 
-/* 00572260 g_FrontendPacket10021Buffer */
 __declspec(align(16)) FrontendCommandPacketRecord g_FrontendPacket10021Buffer = {0};

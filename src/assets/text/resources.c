@@ -11,8 +11,7 @@
 
 /* Implementation ownership: assets/text/resources. */
 
-/* Address: 0x0041CD30.
-   Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
+/* Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
    description and 14 further description lines reachable under the global ids the frontend uses for that
    level: TEXT_ID_LEVEL_TITLE_BASE + title index and TEXT_ID_LEVEL_DESCRIPTION_BASE + TEXT_ID_LEVEL_DESCRIPTION_STRIDE *
    title index (+1..14).
@@ -53,8 +52,7 @@ bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t
 }
 
 
-/* Address: 0x0041B080.
-   Loads the two font texture sources from the consecutive UTF-16 paths in g_FontTexturePathsUtf16, allocates
+/* Loads the two font texture sources from the consecutive UTF-16 paths in g_FontTexturePathsUtf16, allocates
    the 16 KiB font runtime buffer (the flattened text of the wrapped-text functions) and the text-resource
    override table, and fills that whole table (ids and text pointers) with 0xFFFFFFFF. Any failure is fatal.
 */
@@ -106,8 +104,7 @@ void FontRuntime_Init(void)
 }
 
 
-/* Address: 0x0041CEB0.
-   Returns the width of one glyph (0 when the font has no such glyph) in the active font and stores the line
+/* Returns the width of one glyph (0 when the font has no such glyph) in the active font and stores the line
    height (the height of glyph 0) in *outLineHeight unless it is NULL; used to measure text before it is laid
    out. Both sizes are always queried.
 */
@@ -130,8 +127,7 @@ uint32_t FontGlyph_GetLogicalSizeActiveFont(GraphicsSubresourceIndex glyphSubres
 }
 
 
-/* Address: 0x0041CEF0.
-   Returns the width of one glyph (0 when the font has no such glyph) in the font selected by packedStyle,
+/* Returns the width of one glyph (0 when the font has no such glyph) in the font selected by packedStyle,
    without changing the active font, and stores the line height (the height of glyph 0) in *outLineHeight
    unless it is NULL. Both sizes are always queried.
 */
@@ -154,8 +150,7 @@ uint32_t FontGlyph_GetLogicalSizeForStyle
 }
 
 
-/* Address: 0x0041D370.
-   Draws one glyph of the active font with its bottom edge on baselineY at drawX, clipped to the given
+/* Draws one glyph of the active font with its bottom edge on baselineY at drawX, clipped to the given
    rectangle, in the current rich-text colour; with a shadow offset set, a half-transparent black copy is drawn
    first, shifted down and right. Returns the glyph width (0 without a loaded font) so the caller can advance.
 */
@@ -192,8 +187,7 @@ uint32_t FontGlyph_DrawBottomAligned
 }
 
 
-/* Address: 0x0041D400.
-   Draws one glyph of the active font at drawX, centred vertically in the text line that ends at lineBottom and
+/* Draws one glyph of the active font at drawX, centred vertically in the text line that ends at lineBottom and
    is lineHeight pixels high, clipped to the given rectangle, in the current rich-text colour (with the
    half-transparent shadow copy first when a shadow offset is set). Returns the glyph width (0 without a loaded
    font) so the caller can advance. Called directly by the wrapped-line drawing of rich text
@@ -270,8 +264,7 @@ static uint32_t RichTextRecord_ParseDecimalDigits(const uint16_t *recordStart)
 }
 
 
-/* Address: 0x0041CA50.
-   Loads a 'str' text asset as page pageIndex: picks the locale block of the configured (or system) country,
+/* Loads a 'str' text asset as page pageIndex: picks the locale block of the configured (or system) country,
    else the Great Britain block, else the first one, binds it, and prepares every string's command records for
    run time (see the switch). Returns true on success and stores the selected block's address in
    *outLocaleBlockOrError; returns false and stores the package error there, or
@@ -372,8 +365,7 @@ bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32
 }
 
 
-/* Address: 0x0041CCF0.
-   Makes resourceId resolve to text (checked by TextResource_Resolve before the locale blocks) by storing the
+/* Makes resourceId resolve to text (checked by TextResource_Resolve before the locale blocks) by storing the
    pair in the first override entry whose id is zero. Without an override table, or when it is full, nothing
    is registered.
 */
@@ -408,8 +400,7 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
 }
 
 
-/* Address: 0x0041CDE0.
-   Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime
+/* Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime
    override table is searched, then the bound locale block of the id's page (compact or extended id, see
    resources.h). Stores the text in *outText and returns true when found; a missing text stores
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 (the pointer value 0x33, not a real string) there and returns false.

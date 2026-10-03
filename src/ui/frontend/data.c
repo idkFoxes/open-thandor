@@ -11,73 +11,51 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 00402024 g_CommandLineFindOption */
 __declspec(align(4)) CommandLineFindOptionProc *g_CommandLineFindOption = 0;
 
-/* 00402784 g_SpinLockAcquire */
 __declspec(align(4)) SpinLockAcquireProc *g_SpinLockAcquire = (void *)SpinLock_Acquire;
 
-/* 00402788 g_SpinLockTryAcquire */
 __declspec(align(8)) SpinLockTryAcquireFlagsProc *g_SpinLockTryAcquire = (void *)SpinLock_TryAcquireFlags;
 
-/* 0040278C g_SpinLockRelease */
 __declspec(align(4)) SpinLockReleaseProc *g_SpinLockRelease = (void *)SpinLock_Release;
 
-/* 00402790 g_SpinLockReleaseAndInvoke */
 __declspec(align(16)) SpinLockReleaseAndInvokeProc *g_SpinLockReleaseAndInvoke = (void *)SpinLock_ReleaseAndInvoke;
 
-/* 00416828 g_CursorOverrideX */
 __declspec(align(8)) UiPixelCoordinate g_CursorOverrideX = 0;
 
-/* 0041682C g_CursorOverrideY */
 __declspec(align(4)) UiPixelCoordinate g_CursorOverrideY = 0;
 
-/* 00416834 g_CursorVisibilityToken */
 __declspec(align(4)) int32_t g_CursorVisibilityToken = -1;
 
-/* 00416838 g_CursorButtonState */
 __declspec(align(8)) uint32_t g_CursorButtonState = 0;
 
-/* 00417338 g_SoundCreateSampleVoiceSet */
 __declspec(align(8)) SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet = (void *)SoundBackendDisabled_CreateSampleVoiceSet;
 
-/* 0041A544 g_NetworkBackendInstanceCount */
 __declspec(align(4)) uint32_t g_NetworkBackendInstanceCount = 0;
 
-/* 0041A54C g_NetworkBackendSlot0 */
 __declspec(align(4)) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = (void *)NetworkBackendFallback_SetSessionContext;
 
-/* 0041A550 g_NetworkBackendSlot1 */
 __declspec(align(16)) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = (void *)NetworkBackendFallback_Cleanup;
 
-/* 0041A554 g_NetworkBackendSlot2 */
 __declspec(align(4)) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = (void *)NetworkBackendFallback_OpenAndBindUdpSocket;
 
-/* 0041A558 g_NetworkBackendSlot3 */
 __declspec(align(8)) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = (void *)NetworkBackendFallback_CloseActiveSocket;
 
-/* 0041A564 g_NetworkBackendSlot6 */
 __declspec(align(4)) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = (void *)NetworkBackendFallback_ParsePeerEndpoint;
 
-/* 0041A568 g_NetworkBackendSlot7 */
 __declspec(align(8)) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = (void *)NetworkBackendFallback_FormatPeerAddress;
 
-/* 004A6D9C g_MovieDefaultAudioGainQ15 */
 __declspec(align(4)) MovieAudioGainQ15 g_MovieDefaultAudioGainQ15 = 32768;
 
-/* 004A6DA0 g_MovieAlternateAudioGainQ15 */
 __declspec(align(16)) MovieAudioGainQ15 g_MovieAlternateAudioGainQ15 = 32768;
 
-/* 004A8E88 g_FramebufferWidth */
 __declspec(align(8)) uint32_t g_FramebufferWidth = 0;
 
-/* 0050BADE g_WorldMotionTargetDistanceConvergenceStepQ12 */
 __declspec(align(4)) UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12 = 512;
 
-/* 0050BAF6 g_WorldMotionPointerWheelInputScale */
 __declspec(align(4)) int g_WorldMotionPointerWheelInputScale = -64;
 
-/* 0050BB37 g_FrontendModelPointerContextVtable (unaligned in the original; one NOP byte after it dropped) */
+/* unaligned in the original; one NOP byte after it dropped */
 __declspec(align(4)) UiNodeVtable g_FrontendModelPointerContextVtable = {
         .relocate = (void *)FrontendModelPointerContext_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -98,40 +76,29 @@ __declspec(align(4)) UiNodeVtable g_FrontendModelPointerContextVtable = {
         .tick = (void *)FrontendModelPointerContext_Tick,
         .pointerWheel = (void *)FrontendModelPointerContext_PointerWheel};
 
-/* 0050DF4A u_flm_ende0000_flm_0050df4a */
 __declspec(align(4)) uint16_t u_flm_ende0000_flm_0050df4a[17] = L"flm\\ende0000.flm";
 
-/* 0050F050 g_FrontendPlayerRuntimeCount */
 __declspec(align(16)) int32_t g_FrontendPlayerRuntimeCount = 0;
 
-/* 0050F054 g_FrontendLocalPlayerNameUtf16 */
 __declspec(align(4)) uint16_t g_FrontendLocalPlayerNameUtf16[20] = {0};
 
-/* 0050F0C0 g_FrontendPlayerRuntimeBlocks */
 __declspec(align(16)) FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks = 0;
 
-/* 0050F0C4 g_FrontendPlayerRuntimeBlockCount */
 __declspec(align(4)) FrontendPlayerRuntimeBlockCount g_FrontendPlayerRuntimeBlockCount = 0;
 
-/* 0050F0C8 g_SessionNetworkRoleFlags */
 __declspec(align(8)) SessionNetworkRoleFlags g_SessionNetworkRoleFlags = 0;
 
-/* 0050F0D4 g_SessionNetworkTickInterval: uint32_t network lockstep interval in simulation steps (2 * the frontend speed slider value); sent in the join ack */
+/* uint32_t network lockstep interval in simulation steps (2 * the frontend speed slider value); sent in the join ack */
 __declspec(align(4)) uint32_t g_SessionNetworkTickInterval = 2;
 
-/* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
 __declspec(align(4)) uint16_t g_FrontendPlayerMessageScratchUtf16[48] = {0};
 
-/* 00514E04 g_UiSevenSlotCommandPayloadText */
 __declspec(align(4)) UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText = {0};
 
-/* 00516EA0 g_FrontendResultsValueTextUtf16 */
 __declspec(align(16)) uint16_t g_FrontendResultsValueTextUtf16[32] = {0};
 
-/* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
 __declspec(align(16)) uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {0};
 
-/* 00516F60 g_UiNodeVtable_00516F60 */
 __declspec(align(16)) UiNodeVtable g_UiNodeVtable_00516F60 = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -153,73 +120,50 @@ __declspec(align(16)) UiNodeVtable g_UiNodeVtable_00516F60 = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 00516FA8 g_FrontendResultsColumnAdvance00Pixels */
 __declspec(align(8)) int g_FrontendResultsColumnAdvance00Pixels = 0;
 
-/* 00516FAC g_FrontendResultsColumnAdvance01Pixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvance01Pixels = 0;
 
-/* 00516FB0 g_FrontendResultsColumnAdvanceColourPixels */
 __declspec(align(16)) int g_FrontendResultsColumnAdvanceColourPixels = 26;
 
-/* 00516FB4 g_FrontendResultsColumnAdvanceEconomyPixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvanceEconomyPixels = 26;
 
-/* 00516FB8 g_FrontendResultsColumnAdvanceMilitaryPixels */
 __declspec(align(8)) int g_FrontendResultsColumnAdvanceMilitaryPixels = 26;
 
-/* 00516FBC g_FrontendResultsColumnAdvancePointsPixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvancePointsPixels = 26;
 
-/* 00516FC0 g_FrontendResultsColumnAdvancePlayerPixels */
 __declspec(align(16)) int g_FrontendResultsColumnAdvancePlayerPixels = 78;
 
-/* 00516FC4 g_FrontendResultsColumnAdvanceFactionPixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvanceFactionPixels = 26;
 
-/* 00516FC8 g_FrontendResultsColumnAdvanceFactionField98Pixels */
 __declspec(align(8)) int g_FrontendResultsColumnAdvanceFactionField98Pixels = 26;
 
-/* 00516FCC g_FrontendResultsColumnAdvanceFactionField9CPixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvanceFactionField9CPixels = 26;
 
-/* 00516FD0 g_FrontendResultsColumnAdvanceFactionFieldA0Pixels */
 __declspec(align(16)) int g_FrontendResultsColumnAdvanceFactionFieldA0Pixels = 26;
 
-/* 00516FD4 g_FrontendResultsColumnAdvanceFactionFieldA4Pixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvanceFactionFieldA4Pixels = 26;
 
-/* 00516FD8 g_FrontendResultsColumnAdvanceFactionFieldA8Pixels */
 __declspec(align(8)) int g_FrontendResultsColumnAdvanceFactionFieldA8Pixels = 26;
 
-/* 00516FDC g_FrontendResultsColumnAdvanceFactionFieldACPixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvanceFactionFieldACPixels = 26;
 
-/* 00516FE0 g_FrontendResultsColumnAdvanceFactionFieldB0Pixels */
 __declspec(align(16)) int g_FrontendResultsColumnAdvanceFactionFieldB0Pixels = 26;
 
-/* 00516FE4 g_FrontendResultsColumnAdvanceFactionFieldB4Pixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvanceFactionFieldB4Pixels = 26;
 
-/* 00516FE8 g_FrontendResultsColumnAdvanceFactionFieldB8Pixels */
 __declspec(align(8)) int g_FrontendResultsColumnAdvanceFactionFieldB8Pixels = 26;
 
-/* 00516FEC g_FrontendResultsColumnAdvanceFactionFieldBCPixels */
 __declspec(align(4)) int g_FrontendResultsColumnAdvanceFactionFieldBCPixels = 26;
 
-/* 00516FF0 g_FrontendResultsFramebufferBytesPerPixel */
 __declspec(align(16)) uint32_t g_FrontendResultsFramebufferBytesPerPixel = 0;
 
-/* 00516FF4 g_FrontendResultsFramebufferScanlineStrideBytes */
 __declspec(align(4)) uint32_t g_FrontendResultsFramebufferScanlineStrideBytes = 0;
 
-/* 00516FF8 g_FrontendResultsFactionPackedPixelColors */
 __declspec(align(8)) uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {0};
 
-/* 00519734 g_ArmyRuntimeRebaseBaseMinusOne */
 __declspec(align(4)) void *g_ArmyRuntimeRebaseBaseMinusOne = 0;
 
-/* 0051FBD8 g_RuntimeModelClassPriorityByModelClassId */
 __declspec(align(8)) RuntimeModelClassPriorityTable24 g_RuntimeModelClassPriorityByModelClassId = {
     .modelClass01Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
     .modelClass02Priority = RUNTIME_MODEL_CLASS_PRIORITY_HIGH,
@@ -237,18 +181,14 @@ __declspec(align(8)) RuntimeModelClassPriorityTable24 g_RuntimeModelClassPriorit
     .modelClass22Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM,
     .modelClass23Priority = RUNTIME_MODEL_CLASS_PRIORITY_MEDIUM};
 
-/* 0053DA70 g_UiRootCallbacks_0053DA70 */
 __declspec(align(16)) UiRootCallbacks g_UiRootCallbacks_0053DA70 = {
     .frameUpdate = (void *)FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState,
     .keyboardFallback = (void *)FrontendRuntime_DispatchCommandByCodeAndModifierFlags};
 
-/* 0053DA84 g_FrontendSessionListRows */
 __declspec(align(4)) FrontendSessionDiscoveryRecord **g_FrontendSessionListRows = 0;
 
-/* 0053DA88 g_FrontendSessionDiscoveryRecords */
 __declspec(align(8)) FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords = 0;
 
-/* 0053DA8C g_FrontendRootInitializationTemplate */
 __declspec(align(4)) FrontendUiImage g_FrontendRootInitializationTemplate = {
         { /* +0000 frontendRoot g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
@@ -2267,10 +2207,8 @@ __declspec(align(4)) FrontendUiImage g_FrontendRootInitializationTemplate = {
             0x00000008, 0x00000000, 0x00002117},
 };
 
-/* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
 __declspec(align(16)) FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeRecordPointers32[32] = {0};
 
-/* 00543460 g_FrontendTaskAssignmentControlOffsets */
 __declspec(align(16)) FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets = {
     .assignmentControls = {.offsets = {3264, 3356, 3448, 3540, 3632, 3724, 3816}},
     .playerControls = {.offsets = {4580, 4676, 4772, 4868, 4964, 5060, 5156}},
@@ -2278,75 +2216,54 @@ __declspec(align(16)) FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAs
     .selectionRows = {.offsets = {5252, 5348, 5444, 5540, 5636, 5732, 5828}},
     .statusRows = {.offsets = {5924, 6016, 6108, 6200, 6292, 6384, 6476}}};
 
-/* 005434EC g_FrontendNetworkBackendNameRows: row pointer table of the frontend network backend list (display
+/* row pointer table of the frontend network backend list (display
    names), one entry per network backend; Frontend_Init fills it and hands it to the backend list control. The
    original addresses it on its own (0x005434EC), right after the control offset tables, and reserves 256 entries. */
 __declspec(align(4)) uint16_t *g_FrontendNetworkBackendNameRows[256] = {0};
 
-/* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
 __declspec(align(4)) FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
 
-/* 005456F0 g_FrontendRootNode */
 __declspec(align(16)) uint32_t g_FrontendRootNode = 0;
 
-/* 005456F4 g_FrontendPendingPageAction */
 __declspec(align(4)) uint32_t g_FrontendPendingPageAction = 0;
 
-/* 00545700 g_FrontendRuntimeFlags */
 __declspec(align(16)) uint32_t g_FrontendRuntimeFlags = 0;
 
-/* 00545704 g_FrontendCentralTextureSet */
 __declspec(align(4)) uint32_t g_FrontendCentralTextureSet = 0;
 
-/* 00545708 g_FrontendCentralPaletteAsset */
 __declspec(align(8)) uint32_t g_FrontendCentralPaletteAsset = 0;
 
-/* 0054570C g_FrontendMenuTextureSource */
 __declspec(align(4)) GraphicsTextureSourceAsset *g_FrontendMenuTextureSource = 0;
 
-/* 00545710 g_FrontendNetworkTickCounter */
 __declspec(align(16)) uint32_t g_FrontendNetworkTickCounter = 0;
 
-/* 00545714 g_FrontendNetworkState */
 __declspec(align(4)) uint32_t g_FrontendNetworkState = 0;
 
-/* 00545718 g_FrontendFactionAssignmentReadyStateGeneration */
 __declspec(align(8)) uint32_t g_FrontendFactionAssignmentReadyStateGeneration = 0;
 
-/* 0054572C g_FrontendStateTickSpinLock */
 __declspec(align(4)) uint32_t g_FrontendStateTickSpinLock = 0;
 
-/* 00545730 g_FrontendTimerCountdownTicks */
 __declspec(align(16)) uint32_t g_FrontendTimerCountdownTicks = 0;
 
-/* 00545734 g_FrontendRomTransitionKeyframes */
 __declspec(align(4)) WorldMotionSplineKeyframe g_FrontendRomTransitionKeyframes[2] = {
     {0, 0, 0, 0, 0, 0, 0, 0}, /* 00545734 keyframe 0 */
     {0, 0, 0, 0, 0, 0, 0, 0}, /* 00545754 keyframe 1 */
 };
 
-/* 00545774 g_FrontendCentralRomAsset */
 __declspec(align(4)) uint32_t g_FrontendCentralRomAsset = 0;
 
-/* 0054577C g_FrontendWorldObjectRecords */
 __declspec(align(4)) WorldObjectRecord *g_FrontendWorldObjectRecords = 0;
 
-/* 00545914 g_FrontendLoadedCampaignAsset */
 __declspec(align(4)) uint32_t g_FrontendLoadedCampaignAsset = 0;
 
-/* 00545928 g_FrontendScenarioInitializationCount */
 __declspec(align(8)) uint32_t g_FrontendScenarioInitializationCount = 0;
 
-/* 0054592C g_FrontendMusicVoiceSet */
 __declspec(align(4)) uint32_t g_FrontendMusicVoiceSet = 0;
 
-/* 00545930 g_FrontendMusicActiveBuffer */
 __declspec(align(16)) uint32_t g_FrontendMusicActiveBuffer = 0;
 
-/* 00545934 g_FrontendPendingPageActionDepth */
 __declspec(align(4)) uint32_t g_FrontendPendingPageActionDepth = 0;
 
-/* 00545938 g_FrontendUiActionHandlersPage20 */
 __declspec(align(8)) FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
     .handlers00_54 = {
         /*  0 */ (void *)FrontendSessionAction_ResetNetworkAndReturnToMainPage,
@@ -2441,68 +2358,52 @@ __declspec(align(8)) FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandl
         /* 2 */ (void *)ScenarioCatalog_RebuildCampaignRecordListPage
     }};
 
-/* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
 __declspec(align(4)) uint16_t u_gfx_texturen_zentrale_gfx_00545acc[26] = L"gfx\\texturen\\zentrale.gfx";
 
-/* 00545B00 u_gfx_texturen_zentrale_pal_00545b00 */
 __declspec(align(16)) uint16_t u_gfx_texturen_zentrale_pal_00545b00[26] = L"gfx\\texturen\\zentrale.pal";
 
-/* 00545B54 u_sound_menue01_sam_00545b54 */
 __declspec(align(4)) uint16_t u_sound_menue01_sam_00545b54[18] = L"sound\\menue01.sam";
 
-/* 00545B78 u_gfx_panel_menue_gfx_00545b78 */
 __declspec(align(8)) uint16_t u_gfx_panel_menue_gfx_00545b78[20] = L"gfx\\panel\\menue.gfx";
 
-/* 00545C02 g_FrontendMissionBriefingMoviePathUtf16: the four level digits at index 7 (00545C10) are overwritten with the level number (ui/frontend/scenario.c) */
+/* the four level digits at index 7 (00545C10) are overwritten with the level number (ui/frontend/scenario.c) */
 __declspec(align(4)) uint16_t g_FrontendMissionBriefingMoviePathUtf16[16] = L"flm\\lev0000.flm";
 
-/* 00545C4E u_sound_music00_sam_00545c4e */
 __declspec(align(4)) uint16_t u_sound_music00_sam_00545c4e[18] = L"sound\\music00.sam";
 
-/* 00545E72 s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 */
 __declspec(align(4)) char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
 
-/* 00545E91 s_NAME__CLIENT__KARTE___00545e91: Original quirk: the string's terminating NUL (0x00545EA6) is the
+/* Original quirk: the string's terminating NUL (0x00545EA6) is the
    first byte of the Package_FindEntry output buffer g_LevelPackageFoundEntry; the code passes explicit lengths. */
 __declspec(align(4)) char s_NAME__CLIENT__KARTE___00545e91[21] = "NAME=\"CLIENT=\"KARTE=\"";
 
-/* 00548100 g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30: 3 command records and the terminator record
+/* 3 command records and the terminator record
    (commandCode 0) at 00548124 that ends the dispatcher's scan */
 __declspec(align(16)) UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4] = {
     /* 0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190},
     /* 1 */ {.commandCode = 0x20004, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190},
     /* 2 */ {.commandCode = 0x20001, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x548140},
-    /* 3 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* 00548124 terminator: commandCode 0, the rest is the original's NOP fill */
+    /* 3 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
 
-/* 0054DB00 g_FrontendPlayerRemovalPacket10007 */
 __declspec(align(16)) FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007 = {0};
 
-/* 0054DDD0 g_FrontendNetworkEndpointScratch */
 __declspec(align(16)) UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch = {0};
 
-/* 0054DDE0 g_FrontendNetworkRuntimeCountTextUtf16 */
 __declspec(align(16)) uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4] = {0};
 
-/* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16 */
 __declspec(align(8)) uint16_t g_FrontendNetworkPlayerCountTextUtf16[4] = {0};
 
-/* 0054DDF0 g_FrontendNetworkSpeedLabelUtf16 */
 __declspec(align(16)) uint16_t g_FrontendNetworkSpeedLabelUtf16[32] = {0};
 
-/* 0054DE30 g_FrontendNetworkEndpointTextUtf16 */
 __declspec(align(16)) uint16_t g_FrontendNetworkEndpointTextUtf16[512] = {0};
 
-/* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16 */
 __declspec(align(4)) uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {0};
 
-/* 00563330 g_DebugOverlayCounterRefreshCountdown: uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
+/* uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
 __declspec(align(16)) uint32_t g_DebugOverlayCounterRefreshCountdown = 20;
 
-/* 00563BAC g_EndMovieSelectionIndex */
 __declspec(align(4)) uint32_t g_EndMovieSelectionIndex = 0;
 
-/* 00563BB8 g_EndMoviePendingTicks */
 __declspec(align(8)) uint32_t g_EndMoviePendingTicks = 0;
 
-/* 00572040 g_FrontendClientPlayerRemovalPacket10007 */
 __declspec(align(16)) FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007 = {0};

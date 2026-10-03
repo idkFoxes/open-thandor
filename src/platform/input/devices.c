@@ -12,16 +12,13 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 00416818 g_CursorUseOverridePosition */
 uint32_t g_CursorUseOverridePosition = 0;
 
-/* 00416830 g_CursorWheelDelta */
 UiPointerWheelDelta g_CursorWheelDelta = 0;
 
 /* Implementation ownership: platform/input/devices. */
 
-/* Address: 0x00417280.
-   Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of
+/* Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of
    g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218). Both 16-bit code units are upper-cased and the result
    is returned in CF (upper(right) < upper(left)); EAX, ECX and EDX are preserved for the caller.
 */
@@ -39,8 +36,7 @@ bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUni
 }
 
 
-/* Address: 0x00417230.
-   Discards every queued keyboard event by moving the ring's write index back onto its read index.
+/* Discards every queued keyboard event by moving the ring's write index back onto its read index.
    Reached through the g_KeyboardFlushEvents pointer (0x00417210).
 */
 void Keyboard_FlushEvents(void)
@@ -51,8 +47,7 @@ void Keyboard_FlushEvents(void)
 }
 
 
-/* Address: 0x00417240.
-   Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer
+/* Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer
    (0x00417214). Returns true with the key code in *outKeyCode and the modifier state in *outStateMask, or
    false (outputs untouched) when the ring is empty. Original: EAX = key code, EDX = state mask, CF = empty.
 */
@@ -77,8 +72,7 @@ bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask)
 }
 
 
-/* Address: 0x004172D0.
-   Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged. Reached through the toLower
+/* Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged. Reached through the toLower
    slot of g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218).
 */
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
@@ -102,8 +96,7 @@ static bool DirectInputMouse_FailSetup(int32_t initStage,uint32_t *outError)
 }
 
 
-/* Address: 0x00576CF0.
-   Starts the mouse: binds DirectInputCreateA from the DLL, hides the Windows cursor, creates an exclusive
+/* Starts the mouse: binds DirectInputCreateA from the DLL, hides the Windows cursor, creates an exclusive
    foreground buffered DirectInput mouse, hooks display-mode changes, starts the cursor-animation (20 Hz)
    and mouse-poll (64 Hz) timers, loads the cursor images (engine\mouse.gfx) and frame table
    (engine\mouse.dat), and seeds the lock-key bits of g_KeyboardStateMask.
@@ -227,8 +220,7 @@ bool DirectInputMouse_Init(uint32_t *outError)
 }
 
 
-/* Address: 0x00576F20.
-   Periodic DirectInput watchdog that keeps the mouse usable after it was lost (e.g. on a task switch).
+/* Periodic DirectInput watchdog that keeps the mouse usable after it was lost (e.g. on a task switch).
    The original recreated the device while no button was held; this version reacquires the existing
    device and only recreates one when there is none (see the deviations below). g_MousePollBusy keeps
    DirectInputMouse_PollBufferedEvents off the device meanwhile.
@@ -289,8 +281,7 @@ void DirectInputMouse_RefreshDeviceIfIdle(void)
 }
 
 
-/* Address: 0x00577000.
-   Shuts the mouse down: releases the DirectInput device and object, stops the mouse-poll and
+/* Shuts the mouse down: releases the DirectInput device and object, stops the mouse-poll and
    cursor-animation timers and gives Windows back its arrow cursor.
 */
 void DirectInputMouse_Shutdown(void)
@@ -437,8 +428,7 @@ static void DirectInputMouse_AppendCursorEvent(GraphicsCursorEventType eventType
 }
 
 
-/* Address: 0x00577080.
-   Mouse-poll timer callback (64 Hz): drains the buffered DirectInput mouse events, updates the mouse
+/* Mouse-poll timer callback (64 Hz): drains the buffered DirectInput mouse events, updates the mouse
    position (clamped to the framebuffer, the excess kept in g_CursorOverflow*), button mask and wheel
    delta, and appends one entry per motion, wheel or button event to the 256-entry g_CursorInputEvents
    ring. A lost device is reacquired; after 16 errors the poll gives up until the next tick. Skipped when
@@ -491,8 +481,7 @@ void DirectInputMouse_PollBufferedEvents(void)
 }
 
 
-/* Address: 0x005772F0.
-   Mouse hook in front of g_GraphicsSetDisplayMode (installed by DirectInputMouse_Init): frees the three
+/* Mouse hook in front of g_GraphicsSetDisplayMode (installed by DirectInputMouse_Init): frees the three
    cursor buffers, switches the mode through the chained setter, recreates the buffers in the new pixel
    format, converts the cursor palette, centres the mouse and reacquires the device. Returns true on
    success; false with the error in *errorCode when the mode switch fails or a buffer creation fails (JC after each g_SoftwareFramebufferCreate call: 0x00577377,
@@ -551,8 +540,7 @@ bool DirectInputMouse_SetDisplayMode
 }
 
 
-/* Address: 0x00577420.
-   g_PointerSetPosition implementation: moves the mouse to (positionX, positionY) in both the published
+/* g_PointerSetPosition implementation: moves the mouse to (positionX, positionY) in both the published
    cursor state and the DirectInput position, and clears the wheel delta.
 */
 void DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX)
@@ -568,8 +556,7 @@ void DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorC
 }
 
 
-/* Address: 0x00577460.
-   g_PointerFlushEvents implementation: publishes the current mouse position and wheel delta as the
+/* g_PointerFlushEvents implementation: publishes the current mouse position and wheel delta as the
    cursor state and discards the queued cursor events. Note that it moves the write index back to the
    read index (the keyboard flush moves the read index instead).
 */
@@ -700,8 +687,7 @@ static bool Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *
 }
 
 
-/* Address: 0x005774A0.
-   WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle
+/* WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle
    theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), and every other
    mapped key is queued as a KEYBOARD_KEY_CODE_* event with the modifier state of the moment in the 64-entry
    keyboard ring (0x10000-family keys also mark g_KeyboardSpecialKeyDown). CF clear when an event was queued.
@@ -753,8 +739,7 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 }
 
 
-/* Address: 0x00577880.
-   WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock
+/* WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock
    toggle, and releases the g_KeyboardSpecialKeyDown entry of a navigation key (cursor block, VK_SELECT,
    numpad digits and decimal point; the held state the in-game camera keys poll). Original quirk: Escape,
    Enter, Tab, Backspace, Print and Pause also set their entry on key-down but are never released here. Queues no event. CF clear when a non-modifier key was processed.
@@ -788,8 +773,7 @@ void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 }
 
 
-/* Address: 0x00577B30.
-   WM_CHAR/WM_SYSCHAR handler (called from the main window procedure): queues the 16-bit character with
+/* WM_CHAR/WM_SYSCHAR handler (called from the main window procedure): queues the 16-bit character with
    the current modifier state in the keyboard ring. With Ctrl held, the control characters 1-26 that
    Windows delivers for Ctrl+A..Ctrl+Z are turned back into 'a'..'z'.
 */
@@ -818,8 +802,7 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
 }
 
 
-/* Address: 0x004172B0.
-   Converts ASCII 'a'-'z' to 'A'-'Z' and returns every other value unchanged. Reached through the toUpper
+/* Converts ASCII 'a'-'z' to 'A'-'Z' and returns every other value unchanged. Reached through the toUpper
    slot of g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218); Keyboard_CompareAsciiCaseInsensitiveFlags
    also calls it directly.
 */

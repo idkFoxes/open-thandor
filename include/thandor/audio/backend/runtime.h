@@ -31,68 +31,50 @@
 #define DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES 0x14
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00583410 */
 void DirectSound_Shutdown(void);
 
-/* 0x00417570 */
 uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
 
-/* 0x00417580 */
 void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 
-/* 0x004175B0 */
 bool SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
-/* 0x004175C0 */
 bool SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
-/* 0x004175D0 */
 void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice);
 
-/* 0x004175E0 */
 bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
 
-/* 0x00417610 */
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice);
 
-/* 0x00583140 */
 uint32_t DirectSound_Init(void);
 
-/* 0x00583490 */
 uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet);
 
-/* 0x00583690 */
 void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 
-/* 0x00583940 */
 bool DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
-/* 0x00583A70 */
 bool DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
-/* 0x00583B90 */
 void DirectSound_StopVoice(IDirectSoundBuffer *voice);
 
-/* 0x00583BC0 */
 bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice);
 
-/* 0x00583C00 */
 void DirectSound_StopAllVoices(void);
 
-/* 0x00583C70 */
 void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice);
 
-/* 0x004175F0 */
 void SoundBackendDisabled_StopAllVoices(void);
 
-extern SoundPlayVoiceProc *g_SoundPlayOneShot; /* 00417348 g_SoundPlayOneShot */
+extern SoundPlayVoiceProc *g_SoundPlayOneShot;
 
 #endif /* THANDOR_AUDIO_BACKEND_RUNTIME_H */

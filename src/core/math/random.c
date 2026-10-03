@@ -11,8 +11,7 @@
 
 /* Implementation ownership: core/math/random. */
 
-/* Address: 0x004030B0.
-   Primary random stream (the default g_RandomGeneratorState.next): steps the linear congruential seed
+/* Primary random stream (the default g_RandomGeneratorState.next): steps the linear congruential seed
    twice and returns (first step << 14) ^ (second step >> 2), mixing both steps so the weak low bits of
    the LCG do not show up directly.
 */
@@ -27,8 +26,7 @@ uint32_t Random_NextPrimary(void)
 }
 
 
-/* Address: 0x004030E0.
-   Secondary random stream (selected by Random_SelectSecondaryStream for sessions): the same two LCG steps
+/* Secondary random stream (selected by Random_SelectSecondaryStream for sessions): the same two LCG steps
    and output mix as Random_NextPrimary, but on the separate secondary seed, so the session stream can be
    kept in step across machines independently of the primary one.
 */
@@ -44,8 +42,7 @@ uint32_t Random_NextSecondary(void)
 }
 
 
-/* Address: 0x00403110.
-   Sets the primary and the secondary seed to the same value without changing the active stream. A new
+/* Sets the primary and the secondary seed to the same value without changing the active stream. A new
    session seeds both from one value, which network clients receive from the host, so that every machine
    draws the same numbers.
 */
@@ -57,8 +54,7 @@ void Random_SetBothSeeds(RandomSeed seed)
 }
 
 
-/* Address: 0x00403130.
-   Returns the current secondary seed (without stepping it); the host sends it in the player snapshot
+/* Returns the current secondary seed (without stepping it); the host sends it in the player snapshot
    packet so that joining machines can continue the same stream.
 */
 uint32_t __cdecl Random_GetSecondarySeed(void)
@@ -67,8 +63,7 @@ uint32_t __cdecl Random_GetSecondarySeed(void)
   return g_RandomGeneratorState.secondarySeed;
 }
 
-/* Address: 0x00403140.
-   Makes Random_NextSecondary the active generator (g_RandomGeneratorState.next) without touching either seed;
+/* Makes Random_NextSecondary the active generator (g_RandomGeneratorState.next) without touching either seed;
    used together with Random_SetBothSeeds when a session starts.
 */
 void Random_SelectSecondaryStream(void)
@@ -78,8 +73,7 @@ void Random_SelectSecondaryStream(void)
 }
 
 
-/* Address: 0x00403150.
-   Makes Random_NextPrimary the active generator (g_RandomGeneratorState.next) again without touching
+/* Makes Random_NextPrimary the active generator (g_RandomGeneratorState.next) again without touching
    either seed; the front end calls it when a session is left, undoing Random_SelectSecondaryStream.
 */
 void __cdecl Random_SelectPrimaryStream(void)

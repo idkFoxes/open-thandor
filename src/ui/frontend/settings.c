@@ -10,8 +10,7 @@
 
 /* Implementation ownership: ui/frontend/settings. */
 
-/* Address: 0x00549250.
-   Opens the "Choose faction" page (FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE) for the loaded level. The seven
+/* Opens the "Choose faction" page (FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE) for the loaded level. The seven
    roster rows are set up from the level: assignable factions get an active mode button ("Computer"), the other
    active factions a visible but inactive row, unused rows are hidden and their faction slot cleared. The players
    are then spread round-robin over the assignable factions (mode "Player"), the local player's play checkbox is
@@ -235,8 +234,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
 }
 
 
-/* Address: 0x0054BA90.
-   Handler of the ten resolution choices of the display settings page (actions 0x2022..0x202B, slots 34-43 of
+/* Handler of the ten resolution choices of the display settings page (actions 0x2022..0x202B, slots 34-43 of
    g_FrontendUiActionHandlersPage20): takes the clicked button's width/height pair as the pending resolution and
    refreshes which choices are available. Nothing is applied before the apply action (0x2031).
 */
@@ -252,8 +250,7 @@ void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButt
 }
 
 
-/* Address: 0x0054BAC0.
-   Handler of the four colour-depth choices of the display settings page (actions 0x201E..0x2021, slots 30-33 of
+/* Handler of the four colour-depth choices of the display settings page (actions 0x201E..0x2021, slots 30-33 of
    g_FrontendUiActionHandlersPage20): takes the clicked button's bits per pixel as the pending colour depth and
    refreshes which choices are available.
 */
@@ -267,8 +264,7 @@ void FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButt
 }
 
 
-/* Address: 0x0054BAF0.
-   Handler of the display settings page's apply action (FRONTEND_ACTION_APPLY_DISPLAY_MODE, slot 49 of
+/* Handler of the display settings page's apply action (FRONTEND_ACTION_APPLY_DISPLAY_MODE, slot 49 of
    g_FrontendUiActionHandlersPage20): switches to the pending adapter/resolution/colour depth. On success the mode
    is saved in the persistent settings, the UI is laid out again and the palette-based UI textures are converted
    to the new pixel format; on failure the previous mode is restored (fatal if that fails too), the error is
@@ -376,8 +372,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
 }
 
 
-/* Address: 0x0054CD70.
-   Change handler of the network game page's player-name edit (playerNameEdit, action 0x2032, slot 50 of
+/* Change handler of the network game page's player-name edit (playerNameEdit, action 0x2032, slot 50 of
    g_FrontendUiActionHandlersPage20). An empty name hides Host and Join; a valid one shows Host, lets the session
    list decide about Join, and is saved as PERSISTENT_SETTING_PLAYER_NAME and copied to the local player's name
    (20 UTF-16 code units).
@@ -422,8 +417,7 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
 }
 
 
-/* Address: 0x00548E70.
-   Handler of the mission briefing page's game speed slider (FRONTEND_ACTION_GAME_SPEED, slot 74 of
+/* Handler of the mission briefing page's game speed slider (FRONTEND_ACTION_GAME_SPEED, slot 74 of
    g_FrontendUiActionHandlersPage20): applies the percentage directly in a local game and as
    FRONTEND_COMMAND_SET_GAME_SPEED in a network game, and saves it as PERSISTENT_SETTING_GAME_SPEED_PERCENT.
 */
@@ -442,8 +436,7 @@ void FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *contro
 }
 
 
-/* Address: 0x0054A810.
-   Handler of the gameplay settings checkbox with action 0x2049: stores its state as
+/* Handler of the gameplay settings checkbox with action 0x2049: stores its state as
    PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL in the persistent map/mouse option flags, which the session
    reads when it starts.
 */
@@ -467,8 +460,7 @@ void FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *c
 }
 
 
-/* Address: 0x0054A850.
-   Handler of the options page's scroll-speed slider (scrollSpeedSlider, action 0x204B, slot 75 of
+/* Handler of the options page's scroll-speed slider (scrollSpeedSlider, action 0x204B, slot 75 of
    g_FrontendUiActionHandlersPage20): saves the value as PERSISTENT_SETTING_CAMERA_SCROLL_STEP.
 */
 void FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
@@ -479,8 +471,7 @@ void FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *contro
 }
 
 
-/* Address: 0x0054A870.
-   Handler of the "Automatic zoom off" checkbox (autoZoomOffCheckbox, action 0x203C, slot 60 of
+/* Handler of the "Automatic zoom off" checkbox (autoZoomOffCheckbox, action 0x203C, slot 60 of
    g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF.
 */
 void FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
@@ -503,8 +494,7 @@ void FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054A8B0.
-   Handler of the "Automatic rotation off" checkbox (autoRotationOffCheckbox, action 0x203D, slot 61 of
+/* Handler of the "Automatic rotation off" checkbox (autoRotationOffCheckbox, action 0x203D, slot 61 of
    g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF.
 */
 void FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
@@ -527,8 +517,7 @@ void FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *contr
 }
 
 
-/* Address: 0x0054A8F0.
-   Handler of the "Link rotation/zoom" checkbox (FRONTEND_ACTION_LINK_ROTATION_ZOOM, slot 62 of
+/* Handler of the "Link rotation/zoom" checkbox (FRONTEND_ACTION_LINK_ROTATION_ZOOM, slot 62 of
    g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_LINK_OPTION_ROTATION_ZOOM. The two link
    options exclude each other, so while this one is set the "Link rotation/tilt" checkbox is hidden.
 */
@@ -554,8 +543,7 @@ void FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054A950.
-   Handler of the "Link rotation/tilt" checkbox (FRONTEND_ACTION_LINK_ROTATION_TILT, slot 63 of
+/* Handler of the "Link rotation/tilt" checkbox (FRONTEND_ACTION_LINK_ROTATION_TILT, slot 63 of
    g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_LINK_OPTION_ROTATION_TILT and, while set,
    hides the "Link rotation/zoom" checkbox.
 */
@@ -581,8 +569,7 @@ void FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054A9B0.
-   Handler of action 0x2051 (slot 81 of g_FrontendUiActionHandlersPage20): stores the checkbox state as
+/* Handler of action 0x2051 (slot 81 of g_FrontendUiActionHandlersPage20): stores the checkbox state as
    PERSISTENT_LINK_OPTION_HIDE_PANEL. The frontend template calls the 0x2051 checkbox "Right button does not
    scroll" and the 0x2049 one "Hide panel", the opposite of what this handler and
    FrontendGameplaySettings_SetRightButtonDoesNotScroll store.
@@ -607,8 +594,7 @@ void FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054A9F0.
-   Opens the options page (FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) and loads its controls from the
+/* Opens the options page (FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) and loads its controls from the
    persistent settings: map and mouse option checkboxes and the scroll speed. The two "link rotation" options
    exclude each other, so the one that is set hides the other checkbox.
 */
@@ -653,8 +639,7 @@ void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *f
 }
 
 
-/* Address: 0x0054B740.
-   Handler of the options page's "3D" button (settings3DButton, action 0x2012, slot 18 of
+/* Handler of the options page's "3D" button (settings3DButton, action 0x2012, slot 18 of
    g_FrontendUiActionHandlersPage20): opens the graphics settings page and loads its controls from the
    persistent settings: the shading toggle (the shading levels are only offered while it is on), the shading
    level matching the saved grid size and depth, the texture quality and the polygon detail (LOD) slider.
@@ -745,8 +730,7 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
 }
 
 
-/* Address: 0x0054B8D0.
-   Handler of the options page's "Sound" button (soundSettingsButton, action 0x2013, slot 19 of
+/* Handler of the options page's "Sound" button (soundSettingsButton, action 0x2013, slot 19 of
    g_FrontendUiActionHandlersPage20): opens the audio settings page and loads its toggles and volume sliders
    from the persistent settings. The effect and movie volumes are only offered with effects on, the music volume
    only with music on, and reverse stereo only while either is on. The movie-event slider is not loaded.
@@ -806,8 +790,7 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
 }
 
 
-/* Address: 0x0054BCB0.
-   Handler of the graphics settings page's shading toggle (shadingEnabledCheckbox, action 0x2014, slot 20 of
+/* Handler of the graphics settings page's shading toggle (shadingEnabledCheckbox, action 0x2014, slot 20 of
    g_FrontendUiActionHandlersPage20): offers the shading levels only while shading is on and saves the state as
    PERSISTENT_SETTING_SHADING_ENABLED.
 */
@@ -835,8 +818,7 @@ void FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054BD10.
-   Handler of the six shading level choices (FRONTEND_ACTION_SHADING_LEVEL, slot 21 of
+/* Handler of the six shading level choices (FRONTEND_ACTION_SHADING_LEVEL, slot 21 of
    g_FrontendUiActionHandlersPage20): saves the clicked button's grid size as the shading grid half size, twice
    it as the shading texture dimension and its depth / 4 as the subresource count, then selects the matching
    choice exclusively.
@@ -885,8 +867,7 @@ void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054BDE0.
-   Handler of the graphics settings page's polygon detail slider (polygonDetailSlider, action 0x2016, slot 22 of
+/* Handler of the graphics settings page's polygon detail slider (polygonDetailSlider, action 0x2016, slot 22 of
    g_FrontendUiActionHandlersPage20): saves the Q8 model LOD depth threshold as
    PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD and applies it at once (g_ModelLodDepthThresholdQ8).
 */
@@ -902,8 +883,7 @@ void FrontendModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *contro
 }
 
 
-/* Address: 0x0054BE10.
-   Handler of the three texture quality choices (action 0x2017, slot 23 of g_FrontendUiActionHandlersPage20):
+/* Handler of the three texture quality choices (action 0x2017, slot 23 of g_FrontendUiActionHandlersPage20):
    selects the clicked one, saves it as PERSISTENT_SETTING_TEXTURE_QUALITY (high 0, medium 1, low 2) and applies
    it at once: the downsample shift becomes level / 2 (only low halves the textures) and all staging textures
    are rebuilt.
@@ -940,8 +920,7 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054BE90.
-   Handler of the audio settings page's effects toggle (soundEffectsEnabledCheckbox, action 0x2018, slot 24 of
+/* Handler of the audio settings page's effects toggle (soundEffectsEnabledCheckbox, action 0x2018, slot 24 of
    g_FrontendUiActionHandlersPage20): saves PERSISTENT_SOUND_OPTION_EFFECTS, offers the effect and movie volume
    sliders only while effects are on (the music slider and reverse stereo follow the saved music bit), and
    applies the saved effect, UI and movie gains, or silence while effects are off.
@@ -1009,8 +988,7 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054BFD0.
-   Handler of the audio settings page's music toggle (musicEnabledCheckbox, action 0x2019, slot 25 of
+/* Handler of the audio settings page's music toggle (musicEnabledCheckbox, action 0x2019, slot 25 of
    g_FrontendUiActionHandlersPage20). Switching on loads sound\music00.sam and starts it looping at the saved
    music gain (busy cursor meanwhile; any failure just leaves the music off); switching off stops and releases
    it. Then saves PERSISTENT_SOUND_OPTION_MUSIC and offers the volume sliders and reverse stereo accordingly.
@@ -1096,8 +1074,7 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054C150.
-   Handler of the audio settings page's reverse stereo toggle (FRONTEND_ACTION_REVERSE_STEREO, slot 26 of
+/* Handler of the audio settings page's reverse stereo toggle (FRONTEND_ACTION_REVERSE_STEREO, slot 26 of
    g_FrontendUiActionHandlersPage20): applies it at once (g_ReverseStereoMask all ones or zero) and saves
    PERSISTENT_SOUND_OPTION_REVERSE_STEREO.
 */
@@ -1124,8 +1101,7 @@ void FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
 }
 
 
-/* Address: 0x0054C1A0.
-   Handler of the effects volume slider (FRONTEND_ACTION_EFFECTS_GAIN, slot 27 of
+/* Handler of the effects volume slider (FRONTEND_ACTION_EFFECTS_GAIN, slot 27 of
    g_FrontendUiActionHandlersPage20): saves the Q15 gain as PERSISTENT_SETTING_EFFECTS_GAIN and applies it at
    once to the sound effects and the UI sounds.
 */
@@ -1142,8 +1118,7 @@ void FrontendAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 }
 
 
-/* Address: 0x0054C1D0.
-   Handler of the movie volume slider (FRONTEND_ACTION_MOVIE_GAIN, slot 28 of g_FrontendUiActionHandlersPage20):
+/* Handler of the movie volume slider (FRONTEND_ACTION_MOVIE_GAIN, slot 28 of g_FrontendUiActionHandlersPage20):
    saves the Q15 gain as PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN and applies it at once.
 */
 void FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
@@ -1158,8 +1133,7 @@ void FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 }
 
 
-/* Address: 0x0054C200.
-   Handler of the movie event volume slider (FRONTEND_ACTION_MOVIE_EVENT_GAIN, slot 78 of
+/* Handler of the movie event volume slider (FRONTEND_ACTION_MOVIE_EVENT_GAIN, slot 78 of
    g_FrontendUiActionHandlersPage20): saves the Q15 gain used by timed movie events as
    PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN and applies it at once.
 */
@@ -1175,8 +1149,7 @@ void FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control
 }
 
 
-/* Address: 0x0054C230.
-   Handler of the music volume slider (FRONTEND_ACTION_MUSIC_GAIN, slot 29 of g_FrontendUiActionHandlersPage20):
+/* Handler of the music volume slider (FRONTEND_ACTION_MUSIC_GAIN, slot 29 of g_FrontendUiActionHandlersPage20):
    saves the Q15 gain as PERSISTENT_SETTING_MUSIC_GAIN and sets it as left and right gain of the playing frontend
    music.
 */
@@ -1192,8 +1165,7 @@ void FrontendAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 }
 
 
-/* Address: 0x0054D170.
-   Handler of the host game setup page's player-count slider (maxPlayersSlider, action 0x2007, slot 7 of
+/* Handler of the host game setup page's player-count slider (maxPlayersSlider, action 0x2007, slot 7 of
    g_FrontendUiActionHandlersPage20): saves the value as PERSISTENT_SETTING_NETWORK_PLAYER_COUNT and formats it
    into the slider's number text.
 */
@@ -1211,8 +1183,7 @@ void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control)
 }
 
 
-/* Address: 0x0054D1F0.
-   Change handler of the host game setup page's game-name edit: the create button (FRONTEND_ACTION_CREATE_HOSTED_GAME)
+/* Change handler of the host game setup page's game-name edit: the create button (FRONTEND_ACTION_CREATE_HOSTED_GAME)
    is only offered while the name is valid (non-empty), and a valid name is saved as PERSISTENT_SETTING_GAME_NAME.
 */
 void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
@@ -1240,8 +1211,7 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
 }
 
 
-/* Address: 0x0054D250.
-   Handler of the network game page's session list (sessionList, action 0x2009, slot 9 of
+/* Handler of the network game page's session list (sessionList, action 0x2009, slot 9 of
    g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_SetPlayerName). Join
    (FRONTEND_ACTION_JOIN_GAME) is offered only while the list has rows (+0x54), its selected row (+0x60) holds
    a session (row +0x14) and the local player has a name; if then bit 2 of the list's flags at +0x4C is set
@@ -1312,8 +1282,7 @@ static void FrontendTaskAssignmentPage_DisableRowControl(UiRootNode *taskAssignm
 }
 
 
-/* Address: 0x00549620.
-   Refreshes the faction setup page (FRONTEND_PAGE_FACTION_SETUP) from the player records: the task description
+/* Refreshes the faction setup page (FRONTEND_PAGE_FACTION_SETUP) from the player records: the task description
    of the local player's faction, which of the seven faction rows can be chosen (only factions that are active
    in the level; a player who has confirmed is locked), the mode caption per row (player / nobody / computer),
    and in a network game the roster text naming the players of every faction plus the lock of the rows once the
@@ -1592,8 +1561,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
 }
 
 
-/* Address: 0x0054CD20.
-   Handler of the network game page's Join button (FRONTEND_ACTION_JOIN_GAME, slot 2 of
+/* Handler of the network game page's Join button (FRONTEND_ACTION_JOIN_GAME, slot 2 of
    g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick):
    takes the session token (+0x04) and host endpoint (+0xA0, 16 bytes) of the session list's selected row
    (reached at +0x248 from the button, i.e. sessionList +0x60) and sends the join request (player descriptor
@@ -1630,8 +1598,7 @@ bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSett
 }
 
 
-/* Address: 0x0054B160.
-   Refreshes the display settings page after the pending mode changed (called by the colour-depth, resolution
+/* Refreshes the display settings page after the pending mode changed (called by the colour-depth, resolution
    and apply handlers here and by ui/frontend/runtime). Every colour-depth, resolution and adapter choice is
    hidden unless the adapter offers it together with the other two pending values, the choices matching the
    pending mode are selected, and the apply button is only offered while the pending mode differs from the saved
@@ -1719,7 +1686,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1,frontendRoot);
   }
-  /* 0x0054B250 */
   if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption1))->firstValue) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
   }
@@ -1732,7 +1698,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 1,frontendRoot);
   }
-  /* 0x0054B287 */
   if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption2))->firstValue) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption2);
   }
@@ -1744,7 +1709,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 2,frontendRoot);
   }
-  /* 0x0054B2BE */
   if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption3))->firstValue) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption3);
   }
@@ -1756,11 +1720,10 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 3,frontendRoot);
   }
-  /* 0x0054B2F5 */
   if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption4))->firstValue) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption4);
   }
-  /* 0x0054B304: SelectExclusive(4, top, next 4), then pop 1 + 4 */
+  /* SelectExclusive(4, top, next 4), then pop 1 + 4 */
   listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
   if (listCount > 4) {
     listCount = 4;
@@ -1778,7 +1741,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
   }
-  /* 0x0054B33B */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
@@ -1792,7 +1754,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 1,frontendRoot);
   }
-  /* 0x0054B37F */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption2);
@@ -1806,7 +1767,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 2,frontendRoot);
   }
-  /* 0x0054B3C3 */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption3);
@@ -1822,7 +1782,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 3,frontendRoot);
   }
-  /* 0x0054B407 */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption4);
@@ -1836,7 +1795,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 4,frontendRoot);
   }
-  /* 0x0054B44B */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption5);
@@ -1850,7 +1808,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 5,frontendRoot);
   }
-  /* 0x0054B48F */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption6);
@@ -1864,7 +1821,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 6,frontendRoot);
   }
-  /* 0x0054B4D3 */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption7);
@@ -1878,7 +1834,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 7,frontendRoot);
   }
-  /* 0x0054B517 */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption8);
@@ -1892,7 +1847,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 8,frontendRoot);
   }
-  /* 0x0054B55B */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption9);
@@ -1906,12 +1860,11 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 9,frontendRoot);
   }
-  /* 0x0054B59F */
   if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->firstValue) &&
      (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption10);
   }
-  /* 0x0054B5B6: SelectExclusive(10, top, next 10), then pop 1 + 10 */
+  /* SelectExclusive(10, top, next 10), then pop 1 + 10 */
   listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
   if (listCount > 10) {
     listCount = 10;
@@ -1929,7 +1882,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1,frontendRoot);
   }
-  /* 0x0054B5E4 */
   if (adapterIndex == 0) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
   }
@@ -1940,7 +1892,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 1,frontendRoot);
   }
-  /* 0x0054B613 */
   if (adapterIndex == 1) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
   }
@@ -1951,7 +1902,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 2,frontendRoot);
   }
-  /* 0x0054B643 */
   if (adapterIndex == 2) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
   }
@@ -1962,7 +1912,6 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 3,frontendRoot);
   }
-  /* 0x0054B673 */
   if (adapterIndex == 3) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
   }
@@ -1973,11 +1922,10 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 4,frontendRoot);
   }
-  /* 0x0054B6A3 */
   if (adapterIndex == 4) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
   }
-  /* 0x0054B6AF: SelectExclusive(5, top, next 5), then pop 1 + 5 (the stack is dropped at return anyway) */
+  /* SelectExclusive(5, top, next 5), then pop 1 + 5 (the stack is dropped at return anyway) */
   listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
   if (listCount > 5) {
     listCount = 5;

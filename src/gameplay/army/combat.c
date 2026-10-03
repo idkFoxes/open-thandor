@@ -87,8 +87,7 @@ static void ArmyWeaponRuntime_FireFromFirstLoadedAttachment
 }
 
 
-/* Address: 0x00523980.
-   Runtime update of the turret-weapon class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[9],
+/* Runtime update of the turret-weapon class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[9],
    0x0051FCBC). Counts down the reload timers of the eight launch attachments (showing a slot's projectile mesh
    bit again when it is loaded) and the shared inter-shot timer, resolves the aim point of the current target and
    turns the turret (yaw on the root node, pitch on its first child) toward the launch angles; without a target it
@@ -184,8 +183,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
 }
 
 
-/* Address: 0x00525130.
-   Runtime update of the resource storage class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[15],
+/* Runtime update of the resource storage class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[15],
    0x0051FCD4): moves the storage's fill-level child node between the heights at definition +0x24 and +0x28 in
    proportion to the owner faction's current Xenite (or Tritium when definition +0xC0 is 1) over its storage
    limit, then emits the damage-threshold effect.
@@ -223,8 +221,7 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
 }
 
 
-/* Address: 0x00527AC0.
-   Runtime update of army class 4 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[4], 0x0051FCA8):
+/* Runtime update of army class 4 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[4], 0x0051FCA8):
    while the army is intact it runs its timed shot/effect emitters and animated sub-nodes (only during research
    when the definition's gate at +0x1C8 is set), then emits the damage-threshold effect.
 */
@@ -245,8 +242,7 @@ void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
 }
 
 
-/* Address: 0x0052A2E0.
-   Applies an impact's damage to a living army (health at +0x3C, capped at the definition's maximumHealth). When the health reaches zero the army is marked destroyed; a child passes the excess
+/* Applies an impact's damage to a living army (health at +0x3C, capped at the definition's maximumHealth). When the health reaches zero the army is marked destroyed; a child passes the excess
    damage on to its parent army; a root army of class 0 with a zero +0x278 state only turns to the impact
    angle, any other root army is counted in its owner faction's relation counter C (group-A command classes:
    counter D).
@@ -317,8 +313,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
 }
 
 
-/* Address: 0x0052A640.
-   Splits a shot impact between the hit army and the army it is mounted on: half (rounded down) goes to the
+/* Splits a shot impact between the hit army and the army it is mounted on: half (rounded down) goes to the
    hit army, the rest to the parent model node's army, or to the hit army again when it has no parent. Called
    directly by the shot impact handling in world/shots/maintenance.c.
 */
@@ -421,8 +416,7 @@ static bool ArmyWeaponRuntime_TestBallisticLineOfFire
 }
 
 
-/* Address: 0x0052B9D0.
-   Checks whether the army's weapon can hit the target position; true (CF set) = blocked. Ballistic shots need a
+/* Checks whether the army's weapon can hit the target position; true (CF set) = blocked. Ballistic shots need a
    solvable arc whose elevation lies within the weapon's limits (definition +0x24 / +0x28) and no model in the way
    along the horizontal distance; fixed-range shots always pass; other shots need an elevation within the limits
    (unless guided), no terrain in front of the target (a ground shot without an entity target may land within
@@ -554,8 +548,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
 }
 
 
-/* Address: 0x0052A200.
-   Subtracts damageAmount from the health of a living army. When the health drops to zero or below the army is
+/* Subtracts damageAmount from the health of a living army. When the health drops to zero or below the army is
    flagged destroyed and the excess damage is passed on to the army it is attached to (the parent model node),
    so destroying a mounted part also damages its carrier; a negative damage (repair) is capped at the maximum
    health.
@@ -603,8 +596,7 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
 }
 
 
-/* Address: 0x00528200.
-   Damage smoke/fire of a damaged army: while its health (+0x3C) is below the definition's threshold
+/* Damage smoke/fire of a damaged army: while its health (+0x3C) is below the definition's threshold
    percentage (+0x250) of the class maximum (+0x60), it emits the definition's effect (+0x254) every
    +0x258 + random(+0x25C) ticks from the model's damage points (packed point key class 3), cycling through
    them, or from the model origin when it has none, with random orientation angles. Called directly

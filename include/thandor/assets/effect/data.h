@@ -10,6 +10,6 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern EffectDefinition *g_EffectDefinitionRegistry[256]; /* 0051DBD0 g_EffectDefinitionRegistry */
+extern EffectDefinition *g_EffectDefinitionRegistry[256];
 
 #endif

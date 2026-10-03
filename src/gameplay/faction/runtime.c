@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/faction/runtime. */
 
-/* Address: 0x0055F790.
-   Moves the diplomatic relation of a faction pair one step closer, chosen by the state of targetFactionIndex
+/* Moves the diplomatic relation of a faction pair one step closer, chosen by the state of targetFactionIndex
    towards sourceFactionIndex: 0..2 -> 3/2, 3 -> 4, 4..5 -> 6/5, 6 -> 8, 8..9 -> 10/9, 10 -> 11 (merge),
    first value for the source's state towards the target. State 2 does nothing while the last change is at
    most 600 ticks old; the same check in states 4 and 8 never holds (it only accepts 2, 5 and 9). The first
@@ -69,8 +68,7 @@ void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgu
 }
 
 
-/* Address: 0x0055F910.
-   Moves the diplomatic relation of a faction pair back, chosen by the state of targetFactionIndex towards
+/* Moves the diplomatic relation of a faction pair back, chosen by the state of targetFactionIndex towards
    sourceFactionIndex: 1..3 -> 0, 4 and 6 -> 0, 5 -> 4, 8 and 10 -> 4, 9 -> 8 (both directions get the same
    state), with the matching notification text. Other states stay. The first two arguments are not used.
 */
@@ -108,8 +106,7 @@ void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgume
 }
 
 
-/* Address: 0x00565320.
-   Mission carry-over after a session ends: finds the current scenario's record in the loaded campaign and,
+/* Mission carry-over after a session ends: finds the current scenario's record in the loaded campaign and,
    for the outcome selected by g_EndMovieSelectionIndex, stores each faction's technology masks (8 dwords) in
    the old-unit secondary table and every unit standing inside its faction's exit zone as a primary record,
    moved by the scenario's per-faction offset. OldUnitRuntime_MergeMasksAndReplayRecords applies both in the
@@ -254,8 +251,7 @@ static void GameFactionRuntime_ResolveLoadedArmyAssetIds(uint32_t *assetIds,Fact
 }
 
 
-/* Address: 0x005130B0.
-   After loading a save: turns the army-asset ids of both army-asset lists of all eight faction records back into
+/* After loading a save: turns the army-asset ids of both army-asset lists of all eight faction records back into
    registry pointers (an unknown id empties that list) and converts the 256 saved runtime-group member offsets
    into pointers again (offset + g_ArmyRuntimeRebaseBaseMinusOne; 0 stays NULL).
 */
@@ -287,8 +283,7 @@ void GameFactionRuntime_RebaseLoadedArmyReferences(void)
 }
 
 
-/* Address: 0x00513960.
-   Called when an army is destroyed: clears every slot of the eight factions' 256-entry runtime group member
+/* Called when an army is destroyed: clears every slot of the eight factions' 256-entry runtime group member
    tables that still points to it, so no group keeps a dangling pointer to the freed army slot.
 */
 void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember)
@@ -322,8 +317,7 @@ void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void 
 }
 
 
-/* Address: 0x00513CA0.
-   Returns true (CF set) when bit otherFactionIndex is clear in factionIndex's capabilityFlags (record +0x3C).
+/* Returns true (CF set) when bit otherFactionIndex is clear in factionIndex's capabilityFlags (record +0x3C).
    The mask holds one bit per faction: GameData_ResetDefaults sets the faction's own bit and bit 0, and
    GameFactionRuntime_ApplyPairwiseRelationTransition sets or clears the others, so a clear bit marks a faction
    this one is not friendly with (the AI treats its entities as foreign/hostile).
@@ -336,8 +330,7 @@ bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,Factio
 }
 
 
-/* Address: 0x00513CD0.
-   Returns the diplomatic relation state (0..11) of factionIndex towards otherFactionIndex: nibble
+/* Returns the diplomatic relation state (0..11) of factionIndex towards otherFactionIndex: nibble
    otherFactionIndex of the faction record's packedRelationStates. States from 4 on count as friendly.
 */
 FactionRelationState GameFactionRuntime_GetPackedStateNibble
@@ -369,8 +362,7 @@ static TechnologyId GameFactionRuntime_FindFirstTechnologyOnlyIn(const uint32_t 
 }
 
 
-/* Address: 0x00513D70.
-   Technology exchange between related factions: for every unordered pair of factions 1..7 whose relation
+/* Technology exchange between related factions: for every unordered pair of factions 1..7 whose relation
    state is 8, 9 or 10, the lowest technology only the source faction has and the lowest technology only the
    other faction has are swapped (each side unlocks the other's). A pair where either side has nothing the
    other lacks exchanges nothing. Afterwards the other-player command entries are rebuilt.
@@ -461,8 +453,7 @@ static void GameFactionRuntime_MoveImpactAlertAnchor(FactionAnchorCooldownTicks 
 }
 
 
-/* Address: 0x00514510.
-   "Under attack" alert for the faction owning a hit army (called by ShotRuntime_ApplyArmyHitRelationAndNotifications
+/* "Under attack" alert for the faction owning a hit army (called by ShotRuntime_ApplyArmyHitRelationAndNotifications
    when a shot opens hostilities): moves the faction's primary or secondary alert anchor (chosen by definition
    dword +0x18) to the hit model and restarts its 150-tick cooldown. The alert movie 300 / 301 is only queued when
    the cooldown had fallen below 50 and the hit is more than 12 world units from the old anchor or the cooldown had
@@ -493,8 +484,7 @@ void GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
 }
 
 
-/* Address: 0x00514730.
-   Recomputes one faction's statistics for the score / results screens: explored terrain percent, unlocked
+/* Recomputes one faction's statistics for the score / results screens: explored terrain percent, unlocked
    technologies beyond the five starting ones, extracted resource components, the economy and relation scores,
    the summed value of its army assets on the map, and the combined progress score.
 */
@@ -589,8 +579,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
 }
 
 
-/* Address: 0x00514900.
-   Finds which of its faction's eight runtime groups (32 member slots each) holds runtimeEntry, for the group
+/* Finds which of its faction's eight runtime groups (32 member slots each) holds runtimeEntry, for the group
    selection commands in gameplay/selection/runtime. Returns the one-based group number (1..8), or 0 when it is
    in no group.
 */
@@ -626,8 +615,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
 }
 
 
-/* Address: 0x0051B800.
-   Checks whether the faction already has armyAssetRecord pending: in its secondary army-asset list, or in
+/* Checks whether the faction already has armyAssetRecord pending: in its secondary army-asset list, or in
    production in one of its class 0x0B/0x0D structures (state word 0x2E == 1). The result is
    false (CF clear) when found, true (CF set) when not.
 */
@@ -668,8 +656,7 @@ bool FactionRuntime_IsArmyAssetNotPending
 }
 
 
-/* Address: 0x0051C4C0.
-   Stops an entity where it stands (used by the stop command on the selection): clears the command flags
+/* Stops an entity where it stands (used by the stop command on the selection): clears the command flags
    0x01, 0x08, 0x10 and 0x20 and sets the path target and both tracked coordinate pairs to the current
    x/y position of its model.
 */
@@ -698,8 +685,7 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
 }
 
 
-/* Address: 0x0051C680.
-   Where an entity's current command should take it, for the movement code in gameplay/army/movement: target flag
+/* Where an entity's current command should take it, for the movement code in gameplay/army/movement: target flag
    1 aims at a target entity (its model position, raised by definition dword +0x50; class 0x15 aims at its first
    child node), flag 2 at a fixed world position. A target entity that the owner's faction can no longer see is
    dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or returns false
@@ -754,8 +740,7 @@ bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetSta
 }
 
 
-/* Address: 0x0052A4D0.
-   Applies impactValue to an entity's integrity (called twice per hit by ArmyRuntime_ApplyImpactDamageToRuntimeAndParent;
+/* Applies impactValue to an entity's integrity (called twice per hit by ArmyRuntime_ApplyImpactDamageToRuntimeAndParent;
    a negative value repairs and goes to the entity its runtime link points at). A destroyed entity passes the
    overkill on to its parent model's army, or, without a parent, is turned to the impact angle (definition class 0
    without +0x278) and counted in the score counters: a loss for its faction, a kill for sourceFactionIndex (the
@@ -876,8 +861,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
 }
 
 
-/* Address: 0x00560110.
-   Queues repetitionCount units of an army record for a faction (the build buttons of the in-game catalog and
+/* Queues repetitionCount units of an army record for a faction (the build buttons of the in-game catalog and
    the AI): appends the registry pointer of armyAssetId that many times to the faction's secondary army-asset
    list, stopping when its 64 entries are full. An unknown id queues nothing.
 */
@@ -939,8 +923,7 @@ static void GameFactionRuntime_StopProductionAndRefund(int *modelPayload,int sta
 }
 
 
-/* Address: 0x00560160.
-   In-game command INGAME_COMMAND_CANCEL_QUEUED_ARMY (the cancel click on a build button of the in-game catalog,
+/* In-game command INGAME_COMMAND_CANCEL_QUEUED_ARMY (the cancel click on a build button of the in-game catalog,
    the reverse of GameFactionRuntime_RegisterArmyAssetPointers): cancels up to requestedCount orders of an army
    record. Waiting orders are taken out of the faction's production queue first (without a refund); what is left is cancelled in the faction's producing structures (class 0x0B, 0x16 or 0x0D, chosen by the
    army's flags 0x10 / 0x08), which stop production and refund the full price to the faction's xenite.
@@ -1042,8 +1025,7 @@ static bool GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRec
 }
 
 
-/* Address: 0x00560400.
-   In-game command INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT (clicking a finished army in the in-game catalog):
+/* In-game command INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT (clicking a finished army in the in-game catalog):
    takes the first entry of the army record out of the faction's primary army-asset list (record +0x1E0) and
    stages it in the player's pending slot (+0x8098) for placement on the map. When the faction is the one shown
    the command sprite grid is rebuilt, and for the local player the placement cursor is armed. If the faction
@@ -1080,8 +1062,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
 }
 
 
-/* Address: 0x00560620.
-   In-game command handler, the reverse of GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer: takes the
+/* In-game command handler, the reverse of GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer: takes the
    army asset staged for the player's placement (an XCHG with 0) back into the faction's primary army-asset list
    (at most 64 entries). When the faction is the one shown it rebuilds the command sprite grid, and for the local
    player it ends the pending placement.
@@ -1119,8 +1100,7 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
 }
 
 
-/* Address: 0x005606A0.
-   In-game command INGAME_COMMAND_SELL_ARMY (the sell click on a finished army in the in-game catalog): takes the
+/* In-game command INGAME_COMMAND_SELL_ARMY (the sell click on a finished army in the in-game catalog): takes the
    first entry of the army record out of the faction's primary army-asset list (record +0x1E0) and credits 7/8 of
    its price to the faction's xenite. The command sprite grid is rebuilt when the faction is the one shown.
 */
@@ -1148,8 +1128,7 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
 }
 
 
-/* Address: 0x00561F80.
-   In-game command INGAME_COMMAND_PLACEMENT_CREATE_ARMY (map click while placing an army in command mode 3/4, from
+/* In-game command INGAME_COMMAND_PLACEMENT_CREATE_ARMY (map click while placing an army in command mode 3/4, from
    InGameUiCommand_BeginInteractionByMode): creates army armyAssetId at the clicked position for the faction set
    by PlayerRuntime_SetPlacementFaction and keeps it as the player's placed army (+0x8094, as an offset from
    g_ArmyRuntimeRebaseBaseMinusOne), or 0 when it could not be created.
@@ -1175,8 +1154,7 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
 }
 
 
-/* Address: 0x00561FF0.
-   In-game command INGAME_COMMAND_PLACEMENT_SET_FACTION (from InGameUiCommand_BeginInteractionByMode, before
+/* In-game command INGAME_COMMAND_PLACEMENT_SET_FACTION (from InGameUiCommand_BeginInteractionByMode, before
    INGAME_COMMAND_PLACEMENT_CREATE_ARMY): sets the faction (+0x8090) that the player's next placed army belongs to.
 */
 void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
@@ -1187,8 +1165,7 @@ void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t 
 }
 
 
-/* Address: 0x00562020.
-   In-game command INGAME_COMMAND_PLACEMENT_SET_ARMY (clicking an existing army in placement sub-mode 2, from
+/* In-game command INGAME_COMMAND_PLACEMENT_SET_ARMY (clicking an existing army in placement sub-mode 2, from
    InGameUiCommand_BeginInteractionByMode): makes it the player's placed army (+0x8094); armyToken is its offset from
    g_ArmyRuntimeRebaseBaseMinusOne.
 */
@@ -1200,8 +1177,7 @@ void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unu
 }
 
 
-/* Address: 0x005622C0.
-   In-game command INGAME_COMMAND_PLACEMENT_CLEAR_ARMY (end of a placement interaction, from
+/* In-game command INGAME_COMMAND_PLACEMENT_CLEAR_ARMY (end of a placement interaction, from
    InGameUiCommand_EndInteractionByMode): forgets the player's placed army (+0x8094).
 */
 void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
@@ -1212,8 +1188,7 @@ void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t u
 }
 
 
-/* Address: 0x00565590.
-   Applies the mission carry-over stored by OldUnitRuntime_RebuildScenarioReplayTables at the start of the next
+/* Applies the mission carry-over stored by OldUnitRuntime_RebuildScenarioReplayTables at the start of the next
    mission: ORs each faction's saved technology masks into its record, recreates every carried-over unit
    (0x20-byte primary records: asset id, faction, position, rotation) in the world, then rebuilds terrain
    occupancy and the cell classification for the active faction.
@@ -1277,8 +1252,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
 }
 
 
-/* Address: 0x00513D00.
-   Returns true (CF) when the relation of factionIndex towards otherFactionIndex is in one of the pending states
+/* Returns true (CF) when the relation of factionIndex towards otherFactionIndex is in one of the pending states
    2, 5 or 9 and the pair's last relation change is at most 600 ticks old, so the relation does not advance
    again too soon.
 */
@@ -1302,8 +1276,7 @@ bool GameFactionRuntime_IsRecentTimedRelationState
 }
 
 
-/* Address: 0x00565650.
-   Drops any pending mission carry-over: clears the 64-dword technology-mask table and the unit-record count, so
+/* Drops any pending mission carry-over: clears the 64-dword technology-mask table and the unit-record count, so
    OldUnitRuntime_MergeMasksAndReplayRecords has nothing to apply.
 */
 void OldUnitRuntime_ResetPendingTables(void)
@@ -1477,8 +1450,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
 }
 
 
-/* Address: 0x00513EE0.
-   Changes the diplomatic relation between two factions: notifies the shown faction (text code + 500), stores
+/* Changes the diplomatic relation between two factions: notifies the shown faction (text code + 500), stores
    both directed 4-bit relation states, sets or clears the factions' friendly bits in each other's
    capabilityFlags (both by stateSecondTowardFirst: friendly from state 4 on) and stamps the change tick.
    State 11 merges the factions: one of them (see below) gives its units, cells, players, resources,

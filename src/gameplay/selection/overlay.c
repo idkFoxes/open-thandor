@@ -287,8 +287,7 @@ static void InGameWorldOverlay_ReleaseMarkers(EffectRuntimeSlot **markers,uint32
 }
 
 
-/* Address: 0x00568300.
-   World overlay callback: builds (releaseMode == GRAPHICS_STATE_DISABLED) or releases the transient objects
+/* World overlay callback: builds (releaseMode == GRAPHICS_STATE_DISABLED) or releases the transient objects
    drawn over the map - the ghost army previewing a placement or command-mode command, EGATH0 markers at the
    movement target of own class-13 armies (runtime flag 0x800), and the waypoint (EWAYP0) and target (ETARG0)
    markers of the selected own armies.
@@ -343,8 +342,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
 }
 
 
-/* Address: 0x0052F0C0.
-   Draws the metric bars (SelectionPanel_RenderArmyRuntimeMetrics) over every selected entity whose model node
+/* Draws the metric bars (SelectionPanel_RenderArmyRuntimeMetrics) over every selected entity whose model node
    carries flag 4, or flag 8 without 0x10, at the screen bounds of its projected model hierarchy; entities whose
    bounds come out empty are skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when
    context flag 0x400 is set.
@@ -387,8 +385,7 @@ void SelectionOverlay_RenderSelectedArmyMetrics
 }
 
 
-/* Address: 0x0052F1B0.
-   Draws the metric bars of one entity like SelectionOverlay_RenderSelectedArmyMetrics, but with the info-panel
+/* Draws the metric bars of one entity like SelectionOverlay_RenderSelectedArmyMetrics, but with the info-panel
    texture and data (g_InfoPanelTextureSource/g_InfoPanelData) swapped in for the call. Called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped for its selectedOverlayEntity when that entity is in
    the selection info.
@@ -432,8 +429,7 @@ void SelectionOverlay_RenderArmyMetricsForEntity
 }
 
 
-/* Address: 0x0052F2A0.
-   Draws a frame around the screen rectangle spanned by corners A and B (either order; nothing when it is empty in
+/* Draws a frame around the screen rectangle spanned by corners A and B (either order; nothing when it is empty in
    either direction): four corner pieces outside the rectangle and the four edges tiled between them. Called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x80 is set (the drag-selection
    rectangle, WORLD_RUNTIME_FLAG_DRAG_SELECTING in the in-game world view).
@@ -506,8 +502,7 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipBottom,UiPixelCoordi
 }
 
 
-/* Address: 0x0052F490.
-   Draws the SELECTION_OVERLAY_MARKER_GRID_POINT marker centred on the screen position of each of markerPointCount
+/* Draws the SELECTION_OVERLAY_MARKER_GRID_POINT marker centred on the screen position of each of markerPointCount
    grid coordinate pairs: each pair is converted to a world point, snapped to the nearest terrain point and
    projected; points off the field or not beyond the near plane are skipped. Called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped with its terrainMarkerCoordinatePairs when context
@@ -575,8 +570,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
 }
 
 
-/* Address: 0x0052F5A0.
-   Draws the SELECTION_OVERLAY_MARKER_WORLD_POINT marker centred on the projected nearest terrain point (or top
+/* Draws the SELECTION_OVERLAY_MARKER_WORLD_POINT marker centred on the projected nearest terrain point (or top
    surface point when useTopSurface is nonzero) of a world position; nothing when it is off the field. Called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped with the point in its surfaceHitWorldY/X when
    context flag 0x100000 is set and surfaceHitDepth is not WORLD_POINTER_NO_HIT; useTopSurface is set when the
@@ -626,8 +620,7 @@ void SelectionOverlay_DrawWorldPointMarker
 }
 
 
-/* Address: 0x0052F680.
-   Draws the SELECTION_OVERLAY_MARKER_GRID_VERTEX marker at the projected position of every fourth field cell in
+/* Draws the SELECTION_OVERLAY_MARKER_GRID_VERTEX marker at the projected position of every fourth field cell in
    both directions (rows and columns 1, 5, 9, ...), using the cells' projected point B instead of A
    when the high byte of g_UiCommandModeGColorVariantLimit is nonzero; cells whose point A was not projected are
    skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x800000 is set.
@@ -694,8 +687,7 @@ void SelectionOverlay_DrawGridVertexMarkers
 }
 
 
-/* Address: 0x0052F780.
-   Marks the field cells excluded from the fluid simulation: SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED and/or
+/* Marks the field cells excluded from the fluid simulation: SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED and/or
    SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED at the cell's projected point B, skipping cells whose point B was
    not projected. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x1000000
    is set.
@@ -778,8 +770,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
 }
 
 
-/* Address: 0x0052F8C0.
-   Marks the field cells that support Xenite or Tritium: SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE when the cell
+/* Marks the field cells that support Xenite or Tritium: SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE when the cell
    supports the resource selectedResourceIndex picks (0 Xenite, 1 Tritium), SELECTION_OVERLAY_MARKER_OTHER_RESOURCE
    when it supports the other one, at the cell's projected point A. Called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped with the low byte of its selectedResourceMarkerIndex when
@@ -865,8 +856,7 @@ void SelectionOverlay_DrawResourceCellMarkers
 }
 
 
-/* Address: 0x0052FA20.
-   Debug overlay: draws the SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED marker at the projected point A of
+/* Debug overlay: draws the SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED marker at the projected point A of
    every field cell with FIELD_CELL_DEBUG_MARKED (which no code in the game sets). Called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x4000 and g_UiCommandRuntimeFlags
    bit 0x40 are set and a field grid is attached.
@@ -926,8 +916,7 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
 }
 
 
-/* Address: 0x00560020.
-   Pointer-mode handler 3 (g_InGamePointerModeHandlers[3]; networked games queue it as a command
+/* Pointer-mode handler 3 (g_InGamePointerModeHandlers[3]; networked games queue it as a command
    instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 3 (lanes 1 and 2) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
@@ -943,8 +932,7 @@ void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,Selecti
 }
 
 
-/* Address: 0x00560050.
-   Pointer-mode handler 4 (g_InGamePointerModeHandlers[4]; networked games queue it as a command
+/* Pointer-mode handler 4 (g_InGamePointerModeHandlers[4]; networked games queue it as a command
    instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 4 (lane 4) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
@@ -960,8 +948,7 @@ void SelectionMarkerCoordinates_ApplyType4(SelectionMarkerIndex playerId,Selecti
 }
 
 
-/* Address: 0x00560080.
-   Pointer-mode handler 5 (g_InGamePointerModeHandlers[5]; networked games queue it as a command
+/* Pointer-mode handler 5 (g_InGamePointerModeHandlers[5]; networked games queue it as a command
    instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 5 (lanes 1 and 4) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
@@ -977,8 +964,7 @@ void SelectionMarkerCoordinates_ApplyType5(SelectionMarkerIndex playerId,Selecti
 }
 
 
-/* Address: 0x005600B0.
-   Pointer-mode handler 6 (g_InGamePointerModeHandlers[6]; networked games queue it as a command
+/* Pointer-mode handler 6 (g_InGamePointerModeHandlers[6]; networked games queue it as a command
    instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 6 (lanes 2 and 4) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
@@ -994,8 +980,7 @@ void SelectionMarkerCoordinates_ApplyType6(SelectionMarkerIndex playerId,Selecti
 }
 
 
-/* Address: 0x005600E0.
-   Pointer-mode handler 7 (g_InGamePointerModeHandlers[7]; networked games queue it as a command
+/* Pointer-mode handler 7 (g_InGamePointerModeHandlers[7]; networked games queue it as a command
    instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 7 (lanes 1, 2 and 4) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
@@ -1011,8 +996,7 @@ void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,Selecti
 }
 
 
-/* Address: 0x00568210.
-   Places a command-target marker effect on the terrain at a world point, unless the point is the source node's
+/* Places a command-target marker effect on the terrain at a world point, unless the point is the source node's
    own position or already carries a marker. Markers for a scaleQ12 other than 1.0 are lifted and scaled so the
    model's bounding radius becomes 6.5 * scaleQ12 (Q12).
 */

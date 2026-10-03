@@ -10,6 +10,6 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern ShotDefinition *g_ShotDefinitionRegistry[256]; /* 0052AF50 g_ShotDefinitionRegistry */
+extern ShotDefinition *g_ShotDefinitionRegistry[256];
 
 #endif

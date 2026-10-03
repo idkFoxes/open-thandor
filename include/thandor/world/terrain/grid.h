@@ -94,208 +94,155 @@
    to get the product's high dword (a plain 64-bit multiply compiles differently). */
 #define FIELD_GRID_ANGLE_PRODUCT_HIGH_BITS_MASK 0x1ffffffffffffU
 
-/* 0x00505930 */
 void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
           (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
           FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAsset *fieldGrid);
 
-/* 0x00562330 */
 void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,
           TerrainRelaxationPassCount passCount,TerrainRelaxationMode mode);
 
-/* 0x005610A0 */
 void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
-/* 0x005613C0 */
 void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
-/* 0x00561C10 */
 void FieldGrid_RebuildLocalInfluenceState
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 gridRowQ12,Q12 gridColumnQ12);
 
-/* 0x00505620 */
 void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid);
 
-/* 0x00505700 */
 void FieldGrid_RecomputeInteriorDirectionalLighting
           (AngleTurn32 lightElevationAngle,AngleTurn32 lightAzimuthAngle,FieldGridAsset *fieldGrid);
 
-/* 0x005090E0 */
 void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
           (TerrainHeightBrushDeltaSource heightDeltaSourceValue,Q12 worldZQ12,Q12 worldYQ12,
           Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
-/* 0x005618A0 */
 void FieldGrid_ApplyLocalCellUpdate
           (PlayerRuntimeId playerRuntimeId,FieldGridTransitionValue transitionValue,Q12 gridRowQ12,
           Q12 gridColumnQ12);
 
-/* 0x00562390 */
 void FieldGrid_ApplyEncodedCellUpdate(PlayerRuntimeId playerRuntimeId,Q12 gridRowQ12,Q12 gridColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
-/* 0x005623D0 */
 void FieldGrid_SetCellFluidReceiverExcluded
           (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12);
 
-/* 0x00562410 */
 void FieldGrid_SetCellFluidSourceExcluded
           (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12);
 
-/* 0x00562450 */
 void FieldGrid_SetCellResourceSupportFlag
           (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,Q12 gridRowQ12,
           Q12 gridColumnQ12);
 
-/* 0x004FEA80 */
 bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);
 
-/* 0x004FEB10 */
 bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);
 
-/* 0x004FEBA0 */
 int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
-/* 0x004FEC10 */
 bool FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
 
-/* 0x004FED50 */
 int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
-/* 0x004FEE90 */
 bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
 
-/* 0x004FEFF0 */
 bool FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
 
-/* 0x004FF1A0 */
 bool FieldGrid_InterpolateTerrainHeightAndNormal
           (Q12 worldY,Q12 worldX,FieldGridAsset *field,Q12 *outHeightQ12,uint32_t *outPackedNormalAngles);
 
-/* 0x004FFB80 */
 bool FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           );
 
-/* 0x00503C90 */
 void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid);
 
-/* 0x00503DB0 */
 void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid);
 
-/* 0x00503E20 */
 void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,FieldGridAsset *fieldGrid);
 
-/* 0x00503E80 */
 void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,FieldGridAsset *fieldGrid);
 
-/* 0x00503EE0 */
 void TerrainDirectionTable_AdvanceAndRebuildVectors(void);
 
-/* 0x00504B10 */
 bool FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12,
           uint32_t *outMaterialIndex);
 
-/* 0x00504CA0 */
 bool FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12);
 
-/* 0x00504E60 */
 bool FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
           Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,
           Q12 *outDistanceQ12);
 
-/* 0x00505120 */
 void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid);
 
-/* 0x00505240 */
 void FieldGrid_SetOccupancyMaskByteBit0AllCells
           (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid);
 
-/* 0x00505290 */
 void FieldGrid_ClearOccupancyMaskByteBit0AllCells
           (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid);
 
-/* 0x00507580 */
 bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
-/* 0x005092A0 */
 void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid);
 
-/* 0x005092E0 */
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);
 
-/* 0x00532B60 */
 bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError);
 
-/* 0x00561050 */
 void FieldGrid_ClearPlayerScratchPlane
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 reservedWorldYQ12,Q12 reservedWorldXQ12);
 
-/* 0x00561BB0 */
 void FieldGrid_ResetLocalInfluenceState
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 reservedWorldYQ12,Q12 reservedWorldXQ12);
 
-/* 0x00571EC0 */
 void FieldGrid_ApplyEncodedUpdateCore(FieldGridHeightDeltaUnits heightDeltaUnits,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
-/* 0x005058A0 */
 void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial(TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
           FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridCell *cell);
 
-/* 0x00505AA0 */
 void TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid);
 
-/* 0x00505BE0 */
 void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid);
 
-/* 0x00505D30 */
 void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid);
 
-/* 0x00505E60 */
 void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid);
 
-/* 0x00571090 */
 void FieldGrid_ProcessHorizontalSpan(Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
           FieldGridRadiusUnits radiusUnits,Q12 centerRowQ12,Q12 centerColumnQ12,
           FieldGridAccumulatorValue *accumulatorPlane,FieldGridAsset *fieldGrid);
 
-/* 0x00571250 */
 void FieldGrid_ProcessVerticalSpan(FieldGridHeightDeltaUnits heightDeltaUnits,FieldGridRadiusUnits radiusUnits,
           Q12 centerRowQ12,Q12 centerColumnQ12,FieldGridAccumulatorValue *accumulatorPlane,
           FieldGridAsset *fieldGrid);
 
-/* 0x005713E0 */
 void FieldGrid_ApplySingleCellTransition(FieldGridTransitionValue transitionValue,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
-/* 0x00571860 */
 void FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,FieldGridAsset *fieldGrid);
 
-/* 0x004FEA50 */
 FieldGridCoordinates FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX);
 
-/* 0x00571FE0 */
 void FieldGrid_ApplyMaskedRegionCore
           (FieldGridRegionMask preserveMask,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
-/* 0x005052E0 */
 void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell);
 
-/* 0x00505690 */
 void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell);
 
 #endif /* THANDOR_WORLD_TERRAIN_GRID_H */

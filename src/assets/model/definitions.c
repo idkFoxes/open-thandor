@@ -10,8 +10,7 @@
 
 /* Implementation ownership: assets/model/definitions. */
 
-/* Address: 0x0051B3C0.
-   Picks the upgrade stage a faction can build: of the eight linked model-definition ids at +0x20 the last
+/* Picks the upgrade stage a faction can build: of the eight linked model-definition ids at +0x20 the last
    non-zero one whose technology the faction has unlocked wins (the first id is the fallback), and it is
    looked up in the registry. Returns that definition.
    Original quirk: an unregistered id is not reported; the result is then the error code
@@ -66,8 +65,7 @@ static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex
   }
 }
 
-/* Address: 0x0051DB00.
-   Walks the model-definition tree below definitionNode depth-first and, for every node, unlocks for the
+/* Walks the model-definition tree below definitionNode depth-first and, for every node, unlocks for the
    faction the technology granted by the linked definition the faction can currently select
    (ModelDefinition_SelectFactionUnlockedLinkedId). Used when an army is created with
    ARMY_CREATE_UNLOCK_TECHNOLOGY.
@@ -102,8 +100,7 @@ static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks
   return false;
 }
 
-/* Address: 0x0051DA60.
-   Walks the model-definition hierarchy below definitionNode and tests each definition's technology
+/* Walks the model-definition hierarchy below definitionNode and tests each definition's technology
    requirement against the faction's technology masks. Returns false (CF clear) when every definition in the
    tree is unlocked, true (CF set) as soon as one is still locked: ModelDefinition_IsFactionTechnologyLocked
    reports a locked technology with CF set.
@@ -120,8 +117,7 @@ bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
 }
 
 
-/* Address: 0x00528950.
-   Checks that the asset is an 'mdl' of converter version 0x8000A, then registers each of its variable-size
+/* Checks that the asset is an 'mdl' of converter version 0x8000A, then registers each of its variable-size
    model-definition records (starting at +0x200, each prefixed with its byte size) and resolves their
    references against the asset base. Returns true on success; returns false with the error code in *outError
    (untouched on success) for an invalid header or at the first record that fails. (The original's success
@@ -152,8 +148,7 @@ bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
 }
 
 
-/* Address: 0x004BE670.
-   Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte ModelPackedPointRecord
+/* Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte ModelPackedPointRecord
    entries) for the key (keyIndex << 4) | keyClass. Returns true when an entry matches and stores its local
    position (the dwords at +4, +8, +0xC) in *outLocalPosition; returns false and stores (0, 0, 0) when no entry
    matches. outLocalPosition may be NULL when only presence matters. Called directly by
@@ -189,8 +184,7 @@ bool ModelLookupTable_GetPackedPointPosition
 }
 
 
-/* Address: 0x004BE6F0.
-   Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte entries) for the key
+/* Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte entries) for the key
    (keyIndex << 4) | keyClass. Returns true and stores the matching entry in *outEntry when one matches;
    otherwise returns false and stores the address just past the table's last entry in *outEntry (one caller,
    ArmyPlacement_CanPlaceAnchoredModel, reads it anyway).
@@ -217,8 +211,7 @@ bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKe
 }
 
 
-/* Address: 0x0050AEA0.
-   Intersects the current model-space pick ray (g_ModelRaycastLocalOrigin*, g_ModelRaycastLocalDirection*Q28,
+/* Intersects the current model-space pick ray (g_ModelRaycastLocalOrigin*, g_ModelRaycastLocalDirection*Q28,
    limited to g_ModelRaycastMaximumDistance) with one triangle: first the plane distance along the ray (plane
    through the weighted centre (2*v0 + v1 + v2) / 4), then an inside test of the hit point against the edges.
    Returns true on a hit and stores the Q12 distance along the ray in *outDistanceQ12; returns false on a miss
@@ -352,8 +345,7 @@ bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tria
 }
 
 
-/* Address: 0x005289C0.
-   Looks a model definition up by id in the 768-slot registry and returns 0 with its build costs, the three
+/* Looks a model definition up by id in the 768-slot registry and returns 0 with its build costs, the three
    dwords at record +0x188 (*outEnergyLoadQ4), +0x180 (*outBuildTicks) and +0x184 (*outXeniteCostQ4), which
    ArmyAssetRecord_RelocateModelTree adds to an army record. On a miss the id is formatted into
    g_PackageLastErrorPath, the out-parameters are left unchanged and FATAL_ERROR_MODEL_DEFINITION_MISSING is
@@ -386,8 +378,7 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
 }
 
 
-/* Address: 0x0053BA00.
-   Returns the first registered model definition whose runtime class id (dword +0x1C0) equals runtimeClassId,
+/* Returns the first registered model definition whose runtime class id (dword +0x1C0) equals runtimeClassId,
    or NULL. Called directly by the AI planning and technology code (gameplay/ai/planning.c, technology.c).
 */
 ModelDefinitionRecordPrefix *
@@ -412,8 +403,7 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
   return candidateDefinition;
 }
 
-/* Address: 0x0051B430.
-   Same selection as ModelDefinition_SelectFactionUnlockedLinkedDefinition, but returns the chosen id
+/* Same selection as ModelDefinition_SelectFactionUnlockedLinkedDefinition, but returns the chosen id
    itself: the last non-zero of the eight linked ids at +0x20 whose technology the faction has unlocked,
    or the first id when none is. CF is always clear.
 */
@@ -608,8 +598,7 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
   }
 }
 
-/* Address: 0x00528600.
-   Registers one MDL model definition in the first free slot of the 768-slot registry and turns its
+/* Registers one MDL model definition in the first free slot of the 768-slot registry and turns its
    serialized references into runtime pointers: the node tree is relocated by the asset base and its
    sprites are loaded or reused, the shot and effect ids are resolved through their registries, and the
    terrain-class dependent placement values are copied from the grid tables. Returns true on success; a
@@ -650,8 +639,7 @@ bool ModelDefinition_RegisterAndResolveReferences
 }
 
 
-/* Address: 0x0052ADE0.
-   Unlocks for the faction the technology that the model definition grants (record +0x1C4), so building
+/* Unlocks for the faction the technology that the model definition grants (record +0x1C4), so building
    that model makes its successor technology available. An unknown id is silently ignored.
 */
 void ModelDefinition_UnlockLinkedTechnologyForFaction
@@ -668,8 +656,7 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
 }
 
 
-/* Address: 0x0052AD90.
-   Tests whether the faction may use the model definition: the technology bit it requires (record +0x1C0)
+/* Tests whether the faction may use the model definition: the technology bit it requires (record +0x1C0)
    must be set in the faction's 256-bit technology masks. True (CF set) means locked
    (bit clear or unknown id); false (CF clear) means unlocked.
 */
@@ -689,8 +676,7 @@ bool ModelDefinition_IsFactionTechnologyLocked
 }
 
 
-/* Address: 0x00528E20.
-   Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
+/* Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
    g_PackageLastErrorPath for the error message and returns NULL (the original returned
    FATAL_ERROR_MODEL_DEFINITION_MISSING with CF set; callers that passed that code on now supply it
    themselves). A found definition is never NULL.

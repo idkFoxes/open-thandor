@@ -23,37 +23,30 @@
 #define GRAPHICS_CAPTURE_FAILED_STAGE_32BIT 101
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004A9250 */
 bool GraphicsFramebuffer_BeginAccessStub(void);
 
-/* 0x004A9260 */
 void GraphicsFramebuffer_EndAccessStub(void);
 
-/* 0x005796E0 */
 void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer);
 
-/* 0x005798A0 */
 GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);
 
-/* 0x00579B50 */
 GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);
 
-/* 0x00579D90 */
 bool GraphicsFramebuffer_BeginAccess(void);
 
-/* 0x00579E60 */
 void GraphicsFramebuffer_EndAccess(void);
 
-extern SoftwareFramebufferAccess *g_FramebufferAccess; /* 004A8E70 g_FramebufferAccess */
-extern uint32_t g_FramebufferRowStrideBytes; /* 004A8E84 g_FramebufferRowStrideBytes */
-extern uint32_t g_FramebufferHeight; /* 004A8E8C g_FramebufferHeight */
-extern GraphicsFramebufferPresentProc *g_GraphicsFramebufferPresent; /* 004A8EE0 g_GraphicsFramebufferPresent */
-extern GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess; /* 004A8EEC g_GraphicsFramebufferBeginAccess */
-extern GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess; /* 004A8EF0 g_GraphicsFramebufferEndAccess */
-extern GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb; /* 004A8F30 g_GraphicsFramebufferFillRectArgb */
+extern SoftwareFramebufferAccess *g_FramebufferAccess;
+extern uint32_t g_FramebufferRowStrideBytes;
+extern uint32_t g_FramebufferHeight;
+extern GraphicsFramebufferPresentProc *g_GraphicsFramebufferPresent;
+extern GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess;
+extern GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess;
+extern GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb;
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_FRAMEBUFFER_H */

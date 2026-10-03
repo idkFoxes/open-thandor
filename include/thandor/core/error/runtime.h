@@ -138,28 +138,20 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00575890 */
 void __cdecl ErrorSystem_Init(void);
 
-/* 0x00407F50 */
 bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
 
-/* 0x00407F60 */
 int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
 
-/* 0x00407F70 */
 void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 
-/* 0x00407F90 */
 uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool failed);
 
-/* 0x00408090 */
 void ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 
-/* 0x005758D0 */
 uint32_t FatalError_Exit(uint32_t valueOrError,bool failed);
 
-/* 0x0041BB00 */
 int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
 #endif /* THANDOR_CORE_ERROR_RUNTIME_H */

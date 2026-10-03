@@ -12,8 +12,7 @@
 
 /* Implementation ownership: graphics/core/runtime. */
 
-/* Address: 0x00576C30.
-   Periodic cursor timer callback: keeps the software mouse cursor animated and in place independently of the
+/* Periodic cursor timer callback: keeps the software mouse cursor animated and in place independently of the
    game's frame rate. Every second tick it steps the idle and active animation subresources of the current cursor
    frame (wrapping to the first one); when the frame changed or mouse events moved the cursor, and the graphics
    backend is not in use, the cursor is redrawn directly on the primary surface.
@@ -77,8 +76,7 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
 }
 
 
-/* Address: 0x004168B0.
-   Selects the software cursor frame (GRAPHICS_CURSOR_FRAME_*) that the cursor timer animates and draws.
+/* Selects the software cursor frame (GRAPHICS_CURSOR_FRAME_*) that the cursor timer animates and draws.
    Returns true when the frame was selected, false (frame unchanged) for an index at or above g_CursorFrameCount;
    the error to report for that is FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE. Installed in g_GraphicsCursorSetFrame
    (image slot 0x00416848).
@@ -94,8 +92,7 @@ bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 }
 
 
-/* Address: 0x004168E0.
-   Takes the next mouse event from the 256-entry ring the mouse input code fills (returns false and leaves
+/* Takes the next mouse event from the 256-entry ring the mouse input code fills (returns false and leaves
    *outEvent untouched when it is empty; true with the event in *outEvent otherwise) and publishes it: button state, cursor position and wheel delta go to the g_Cursor* globals, a release stores
    its clock per button, a press its position as the last click. Installed in g_GraphicsCursorConsumeEvent
    (image slot 0x00416850). A press less than 16 clock ticks after the release of the same button and within
@@ -181,8 +178,7 @@ bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
 }
 
 
-/* Address: 0x00486430.
-   Perspective-projects one view-space Q12 point to screen coordinates (EAX = x, EDX = y): the perspective scale
+/* Perspective-projects one view-space Q12 point to screen coordinates (EAX = x, EDX = y): the perspective scale
    is the 64-bit projection numerator divided by z, x and y are scaled by it and offset by the projection
    centre. Points with z not above the numerator's high dword (behind or too close to the eye, where the
    32-bit IDIV would overflow) project to (0,0).
@@ -217,8 +213,7 @@ GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoin
 }
 
 
-/* Address: 0x00486490.
-   Sets the screen rectangle projected geometry is clipped against, converted from pixels to Q12 (20.12 fixed
+/* Sets the screen rectangle projected geometry is clipped against, converted from pixels to Q12 (20.12 fixed
    point). First step of a scene setup, before the view parameters and the viewport (called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped and GraphicsOffscreen_RenderModelListToTextureSource).
 */
@@ -234,8 +229,7 @@ void Graphics_SetProjectionClipRect
 }
 
 
-/* Address: 0x004864D0.
-   Sets up the camera for the next scene: stores the eye position (Q12 world coordinates), projection scale and
+/* Sets up the camera for the next scene: stores the eye position (Q12 world coordinates), projection scale and
    view angles, builds the view rotation, the camera matrix (identity rotation, translation to the eye) and
    their composition g_ViewProjectionMatrixFixed, and stores the sin/cos pairs of the view azimuth plus and minus
    the half view angle atan2(1 << (12 - projectionShift), projectionScale).
@@ -291,8 +285,7 @@ void Graphics_SetViewProjectionParameters
 }
 
 
-/* Address: 0x00486640.
-   Maps the view onto a screen rectangle in pixels: the projection centre
+/* Maps the view onto a screen rectangle in pixels: the projection centre
    is the rectangle's midpoint in Q12, and the perspective numerator that Graphics_ProjectViewPoint divides by z
    is width * projection scale, shifted by g_ProjectionShift - 1 and widened to a signed 64-bit value << 12.
    Must follow Graphics_SetViewProjectionParameters, whose scale and shift it reads.
@@ -328,8 +321,7 @@ void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScre
 }
 
 
-/* Address: 0x004866C0.
-   Sets the scene's second direction (elevation/azimuth): stores the angles, their unit direction
+/* Sets the scene's second direction (elevation/azimuth): stores the angles, their unit direction
    g_AuxiliaryForwardDirectionFixed and a rotation built like the view rotation. The model renderer transforms the
    direction into each model's space and passes it to ModelRender_ComputeVertexIntensity* as the light direction;
    the rotation is used by the generated-texture shading code.
@@ -349,8 +341,7 @@ void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azi
 }
 
 
-/* Address: 0x00486730.
-   Stores the eight per-scene values in g_SceneBoundsFixed. bound4..bound7 are packed ARGB
+/* Stores the eight per-scene values in g_SceneBoundsFixed. bound4..bound7 are packed ARGB
    colours: the model renderer passes bound5/bound4 and bound7/bound6 as the scene colour pairs of
    ModelRender_ComputeVertexIntensityDefaultPath and ...ScaledPath. No reader of bound0..bound3 is known.
 */
@@ -371,8 +362,7 @@ void Graphics_SetSceneBoundsAndColors(GraphicsSceneExtentFixed bound7,GraphicsSc
 }
 
 
-/* Address: 0x00486790.
-   Selects the primitive queue the model renderer appends its triangles to (g_ActivePrimitiveQueue); the scene
+/* Selects the primitive queue the model renderer appends its triangles to (g_ActivePrimitiveQueue); the scene
    setup calls it with the queue freshly reset by GraphicsPrimitiveQueue_ResetGlobal.
 */
 void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
@@ -382,8 +372,7 @@ void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
 }
 
 
-/* Address: 0x004867B0.
-   Rebuilds the four side planes of the view frustum from the current view angles, projection scale and shift
+/* Rebuilds the four side planes of the view frustum from the current view angles, projection scale and shift
    (call after Graphics_SetViewProjectionParameters). Two edge rays are forward + / - a sideways vector of length
    1 << (12 - shift), two are forward + / - an up/down vector of that length; the plane normals are cross
    products of neighbouring rays, normalised to Q28 in g_FrustumPlaneNormalFixed_0[0..3].
@@ -452,8 +441,7 @@ void Graphics_RebuildFrustumPlanes(void)
 }
 
 
-/* Address: 0x00578560.
-   Allocates the texture-slot, palette, adapter and display-mode tables, enumerates the DirectDraw adapters
+/* Allocates the texture-slot, palette, adapter and display-mode tables, enumerates the DirectDraw adapters
    (every one is a software renderer device) and their display modes and installs the DirectDraw surface
    backend in the g_Graphics* slots. The display-mode hook installed before (the software renderer's) is kept
    as g_GraphicsDisplayModeFinalize. Returns 0 on success, otherwise the error code of the failing step (never
@@ -562,8 +550,7 @@ uint32_t __cdecl Graphics_Init(void)
 }
 
 
-/* Address: 0x00579520.
-   Tears the graphics backend down at exit (Runtime_Shutdown): blocks the cursor timer, frees the software
+/* Tears the graphics backend down at exit (Runtime_Shutdown): blocks the cursor timer, frees the software
    cursor buffers and releases every DirectDraw surface, primary surface last.
 */
 void Graphics_Shutdown(void)
@@ -597,8 +584,7 @@ void Graphics_Shutdown(void)
 }
 
 
-/* Address: 0x0057A330.
-   Draws the software mouse cursor into backSurface before it is presented (the animation timer also redraws it
+/* Draws the software mouse cursor into backSurface before it is presented (the animation timer also redraws it
    on the primary surface when it moved): the background under the cursor is saved twice (once to draw on, once
    for GraphicsCursor_RestoreAfterPresent), the cursor frame is blended onto the first copy (the pressed image
    while a mouse button is down) and that copy is written back.
@@ -642,8 +628,7 @@ void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
 }
 
 
-/* Address: 0x0057A2C0.
-   Removes the software cursor from backSurface again by writing back the background that
+/* Removes the software cursor from backSurface again by writing back the background that
    GraphicsCursor_ComposeBeforePresent saved, so the surface is clean again (for the next frame or for drawing
    the cursor at its new position). Skipped when the cursor was hidden at compose time.
 */
@@ -658,8 +643,7 @@ void GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface)
 }
 
 
-/* Address: 0x00579EC0.
-   Saves the screen rectangle under the software cursor: copies the part of sourceSurface at (drawX, drawY)
+/* Saves the screen rectangle under the software cursor: copies the part of sourceSurface at (drawX, drawY)
    that lies on screen into destinationBuffer (same layout, 16 or 32 bits per pixel), so the cursor can later
    be removed again with GraphicsCursor_RestoreSurfaceBackground. The surface is restored first if it was lost.
 */
@@ -727,8 +711,7 @@ void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destination
 }
 
 
-/* Address: 0x0057A0C0.
-   Writes a buffer filled by GraphicsCursor_SaveSurfaceBackground (or the composed cursor image) back into
+/* Writes a buffer filled by GraphicsCursor_SaveSurfaceBackground (or the composed cursor image) back into
    destinationSurface at (drawX, drawY), clipped to the screen exactly like the save. Used to draw the
    composed cursor and to remove it again after the present.
 */

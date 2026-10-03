@@ -10,8 +10,7 @@
 
 /* Implementation ownership: core/text/string. */
 
-/* Address: 0x00402D50.
-   Formats a 32-bit number as UTF-16 text with the locale strings of g_WideNumberFormatState and returns the
+/* Formats a 32-bit number as UTF-16 text with the locale strings of g_WideNumberFormatState and returns the
    length written in bytes (without the NUL that WIDE_FORMAT_WRITE_TERMINATOR adds). Decimal mode prints
    value / denominator with optional sign, padding to integerDigitLimit, one group separator before the last
    three digits and up to fractionalDigits fraction digits (denominator must not be 0); hexadecimal mode prints
@@ -139,8 +138,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
 }
 
 
-/* Address: 0x00403010.
-   Compares two NUL-terminated UTF-16 strings, ignoring the case of ASCII letters only, and returns the order
+/* Compares two NUL-terminated UTF-16 strings, ignoring the case of ASCII letters only, and returns the order
    of leftText relative to rightText: -1 when less, 0 when equal, 1 when greater. A string that ends first
    compares as greater (1), equal (0) only when both end together. (The original returned the order in ZF/CF;
    the name keeps "Flags" because the generated image data refers to it.)
@@ -179,8 +177,7 @@ int Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *l
 }
 
 
-/* Address: 0x0041BAA0.
-   Widens a NUL-terminated 8-bit string to UTF-16 (each byte zero-extended) into a buffer of capacityBytes
+/* Widens a NUL-terminated 8-bit string to UTF-16 (each byte zero-extended) into a buffer of capacityBytes
    bytes. Returns the bytes written including the terminator (always at least 2); if the string does not
    fit it is cut off and terminated, and 0 is returned (the original reported FATAL_ERROR_GENERAL_FAILURE
    with CF set).
@@ -210,8 +207,7 @@ uint32_t Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *
 }
 
 
-/* Address: 0x00586DA0.
-   Copies a NUL-terminated UTF-16 string including its terminator and returns its length in bytes, without
+/* Copies a NUL-terminated UTF-16 string including its terminator and returns its length in bytes, without
    the terminator.
 */
 uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source)
@@ -233,8 +229,7 @@ uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source)
   return completedByteLength;
 }
 
-/* Address: 0x00402D30.
-   Copies exactly codeUnitCount UTF-16 code units from source to destination (rep movsw in the original).
+/* Copies exactly codeUnitCount UTF-16 code units from source to destination (rep movsw in the original).
    It appends no terminator, so the number formatter can splice digit runs into a larger buffer.
 */
 void WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,uint16_t *source,uint16_t *destination)

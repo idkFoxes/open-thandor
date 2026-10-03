@@ -11,8 +11,7 @@
 
 /* Implementation ownership: gameplay/army/placement. */
 
-/* Address: 0x005244B0.
-   Placement test for models with a second footprint: runs the common candidate test
+/* Placement test for models with a second footprint: runs the common candidate test
    (ArmyPlacement_CanPlaceBuilding), then rotates the model's (1,5) anchor point by the
    placement heading and requires ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of free room there, both from other
    armies and from the terrain limits of the definition's contact kind. Returns true when the point is
@@ -77,8 +76,7 @@ bool ArmyPlacement_CanPlaceAnchoredModel
 }
 
 
-/* Address: 0x00524570.
-   Validates a placed model with a second footprint (the live counterpart of
+/* Validates a placed model with a second footprint (the live counterpart of
    ArmyPlacement_CanPlaceAnchoredModel): the common test ArmyPlacementCollision_TestCurrentRuntime,
    then ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of room around the model's (1,5) anchor point in world space,
    free of other armies and within the terrain limits (TerrainAuxHeightThreshold_TestAroundWorldPoint for
@@ -143,8 +141,7 @@ bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
 Q12 g_ArmyPlacementValidatedWorldXQ12;
 Q12 g_ArmyPlacementValidatedWorldYQ12;
 
-/* Address: 0x0051D380.
-   Tests whether an army asset can be placed at a point (the placement cursor, a build command): first at
+/* Tests whether an army asset can be placed at a point (the placement cursor, a build command): first at
    the point itself, then at four points around it (the point rounded down to a multiple of 0x100, plus 0 or
    0x240 on each axis). Returns false (CF clear) when one fits and leaves the accepted point in
    g_ArmyPlacementValidatedWorldXQ12/YQ12 (the original's ECX/EDX); true when none fits.
@@ -187,8 +184,7 @@ bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
 }
 
 
-/* Address: 0x00524EB0.
-   Placement test for resource extractors: after the common candidate test
+/* Placement test for resource extractors: after the common candidate test
    (ArmyPlacement_CanPlaceBuilding) the field-grid cell under the point must carry the
    deposit bit the definition asks for (FIELD_CELL_XENITE_SUPPORT << selector at +0xC0: 0 Xenite, 1 Tritium).
    Returns true when the point is accepted and stores the common test's value in *outPlacementValue;
@@ -237,8 +233,7 @@ bool ArmyPlacement_CanPlaceResourceExtractor
 }
 
 
-/* Address: 0x00524F70.
-   Validates a placed resource extractor (the live counterpart of ArmyPlacement_CanPlaceResourceExtractor):
+/* Validates a placed resource extractor (the live counterpart of ArmyPlacement_CanPlaceResourceExtractor):
    the common test ArmyPlacementCollision_TestCurrentRuntime, then the field-grid cell under the model (not on
    the grid border) must carry the deposit bit FIELD_CELL_XENITE_SUPPORT << selector (+0xC0: 0 Xenite,
    1 Tritium). Returns CF: true = rejected.
@@ -282,8 +277,7 @@ bool ArmyPlacement_TestGridOccupancyMask
 }
 
 
-/* Address: 0x00528110.
-   Validates the position of a mobile unit (ground, tracked, walker, glider and water classes): its grid cell
+/* Validates the position of a mobile unit (ground, tracked, walker, glider and water classes): its grid cell
    must pass the definition's cell-mask bands (+0x260/+0x264), no other army may overlap it
    (ArmyCollision_FindBlockingRuntimeForCurrentUnit), and, unless
    UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set, the field-grid point must not be blocked for
@@ -323,8 +317,7 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
 }
 
 
-/* Address: 0x005281A0.
-   Placement test for a mobile unit (ground, tracked, walker, glider and water classes): the point must pass the definition's cell-mask bands (+0x260/+0x264), be
+/* Placement test for a mobile unit (ground, tracked, walker, glider and water classes): the point must pass the definition's cell-mask bands (+0x260/+0x264), be
    free of other armies (ArmyCollision_TestPointAgainstRuntimeList) and, unless
    UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set, not be blocked on the field grid for the
    owner's faction. Returns true when the point is accepted and stores 0 in *outPlacementValue; returns
@@ -365,8 +358,7 @@ bool ArmyPlacement_CanPlaceMobileUnit
 }
 
 
-/* Address: 0x004BE7F0.
-   Contact kind 0 (terrain): sets the model node onto the interpolated terrain height at the point, plus
+/* Contact kind 0 (terrain): sets the model node onto the interpolated terrain height at the point, plus
    heightOffsetQ12 and the model resource's own height offset, stands it upright (angle 1 = quarter turn)
    and sets node flag 0x1. Nothing changes without a field grid or when the point is off the grid.
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[0] (0x004BD890), indexed by the model
@@ -394,8 +386,7 @@ void ArmyPlacementContact_ApplyTerrainHeight
 }
 
 
-/* Address: 0x004BE860.
-   Contact kind 1 (water surface): sets the model node onto the interpolated water surface at the point
+/* Contact kind 1 (water surface): sets the model node onto the interpolated water surface at the point
    plus heightOffsetQ12 (no resource offset), stands it upright (angle 1 = quarter turn) and sets node flag
    0x1. Nothing changes without a field grid or when the point is off the grid.
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[1] (0x004BD890), indexed by the model
@@ -421,8 +412,7 @@ void ArmyPlacementContact_ApplyWaterSurfaceHeight
 }
 
 
-/* Address: 0x004BE8C0.
-   Contact kind 2 (terrain with slope): like kind 0, but tilts the model node to the terrain normal (the two
+/* Contact kind 2 (terrain with slope): like kind 0, but tilts the model node to the terrain normal (the two
    packed 16-bit normal angles become rotation angles 0 and 1) instead of standing it upright.
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[2] (0x004BD890), indexed by the model
    definition's contact kind (+0x278).
@@ -453,8 +443,7 @@ void ArmyPlacementContact_ApplyTerrainHeightAndNormal
 }
 
 
-/* Address: 0x004BE930.
-   Contact kind 4 (top surface): sets the model node onto the top surface - the terrain, or the water above
+/* Contact kind 4 (top surface): sets the model node onto the top surface - the terrain, or the water above
    it (FieldGrid_InterpolateTopSurfaceHeight) - plus heightOffsetQ12, stands it upright (angle 1 = quarter turn)
    and sets node flag 0x1. Nothing changes without a field grid or when the point is off the grid.
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[4] (0x004BD890), indexed by the model
@@ -480,8 +469,7 @@ void ArmyPlacementContact_ApplyTopSurfaceHeight
 }
 
 
-/* Address: 0x004BE990.
-   Contact kind 3 (articulated walker): moves the model node to the point, sets node flag 0x1 and lets the
+/* Contact kind 3 (articulated walker): moves the model node to the point, sets node flag 0x1 and lets the
    articulated code seat its legs/suspension on the terrain (height and tilt come from there, so
    heightOffsetQ12 is unused).
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[3] (0x004BD890), indexed by the model
@@ -501,8 +489,7 @@ void ArmyPlacementContact_InitializeArticulatedSuspension
 }
 
 
-/* Address: 0x00525320.
-   Release handler of a resource extractor (class 14): gives back the storage it added to its faction (see
+/* Release handler of a resource extractor (class 14): gives back the storage it added to its faction (see
    ArmyPlacement_ReleaseFactionCapacity) and clears the extractor markers (army at +0x6C, extraction
    descriptor at +0x7C) of the field-grid cell it stood on, so the deposit can be built on again.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[14] (0x0051FE78),
@@ -565,8 +552,7 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
 }
 
 
-/* Address: 0x00525420.
-   Release handler of a resource storage (class 15): the model's storage (+0xC4 of the definition) is taken
+/* Release handler of a resource storage (class 15): the model's storage (+0xC4 of the definition) is taken
    off its faction's Xenite or Tritium storage limit (selector +0xC0), and - unless the model's state
    (+0x3C) is 2 or more, the limit is zero or class-state bit 0x20 is set - the faction's stock of that
    resource loses the proportional share (stock * storage / limit) that was kept in it.
@@ -606,8 +592,7 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
 }
 
 
-/* Address: 0x005263E0.
-   Release handler of class 21 (aircraft): the model linked at +0x60 (presumably its home base) keeps 13 slots of army
+/* Release handler of class 21 (aircraft): the model linked at +0x60 (presumably its home base) keeps 13 slots of army
    asset ids (+0x78..) with a reservation bit each (+0xB4). The first slot holding this army's asset id with
    its bit set gets the bit cleared and the counter at +0x70 incremented; unless class-state bit 0x20 of the
    released model is set, the slot is also emptied and the counters at +0x6C and +0x70 are decremented.
@@ -656,8 +641,7 @@ void ArmyPlacement_ReleaseClassStateReservation
 }
 
 
-/* Address: 0x00527BD0.
-   Placement test of the classes that can be placed anywhere: accepts at once (returns true and stores 0 in
+/* Placement test of the classes that can be placed anywhere: accepts at once (returns true and stores 0 in
    *outPlacementValue; the original preserves EAX and pops the nine arguments).
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[0, 5..9,
    12, 21] (0x0051FF38), called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
@@ -674,8 +658,7 @@ bool ArmyPlacement_CanPlaceAnywhere
   return true;
 }
 
-/* Address: 0x00529CB0.
-   Tests whether a model of this definition, with its placement radius (+0xDC), would overlap any army in
+/* Tests whether a model of this definition, with its placement radius (+0xDC), would overlap any army in
    the world's owner list: a cheap depth-bin mask overlap first, then the exact circle test
    ArmyCollision_TestPointWithinExpandedRuntimeRadius. Returns CF: true = an army is in the way (a
    definition without radius never collides).
@@ -717,8 +700,7 @@ bool ArmyCollision_TestPointAgainstRuntimeList
 }
 
 
-/* Address: 0x00529E60.
-   Finds the first model that a moving unit would run into at the given point: every model in the world's
+/* Finds the first model that a moving unit would run into at the given point: every model in the world's
    owner list whose depth bins overlap the unit's own, except the unit itself, the model it is linked to
    (+0xF0) and models linked to it, and whose collision circle reaches the point within the unit's placement
    radius (+0xDC of its definition). Returns that model runtime (never NULL), or NULL when nothing is in
@@ -776,8 +758,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
 }
 
 
-/* Address: 0x0051D450.
-   Looks up the army asset and its model definition, samples the terrain height at the point with the
+/* Looks up the army asset and its model definition, samples the terrain height at the point with the
    definition's interpolation callback (index at +0x278), and hands the placement test to the handler of the
    definition's class (+0x4C) in the placement dispatch table. Returns true when that handler accepts the
    point and stores the handler's value (a placement count for the counting modes 3 and 7) in
@@ -825,8 +806,7 @@ bool ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
 }
 
 
-/* Address: 0x00529D70.
-   Tests whether a circle of queryRadiusQ12 at a candidate point hits any army in the world's owner list:
+/* Tests whether a circle of queryRadiusQ12 at a candidate point hits any army in the world's owner list:
    depth-bin overlap first, then the exact circle test; armies of runtime class 0 and 12 never block, class-13
    armies also block when the point comes near their (1,5) anchor point. With
    ARMY_PLACEMENT_MODE_STRUCTURES_ONLY in the mode only armies of depth-bin class 0x90 count. Returns CF:
@@ -887,8 +867,7 @@ bool ArmyPlacementCollision_TestPointAgainstRuntimeList
 }
 
 
-/* Address: 0x00529F30.
-   Tests whether a placed model collides with another army at a point. candidateRuntimeOrRadiusQ12 is either
+/* Tests whether a placed model collides with another army at a point. candidateRuntimeOrRadiusQ12 is either
    the model runtime itself (a value at or above the image base 0x400000: its placement radius +0xDC is used,
    the depth bins of its node must overlap, and it, its linked model (+0xF0) and models linked to it are
    skipped) or a bare radius below 0x400000 (used as radius + 1, no depth-bin pre-test). excludedWorldObject
@@ -972,8 +951,7 @@ bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
 }
 
 
-/* Address: 0x00527740.
-   Validates a placed building (the live counterpart of ArmyPlacement_CanPlaceBuilding): no
+/* Validates a placed building (the live counterpart of ArmyPlacement_CanPlaceBuilding): no
    other army may overlap it, the terrain around it must suit its contact kind, and - unless
    UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set - its field-grid point must not be blocked for
    its faction and it must stand within the support radius (+0x19C) plus its own margin (+0x1A8) of another
@@ -1071,8 +1049,7 @@ bool ArmyPlacementCollision_TestCurrentRuntime
 }
 
 
-/* Address: 0x005278D0.
-   Common placement test for buildings: the candidate point must be free of other armies (placement radius
+/* Common placement test for buildings: the candidate point must be free of other armies (placement radius
    +0xDC), pass the terrain test of the definition's contact kind against terrainHeightQ12, and - unless
    UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set - not be blocked on the field grid for the
    owner's faction and lie within reach of a same-faction model with a support radius (+0x19C of its record,
@@ -1210,8 +1187,7 @@ bool ArmyPlacement_CanPlaceBuilding
 }
 
 
-/* Address: 0x00524650.
-   Tests whether a point comes within queryRadiusQ12 + ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of the model's
+/* Tests whether a point comes within queryRadiusQ12 + ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of the model's
    (1,5) anchor point in world space - the second footprint of class-13 models. Returns CF: true = too close
    (and counts it in g_ArmyPlacementLateRejectionCount); false also when the model has no anchor point.
    Called directly by ArmyPlacementCollision_TestPointAgainstRuntimeList and
@@ -1240,8 +1216,7 @@ bool ArmyPlacementCandidate_TestModelAnchorDistance
 }
 
 
-/* Address: 0x00529C40.
-   Exact circle test between a point and a model: true (CF set) when the point lies within the model's
+/* Exact circle test between a point and a model: true (CF set) when the point lies within the model's
    placement radius (definition footprintRadius, +0xDC) plus queryRadiusQ12 of the model's position, compared
    on the 64-bit squares. Models without radius and a zero query radius never hit.
    Called directly by the runtime-list collision scans in this file and by the movement code

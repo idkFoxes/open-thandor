@@ -20,33 +20,25 @@
 #define SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 0x100
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0050B5D0 */
 bool SpatialSoundPool_Init(uint32_t *outError);
 
-/* 0x0050B600 */
 void SpatialSound_RebuildListenerTransformFromPose
           (AngleTurn32 viewAngle1,AngleTurn32 viewAngle0,GraphicsWorldCoordinateQ12 originZ,
           GraphicsWorldCoordinateQ12 originY,GraphicsWorldCoordinateQ12 originX);
 
-/* 0x0050B6E0 */
 void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,
           GraphicsFixedVec3 *worldPosition,DirectSoundVoiceSet **voiceSetRef);
 
-/* 0x0050B7D0 */
 void SpatialSound_UpdateDesiredPositionedGains
           (SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,
           GraphicsFixedVec3 *worldPosition,SpatialSoundSlot *slot);
 
-/* 0x0050B8C0 */
 SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset);
 
-/* 0x0050B9D0 */
 void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot);
 
-/* 0x0050BA30 */
 void SpatialSoundPool_ClearDesiredGains(void);
 
-/* 0x0050BA60 */
 void SpatialSoundPool_ApplyDesiredGains(void);
 
 #endif /* THANDOR_AUDIO_SPATIAL_RUNTIME_H */

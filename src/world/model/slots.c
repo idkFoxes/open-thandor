@@ -17,8 +17,7 @@
    (ModelRuntimePool_RebaseAfterLoad). The class state at +0x60..+0xEC of a ModelRuntimeSlot means something
    different for every class. */
 
-/* Address: 0x005200C0.
-   Class initializer of model class 2 (modelClassInitialize[2]). Turns on texture scrolling for the root node:
+/* Class initializer of model class 2 (modelClassInitialize[2]). Turns on texture scrolling for the root node:
    the definition's primary animated subresource (+0x1B8) and, only together with it, the secondary one (+0x1BC),
    both starting at texture offset 0.
 */
@@ -50,8 +49,7 @@ void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
 }
 
 
-/* Address: 0x00522A90.
-   Class initializer of model class 3 (modelClassInitialize[3]). Marks the class fields +0x68..+0x74 as unset
+/* Class initializer of model class 3 (modelClassInitialize[3]). Marks the class fields +0x68..+0x74 as unset
    (0x80000000) and +0x78 / +0xE8 as 0x7FFFFFFF, records the local Y of the root's first child and grandchild,
    and derives a starting timer value (stored at +0x10 and +0xD0) from the definition values at +0x0C, +0x18,
    +0xC0 and +0xC4.
@@ -94,8 +92,7 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
 }
 
 
-/* Address: 0x00522B90.
-   Class initializer of model class 17 (modelClassInitialize[17]). Seeds the class state from the root node:
+/* Class initializer of model class 17 (modelClassInitialize[17]). Seeds the class state from the root node:
    +0x60 = 0x4000, +0x64 = the root's rotation angle 2, +0x68 / +0x6C = its world X / Y, +0x70 = 0x18, and
    bits 1 and 2 of +0xB8 when the root has more than two children.
 */
@@ -122,8 +119,7 @@ void ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
 }
 
 
-/* Address: 0x00523CA0.
-   Class initializer of model class 9 (modelClassInitialize[9]). Clears +0x60..+0x80, then checks the eight packed
+/* Class initializer of model class 9 (modelClassInitialize[9]). Clears +0x60..+0x80, then checks the eight packed
    keys 0..7 of key class 2 in the model resource of the root's grandchild: the counter of every missing key
    (+0x60, +0x64, ... +0x7C) becomes -1, the others stay 0.
 */
@@ -183,8 +179,7 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
 }
 
 
-/* Address: 0x005243D0.
-   Class initializer of model class 11 (modelClassInitialize[11]): clears the class fields +0x64, +0x68, +0x74
+/* Class initializer of model class 11 (modelClassInitialize[11]): clears the class fields +0x64, +0x68, +0x74
    and +0xB8.
 */
 void ModelRuntimeSlotClassInit_ResetStructureFactoryBuild
@@ -198,8 +193,7 @@ void ModelRuntimeSlotClassInit_ResetStructureFactoryBuild
   return;
 }
 
-/* Address: 0x00524CB0.
-   Unrebase handler of model class 13 (modelUnrebase[13], run by ModelRuntimePool_UnrebaseBeforeSave): before a
+/* Unrebase handler of model class 13 (modelUnrebase[13], run by ModelRuntimePool_UnrebaseBeforeSave): before a
    save, turns the army pointer at +0x6C into a saved offset relative to g_ArmyRuntimeRebaseBaseMinusOne.
 */
 void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime)
@@ -216,8 +210,7 @@ void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRunti
 }
 
 
-/* Address: 0x00524CE0.
-   Rebase handler of model class 13 (modelRebaseOrLoadRepair[13], run by ModelRuntimePool_RebaseAfterLoad): after
+/* Rebase handler of model class 13 (modelRebaseOrLoadRepair[13], run by ModelRuntimePool_RebaseAfterLoad): after
    a load, turns the saved army offset at +0x6C back into a pointer (offset + g_ArmyRuntimeRebaseBaseMinusOne).
 */
 void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntimeSlot)
@@ -234,8 +227,7 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
 }
 
 
-/* Address: 0x00524D10.
-   Class initializer of model class 13 (modelClassInitialize[13]). Clears the class state (no linked army at
+/* Class initializer of model class 13 (modelClassInitialize[13]). Clears the class state (no linked army at
    +0x6C), sets byte +0xBC to 1 and turns on texture scrolling of the root node for the subresource named at
    definition +0xC0.
 */
@@ -262,8 +254,7 @@ void ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
 }
 
 
-/* Address: 0x005251C0.
-   Class initializer of model class 14, the resource extractor (modelClassInitialize[14]). Adds the model's
+/* Class initializer of model class 14, the resource extractor (modelClassInitialize[14]). Adds the model's
    storage (definition +0xC4) to its faction's Xenite or Tritium storage limit (selector +0xC0); undone by
    ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation. Unless the owning army's +0xBC is 0x6000000, the
    root's fourth child node is unlinked and dropped.
@@ -297,8 +288,7 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
 }
 
 
-/* Address: 0x00525250.
-   Class initializer of model class 15, the resource storage (modelClassInitialize[15]). Adds the model's storage
+/* Class initializer of model class 15, the resource storage (modelClassInitialize[15]). Adds the model's storage
    (definition +0xC4) to its faction's Xenite or Tritium storage limit (selector +0xC0); undone by
    ArmyPlacement_ReleaseFactionCapacity. Unless the owning army's +0xBC is 0x6000000, the root's second child
    node is unlinked and dropped.
@@ -331,8 +321,7 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
 }
 
 
-/* Address: 0x005252E0.
-   Class initializer of model class 16, the energy generator (modelClassInitialize[16]): adds the definition's
+/* Class initializer of model class 16, the energy generator (modelClassInitialize[16]): adds the definition's
    generation capacity (+0xC0, Q4) to the owning faction's energyGenerationCapacityQ4. The stock power plant
    (ARM 310) links four such generator models with 200 each.
 */
@@ -351,8 +340,7 @@ void ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
 }
 
 
-/* Address: 0x005254B0.
-   Release handler of model class 16, the energy generator (modelReleaseOrCommit[16], run by
+/* Release handler of model class 16, the energy generator (modelReleaseOrCommit[16], run by
    ModelRuntimePool_DestroyHierarchyAndDetach): takes the definition's generation capacity (+0xC0) off the
    owning faction's energyGenerationCapacityQ4 again.
 */
@@ -371,8 +359,7 @@ void ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
 }
 
 
-/* Address: 0x00526340.
-   Unrebase handler of model class 21, the aircraft (modelUnrebase[21], run by ModelRuntimePool_UnrebaseBeforeSave):
+/* Unrebase handler of model class 21, the aircraft (modelUnrebase[21], run by ModelRuntimePool_UnrebaseBeforeSave):
    before a save, turns the linked model runtime at +0x60 (presumably its base) into a saved offset (pointer -
    g_ModelRuntimeRebaseDelta).
 */
@@ -390,8 +377,7 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
 }
 
 
-/* Address: 0x00526370.
-   Rebase handler of model class 21, the aircraft (modelRebaseOrLoadRepair[21], run by
+/* Rebase handler of model class 21, the aircraft (modelRebaseOrLoadRepair[21], run by
    ModelRuntimePool_RebaseAfterLoad): after a load, turns the saved offset at +0x60 back into a pointer
    (offset + g_ModelRuntimeRebaseDelta).
 */
@@ -409,8 +395,7 @@ void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntim
 }
 
 
-/* Address: 0x005263A0.
-   Class initializer of model class 21, the aircraft (modelClassInitialize[21]): no base linked yet at +0x60,
+/* Class initializer of model class 21, the aircraft (modelClassInitialize[21]): no base linked yet at +0x60,
    +0xB8 cleared, and the local Z of the root's first child set to Q12_ONE.
 */
 void ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset
@@ -428,8 +413,7 @@ void ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset
   return;
 }
 
-/* Address: 0x00526E00.
-   Class initializer of model class 22 (modelClassInitialize[22]), presumably the aircraft base: clears the class
+/* Class initializer of model class 22 (modelClassInitialize[22]), presumably the aircraft base: clears the class
    state including the 13 slots at +0x78..+0xAB (the army asset ids ArmyPlacement_ReleaseClassStateReservation
    looks up) and turns on texture scrolling of the root node for the subresource named at definition +0xC0.
 */
@@ -465,8 +449,7 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
 }
 
 
-/* Address: 0x00527B80.
-   Default rebase/load-repair handler (modelRebaseOrLoadRepair, every class except 13 and 21, run by
+/* Default rebase/load-repair handler (modelRebaseOrLoadRepair, every class except 13 and 21, run by
    ModelRuntimePool_RebaseAfterLoad): those classes keep no pointers in their class state, so this does nothing
    (RET 4).
 */
@@ -477,8 +460,7 @@ void ModelRuntimeSlotPointerRebase_NoOp(ModelRuntimeSlot *modelRuntimeSlot)
 }
 
 
-/* Address: 0x00527B90.
-   Default class initializer (modelClassInitialize of classes 0, 1, 4-8, 10 and 18-20): those classes need no
+/* Default class initializer (modelClassInitialize of classes 0, 1, 4-8, 10 and 18-20): those classes need no
    class state, so this does nothing (RET 8).
 */
 void ModelRuntimeSlotClassInit_NoOp
@@ -488,8 +470,7 @@ void ModelRuntimeSlotClassInit_NoOp
   return;
 }
 
-/* Address: 0x005283B0.
-   Class initializer of model class 12 (modelClassInitialize[12]): clears the link at +0x60.
+/* Class initializer of model class 12 (modelClassInitialize[12]): clears the link at +0x60.
 */
 void ModelRuntimeSlotClassInit_ClearField60
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
@@ -499,8 +480,7 @@ void ModelRuntimeSlotClassInit_ClearField60
   return;
 }
 
-/* Address: 0x005285D0.
-   Class initializer of model class 23 (modelClassInitialize[23]): clears the class fields +0x60 and +0xB8.
+/* Class initializer of model class 23 (modelClassInitialize[23]): clears the class fields +0x60 and +0xB8.
 */
 void ModelRuntimeSlotClassInit_ClearFields60AndB8
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)

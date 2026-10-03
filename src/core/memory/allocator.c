@@ -10,8 +10,7 @@
 
 /* Implementation ownership: core/memory/allocator. */
 
-/* Address: 0x005368E0.
-   Heap-building step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): the newly
+/* Heap-building step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): the newly
    appended last entity/priority pair moves up the max-heap, swapping with its parent while its priority is
    larger.
 */
@@ -46,8 +45,7 @@ void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorit
 }
 
 
-/* Address: 0x00536930.
-   Extraction step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): after the root was
+/* Extraction step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): after the root was
    swapped with the last entry, the new root entity/priority pair moves down the max-heap, swapping with its
    larger-priority child while that child is larger.
 */
@@ -91,8 +89,7 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
 }
 
 
-/* Address: 0x00547D20.
-   Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to
+/* Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to
    candidateRecord. Inverted like all CF results: false (CF clear) = found, true (CF set) = not found.
    recordCount must be at least 1.
 */
@@ -124,8 +121,7 @@ bool DwordBlock64Array_ContainsExactRecord
 }
 
 
-/* Address: 0x005863C0.
-   Creates the game's 96 MiB memory arena: allocates it in one piece from a private Win32 heap, installs the
+/* Creates the game's 96 MiB memory arena: allocates it in one piece from a private Win32 heap, installs the
    ArenaHeap_* functions in g_MemoryApi and makes the whole arena one free block. Returns the raw HeapAlloc
    pointer; if the heap cannot be created or allocated the game exits with the heap error message.
 */
@@ -162,8 +158,7 @@ void * __cdecl ArenaHeap_Init(void)
 }
 
 
-/* Address: 0x00586470.
-   Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
+/* Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
 */
 void ArenaHeap_Shutdown(void)
 
@@ -174,8 +169,7 @@ void ArenaHeap_Shutdown(void)
 }
 
 
-/* Address: 0x005864A0.
-   The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32
+/* The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32
    bytes, splitting off the rest of the block as a new free block when it is large enough. Returns 0 with
    the payload pointer in *outPayload, or FATAL_ERROR_ARENA_EXHAUSTED (largest free size left in
    g_PackageLastErrorPath) or ARENA_HEAP_CORRUPT for a corrupt block chain; *outPayload is then unchanged.
@@ -231,8 +225,7 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
 }
 
 
-/* Address: 0x00586570.
-   Returns the sum of all free payload bytes in the arena (g_MemoryApi.queryFreeBytes), or
+/* Returns the sum of all free payload bytes in the arena (g_MemoryApi.queryFreeBytes), or
    ARENA_HEAP_CORRUPT when the block chain is corrupt.
 */
 uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
@@ -255,8 +248,7 @@ uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
   return freePayloadBytes;
 }
 
-/* Address: 0x005865B0.
-   The arena's free (g_MemoryApi.free): marks the block free and merges it with a free following block,
+/* The arena's free (g_MemoryApi.free): marks the block free and merges it with a free following block,
    then merges a free preceding block with it. NULL is accepted. Returns 0, or ARENA_HEAP_CORRUPT for a
    payload whose header is not marked allocated.
    The ArenaBlockHeader lies directly below the payload.
@@ -302,8 +294,7 @@ uint32_t ArenaHeap_Free(void *memory)
 }
 
 
-/* Address: 0x00586640.
-   Takes the largest free block whole (g_MemoryApi.allocLargestFreeBlock): marks it allocated and returns 0
+/* Takes the largest free block whole (g_MemoryApi.allocLargestFreeBlock): marks it allocated and returns 0
    with its payload pointer in *outAllocation and its size in *outBlockSize, for callers that shrink it
    afterwards with ArenaHeap_ShrinkInPlace. Returns FATAL_ERROR_ARENA_EXHAUSTED when nothing is free, or
    ARENA_HEAP_CORRUPT for a corrupt block chain; the out-parameters are then unchanged.
@@ -340,8 +331,7 @@ uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlock
 }
 
 
-/* Address: 0x005866B0.
-   Shrinks an allocated block to newSize (rounded up to 32 bytes) and returns the tail as a free block,
+/* Shrinks an allocated block to newSize (rounded up to 32 bytes) and returns the tail as a free block,
    merged with a free following block (g_MemoryApi.shrinkInPlace). A tail too small to split is kept.
    Returns 0 on success, or ARENA_HEAP_CORRUPT when the block is not allocated or newSize is larger
    than the block.
@@ -394,8 +384,7 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 }
 
 
-/* Address: 0x00586750.
-   Bump allocation from the linear region g_Arena.linearCursor..linearLimit (g_MemoryApi.reserveLinear):
+/* Bump allocation from the linear region g_Arena.linearCursor..linearLimit (g_MemoryApi.reserveLinear):
    returns 0 with the old cursor in *outBase and advances it by bytes, or FATAL_ERROR_GENERAL_FAILURE
    (*outBase unchanged) when the region is full. Nothing is ever given back.
 */
@@ -414,8 +403,7 @@ uint32_t ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes,void **outBase)
 }
 
 
-/* Address: 0x005873A0.
-   Zeroes bytes / 4 dwords at destination (REP STOSD); a trailing one to three bytes are left unchanged,
+/* Zeroes bytes / 4 dwords at destination (REP STOSD); a trailing one to three bytes are left unchanged,
    so callers pass multiples of 4.
 */
 void Memory_ZeroDwords(MemoryByteCount bytes,void *destination)

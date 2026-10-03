@@ -15,8 +15,7 @@
 
 /* Implementation ownership: graphics/render/projection. */
 
-/* Address: 0x00486B00.
-   Renders a list of model hierarchies off screen into a new texture-source asset (used for the army preview,
+/* Renders a list of model hierarchies off screen into a new texture-source asset (used for the army preview,
    g_GraphicsOffscreenRenderModelListToTextureSource). The asset holds one direct-colour subresource of
    outputWidth x outputHeight ARGB pixels at +0x220; it is drawn with the software rasterizer's auxiliary
    family into a temporary depth buffer that replaces g_SoftwareDepthBuffer/g_SoftwareDepthEpoch for the call.
@@ -138,8 +137,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
 }
 
 
-/* Address: 0x0050A6A0.
-   Point-in-triangle test for the mouse pointer against a projected triangle, used by
+/* Point-in-triangle test for the mouse pointer against a projected triangle, used by
    ModelRuntimeNode_HitTestProjectedBoundsAndChildren on the faces of a model's projected bounding box.
    Returns true when the pointer is strictly inside. Each edge test is a 64-bit cross product; the
    winding is normalized first (vertex1/vertex2 swapped when the triangle's own cross product is not

@@ -60,102 +60,78 @@
    visited cells */
 #define GRID_REACHABILITY_OPEN_STOP_MASK 0xf0007f01
 
-/* 0x005349D0 */
 PathingDestination
 EntityPathing_ResolveDestinationAndRebuildRoutes
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime);
 
-/* 0x00536500 */
 bool GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12);
 
-/* 0x00533620 */
 void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime);
 
-/* 0x005332C0 */
 bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
 
-/* 0x00533360 */
 void GridScratch_ReleaseBuffers(void);
 
-/* 0x00533400 */
 void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid);
 
-/* 0x00533BA0 */
 bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
 
-/* 0x00536C90 */
 WorldPositionXY
 EntityPathing_RebuildOverlappingGroupRoutes
           (UQ12 targetWorldY,UQ12 targetWorldX,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime);
 
-/* 0x00534F50 */
 void GridFootprint_ClearTraversalFlagsAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12);
 
-/* 0x005369A0 */
 WorldPositionXY EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
           EntityPathingRouteEntityRuntimeView *routeEntityRuntime);
 
-/* 0x00534660 */
 bool GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn,FieldGridRegionMask *outRouteStateMask);
 
-/* 0x00534960 */
 void GridPathRegion_MarkUnreachableFromCell
           (GridPathUnreachableReferenceRow32 referenceRow,
           GridPathUnreachableReferenceColumn32 referenceColumn,FieldGridCellCoordinate row,
           FieldGridCellCoordinate column,FieldGridCellCoordinate *outRow,FieldGridCellCoordinate *outColumn);
 
-/* 0x005333B0 */
 void __cdecl GridScratch_CopyPrimaryToSecondary(void);
 
-/* 0x005333E0 */
 void GridScratch_SwapPrimarySecondary(void);
 
-/* 0x00533580 */
 void GridScratch_FloodFillConnectedCells
           (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
-/* 0x00533EF0 */
 void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasses,GridScratchCell *originCell,
           FieldGridCellCoordinate startRow,FieldGridCellCoordinate startColumn);
 
-/* 0x00534200 */
 void GridScratch_ResetTraversalFlagsAndCosts(void);
 
-/* 0x00534780 */
 GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
           (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
           uint32_t bestCellByteOffset);
 
-/* 0x00534E70 */
 int GridFootprint_ClearTraversalFlagsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
 
-/* 0x00534EE0 */
 int GridFootprint_ClearTraversalFlagsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
 
-/* 0x005363C0 */
 void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
-/* 0x00536440 */
 void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
-/* 0x005342F0 */
 bool GridPathCost_RelocateFromBlockedCell
           (FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn);
 
-/* 0x005344B0 */
 bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell);
 

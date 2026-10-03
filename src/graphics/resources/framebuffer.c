@@ -12,31 +12,23 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004A8E70 g_FramebufferAccess */
 SoftwareFramebufferAccess *g_FramebufferAccess = 0;
 
-/* 004A8E84 g_FramebufferRowStrideBytes */
 uint32_t g_FramebufferRowStrideBytes = 0;
 
-/* 004A8E8C g_FramebufferHeight */
 uint32_t g_FramebufferHeight = 0;
 
-/* 004A8EE0 g_GraphicsFramebufferPresent */
 GraphicsFramebufferPresentProc *g_GraphicsFramebufferPresent = 0;
 
-/* 004A8EEC g_GraphicsFramebufferBeginAccess */
 GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess = (void *)GraphicsFramebuffer_BeginAccessStub;
 
-/* 004A8EF0 g_GraphicsFramebufferEndAccess */
 GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess = (void *)GraphicsFramebuffer_EndAccessStub;
 
-/* 004A8F30 g_GraphicsFramebufferFillRectArgb */
 GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = 0;
 
 /* Implementation ownership: graphics/resources/framebuffer. */
 
-/* Address: 0x004A9250.
-   Default g_GraphicsFramebufferBeginAccess hook: an in-memory software framebuffer needs no lock, so it only
+/* Default g_GraphicsFramebufferBeginAccess hook: an in-memory software framebuffer needs no lock, so it only
    reports success (false, CF clear). Backends with a real surface install their own hook.
 */
 bool GraphicsFramebuffer_BeginAccessStub(void)
@@ -46,8 +38,7 @@ bool GraphicsFramebuffer_BeginAccessStub(void)
 }
 
 
-/* Address: 0x004A9260.
-   Default g_GraphicsFramebufferEndAccess hook, the counterpart of GraphicsFramebuffer_BeginAccessStub: nothing
+/* Default g_GraphicsFramebufferEndAccess hook, the counterpart of GraphicsFramebuffer_BeginAccessStub: nothing
    to unlock.
 */
 void GraphicsFramebuffer_EndAccessStub(void)
@@ -57,8 +48,7 @@ void GraphicsFramebuffer_EndAccessStub(void)
 }
 
 
-/* Address: 0x005796E0.
-   Shows the finished frame of g_DisplayFramebufferAccess (other framebuffers are ignored): the mouse cursor is
+/* Shows the finished frame of g_DisplayFramebufferAccess (other framebuffers are ignored): the mouse cursor is
    drawn into the back surface, the whole back surface is blitted to the primary surface and the cursor is
    removed again. Skipped while another thread holds g_GraphicsBackendAccessState.
 */
@@ -180,8 +170,7 @@ static uint8_t GraphicsFramebuffer_ExpandChannelTo8Bit
 }
 
 
-/* Address: 0x005798A0.
-   g_GraphicsFramebufferCaptureRegion in 16-bit modes (callers grab the whole screen): copies a rectangle of
+/* g_GraphicsFramebufferCaptureRegion in 16-bit modes (callers grab the whole screen): copies a rectangle of
    the back surface into a newly allocated one-image 'gfx' asset in opaque ARGB8888, expanding each channel
    with the masks and shifts of g_SoftwarePixelFormatConfig. Returns the asset, or NULL when the allocation fails or the back surface cannot be restored or locked (the
    original's error values, the arena error or FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES, were never read).
@@ -249,8 +238,7 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
 }
 
 
-/* Address: 0x00579B50.
-   32-bit counterpart of GraphicsFramebuffer_CaptureRegion16Bit: copies a rectangle of the back surface into a
+/* 32-bit counterpart of GraphicsFramebuffer_CaptureRegion16Bit: copies a rectangle of the back surface into a
    newly allocated one-image 'gfx' asset, keeping RGB and forcing alpha to 0xFF, two pixels per step. Callers
    pass the full (even) screen width. Returns the asset, or NULL when the
    allocation fails or the back surface cannot be restored or locked.
@@ -307,8 +295,7 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
 }
 
 
-/* Address: 0x00579D90.
-   Gives the CPU direct access to the frame being drawn: restores (if lost) and locks the DirectDraw back surface
+/* Gives the CPU direct access to the frame being drawn: restores (if lost) and locks the DirectDraw back surface
    and publishes its pixels and width in pixels in g_DisplayFramebufferAccess. Fails (CF set) when the restore or
    lock fails.
 */
@@ -345,8 +332,7 @@ bool GraphicsFramebuffer_BeginAccess(void)
 }
 
 
-/* Address: 0x00579E60.
-   Ends the CPU access begun by GraphicsFramebuffer_BeginAccess: unlocks the back surface and clears the
+/* Ends the CPU access begun by GraphicsFramebuffer_BeginAccess: unlocks the back surface and clears the
    published pixel pointer.
 */
 void GraphicsFramebuffer_EndAccess(void)

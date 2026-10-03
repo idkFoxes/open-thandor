@@ -10,8 +10,7 @@
 
 /* Implementation ownership: core/text/path. */
 
-/* Address: 0x0040F2B0.
-   Replaces the extension of the final path component with the packed code (one character per byte, first
+/* Replaces the extension of the final path component with the packed code (one character per byte, first
    character in the lowest byte, e.g. 0x786667 = "gfx"), appending '.' when there is none. Asset
    loaders use it to derive sibling files (.gfx/.pal/.dat, .lev/.fld, ...). Always returns with CF clear.
    Only three characters come out right: a fourth byte would be merged into the third code unit (all callers
@@ -50,8 +49,7 @@ bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t 
 }
 
 
-/* Address: 0x0040F320.
-   Splits a UTF-16 path (at most WIDE_PATH_MAX_CODE_UNITS units) at its last backslash: leafOut gets the
+/* Splits a UTF-16 path (at most WIDE_PATH_MAX_CODE_UNITS units) at its last backslash: leafOut gets the
    file name, parentOut the directory without the trailing backslash. Without a backslash the leaf is the
    whole path and the parent is empty. Always returns false (CF clear).
 */
@@ -105,8 +103,7 @@ bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t 
 }
 
 
-/* Address: 0x0040F3C0.
-   Builds "directory\leaf" in destination: copies the directory without its terminator, adds a backslash
+/* Builds "directory\leaf" in destination: copies the directory without its terminator, adds a backslash
    unless it already ends in one (nothing for an empty directory), then copies the leaf with its terminator.
    The loaders use it to try a file relative to the executable directory before the plain path. A directory
    without a terminator in its first WIDE_PATH_MAX_CODE_UNITS units writes nothing; such a leaf leaves the
@@ -169,8 +166,7 @@ void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint1
 }
 
 
-/* Address: 0x00531170.
-   Parses the decimal number that ends right before a 4-character extension (".sav" in "save12.sav" gives 12):
+/* Parses the decimal number that ends right before a 4-character extension (".sav" in "save12.sav" gives 12):
    reads digits backwards from the fifth code unit before the terminator until a non-digit. The terminator
    search and the digit count share a limit of 32 code units. Returns the number, 0 if there is none.
 */

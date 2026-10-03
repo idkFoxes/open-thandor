@@ -22,8 +22,7 @@ static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node) {
   }
 }
 
-/* Address: 0x004B1D20.
-   Advances the frame animation of every sprite button below root (depth first), so animated buttons
+/* Advances the frame animation of every sprite button below root (depth first), so animated buttons
    keep cycling their frames. Only nodes whose vtable is exactly g_UiSpriteButtonControlVtable count.
 */
 void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
@@ -34,8 +33,7 @@ void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
 }
 
 
-/* Address: 0x004B1620.
-   Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables at 0x005162C0, 0x00516310
+/* Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables at 0x005162C0, 0x00516310
    and 0x00516530. For an animated button it first expands a serialized 8-int descriptor (node rectangle,
    normal and selected frame ranges) and starts the animation on a random normal frame, so buttons of the
    same kind do not animate in lockstep; then the children are relocated.
@@ -72,8 +70,7 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
 }
 
 
-/* Address: 0x004B16E0.
-   drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables at 0x005162C0 and
+/* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables at 0x005162C0 and
    0x00516310. Draws the current frame (normal or selected, plus the animation offset) twice: first as a
    half-transparent black shadow shifted by the state's drawOffsets, then the sprite itself, optionally
    over the normal frame (NORMAL_UNDER_SELECTED).
@@ -167,8 +164,7 @@ void UiSpriteButtonControl_DrawClipped
 }
 
 
-/* Address: 0x004B1890.
-   nonRightPress slot of g_UiSpriteButtonControlVtable. A momentary button only shows its pressed frame
+/* nonRightPress slot of g_UiSpriteButtonControlVtable. A momentary button only shows its pressed frame
    (the action follows on release); a persistent one toggles (TOGGLE_ON_ACTIVATION) or latches selected,
    plays its activation sound and queues actionId, deferred to the animation end for ACTION_AFTER_ANIMATION.
 */
@@ -252,8 +248,7 @@ void UiSpriteButtonControl_NonRightPress
 }
 
 
-/* Address: 0x004B1A30.
-   nonRightRelease slot of g_UiSpriteButtonControlVtable. Completes the click of a momentary button: if it
+/* nonRightRelease slot of g_UiSpriteButtonControlVtable. Completes the click of a momentary button: if it
    is still shown pressed (the pointer was released over it), it plays the activation sound, drops the
    pressed state and queues actionId. Persistent buttons act on press instead.
 */
@@ -289,8 +284,7 @@ void UiSpriteButtonControl_NonRightRelease
 }
 
 
-/* Address: 0x004B1AE0.
-   nonRightDrag slot of g_UiSpriteButtonControlVtable, and both drag slots of the sprite-button vtables at
+/* nonRightDrag slot of g_UiSpriteButtonControlVtable, and both drag slots of the sprite-button vtables at
    0x005162C0, 0x00516310 and 0x00516530. While a momentary, non-animated button holds the
    pointer, it shows the pressed state only while the pointer is over the button (opaque sprite pixel or
    node rectangle), so dragging off cancels the click.
@@ -353,8 +347,7 @@ void UiSpriteButtonControl_NonRightDrag
 }
 
 
-/* Address: 0x004B1BF0.
-   hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables at 0x005162C0, 0x00516310
+/* hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables at 0x005162C0, 0x00516310
    and 0x00516530. Returns the button when the point lies on an opaque pixel of its normal frame (selected
    frame for SELECTED_ONLY buttons); RECT_HIT_TEST buttons accept the whole node (the caller has already
    checked the rectangle). Otherwise UI_NODE_NONE.
@@ -394,8 +387,7 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
 }
 
 
-/* Address: 0x00515010.
-   drawClipped slot of g_UiImageActionControlVtable (briefing image, movie views). Draws the image 1:1, or
+/* drawClipped slot of g_UiImageActionControlVtable (briefing image, movie views). Draws the image 1:1, or
    with UI_IMAGE_ACTION_STRETCH bilinearly stretched over the node; with UI_IMAGE_ACTION_LETTERBOX and a
    letterboxWidth narrower than the node it is scaled to that width, centred and framed by black bars.
    Children are drawn on top.
@@ -469,8 +461,7 @@ void UiImageActionControl_DrawImageAndChildren
 }
 
 
-/* Address: 0x005151F0.
-   pointerMove slot of g_UiImageActionControlVtable: returns the control's cursor frame for the pointer.
+/* pointerMove slot of g_UiImageActionControlVtable: returns the control's cursor frame for the pointer.
 */
 GraphicsCursorFrameIndex UiImageActionControl_QueryPointerCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageActionControl *control)
@@ -480,8 +471,7 @@ GraphicsCursorFrameIndex UiImageActionControl_QueryPointerCode
 }
 
 
-/* Address: 0x00515210.
-   nonRightPress slot of g_UiImageActionControlVtable: a left click queues primaryActionId.
+/* nonRightPress slot of g_UiImageActionControlVtable: a left click queues primaryActionId.
 */
 void UiImageActionControl_EnqueuePrimaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -493,8 +483,7 @@ void UiImageActionControl_EnqueuePrimaryAction
 }
 
 
-/* Address: 0x00515230.
-   rightPress slot of g_UiImageActionControlVtable: a right click queues secondaryActionId.
+/* rightPress slot of g_UiImageActionControlVtable: a right click queues secondaryActionId.
 */
 void UiImageActionControl_EnqueueSecondaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -506,8 +495,7 @@ void UiImageActionControl_EnqueueSecondaryAction
 }
 
 
-/* Address: 0x00515250.
-   keyboardEvent slot of g_UiImageActionControlVtable. Tab moves the keyboard focus on; with
+/* keyboardEvent slot of g_UiImageActionControlVtable. Tab moves the keyboard focus on; with
    UI_IMAGE_ACTION_KEY_ACTIVATES any other key queues primaryActionId, like a left click.
    CF clear when the key was consumed, set to pass it on.
 */
@@ -527,8 +515,7 @@ bool UiImageActionControl_HandleKeyboardActivation
 }
 
 
-/* Address: 0x005152E0.
-   drawClipped slot of g_UiConditionalActionControlVtable. Draws nothing while the box has no text lines.
+/* drawClipped slot of g_UiConditionalActionControlVtable. Draws nothing while the box has no text lines.
    Otherwise it draws a tiled window frame (or, for a 416x58 box, one unframed background image) and the
    rich-text lines inside the frame, clipped to the inner area. The 416x58 variant shows at most 4 lines,
    last line first.
@@ -653,8 +640,7 @@ void UiConditionalActionControl_DrawClipped
 }
 
 
-/* Address: 0x005155A0.
-   pointerMove slot of g_UiConditionalActionControlVtable: returns the control's cursor frame.
+/* pointerMove slot of g_UiConditionalActionControlVtable: returns the control's cursor frame.
 */
 GraphicsCursorFrameIndex UiConditionalActionControl_QueryPointerCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control)
@@ -664,8 +650,7 @@ GraphicsCursorFrameIndex UiConditionalActionControl_QueryPointerCode
 }
 
 
-/* Address: 0x005155C0.
-   hitTest slot of g_UiConditionalActionControlVtable. An empty box (no text lines) is invisible and
+/* hitTest slot of g_UiConditionalActionControlVtable. An empty box (no text lines) is invisible and
    returns UI_NODE_NONE; otherwise the normal child hit test applies.
 */
 UiNodeBase * UiConditionalActionControl_HitTestWhenEnabled
@@ -682,8 +667,7 @@ UiNodeBase * UiConditionalActionControl_HitTestWhenEnabled
 }
 
 
-/* Address: 0x005155F0.
-   nonRightPress slot of g_UiConditionalActionControlVtable: a left click queues actionId, but only while
+/* nonRightPress slot of g_UiConditionalActionControlVtable: a left click queues actionId, but only while
    the box shows text.
 */
 void UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
@@ -698,8 +682,7 @@ void UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
 }
 
 
-/* Address: 0x004B1C80.
-   Advances an animated sprite button by one frame within its normal or selected frame range, wrapping to
+/* Advances an animated sprite button by one frame within its normal or selected frame range, wrapping to
    the first frame. On the last frame a deferred activation action is queued (and cleared), then the UI is
    redrawn.
 */
@@ -741,7 +724,6 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
 
 /* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004B15D0 g_UiSpriteButtonControlVtable */
 UiNodeVtable g_UiSpriteButtonControlVtable = {
     .relocate = (void *)UiSpriteButtonControl_Relocate,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -762,7 +744,6 @@ UiNodeVtable g_UiSpriteButtonControlVtable = {
     .tick = (void *)UiNode_DefaultTick,
     .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 00514FC0 g_UiImageActionControlVtable (followed by 0x90 code filler) */
 UiNodeVtable g_UiImageActionControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -784,7 +765,6 @@ UiNodeVtable g_UiImageActionControlVtable = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 00515290 g_UiConditionalActionControlVtable (followed by 0x90 code filler) */
 UiNodeVtable g_UiConditionalActionControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -806,7 +786,6 @@ UiNodeVtable g_UiConditionalActionControlVtable = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 00516530 g_UiCatalogEntryControlVtable (followed by 0x90 code filler) */
 UiNodeVtable g_UiCatalogEntryControlVtable = {
         .relocate = (void *)UiSpriteButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,

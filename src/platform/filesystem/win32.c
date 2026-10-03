@@ -11,10 +11,8 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntries */
 FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries = 0;
 
-/* 0040B218 g_FileSystemValidateDos83Path */
 FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path = 0;
 
 /* Implementation ownership: platform/filesystem/win32. */
@@ -52,8 +50,7 @@ static bool FileSystem_CopyRecordNamesIntoTable
   return true;
 }
 
-/* Address: 0x0040F430.
-   Lists a directory (or a drive's volume label) as a compact string table: the fixed-size name records of
+/* Lists a directory (or a drive's volume label) as a compact string table: the fixed-size name records of
    g_FileSystemEnumerateDirectoryOrVolumeEntries are collected in the largest free arena block, then copied
    into a second largest block as an array of entryCount UTF-16 string pointers followed by the strings, which
    is shrunk to its used size. Returns true with the table in *outTable and the entry count in *outEntryCount;
@@ -105,8 +102,7 @@ bool FileSystem_BuildEnumerationStringTable
   return false;
 }
 
-/* Address: 0x00575CB0.
-   Starts the file layer: records the executable directory, installs the Win32 implementations of the
+/* Starts the file layer: records the executable directory, installs the Win32 implementations of the
    g_FileSystem* function table, replaces the default L"Computer" label with the machine name, allocates the
    8 MiB package scratch buffer, loads THANDOR.cfg (current directory first, then the executable
    directory) and normalizes it in place, remembers the working directory and mounts engine.pck.
@@ -226,8 +222,7 @@ uint32_t __cdecl FileSystem_Init(void)
 }
 
 
-/* Address: 0x005762F0.
-   Stores the last-write time of a file as a packed DOS date and time (date in the high word, time in
+/* Stores the last-write time of a file as a packed DOS date and time (date in the high word, time in
    the low word) in *outDosDateTime and returns 0. Returns FATAL_ERROR_FILE_ACCESS_FAILED when the file
    cannot be opened or its time cannot be read (*outDosDateTime is then left untouched).
 */
@@ -260,8 +255,7 @@ uint32_t Win32File_GetLastWriteDosDate(uint16_t *path,uint32_t *outDosDateTime)
 }
 
 
-/* Address: 0x00576360.
-   Stores the high dword of a file's last-write FILETIME (a coarse modification stamp, about 7 minutes
+/* Stores the high dword of a file's last-write FILETIME (a coarse modification stamp, about 7 minutes
    per step) in *outLastWriteTimeHigh and returns 0. Returns FATAL_ERROR_FILE_ACCESS_FAILED when the file
    cannot be opened or its time cannot be read (*outLastWriteTimeHigh is then left untouched).
 */
@@ -288,8 +282,7 @@ uint32_t Win32File_GetLastWriteTimeHigh(uint16_t *path,uint32_t *outLastWriteTim
 }
 
 
-/* Address: 0x005763C0.
-   Despite its slot name (g_FileSystemGetVolumeSerialNumber) this queries no volume: it reads all three
+/* Despite its slot name (g_FileSystemGetVolumeSerialNumber) this queries no volume: it reads all three
    FILETIMEs of the file at path, clears the first byte of outputLabel and returns the high dword of the
    last-write time, like Win32File_GetLastWriteTimeHigh. The original reports failure in CF (with
    FATAL_ERROR_FILE_ACCESS_FAILED in EAX, STC at 0x00576416); this C version returns only EAX. Nothing
@@ -324,8 +317,7 @@ uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path)
 }
 
 
-/* Address: 0x00575F40.
-   Changes back to the working directory FileSystem_Init found at startup, if one was captured.
+/* Changes back to the working directory FileSystem_Init found at startup, if one was captured.
 */
 void __cdecl Win32FileSystem_RestoreInitialDirectory(void)
 
@@ -336,8 +328,7 @@ void __cdecl Win32FileSystem_RestoreInitialDirectory(void)
   return;
 }
 
-/* Address: 0x005766F0.
-   Reports whether a drive has usable media: CF clear (false) for fixed, network and other drives,
+/* Reports whether a drive has usable media: CF clear (false) for fixed, network and other drives,
    CF set (true) for removable and CD-ROM drives. The original contains an unreachable
    \\.\X: + IOCTL_STORAGE_CHECK_VERIFY probe after the type check, so removable and CD-ROM drives are
    always reported as not ready.
@@ -400,8 +391,7 @@ static bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **ou
   return false;
 }
 
-/* Address: 0x0040EF50.
-   Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as
+/* Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as
    given. Returns true with the buffer in *outBuffer, or false with the open/size/read error in *outError
    (0 when the size query failed), or FATAL_ERROR_OUT_OF_MEMORY with the file size left in
    g_FatalErrorDetail1Utf16. *outBuffer is only written on success, *outError only on failure. No caller in
@@ -413,8 +403,7 @@ bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *out
   return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,outError);
 }
 
-/* Address: 0x0040F120.
-   Same whole-file load as FileSystem_LoadWholeFile (same search order and errors); the only difference in
+/* Same whole-file load as FileSystem_LoadWholeFile (same search order and errors); the only difference in
    the original is that ECX is not preserved: it returns the file size there. Same C interface too: true
    with the buffer in *outBuffer, or false with the error in *outError. No caller in the recovered code.
 */
@@ -424,8 +413,7 @@ bool FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,
   return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,outError);
 }
 
-/* Address: 0x0040F1F0.
-   Writes a whole buffer to a file, creating or truncating it with exclusive access. A failed write
+/* Writes a whole buffer to a file, creating or truncating it with exclusive access. A failed write
    leaves no partial file behind: it is closed and deleted. Returns 0 on success, otherwise the open or
    write error (FATAL_ERROR_FILE_ACCESS_FAILED, FATAL_ERROR_FILE_WRITE_FAILED or
    FATAL_ERROR_FILE_WRITE_INCOMPLETE, never 0).
@@ -451,8 +439,7 @@ uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uin
 }
 
 
-/* Address: 0x00576070.
-   Writes exactly byteCount bytes to a file; byteCount 0 instead truncates the file at the current
+/* Writes exactly byteCount bytes to a file; byteCount 0 instead truncates the file at the current
    position (SetEndOfFile). Returns 0 on success, FATAL_ERROR_FILE_WRITE_FAILED when WriteFile fails, or
    FATAL_ERROR_FILE_WRITE_INCOMPLETE when it wrote fewer bytes (disk full). The truncation always
    succeeds: the original passes SetEndOfFile's result on as a success value, which no caller reads.
@@ -478,8 +465,7 @@ uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void
 }
 
 
-/* Address: 0x00576140.
-   Stores the current position of a file in *outPosition and returns true; returns false with
+/* Stores the current position of a file in *outPosition and returns true; returns false with
    *outPosition 0 when SetFilePointer fails (0x0057616D).
 */
 bool Win32File_GetPosition(void *handle,uint32_t *outPosition)
@@ -496,8 +482,7 @@ bool Win32File_GetPosition(void *handle,uint32_t *outPosition)
   return false;
 }
 
-/* Address: 0x00576180.
-   Moves the file pointer (moveMethod is FILESYSTEM_SEEK_BEGIN/CURRENT/END, the Win32 FILE_* values).
+/* Moves the file pointer (moveMethod is FILESYSTEM_SEEK_BEGIN/CURRENT/END, the Win32 FILE_* values).
    Returns 0 on success, FATAL_ERROR_FILE_SEEK_FAILED on failure. (The original also returned the new
    position on success; no caller uses it.)
 */
@@ -514,8 +499,7 @@ uint32_t Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition d
 }
 
 
-/* Address: 0x005761C0.
-   Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface. Returns 0, or
+/* Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface. Returns 0, or
    FATAL_ERROR_FILE_ACCESS_FAILED when DeleteFileA fails (0x00576202).
 */
 uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
@@ -529,8 +513,7 @@ uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
   return FATAL_ERROR_FILE_ACCESS_FAILED;
 }
 
-/* Address: 0x00576210.
-   Moves (renames) a file from sourcePath to destinationPath. Returns 0, or FATAL_ERROR_FILE_ACCESS_FAILED
+/* Moves (renames) a file from sourcePath to destinationPath. Returns 0, or FATAL_ERROR_FILE_ACCESS_FAILED
    when MoveFileA fails.
 */
 uint32_t Win32File_Move(uint16_t *destinationPath,uint16_t *sourcePath)
@@ -546,8 +529,7 @@ uint32_t Win32File_Move(uint16_t *destinationPath,uint16_t *sourcePath)
 }
 
 
-/* Address: 0x00576280.
-   Copies a file from sourcePath to destinationPath without overwriting an existing destination. Returns
+/* Copies a file from sourcePath to destinationPath without overwriting an existing destination. Returns
    0, or FATAL_ERROR_FILE_ACCESS_FAILED when CopyFileA fails.
 */
 uint32_t Win32File_Copy(uint16_t *destinationPath,uint16_t *sourcePath)
@@ -563,8 +545,7 @@ uint32_t Win32File_Copy(uint16_t *destinationPath,uint16_t *sourcePath)
 }
 
 
-/* Address: 0x005764E0.
-   Creates a directory. With FILESYSTEM_CREATE_DIRECTORY_RECURSIVE a failed attempt first creates the
+/* Creates a directory. With FILESYSTEM_CREATE_DIRECTORY_RECURSIVE a failed attempt first creates the
    parent directories (recursively) and then retries. Returns 0, or FATAL_ERROR_FILE_WRITE_FAILED when the
    directory cannot be created.
 */
@@ -593,8 +574,7 @@ uint32_t Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags
 }
 
 
-/* Address: 0x005765A0.
-   Removes an (empty) directory. Returns 0, or FATAL_ERROR_REMOVE_DIRECTORY_FAILED when RemoveDirectoryA
+/* Removes an (empty) directory. Returns 0, or FATAL_ERROR_REMOVE_DIRECTORY_FAILED when RemoveDirectoryA
    fails. Unlike the other path operations it does not record the path in g_PackageLastErrorPath.
 */
 uint32_t Win32File_RemoveDirectory(uint16_t *path)
@@ -608,8 +588,7 @@ uint32_t Win32File_RemoveDirectory(uint16_t *path)
 }
 
 
-/* Address: 0x005765F0.
-   Returns the free and total bytes of a drive, both 0 when the query fails. The products are 32-bit, so
+/* Returns the free and total bytes of a drive, both 0 when the query fails. The products are 32-bit, so
    drives above 4 GiB wrap.
 */
 Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLetter)
@@ -642,8 +621,7 @@ Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLet
   return capacity;
 }
 
-/* Address: 0x005766B0.
-   Lists the existing drives: writes one letter 'A'..'Z' per set bit of GetLogicalDrives to lettersOut
+/* Lists the existing drives: writes one letter 'A'..'Z' per set bit of GetLogicalDrives to lettersOut
    (no terminator) and returns the number of letters.
 */
 uint32_t Win32Drive_EnumerateLetters(uint8_t *lettersOut)
@@ -672,8 +650,7 @@ uint32_t Win32Drive_EnumerateLetters(uint8_t *lettersOut)
 }
 
 
-/* Address: 0x00576790.
-   Checks that an ANSI path is made of DOS 8.3 names (letters, digits and characters below ','), with an
+/* Checks that an ANSI path is made of DOS 8.3 names (letters, digits and characters below ','), with an
    optional "X:" drive and leading '\'. FILESYSTEM_DOS83_ALLOW_WILDCARDS permits '*' and '?';
    FILESYSTEM_DOS83_COMPONENT_ONLY checks one name only, and FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION lets
    that name end at a '\'. CF clear (false) means valid, CF set (true) rejected.
@@ -860,8 +837,7 @@ static void Win32FileSystem_CopyEnumerationRecord(uint32_t *destination,const ui
   }
 }
 
-/* Address: 0x00576910.
-   Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or
+/* Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or
    subdirectories (FILESYSTEM_ENUMERATE_DIRECTORIES) matching the wildcard path, sorted by a bubble sort,
    or the single volume label of a drive (FILESYSTEM_ENUMERATE_VOLUME_LABEL, pathOrVolumeText is then the
    ANSI "X:\"). Entries that no longer fit are skipped. Returns the number of records written (an
@@ -940,8 +916,7 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
 }
 
 
-/* Address: 0x00576020.
-   Reads exactly byteCount bytes from a file. Returns 0 on success, FATAL_ERROR_FILE_READ_FAILED when
+/* Reads exactly byteCount bytes from a file. Returns 0 on success, FATAL_ERROR_FILE_READ_FAILED when
    fewer bytes arrive (end of file or read error). (The original returned the byte count on success.)
 */
 uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *handle)
@@ -956,8 +931,7 @@ uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *h
 }
 
 
-/* Address: 0x00576100.
-   Stores the size of a file (low 32 bits) in *outSize and returns true; returns false with *outSize 0
+/* Stores the size of a file (low 32 bits) in *outSize and returns true; returns false with *outSize 0
    when GetFileSize fails (some callers pass that 0 on as their error code).
 */
 bool Win32File_GetSize(void *handle,uint32_t *outSize)
@@ -975,8 +949,7 @@ bool Win32File_GetSize(void *handle,uint32_t *outSize)
 }
 
 
-/* Address: 0x00576430.
-   Stores the current directory as UTF-16 into destination (0x200 bytes) and returns true. When
+/* Stores the current directory as UTF-16 into destination (0x200 bytes) and returns true. When
    GetCurrentDirectoryA fails, destination becomes an empty string and the result is false. (The
    original also passed on the copy's byte count, or FATAL_ERROR_GENERAL_FAILURE for a cut-off path, as
    the success value; no caller read it.)
@@ -997,8 +970,7 @@ bool Win32File_GetCurrentDirectory(uint16_t *destination)
 }
 
 
-/* Address: 0x00576490.
-   Changes the current directory. Returns 0, or FATAL_ERROR_SET_DIRECTORY_FAILED when SetCurrentDirectoryA
+/* Changes the current directory. Returns 0, or FATAL_ERROR_SET_DIRECTORY_FAILED when SetCurrentDirectoryA
    fails.
 */
 uint32_t Win32File_SetCurrentDirectory(uint16_t *path)
@@ -1013,8 +985,7 @@ uint32_t Win32File_SetCurrentDirectory(uint16_t *path)
 }
 
 
-/* Address: 0x00576650.
-   Classifies a drive for the engine: ENGINE_DRIVE_REMOVABLE, ENGINE_DRIVE_REMOTE, ENGINE_DRIVE_CDROM, or
+/* Classifies a drive for the engine: ENGINE_DRIVE_REMOVABLE, ENGINE_DRIVE_REMOTE, ENGINE_DRIVE_CDROM, or
    ENGINE_DRIVE_OTHER for fixed, RAM-disk and unknown drives.
 */
 EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
@@ -1040,8 +1011,7 @@ EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLette
 }
 
 
-/* Address: 0x00575F60.
-   Opens a file (path recorded in g_PackageLastErrorPath for error messages). The FileSystemOpenFlags
+/* Opens a file (path recorded in g_PackageLastErrorPath for error messages). The FileSystemOpenFlags
    select the creation mode (create/truncate, open-or-create, open existing), sharing and access; files
    are always opened write-through. Returns 0 and stores the handle in *outHandle, or returns
    FATAL_ERROR_FILE_ACCESS_FAILED and leaves *outHandle unchanged.
@@ -1094,8 +1064,7 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
 }
 
 
-/* Address: 0x00576000.
-   Closes a file handle.
+/* Closes a file handle.
 */
 void Win32File_Close(void *handle)
 

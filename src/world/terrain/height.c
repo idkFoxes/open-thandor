@@ -72,8 +72,7 @@ static bool TerrainScan_BeginAroundWorldPoint
 }
 
 
-/* Address: 0x00508000.
-   Terrain placement test for every terrain class except 1 (g_TerrainClassPlacementAndOverlayCallbacks10
+/* Terrain placement test for every terrain class except 1 (g_TerrainClassPlacementAndOverlayCallbacks10
    .placementTests[0, 2..4], also called directly by the army placement code): maps the world point to its field
    cell and checks the hexagon of radius radiusWorldUnits around it. Returns true (CF set, rejected) when a cell is
    a map-edge cell, lies under water, or its height relative to referenceHeightQ12 leaves
@@ -129,8 +128,7 @@ bool TerrainHeightBand_TestAroundWorldPoint
 }
 
 
-/* Address: 0x00508920.
-   Terrain placement test for terrain class 1 / water-surface contact (g_TerrainClassPlacementAndOverlayCallbacks10
+/* Terrain placement test for terrain class 1 / water-surface contact (g_TerrainClassPlacementAndOverlayCallbacks10
    .placementTests[1], also called directly by the army placement code): maps the world point to its field cell and
    checks the hexagon of radius radiusWorldUnits around it. Returns true (CF set, rejected) when a cell is a map-edge
    cell, has a negative waterSurfaceDelta, or the high word of its packed normal angles is below
@@ -197,8 +195,7 @@ static void TerrainHeightDelta_LevelCell(FieldGridCell *cell)
 }
 
 
-/* Address: 0x00508D20.
-   Flatten brush, sector 0 of the hexagon around the brush vertex
+/* Flatten brush, sector 0 of the hexagon around the brush vertex
    (FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors): walks the sector's diagonal, levels each cell and the one between it and the next diagonal cell to
    g_TerrainScanReferenceHeight (the removed height goes into waterSurfaceDelta, so the water surface stays), and
    starts the straight scans of directions 0 and 1 that fill the sector. Stops at a map-edge cell or the radius.
@@ -232,8 +229,7 @@ void TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGri
 }
 
 
-/* Address: 0x00508DC0.
-   Flatten brush, sector 1: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+/* Flatten brush, sector 1: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 1 and 2.
 */
 void TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -267,8 +263,7 @@ void TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGri
 }
 
 
-/* Address: 0x00508E60.
-   Flatten brush, sector 2: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+/* Flatten brush, sector 2: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 2 and 3.
 */
 void TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -306,8 +301,7 @@ void TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGri
 }
 
 
-/* Address: 0x00508F00.
-   Flatten brush, sector 3: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+/* Flatten brush, sector 3: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 3 and 4.
 */
 void TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -339,8 +333,7 @@ void TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGri
 }
 
 
-/* Address: 0x00508FA0.
-   Flatten brush, sector 4: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+/* Flatten brush, sector 4: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 4 and 5.
 */
 void TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -375,8 +368,7 @@ void TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGri
 }
 
 
-/* Address: 0x00509040.
-   Flatten brush, sector 5: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+/* Flatten brush, sector 5: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 5 and 0.
 */
 void TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -703,8 +695,7 @@ static bool TerrainTriangle_IntersectRayCorner0Triangle
 }
 
 
-/* Address: 0x00504520.
-   Terrain raycast step: intersects the ray segment (grid-space delta, Z origin and Z delta, relative to the cell)
+/* Terrain raycast step: intersects the ray segment (grid-space delta, Z origin and Z delta, relative to the cell)
    with the two triangles of one field-grid cell given its four corner heights, first the one based on corner 3,
    then the one based on corner 0 (the far corner, local coordinates shifted by one cell). A hit returns true with
    the world distance from the ray origin in *outDistanceQ12; a miss (also the quick reject when all four corners
@@ -742,8 +733,7 @@ FieldGridCell *g_TerrainRayNextCell;
 Q12 g_TerrainRayNextCoord0Q12;
 Q12 g_TerrainRayNextCoord1Q12;
 
-/* Address: 0x005049E0.
-   One step of the terrain raycasts' cell walk (coord0 = grid row, coord1 = grid column, both Q12): moves to the
+/* One step of the terrain raycasts' cell walk (coord0 = grid row, coord1 = grid column, both Q12): moves to the
    next row when the ray segment start..end leaves the current cell through a row boundary, otherwise to the next
    column. Returns true (CF set) when the current cell already contains the ray end or no step is possible (no
    row crossing and no column movement), false with the next cell and corner in g_TerrainRayNext* otherwise.
@@ -844,8 +834,7 @@ static bool TerrainHeightBand_IsCellOutside(const FieldGridCell *cell)
 }
 
 
-/* Address: 0x00507AB0.
-   Height-band placement test, sector 0 of the hexagon (see TerrainHeightBand_TestAroundWorldPoint): walks the
+/* Height-band placement test, sector 0 of the hexagon (see TerrainHeightBand_TestAroundWorldPoint): walks the
    sector's diagonal, tests each diagonal cell and the cell between it and the next one, and runs the straight
    tests of directions 0 and 1 that cover the sector. Returns true (CF set) at the first cell outside the height
    band, false when the step limit is reached.
@@ -884,8 +873,7 @@ bool TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridC
 }
 
 
-/* Address: 0x00507BA0.
-   Height-band placement test, sector 1: like TerrainHeightBand_TestWedge0, running the straight tests of
+/* Height-band placement test, sector 1: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 1 and 2.
 */
 bool TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -923,8 +911,7 @@ bool TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridC
 }
 
 
-/* Address: 0x00507C80.
-   Height-band placement test, sector 2: like TerrainHeightBand_TestWedge0, running the straight tests of
+/* Height-band placement test, sector 2: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 2 and 3.
 */
 bool TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -958,8 +945,7 @@ bool TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridC
 }
 
 
-/* Address: 0x00507D60.
-   Height-band placement test, sector 3: like TerrainHeightBand_TestWedge0, running the straight tests of
+/* Height-band placement test, sector 3: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 3 and 4.
 */
 bool TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
@@ -1018,8 +1004,7 @@ bool TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *c
 }
 
 
-/* Address: 0x00507E40.
-   Height-band placement test, sector 4: like TerrainHeightBand_TestWedge0, running the straight tests of
+/* Height-band placement test, sector 4: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 4 and 5.
 */
 bool TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1059,8 +1044,7 @@ bool TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridC
 }
 
 
-/* Address: 0x00507F20.
-   Height-band placement test, sector 5: like TerrainHeightBand_TestWedge0, running the straight tests of
+/* Height-band placement test, sector 5: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 5 and 0.
 */
 bool TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1095,8 +1079,7 @@ bool TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridC
 }
 
 
-/* Address: 0x00508470.
-   Water-surface placement test, sector 0 of the hexagon (see TerrainAuxHeightThreshold_TestAroundWorldPoint):
+/* Water-surface placement test, sector 0 of the hexagon (see TerrainAuxHeightThreshold_TestAroundWorldPoint):
    walks the sector's diagonal, tests each diagonal cell and the cell between it and the next one, and runs the
    straight tests of directions 0 and 1 that cover the sector. Returns true (CF set) at the first failing cell,
    false when the step limit is reached.
@@ -1147,8 +1130,7 @@ bool TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,Fi
 }
 
 
-/* Address: 0x00508540.
-   Water-surface placement test, sector 1: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+/* Water-surface placement test, sector 1: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 1 and 2.
 */
 bool TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1197,8 +1179,7 @@ bool TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,Fi
 }
 
 
-/* Address: 0x00508600.
-   Water-surface placement test, sector 2: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+/* Water-surface placement test, sector 2: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 2 and 3.
 */
 bool TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1243,8 +1224,7 @@ bool TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,Fi
 }
 
 
-/* Address: 0x005086C0.
-   Water-surface placement test, sector 3: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+/* Water-surface placement test, sector 3: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 3 and 4.
 */
 bool TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1293,8 +1273,7 @@ bool TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,Fi
 }
 
 
-/* Address: 0x00508790.
-   Water-surface placement test, sector 4: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+/* Water-surface placement test, sector 4: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 4 and 5.
 */
 bool TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1346,8 +1325,7 @@ bool TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,Fi
 }
 
 
-/* Address: 0x00508850.
-   Water-surface placement test, sector 5: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+/* Water-surface placement test, sector 5: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 5 and 0.
 */
 bool TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1394,8 +1372,7 @@ bool TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,Fi
 }
 
 
-/* Address: 0x005077F0.
-   Height-band placement test, straight leg along direction 0 (C+1, right): returns true (CF set) at the first
+/* Height-band placement test, straight leg along direction 0 (C+1, right): returns true (CF set) at the first
    cell that is a map-edge cell, lies under water (waterSurfaceDelta > 0) or whose height relative to
    g_TerrainScanReferenceHeight leaves [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; false
    once the step limit is reached (4 scan steps per cell).
@@ -1424,8 +1401,7 @@ bool TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldG
 }
 
 
-/* Address: 0x00507860.
-   Height-band placement test, straight leg along direction 1 (C+1-W, up and right); see TerrainHeightBand_TestDirection0.
+/* Height-band placement test, straight leg along direction 1 (C+1-W, up and right); see TerrainHeightBand_TestDirection0.
 */
 bool TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -1448,8 +1424,7 @@ bool TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldG
 }
 
 
-/* Address: 0x005078E0.
-   Height-band placement test, straight leg along direction 2 (C-W, up); see TerrainHeightBand_TestDirection0.
+/* Height-band placement test, straight leg along direction 2 (C-W, up); see TerrainHeightBand_TestDirection0.
 */
 bool TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -1472,8 +1447,7 @@ bool TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldG
 }
 
 
-/* Address: 0x00507950.
-   Height-band placement test, straight leg along direction 3 (C-1, left); see TerrainHeightBand_TestDirection0.
+/* Height-band placement test, straight leg along direction 3 (C-1, left); see TerrainHeightBand_TestDirection0.
 */
 bool TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -1496,8 +1470,7 @@ bool TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldG
 }
 
 
-/* Address: 0x005079C0.
-   Height-band placement test, straight leg along direction 4 (C-1+W, down and left); see TerrainHeightBand_TestDirection0.
+/* Height-band placement test, straight leg along direction 4 (C-1+W, down and left); see TerrainHeightBand_TestDirection0.
 */
 bool TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -1520,8 +1493,7 @@ bool TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldG
 }
 
 
-/* Address: 0x00507A40.
-   Height-band placement test, straight leg along direction 5 (C+W, down); see TerrainHeightBand_TestDirection0.
+/* Height-band placement test, straight leg along direction 5 (C+W, down); see TerrainHeightBand_TestDirection0.
 */
 bool TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -1544,8 +1516,7 @@ bool TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldG
 }
 
 
-/* Address: 0x005081D0.
-   Water-surface placement test, straight leg along direction 0 (C+1, right): returns true (CF set) at the first
+/* Water-surface placement test, straight leg along direction 0 (C+1, right): returns true (CF set) at the first
    cell that is a map-edge cell, has a negative waterSurfaceDelta or whose triangle1NormalAngles high word is below
    g_TerrainAuxHeightMinimum; false once the step limit is reached (4 scan steps per cell).
 */
@@ -1564,8 +1535,7 @@ bool TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanSte
 }
 
 
-/* Address: 0x00508240.
-   Water-surface placement test, straight leg along direction 1 (C+1-W, up and right); see
+/* Water-surface placement test, straight leg along direction 1 (C+1-W, up and right); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
 bool TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1583,8 +1553,7 @@ bool TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanSte
 }
 
 
-/* Address: 0x005082B0.
-   Water-surface placement test, straight leg along direction 2 (C-W, up); see
+/* Water-surface placement test, straight leg along direction 2 (C-W, up); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
 bool TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1602,8 +1571,7 @@ bool TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanSte
 }
 
 
-/* Address: 0x00508320.
-   Water-surface placement test, straight leg along direction 3 (C-1, left); see
+/* Water-surface placement test, straight leg along direction 3 (C-1, left); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
 bool TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1621,8 +1589,7 @@ bool TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanSte
 }
 
 
-/* Address: 0x00508390.
-   Water-surface placement test, straight leg along direction 4 (C-1+W, down and left); see
+/* Water-surface placement test, straight leg along direction 4 (C-1+W, down and left); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
 bool TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1640,8 +1607,7 @@ bool TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanSte
 }
 
 
-/* Address: 0x00508400.
-   Water-surface placement test, straight leg along direction 5 (C+W, down); see
+/* Water-surface placement test, straight leg along direction 5 (C+W, down); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
 bool TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1659,8 +1625,7 @@ bool TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanSte
 }
 
 
-/* Address: 0x00508AE0.
-   Flatten brush, straight leg along direction 0 (C+1, right): levels each cell to g_TerrainScanReferenceHeight
+/* Flatten brush, straight leg along direction 0 (C+1, right): levels each cell to g_TerrainScanReferenceHeight
    and takes the change out of waterSurfaceDelta so the water surface stays where it was. 4 scan steps per cell,
    until the step limit or a map-edge cell.
 */
@@ -1685,8 +1650,7 @@ void TerrainHeightDelta_ApplyDirection0(TerrainDirectionalScanStep scanStep,Fiel
 }
 
 
-/* Address: 0x00508B40.
-   Flatten brush, straight leg along direction 1 (C+1-W, up and right): levels each cell to
+/* Flatten brush, straight leg along direction 1 (C+1-W, up and right): levels each cell to
    g_TerrainScanReferenceHeight, keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void TerrainHeightDelta_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1710,8 +1674,7 @@ void TerrainHeightDelta_ApplyDirection1(TerrainDirectionalScanStep scanStep,Fiel
 }
 
 
-/* Address: 0x00508BA0.
-   Flatten brush, straight leg along direction 2 (C-W, up): levels each cell to g_TerrainScanReferenceHeight,
+/* Flatten brush, straight leg along direction 2 (C-W, up): levels each cell to g_TerrainScanReferenceHeight,
    keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void TerrainHeightDelta_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1735,8 +1698,7 @@ void TerrainHeightDelta_ApplyDirection2(TerrainDirectionalScanStep scanStep,Fiel
 }
 
 
-/* Address: 0x00508C00.
-   Flatten brush, straight leg along direction 3 (C-1, left): levels each cell to g_TerrainScanReferenceHeight,
+/* Flatten brush, straight leg along direction 3 (C-1, left): levels each cell to g_TerrainScanReferenceHeight,
    keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void TerrainHeightDelta_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1760,8 +1722,7 @@ void TerrainHeightDelta_ApplyDirection3(TerrainDirectionalScanStep scanStep,Fiel
 }
 
 
-/* Address: 0x00508C60.
-   Flatten brush, straight leg along direction 4 (C-1+W, down and left): levels each cell to
+/* Flatten brush, straight leg along direction 4 (C-1+W, down and left): levels each cell to
    g_TerrainScanReferenceHeight, keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1785,8 +1746,7 @@ void TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,Fiel
 }
 
 
-/* Address: 0x00508CC0.
-   Flatten brush, straight leg along direction 5 (C+W, down): levels each cell to g_TerrainScanReferenceHeight,
+/* Flatten brush, straight leg along direction 5 (C+W, down): levels each cell to g_TerrainScanReferenceHeight,
    keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void TerrainHeightDelta_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)

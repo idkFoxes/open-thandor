@@ -15,8 +15,7 @@
   ((AiFactionCandidateCacheState *)((uint8_t *)&g_GameFactionRuntimeImage.records[0].candidateCache + \
                                     (factionImageByteOffset)))
 
-/* Address: 0x0053A1E0.
-   Proposes armyAssetId at the first workspace 08 site of that asset where it can be placed (placement mode 4),
+/* Proposes armyAssetId at the first workspace 08 site of that asset where it can be placed (placement mode 4),
    unless one of it is still unassigned. Weight: 3 * baseWeight / (existing count + 3); for assets other than
    ARM 330 (0x14A) additionally scaled by (2 * unpowered + supplied Energy demand) / (record +0x358 rate << 4)
    when that rate is nonzero.
@@ -511,8 +510,7 @@ static void AiPlanningRebuild_CollectResearchCandidates(FactionRuntimeIndex fact
 }
 
 
-/* Address: 0x00538230.
-   Rebuilds the faction's AI workspaces at the start of a planning pass:
+/* Rebuilds the faction's AI workspaces at the start of a planning pass:
    - world entities: own units (ARM < 300) into 01, own structures into 00 (ARM 300 also remembered); entities
      of factions whose capability bit for us is clear into 03 or 02, depending on their visibility bits;
    - the faction's pending army assets as unassigned 00/01 entries (the primary list also as requests in 04),
@@ -557,8 +555,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
 }
 
 
-/* Address: 0x0053BF30.
-   Research planning: once the faction has an ARM 330 (0x14A) structure, scores every available technology of
+/* Research planning: once the faction has an ARM 330 (0x14A) structure, scores every available technology of
    workspace 12 with the score callback of its kind and proposes the best one (entry kind 2) with
    workspace12BestCandidateBaseWeight, halved while the faction's primary anchor cooldown runs.
 */
@@ -613,8 +610,7 @@ void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,Worl
 }
 
 
-/* Address: 0x00537420.
-   Empties the AI candidate workspace (workspace 13) by resetting its entry count.
+/* Empties the AI candidate workspace (workspace 13) by resetting its entry count.
 */
 void AiCandidateWorkspace_Clear(void)
 
@@ -624,8 +620,7 @@ void AiCandidateWorkspace_Clear(void)
 }
 
 
-/* Address: 0x00537430.
-   Keeps the first (at most three) candidates of the AI candidate workspace in the faction's runtime record
+/* Keeps the first (at most three) candidates of the AI candidate workspace in the faction's runtime record
    (candidateCache, factionImageByteOffset = faction * 0x740) so that the next planning pass of this faction can
    start from them (AiCandidateWorkspace_LoadFromFactionImage).
 */
@@ -654,8 +649,7 @@ void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImage
 }
 
 
-/* Address: 0x00537470.
-   Refills the shared AI candidate workspace with the candidates that AiCandidateWorkspace_SaveToFactionImage
+/* Refills the shared AI candidate workspace with the candidates that AiCandidateWorkspace_SaveToFactionImage
    kept in the faction's runtime record (factionImageByteOffset = faction * 0x740).
 */
 void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByteOffset)
@@ -681,8 +675,7 @@ void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionIma
 }
 
 
-/* Address: 0x00537570.
-   Sorts the AI candidate workspace (workspace 13) by descending weightedScoreAndKind (signed compare), so the
+/* Sorts the AI candidate workspace (workspace 13) by descending weightedScoreAndKind (signed compare), so the
    purchase planner tries the best candidates first. Selection sort: each pass swaps every higher entry into the
    pass's first slot, carrying the id/multiplicity dword along.
 */
@@ -737,8 +730,7 @@ void AiCandidateWorkspace_SortDescending(void)
 }
 
 
-/* Address: 0x005375D0.
-   Returns the xenite cost (Q4) of a candidate, which the purchase planner checks against the faction's xenite:
+/* Returns the xenite cost (Q4) of a candidate, which the purchase planner checks against the faction's xenite:
    the technology's xeniteCostQ4 for a technology candidate, else the army asset's cost dword at +0x28, or
    0x7FFFFFFF (never affordable) when the asset is unknown.
 */
@@ -766,8 +758,7 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 }
 
 
-/* Address: 0x00538CF0.
-   Returns true (CF set) when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
+/* Returns true (CF set) when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
    or not.
 */
 bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
@@ -788,8 +779,7 @@ bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 }
 
 
-/* Address: 0x00538D90.
-   Returns the smallest Manhattan distance from the point to an assigned secondary-workspace (workspace 01)
+/* Returns the smallest Manhattan distance from the point to an assigned secondary-workspace (workspace 01)
    entry, measured to the linked entity's path coordinates, or 0x7FFFFFFF when there is none.
    Arguments are Y first, then X, as every caller passes them.
 */
@@ -827,8 +817,7 @@ int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 world
 }
 
 
-/* Address: 0x00538E00.
-   Returns the smallest Manhattan distance from the point to an assigned primary-workspace (workspace 00) unit
+/* Returns the smallest Manhattan distance from the point to an assigned primary-workspace (workspace 00) unit
    whose linked entity has a nonzero commandState (i.e. is active), or 0x7FFFFFFF when there is none.
    Arguments are Y first, then X, as every caller passes them.
 */
@@ -867,8 +856,7 @@ int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 w
 }
 
 
-/* Address: 0x00538E80.
-   Returns the smallest Manhattan distance from the point to an assigned workspace-02 unit, or 0x7FFFFFFF when
+/* Returns the smallest Manhattan distance from the point to an assigned workspace-02 unit, or 0x7FFFFFFF when
    there is none. Arguments are Y first, then X, as every caller passes them.
 */
 int AiHostileWorkspace_GetNearestVisibleHostileDistance(Q12 worldY,Q12 worldX)
@@ -905,8 +893,7 @@ int AiHostileWorkspace_GetNearestVisibleHostileDistance(Q12 worldY,Q12 worldX)
 }
 
 
-/* Address: 0x00538EF0.
-   Returns the smallest Manhattan distance from the point to an assigned workspace-03 unit, or 0x7FFFFFFF when
+/* Returns the smallest Manhattan distance from the point to an assigned workspace-03 unit, or 0x7FFFFFFF when
    there is none. Arguments are Y first, then X, as every caller passes them.
 */
 int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX)
@@ -943,8 +930,7 @@ int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX)
 }
 
 
-/* Address: 0x00538F60.
-   Returns the smallest Manhattan distance from the point to any assigned primary-workspace (workspace 00) unit,
+/* Returns the smallest Manhattan distance from the point to any assigned primary-workspace (workspace 00) unit,
    or 0x7FFFFFFF when there is none. Arguments are Y first, then X, as every caller passes them.
 */
 int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
@@ -981,8 +967,7 @@ int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 }
 
 
-/* Address: 0x00539240.
-   Builds a pending resource structure (ARM_0330/ARM_0332) of the AI faction: at the first workspace-08 site of
+/* Builds a pending resource structure (ARM_0330/ARM_0332) of the AI faction: at the first workspace-08 site of
    this asset where the mode-0 placement test passes it creates the structure with the site's heading, rebuilds
    its model transforms, dispatches its class command, starts the effect referenced by its model runtime and
    removes the asset from the faction's pending list. Nothing happens when no site passes.
@@ -1040,8 +1025,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
 }
 
 
-/* Address: 0x0053BCB0.
-   Technology score callback for score kind 0 (g_AiTechnologyCandidateScoreCallbackTable[0], image 0x0053B9E0,
+/* Technology score callback for score kind 0 (g_AiTechnologyCandidateScoreCallbackTable[0], image 0x0053B9E0,
    called by AiTechnologyCandidate_AddBestResearch): a technology of this kind always scores 0, so it
    is never chosen for research.
 */
@@ -1054,8 +1038,7 @@ AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
 }
 
 
-/* Address: 0x0053C6C0.
-   Allocates the fifteen AI workspace buffers 00-14 from the arena (sizes in their names) and loads the AI
+/* Allocates the fifteen AI workspace buffers 00-14 from the arena (sizes in their names) and loads the AI
    parameters from engine\ki.dat into g_AiKnowledgeData. Returns true on success; stops at the first failure,
    returning false with that failure's error code in *outErrorCode (buffers allocated before it are not freed).
 */
@@ -1138,8 +1121,7 @@ bool AiRuntime_InitWorkspace(uint32_t *outErrorCode)
 }
 
 
-/* Address: 0x00537F80.
-   Adds a field cell to workspace 09 (at most 1024 cells) when it lies inside the extent (+0x19C of the
+/* Adds a field cell to workspace 09 (at most 1024 cells) when it lies inside the extent (+0x19C of the
    definition) of some primary-workspace structure, i.e. when AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
    returns false. These cells are the build sites near the AI's own base.
 */
@@ -1164,8 +1146,7 @@ void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell)
 }
 
 
-/* Address: 0x00537FC0.
-   Adds a field cell to workspace 10 (base sites with the wider clearance, at most 256 cells) when it lies inside
+/* Adds a field cell to workspace 10 (base sites with the wider clearance, at most 256 cells) when it lies inside
    the extent of some own structure; otherwise the same as AiBaseSiteWorkspace_AddCellInsideBase (workspace 09).
 */
 void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
@@ -1189,8 +1170,7 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 }
 
 
-/* Address: 0x00538B90.
-   Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset whose
+/* Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset whose
    runtime pointer is NULL.
 */
 bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
@@ -1212,8 +1192,7 @@ bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 }
 
 
-/* Address: 0x00538BF0.
-   Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset, with or
+/* Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset, with or
    without a runtime object.
 */
 bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
@@ -1234,8 +1213,7 @@ bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 }
 
 
-/* Address: 0x00538C40.
-   Counts the primary-workspace (workspace 00) entries of this army asset that have a runtime object.
+/* Counts the primary-workspace (workspace 00) entries of this army asset that have a runtime object.
 */
 int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
 
@@ -1258,8 +1236,7 @@ int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
 }
 
 
-/* Address: 0x005374B0.
-   Proposes a purchase candidate (id + kind) with the randomised score 5 * weightRange + random % weightRange.
+/* Proposes a purchase candidate (id + kind) with the randomised score 5 * weightRange + random % weightRange.
    An existing entry of the same kind and id gets the score added and its multiplicity raised by one; otherwise
    a new entry is appended while the workspace has fewer than 128. A weightRange of 0 or 1 proposes nothing.
 */
@@ -1305,8 +1282,7 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
 }
 
 
-/* Address: 0x00538FD0.
-   Returns false as soon as the point lies strictly inside the square extent of some assigned
+/* Returns false as soon as the point lies strictly inside the square extent of some assigned
    primary-workspace (workspace 00) unit: both axis distances to the unit's position below the extent at +0x19C
    of its definition. True when it is outside all of them. Arguments are Y first, then X, as every
    caller passes them.

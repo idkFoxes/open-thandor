@@ -10,8 +10,7 @@
 
 /* Implementation ownership: assets/shot/catalog. */
 
-/* Address: 0x0052B4D0.
-   Registers every shot definition of a loaded SHT asset: checks the 'sht' magic and converter version
+/* Registers every shot definition of a loaded SHT asset: checks the 'sht' magic and converter version
    0x60006, then hands each 0x2E0-byte record after the 0x200-byte header to
    ShotDefinition_RegisterAndResolveReferences, stopping at the first failure. An invalid header leaves the
    asset path in g_PackageLastErrorPath and fails with FATAL_ERROR_SHOT_ASSET_INVALID.
@@ -41,8 +40,7 @@ uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset)
 }
 
 
-/* Address: 0x0052B7E0.
-   Runs after the level's terrain materials are loaded: checks that each of the 31 terrain-material indices
+/* Runs after the level's terrain materials are loaded: checks that each of the 31 terrain-material indices
    of every registered shot definition is negative (no material) or names a loaded material. Otherwise the
    registry index of the offending shot is written to g_PackageLastErrorPath and the check fails with
    FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID. Returns 0 on success, otherwise that error code (the original's
@@ -83,8 +81,7 @@ uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void)
 }
 
 
-/* Address: 0x0052B860.
-   Looks up a registered shot definition by id: returns 0 and stores it in *outDefinition. On a miss the id is
+/* Looks up a registered shot definition by id: returns 0 and stores it in *outDefinition. On a miss the id is
    written as decimal text to g_PackageLastErrorPath for the fatal-error message, *outDefinition is left untouched
    and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned.
 */
@@ -112,8 +109,7 @@ uint32_t ShotDefinitionRegistry_FindByIdWithError
 }
 
 
-/* Address: 0x0052B8C0.
-   Computes the heading and elevation (Angle16) at which a shot of this definition must leave launchPoint to reach
+/* Computes the heading and elevation (Angle16) at which a shot of this definition must leave launchPoint to reach
    targetPoint. Ballistic shots solve the projectile equation (gravity = ballisticDivisorQ12) and take the high arc,
    the low arc only when the height difference is below 1.0; fixed-range shots always go straight up (0, 0x4000);
    all others aim directly, raised by the definition's elevation offset and capped at straight up. The callers
@@ -179,8 +175,7 @@ ShotLaunchAngles ShotDefinition_ComputeLaunchAngles
 }
 
 
-/* Address: 0x0052BCE0.
-   Returns how far a shot of this definition reaches, used when a model's weapons are summed up for target
+/* Returns how far a shot of this definition reaches, used when a model's weapons are summed up for target
    selection: ballistic shots 9/8 of speed^2 / divisor, fixed-range shots their stored range (+0x27C), all
    others speed times the flight time, where the ramp-up ticks count only one third.
 */
@@ -206,8 +201,7 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
   return selectionRangeQ12;
 }
 
-/* Address: 0x0052BD50.
-   Returns the shot speed used to lead a moving target: the launch speed (+0x0C) for unguided shots that
+/* Returns the shot speed used to lead a moving target: the launch speed (+0x0C) for unguided shots that
    do not fly a direct line, INT32_MAX (no lead) for direct-line or guided (+0x290 non-zero) shots. Called
    directly by the target aim-point computation in gameplay/army/runtime.c (the original returns it in EBX
    and preserves EAX, ECX and EDX).
@@ -226,8 +220,7 @@ Q12 ShotDefinition_GetLeadSpeed(ShotDefinition *definition)
 }
 
 
-/* Address: 0x0052BD80.
-   Returns the extra lead time for unguided lead-adjusted shots (trajectory mode 3, +0x290 zero): about two
+/* Returns the extra lead time for unguided lead-adjusted shots (trajectory mode 3, +0x290 zero): about two
    thirds (0xAB / 256) of the ramp-up ticks (+0x270), during which the shot is still accelerating; 0 for all
    other shots. The aim-point computation in gameplay/army/runtime.c multiplies it by the target's speed.
 */
@@ -333,8 +326,7 @@ static uint32_t ShotDefinition_ResolveEffectReferences(ShotDefinition *definitio
   return 0;
 }
 
-/* Address: 0x0052B350.
-   Registers one 0x2E0-byte shot definition in the first free registry slot, loads its sprite (switching the
+/* Registers one 0x2E0-byte shot definition in the first free registry slot, loads its sprite (switching the
    resource path to .spr; an already registered sprite with the same id is reused and the fresh load released)
    and replaces the effect ids of the launch, secondary and primary effects and of the 31 terrain-impact and 8
    target-class-impact effects by their registered definitions. Returns 0 on success, otherwise the error code

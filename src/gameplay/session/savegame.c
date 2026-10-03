@@ -38,8 +38,7 @@ static void InGameSaveGame_ShowRecordDescription(UiWrappedTextControl *descripti
 }
 
 
-/* Address: 0x0056C030.
-   Row handler of the in-game save list (action INGAME_ACTION_SAVE_GAME_SELECT, g_InGameUiActionHandlersPage12
+/* Row handler of the in-game save list (action INGAME_ACTION_SAVE_GAME_SELECT, g_InGameUiActionHandlersPage12
    slot 15). Shows the name edit only for the trailing "new savegame" row. A confirmed (double-clicked) existing
    save is overwritten at once; a plain selection shows the save's description (see InGameSaveGamePage_RebuildCatalog)
    and enables Delete, while the new row shows the empty description, disables Delete and enables Save only for a
@@ -102,8 +101,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
 }
 
 
-/* Address: 0x0056C190.
-   Delete button of the in-game save page (action INGAME_ACTION_SAVE_GAME_DELETE, g_InGameUiActionHandlersPage12
+/* Delete button of the in-game save page (action INGAME_ACTION_SAVE_GAME_DELETE, g_InGameUiActionHandlersPage12
    slot 25): deletes save\<name>.sve of the selected save list row (not the trailing "new savegame" row) and
    rebuilds the page with InGameSaveGamePage_RebuildCatalog. A failed delete is reported, not fatal.
 */
@@ -139,8 +137,7 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
 }
 
 
-/* Address: 0x0056BDD0.
-   Opens the in-game save page (action 0x120E, from the game menu's Save button): rebuilds g_ScenarioCatalog
+/* Opens the in-game save page (action 0x120E, from the game menu's Save button): rebuilds g_ScenarioCatalog
    from the headers of save\*.sve plus a final "new savegame" row (text 0x2151), sorts the saves by the dword pair
    at record offset 0xF0 (descending), selects the new row and shows the page with the save-name entry. The
    description shows the selected save's title texts (alone, or patched into text 0x215E while a campaign is
@@ -250,8 +247,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
 }
 
 
-/* Address: 0x0056C230.
-   Save button of the in-game save page (action INGAME_ACTION_SAVE_GAME_SAVE, g_InGameUiActionHandlersPage12
+/* Save button of the in-game save page (action INGAME_ACTION_SAVE_GAME_SAVE, g_InGameUiActionHandlersPage12
    slot 16; also called by InGameSaveGameList_SelectAndRefreshDetail for a double-clicked row): writes the game to
    save\<name>.sve, named by the typed name for the trailing "new savegame" row or by the selected save's file
    name (overwriting it), reports a failed save and closes the in-game menu.
@@ -295,8 +291,7 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
 }
 
 
-/* Address: 0x0056C2F0.
-   Handler of the save-name edit (action 0x1211): enables the Save button (INGAME_ACTION_SAVE_GAME_SAVE) only
+/* Handler of the save-name edit (action 0x1211): enables the Save button (INGAME_ACTION_SAVE_GAME_SAVE) only
    while the typed name is valid (edit flag 0x1 set, terminated within the capacity) and contains none of the
    characters * . \ ? < > : " | / that would break the file name built from it.
 */

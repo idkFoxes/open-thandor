@@ -10,8 +10,8 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne; /* 0051DBCC g_EffectRuntimeRebaseBaseMinusOne */
+extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne;
 
-extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne; /* 00563700 g_RuntimeObjectRebaseBaseMinusOne */
+extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne;
 
 #endif

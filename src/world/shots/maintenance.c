@@ -40,8 +40,7 @@ static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
   return packed;
 }
 
-/* Address: 0x0052C080.
-   g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.shot: works out which factions are around the shot
+/* g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.shot: works out which factions are around the shot
    (for a direct-line shot also at the middle and the end of its beam), turns that into the
    TERRAIN_OCCUPANCY_FLAG_* visibility flags for the active faction and refreshes the state tint, then
    modulates the node tint with the shot definition's tint.
@@ -106,8 +105,7 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
 }
 
 
-/* Address: 0x0052C1A0.
-   g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.shot: shots do not contribute to the terrain occupancy,
+/* g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.shot: shots do not contribute to the terrain occupancy,
    so this callback does nothing (it still pops its two stack arguments).
 */
 void ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
@@ -117,8 +115,7 @@ void ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRunti
 }
 
 
-/* Address: 0x0052C1B0.
-   g_RuntimeMaintenanceCallbackPhases.audioRefresh.shot: feeds the shot's position to the positioned sound slot
+/* g_RuntimeMaintenanceCallbackPhases.audioRefresh.shot: feeds the shot's position to the positioned sound slot
    its definition selects (soundSlotIndex indexes the world's sound slot table, not a terrain mask),
    unless the shot is over a cell hidden by TerrainGrid_TestProjectedCellMaskBits01.
 */
@@ -714,8 +711,7 @@ static bool ShotProjectile_UpdateFixedRangeTrajectory
   return false;
 }
 
-/* Address: 0x0052C230.
-   g_RuntimeMaintenanceCallbackPhases.primaryUpdate.shot: advances a shot by g_InGameSimulationStepTicks ticks.
+/* g_RuntimeMaintenanceCallbackPhases.primaryUpdate.shot: advances a shot by g_InGameSimulationStepTicks ticks.
    Each tick steps the animation, ages the shot (it expires when its lifetime runs out), emits the secondary
    trail effect, then casts a ray against armies, terrain and the secondary surface. A direct-line shot (beam)
    stays in place: its length is cut at the nearest hit, whose impact effect is emitted once, and an army hit

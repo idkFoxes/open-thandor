@@ -62,149 +62,117 @@
 /* Character-code bits UI_LABEL_SWALLOW_CHARACTERS tests (0x10 | 0x20) */
 #define UI_LABEL_SWALLOWED_CHARACTER_BITS 0x30
 
-/* 0x004AF500 */
 void UiPointer_DispatchPendingEvents(void);
 
-/* 0x004B00F0 */
 void UiKeyboardFocus_ReleaseNode(UiNodeBase *node);
 
-/* 0x004AF3D0 */
 void UiKeyboard_DispatchPendingEvents(void);
 
-/* 0x004B0030 */
 void UiKeyboardFocus_SelectInitial(UiNodeBase *root);
 
-/* 0x004B0120 */
 void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node);
 
-/* 0x004B4420 */
 bool UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control);
 
-/* 0x004B9CB0 */
 bool UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control);
 
-/* 0x004B9DA0 */
 void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
-/* 0x004B07F0 */
 GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
-/* 0x004B42D0 */
 void UiRangeSliderControl_UpdateValueFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiRangeSliderControl *control);
 
-/* 0x004B4570 */
 void UiRangeSliderControl_HandlePointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiRangeSliderControl *control);
 
-/* 0x004B9580 */
 void UiSingleLineTextControl_RelocateChild
           (UiSerializedRelocationDelta relocationDelta,UiSingleLineTextControl *control);
 
-/* 0x004B99A0 */
 void UiSingleLineTextControl_ForwardNonRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
-/* 0x004B9A00 */
 void UiSingleLineTextControl_ForwardNonRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
-/* 0x004B9A60 */
 void UiSingleLineTextControl_ForwardRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
-/* 0x004B9AD0 */
 void UiSingleLineTextControl_ForwardRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
-/* 0x004B9B30 */
 void UiSingleLineTextControl_ForwardNonRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
-/* 0x004B9B90 */
 void UiSingleLineTextControl_ForwardRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
-/* 0x004B9BF0 */
 GraphicsCursorFrameIndex UiSingleLineTextControl_ForwardPointerMoveToChild
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control);
 
-/* 0x004B9C50 */
 UiNodeBase * UiSingleLineTextControl_HitTestChildProxy
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control);
 
-/* 0x004B9D40 */
 void UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control);
 
-/* 0x004BCA70 */
 GraphicsCursorFrameIndex UiImageControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control);
 
-/* 0x00515CC0 */
 void UiSelectionGeometryControl_DrawClipped
           (int clipBottom,int clipRight,int clipTop,int clipLeft,UiSelectionGeometryControl *control
           );
 
-/* 0x005161A0 */
 void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSelectionGeometryControl *control);
 
-/* 0x004AFA60 */
 void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);
 
-/* 0x004AFBC0 */
 void UiPointer_DispatchMiddlePress
           (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX);
 
-/* 0x004AFD10 */
 void UiPointer_DispatchRightPress
           (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX);
 
-/* 0x004AFFA0 */
 void UiKeyboardFocus_MoveNext(void);
 
-/* 0x004AFE40 */
 void UiPointer_DispatchMotionAndWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);
 
-/* 0x004B09F0 */
 void UiNode_ForwardPointerWheelToParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
-/* 0x004B08C0 */
 bool UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control);
 
-/* 0x004AFF60 */
 void UiKeyboardFocus_Set(UiNodeBase *node);
 
 /* Not in the original: builds the bilinear scaler weight tables (called once at startup). */
 void UiScaler_BuildPixelWeightTables(void);
 
-extern UiNodeVtable g_UiFocusProxyControlVtable; /* 004B9530 g_UiFocusProxyControlVtable */
-extern UiNodeVtable g_UiSelectionGeometryControlVtable; /* 00515C70 g_UiSelectionGeometryControlVtable */
+extern UiNodeVtable g_UiFocusProxyControlVtable;
+extern UiNodeVtable g_UiSelectionGeometryControlVtable;
 extern UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable; followed by 0x90 code alignment fill */
 
-extern UiNodeBase *g_UiPointerCaptureTarget; /* 004B0E3C g_UiPointerCaptureTarget */
-extern UiNodeBase *g_UiKeyboardFocusNode; /* 004B0E40 g_UiKeyboardFocusNode */
-extern UiPointerCaptureButton g_UiPointerCaptureButton; /* 004B0F24 g_UiPointerCaptureButton */
-extern UiImageControl * g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
+extern UiNodeBase *g_UiPointerCaptureTarget;
+extern UiNodeBase *g_UiKeyboardFocusNode;
+extern UiPointerCaptureButton g_UiPointerCaptureButton;
+extern UiImageControl * g_UiImageControlHoverTarget;
 
 #endif /* THANDOR_UI_CONTROLS_INPUT_H */

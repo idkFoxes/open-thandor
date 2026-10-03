@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/technology/runtime. */
 
-/* Address: 0x005139C0.
-   Unlocks a technology for a faction (once): sets its bit in the faction's 256-bit technology mask, announces it
+/* Unlocks a technology for a faction (once): sets its bit in the faction's 256-bit technology mask, announces it
    to the local player (at the given map position, if any), recursively unlocks the technology it depends on,
    applies the technology's model variants to the faction's models on the map and, for the local faction, rebuilds
    the two build-catalog grids.
@@ -71,8 +70,7 @@ void Technology_UnlockForFaction
 }
 
 
-/* Address: 0x00513AE0.
-   Tests the technology's bit in the faction's 256-bit unlock mask (records[factionIndex].technologyMasks256Bits
+/* Tests the technology's bit in the faction's 256-bit unlock mask (records[factionIndex].technologyMasks256Bits
    at +0x6E0). Note the inverted CF result: false (CF clear) when the technology is unlocked, true (CF set)
    when it is still locked.
 */
@@ -89,8 +87,7 @@ bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,Fact
 }
 
 
-/* Address: 0x00513B20.
-   Decides whether the faction may start researching a technology: it must still be locked, every bit of
+/* Decides whether the faction may start researching a technology: it must still be locked, every bit of
    its eight prerequisite mask words must be unlocked for the faction, and no army
    of that faction may already be researching it. True (CF set) means available.
 */
@@ -133,8 +130,7 @@ bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fac
 }
 
 
-/* Address: 0x0052AE10.
-   Starts researching a technology in a building: unless a research is already assigned or running, stores the
+/* Starts researching a technology in a building: unless a research is already assigned or running, stores the
    technology index and copies the tech.tec record's Xenite cost (+0x20), energy cost (+0x24) and duration
    (+0x28) into the entity; the HUD shows these as the research costs and time. The fast-build cheat divides the
    duration by 16.
@@ -167,8 +163,7 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
 }
 
 
-/* Address: 0x00539BB0.
-   Recomputes values derived from the loaded army and technology files: per model category (0..7) the largest
+/* Recomputes values derived from the loaded army and technology files: per model category (0..7) the largest
    model value +0x60 and its Q24 reciprocal, the largest value +0x0C of models with a non-zero +0x18 (used by the
    AI army candidates), and the 256-bit masks of the technologies in categories 2 and 3.
 */

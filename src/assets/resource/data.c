@@ -11,8 +11,6 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0051DBCC g_EffectRuntimeRebaseBaseMinusOne */
 __declspec(align(4)) uint8_t *g_EffectRuntimeRebaseBaseMinusOne = 0;
 
-/* 00563700 g_RuntimeObjectRebaseBaseMinusOne */
 __declspec(align(16)) uint8_t *g_RuntimeObjectRebaseBaseMinusOne = 0;

@@ -474,8 +474,7 @@ static bool FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordId
   return FrontendMainLoop_RebuildMenu(frontendEntryRecordId,FRONTEND_PAGE_ACTION_NONE,outError);
 }
 
-/* Address: 0x00546BD0.
-   The frontend (main menu) state machine, run from Game_Run until the player quits. It builds the menu at
+/* The frontend (main menu) state machine, run from Game_Run until the player quits. It builds the menu at
    frontendEntryRecordId, jumps straight into the host/client/map flow when -HOST, -CLIENT= or -KARTE= is on the
    command line, then presents UI frames until g_FrontendPendingPageAction (FRONTEND_PAGE_ACTION_*) is set and
    performs it: open a menu page, wait for the network peers (scenario catalogue, task assignment, level
@@ -516,8 +515,7 @@ bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
 }
 
 
-/* Address: 0x0050C380.
-   Pointer-move handler of the model pointer context (pointerMove of g_FrontendModelPointerContextVtable): stores
+/* Pointer-move handler of the model pointer context (pointerMove of g_FrontendModelPointerContextVtable): stores
    the best model hit under the pointer, then returns the cursor frame. While a non-right button is held
    (ROUTE_TO_SECONDARY_CALLBACK) heldButtonCursorCallback decides it, with no button hoverCursorCallback;
    while the right button drags the camera (ROUTE_TO_BUILTIN_ACTION_RESOLUTION) the frame shows the camera
@@ -638,8 +636,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   return cursorFrameIndex;
 }
 
-/* Address: 0x0050C5A0.
-   Press of a non-right button on the model pointer context (nonRightPress of
+/* Press of a non-right button on the model pointer context (nonRightPress of
    g_FrontendModelPointerContextVtable): remembers the press point (corner of the drag frame), stores the best
    model hit, routes the following pointer moves to heldButtonCursorCallback and reports the press to
    buttonPressCallback.
@@ -672,8 +669,7 @@ void FrontendModelPointerContext_NonRightPress
 }
 
 
-/* Address: 0x0050C610.
-   Release of a non-right button on the model pointer context (nonRightRelease of
+/* Release of a non-right button on the model pointer context (nonRightRelease of
    g_FrontendModelPointerContextVtable): stores the best model hit, routes pointer moves back to the hover
    callback and reports the release to buttonReleaseCallback.
 */
@@ -701,8 +697,7 @@ void FrontendModelPointerContext_NonRightRelease
 }
 
 
-/* Address: 0x0050C670.
-   Drag with a non-right button on the model pointer context (nonRightDrag of
+/* Drag with a non-right button on the model pointer context (nonRightDrag of
    g_FrontendModelPointerContextVtable): remembers the current point (the other corner of the drag frame),
    stores the best model hit and reports the drag to buttonDragCallback.
 */
@@ -732,8 +727,7 @@ void FrontendModelPointerContext_NonRightDrag
 }
 
 
-/* Address: 0x00549B40.
-   Handler of action 0x2044 (slot 68 of g_FrontendUiActionHandlersPage20.handlers00_54), the colour buttons of
+/* Handler of action 0x2044 (slot 68 of g_FrontendUiActionHandlersPage20.handlers00_54), the colour buttons of
    the faction setup page: finds the row of the pressed button in the factionControls offset table and cycles
    that faction's colour (FrontendFactionSetup_CycleFactionColour directly in a local game,
    FRONTEND_COMMAND_CYCLE_FACTION_COLOUR in a network game).
@@ -762,8 +756,7 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
 }
 
 
-/* Address: 0x00549BC0.
-   Handler of action 0x2045 (slot 69 of g_FrontendUiActionHandlersPage20.handlers00_54), the mode buttons of
+/* Handler of action 0x2045 (slot 69 of g_FrontendUiActionHandlersPage20.handlers00_54), the mode buttons of
    the faction setup page: finds the row of the pressed button in the playerControls offset table and toggles
    whether that faction takes part (FrontendFactionSetup_ToggleFactionActive directly in a local game,
    FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE in a network game).
@@ -792,8 +785,7 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
 }
 
 
-/* Address: 0x00549C40.
-   Handler of action 0x2046 (slot 70 of g_FrontendUiActionHandlersPage20.handlers00_54), the "play" checkboxes
+/* Handler of action 0x2046 (slot 70 of g_FrontendUiActionHandlersPage20.handlers00_54), the "play" checkboxes
    of the faction setup page: finds the row of the pressed checkbox in the selectionRows offset table and makes
    that faction the local player's (FrontendFactionSetup_ChooseFaction directly in a local game,
    FRONTEND_COMMAND_CHOOSE_FACTION in a network game).
@@ -822,8 +814,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
 }
 
 
-/* Address: 0x0050BB80.
-   Relocate method of the model pointer context (relocate of g_FrontendModelPointerContextVtable), run when the
+/* Relocate method of the model pointer context (relocate of g_FrontendModelPointerContextVtable), run when the
    control is built from its template: puts the camera target at the origin, gives camera limits the template
    left at 0 their defaults, starts with no candidate models and no overlay entity, then relocates the children.
 */
@@ -858,8 +849,7 @@ void FrontendModelPointerContext_Relocate
 }
 
 
-/* Address: 0x0050BC30.
-   Layout method of the model pointer context (layout of g_FrontendModelPointerContextVtable): a new size
+/* Layout method of the model pointer context (layout of g_FrontendModelPointerContextVtable): a new size
    invalidates the reusable terrain projection (WorldRuntime_ClearFieldGridDirtyFlag clears
    TERRAIN_RENDER_REUSE_PROJECTION), then the children are laid out.
 */
@@ -898,8 +888,7 @@ static void FrontendModelPointerContext_DrawActiveQueue
   control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
 }
 
-/* Address: 0x0050BC60.
-   Draw method of the model pointer context (drawClipped of g_FrontendModelPointerContextVtable), the 3D view of
+/* Draw method of the model pointer context (drawClipped of g_FrontendModelPointerContextVtable), the 3D view of
    the menu room and of the in-game world: clamps the clip rectangle to the control, sets up camera, projection
    and (optionally) the sound listener, then renders the candidate models in up to four primitive-queue passes
    (models with flag 0x200, the terrain, the shading pass of models with flag 0x100, the remaining models),
@@ -1119,8 +1108,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
 }
 
 
-/* Address: 0x0050C6E0.
-   Right-button press on the model pointer context (rightPress of g_FrontendModelPointerContextVtable): starts a
+/* Right-button press on the model pointer context (rightPress of g_FrontendModelPointerContextVtable): starts a
    camera drag. Remembers the press point (the pointer is put back there after every drag step), routes pointer
    moves to the camera cursor resolution, restarts the held-tick counter (rightButtonHeldTicks, counted by
    FrontendModelPointerContext_Tick) and pins the drawn cursor.
@@ -1142,8 +1130,7 @@ void FrontendModelPointerContext_RightPress
 }
 
 
-/* Address: 0x0050C730.
-   Right-button release on the model pointer context (rightRelease of g_FrontendModelPointerContextVtable): ends
+/* Right-button release on the model pointer context (rightRelease of g_FrontendModelPointerContextVtable): ends
    the camera drag and unpins the cursor. A release within 7 ticks of the press counts as a click and is
    reported to rightClickCallback (the menu room stops its camera flight with it).
 */
@@ -1164,8 +1151,7 @@ void FrontendModelPointerContext_RightRelease
 }
 
 
-/* Address: 0x0050CC80.
-   Right-button drag on the model pointer context (rightDrag of g_FrontendModelPointerContextVtable): moves the
+/* Right-button drag on the model pointer context (rightDrag of g_FrontendModelPointerContextVtable): moves the
    camera by the pointer's offset from the press point, then puts the pointer back there, snapshots the camera
    state and calls the view's clearTransientStateCallback. The motion depends on the camera scheme bit of the
    view (0x100, 0x8000 or 0x200), the left button and the modifier keys: move, heading, pitch, distance or a
@@ -1293,8 +1279,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
 }
 
 
-/* Address: 0x0050CED0.
-   Wheel handler of the model pointer context (pointerWheel of g_FrontendModelPointerContextVtable): unless
+/* Wheel handler of the model pointer context (pointerWheel of g_FrontendModelPointerContextVtable): unless
    camera input is blocked (0x10) or the view has no camera scheme (0x100/0x200/0x8000), the scaled wheel
    delta changes the camera distance, with Ctrl the pitch, and the camera state is snapshotted.
 */
@@ -1328,8 +1313,7 @@ void FrontendModelPointerContext_PointerWheel
 }
 
 
-/* Address: 0x0050CF50.
-   Keyboard handler of the model pointer context (keyboardEvent of g_FrontendModelPointerContextVtable): offers
+/* Keyboard handler of the model pointer context (keyboardEvent of g_FrontendModelPointerContextVtable): offers
    the key to the view's keyboardFallback first; when there is none or it returns true, the default handling
    (UiNode_DefaultKeyboardEventMoveFocusNext) decides and its result is returned.
 */
@@ -1345,8 +1329,7 @@ bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardState
 }
 
 
-/* Address: 0x0050CF90.
-   Tick method of the model pointer context (tick of g_FrontendModelPointerContextVtable): counts the ticks the
+/* Tick method of the model pointer context (tick of g_FrontendModelPointerContextVtable): counts the ticks the
    right button is held (rightButtonHeldTicks, read by FrontendModelPointerContext_RightRelease) and, in a view
    without camera scheme 0x100/0x8000, camera input block (0x10) and WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA, eases
    the camera distance by one convergence step per tick until it is within 15/16..17/16 of the clamped committed
@@ -1402,8 +1385,7 @@ void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
 }
 
 
-/* Address: 0x00514E40.
-   Refreshes the HUD resource numbers of the active faction in the in-game root: Xenite and Tritium
+/* Refreshes the HUD resource numbers of the active faction in the in-game root: Xenite and Tritium
    (current / storage limit), Energy demand / generation capacity, and baseline Energy supply plus the Tritium
    extraction rate. Q4 amounts are shown as whole units (>> 4); the Xenite amount is also formatted as text.
 */
@@ -1448,8 +1430,7 @@ void FrontendRuntime_UpdateCurrentFactionMetricCache(void)
 }
 
 
-/* Address: 0x00547620.
-   Periodic timer callback of the frontend (80 Hz): counts g_FrontendTimerCountdownTicks down to zero.
+/* Periodic timer callback of the frontend (80 Hz): counts g_FrontendTimerCountdownTicks down to zero.
    Frontend_StateTick uses the countdown to pace its network polling.
 */
 void __cdecl FrontendRuntime_TimerCountdownTick(void)
@@ -1461,8 +1442,7 @@ void __cdecl FrontendRuntime_TimerCountdownTick(void)
   return;
 }
 
-/* Address: 0x00547FB0.
-   Periodic timer callback of the frontend (256 Hz): advances the clock of the menu camera flight while a ROM
+/* Periodic timer callback of the frontend (256 Hz): advances the clock of the menu camera flight while a ROM
    transition is pending; the flight's spline is evaluated at g_FrontendRomTransitionElapsedTicks.
 */
 void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void)
@@ -1474,8 +1454,7 @@ void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void)
   return;
 }
 
-/* Address: 0x00548030.
-   Keyboard fallback of the menu room's pointer context: looks the key up in the frontend hotkey table
+/* Keyboard fallback of the menu room's pointer context: looks the key up in the frontend hotkey table
    (commandCode + required modifier class, see KEYBOARD_STATE_*). Alt+Q and Alt+key 0x20004 leave the
    current menu: back to the main page, a network session is closed first; Ctrl+key 0x20001 on the faction
    setup page toggles bit 0 of the local player's colourCycleFlags (an eighth entry in the faction cycle,
@@ -1601,8 +1580,7 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
 }
 
 
-/* Address: 0x00548700.
-   Runs one record of the frontend ROM action table locally, with the activation sound (the direct-call form of
+/* Runs one record of the frontend ROM action table locally, with the activation sound (the direct-call form of
    the FRONTEND_COMMAND_EXECUTE_ROM_ACTION command handler).
 */
 void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex)
@@ -1613,8 +1591,7 @@ void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex)
 }
 
 
-/* Address: 0x00548910.
-   Hover handler of the menu room's pointer context (hoverCursorCallback/108). On the main page (not on a
+/* Hover handler of the menu room's pointer context (hoverCursorCallback/108). On the main page (not on a
    network client) an object of the room that has a usable ROM action record starts a camera flight towards
    the record's keyframe and makes the pointer cursor frame 7; the record's hint text (text id 0x2000 + hint)
    is shown in the hint box, hint 1 while a page action is still being processed, none otherwise.
@@ -1735,8 +1712,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
 }
 
 
-/* Address: 0x00548BE0.
-   Button-press handler of the menu room's pointer context (buttonPressCallback): the frontend does nothing
+/* Button-press handler of the menu room's pointer context (buttonPressCallback): the frontend does nothing
    on press, it acts on release (FrontendMenuRoom_ExecuteClickedRomAction).
 */
 void FrontendMenuRoom_PressNoOp
@@ -1747,8 +1723,7 @@ void FrontendMenuRoom_PressNoOp
   return;
 }
 
-/* Address: 0x00548BF0.
-   Drag handler of the menu room's pointer context (buttonDragCallback); dragging does nothing in the
+/* Drag handler of the menu room's pointer context (buttonDragCallback); dragging does nothing in the
    frontend.
 */
 void FrontendMenuRoom_DragNoOp
@@ -1759,8 +1734,7 @@ void FrontendMenuRoom_DragNoOp
   return;
 }
 
-/* Address: 0x00548C00.
-   Button-release handler of the menu room's pointer context (buttonReleaseCallback): clicking an object of
+/* Button-release handler of the menu room's pointer context (buttonReleaseCallback): clicking an object of
    the menu room runs the ROM action record that belongs to it (FrontendRomActionTable_ExecuteRecord). In a
    network game the host sends it as a frontend command so every player follows; clients ignore clicks.
 */
@@ -1791,8 +1765,7 @@ void FrontendMenuRoom_ExecuteClickedRomAction
 }
 
 
-/* Address: 0x00548C70.
-   Right-button release handler of the menu room's pointer context (rightClickCallback): stops the running
+/* Right-button release handler of the menu room's pointer context (rightClickCallback): stops the running
    camera flight (ScenarioCatalog_RequestRomTransitionStopCallback), in a network game as a frontend command
    sent by the host; clients ignore it.
 */
@@ -1811,8 +1784,7 @@ void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext)
   return;
 }
 
-/* Address: 0x00548CB0.
-   Adds a chat line to the shared recent-text history and rebuilds the frontend chat history box from its five
+/* Adds a chat line to the shared recent-text history and rebuilds the frontend chat history box from its five
    newest entries.
 */
 void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
@@ -1829,8 +1801,7 @@ void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
 }
 
 
-/* Address: 0x00549100.
-   Handler of action 0x2043 (slot 67 of g_FrontendUiActionHandlersPage20.handlers00_54), the mission briefing's
+/* Handler of action 0x2043 (slot 67 of g_FrontendUiActionHandlersPage20.handlers00_54), the mission briefing's
    "Back" button: applies the game speed and returns to the main page with ROM action record 0
    (FRONTEND_COMMAND_APPLY_GAME_SPEED in a network game).
 */
@@ -1848,8 +1819,7 @@ void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackAr
 }
 
 
-/* Address: 0x00549140.
-   Handler of action 0x204F (slot 79 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Exit" button of
+/* Handler of action 0x204F (slot 79 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Exit" button of
    the in-game variant of the mission briefing: releases the loaded campaign and returns to the main page
    (FRONTEND_COMMAND_RELEASE_CAMPAIGN in a network game).
 */
@@ -1867,8 +1837,7 @@ void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackA
 }
 
 
-/* Address: 0x00549180.
-   Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of
+/* Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of
    the in-game variant of the mission briefing: does nothing.
 */
 void FrontendCallback_NoOpArg1(void *source)
@@ -1878,8 +1847,7 @@ void FrontendCallback_NoOpArg1(void *source)
 }
 
 
-/* Address: 0x00549AB0.
-   Handler of action 0x2040 (slot 64 of g_FrontendUiActionHandlersPage20.handlers00_54), the faction setup
+/* Handler of action 0x2040 (slot 64 of g_FrontendUiActionHandlersPage20.handlers00_54), the faction setup
    page's "Back" button: returns to the main page with ROM action record 0 (FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE
    in a network game).
 */
@@ -1897,8 +1865,7 @@ void FrontendFactionSetupAction_ReturnToMainPage(uint32_t callbackArgument)
 }
 
 
-/* Address: 0x0054A5A0.
-   Handler of action 0x2034 (slot 52 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Choose game"
+/* Handler of action 0x2034 (slot 52 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Choose game"
    page's "Cancel" button: returns to the main page with ROM action record 0 in a local game and with record 4
    (as FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE) in a network game.
 */
@@ -1927,8 +1894,7 @@ void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument
 }
 
 
-/* Address: 0x0054A7D0.
-   Handler of action 0x2033 (slot 51 of g_FrontendUiActionHandlersPage20.handlers00_54), the quit dialog's "no"
+/* Handler of action 0x2033 (slot 51 of g_FrontendUiActionHandlersPage20.handlers00_54), the quit dialog's "no"
    button: returns to the main page with ROM action record 0 (FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a
    network game).
 */
@@ -1946,8 +1912,7 @@ void FrontendQuitDialogAction_ReturnToMainPage(uint32_t callbackArgument)
 }
 
 
-/* Address: 0x0054AAD0.
-   Handler of action 0x2010 (slot 16 of g_FrontendUiActionHandlersPage20.handlers00_54), shared by the options
+/* Handler of action 0x2010 (slot 16 of g_FrontendUiActionHandlersPage20.handlers00_54), shared by the options
    page's "Ok" button and the display settings page's "Back" button: "Ok" returns to the main page (ROM action
    record 0, FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a network game), "Back" reopens the options page.
 */
@@ -2016,8 +1981,7 @@ static void FrontendDisplaySettingsPage_FillAdapterRow
   source->adapterRows.rows[adapterIndex].deviceNameUtf16 = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
 }
 
-/* Address: 0x0054AB70.
-   Handler of action 0x2011 (slot 17 of g_FrontendUiActionHandlersPage20.handlers00_54), the options page's
+/* Handler of action 0x2011 (slot 17 of g_FrontendUiActionHandlersPage20.handlers00_54), the options page's
    "Graphics" button: opens the display settings page and fills its choices: the four smallest distinct colour
    depths and the ten smallest distinct resolutions (width << 16 | height) of g_GraphicsDisplayModes, each
    collected by an insertion into a sorted list with 0xFFFFFFFF as the empty mark, and the name and device of
@@ -2100,8 +2064,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
 }
 
 
-/* Address: 0x0054BA30.
-   Handler of actions 0x202C..0x2030 (slots 44..48 of g_FrontendUiActionHandlersPage20.handlers00_54), the five
+/* Handler of actions 0x202C..0x2030 (slots 44..48 of g_FrontendUiActionHandlersPage20.handlers00_54), the five
    adapter choices of the display settings page: selects the adapter whose button was pressed (identified by
    its offset in the parent container, 0x68 bytes apart) and refreshes which modes can be chosen.
 */
@@ -2134,8 +2097,7 @@ void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode)
 }
 
 
-/* Address: 0x0054D3F0.
-   Handler of action 0x200C (slot 12 of g_FrontendUiActionHandlersPage20.handlers00_54), a selection change in
+/* Handler of action 0x200C (slot 12 of g_FrontendUiActionHandlersPage20.handlers00_54), a selection change in
    the host lobby's player list: the Kick button (FRONTEND_ACTION_KICK_PLAYER) is hidden while the first row,
    the host itself, is selected and shown for any other player.
 */
@@ -2160,8 +2122,7 @@ void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *player
 }
 
 
-/* Address: 0x0054D460.
-   Handler of action 0x200E (slot 14 of g_FrontendUiActionHandlersPage20.handlers00_54), a click on the chat
+/* Handler of action 0x200E (slot 14 of g_FrontendUiActionHandlersPage20.handlers00_54), a click on the chat
    strip at the top left: drops the oldest chat lines until four are left, then one more (a click removes the
    oldest line shown), and rebuilds the strip's pointer list of at most five lines.
 */
@@ -2181,8 +2142,7 @@ void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source)
 }
 
 
-/* Address: 0x0054D4A0.
-   Handler of action 0x200F (slot 15 of g_FrontendUiActionHandlersPage20.handlers00_54), a choice in the network
+/* Handler of action 0x200F (slot 15 of g_FrontendUiActionHandlersPage20.handlers00_54), a choice in the network
    game page's protocol list: closes the current backend and opens the chosen one on NETWORK_GAME_UDP_PORT. On
    success the local endpoint is copied to g_FrontendNetworkEndpointScratch and formatted into
    g_FrontendNetworkEndpointTextUtf16, the session list is emptied, Join hidden and a discovery probe sent. A failure is reported and the backend opened once more without a report; if that
@@ -2373,8 +2333,7 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
   } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED) == 0);
 }
 
-/* Address: 0x00565A30.
-   End of a mission: plays the end movie chosen by the current scenario's record in the loaded campaign
+/* End of a mission: plays the end movie chosen by the current scenario's record in the loaded campaign
    (flm\endeNNNN.flm for the outcome g_EndMovieSelectionIndex and variant g_EndMovieVariantIndex) on the
    in-game root, then shows the results page (per-faction scores, elapsed time, level title) until a results
    button sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED. Without an in-game root or end movie path, or when the
@@ -2572,8 +2531,7 @@ static void FrontendInit_CopyNameDwords(uint32_t *destination,const uint32_t *so
   }
 }
 
-/* Address: 0x00546700.
-   Builds the frontend (menu) at the ROM record initialRomRecordId: clears the screen, loads the central
+/* Builds the frontend (menu) at the ROM record initialRomRecordId: clears the screen, loads the central
    texture set, palette, menu sounds (sound\menueNN.sam until the first missing one), engine\zentrale.rom and
    the menu music, creates the 0x5954-byte frontend root from its template and pushes it on the UI root stack,
    installs the 3D menu-room callbacks and activates the record's camera transition. It then reports this
@@ -2753,8 +2711,7 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
 }
 
 
-/* Address: 0x00547630.
-   Network work of the frontend, run under the frontend tick spin lock (skipped while the lock is busy); it is
+/* Network work of the frontend, run under the frontend tick spin lock (skipped while the lock is busy); it is
    also installed as the menu room's render-lock release callback. According to g_FrontendNetworkState
    it sends the periodic packets of the state and hands every received packet to the state's handler, at most
    once per FRONTEND_TIMER_TICKS_PER_NETWORK_TICK timer ticks (the session start states faster).
@@ -2878,8 +2835,7 @@ void Frontend_StateTick(void)
 }
 
 
-/* Address: 0x00543B70.
-   Called by Frontend_Init for the freshly copied frontend UI: loads gfx\panel\menue.gfx as the texture of the
+/* Called by Frontend_Init for the freshly copied frontend UI: loads gfx\panel\menue.gfx as the texture of the
    menu panels (also kept in g_FrontendMenuTextureSource) and gives the buttons their click sounds, button
    sound voice sets 3 to 6 by control kind. Nothing is bound when the texture cannot be loaded.
 */
@@ -3012,8 +2968,7 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
 }
 
 
-/* Address: 0x005445A0.
-   Handler of frontend command FRONTEND_COMMAND_CYCLE_FACTION_COLOUR (0x650), called directly by
+/* Handler of frontend command FRONTEND_COMMAND_CYCLE_FACTION_COLOUR (0x650), called directly by
    FrontendFactionSetupAction_CycleFactionColour in a local game: advances the colour of faction row rowIndex + 1 (0-based index)
    by one, wrapping after 7 colours (8 when the requesting player has colourCycleFlags bit 0); the row's caption
    (faction colour name) and the level player slot's colour index (the field typed aiClassOrMode) move together.
@@ -3065,8 +3020,7 @@ void FrontendFactionSetup_CycleFactionColour
 }
 
 
-/* Address: 0x00544640.
-   Handler of frontend command FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE (0x6F0), called directly by
+/* Handler of frontend command FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE (0x6F0), called directly by
    FrontendFactionSetupAction_ToggleFactionActive in a local game: unless a player has chosen faction rowIndex + 1, toggles
    whether that faction takes part (FACTION_RUNTIME_LIFECYCLE_ACTIVE: computer or nobody) and refreshes the
    faction setup page.
@@ -3096,8 +3050,7 @@ void FrontendFactionSetup_ToggleFactionActive
 }
 
 
-/* Address: 0x005446A0.
-   Handler of frontend command FRONTEND_COMMAND_CHOOSE_FACTION (0x750), called directly by
+/* Handler of frontend command FRONTEND_COMMAND_CHOOSE_FACTION (0x750), called directly by
    FrontendFactionSetupAction_ChooseFaction in a local game: unless the row is inactive (FRONTEND_CONTROL_INACTIVE), the
    player chooses faction rowIndex + 1. For the local player the row's checkbox becomes the only one checked.
    The player's record (the first one in a local game) gets the faction and the next ready-state generation,
@@ -3160,8 +3113,7 @@ void FrontendFactionSetup_ChooseFaction
 }
 
 
-/* Address: 0x00546190.
-   Fills the frontend debug overlay texts: every 20th call the frames rendered since the last refresh and the
+/* Fills the frontend debug overlay texts: every 20th call the frames rendered since the last refresh and the
    draw calls, texture binds and texture reloads per frame (then all four counters restart), and on every call
    the menu camera's position and orientation, the cursor override position and the free arena bytes.
 */
@@ -3235,8 +3187,7 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
 }
 
 
-/* Address: 0x005474E0.
-   Tears down what Frontend_Init built, before a session starts, before the menu is rebuilt and when the game
+/* Tears down what Frontend_Init built, before a session starts, before the menu is rebuilt and when the game
    quits: removes the frame hooks and frontend timers, saves the root's state snapshot and pops/frees the
    frontend root, releases the ROM registry, world objects, central ROM, textures, palette, menu sounds and
    music, and flushes pending input.
@@ -3292,8 +3243,7 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
 }
 
 
-/* Address: 0x0050AD90.
-   Finds the model under the pointer for the model pointer context's press, release, drag and move handlers:
+/* Finds the model under the pointer for the model pointer context's press, release, drag and move handlers:
    hit-tests every candidate model node with flag 2 that is a runtime model (and has flag 0x20 unless the
    context allows models without it). The winner is the nearest hit, or, unless the context compares by metric
    only, the hit whose model class has the highest priority, the nearer one on equal priority. Returns the

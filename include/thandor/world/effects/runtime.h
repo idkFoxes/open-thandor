@@ -19,19 +19,14 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0051E120 */
 EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId);
 
-/* 0x0051E190 */
 bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 
-/* 0x0051E210 */
 void EffectRuntime_ShutdownGraphicsResources(void);
 
-/* 0x0051E340 */
 void EffectRuntime_RebaseSlotsAfterLoad(void);
 
-/* 0x0051E4A0 */
 EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
           (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference ownerRuntime,
           AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,

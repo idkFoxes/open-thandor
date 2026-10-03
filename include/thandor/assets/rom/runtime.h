@@ -77,59 +77,42 @@ typedef struct RomRecord {
 #define ROM_NODE_FLAG_ACTION_TARGET 0x20 /* linked from an entry of the active record */
 #define ROM_NODE_FLAG_HIDDEN 0x40 /* neither the active record nor in its visibleRecordMask */
 
-/* 0x005452A0 */
 void FrontendRomActionTable_ExecuteRecord
           (uint32_t reservedZero0,uint32_t reservedZero1,FrontendBooleanState32 suppressActivationSound,
           RomRecordTableIndex recordIndex);
 
-/* 0x00546450 */
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
 
-/* 0x005466A0 */
 bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
 
-/* 0x00547FC0 */
 void FrontendRomTransition_ProcessPendingRecord(void);
 
-/* 0x00547400 */
 void FrontendRomRegistry_ClearAndReleaseNestedResources(void);
 
-/* 0x00548720 */
 void FrontendRomTransition_RequestStop(void);
 
-/* 0x005487F0 */
 RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue);
 
-/* 0x00548890 */
 void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable);
 
-/* 0x005488D0 */
 RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *table);
 
-/* 0x005484D0 */
 uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
 
-/* 0x00548600 */
 bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
 
-/* 0x00546330 */
 uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
 
-/* 0x005464C0 */
 ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
           (PackedArgb32 stateTintArgb,RomSerializedNodeHeader *romNodeRecord,
           WorldRuntimeContext *worldObjectArray);
 
-/* 0x005483C0 */
 void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitionEnabled,FrontendRomActionEntry *entry);
 
-/* 0x005487A0 */
 bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
 
-/* 0x00548410 */
 void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record);
 
-/* 0x00548740 */
 RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId);
 
 #endif /* THANDOR_ASSETS_ROM_RUNTIME_H */

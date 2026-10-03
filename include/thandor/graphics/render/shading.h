@@ -39,98 +39,72 @@
 #define GRAPHICS_SHADING_INTENSITY_MAX 255
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004CDD40 */
 void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);
 
-/* 0x004BCF70 */
 uint32_t GraphicsIntensityClampTable_Initialize(void);
 
-/* 0x004CCA90 */
 MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPoint
           (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulator);
 
-/* 0x004CCB40 */
 GraphicsShadingRuntimeRecord * GraphicsShadingRuntime_AllocateRecord
           (GraphicsTransitionTickCount transitionDurationTicks,GraphicsRadiusQ12 radiusQ12,
           PackedRgb24 packedColorRgb,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
 
-/* 0x004CCC60 */
 void GraphicsShadingRuntime_ClearRecordTable(void);
 
-/* 0x004CCD00 */
 void GraphicsShadingRuntime_RebuildCompactLightingRecords(void);
 
-/* 0x004CCD70 */
 void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
 
-/* 0x004CCFF0 */
 uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension);
 
-/* 0x004CD1B0 */
 void GraphicsShadingRuntime_Shutdown(void);
 
-/* 0x004CD200 */
 void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void);
 
-/* 0x004CD360 */
 void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void);
 
-/* 0x004CD880 */
 void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddress32 meshRecord);
 
-/* 0x004CD930 */
 void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNode *modelNode);
 
-/* 0x004CD9F0 */
 uint32_t
 GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 meshRecord);
 
-/* 0x004CDAB0 */
 uint32_t
 GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *modelNode);
 
-/* 0x004CDB80 */
 void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelMeshGroupAddress32 meshRecord);
 
-/* 0x004CDC20 */
 void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds(ModelRuntimeNode *modelNode);
 
-/* 0x00485020 */
 void GraphicsShadingGeneratedTexture_TransformPointXY
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform);
 
-/* 0x004CD2B0 */
 void GraphicsShadingGeneratedTexture_AdvanceTileCursor(void);
 
-/* 0x004CD3D0 */
 void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void);
 
-/* 0x004CDCE0 */
 bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
 
-/* 0x004D1060 */
 GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext);
 
-/* 0x004D1150 */
 void GraphicsShadingGeneratedTexture_RollbackFourteenProjectedPointBlocks
                (GeneratedTextureRenderContextView *renderContext);
 
-/* 0x00484FA0 */
 void GraphicsShadingGeneratedTexture_TransformPointXYQuantized
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform);
 
-/* 0x00485320 */
 void GraphicsShadingGeneratedTexture_ComposeTransform
           (GraphicsFixedMatrix3x4 *outTransform,GraphicsFixedMatrix3x4 *rhsTransform,
           GraphicsFixedMatrix3x4 *lhsTransform);
 
-/* 0x004CD690 */
 void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
           (GraphicsFixedVec2 *vertexA,GraphicsFixedVec2 *vertexB,GraphicsFixedVec2 *vertexC);
 

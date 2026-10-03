@@ -52,8 +52,7 @@ static uint32_t EffectTint_Modulate(uint32_t effectTintArgb,uint32_t definitionT
   return EffectTint_PackWordsUnsignedSaturate(modulatedLanes);
 }
 
-/* Address: 0x0051E790.
-   Effect entry of the terrainStateRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
+/* Effect entry of the terrainStateRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
    table, from InGameRuntime_UpdateSimulationAndNetworkTick). Classifies the terrain occupancy around the effect,
    replaces the node's PRESENT/SEEN_BEFORE visibility flags with the resolved ones and refreshes the state tint;
    while the resulting tint is not fully transparent it becomes the effect tint modulated by the definition tint.
@@ -86,8 +85,7 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
 }
 
 
-/* Address: 0x0051E830.
-   Effect entry of the occupancyRebuild phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
+/* Effect entry of the occupancyRebuild phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
    table, from InGameRuntime_UpdateSimulationAndNetworkTick): effects take no part in the occupancy rebuild, so this
    does nothing (RET 8).
 */
@@ -98,8 +96,7 @@ void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRun
 }
 
 
-/* Address: 0x0051E840.
-   Effect entry of the audioRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
+/* Effect entry of the audioRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
    from the every-8th-frame spatial sound pass in InGameUiRoot_UpdateFrame): effects add no
    spatial sound, so this does nothing (RET 8).
 */
@@ -466,8 +463,7 @@ static int EffectLifecycle_AdvanceTerrainRelativeMotion
   return 0;
 }
 
-/* Address: 0x0051E850.
-   Effect entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
+/* Effect entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
    from InGameRuntime_UpdateSimulationAndNetworkTick). Runs once per simulation step of the batch: advances the
    animation frames (the effect ends and unlinks itself when they run out), starts and stops its shading record,
    fades the alpha in and out, interpolates the model scale, spawns periodic child effects and then performs the

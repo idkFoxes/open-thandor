@@ -16,18 +16,14 @@
 #define SHOT_IMPACT_EFFECT_EMITTED 0x1
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0052C080 */
 void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode);
 
-/* 0x0052C1A0 */
 void ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject);
 
-/* 0x0052C1B0 */
 void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode);
 
-/* 0x0052C230 */
 void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode);
 

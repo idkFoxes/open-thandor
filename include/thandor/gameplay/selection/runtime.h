@@ -48,169 +48,128 @@
 #define SELECTION_PANEL_CELL_BOTTOM_BAR 0x19        /* hierarchy scale ratio */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0052E350 */
 void SelectionPanel_RenderArmyRuntimeMetrics
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
           UiPixelCoordinate panelTop,UiPixelCoordinate panelLeft,
           RuntimeModelFactionPrefix *runtimeEntry);
 
-/* 0x0055FA20 */
 void InGameSelection_SelectAllOwnAircraftPads
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
-/* 0x0055FB30 */
 void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
           (PlayerRuntimeId playerId,uint32_t unusedPayload1,uint32_t unusedPayload2,
           RuntimeToken armyRuntimeIndex);
 
-/* 0x0055FE70 */
 void InGamePlayerSelection_ApplyMoveCommand
           (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayload worldXQ12,
           CommandPayload worldYQ12);
 
-/* 0x0055FEA0 */
 void InGamePlayerSelection_ApplyPositionCommand
           (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayload worldXQ12,
           CommandPayload worldYQ12);
 
-/* 0x0055FED0 */
 void InGamePlayerSelection_SelectArmyRuntimeIndex
           (PlayerRuntimeId playerId,uint32_t unusedPayload1,uint32_t unusedPayload2,
           RuntimeToken armyRuntimeIndex);
 
-/* 0x0055FF10 */
 void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,CommandPayload surfaceHeightQ12,
           CommandPayload worldXQ12,CommandPayload worldYQ12);
 
-/* 0x0055FF40 */
 void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayload unusedPayload1,
           CommandPayload unusedPayload2,CommandPayload unusedPayload3);
 
-/* 0x0055FF60 */
 void PlayerSelection_StopMovement
           (PlayerRuntimeId playerId,CommandPayload unusedPayload1,
           CommandPayload unusedPayload2,CommandPayload unusedPayload3);
 
-/* 0x0055FF80 */
 void PlayerSelection_CancelTargets
           (PlayerRuntimeId playerId,CommandPayload unusedPayload1,
           CommandPayload unusedPayload2,CommandPayload unusedPayload3);
 
-/* 0x0055FFA0 */
 void PlayerSelection_SelfDestruct
           (PlayerRuntimeId playerId,CommandPayload unusedPayload1,
           CommandPayload unusedPayload2,CommandPayload unusedPayload3);
 
-/* 0x0055FFC0 */
 void InGameSelection_SetAircraftPadTargetLane1
           (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
-/* 0x0055FFF0 */
 void InGameSelection_SetAircraftPadTargetLane2
           (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
-/* 0x00562050 */
 void SelectionPlayerRuntime_MovePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved,Q12 deltaYQ12,Q12 deltaXQ12);
 
-/* 0x00562220 */
 void SelectionPlayerRuntime_RotatePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,AngleTurn32 angleDelta);
 
-/* 0x0052CEE0 */
 bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError);
 
-/* 0x0052D0F0 */
 void SelectionInfoPanel_ShutdownResources(void);
 
-/* 0x0052FB20 */
 void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target);
 
-/* 0x0052FB70 */
 bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition);
 
-/* 0x0052FD60 */
 void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array);
 
-/* 0x0052FDC0 */
 bool SelectionInfo_HasAnyEntry(void);
 
-/* 0x0052FDE0 */
 bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex);
 
-/* 0x0052FE30 */
 bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex);
 
-/* 0x0052FEB0 */
 bool SelectionInfo_TestAnyActiveOrSingleClass13(void);
 
-/* 0x0052FF30 */
 bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime);
 
-/* 0x00530050 */
 bool SelectionInfo_TestNoEntryHasWeaponDamage(void);
 
-/* 0x005300A0 */
 bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void);
 
-/* 0x005300E0 */
 GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void);
 
-/* 0x00530100 */
 bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry);
 
-/* 0x00530770 */
 uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void);
 
-/* 0x005307C0 */
 uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void);
 
-/* 0x00561000 */
 void SelectionPlayerRuntime_ClearTerrainEditSelectionState
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2);
 
-/* 0x00571020 */
 bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId);
 
-/* 0x005302B0 */
 void SelectionPointerArray_ApplyMoveCommand
           (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection);
 
-/* 0x00530420 */
 void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries);
 
-/* 0x0052FCE0 */
 void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
           (ArmyRuntimeSlot *sourceArmyRuntime,SelectionPointerArray32 *selection);
 
-/* 0x005303A0 */
 void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection);
 
-/* 0x0052D600 */
 SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex);
 
-/* 0x0052D6F0 */
 SelectionPanelCellAdvance SelectionPanel_DrawIconCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelCellIndex cellIndex);
 
-/* 0x0052D770 */
 SelectionPanelCellAdvance SelectionPanel_DrawSteppedMeterCellAndAdvance
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex);
 
-/* 0x0052D850 */
 void SelectionPanel_DrawProportionalCappedBar
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
@@ -218,21 +177,18 @@ void SelectionPanel_DrawProportionalCappedBar
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex);
 
-/* 0x0052DAF0 */
 void SelectionPanel_DrawForwardCappedBar
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
           SelectionPanelCellIndex cellIndex);
 
-/* 0x0052DBC0 */
 void SelectionPanel_DrawSolidCappedBar
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
           SelectionPanelCellIndex cellIndex);
 
-/* 0x0052DFF0 */
 void SelectionPanel_DrawSegmentedCappedBar
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
@@ -240,42 +196,31 @@ void SelectionPanel_DrawSegmentedCappedBar
           SelectionPanelSegmentCount totalSegmentCount,SelectionPanelSegmentCount filledSegmentCount
           ,SelectionPanelCellIndex cellIndex);
 
-/* 0x00530130 */
 void SelectionPointerArray_ApplyArmyRuntimeTarget
           (ArmyRuntimeSlot *targetArmyRuntime,SelectionPointerArray32 *selection);
 
-/* 0x00530190 */
 void SelectionPointerArray_ApplyTargetPositionCommand
           (Q12 coordinateA,uint32_t coordinateB,Q12 coordinateC,SelectionPointerArray32 *selection);
 
-/* 0x00530540 */
 void SelectionRuntime_StopMovement(GameEntityRuntime **selectionEntries);
 
-/* 0x005305A0 */
 void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries);
 
-/* 0x00530600 */
 void SelectionRuntime_SelfDestruct(GameEntityRuntime **selectionEntries);
 
-/* 0x0052FCA0 */
 void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection);
 
-/* 0x0052FBF0 */
 void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection);
 
-/* 0x0052FD90 */
 bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array);
 
-/* 0x005301F0 */
 bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
 
-/* 0x00530650 */
 void SelectionPointerArray_SetAircraftPadTargets
           (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12,
           SelectionPointerArray32 *selection);
 
-/* 0x0052FB00 */
 void SelectionPointerArray_Clear32(SelectionPointerArray32 *array);
 
 #endif /* THANDOR_GAMEPLAY_SELECTION_RUNTIME_H */

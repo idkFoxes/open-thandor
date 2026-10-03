@@ -12,8 +12,7 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node);
 
 /* Implementation ownership: world/model/hierarchy. */
 
-/* Address: 0x004BD1F0.
-   Fades the model's tint one step toward the target its state flags ask for and applies it to the whole
+/* Fades the model's tint one step toward the target its state flags ask for and applies it to the whole
    hierarchy (called by the army terrainStateRefresh maintenance phase in gameplay/army/runtime.c). Targets:
    flag 4 white and opaque; else flag 8 with 0x10 white and transparent, flag 8 alone grey 0x87 and opaque,
    neither black and transparent; flag 0x1000 always makes it transparent. The step limit comes from the
@@ -66,8 +65,7 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
 }
 
 
-/* Address: 0x004BE360.
-   Recomputes the world transforms of a model hierarchy after its local animation, aim, recoil or
+/* Recomputes the world transforms of a model hierarchy after its local animation, aim, recoil or
    translation changed: composes from the node's parent if it has one, else from the node itself. Only one
    level is climbed, so callers pass a root node or a direct child of it.
 */
@@ -83,8 +81,7 @@ void ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRunti
 }
 
 
-/* Address: 0x0051D870.
-   Gives a model node and all its descendants the palette and texture set. Only
+/* Gives a model node and all its descendants the palette and texture set. Only
    called by itself in the executable; the faction code uses
    ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive.
 */
@@ -107,8 +104,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
   return;
 }
 
-/* Address: 0x0051DB80.
-   Switches the models of an army to the variants its faction's technology selects: runs
+/* Switches the models of an army to the variants its faction's technology selects: runs
    ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive on the army's model runtime hierarchy.
 */
 void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime)
@@ -119,8 +115,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(FactionRuntimeIndex fa
 }
 
 
-/* Address: 0x004BD310.
-   Grows the global model bounding box (g_ModelBoundsMinimum/Maximum X/Y/Z) by every mesh vertex of the node,
+/* Grows the global model bounding box (g_ModelBoundsMinimum/Maximum X/Y/Z) by every mesh vertex of the node,
    transformed by the node's world transform, and then by all its descendants. The caller seeds the box first.
 */
 void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNode)
@@ -179,8 +174,7 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
 }
 
 
-/* Address: 0x004BD8D0.
-   Turns a mesh group towards the camera around the model's own up axis (mesh group flag 1 in
+/* Turns a mesh group towards the camera around the model's own up axis (mesh group flag 1 in
    ModelRender_DrawMeshGroupsWithTemporaryTransform): rotates the camera-to-node vector into the model's frame
    (keeping its two stored rotation angles) and replaces the third angle by the view direction plus a quarter turn.
 */
@@ -205,8 +199,7 @@ void ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime
 }
 
 
-/* Address: 0x004BD950.
-   Turns a mesh group fully towards the camera, a billboard (mesh group flag 2 in
+/* Turns a mesh group fully towards the camera, a billboard (mesh group flag 2 in
    ModelRender_DrawMeshGroupsWithTemporaryTransform): the rotation basis is built from the direction of the
    camera-to-node vector (azimuth + half turn, negated elevation).
 */
@@ -226,8 +219,7 @@ void ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
 }
 
 
-/* Address: 0x004BE9D0.
-   Recomputes the bounding radius of a model node's subtree, children first: the largest of the node's own
+/* Recomputes the bounding radius of a model node's subtree, children first: the largest of the node's own
    model radius and, per child, the child's distance from the node plus the child's subtree radius. Read by
    rendering, the selection overlay and ModelNodeRuntime_UpdateDepthBinMasks.
 */
@@ -263,8 +255,7 @@ void ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNode
 }
 
 
-/* Address: 0x004BEA30.
-   Updates the coarse position bins of a model node after it moved: one bit mask along world x and one along
+/* Updates the coarse position bins of a model node after it moved: one bit mask along world x and one along
    world y, each covering the node's position +- the larger of minimumRadius (the army's placement radius)
    and the subtree bounding radius. Placement and combat test these masks before exact distance checks.
 */
@@ -288,8 +279,7 @@ void ModelNodeRuntime_UpdateDepthBinMasks(DepthIntervalRadius32 minimumRadius,Mo
 }
 
 
-/* Address: 0x004BEB80.
-   Transforms a model-local point record (anchor, launch or marker point) into world coordinates through the
+/* Transforms a model-local point record (anchor, launch or marker point) into world coordinates through the
    node's world transform. The point is written to g_ModelTransformOutput and also returned.
 */
 ModelWorldPoint
@@ -309,8 +299,7 @@ ModelNodeRuntime_TransformLocalPoint
 }
 
 
-/* Address: 0x004BEBC0.
-   Converts a world direction (elevation, azimuth) into the frame of a model node for aiming turrets and weapons
+/* Converts a world direction (elevation, azimuth) into the frame of a model node for aiming turrets and weapons
    (ArmyRuntimeClass_UpdateSingleBarrelTurret/B, ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments):
    rotates a unit vector by the inverse of the node's world rotation and returns its angles, the yaw made
    relative by adding the node's local rotation angle 2 (+0x2C).
@@ -419,8 +408,7 @@ static bool ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_
 }
 
 
-/* Address: 0x0050A7A0.
-   Pointer hit test of a model hierarchy (FrontendModelPointerContext_FindBestEligibleModelHitTarget): projects the
+/* Pointer hit test of a model hierarchy (FrontendModelPointerContext_FindBestEligibleModelHitTarget): projects the
    eight corners of the node's local bounding box and tests the pointer against the twelve triangles of its faces
    (faces with a corner behind the near plane are skipped). On a hit returns the distance from the context's
    reference point to the node (to the box centre with HIT_DISTANCE_TO_BOUNDS_CENTER); otherwise the children are tested
@@ -518,8 +506,7 @@ static ModelMeshGroupRelativeOffset *ModelResource_FindRaycastMeshGroup(ModelRes
 }
 
 
-/* Address: 0x0050B1D0.
-   Ray test of a model hierarchy against the ray in g_ModelRaycastOrigin and
+/* Ray test of a model hierarchy against the ray in g_ModelRaycastOrigin and
    g_ModelRaycastWorldDirectionQ28 (ModelRuntime_RaycastCandidateListNearest): when the ray passes the node's
    bounding sphere within
    g_ModelRaycastMaximumDistance, it is moved into the node's frame and tested against every triangle of the
@@ -654,8 +641,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
 }
 
 
-/* Address: 0x0051B650.
-   Builds the child models of a new model hierarchy from its MDL definition node: every linked definition list
+/* Builds the child models of a new model hierarchy from its MDL definition node: every linked definition list
    yields the variant the faction's technology selects, which is created in the matching child slot and then
    built the same way. CF set (true) when a child cannot be created.
 */
@@ -700,8 +686,7 @@ bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
 }
 
 
-/* Address: 0x0051BEC0.
-   Gives a model node and all its descendants a new palette and texture set; used when two factions merge
+/* Gives a model node and all its descendants a new palette and texture set; used when two factions merge
    and the absorbed faction's models take the survivor's colours. Unlike
    ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive it expects a non-NULL node and skips empty child
    slots itself.
@@ -728,8 +713,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
 }
 
 
-/* Address: 0x0051BF30.
-   Walks a model runtime hierarchy and clears the target (+0x6C) of every model of class 13 (definition +0x4C)
+/* Walks a model runtime hierarchy and clears the target (+0x6C) of every model of class 13 (definition +0x4C)
    that points at targetRuntimeId, so no model keeps aiming at a destroyed object. The dword view: [0] model
    definition, [3] attachment count, [0x1B] target, [0x50 + 8*i] attached child model runtime.
 */
@@ -759,8 +743,7 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
 }
 
 
-/* Address: 0x0051C100.
-   Marks every not yet destroyed node of the army's model hierarchy (root model runtime at +0x00) as destroyed, dismantling
+/* Marks every not yet destroyed node of the army's model hierarchy (root model runtime at +0x00) as destroyed, dismantling
    and non-regenerating: sets runtime flags 0x418 (0x400 | 0x10 | 0x08) on each node that does not have flag
    0x08 yet. The world context is not used.
 */
@@ -807,8 +790,7 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
   }
 }
 
-/* Address: 0x0051C1F0.
-   Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current
+/* Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current
    armour points (runtime +0x3C) of every node, walked depth-first.
 */
 int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
@@ -819,8 +801,7 @@ int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
 }
 
 
-/* Address: 0x00528C20.
-   Collects the attachment points of a runtime model from its serialized MDL definition node (nodes whose
+/* Collects the attachment points of a runtime model from its serialized MDL definition node (nodes whose
    nodeFlags low nibble is not 0 return false and are not walked). Per child slot the first transform record of
    kind 0 or 1 naming that slot is searched in the definition's sprite asset; when the child definition is not
    walked (false from the recursion), the record goes into the next of the six attachments[] entries.
@@ -907,8 +888,7 @@ static ModelAttachmentTransformRecord *ModelResource_FindChildAttachmentTransfor
 }
 
 
-/* Address: 0x00528E90.
-   Builds the runtime node tree of a model from its serialized MDL node tree: allocates a world node per
+/* Builds the runtime node tree of a model from its serialized MDL node tree: allocates a world node per
    definition node, copies the local rotation and the mesh resource, and places each child at the translation
    of the attachment transform record (kind 0 or 1) that names its slot. Definition nodes whose low nibble of
    nodeFlags is set are not instantiated (NULL); for such a child an attachment point is recorded in the model
@@ -1040,8 +1020,7 @@ bool ModelNodeRuntime_CreateHierarchyRecursive
 }
 
 
-/* Address: 0x005294E0.
-   Frees a model node and its whole subtree: releases the children first, clears the parent's childNodes[]
+/* Frees a model node and its whole subtree: releases the children first, clears the parent's childNodes[]
    entries that point at this node and finally unlinks the node from its world owner list.
 */
 void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
@@ -1073,8 +1052,7 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
 }
 
 
-/* Address: 0x0052A100.
-   Folds one model runtime and its attached children into the owning army's selection figures (cleared by
+/* Folds one model runtime and its attached children into the owning army's selection figures (cleared by
    ArmyRuntime_RebuildDerivedSelectionMetrics): maxima at army +0x90, +0x44 and +0x48, the largest shot selection
    range at +0x4C and, for armed models, the shot's impact damage per target class summed into army +0x100[8].
    The dword view: [0] model definition, [1] linked runtime, [2] army, [3] attachment count, [0x3B] class
@@ -1141,8 +1119,7 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
 }
 
 
-/* Address: 0x0052A690.
-   Condition of a model hierarchy as a Q12 ratio: the node's armour points (+0x3C) relative to its
+/* Condition of a model hierarchy as a Q12 ratio: the node's armour points (+0x3C) relative to its
    definition's maximum (+0x60), multiplied by the average of 1.0 and the ratios of all attached child
    hierarchies; Q12_ONE is full condition. Unrelated to the draw scale at node +0xC0.
 */
@@ -1177,8 +1154,7 @@ Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntim
 }
 
 
-/* Address: 0x0052A6F0.
-   Energy demand of a model and its directly attached models (value +0xF4): totalQ4 is the whole demand,
+/* Energy demand of a model and its directly attached models (value +0xF4): totalQ4 is the whole demand,
    activeQ4 only the part of models not switched off (stateFlags bit 0). Attached models count only when the
    definition has flag 0x80 at +0x68; the walk is one level deep, not recursive.
 */
@@ -1219,8 +1195,7 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
   return energyDemand;
 }
 
-/* Address: 0x0052AAC0.
-   Turns a weapon or turret node's yaw (localRotationAngle2) toward targetYawAngle16 over the shorter way, for
+/* Turns a weapon or turret node's yaw (localRotationAngle2) toward targetYawAngle16 over the shorter way, for
    the army aim updates (ArmyRuntimeClass_UpdateSingleBarrelTurret/B,
    ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments): the turn velocity grows by the weapon definition's
    acceleration up to its rate limit and is reset when it points away; the target is taken exactly once it is
@@ -1305,8 +1280,7 @@ bool ModelNodeRuntime_SmoothYawTowardTarget
 }
 
 
-/* Address: 0x0052AC00.
-   Pitch counterpart of ModelNodeRuntime_SmoothYawTowardTarget (same callers): clamps the target to the weapon
+/* Pitch counterpart of ModelNodeRuntime_SmoothYawTowardTarget (same callers): clamps the target to the weapon
    definition's pitch range, then moves localRotationAngle1 toward it with the same accelerate/limit/stop rules,
    without wrap-around. Returns the clamped target pitch when the node is on it (reached within this step or
    already there), otherwise the remaining difference (pitch - clamped target) & FIXED_ANGLE16_MASK.
@@ -1389,8 +1363,7 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
 }
 
 
-/* Address: 0x004BD1A0.
-   Sets the packed ARGB tint of a model node and of all its descendants (the state tint of a whole model,
+/* Sets the packed ARGB tint of a model node and of all its descendants (the state tint of a whole model,
    see ModelNodeRuntime_UpdateStateTintRecursive).
 */
 void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *modelNode)
@@ -1411,8 +1384,7 @@ void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode 
 }
 
 
-/* Address: 0x004BE390.
-   Computes the world transforms of a model hierarchy: a root node first gets its rotation basis from its world
+/* Computes the world transforms of a model hierarchy: a root node first gets its rotation basis from its world
    angles; then every child's world transform = parent world transform x child local transform, the child's world
    Euler angles are extracted from it, the parent's tint is inherited, and the child's subtree is processed.
 */
@@ -1468,8 +1440,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
 }
 
 
-/* Address: 0x0052AEA0.
-   Switches every node of a model hierarchy to the first of the (up to six) variant definitions listed in its
+/* Switches every node of a model hierarchy to the first of the (up to six) variant definitions listed in its
    definition (+0x238) that the faction's technology unlocks. The armour points (+0x3C) are rescaled to the new
    definition's maximum (+0x60) so the condition stays the same, and the army's derived metrics are rebuilt.
 */

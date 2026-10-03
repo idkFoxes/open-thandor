@@ -12,8 +12,7 @@
 
 /* Implementation ownership: world/terrain/grid. */
 
-/* Address: 0x00505930.
-   Deforms the terrain around a world point (crater/mound of an effect): clips the cell rectangle around the
+/* Deforms the terrain around a world point (crater/mound of an effect): clips the cell rectangle around the
    circle to the grid interior, applies FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial to every cell in
    it, then recomputes the triangle normals and the directional light of the same rectangle. Called by effect
    maintenance slot 2 (EffectModelRuntimeMaintenance, 0x0051E850) when a finished effect invokes its linked
@@ -112,8 +111,7 @@ void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
 }
 
 
-/* Address: 0x00562330.
-   In-game command INGAME_COMMAND_TERRAIN_RELAXATION (0x3200, handler at INGAME_COMMAND_CODE_BASE + code):
+/* In-game command INGAME_COMMAND_TERRAIN_RELAXATION (0x3200, handler at INGAME_COMMAND_CODE_BASE + code):
    runs passCount pairs of forward and reverse water relaxation sweeps over the active field grid, the
    sign-gated pair or (mode bit 0 set) the ungated land-tool pair. Queued or called directly by
    InGameCommandRange_DispatchState0/1 (ui/ingame/commands.c) with 0x80 passes. passCount must not be 0.
@@ -186,8 +184,7 @@ static void FieldGridCell_RefreshChangedCellAndNeighbours(int rowStrideBytes,Fie
 }
 
 
-/* Address: 0x005610A0.
-   In-game command INGAME_COMMAND_EDITOR_RAISE_HEIGHTS (0x1F70, handler at INGAME_COMMAND_CODE_BASE + code),
+/* In-game command INGAME_COMMAND_EDITOR_RAISE_HEIGHTS (0x1F70, handler at INGAME_COMMAND_CODE_BASE + code),
    terrain-editor drag (mode G 0, C 0): pulls the terrain towards the anchor cell's height moved by the vertical
    drag distance, with a cosine falloff over the horizontal drag distance. The player's scratch plane holds the
    height change of the previous drag step: it is undone first, the plane is refilled with the current heights
@@ -276,8 +273,7 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
 }
 
 
-/* Address: 0x005613C0.
-   In-game command INGAME_COMMAND_EDITOR_LOWER_HEIGHTS (0x2290, handler at INGAME_COMMAND_CODE_BASE + code),
+/* In-game command INGAME_COMMAND_EDITOR_LOWER_HEIGHTS (0x2290, handler at INGAME_COMMAND_CODE_BASE + code),
    terrain-editor drag (mode G 0, C 1): raises or lowers the terrain by the vertical drag distance, with a cosine
    falloff over the horizontal drag distance. The player's scratch plane holds the height change of the previous
    drag step: it is undone and cleared, then FieldGrid_ProcessVerticalSpan writes the new per-cell offsets around
@@ -356,8 +352,7 @@ void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
 }
 
 
-/* Address: 0x00561C10.
-   In-game command INGAME_COMMAND_EDITOR_REBUILD_INFLUENCE (0x2AE0, handler at INGAME_COMMAND_CODE_BASE + code),
+/* In-game command INGAME_COMMAND_EDITOR_REBUILD_INFLUENCE (0x2AE0, handler at INGAME_COMMAND_CODE_BASE + code),
    terrain-editor smoothing brush (mode G 0, C 2): smooths the cell at the given grid position (or at every
    selected pair) with FieldGrid_ApplyRectangularTransition, then refreshes normals and light wherever the height
    now differs from the player's scratch plane (filled with the heights by FieldGrid_ResetLocalInfluenceState
@@ -441,8 +436,7 @@ void FieldGrid_RebuildLocalInfluenceState
 }
 
 
-/* Address: 0x00505620.
-   Recomputes the packed normal angles of both terrain triangles of every interior cell (the one-cell
+/* Recomputes the packed normal angles of both terrain triangles of every interior cell (the one-cell
    border ring is skipped) after the heights changed, and marks the field grid dirty (runtimeStateFlags
    bit 0).
 */
@@ -477,8 +471,7 @@ void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
 }
 
 
-/* Address: 0x00505700.
-   Sets the terrain light direction (g_TerrainLightDirection, Q28) from an elevation and azimuth
+/* Sets the terrain light direction (g_TerrainLightDirection, Q28) from an elevation and azimuth
    and relights every interior cell with it (border ring skipped); marks the field grid dirty.
 */
 void FieldGrid_RecomputeInteriorDirectionalLighting
@@ -515,8 +508,7 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
 }
 
 
-/* Address: 0x005090E0.
-   Terrain shaping at a world point (used by armies whose class shapes the ground under them): sets the
+/* Terrain shaping at a world point (used by armies whose class shapes the ground under them): sets the
    grid vertex nearest to (worldX, worldY) to the height worldZ (moving its water surface by the opposite
    amount, so the water level stays) and lets the six wedge scans around
    the vertex adapt the neighbouring terrain; heightDeltaSourceValue / 0x240 (clamped to 1..255) limits
@@ -617,8 +609,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
 }
 
 
-/* Address: 0x005618A0.
-   In-game command INGAME_COMMAND_EDITOR_PAINT_MATERIAL (0x2770, handler at INGAME_COMMAND_CODE_BASE + code),
+/* In-game command INGAME_COMMAND_EDITOR_PAINT_MATERIAL (0x2770, handler at INGAME_COMMAND_CODE_BASE + code),
    terrain-editor material brush (mode G 1): writes the material index transitionValue into the cell at the Q12
    grid row/column (or into the cell of every selected pair) with FieldGrid_ApplySingleCellTransition and marks
    the surface dirty. Called directly or through the command queue by InGameUiCommand_UpdateInteractionByMode
@@ -653,8 +644,7 @@ void FieldGrid_ApplyLocalCellUpdate
 }
 
 
-/* Address: 0x00562390.
-   In-game command INGAME_COMMAND_EDITOR_SMOOTH (0x3260, handler at INGAME_COMMAND_CODE_BASE + code),
+/* In-game command INGAME_COMMAND_EDITOR_SMOOTH (0x3260, handler at INGAME_COMMAND_CODE_BASE + code),
    terrain-editor water drag (mode G 2, E 0): marks the surface dirty and lets FieldGrid_ApplyEncodedUpdateCore
    move the water level of the cell at the Q12 grid row/column by the vertical drag distance (the signed high 16
    bits of packedDragDeltaXY16). Called directly or through the command queue by
@@ -675,8 +665,7 @@ void FieldGrid_ApplyEncodedCellUpdate(PlayerRuntimeId playerRuntimeId,Q12 gridRo
 }
 
 
-/* Address: 0x005623D0.
-   In-game command INGAME_COMMAND_EDITOR_SET_RECEIVER_EXCLUDED (0x32A0, handler at INGAME_COMMAND_CODE_BASE +
+/* In-game command INGAME_COMMAND_EDITOR_SET_RECEIVER_EXCLUDED (0x32A0, handler at INGAME_COMMAND_CODE_BASE +
    code), terrain-editor flag toggle (mode G 2, E 1): replaces FIELD_CELL_FLUID_RECEIVER_EXCLUDED of the cell at
    the Q12 grid row/column with setMask (0 or the flag, g_UiCommandTerrainMaskToggleValue) and marks the surface
    dirty. Called directly or through the command queue by InGameUiCommand_UpdateInteractionByMode (0x005703D0).
@@ -695,8 +684,7 @@ void FieldGrid_SetCellFluidReceiverExcluded
 }
 
 
-/* Address: 0x00562410.
-   In-game command INGAME_COMMAND_EDITOR_SET_SOURCE_EXCLUDED (0x32E0, handler at INGAME_COMMAND_CODE_BASE +
+/* In-game command INGAME_COMMAND_EDITOR_SET_SOURCE_EXCLUDED (0x32E0, handler at INGAME_COMMAND_CODE_BASE +
    code), terrain-editor flag toggle (mode G 2, E 2 and up): replaces FIELD_CELL_FLUID_SOURCE_EXCLUDED of the
    cell at the Q12 grid row/column with setMask (0 or the flag, g_UiCommandTerrainMaskToggleValue) and marks the
    surface dirty. Called directly or through the command queue by InGameUiCommand_UpdateInteractionByMode
@@ -716,8 +704,7 @@ void FieldGrid_SetCellFluidSourceExcluded
 }
 
 
-/* Address: 0x00562450.
-   In-game command INGAME_COMMAND_EDITOR_APPLY_REGION_MASK (0x3320, handler at INGAME_COMMAND_CODE_BASE + code),
+/* In-game command INGAME_COMMAND_EDITOR_APPLY_REGION_MASK (0x3320, handler at INGAME_COMMAND_CODE_BASE + code),
    terrain-editor resource brush (mode G 5): sets cell flag bit 11 + materialBitIndex (FIELD_CELL_XENITE_SUPPORT
    for 0, FIELD_CELL_TRITIUM_SUPPORT for 1) in the cell at the Q12 grid row/column, or clears it when bit 31 of
    materialBitIndex is set (g_UiCommandCallerMaskHighBit; the shift count only uses the low 5 bits), and marks
@@ -746,8 +733,7 @@ void FieldGrid_SetCellResourceSupportFlag
 }
 
 
-/* Address: 0x004FEA80.
-   Snaps a world position to the nearest grid vertex (cell): *outPoint receives that cell's worldX, worldY and
+/* Snaps a world position to the nearest grid vertex (cell): *outPoint receives that cell's worldX, worldY and
    terrain height and true is returned. Outside the grid false is returned and *outPoint is the input position
    with height 0 (always written).
 */
@@ -786,8 +772,7 @@ bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *fiel
 }
 
 
-/* Address: 0x004FEB10.
-   Snaps a world position to the nearest grid vertex (cell) like FieldGrid_GetNearestTerrainPoint, but returns
+/* Snaps a world position to the nearest grid vertex (cell) like FieldGrid_GetNearestTerrainPoint, but returns
    the height of the top surface there (terrainHeight + waterSurfaceDelta) in *outPoint and returns true.
    Outside the grid false is returned and *outPoint is the input position with height 0 (always written).
    Used by SelectionOverlay_DrawWorldPointMarker (0x0052F5A0).
@@ -827,8 +812,7 @@ bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *f
 }
 
 
-/* Address: 0x004FEBA0.
-   Water depth at the grid vertex nearest to a world position: the cell's signed waterSurfaceDelta (positive
+/* Water depth at the grid vertex nearest to a world position: the cell's signed waterSurfaceDelta (positive
    when the cell is under water). Outside the grid the result is meaningless (the rounded column index); the
    callers only ask for points inside the field
    (ArmyArticulatedRuntime_UpdateContactChildAndEffects 0x00521580, ArmyRuntime_UpdateTimedShotAndEffectEmitters
@@ -856,8 +840,7 @@ int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
 }
 
 
-/* Address: 0x004FEC10.
-   Terrain height at a world position, interpolated linearly over the grid triangle that contains it, stored
+/* Terrain height at a world position, interpolated linearly over the grid triangle that contains it, stored
    as Q12 in *outHeightQ12. Returns false (and stores height 0) outside the grid or when the cell or its
    diagonal neighbour is a border cell. Entries 0, 2 and 3 of g_FieldGridInterpolationCallbacks5 (0x004FEA30); also called directly by
    ArmyPlacementContact_ApplyTerrainHeight and the army movement code.
@@ -915,8 +898,7 @@ bool FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
 }
 
 
-/* Address: 0x004FED50.
-   Water depth (waterSurfaceDelta) at a world position, interpolated linearly over the grid triangle that
+/* Water depth (waterSurfaceDelta) at a world position, interpolated linearly over the grid triangle that
    contains it like FieldGrid_InterpolateTerrainHeight. Returns 0 outside the grid or on a border cell (the
    original also leaves CF set there; the C prototype drops it). Called by the army movement code
    (ArmyRuntimeClass_UpdateArticulatedMovement, ..UpdateGroundMovementCollisionAndTrackAnimation,
@@ -972,8 +954,7 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
 }
 
 
-/* Address: 0x004FEE90.
-   Height of the water surface (terrainHeight + waterSurfaceDelta, also where waterSurfaceDelta is negative, i.e.
+/* Height of the water surface (terrainHeight + waterSurfaceDelta, also where waterSurfaceDelta is negative, i.e.
    the surface lies below the ground) at a world position, interpolated linearly over the grid triangle that
    contains it, stored as Q12 in *outHeightQ12. Returns false (and stores height 0) outside the grid or on a
    border cell. Entry 1 of
@@ -1037,8 +1018,7 @@ bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGr
 }
 
 
-/* Address: 0x004FEFF0.
-   Height of the top surface (terrain plus water above it) at a world position, interpolated linearly
+/* Height of the top surface (terrain plus water above it) at a world position, interpolated linearly
    over the grid triangle that contains it; one of the five height samplers of the field-grid
    interpolation table (entry 4 of g_FieldGridInterpolationCallbacks5). Stores the Q12 height in
    *outHeightQ12; returns false (and stores height 0) outside the grid or on a border cell.
@@ -1232,8 +1212,7 @@ static uint32_t FieldGrid_BlendTriangleNormals
   return blendedNormalAngles.elevationAngle << 16 | blendedNormalAngles.azimuthAngle & FIXED_ANGLE16_MASK;
 }
 
-/* Address: 0x004FF1A0.
-   Terrain height and terrain normal at a world position: interpolates terrainHeight over the grid triangle
+/* Terrain height and terrain normal at a world position: interpolates terrainHeight over the grid triangle
    that contains it (Q12, *outHeightQ12) and blends the three vertex normals (triangle0NormalAngles, +0x08) with
    the same barycentric weights, stored as packed angles elevation << 16 | azimuth (*outPackedNormalAngles).
    Returns false (outputs untouched) outside the grid or on a border cell. Used by the articulated army contact
@@ -1265,8 +1244,7 @@ bool FieldGrid_InterpolateTerrainHeightAndNormal
 }
 
 
-/* Address: 0x004FFB80.
-   Placement test at a world position: returns false (CF clear) when the nearest grid cell's occupancy byte of
+/* Placement test at a world position: returns false (CF clear) when the nearest grid cell's occupancy byte of
    faction slot factionSlot has any FIELD_CELL_OCCUPANCY_PRESENCE_BITS set, true (CF set, "blocked") when the
    faction is not present there or the point is outside the grid. Called by
    ArmyPlacement_TestGridRuntimeAndFieldBlocking (0x00528110), ArmyPlacementCollision_TestCurrentRuntime
@@ -1299,8 +1277,7 @@ bool FieldGrid_TestWorldPointBlocked
 }
 
 
-/* Address: 0x00503C90.
-   Load-time cell setup: marks the field surface dirty and gives every cell a random animation phase (masked to
+/* Load-time cell setup: marks the field surface dirty and gives every cell a random animation phase (masked to
    the bit width stored just before the terrain surface packet table), a terrain direction record chosen by the
    low nibbles of its world X/Y, a white overlay colour and random material variant bits 8-10. Then it rebuilds
    the four map-edge flags on the outermost ring of cells, which neighbour loops test before stepping outside.
@@ -1328,7 +1305,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
     for (columnsRemaining = cellsPerRow; columnsRemaining != 0; columnsRemaining--) {
       cellWorldXQ12 = cell->worldX;
       cellWorldYQ12 = cell->worldY;
-      /* 0x77ff1fff: the edge flags are rebuilt from scratch, the debug mark starts cleared */
+      /* the edge flags are rebuilt from scratch, the debug mark starts cleared */
       cell->flagsAndMaterial =
            cell->flagsAndMaterial & ~(FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_DEBUG_MARKED);
       phaseRandomValue = Random_NextPrimary();
@@ -1368,8 +1345,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
 }
 
 
-/* Address: 0x00503DB0.
-   Marks the field surface dirty and re-binds every cell's terrain direction record (+0x54) from the low nibbles
+/* Marks the field surface dirty and re-binds every cell's terrain direction record (+0x54) from the low nibbles
    of its world X/Y, the same 16x16 tiling FieldGrid_InitializeRuntimeCellsAndBoundaryFlags uses. The secondary
    terrain resource load calls this instead of the full initialization, so the other cell state is kept.
 */
@@ -1401,8 +1377,7 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
 }
 
 
-/* Address: 0x00503E20.
-   For every field cell, maps the fog-of-war lighting index (visibilityLightingIndex, +0x68) through the
+/* For every field cell, maps the fog-of-war lighting index (visibilityLightingIndex, +0x68) through the
    256x256 terrain clamp lookup, keyed by the cell's occupancy byte of the given faction, and writes the result
    back. Runs on tick-wheel cases 3 and 7 after the per-class terrain-state refresh callbacks.
 */
@@ -1439,8 +1414,7 @@ void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,Fiel
 }
 
 
-/* Address: 0x00503E80.
-   Rebuilds every cell's fog-of-war lighting index (visibilityLightingIndex, +0x68) from the occupancy byte of
+/* Rebuilds every cell's fog-of-war lighting index (visibilityLightingIndex, +0x68) from the occupancy byte of
    one faction slot (usually the active faction): FIELD_CELL_LIGHTING_VISIBLE when a current presence bit
    (FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) is set, FIELD_CELL_LIGHTING_EXPLORED when only the persistent
    bit 7 is, FIELD_CELL_LIGHTING_UNEXPLORED otherwise.
@@ -1473,8 +1447,7 @@ void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,Fi
 }
 
 
-/* Address: 0x00503EE0.
-   Animates the 256 terrain direction records (random rates and scales from TerrainVisualResources_LoadPrimary):
+/* Animates the 256 terrain direction records (random rates and scales from TerrainVisualResources_LoadPrimary):
    both 16-bit angles advance by their rates, and the scaled sine/cosine of angle A and one component of
    angle B are stored, computed from the angles before this step.
 */
@@ -1506,8 +1479,7 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors(void)
 }
 
 
-/* Address: 0x00504B10.
-   Casts a ray from a world point along (elevation, azimuth) scaled to rayScaleQ12 and walks the field grid cell by
+/* Casts a ray from a world point along (elevation, azimuth) scaled to rayScaleQ12 and walks the field grid cell by
    cell towards its end point, testing the two terrain triangles of each in-bounds cell. On a hit it returns true
    and stores the distance and the cell's material byte; a miss (or more than FIELD_GRID_RAYCAST_MAX_STEPS cells)
    returns false and stores FIELD_GRID_RAYCAST_MISS_DISTANCE as the distance (both outputs are always written;
@@ -1596,8 +1568,7 @@ bool FieldGrid_RaycastTerrainSurfaceDistance
 }
 
 
-/* Address: 0x00504CA0.
-   Same walk as FieldGrid_RaycastTerrainSurfaceDistance, but against the secondary (water) surface: each triangle
+/* Same walk as FieldGrid_RaycastTerrainSurfaceDistance, but against the secondary (water) surface: each triangle
    corner is terrainHeight + waterSurfaceDelta. Returns true with the hit distance in *outDistanceQ12, or false with
    FIELD_GRID_RAYCAST_MISS_DISTANCE there on a miss (the original also returned the hit cell's material byte as a
    second result; no caller reads it).
@@ -1678,8 +1649,7 @@ bool FieldGrid_RaycastSecondarySurfaceDistance
 }
 
 
-/* Address: 0x00504E60.
-   Casts a ray of length rayScaleQ12 from a world point in the direction (elevation, azimuth) over the terrain
+/* Casts a ray of length rayScaleQ12 from a world point in the direction (elevation, azimuth) over the terrain
    triangles and returns true on the first hit, with its distance in *outDistanceQ12; false (output untouched)
    when the ray ends first or after FIELD_GRID_RAYCAST_MAX_STEPS - 1 cells. The original also returned the hit
    cell's material byte (or the traversal's last row coordinate on a miss) in EDX; no caller reads it. Cells
@@ -1836,8 +1806,7 @@ bool FieldGrid_RaycastTerrainTrianglesAlongDirection
 }
 
 
-/* Address: 0x00505120.
-   Clears the rebuilt bits 0..6 of every faction byte of every cell's occupancyMask, keeping bit 7. Head of
+/* Clears the rebuilt bits 0..6 of every faction byte of every cell's occupancyMask, keeping bit 7. Head of
    tick-wheel case 7, before the per-class occupancy-rebuild callbacks repopulate the mask. The MMX original
    handles eight cells per step and then exactly three more per row, i.e. it assumes a row width of 8n + 3.
 */
@@ -1885,8 +1854,7 @@ void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid)
   return;
 }
 
-/* Address: 0x00505240.
-   Sets FIELD_CELL_OCCUPANCY_BIT0 in one faction's occupancy byte of every cell. Tick-wheel case 7 calls it
+/* Sets FIELD_CELL_OCCUPANCY_BIT0 in one faction's occupancy byte of every cell. Tick-wheel case 7 calls it
    for the active faction when bit 3 of g_UiCommandRuntimeFlags is set, right after the rebuild clear, so
    every cell carries bit 0 for that faction during the rebuild.
 */
@@ -1918,8 +1886,7 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
 }
 
 
-/* Address: 0x00505290.
-   Counterpart of FieldGrid_SetOccupancyMaskByteBit0AllCells: clears FIELD_CELL_OCCUPANCY_BIT0 in one
+/* Counterpart of FieldGrid_SetOccupancyMaskByteBit0AllCells: clears FIELD_CELL_OCCUPANCY_BIT0 in one
    faction's occupancy byte of every cell.
 */
 void FieldGrid_ClearOccupancyMaskByteBit0AllCells
@@ -1949,8 +1916,7 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
 }
 
 
-/* Address: 0x00507580.
-   Rounds a world point to the nearest field-grid cell and tests occupancy bits 0/1 of the active faction there.
+/* Rounds a world point to the nearest field-grid cell and tests occupancy bits 0/1 of the active faction there.
    Returns false (CF clear) when one of them is set, true when the point is outside the grid or neither bit is
    set. Unit, shot and effect code play positioned sounds only when this returns false.
 */
@@ -1980,8 +1946,7 @@ bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRu
 }
 
 
-/* Address: 0x005092A0.
-   Clears the debug mark (FIELD_CELL_DEBUG_MARKED, bit 15) in every cell of the grid. No caller
+/* Clears the debug mark (FIELD_CELL_DEBUG_MARKED, bit 15) in every cell of the grid. No caller
    found in src/ or the image tables, and no code in the game sets the mark.
 */
 void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid)
@@ -2000,8 +1965,7 @@ void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid)
 }
 
 
-/* Address: 0x005092E0.
-   Sets the overlay colour (ARGB, cell +0x04) of every field-grid cell to one value.
+/* Sets the overlay colour (ARGB, cell +0x04) of every field-grid cell to one value.
 */
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid)
 
@@ -2019,8 +1983,7 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
 }
 
 
-/* Address: 0x00532B60.
-   Map editor save of the field grid: copies the loaded asset image (its size is the second dword) into a
+/* Map editor save of the field grid: copies the loaded asset image (its size is the second dword) into a
    temporary block, resets the runtime-only cell state (normals to straight up, derived dwords and occupancy
    to 0, runtime flag bits cleared), rebuilds fieldFlags as the set of used material ids and writes the block to
    g_LevelResourcePathScratchUtf16. Returns true on success (the temporary block is freed; the free's own
@@ -2104,8 +2067,7 @@ bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32
 }
 
 
-/* Address: 0x00561050.
-   In-game command INGAME_COMMAND_EDITOR_CLEAR_SCRATCH (0x1F20, handler at INGAME_COMMAND_CODE_BASE + code):
+/* In-game command INGAME_COMMAND_EDITOR_CLEAR_SCRATCH (0x1F20, handler at INGAME_COMMAND_CODE_BASE + code):
    zeroes the player's terrain scratch plane (one dword per cell) at the start of a height drag (mode G 0,
    C 0/1), so that FieldGrid_ApplyPositiveCellDeltas / ..NegativeCellDeltas have no previous step to undo. The
    other payload dwords are unused. Called directly or through the command queue by
@@ -2131,8 +2093,7 @@ void FieldGrid_ClearPlayerScratchPlane
 }
 
 
-/* Address: 0x00561BB0.
-   In-game command INGAME_COMMAND_EDITOR_RESET_INFLUENCE (0x2A80, handler at INGAME_COMMAND_CODE_BASE + code):
+/* In-game command INGAME_COMMAND_EDITOR_RESET_INFLUENCE (0x2A80, handler at INGAME_COMMAND_CODE_BASE + code):
    copies every cell's terrain height into the player's scratch plane at the start of a smoothing stroke
    (mode G 0, C 2), the reference FieldGrid_RebuildLocalInfluenceState compares against. The other payload
    dwords are unused. Called directly or through the command queue by InGameUiCommand_BeginInteractionByMode
@@ -2162,8 +2123,7 @@ void FieldGrid_ResetLocalInfluenceState
 }
 
 
-/* Address: 0x00571EC0.
-   Moves the water level of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) by -64 per
+/* Moves the water level of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) by -64 per
    heightDeltaUnits (the vertical drag distance, so dragging up raises it) and refreshes the normals and light of
    the cell and of its six neighbours that are not border cells. Called by FieldGrid_ApplyEncodedCellUpdate.
 */
@@ -2217,8 +2177,7 @@ void FieldGrid_ApplyEncodedUpdateCore(FieldGridHeightDeltaUnits heightDeltaUnits
 }
 
 
-/* Address: 0x005058A0.
-   One cell of FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface: when the cell lies strictly inside the
+/* One cell of FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface: when the cell lies strictly inside the
    circle, its height changes by amplitude * (distance^2 / radius^2 - 1) (a paraboloid, -amplitude at the centre,
    0 at the rim), cells with water (waterSurfaceDelta >= 0) keep their water level, and a non-negative
    terrainMaterialIndexOrNegativeSentinel replaces the material byte.
@@ -2273,8 +2232,7 @@ void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial(TerrainMaterialIndex
 }
 
 
-/* Address: 0x00505AA0.
-   Water flow pass A (tick-wheel case 1): scans the interior cells row by row and pulls the water surface
+/* Water flow pass A (tick-wheel case 1): scans the interior cells row by row and pulls the water surface
    (terrainHeight + waterSurfaceDelta) of the six hexagonal neighbours 1/8 of the way toward the source
    cell's surface. Sources with negative water or FIELD_CELL_FLUID_SOURCE_EXCLUDED are skipped, receivers
    with FIELD_CELL_FLUID_RECEIVER_EXCLUDED are left alone.
@@ -2352,8 +2310,7 @@ void TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGr
 }
 
 
-/* Address: 0x00505BE0.
-   Water flow pass B (tick-wheel case 5): the same neighbour relaxation as pass A, scanning the interior
+/* Water flow pass B (tick-wheel case 5): the same neighbour relaxation as pass A, scanning the interior
    cells backwards from the bottom-right, so water spreads evenly in both directions over two ticks.
    Cells are addressed by raw byte offsets (cell size 0x80; +0x48 terrainHeight, +0x4C waterSurfaceDelta,
    +0x50 flagsAndMaterial; +/-0x80 is the next/previous cell).
@@ -2433,8 +2390,7 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
 }
 
 
-/* Address: 0x00505D30.
-   Water relaxation, forward, without the sign gate: like pass A
+/* Water relaxation, forward, without the sign gate: like pass A
    (TerrainGrid_RelaxNeighborHeightsForwardWithSignGate) it pulls the water surface of the six neighbours of
    every interior cell 1/8 of the way toward that cell's surface, but cells with negative water are sources too.
    FIELD_CELL_FLUID_SOURCE_EXCLUDED and FIELD_CELL_FLUID_RECEIVER_EXCLUDED are honoured. Run by
@@ -2514,8 +2470,7 @@ void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
 }
 
 
-/* Address: 0x00505E60.
-   Water relaxation, backward, without the sign gate: TerrainGrid_RelaxNeighborHeightsForward scanning the
+/* Water relaxation, backward, without the sign gate: TerrainGrid_RelaxNeighborHeightsForward scanning the
    interior cells from the bottom-right, the partner pass of the land tool in
    TerrainGrid_RunDirectionalRelaxationPasses. Cells are addressed by raw byte offsets (cell size 0x80; +0x48
    terrainHeight, +0x4C waterSurfaceDelta, +0x50 flagsAndMaterial; 0x40000000 = FIELD_CELL_FLUID_SOURCE_EXCLUDED,
@@ -2596,8 +2551,7 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
 }
 
 
-/* Address: 0x00571090.
-   Height-drag brush of FieldGrid_ApplyPositiveCellDeltas around one centre cell (Q12 grid row/column
+/* Height-drag brush of FieldGrid_ApplyPositiveCellDeltas around one centre cell (Q12 grid row/column
    centerRowQ12/centerColumnQ12): the target height is the source cell's terrainHeight - 64 * heightDeltaUnits;
    every cell of accumulatorPlane (one height per cell) within radius = min(|64 * radiusUnits|, 0x5000) world
    units of the centre cell moves towards it by (1 + cos(pi * distance / (radius + 1))) / 2 of the difference,
@@ -2706,8 +2660,7 @@ void FieldGrid_ProcessHorizontalSpan(Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldG
 }
 
 
-/* Address: 0x00571250.
-   Raise/lower brush of FieldGrid_ApplyNegativeCellDeltas around one centre cell (Q12 grid row/column
+/* Raise/lower brush of FieldGrid_ApplyNegativeCellDeltas around one centre cell (Q12 grid row/column
    centerRowQ12/centerColumnQ12): adds (1 + cos(pi * distance / (radius + 1))) / 2 * offset, offset = -64 *
    heightDeltaUnits, to every accumulatorPlane entry within radius = min(|64 * radiusUnits|, 0x5000) world units
    of the centre cell, capping the sum at offset (so overlapping brushes do not add up beyond it). The scanned
@@ -2813,8 +2766,7 @@ void FieldGrid_ProcessVerticalSpan(FieldGridHeightDeltaUnits heightDeltaUnits,Fi
 }
 
 
-/* Address: 0x005713E0.
-   Replaces the material byte of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) with transitionValue,
+/* Replaces the material byte of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) with transitionValue,
    when the cell is inside the grid. Called by FieldGrid_ApplyLocalCellUpdate.
 */
 void FieldGrid_ApplySingleCellTransition(FieldGridTransitionValue transitionValue,Q12 gridRowQ12,Q12 gridColumnQ12,
@@ -2836,8 +2788,7 @@ void FieldGrid_ApplySingleCellTransition(FieldGridTransitionValue transitionValu
 }
 
 
-/* Address: 0x00571860.
-   Smooths one cell: sets the terrain height of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) to the
+/* Smooths one cell: sets the terrain height of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) to the
    average of its six neighbours (the water level stays); only rows 2..height-2 and columns 2..width-2 are
    touched. Called by FieldGrid_RebuildLocalInfluenceState.
 */
@@ -2874,8 +2825,7 @@ void FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,Field
 }
 
 
-/* Address: 0x004FEA50.
-   Converts a world-plane position to field-grid coordinates in Q12 (integer part = cell column/row,
+/* Converts a world-plane position to field-grid coordinates in Q12 (integer part = cell column/row,
    fraction = position inside the cell): column in EAX, row in EDX. The triangular lattice makes the
    column shift by half a cell per row.
    Original register convention: result in EAX and EDX, CF flag; ECX preserved; uses MMX register MM0.
@@ -2896,8 +2846,7 @@ FieldGridCoordinates FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
 }
 
 
-/* Address: 0x00571FE0.
-   Sets the flags of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) to (flags & preserveMask) |
+/* Sets the flags of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) to (flags & preserveMask) |
    setMask, when the cell is inside the grid. Shared by FieldGrid_SetCellFluidReceiverExcluded,
    FieldGrid_SetCellFluidSourceExcluded and FieldGrid_SetCellResourceSupportFlag.
 */
@@ -2921,8 +2870,7 @@ void FieldGrid_ApplyMaskedRegionCore
 }
 
 
-/* Address: 0x005052E0.
-   Recomputes a cell's two vertex normals from its six lattice neighbours and stores them as packed
+/* Recomputes a cell's two vertex normals from its six lattice neighbours and stores them as packed
    (azimuth | elevation << 16) angle pairs: triangle0NormalAngles (+0x08) for the terrain surface and
    triangle1NormalAngles (+0x78) for the secondary surface (terrainHeight + waterSurfaceDelta). The lighting in
    FieldGridCell_ComputeDirectionalLightColor reads the first one.
@@ -3000,8 +2948,7 @@ void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStri
 }
 
 
-/* Address: 0x00505690.
-   Diffuse terrain lighting for one cell: turns the terrain normal (triangle0NormalAngles) back into a Q28
+/* Diffuse terrain lighting for one cell: turns the terrain normal (triangle0NormalAngles) back into a Q28
    direction, dots it with the global light direction and looks the result up in the directional light colour
    table (groundDirectionalLightColor). The secondary surface always gets the one fixed secondary colour
    (secondarySurfaceDirectionalLightColor).

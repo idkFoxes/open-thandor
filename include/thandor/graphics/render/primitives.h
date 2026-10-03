@@ -44,43 +44,32 @@
 #define GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK 0x7fffffff
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00486080 */
 void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 
-/* 0x004D0A10 */
 uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
 
-/* 0x004D0A40 */
 GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal(void);
 
-/* 0x004D0A90 */
 uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
 
-/* 0x004D0AA0 */
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue);
 
-/* 0x004D0AE0 */
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
 
-/* 0x004D0B20 */
 bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue);
 
-/* 0x004D0C80 */
 void GraphicsPrimitiveQueue_SetVertexColors
           (PackedArgb32 vertex2Color,PackedArgb32 vertex1Color,PackedArgb32 vertex0Color,
           GraphicsPrimitiveQueue *queue);
 
-/* 0x004D0D00 */
 void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTextureSetEntry *textureEntry,
           GraphicsPrimitiveQueue *queue);
 
-/* 0x004D0D50 */
 void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoordinateFixed deltaV,
           GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue);
 
-/* 0x004D0DA0 */
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
@@ -89,7 +78,6 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
           GraphicsProjectedVertexSource *vertex0Projected,
           FrontendModelPointerContext *renderContext);
 
-/* 0x004D0F20 */
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
@@ -98,10 +86,8 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
           GraphicsProjectedVertexSource *vertex0Projected,
           FrontendModelPointerContext *renderContext);
 
-/* 0x004FFC10 */
 DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);
 
-/* 0x004FFC50 */
 bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1);
 

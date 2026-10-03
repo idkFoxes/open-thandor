@@ -10,76 +10,59 @@
 
 /* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 004AF1E0 g_UiTooltipState */
 UiTooltipState g_UiTooltipState = {.countdownFrames = 8};
 
-/* 004B0E44 g_UiSoundGainQ15 */
 AudioMixerGainQ15 g_UiSoundGainQ15 = 32768;
 
-/* 004B0E60 g_UiListActivationPulseFrames: UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+/* UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
 const UiFrameDelayFrames g_UiListActivationPulseFrames = 8;
 
-/* 004B0E78 g_UiTextStyleNormal */
 const uint32_t g_UiTextStyleNormal = 0;
 
-/* 004B0E8C g_UiWindowFrameInset */
 const int32_t g_UiWindowFrameInset = 2;
 
-/* 004B0E90 g_UiListTextStyle */
 const uint32_t g_UiListTextStyle = 0;
 
-/* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlags */
 static const pointer g_Utf16StringCompareAsciiCaseInsensitiveFlags = (void *)Utf16String_CompareAsciiCaseInsensitiveFlags;
 
-/* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
 uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {0};
 
-/* 00422788 g_GraphicsAdapterFormatScratch1Utf16 (followed by 8 bytes of 0x90 alignment padding, dropped) */
 uint16_t g_GraphicsAdapterFormatScratch1Utf16[16] = {0};
 
-/* 004B0E48 g_UiTooltipDelayFrames */
 static const UiFrameDelayFrames g_UiTooltipDelayFrames = 12;
 
-/* 004B0E4C g_UiTooltipTextStyle */
 static const uint32_t g_UiTooltipTextStyle = 0;
 
-/* 004B0E74 g_UiTextStyleSelected: UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/text.c). */
+/* UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/text.c). */
 static const UiPackedTextStyle g_UiTextStyleSelected = 0x10000;
 
-/* 004B0E7C g_UiTextStyleDisabled: UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.c). */
+/* UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.c). */
 static const UiPackedTextStyle g_UiTextStyleDisabled = 0x20000;
 
-/* 004B0E80 g_UiTextStyleAlternate */
 static const uint32_t g_UiTextStyleAlternate = 0;
 
-/* 004B0E98 g_UiTextEditActiveTextStyle */
 static const uint32_t g_UiTextEditActiveTextStyle = 0;
 
-/* 004B0E9C g_UiTextEditInactiveTextStyle */
 static const uint32_t g_UiTextEditInactiveTextStyle = 0;
 
-/* 004B0EA0 g_UiTextEditDisabledTextStyle */
 static const uint32_t g_UiTextEditDisabledTextStyle = 0;
 
-/* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep: UiFrameDelayFrames, 8: frames per caret blink phase of a focused text edit, reloaded into the counter byte of editStateFlags (src/ui/controls/text.c). */
+/* UiFrameDelayFrames, 8: frames per caret blink phase of a focused text edit, reloaded into the counter byte of editStateFlags (src/ui/controls/text.c). */
 static const UiFrameDelayFrames g_UiTextEditCaretBlinkPhaseStep = 8;
 
-/* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16: 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
+/* 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
 static uint16_t g_UiPointerListExpandedLeftTextUtf16[512] = {0};
 
-/* 004BA9D8 g_UiPointerListExpandedRightTextUtf16: 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
+/* 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
 static uint16_t g_UiPointerListExpandedRightTextUtf16[512] = {0};
 
-/* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
 static uint16_t g_UiNumericPairFirstValueScratchUtf16[16] = {0};
 
-/* 00515678 g_UiNumericPairSecondValueScratchUtf16 (followed by 0x90 code filler up to 005156A0) */
 static uint16_t g_UiNumericPairSecondValueScratchUtf16[16] = {0};
 
 /* Implementation ownership: ui/controls/text. */
 
-/* Address: 0x004B0200.
-   Per-frame tooltip delay: while the pointer rests on an enabled control (no button held), counts the
+/* Per-frame tooltip delay: while the pointer rests on an enabled control (no button held), counts the
    delay down and prepares the tooltip text when it expires. While a node has captured the pointer or the
    hovered control is disabled, re-evaluates the hover target at the last pointer position instead.
 */
@@ -131,8 +114,7 @@ static void UiNumericTextEdit_RemoveSelectedRange(UiNumericTextControl *control)
 }
 
 
-/* Address: 0x004B5F20.
-   Keyboard handler of the numeric text edit (keyboardEvent slot of g_UiNumericTextEditControlVtable): inserts
+/* Keyboard handler of the numeric text edit (keyboardEvent slot of g_UiNumericTextEditControlVtable): inserts
    digits, '-' (signed values) and A-F (hexadecimal values), edits and moves the cursor and Shift selection,
    and after every handled key parses and commits the value. Enter queues the action when the control acts on
    Enter only; everything else goes to UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
@@ -774,8 +756,7 @@ static void UiPathTextEdit_PlayInteractionSound(UiPathTextEditControl *control)
 }
 
 
-/* Address: 0x004B68C0.
-   Keyboard handler of the DOS path edit (keyboardEvent slot of g_UiPathTextEditControlVtable): inserts the
+/* Keyboard handler of the DOS path edit (keyboardEvent slot of g_UiPathTextEditControlVtable): inserts the
    characters a DOS 8.3 path may contain, edits and moves the cursor and Shift selection, and Ctrl+Left/Right
    jump between path segments. After every handled key the path is validated and, unless the control acts on
    Enter only, its action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext.
@@ -980,8 +961,7 @@ static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *c
 }
 
 
-/* Address: 0x004B7110.
-   Keyboard handler of the free-text edit that must not stay empty (keyboardEvent slot of
+/* Keyboard handler of the free-text edit that must not stay empty (keyboardEvent slot of
    g_UiRequiredTextEditControlVtable): inserts any character, edits and moves the cursor and Shift selection,
    Ctrl+Left/Right jump between space-separated words, and Escape clears the text when the control allows it.
    After every handled key the non-empty validity is updated and, unless the control acts on Enter only, its
@@ -1089,8 +1069,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
 }
 
 
-/* Address: 0x004227B0.
-   Draws a graphics-adapter option button (drawClipped slot of g_UiGraphicsAdapterTextButtonVtable): patches
+/* Draws a graphics-adapter option button (drawClipped slot of g_UiGraphicsAdapterTextButtonVtable): patches
    rich-text payloads 0 and 1 of its text and draws it as a text button. The values are the two dwords stored
    just before the node (control[-1].packedTextStyle at -8 is the adapter index or first number,
    control[-1].textResourceId at -0xC the second number). State bit 0x80: only the first number; bit 0x800:
@@ -1140,8 +1119,7 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
 }
 
 
-/* Address: 0x004B58F0.
-   Relocation of a loaded numeric text edit (relocate slot of g_UiNumericTextEditControlVtable): makes it a
+/* Relocation of a loaded numeric text edit (relocate slot of g_UiNumericTextEditControlVtable): makes it a
    fallback focus target unless it is the preferred one, hides the caret, rebuilds the text from the value,
    selects all of it and relocates the children.
 */
@@ -1175,8 +1153,7 @@ void UiNumericTextEditControl_RelocateAndRebuildText
 }
 
 
-/* Address: 0x004B5960.
-   Draws a text edit (drawClipped slot of g_UiNumericTextEditControlVtable, g_UiPathTextEditControlVtable and
+/* Draws a text edit (drawClipped slot of g_UiNumericTextEditControlVtable, g_UiPathTextEditControlVtable and
    g_UiRequiredTextEditControlVtable): the optional win.gfx frame and tiled interior, the selection highlight,
    the text in the active, invalid-value or disabled style, and in the visible caret phase the insert or
    overwrite caret with its shadow. The clip rectangle is narrowed to the text area first.
@@ -1350,8 +1327,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
 }
 
 
-/* Address: 0x004B5DF0.
-   Primary button press on a text edit (nonRightPress slot of the numeric, path and required text edit
+/* Primary button press on a text edit (nonRightPress slot of the numeric, path and required text edit
    vtables): unless read-only, starts a pointer selection by placing the cursor and an empty selection at the
    pointer; plays the interaction sound when enabled.
 */
@@ -1377,8 +1353,7 @@ void UiTextEditControl_BeginSelectionAtPointer
 }
 
 
-/* Address: 0x004B5EA0.
-   Primary-button drag over a text edit (nonRightDrag slot of the numeric, path and required text edit
+/* Primary-button drag over a text edit (nonRightDrag slot of the numeric, path and required text edit
    vtables): while a pointer selection is active, moves the cursor and the selection end it sits on to the
    pointer, keeps selectionStart <= selectionEnd, lays the control out again (scroll) and redraws it.
 */
@@ -1407,8 +1382,7 @@ void UiTextEditControl_UpdateSelectionFromPointer
 }
 
 
-/* Address: 0x004B6850.
-   Relocation of a loaded DOS path edit (relocate slot of g_UiPathTextEditControlVtable): makes it a fallback
+/* Relocation of a loaded DOS path edit (relocate slot of g_UiPathTextEditControlVtable): makes it a fallback
    focus target unless it is the preferred one, hides the caret, validates the path, selects all of it and
    relocates the children.
 */
@@ -1442,8 +1416,7 @@ void UiPathTextEditControl_RelocateAndValidateDos83
 }
 
 
-/* Address: 0x004B70A0.
-   Relocation of a loaded required text edit (relocate slot of g_UiRequiredTextEditControlVtable): makes it a
+/* Relocation of a loaded required text edit (relocate slot of g_UiRequiredTextEditControlVtable): makes it a
    fallback focus target unless it is the preferred one, hides the caret, updates the non-empty validity,
    selects all of the text and relocates the children.
 */
@@ -1506,8 +1479,7 @@ static void UiPointerList_ReselectRecordAfterSort(void *selectedRecord,UiPointer
 }
 
 
-/* Address: 0x004BB5C0.
-   Sorts the rows of a pointer list in ascending order of the rich text found fieldOffset bytes into each row
+/* Sorts the rows of a pointer list in ascending order of the rich text found fieldOffset bytes into each row
    record (expanded, ASCII case-insensitive), with an exchange sort that moves the smallest remaining row to
    the front in each pass. The previously selected record stays selected and is scrolled into view. Called
    by the scenario catalogue (assets/scenario/catalog.c, field offset 0x74).
@@ -1553,8 +1525,7 @@ void UiPointerList_SortByExpandedTextFieldAscending
 }
 
 
-/* Address: 0x005156A0.
-   Draws a text button showing two numbers (drawClipped slot of g_UiNumericPairTextButtonVtable, e.g. a
+/* Draws a text button showing two numbers (drawClipped slot of g_UiNumericPairTextButtonVtable, e.g. a
    display resolution): formats firstValue and secondValue as decimal into rich-text payloads 0 and 1 of its
    text, then draws it as a text button.
 */
@@ -1581,8 +1552,7 @@ void UiNumericPairTextButton_DrawFormattedValues
 }
 
 
-/* Address: 0x00515780.
-   Draws a text button with two text payloads (drawClipped slot of g_UiPayloadPairTextButtonVtable): patches
+/* Draws a text button with two text payloads (drawClipped slot of g_UiPayloadPairTextButtonVtable): patches
    firstPayload and secondPayload into rich-text payloads 0 and 1 of its text, then draws it as a text
    button.
 */
@@ -1603,8 +1573,7 @@ void UiPayloadPairTextButton_DrawFormattedPayloads
 }
 
 
-/* Address: 0x004B0320.
-   Draws the tooltip once its delay has expired: a one-line box (win.gfx left cap 0xBC, tiled middle 0xBD,
+/* Draws the tooltip once its delay has expired: a one-line box (win.gfx left cap 0xBC, tiled middle 0xBD,
    right cap 0xBE) centred above the hovered control, kept inside its root window, and moved below the
    control when there is no room above. Drawn last in the frame, over everything. With no root open at all,
    the whole screen is darkened (ARGB 0x80000000: black at half alpha).
@@ -1705,8 +1674,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
 }
 
 
-/* Address: 0x004B0F90.
-   Closes the UI roots of an ending session: pops the front root until the stack is empty; a root that vetoes
+/* Closes the UI roots of an ending session: pops the front root until the stack is empty; a root that vetoes
    its close stops the loop and is reported as CF (true). The original also stops at the dword after
    g_UiRootNode (0x004B0E34, the window texture source), which is never a root, so in practice this pops every
    root.
@@ -1727,8 +1695,7 @@ bool UiRootStack_PopUntilWindowTextureBoundary(void)
 }
 
 
-/* Address: 0x004B1DD0.
-   Relocation of a loaded framed text button (relocate slot of g_UiFramedTextButtonControlVtable): an inset-framed
+/* Relocation of a loaded framed text button (relocate slot of g_UiFramedTextButtonControlVtable): an inset-framed
    button (UI_BUTTON_FRAME_INSET) grows its layout offsets by g_UiWindowFrameInset on every side, so the frame
    lies outside the authored box; then the children are relocated.
 */
@@ -1757,8 +1724,7 @@ void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDe
 }
 
 
-/* Address: 0x004B1E10.
-   Draws a framed text button (drawClipped slot of g_UiFramedTextButtonControlVtable): the normal, selected or disabled
+/* Draws a framed text button (drawClipped slot of g_UiFramedTextButtonControlVtable): the normal, selected or disabled
    win.gfx frame (plain or inset), its text centred in the state's style, with the focus mark and its shadow
    behind the text while it has keyboard focus, then the children unless the button is suppressed.
 */
@@ -1959,8 +1925,7 @@ void UiFramedTextButtonControl_DrawClipped
 }
 
 
-/* Address: 0x004B22A0.
-   Primary button press on a framed button (nonRightPress slot of g_UiFramedTextButtonControlVtable and
+/* Primary button press on a framed button (nonRightPress slot of g_UiFramedTextButtonControlVtable and
    g_UiWindowControlVtable). A momentary button only shows itself pressed (the action follows on release); a
    persistent toggle button flips its selected state, a persistent radio-style button becomes selected unless
    it already is. Both of those play the activation sound when enabled and queue the action.
@@ -2011,8 +1976,7 @@ void UiFramedTextButtonControl_NonRightPress
 }
 
 
-/* Address: 0x004B2380.
-   Primary button release on a framed button (nonRightRelease slot of g_UiFramedTextButtonControlVtable and
+/* Primary button release on a framed button (nonRightRelease slot of g_UiFramedTextButtonControlVtable and
    g_UiWindowControlVtable): a momentary button that is still pressed (the pointer stayed on it) plays the
    activation sound when enabled, pops back up and queues its action.
 */
@@ -2065,8 +2029,7 @@ static bool UiFramedTextButtonControl_ContainsPoint
 }
 
 
-/* Address: 0x004B23F0.
-   Primary-button drag with a framed button captured (nonRightDrag slot of g_UiFramedTextButtonControlVtable and
+/* Primary-button drag with a framed button captured (nonRightDrag slot of g_UiFramedTextButtonControlVtable and
    g_UiWindowControlVtable): a momentary button shows itself pressed while the pointer is inside its box
    (inside the frame for UI_BUTTON_FRAME_INSET) and released while it is outside.
 */
@@ -2091,8 +2054,7 @@ void UiFramedTextButtonControl_NonRightDrag
 }
 
 
-/* Address: 0x004B24C0.
-   Hit test of a framed button (hitTest slot of g_UiFramedTextButtonControlVtable and g_UiWindowControlVtable): the
+/* Hit test of a framed button (hitTest slot of g_UiFramedTextButtonControlVtable and g_UiWindowControlVtable): the
    control itself when the point lies inside its box (for UI_BUTTON_FRAME_INSET: inside the frame), else
    UI_NODE_NONE. Suppressed buttons are never hit; children are not tested.
 */
@@ -2108,8 +2070,7 @@ UiNodeBase * UiFramedTextButtonControl_HitTestRect
 }
 
 
-/* Address: 0x004B27D0.
-   Draws a framed icon-and-text button (drawClipped slot of g_UiWindowControlVtable): the normal, selected or
+/* Draws a framed icon-and-text button (drawClipped slot of g_UiWindowControlVtable): the normal, selected or
    disabled win.gfx frame, the text centred in the right three quarters (with the focus mark while focused),
    and the icon, vertically centred and ending at the quarter line, over its shadow copy shifted by the normal
    or selected iconDrawOffsets (no shift while suppressed). Children are not drawn.
@@ -2337,8 +2298,7 @@ void UiWindowControl_DrawFramedTextAndChrome
 }
 
 
-/* Address: 0x004B2E40.
-   Relocation of a loaded text button (relocate slot of g_UiTextButtonControlVtable,
+/* Relocation of a loaded text button (relocate slot of g_UiTextButtonControlVtable,
    g_UiGraphicsAdapterTextButtonVtable, g_UiNumericPairTextButtonVtable and g_UiPayloadPairTextButtonVtable):
    only the children need relocating; the text resource id and style are plain values.
 */
@@ -2350,8 +2310,7 @@ void UiTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,Ui
 }
 
 
-/* Address: 0x004B31B0.
-   Primary button press on a text button (nonRightPress slot of g_UiTextButtonControlVtable,
+/* Primary button press on a text button (nonRightPress slot of g_UiTextButtonControlVtable,
    g_UiGraphicsAdapterTextButtonVtable, g_UiNumericPairTextButtonVtable and g_UiPayloadPairTextButtonVtable).
    Only opaque pixels of the button graphic count. A checkbox (toggle) flips its checked state and leaves the
    alternate state; a radio-style button becomes selected unless it already is. Either way the activation
@@ -2412,8 +2371,7 @@ void UiTextButtonControl_NonRightPress
 }
 
 
-/* Address: 0x004B32C0.
-   Keyboard handler of a text button (keyboardEvent slot of g_UiTextButtonControlVtable,
+/* Keyboard handler of a text button (keyboardEvent slot of g_UiTextButtonControlVtable,
    g_UiGraphicsAdapterTextButtonVtable, g_UiNumericPairTextButtonVtable and g_UiPayloadPairTextButtonVtable):
    Space on the focused button activates it like a pointer press (checkbox toggles, radio-style button gets
    selected) unless UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION is set. Everything else, including Space on
@@ -2467,8 +2425,7 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
 }
 
 
-/* Address: 0x004B37C0.
-   Draws an image panel (drawClipped slot of g_UiImagePanelControlVtable): its texture aligned in the layout
+/* Draws an image panel (drawClipped slot of g_UiImagePanelControlVtable): its texture aligned in the layout
    box by panelFlags (centre/right/bottom), optionally over a drop shadow, or stretched over the whole box,
    clipped to the panel; then the children. A panel without a texture or a suppressed one draws nothing, not
    even its children.
@@ -2553,8 +2510,7 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
 }
 
 
-/* Address: 0x004B3960.
-   Hit test of an image panel (hitTest slot of g_UiImagePanelControlVtable and g_UiArmyMetricsPanelVtable):
+/* Hit test of an image panel (hitTest slot of g_UiImagePanelControlVtable and g_UiArmyMetricsPanelVtable):
    the point must lie on an opaque pixel of the aligned texture (unless UI_IMAGE_PANEL_HIT_WHOLE_BOX), then
    the children are tested. UI_NODE_NONE for UI_IMAGE_PANEL_NEVER_HIT or a miss.
 */
@@ -2651,8 +2607,7 @@ static void UiFillPanelControl_DrawTileRow
 }
 
 
-/* Address: 0x004B3AA0.
-   Draws a fill panel (drawClipped slot of g_UiFillPanelControlVtable): without a texture, a rectangle in the
+/* Draws a fill panel (drawClipped slot of g_UiFillPanelControlVtable): without a texture, a rectangle in the
    ARGB colour subresourceOrFillArgb; with one, its subresource once or tiled across and/or down the box
    (fillFlags), each tile optionally over a drop shadow. Then the children.
 */
@@ -2710,8 +2665,7 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
 }
 
 
-/* Address: 0x004B5E60.
-   Primary button release on a text edit (nonRightRelease slot of the numeric, path and required text edit
+/* Primary button release on a text edit (nonRightRelease slot of the numeric, path and required text edit
    vtables): ends the pointer selection and plays the interaction sound when enabled.
 */
 void UiTextEditControl_EndSelection
@@ -2728,8 +2682,7 @@ void UiTextEditControl_EndSelection
 }
 
 
-/* Address: 0x004B6480.
-   Disables a text edit whose action id matches (suppressActionId slot of the numeric, path and required text
+/* Disables a text edit whose action id matches (suppressActionId slot of the numeric, path and required text
    edit vtables): suppresses it, takes the keyboard focus away from it and redraws. Children are not visited.
 */
 void UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl *control)
@@ -2747,8 +2700,7 @@ void UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl 
 }
 
 
-/* Address: 0x004B64B0.
-   Enables a text edit whose action id matches (unsuppressActionId slot of the numeric, path and required text
+/* Enables a text edit whose action id matches (unsuppressActionId slot of the numeric, path and required text
    edit vtables): clears the suppression, gives it the keyboard focus if nothing has it and redraws.
 */
 void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditControl *control)
@@ -2766,8 +2718,7 @@ void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditContro
 }
 
 
-/* Address: 0x004B64E0.
-   Per-frame tick of a text edit (tick slot of the numeric, path and required text edit vtables): while it
+/* Per-frame tick of a text edit (tick slot of the numeric, path and required text edit vtables): while it
    has the keyboard focus, counts the blink frames in the top byte of editStateFlags down; when they run out
    the caret phase flips, the counter restarts at g_UiTextEditCaretBlinkPhaseStep and the edit is redrawn.
 */
@@ -2855,8 +2806,7 @@ static void UiSingleLineTextControl_DrawFocusMark
 }
 
 
-/* Address: 0x004B95E0.
-   Draws a single-line label that forwards its focus to a child (drawClipped slot of
+/* Draws a single-line label that forwards its focus to a child (drawClipped slot of
    g_UiFocusProxyControlVtable): measures the line, aligns it by labelFlags (room for the focus-mark caps
    when there is a focusChild), draws the focus mark and its shadow while the label has keyboard focus, then
    the line (disabled style when the focus child is suppressed). While the label holds the keyboard focus,
@@ -2982,8 +2932,7 @@ void UiSingleLineTextControl_DrawClipped
 }
 
 
-/* Address: 0x004B9E90.
-   Draws the visible rows of a text list (drawClipped slot of g_UiTextListControlVtable): each row's rich
+/* Draws the visible rows of a text list (drawClipped slot of g_UiTextListControlVtable): each row's rich
    text in the list style, the selected row over a highlight bar as wide as its text plus 6 pixels (with end
    caps while the list has keyboard focus).
 */
@@ -3059,8 +3008,7 @@ void UiTextListControl_DrawRowsAndSelection
 }
 
 
-/* Address: 0x004BA040.
-   Primary button press on a text list (nonRightPress slot of g_UiTextListControlVtable): a click on the text
+/* Primary button press on a text list (nonRightPress slot of g_UiTextListControlVtable): a click on the text
    of a row (its width plus 6 pixels) selects that row, scrolls it into view, queues the action and plays the
    selection sound when enabled. A double click also marks the selection confirmed and repeats the action for
    the already selected row; a single click on it does nothing.
@@ -3110,8 +3058,7 @@ void UiTextListControl_SelectRowFromPointer
 }
 
 
-/* Address: 0x004BA130.
-   Keyboard handler of a text list (keyboardEvent slot of g_UiTextListControlVtable): with type search, a
+/* Keyboard handler of a text list (keyboardEvent slot of g_UiTextListControlVtable): with type search, a
    character selects the first row whose first code unit is not below it, ASCII case-insensitive (meant for
    sorted lists; the last row when there is none); Enter confirms the selection
    and queues the action; Home/End/Page Up/Page Down/Up/Down move the selection. A changed selection plays
@@ -3219,8 +3166,7 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
 }
 
 
-/* Address: 0x004BA390.
-   Per-frame tick of a text list (tick slot of g_UiTextListControlVtable): while a keyboard selection change
+/* Per-frame tick of a text list (tick slot of g_UiTextListControlVtable): while a keyboard selection change
    is pending, counts its frame counter (top byte of listStateFlags) down and queues the list's action when it
    reaches 0, so quick key repeats queue only one action.
 */
@@ -3240,8 +3186,7 @@ void UiTextListControl_TickActivationPulse(UiTextListControl *control)
 }
 
 
-/* Address: 0x004BA3D0.
-   Enables a text list whose action id matches (unsuppressActionId slot of g_UiTextListControlVtable), then
+/* Enables a text list whose action id matches (unsuppressActionId slot of g_UiTextListControlVtable), then
    passes the id on to the children.
 */
 void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control)
@@ -3258,8 +3203,7 @@ void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListContro
 }
 
 
-/* Address: 0x004BA400.
-   Disables a text list whose action id matches (suppressActionId slot of g_UiTextListControlVtable), then
+/* Disables a text list whose action id matches (suppressActionId slot of g_UiTextListControlVtable), then
    passes the id on to the children.
 */
 void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control)
@@ -3276,8 +3220,7 @@ void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl 
 }
 
 
-/* Address: 0x004BA430.
-   Fills a pointer list whose rows are rich-text strings (rowPointers, one per row) and selects row 0. The
+/* Fills a pointer list whose rows are rich-text strings (rowPointers, one per row) and selects row 0. The
    list's size follows its content: one list-font line plus 1 pixel per row, and the widest measured row
    plus 6 pixels; the parent (the scrollable frame) is laid out again for the new size.
 */
@@ -3316,8 +3259,7 @@ void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **row
 }
 
 
-/* Address: 0x004BC490.
-   Draws a wrapped multi-line label (drawClipped slot of g_UiListOffsetControlVtable): its text (a text
+/* Draws a wrapped multi-line label (drawClipped slot of g_UiListOffsetControlVtable): its text (a text
    resource or a command stream) wrapped at wrapWidth, which follows the layout width unless
    UI_LABEL_KEEP_WRAP_WIDTH, in g_UiTextStyleNormal with the label's font/palette overrides; then the
    children.
@@ -3366,8 +3308,7 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
 }
 
 
-/* Address: 0x004BCC80.
-   Draws a nine-slice panel (drawClipped slot of g_UiNineSlicePanelControlVtable) from eight consecutive
+/* Draws a nine-slice panel (drawClipped slot of g_UiNineSlicePanelControlVtable) from eight consecutive
    frames starting at firstFrameSubresource: 0 top-left and 1 top-right corner, 2 top edge, 3 left edge,
    4 right edge, 5 bottom-left and 6 bottom-right corner, 7 bottom edge (edges tiled), and centerSubresource
    tiled over the interior; then the children. GRAPHICS_TILED_BLIT_ONE_TILE keeps an edge one tile thick.
@@ -3480,8 +3421,7 @@ void UiNineSlicePanelControl_DrawTextureFrameAndChildren
 }
 
 
-/* Address: 0x00515830.
-   Relocation of a loaded resource gauge (relocate slot of g_UiFormattedContainerVtable): when it has a
+/* Relocation of a loaded resource gauge (relocate slot of g_UiFormattedContainerVtable): when it has a
    tooltip, points payloads 0, 1 (and 2 with UI_GAUGE_HAS_MARKER) of the tooltip text (the resource id stored
    just before the node) at the gauge's own value strings, so the tooltip always shows the current numbers;
    the value strings start out empty. Then the children are relocated.
@@ -3568,8 +3508,7 @@ static int UiFormattedContainer_FillVariantOffset(uint32_t fillPercent,bool twoS
 }
 
 
-/* Address: 0x005158B0.
-   Draws a resource gauge (drawClipped slot of g_UiFormattedContainerVtable): the empty bar (frames
+/* Draws a resource gauge (drawClipped slot of g_UiFormattedContainerVtable): the empty bar (frames
    firstFrameSubresource + 0/1/2: left cap, tiled middle, right cap), the fill up to currentValue in one of six
    colour variants (+3, +6, ... +18, chosen by the fill percentage of the limit or marker), and marker frame
    +21 at limitValue and, with UI_GAUGE_HAS_MARKER, at markerValue. The scale starts at
@@ -3706,8 +3645,7 @@ void UiFormattedContainer_DrawClipped
 }
 
 
-/* Address: 0x00516D10.
-   Draws the army metrics panel (drawClipped slot of g_UiArmyMetricsPanelVtable): the aligned panel texture
+/* Draws the army metrics panel (drawClipped slot of g_UiArmyMetricsPanelVtable): the aligned panel texture
    like an image panel, then, when an entity is attached, its runtime metrics via
    SelectionPanel_RenderArmyRuntimeMetrics with the info-panel graphics temporarily installed as the
    selection-panel graphics; then the children.
@@ -3794,8 +3732,7 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
 }
 
 
-/* Address: 0x00519110.
-   Draws a software texture preview (drawClipped slot of g_UiSoftwareTexturePreviewControlVtable): the
+/* Draws a software texture preview (drawClipped slot of g_UiSoftwareTexturePreviewControlVtable): the
    outgoing and incoming subresources blended bilinearly and scaled over the layout box (a crossfade driven by
    the control's blend buffers), then the children.
 */
@@ -3824,8 +3761,7 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
 }
 
 
-/* Address: 0x00519190.
-   Primary button press on a software texture preview (nonRightPress slot of
+/* Primary button press on a software texture preview (nonRightPress slot of
    g_UiSoftwareTexturePreviewControlVtable): queues the control's action.
 */
 void UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
@@ -3838,8 +3774,7 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
 }
 
 
-/* Address: 0x005191B0.
-   Secondary button press on a software texture preview (rightPress slot of
+/* Secondary button press on a software texture preview (rightPress slot of
    g_UiSoftwareTexturePreviewControlVtable): queues the control's action, like the primary button.
 */
 void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
@@ -3852,8 +3787,7 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
 }
 
 
-/* Address: 0x005191D0.
-   Keyboard handler of a software texture preview (keyboardEvent slot of
+/* Keyboard handler of a software texture preview (keyboardEvent slot of
    g_UiSoftwareTexturePreviewControlVtable): Tab moves the focus on, any other key queues the control's action.
    Always consumed (CF clear).
 */
@@ -3892,8 +3826,7 @@ static UiNodeBase *UiTooltip_FindEligibleNodeAt(UiPixelCoordinate pointerY,UiPix
 }
 
 
-/* Address: 0x004B0150.
-   Tracks which node the tooltip belongs to: remembers the pointer position and takes the node under the
+/* Tracks which node the tooltip belongs to: remembers the pointer position and takes the node under the
    pointer in the top root (only while no button holds a capture, and only tooltip-eligible nodes). When the
    target changes, the tooltip delay starts over and the text of the previous target is prepared again.
 */
@@ -3919,8 +3852,7 @@ void UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate po
 }
 
 
-/* Address: 0x004B6520.
-   Rewrites the text of a numeric text edit from currentValue: clears the 16-code-unit buffer, writes a '-'
+/* Rewrites the text of a numeric text edit from currentValue: clears the 16-code-unit buffer, writes a '-'
    for a negative signed value, then the magnitude in decimal or upper-case hexadecimal, and updates the
    range validity. Called by UiNumericTextEditControl_RelocateAndRebuildText.
 */
@@ -4021,8 +3953,7 @@ static bool UiNumericTextControl_TryHexDigitValue(uint32_t codeUnit,uint32_t *di
 }
 
 
-/* Address: 0x004B65F0.
-   Parses the text of a numeric text edit (optional '-', then decimal or hexadecimal digits) into
+/* Parses the text of a numeric text edit (optional '-', then decimal or hexadecimal digits) into
    currentValue, queues the action unless the control acts on Enter only, and updates the range validity.
    Empty text, a bad digit or a '-' on an unsigned control only clears UI_NUMERIC_TEXT_VALUE_VALID (the value
    stays). Called after every handled key by UiNumericTextEditControl_HandleKeyboardAndCommit.
@@ -4083,8 +4014,7 @@ void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
 }
 
 
-/* Address: 0x004B0250.
-   Prepares the tooltip of node (NULL: nothing to do): the dword stored just before the node is its tooltip,
+/* Prepares the tooltip of node (NULL: nothing to do): the dword stored just before the node is its tooltip,
    either a UTF-16 text pointer (UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) or a text resource id. The text is
    measured in the tooltip style and the UI is redrawn.
 */
@@ -4110,8 +4040,7 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
 }
 
 
-/* Address: 0x004B66E0.
-   Sets UI_NUMERIC_TEXT_VALUE_VALID exactly when currentValue lies within minimumValue..maximumValue,
+/* Sets UI_NUMERIC_TEXT_VALUE_VALID exactly when currentValue lies within minimumValue..maximumValue,
    compared signed for UI_NUMERIC_TEXT_SIGNED_VALUE and unsigned otherwise. Called by
    UiNumericTextControl_RebuildTextFromValue and UiNumericTextControl_ParseAndCommitValue.
 */
@@ -4139,8 +4068,7 @@ void UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control)
 }
 
 
-/* Address: 0x004B6740.
-   Width in pixels of the first prefixLength code units of a text edit's text (fewer if the text ends
+/* Width in pixels of the first prefixLength code units of a text edit's text (fewer if the text ends
    before), measured glyph by glyph in g_UiTextEditActiveTextStyle. Used for the selection, caret and scroll
    positions by the text edit draw and layout functions.
 */
@@ -4168,8 +4096,7 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
 }
 
 
-/* Address: 0x004B6790.
-   Cursor index for a pointer x in a text edit: the index of the glyph under the pointer (the first one whose
+/* Cursor index for a pointer x in a text edit: the index of the glyph under the pointer (the first one whose
    right edge reaches it), or the text length past the end. Accounts for the horizontal scroll and, with
    UI_TEXT_EDIT_DRAW_FRAMED_CHROME, the frame width. Used by the pointer press and drag handlers.
 */
@@ -4205,8 +4132,7 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
 }
 
 
-/* Address: 0x004B7010.
-   Sets UI_TEXT_EDIT_VALUE_VALID of a DOS path edit from g_FileSystemValidateDos83Path, which gets the
+/* Sets UI_TEXT_EDIT_VALUE_VALID of a DOS path edit from g_FileSystemValidateDos83Path, which gets the
    control's UI_PATH_TEXT_ALLOW_WILDCARDS and UI_PATH_TEXT_NAME_ONLY bits shifted down to bits 0-1. Called by
    the path edit's keyboard handler and relocation.
 */
@@ -4227,8 +4153,7 @@ void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
 }
 
 
-/* Address: 0x004B78F0.
-   A text control's value is valid (UI_TEXT_EDIT_VALUE_VALID) exactly when its text is not empty.
+/* A text control's value is valid (UI_TEXT_EDIT_VALUE_VALID) exactly when its text is not empty.
 */
 void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
 
@@ -4243,8 +4168,7 @@ void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
 }
 
 
-/* Address: 0x004BB570.
-   Compares two rich-text streams for the pointer-list sorts: both are expanded (nested streams inlined) into
+/* Compares two rich-text streams for the pointer-list sorts: both are expanded (nested streams inlined) into
    1 KiB scratch buffers and compared with Utf16String_CompareAsciiCaseInsensitiveFlags. Returns the
    comparator's order of leftText relative to rightText: -1 when less, 0 when equal, 1 when greater (a string
    that ends first compares as equal-or-greater, see the comparator). Called by
@@ -4263,8 +4187,7 @@ int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText)
 }
 
 
-/* Address: 0x004B5D00.
-   Layout of a text edit (layout slot of the numeric, path and required text edit vtables; also called after
+/* Layout of a text edit (layout slot of the numeric, path and required text edit vtables; also called after
    every edit): refreshes the layout size and scrolls horizontally just enough to keep the glyphs before and
    after the cursor visible, or not at all while the whole text (plus caret and frame) fits.
 */
@@ -4321,8 +4244,7 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
 }
 
 
-/* Address: 0x004B2E60.
-   Draws a text button (drawClipped slot of g_UiTextButtonControlVtable; also called by the adapter, numeric-pair
+/* Draws a text button (drawClipped slot of g_UiTextButtonControlVtable; also called by the adapter, numeric-pair
    and payload-pair buttons after patching their text): the push-button or checkbox graphic for its state
    (pressed/checked, alternate, disabled), then its text 6 pixels right of the graphic, vertically centred,
    with the focus mark and its shadow while it has keyboard focus. Children are not drawn.
@@ -4467,7 +4389,6 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
 
 /* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
 
-/* 00422720 g_UiGraphicsAdapterTextButtonVtable */
 UiNodeVtable g_UiGraphicsAdapterTextButtonVtable = {
         .relocate = (void *)UiTextButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4489,7 +4410,6 @@ UiNodeVtable g_UiGraphicsAdapterTextButtonVtable = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 004B1D80 g_UiFramedTextButtonControlVtable */
 UiNodeVtable g_UiFramedTextButtonControlVtable = {
         .relocate = (void *)UiFramedTextButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4510,7 +4430,6 @@ UiNodeVtable g_UiFramedTextButtonControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B2740 g_UiWindowControlVtable */
 UiNodeVtable g_UiWindowControlVtable = {
         .relocate = (void *)UiWindowControl_RelocateWithFrameInset,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4531,7 +4450,6 @@ UiNodeVtable g_UiWindowControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B2CE0 g_UiTextButtonControlVtable */
 UiNodeVtable g_UiTextButtonControlVtable = {
         .relocate = (void *)UiTextButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4552,7 +4470,6 @@ UiNodeVtable g_UiTextButtonControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B3770 g_UiImagePanelControlVtable */
 UiNodeVtable g_UiImagePanelControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4573,7 +4490,6 @@ UiNodeVtable g_UiImagePanelControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B58A0 g_UiNumericTextEditControlVtable */
 UiNodeVtable g_UiNumericTextEditControlVtable = {
         .relocate = (void *)UiNumericTextEditControl_RelocateAndRebuildText,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4594,7 +4510,6 @@ UiNodeVtable g_UiNumericTextEditControlVtable = {
         .tick = (void *)UiTextEditControl_TickCaretBlink,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B6800 g_UiPathTextEditControlVtable */
 UiNodeVtable g_UiPathTextEditControlVtable = {
         .relocate = (void *)UiPathTextEditControl_RelocateAndValidateDos83,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4615,7 +4530,6 @@ UiNodeVtable g_UiPathTextEditControlVtable = {
         .tick = (void *)UiTextEditControl_TickCaretBlink,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B7050 g_UiRequiredTextEditControlVtable */
 UiNodeVtable g_UiRequiredTextEditControlVtable = {
         .relocate = (void *)UiRequiredTextEditControl_RelocateAndValidateNonEmpty,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4636,7 +4550,6 @@ UiNodeVtable g_UiRequiredTextEditControlVtable = {
         .tick = (void *)UiTextEditControl_TickCaretBlink,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004B9E40 g_UiTextListControlVtable */
 UiNodeVtable g_UiTextListControlVtable = {
     .relocate = (void *)UiContainer_RelocateChildren,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4657,7 +4570,6 @@ UiNodeVtable g_UiTextListControlVtable = {
     .tick = (void *)UiTextListControl_TickActivationPulse,
     .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 004BCC30 g_UiNineSlicePanelControlVtable */
 UiNodeVtable g_UiNineSlicePanelControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4678,7 +4590,6 @@ UiNodeVtable g_UiNineSlicePanelControlVtable = {
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
-/* 00515610 g_UiNumericPairTextButtonVtable */
 UiNodeVtable g_UiNumericPairTextButtonVtable = {
         .relocate = (void *)UiTextButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4700,7 +4611,6 @@ UiNodeVtable g_UiNumericPairTextButtonVtable = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 00515730 g_UiPayloadPairTextButtonVtable (followed by 0x90 code filler) */
 UiNodeVtable g_UiPayloadPairTextButtonVtable = {
         .relocate = (void *)UiTextButtonControl_Relocate,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4722,7 +4632,6 @@ UiNodeVtable g_UiPayloadPairTextButtonVtable = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 005157E0 g_UiFormattedContainerVtable (followed by 0x90 code filler) */
 UiNodeVtable g_UiFormattedContainerVtable = {
         .relocate = (void *)UiFormattedContainer_RelocateWithPatchedTextPayloads,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4744,7 +4653,6 @@ UiNodeVtable g_UiFormattedContainerVtable = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 00516CC0 g_UiArmyMetricsPanelVtable (followed by 0x90 code filler) */
 UiNodeVtable g_UiArmyMetricsPanelVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
@@ -4766,7 +4674,6 @@ UiNodeVtable g_UiArmyMetricsPanelVtable = {
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
 };
 
-/* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
 UiNodeVtable g_UiSoftwareTexturePreviewControlVtable = {
     .relocate = (void *)UiContainer_RelocateChildren,
     .method04 = (void *)UiNode_DefaultMethod04_NoOp,

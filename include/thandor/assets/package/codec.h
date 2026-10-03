@@ -41,32 +41,26 @@
    incidental register value, see each decoder), or return false and store the error code in *outErrorCode.
    Only the out pointer of the outcome is written; either may be NULL. */
 
-/* 0x0040A9C0 */
 bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-/* 0x0040AAA0 */
 bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-/* 0x0040A960 */
 bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-/* 0x0040A9A0 */
 bool PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-/* 0x0040A4C0 */
 bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-/* 0x0040A790 */
 bool PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
           uint8_t *source,

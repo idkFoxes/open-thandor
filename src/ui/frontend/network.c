@@ -114,8 +114,7 @@ static void FrontendNetworkSetupPage_ApplyClientOption(void)
              g_FrontendNetworkEndpointTextUtf16,NULL);
 }
 
-/* Address: 0x0054C260.
-   Opens the network part of the menu (FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) according to the session role:
+/* Opens the network part of the menu (FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) according to the session role:
    - host session already running (returning from a game): back to the host lobby with the local player as the
      only player record;
    - client session: back to the network game page, the player record reset, and the join request re-sent;
@@ -294,8 +293,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
 }
 
 
-/* Address: 0x005474A0.
-   Frontend teardown: carries the status text id and the host address the player typed over into the frontend
+/* Frontend teardown: carries the status text id and the host address the player typed over into the frontend
    template, so the next frontend built from it (and the in-game template's info text) shows them again.
 */
 void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
@@ -325,8 +323,7 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
 }
 
 
-/* Address: 0x0054C7D0.
-   Action 0x200D of the host address edit on the network game page (g_FrontendUiActionHandlersPage20 slot 13):
+/* Action 0x200D of the host address edit on the network game page (g_FrontendUiActionHandlersPage20 slot 13):
    the typed address is parsed by the active network backend into g_FrontendNetworkEndpointScratch. An
    unparsable address only clears the edit's valid flag; a valid one sends the session discovery probe
    and writes the parsed endpoint back as normalised text.
@@ -353,8 +350,7 @@ void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *host
 }
 
 
-/* Address: 0x0054CE10.
-   Action 0x2003 of the back button on the host game setup page (g_FrontendUiActionHandlersPage20 slot 3):
+/* Action 0x2003 of the back button on the host game setup page (g_FrontendUiActionHandlersPage20 slot 3):
    returns to the network game page, stops the menu room rendering behind it on small screens, resumes
    browsing with the join button hidden and an empty session list, and sends a new session discovery probe.
 */
@@ -396,8 +392,7 @@ static uint32_t CommandLineOption_ParseQuotedDigit(const uint8_t *option, int di
   return (uint32_t)(option[digitOffset] - '0');
 }
 
-/* Address: 0x0054C830.
-   Opens the host game setup page (action FRONTEND_ACTION_HOST_GAME). The command-line options
+/* Opens the host game setup page (action FRONTEND_ACTION_HOST_GAME). The command-line options
    -SPIELER="n" (maximum players, 2..8), -SPIEL="name" (game name) and -NETZWERK="n" (network speed 1..7,
    tick interval 2n) preset the page, each consumed by lower-casing its first letter; when all three are
    given, the game is created at once (FrontendNetworkSetupPage_InitializeSingleLocalPlayer).
@@ -481,8 +476,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
 }
 
 
-/* Address: 0x0054CE80.
-   Action handler of the host game setup page's create button: opens the host lobby page and makes the local
+/* Action handler of the host game setup page's create button: opens the host lobby page and makes the local
    player the only player of a new hosted session (player block 0 with the local name and endpoint, id 0, no
    timeout, "CD" capability, its 64x64 preview image as snapshot payload when it loads), then refreshes the lobby.
 */

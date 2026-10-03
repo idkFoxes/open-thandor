@@ -26,41 +26,29 @@
 #define DWORD_BLOCK64_RECORD_DWORDS 0x40
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x005368E0 */
 void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase);
 
-/* 0x00536930 */
 void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase);
 
-/* 0x00547D20 */
 bool DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord);
 
-/* 0x005863C0 */
 void * __cdecl ArenaHeap_Init(void);
 
-/* 0x00586470 */
 void ArenaHeap_Shutdown(void);
 
-/* 0x005864A0 */
 uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload);
 
-/* 0x00586570 */
 uint32_t __cdecl ArenaHeap_QueryFreeBytes(void);
 
-/* 0x005865B0 */
 uint32_t ArenaHeap_Free(void *memory);
 
-/* 0x00586640 */
 uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlockSize);
 
-/* 0x005866B0 */
 uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory);
 
-/* 0x00586750 */
 uint32_t ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes,void **outBase);
 
-/* 0x005873A0 */
 void Memory_ZeroDwords(MemoryByteCount bytes,void *destination);
 
 #endif /* THANDOR_CORE_MEMORY_ALLOCATOR_H */

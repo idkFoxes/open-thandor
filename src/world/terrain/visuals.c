@@ -58,8 +58,7 @@ static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,
   return lanes.q;
 }
 
-/* Address: 0x0053D370.
-   Builds the terrain composite texture for the current field grid: an in-memory gfx asset with three direct-colour
+/* Builds the terrain composite texture for the current field grid: an in-memory gfx asset with three direct-colour
    ARGB images of one pixel per field cell, published in g_TerrainCompositeTexture and the in-game root. Fills
    planes 1 and 2 and then derives plane 0 from them. Returns true on success; on failure returns false and
    stores the allocator error in *outError (untouched on success).
@@ -160,8 +159,7 @@ static uint8_t *TerrainByteClampLookup_FillRow(uint8_t *rowCursor,int targetLeve
   return rowCursor;
 }
 
-/* Address: 0x00503B10.
-   Builds g_TerrainByteClampLookup, the 64-KiB table FieldGrid_ApplyByteClampLookupToCells uses every few ticks to
+/* Builds g_TerrainByteClampLookup, the 64-KiB table FieldGrid_ApplyByteClampLookupToCells uses every few ticks to
    fade each cell's runtime byte (+0x68) one step (TERRAIN_RUNTIME_BYTE_FADE_STEP) towards the level its occupancy
    byte asks for (row targets: see TERRAIN_BYTE_CLAMP_LOOKUP_BYTES). The table is 64-KiB aligned so the original
    can index it by loading the two bytes into AH/AL. Returns true on success; false when the allocation fails,
@@ -358,8 +356,7 @@ static void TerrainDirectionTable_RandomizeRecords(void)
   }
 }
 
-/* Address: 0x00503F30.
-   Loads the terrain graphics of a field (fld asset, else FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material
+/* Loads the terrain graphics of a field (fld asset, else FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material
    texture sets <secondary>a..z.gfx (those flagged in field->fieldFlags are required, the others optional),
    <primary>.dat/.gfx/.pal and <secondary>.pal/.dat, then initialises the field's runtime cells and the
    animated direction table. Advances the loading movie between steps. Returns true on success; on failure
@@ -395,8 +392,7 @@ bool TerrainVisualResources_LoadPrimary
 }
 
 
-/* Address: 0x005041C0.
-   Variant of TerrainVisualResources_LoadPrimary for a field whose runtime cells already exist (loading a
+/* Variant of TerrainVisualResources_LoadPrimary for a field whose runtime cells already exist (loading a
    savegame): the same resources are loaded, but the cells only get their lookup pointers rebuilt, and
    flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell. Returns true on success; on failure
    returns false and stores the error in *outError (untouched on success).
@@ -441,8 +437,7 @@ bool TerrainVisualResources_LoadAndClearCellOverlayFlags
 }
 
 
-/* Address: 0x00504470.
-   Releases everything TerrainVisualResources_Load* loaded: the 26 material texture sets, the primary
+/* Releases everything TerrainVisualResources_Load* loaded: the 26 material texture sets, the primary
    texture set, both palettes and both .dat tables (their globals point 0x20 bytes into the loaded
    resource, past its header, so that offset is undone before Resource_Release).
 */
@@ -481,8 +476,7 @@ void TerrainVisualResources_Shutdown(void)
 }
 
 
-/* Address: 0x00505780.
-   Sets up the terrain lighting colours: the shaded half of g_TerrainDirectionalLightColorLut gets
+/* Sets up the terrain lighting colours: the shaded half of g_TerrainDirectionalLightColorLut gets
    [i] = base + ramp * (256 - i) / 256 per colour channel (saturated at 0xFF, alpha taken from base), the lit
    half (from TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX) is filled with the base colour and the secondary colour
    is stored in g_TerrainDirectionalLightSecondaryColor.
@@ -547,8 +541,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
 }
 
 
-/* Address: 0x0053D4D0.
-   Frees the terrain composite texture built by TerrainCompositeTexture_Create (through its allocation base).
+/* Frees the terrain composite texture built by TerrainCompositeTexture_Create (through its allocation base).
    g_TerrainCompositeTexture and the in-game root keep the stale pointer.
 */
 void TerrainCompositeTexture_Destroy(void)
@@ -563,8 +556,7 @@ void TerrainCompositeTexture_Destroy(void)
 }
 
 
-/* Address: 0x00561EA0.
-   In-game command 0x2D70 (INGAME_COMMAND_EDITOR_TURN_LIGHT; issued by Ctrl editor hotkeys in
+/* In-game command 0x2D70 (INGAME_COMMAND_EDITOR_TURN_LIGHT; issued by Ctrl editor hotkeys in
    ui/ingame/runtime.c with steps of +-0x400): turns the terrain light and relights the field region. The
    elevation (the root's lightElevationAngle) is kept between -0x4000 (straight down) and -0x1000, the
    azimuth (lightAzimuthAngle) wraps around.
@@ -592,8 +584,7 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
 }
 
 
-/* Address: 0x0053D560.
-   Renders plane 1 of the terrain composite texture (the minimap image, one ARGB pixel per field cell):
+/* Renders plane 1 of the terrain composite texture (the minimap image, one ARGB pixel per field cell):
    dry cells get their material's panel colour shaded by terrain height, flooded cells the water colour
    (palette entry 0) shaded by water depth, both through g_PackedLightingLookupTable.
 */
@@ -669,8 +660,7 @@ void TerrainCompositeTexture_FillPlane1(void)
 }
 
 
-/* Address: 0x0053D680.
-   Renders plane 2 of the terrain composite texture, the resource view of the minimap: Xenite, Tritium and
+/* Renders plane 2 of the terrain composite texture, the resource view of the minimap: Xenite, Tritium and
    plain soil cells get their panel colours shaded by terrain height, and water is blended 50/50 over
    flooded cells.
 */
@@ -790,8 +780,7 @@ void TerrainCompositeTexture_FillPlane2(void)
 }
 
 
-/* Address: 0x0053D840.
-   Builds the displayed minimap (plane 0): copies plane 1 (terrain) or, with bit 1 of
+/* Builds the displayed minimap (plane 0): copies plane 1 (terrain) or, with bit 1 of
    minimapResourceButtonStateFlags, plane 2 (resources), hides cells the active faction has never seen
    (almost black) and darkens those it does not see now, then draws a pixel for each model runtime with an
    alpha tint whose faction has a non-zero colorIndex, in the panel colour of variant

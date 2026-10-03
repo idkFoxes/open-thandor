@@ -52,58 +52,44 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00529360 */
 bool ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
           ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,
           ModelRuntimeSlot **outChildModelRuntime);
 
-/* 0x004BDDB0 */
 void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime);
 
-/* 0x004BE270 */
 void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode);
 
-/* 0x0050B440 */
 bool ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,
           ModelRuntimeNode **outNearestModelNode);
 
-/* 0x0051C260 */
 Q12 ModelRuntime_QueryHierarchyConditionRatioQ12(RuntimeModelFactionPrefix *runtimeEntry);
 
-/* 0x0051C280 */
 int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime);
 
-/* 0x0051C2A0 */
 ModelHierarchyEnergyDemand
 ModelRuntime_QueryHierarchyEnergyDemand(RuntimeModelFactionPrefix *runtimeEntry);
 
-/* 0x00528A40 */
 uint32_t __cdecl ModelRuntimePool_Init(void);
 
-/* 0x00528A70 */
 void ModelRuntimePool_ShutdownAndReleaseDefinitions(void);
 
-/* 0x00528B30 */
 void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void);
 
-/* 0x00528CF0 */
 void ModelRuntimePool_RebaseAfterLoad(void);
 
-/* 0x00529560 */
 void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00529690 */
 void ModelRuntime_EmitProjectilesFromAttachmentPoints
           (ShotTargetModelReference targetModelReference,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
           Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
           MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime);
 
-/* 0x00529140 */
 uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,

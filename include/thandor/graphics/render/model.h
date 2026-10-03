@@ -16,11 +16,11 @@
 /* Rows of g_ModelLightingMmxMultiplierRows (one table in the original, 0x004CAD60..0x004CC6F8). Both vertex
    lighting paths index it with a signed row relative to a base row, so negative indices read the rows before it. */
 #define MODEL_LIGHTING_MMX_ROW_COUNT 819
-/* 0x004CAD60: row 0 = distance attenuation row -136 (former g_ModelDistanceAttenuationMmxNegativeRows) */
+/* row 0 = distance attenuation row -136 (former g_ModelDistanceAttenuationMmxNegativeRows) */
 #define MODEL_DISTANCE_ATTENUATION_NEGATIVE_ROW0 0
-/* 0x004CB1A0: ModelRender_ComputeVertexIntensityDefaultPath's base, indexed by the light-facing dot >> 21 */
+/* ModelRender_ComputeVertexIntensityDefaultPath's base, indexed by the light-facing dot >> 21 */
 #define MODEL_DISTANCE_ATTENUATION_ROW0 136
-/* 0x004CC2B0: ModelRender_ComputeVertexIntensityScaledPath's base, indexed by (dot / lightingScaleQ12) >> 9 */
+/* ModelRender_ComputeVertexIntensityScaledPath's base, indexed by (dot / lightingScaleQ12) >> 9 */
 #define MODEL_LIGHTING_SCALE_ROW0 682
 
 /* ModelRuntimeNode.runtimeFlags bits */
@@ -77,60 +77,44 @@ typedef struct ModelMeshHeader {
 } ModelMeshHeader;
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004BDC90 */
 void ModelRender_DrawMeshGroupsWithTemporaryTransform
           (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode);
 
-/* 0x004BE1F0 */
 void ModelRender_DrawMeshGroupsAlternatePath(ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode);
 
-/* 0x0050A5C0 */
 void ModelProjectedBounds_AccumulateHierarchyRecursive(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode);
 
-/* 0x004BD4B0 */
 void ModelRender_PrepareProjectedVertex
           (ModelRuntimeNode *modelNode,ModelMeshGroupAddress32 triangle,GraphicsFixedVec3 *vertex);
 
-/* 0x004BD9B0 */
 void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode);
 
-/* 0x004BDC20 */
 void ModelRender_SubmitMeshTriangles
           (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode);
 
-/* 0x004BE180 */
 void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode);
 
-/* 0x004BD6B0 */
 bool ModelRender_PrepareProjectedVertexAlternatePath
           (ModelRuntimeNode *modelNode,GraphicsTriangleInput *triangle,GraphicsFixedVec3 *vertex);
 
-/* 0x004BDFB0 */
 void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode);
 
-/* 0x0050A4A0 */
 void ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode);
 
-/* 0x004BD7E0 */
 int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle);
 
-/* 0x004CC710 */
 PackedArgb32 ModelRender_ComputeVertexIntensityDefaultPath (PackedArgb32 vertexPackedColor,int *vertexPositionQ12, GraphicsDistanceAttenuationTableAddress32 distanceAttenuationTable, PackedArgb32 scenePackedColor0,PackedArgb32 scenePackedColor1, GraphicsFixedVec3 *lightDirectionQ12,PackedArgb32 materialPackedColor, GraphicsFixedVec3 *surfaceNormalQ12);
 
-/* 0x004CC820 */
 PackedArgb32 ModelRender_ComputeVertexIntensityScaledPath (PackedArgb32 vertexPackedColor,int *vertexPositionQ12,Q12 lightingScaleQ12, PackedArgb32 scenePackedColor0,PackedArgb32 scenePackedColor1, GraphicsFixedVec3 *lightDirectionQ12,PackedArgb32 materialPackedColor, GraphicsFixedVec3 *surfaceNormalQ12);
 
-/* 0x004CC940 */
 PackedArgb32
 ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
           (PackedArgb32 vertexPackedColor,GraphicsFixedVec3 *vertexPositionQ12,
           PackedArgb32 scenePackedColor0,PackedArgb32 materialPackedColor,
           GraphicsFixedVec3 *surfaceNormalQ12);
 
-/* 0x0050A430 */
 void ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixels *bounds);
 
-/* 0x004BD800 */
 void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime);
 
 #endif /* THANDOR_GRAPHICS_RENDER_MODEL_H */

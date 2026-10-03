@@ -11,8 +11,7 @@
 
 /* Implementation ownership: world/effects/runtime. */
 
-/* Address: 0x0051E120.
-   Looks up an effect definition by its id in the 256-slot effect-definition registry (used by the effect
+/* Looks up an effect definition by its id in the 256-slot effect-definition registry (used by the effect
    catalog to reject duplicate ids). Returns the registered definition (never NULL), or NULL on a miss; a miss
    also writes a number into the package error text (the original returned FATAL_ERROR_EFFECT_ID_NOT_FOUND as
    its failure value).
@@ -37,8 +36,7 @@ EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog 
 }
 
 
-/* Address: 0x0051E190.
-   Level start: loads the shared effect texture set and palette ("<mutableBasePath>.gfx/.pal"; the extension is
+/* Level start: loads the shared effect texture set and palette ("<mutableBasePath>.gfx/.pal"; the extension is
    changed in place) and allocates and zeroes the 0x40000-byte effect runtime pool. The movie schedule is ticked
    between the steps. Returns true with *outError = 0 on success, or false with the load/allocation error in
    *outError (always written).
@@ -88,8 +86,7 @@ bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *out
 }
 
 
-/* Address: 0x0051E210.
-   Counterpart of EffectRuntime_InitGraphicsResources: frees the effect runtime pool, releases the effect
+/* Counterpart of EffectRuntime_InitGraphicsResources: frees the effect runtime pool, releases the effect
    texture set and palette, releases the nested resource owned by each registered effect definition and clears
    the definition registry.
 */
@@ -123,8 +120,7 @@ void EffectRuntime_ShutdownGraphicsResources(void)
 }
 
 
-/* Address: 0x0051E340.
-   After a savegame load: turns the saved offsets of every live effect slot back into pointers (the model node,
+/* After a savegame load: turns the saved offsets of every live effect slot back into pointers (the model node,
    and the owner as a model runtime or an army depending on the completion action) and replaces the saved
    definition id by the registered definition; an effect whose definition is no longer registered is dropped.
 */
@@ -177,8 +173,7 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
 }
 
 
-/* Address: 0x0051E4A0.
-   Spawns one effect: takes a free effect slot and a world object record, links the record into the world as an
+/* Spawns one effect: takes a free effect slot and a world object record, links the record into the world as an
    effect node showing the definition's sprite model (effect or army graphics per the definition's creation
    flags) at the given position and orientation, sets up animation, scale, the optional light (shading record
    at the model's lookup point (0,4)) and terrain class flags, and plays its positioned sound unless the spot

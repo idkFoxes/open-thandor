@@ -126,21 +126,16 @@
 #define INGAME_COMMAND_HANDLER_REGION_END 0x00562499 /* InGameCommandHandlerCodeRegionEnd: the 0x90 filler bytes before g_InGameUiActionHandlersPage10 in the original image */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00543F50 */
 void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,CommandPayload payload1,
           CommandPayload payload2,CommandPayload payload3);
 
-/* 0x00543FB0 */
 void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
 
-/* 0x0055F130 */
 void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandPayload payload1,
           CommandPayload payload2,CommandPayload payload3);
 
-/* 0x0055F190 */
 void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
 
-/* 0x0055F200 */
 bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress);
 

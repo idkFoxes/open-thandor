@@ -23,8 +23,7 @@ static void Win32_ShutdownAndExit(void)
   ExitProcess(0);
 }
 
-/* Address: 0x005868D0.
-   The game's non-blocking message pump (g_Win32PumpMessages): handles every pending message of the main
+/* The game's non-blocking message pump (g_Win32PumpMessages): handles every pending message of the main
    window (TranslateMessage only where Win32_ShouldTranslateMessageFlags allows it) and returns once the
    queue is empty. WM_QUIT or a window being destroyed (g_WindowDestroyDepth) shuts the game down and
    ends the process instead. With the developer tools open-thandor first runs its automatic screenshots and the
@@ -51,8 +50,7 @@ void Win32_PumpMessages(void)
 }
 
 
-/* Address: 0x00577B90.
-   Decides whether the message pump calls TranslateMessage (CF set): only for key-down/up messages
+/* Decides whether the message pump calls TranslateMessage (CF set): only for key-down/up messages
    (WM_KEYDOWN..WM_SYSKEYUP, not WM_CHAR/WM_DEADCHAR) of keys that produce text. The keys the engine
    handles itself (Backspace, Tab, Enter, Pause, Escape, Space through Delete, numpad and F1-F12) get no
    WM_CHAR, so text fields do not see them twice.

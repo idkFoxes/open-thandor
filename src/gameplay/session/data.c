@@ -11,147 +11,102 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 00402018 g_TimerRegisterPeriodic */
 __declspec(align(8)) TimerRegisterPeriodicProc *g_TimerRegisterPeriodic = 0;
 
-/* 0040201C g_TimerUnregisterPeriodic */
 __declspec(align(4)) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = 0;
 
-/* 00416848 g_GraphicsCursorSetFrame */
 __declspec(align(8)) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = (void *)GraphicsCursor_SetFrameIndex;
 
-/* 004171F0 g_KeyboardSpecialKeyDown */
 __declspec(align(16)) uint8_t g_KeyboardSpecialKeyDown[32] = {0};
 
-/* 00417210 g_KeyboardFlushEvents */
 __declspec(align(16)) KeyboardFlushEventsProc *g_KeyboardFlushEvents = (void *)Keyboard_FlushEvents;
 
-/* 0041733C g_SoundReleaseSampleVoiceSet */
 __declspec(align(4)) SoundReleaseSampleVoiceSetProc *g_SoundReleaseSampleVoiceSet = (void *)SoundBackendDisabled_ReleaseSampleVoiceSet;
 
-/* 00417354 g_SoundStopAllVoices */
 __declspec(align(4)) SoundStopAllVoicesProc *g_SoundStopAllVoices = (void *)SoundBackendDisabled_StopAllVoices;
 
-/* 004A8F40 g_GraphicsTextureSourceLifecycleCallbacks3 */
 __declspec(align(16)) GraphicsTextureSourceLifecycleCallbackTable g_GraphicsTextureSourceLifecycleCallbacks3 = {
     .releasePackage = (void *)GraphicsTextureSource_ReleasePackageAsset,
     .clone = (void *)GraphicsTextureSource_CloneAsset,
     .releaseClone = (void *)GraphicsTextureSource_ReleaseClonedAsset};
 
-/* 0050DAA2 u_save_0050daa2 */
 __declspec(align(4)) uint16_t u_save_0050daa2[5] = L"save";
 
-/* 0050DAC4 g_ScenarioCatalogPathScratchUtf16 */
 __declspec(align(4)) uint16_t g_ScenarioCatalogPathScratchUtf16[256] = {0};
 
-/* 0050DF06 u_flm_ende0000_flm_0050df06 */
 __declspec(align(4)) uint16_t u_flm_ende0000_flm_0050df06[17] = L"flm\\ende0000.flm";
 
-/* 0050DF28 u_flm_ende0001_flm_0050df28 */
 __declspec(align(8)) uint16_t u_flm_ende0001_flm_0050df28[17] = L"flm\\ende0001.flm";
 
-/* 0050DF6C u_sound_level00_sam_0050df6c */
 __declspec(align(4)) uint16_t u_sound_level00_sam_0050df6c[18] = L"sound\\level00.sam";
 
-/* 0050DF90 u_sound_music00_sam_0050df90 */
 __declspec(align(16)) uint16_t u_sound_music00_sam_0050df90[18] = L"sound\\music00.sam";
 
-/* 0050DFC6 u_effect_hex_0050dfc6 */
 __declspec(align(4)) uint16_t u_effect_hex_0050dfc6[11] = L"effect.hex";
 
-/* 0050DFDC u_shot_hex_0050dfdc */
 __declspec(align(4)) uint16_t u_shot_hex_0050dfdc[9] = L"shot.hex";
 
-/* 0050DFEE u_modul_hex_0050dfee */
 __declspec(align(4)) uint16_t u_modul_hex_0050dfee[10] = L"modul.hex";
 
-/* 0050E002 u_field_hex_0050e002 */
 __declspec(align(4)) uint16_t u_field_hex_0050e002[10] = L"field.hex";
 
-/* 0050E016 u_light_hex_0050e016 */
 __declspec(align(4)) uint16_t u_light_hex_0050e016[10] = L"light.hex";
 
-/* 0050E02A u_widget_hex_0050e02a */
 __declspec(align(4)) uint16_t u_widget_hex_0050e02a[11] = L"widget.hex";
 
-/* 0050E040 u_level_hex_0050e040 */
 __declspec(align(16)) uint16_t u_level_hex_0050e040[10] = L"level.hex";
 
-/* 0050F0D8 g_SessionNetworkTickCounter */
 __declspec(align(8)) uint32_t g_SessionNetworkTickCounter = 0;
 
-/* 0050F0DC g_HostCommandBatchSyncSentThisInterval */
 __declspec(align(4)) uint32_t g_HostCommandBatchSyncSentThisInterval = 0;
 
-/* 00512D60 g_TerrainRegionCollectionStoredCount */
 __declspec(align(16)) TerrainRegionCollectionCount g_TerrainRegionCollectionStoredCount = 0;
 
-/* 00512D64 g_TerrainRegionCollectionVisitedCount */
 __declspec(align(4)) TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount = 0;
 
-/* 00512D68 g_TerrainRegionCollectionEntries */
 __declspec(align(8)) uint32_t g_TerrainRegionCollectionEntries = 0;
 
-/* 00514D60 g_SelectionPlayerBlocks */
 __declspec(align(16)) SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks = 0;
 
-/* 00514D64 g_InGameFactionScratchBufferSetA8 */
 __declspec(align(4)) void *g_InGameFactionScratchBufferSetA8[8] = {0};
 
-/* 00514D84 g_InGameFactionScratchBufferSetB8 */
 __declspec(align(4)) void *g_InGameFactionScratchBufferSetB8[8] = {0};
 
-/* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass: uint32_t[24] energy allocation priority per model runtime class (0 = none, up to 0x12); gameplay/session/runtime.c energy distribution */
+/* uint32_t[24] energy allocation priority per model runtime class (0 = none, up to 0x12); gameplay/session/runtime.c energy distribution */
 __declspec(align(8)) uint32_t g_FactionEnergyAllocationPriorityByModelClass[24] = {
     /*  0 */ 0, 0, 0, 0, 256, 768, 1024, 1280, 1536, 1792, 512, 4608, 0, 2048, 4096, 0,
     /* 16 */ 0, 0, 0, 0, 0, 0, 2048, 256};
 
-/* 00530820 g_InGameLoadedResourcePointers */
 __declspec(align(16)) void **g_InGameLoadedResourcePointers = 0;
 
-/* 00530824 g_InGameLoadedResourcePointerCount */
 __declspec(align(4)) InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount = 0;
 
-/* 00530828 g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 */
 __declspec(align(8)) uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256] = {0};
 
-/* 00530A28 g_InGameLevelSoundParentDirectoryScratchUtf16 */
 __declspec(align(8)) uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256] = {0};
 
-/* 00530E28 g_LevelEndingMovieSourcePath */
 __declspec(align(8)) uint16_t g_LevelEndingMovieSourcePath[256] = {0};
 
-/* 00531028 g_InGameLevelTitleTextResourceIndex */
 __declspec(align(8)) uint32_t g_InGameLevelTitleTextResourceIndex = 0;
 
-/* 0053102C g_InGameLevelCampaignAssociationIndex */
 __declspec(align(4)) uint32_t g_InGameLevelCampaignAssociationIndex = 0;
 
-/* 00531030 g_InGameLevelEffectVoiceSets */
 __declspec(align(16)) DirectSoundVoiceSet *g_InGameLevelEffectVoiceSets[4] = {0, 0, 0, 0};
 
-/* 00531040 g_InGameActiveEffectVoice */
 __declspec(align(16)) uint32_t g_InGameActiveEffectVoice = 0;
 
-/* 00531044 g_InGameEffectsEnabled */
 __declspec(align(4)) uint32_t g_InGameEffectsEnabled = 0;
 
-/* 00531048 g_InGameLevelMusicVoiceSets */
 __declspec(align(8)) DirectSoundVoiceSet *g_InGameLevelMusicVoiceSets[4] = {0, 0, 0, 0};
 
-/* 00531058 g_InGameActiveMusicVoice */
 __declspec(align(8)) uint32_t g_InGameActiveMusicVoice = 0;
 
-/* 0053105C g_InGameMusicNextTrackCountdown */
 __declspec(align(4)) uint32_t g_InGameMusicNextTrackCountdown = 0;
 
-/* 00531060 g_InGameLevelRuntimeGlobalBlock */
 __declspec(align(16)) InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock = {.playerSlotByteOffsets = {0, 32, 64, 96, 128, 160, 192}};
 
-/* 00550590 g_InGameCountdownTextUtf16 */
 __declspec(align(16)) uint16_t g_InGameCountdownTextUtf16[8] = {0};
 
-/* 005505A0 g_InGameRuntimeDefaultImageTemplate */
 __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         { /* +0000 inGameRootPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x17C), .parent = UI_TEMPLATE_NO_LINK,
@@ -3974,56 +3929,41 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             0x00000201, 0x0000111D, 0x00000000, 0x0000008C, 0x00000000, 0x0000008D},
 };
 
-/* 0056314E u_flm_movie000_flm_0056314e: the notification movie path; the three digits at [9] are overwritten with
+/* the notification movie path; the three digits at [9] are overwritten with
    the movie number before it is opened (gameplay/session/runtime.c) */
 __declspec(align(4)) uint16_t u_flm_movie000_flm_0056314e[17] = L"flm\\movie000.flm";
 
-/* 00563268 g_InGamePendingSimulationTicks */
 __declspec(align(8)) int32_t g_InGamePendingSimulationTicks = 0;
 
-/* 0056326C g_InGameSessionNotificationTimeoutTicks */
 __declspec(align(4)) uint32_t g_InGameSessionNotificationTimeoutTicks = 0;
 
-/* 00563270 g_EndGameResultsCurrentMusicTrackId */
 __declspec(align(16)) uint32_t g_EndGameResultsCurrentMusicTrackId = 0;
 
-/* 00563274 g_InGameNetworkTickCountdown */
 __declspec(align(4)) uint32_t g_InGameNetworkTickCountdown = 0;
 
-/* 00563278 g_InGameStateTickSpinLock */
 __declspec(align(8)) uint32_t g_InGameStateTickSpinLock = 0;
 
-/* 00563284 g_InGameDiagramTextureSource */
 __declspec(align(4)) uint32_t g_InGameDiagramTextureSource = 0;
 
-/* 00563288 g_InGameTechnologyTextureSource */
 __declspec(align(8)) uint32_t g_InGameTechnologyTextureSource = 0;
 
-/* 0056328C g_InGameWindowTextureSource */
 __declspec(align(4)) uint32_t g_InGameWindowTextureSource = 0;
 
-/* 00563320 g_MoviePlaybackBaseFrameGroup */
 __declspec(align(16)) uint32_t g_MoviePlaybackBaseFrameGroup = 0;
 
-/* 00563324 g_MoviePlaybackScheduleCounter */
 __declspec(align(4)) uint32_t g_MoviePlaybackScheduleCounter = 0;
 
-/* 00563328 g_MoviePlaybackScheduleSpan */
 __declspec(align(8)) uint32_t g_MoviePlaybackScheduleSpan = 0;
 
-/* 005636FC g_InGameWorldObjectRecords */
 __declspec(align(4)) WorldObjectRecord *g_InGameWorldObjectRecords = 0;
 
-/* 005637AC g_InGameWorldRuntimeDwordArray256 */
 __declspec(align(4)) uint32_t g_InGameWorldRuntimeDwordArray256[256] = {0};
 
-/* 00563BB0 g_EndMovieVariantIndex */
 __declspec(align(16)) uint32_t g_EndMovieVariantIndex = 0;
 
-/* 00563BB4 g_EndMoviePath */
 __declspec(align(4)) uint16_t *g_EndMoviePath = 0;
 
-/* 00567110 g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30: 15 command records and the terminator
+/* 15 command records and the terminator
    record (commandCode 0) at 005671C4 that ends the dispatcher's scan */
 __declspec(align(16)) UiCommandDispatchRecord g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[16] = {
     /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567870},
@@ -4041,16 +3981,12 @@ __declspec(align(16)) UiCommandDispatchRecord g_EndGameResultsCommandDispatchRec
     /* 12 */ {.commandCode = 0x30078, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x567200},
     /* 13 */ {.commandCode = 0x30065, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x567230},
     /* 14 */ {.commandCode = 0x3007A, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x5671E0},
-    /* 15 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* 005671C4 terminator: commandCode 0, the rest is the original's NOP fill */
+    /* 15 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
 
-/* 0056A604 g_InGameSessionStartedNetworked */
 __declspec(align(4)) uint8_t g_InGameSessionStartedNetworked = 0;
 
-/* 00572280 g_FrontendPacket10022Buffer */
 __declspec(align(16)) FrontendPacket10022StatePending g_FrontendPacket10022Buffer = {0};
 
-/* 005722A0 g_FrontendPacket10023Buffer */
 __declspec(align(16)) FrontendPacket10023StateAck g_FrontendPacket10023Buffer = {0};
 
-/* 00572ACC g_SoundPackageHandle */
 __declspec(align(4)) uint32_t g_SoundPackageHandle = 0;

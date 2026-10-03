@@ -58,133 +58,96 @@
 #define WORLD_LIGHTING_PACKED_HALF_WRAP 0x10000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00532FA0 */
 void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void);
 
-/* 0x0050D100 */
 void WorldRuntime_SetCameraPositionKeepingTarget
           (Q12 positionZ,Q12 positionY,Q12 positionX,WorldRuntimeContext *runtime);
 
-/* 0x0050D150 */
 void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
           (WorldMotionValue78 projectionShift,AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 magnitude
           ,WorldRuntimeContext *runtime);
 
-/* 0x0050D1E0 */
 void WorldRuntime_PointCameraAtTarget
           (AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 distance,Q12 originZ,Q12 originY,
           Q12 originX,WorldRuntimeContext *runtime);
 
-/* 0x0050D2C0 */
 void WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime);
 
-/* 0x0050D670 */
 void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world);
 
-/* 0x00561E30 */
 void WorldRuntime_TurnAuxiliaryAnglesClamped
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle);
 
-/* 0x004BE7C0 */
 uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050A610 */
 bool WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl);
 
-/* 0x0050D260 */
 void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime);
 
-/* 0x0050D4F0 */
 void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world);
 
-/* 0x0050D510 */
 void WorldRuntime_AttachObjectArray
           (WorldObjectRecordCount count,WorldObjectRecord *objectArray,WorldRuntimeContext *world);
 
-/* 0x0050D610 */
 WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world);
 
-/* 0x0050D630 */
 WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *world);
 
-/* 0x0050D710 */
 void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world);
 
-/* 0x0050D7D0 */
 WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime);
 
-/* 0x0050D830 */
 void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node);
 
-/* 0x0050D880 */
 void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node);
 
-/* 0x0050D8F0 */
 void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
           WorldRuntimeContext *world);
 
-/* 0x0050EC80 */
 RuntimeHexSegmentImage __cdecl RuntimeHexSegment_GetLightImageAndToggleFlag(void);
 
-/* 0x0050ECA0 */
 void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void);
 
-/* 0x0050ECB0 */
 RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext);
 
-/* 0x0050ECD0 */
 void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext);
 
-/* 0x0051BFA0 */
 void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode *node);
 
-/* 0x0051D500 */
 void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime);
 
-/* 0x005233F0 */
 void ArmyRuntimeClass_NoOpTickUpdateForClass5
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
-/* 0x00523400 */
 void ArmyRuntimeClass_NoOpTickUpdateForClass6
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
-/* 0x00527B70 */
 void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime);
 
-/* 0x00527BA0 */
 void UnifiedRuntimeDefault_TwoArgNoOpB (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00527BE0 */
 bool UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
-/* 0x00527BF0 */
 void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-/* 0x00529430 */
 void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject,WorldOwnerListNode *node);
 
-/* 0x00565110 */
 void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutdownContext,WorldOwnerListNode *node);
 
-/* 0x0050D3B0 */
 void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *worldRuntime);
 
-/* 0x0050D760 */
 void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CArgb,PackedArgb32 lightingColor138Argb,
           PackedArgb32 lightingColor134Argb,PackedArgb32 lightingColor130Argb,
           PackedArgb32 secondaryColorArgb,PackedArgb32 lightingColor128Argb,
           PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb,WorldRuntimeContext *worldRuntime
           );
 
-/* 0x0050D5C0 */
 void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
           (FieldGridDimensionCells auxiliaryElevationAngle,FieldGridDimensionCells auxiliaryAzimuthAngle,
           Q12 lightElevationAngle,Q12 lightAzimuthAngle,WorldRuntimeContext *worldRuntime);
 
-/* 0x0050D6B0 */
 void WorldRuntime_ClearFieldGridDirtyFlag(WorldRuntimeContext *world);
 
 #endif /* THANDOR_WORLD_RUNTIME_CORE_H */

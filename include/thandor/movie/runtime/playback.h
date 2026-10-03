@@ -58,65 +58,47 @@
 #define MOVIE_LUMA_THIRD_Q16 0x5555
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004A8040 */
 bool Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount);
 
-/* 0x00563FF0 */
 void MoviePlayback_AdvanceScheduledFrameAndTick(void);
 
-/* 0x004A8590 */
 bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
 
-/* 0x004A8A20 */
 MovieFrameDimensions Movie_GetFrameDimensions(void);
 
-/* 0x004A8A40 */
 void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15);
 
-/* 0x004A8C00 */
 uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext);
 
-/* 0x004A8D50 */
 void Movie_Rewind(void);
 
-/* 0x004A8D90 */
 void Movie_Close(void);
 
-/* 0x005657D0 */
 void EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime);
 
-/* 0x00565810 */
 void EndMovieUiRuntime_DispatchCommandByFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime);
 
-/* 0x005739C0 */
 void IntroMovie_TimerTick(void);
 
-/* 0x004A7030 */
 uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *encodedOutput,uint32_t *sourcePixels);
 
-/* 0x004A7770 */
 uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *encodedOutput,uint32_t *previousFramePixels,uint32_t *currentFramePixels);
 
-/* 0x004A8A60 */
 bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode);
 
-/* 0x00564080 */
 void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);
 
-/* 0x004A81C0 */
 uint32_t Movie_DecodeFrame4x4Delta
           (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,uint32_t *destinationArgb,
           uint8_t *encodedFrame);
 
-/* 0x004A6FB0 */
 uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888);
 
-/* 0x004A7000 */
 uint32_t MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888);
 
 /* Not in the original: fills g_MovieChromaLumaToArgb (the original shipped it precomputed). */

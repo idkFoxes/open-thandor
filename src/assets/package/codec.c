@@ -28,8 +28,7 @@ static bool PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
   return false;
 }
 
-/* Address: 0x0040A9C0.
-   PCK compression method 2 writer for field grids: keeps only the header and the four persisted dwords of each
+/* PCK compression method 2 writer for field grids: keeps only the header and the four persisted dwords of each
    0x80-byte cell (the rest is runtime state that the decoder regenerates), then packs that compact image with
    method 0 behind a PCK_FIELD_GRID_PREFIX_BYTES prefix holding its size. Returns the packed size including the
    prefix in *outByteCount (true), or false with the error code of the allocation or the method-0 encoder in
@@ -170,8 +169,7 @@ static void PckCodec_GenerateFieldGridWorldCoordinates(FieldGridAsset *grid)
   } while (rowsRemaining != 0);
 }
 
-/* Address: 0x0040AAA0.
-   PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image,
+/* PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image,
    restores the header, expands every 0x10-byte record into a zeroed FieldGridCell and regenerates the cell world
    coordinates: worldX = column * 0x901 + row * 0x480, worldY = row * -1999 (Q12, 32-bit wrap). Returns true,
    or false with the error code of the allocation in *outErrorCode.
@@ -207,8 +205,7 @@ bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,Fi
 }
 
 
-/* Address: 0x0040A960.
-   PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable (0x0040E224).
+/* PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable (0x0040E224).
    Copies the source dword by dword when it fits into the destination and returns true with its size rounded up
    to four bytes in *outByteCount; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when it does not fit.
 */
@@ -232,8 +229,7 @@ bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8
 }
 
 
-/* Address: 0x0040A9A0.
-   PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable (0x0040E230).
+/* PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable (0x0040E230).
    Copies the stored bytes dword by dword to the destination; the capacity is not checked.
    Original quirk: the outcome is what SHR ECX,2 shifted out last, so it fails exactly when bit 1 of
    sourceSizeBytes is set (stored sizes written by the encoder are multiples of four, so it succeeds for them).
@@ -503,8 +499,7 @@ static bool PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *sou
   return true;
 }
 
-/* Address: 0x0040A4C0.
-   PCK compression method 0 writer. Counts the byte frequencies of the source, scales them to 8 bits, builds a
+/* PCK compression method 0 writer. Counts the byte frequencies of the source, scales them to 8 bits, builds a
    Huffman tree from them, writes the 256-byte frequency table and then the bitstream of literal and 3..18-byte
    run tokens (format in codec.h). Returns the packed size (rounded up to 16 bytes, with at least 16 bytes of
    slack for the decoder's dword reads) in *outByteCount with true, or false with FATAL_ERROR_GENERAL_FAILURE in
@@ -643,8 +638,7 @@ static uint8_t *PckCodec_DecoderSkipWholeBytes(uint8_t *inputByte,PckHuffmanBitO
   return inputByte;
 }
 
-/* Address: 0x0040A790.
-   PCK compression method 0 reader. Rebuilds the encoder's Huffman tree from the 256-byte frequency table at
+/* PCK compression method 0 reader. Rebuilds the encoder's Huffman tree from the 256-byte frequency table at
    the start of source, then decodes literal and run tokens (format in codec.h) until outputSizeBytes bytes are
    written. Returns true on success; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when the tree
    overflows the workspace. sourceSizeBytes is not checked: the bitstream is trusted.

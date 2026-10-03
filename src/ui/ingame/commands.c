@@ -10,8 +10,7 @@
 
 /* Implementation ownership: ui/ingame/commands. */
 
-/* Address: 0x0056DB40.
-   Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiActionHandlersPage11[0],
+/* Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiActionHandlersPage11[0],
    g_UiCommandModeGHandlers[0]; also called by the editor hotkeys in ui/ingame/runtime.c). Selects the tab, shows
    the tool's pages and switches the world view to the height tool overlays: surface point, terrain point, grid
    vertex and secondary surface markers, with the unmasked terrain colour ramp.
@@ -35,8 +34,7 @@ void InGameCommandModeG_Select0(UiSelectableControl *source)
 }
 
 
-/* Address: 0x0056DB90.
-   Editor mode tab G1, terrain material tool (action 0x1101: g_InGameUiActionHandlersPage11[1],
+/* Editor mode tab G1, terrain material tool (action 0x1101: g_InGameUiActionHandlersPage11[1],
    g_UiCommandModeGHandlers[1]; also called by the editor hotkeys in ui/ingame/runtime.c). Like G0, but without the
    secondary surface markers.
 */
@@ -59,8 +57,7 @@ void InGameCommandModeG_Select1(UiSelectableControl *source)
 }
 
 
-/* Address: 0x0056DBE0.
-   Editor mode tab G2, terrain smoothing tool (action 0x1102: g_InGameUiActionHandlersPage11[2],
+/* Editor mode tab G2, terrain smoothing tool (action 0x1102: g_InGameUiActionHandlersPage11[2],
    g_UiCommandModeGHandlers[2]; also called by the editor hotkeys in ui/ingame/runtime.c). Shows the surface point,
    grid vertex and secondary surface markers and is the only mode with the masked terrain colours
    (UiCommandModeG_ApplyMaskedColorVariant).
@@ -84,8 +81,7 @@ void InGameCommandModeG_Select2(UiSelectableControl *source)
 }
 
 
-/* Address: 0x0056DC30.
-   Editor mode tab G3, unit placement tool (action 0x1105: g_InGameUiActionHandlersPage11[5],
+/* Editor mode tab G3, unit placement tool (action 0x1105: g_InGameUiActionHandlersPage11[5],
    g_UiCommandModeGHandlers[3]; also called by the editor hotkeys in ui/ingame/runtime.c). Shows the army metrics
    and grid vertex markers and puts the army asset g_UiCommandModeGArmyAssetId into the selection detail panel;
    an unknown asset id is fatal.
@@ -117,8 +113,7 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
 }
 
 
-/* Address: 0x0056DCA0.
-   Editor mode tab G4, object placement tool (action 0x1106: g_InGameUiActionHandlersPage11[6],
+/* Editor mode tab G4, object placement tool (action 0x1106: g_InGameUiActionHandlersPage11[6],
    g_UiCommandModeGHandlers[4]; also called by the editor hotkeys in ui/ingame/runtime.c). Same overlays as G3
    (army metrics and grid vertex markers) without the detail panel update.
 */
@@ -141,8 +136,7 @@ void InGameCommandModeG_Select4(UiSelectableControl *source)
 }
 
 
-/* Address: 0x0056DCF0.
-   Editor mode tab G5, region tool (action 0x1104: g_InGameUiActionHandlersPage11[4],
+/* Editor mode tab G5, region tool (action 0x1104: g_InGameUiActionHandlersPage11[4],
    g_UiCommandModeGHandlers[5]; also called by ui/ingame/runtime.c). Shows the surface point, army metrics, grid
    vertex and region markers; the region markers draw the variant chosen by mode F, so g_UiCommandModeF is copied
    into the world runtime (+0xB4) as well.
@@ -167,8 +161,7 @@ void InGameCommandModeG_Select5(UiSelectableControl *source)
 }
 
 
-/* Address: 0x0056AC50.
-   Results screen continue button (action 0x101B, g_InGameUiActionHandlersPage10[27]). A local game or network host
+/* Results screen continue button (action 0x101B, g_InGameUiActionHandlersPage10[27]). A local game or network host
    sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED (the host through command 0x310 so every machine sees it); a network
    client instead reports itself ready, which lets the host show its own continue button.
 */
@@ -197,8 +190,7 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
 }
 
 
-/* Address: 0x0056ACC0.
-   End movie view click (action 0x1009, g_InGameUiActionHandlersPage10[9]): skips the end movie by clearing
+/* End movie view click (action 0x1009, g_InGameUiActionHandlersPage10[9]): skips the end movie by clearing
    UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING (clear mask of command 0x310, sent to every machine in a network
    game).
 */
@@ -218,8 +210,7 @@ void InGameEndMovie_Skip(void *source)
 }
 
 
-/* Address: 0x0056D6C0.
-   Quit game window restart button (action INGAME_ACTION_QUIT_RESTART_MISSION 0x1027,
+/* Quit game window restart button (action INGAME_ACTION_QUIT_RESTART_MISSION 0x1027,
    g_InGameUiActionHandlersPage10[39]): deselects and closes the in-game menu, then issues command 0x150 with
    INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION, which ends the session.
 */
@@ -246,8 +237,7 @@ void InGameQuitMenu_RestartMission(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056DFD0.
-   Terrain material swatch click (action 0x1110, g_InGameUiActionHandlersPage11[16]): finds which of the
+/* Terrain material swatch click (action 0x1110, g_InGameUiActionHandlersPage11[16]): finds which of the
    twelve swatch controls (g_UiMappedCommandControlOffsets) was clicked and selects the material at that position
    of the current page. Clicks on other controls are ignored.
 */
@@ -273,8 +263,7 @@ void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
 }
 
 
-/* Address: 0x00516360.
-   Pointer press of the command sprite buttons (nonRightPress and rightPress of g_UiNodeVtable_005162C0,
+/* Pointer press of the command sprite buttons (nonRightPress and rightPress of g_UiNodeVtable_005162C0,
    g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable): shows the button pressed and starts a new
    activationInputState, marking a double click when the node reports one.
 */
@@ -299,8 +288,7 @@ void UiCommandSpriteButtonControl_BeginPress
 }
 
 
-/* Address: 0x005163A0.
-   Left/middle button release of the command sprite buttons (nonRightRelease of g_UiNodeVtable_005162C0 and
+/* Left/middle button release of the command sprite buttons (nonRightRelease of g_UiNodeVtable_005162C0 and
    g_UiNodeVtable_00516310): when the press started on this button, adds the modifier keys held now to
    activationInputState, plays the activation sound if enabled and queues the button's action; the action
    handler reads activationInputState to choose what to do.
@@ -333,8 +321,7 @@ void UiCommandSpriteButtonControl_NonRightRelease
 }
 
 
-/* Address: 0x00516410.
-   Right button release of the command sprite buttons (rightRelease of g_UiNodeVtable_005162C0,
+/* Right button release of the command sprite buttons (rightRelease of g_UiNodeVtable_005162C0,
    g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable): like the left release, but replaces activationInputState
    with the modifier keys plus UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON (which also drops the double-click marker).
 */
@@ -363,8 +350,7 @@ void UiCommandSpriteButtonControl_RightRelease
 }
 
 
-/* Address: 0x00516490.
-   Pointer move over an army stock slot (pointerMove of g_UiNodeVtable_005162C0, which the seven diplomacy
+/* Pointer move over an army stock slot (pointerMove of g_UiNodeVtable_005162C0, which the seven diplomacy
    relation buttons share; for them no slot matches and only the cursor frame is returned): shows the slot's
    army asset in the selection detail panel and returns the cursor frame, 12 while Ctrl is held (a click then
    sells the army, see InGameArmyStock_TakeOrSellSlotArmy), 10 otherwise.
@@ -397,8 +383,7 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
 }
 
 
-/* Address: 0x00517F60.
-   drawClipped of g_UiCommandVisibilityWrappedTextVtable (the wrapped world view status text): draws the text
+/* drawClipped of g_UiCommandVisibilityWrappedTextVtable (the wrapped world view status text): draws the text
    unless g_UiCommandRuntimeFlags bit 0x200 hides all these texts; with label flag 0x800 only while the game is
    paused.
 */
@@ -417,8 +402,7 @@ void UiCommandVisibilityWrappedText_DrawWhenAllowed
 }
 
 
-/* Address: 0x00518010.
-   drawClipped of g_UiCommandVisibilitySingleLineTextVtable (the single-line world view texts): same visibility
+/* drawClipped of g_UiCommandVisibilitySingleLineTextVtable (the single-line world view texts): same visibility
    rules as the wrapped text; label flag 0x1000 additionally needs g_InGameSimulationStepTicks > 1 and draws the
    text shifted by ticks - 2 bytes (the text pointer is restored afterwards).
 */
@@ -452,8 +436,7 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
 }
 
 
-/* Address: 0x0055F4A0.
-   In-game command handler 0x370 (key P): toggles the player's pause request, then toggles the global pause once
+/* In-game command handler 0x370 (key P): toggles the player's pause request, then toggles the global pause once
    every player agrees - the game pauses when all players request it and resumes when none does any more.
 */
 void InGameCommand_TogglePauseRequest
@@ -486,8 +469,7 @@ void InGameCommand_TogglePauseRequest
 }
 
 
-/* Address: 0x005604D0.
-   In-game command handler INGAME_COMMAND_PLACE_ARMY: takes the player's pending army asset (stock entry chosen
+/* In-game command handler INGAME_COMMAND_PLACE_ARMY: takes the player's pending army asset (stock entry chosen
    in the army stock panel), validates the placement at the clicked point and creates the army there with the
    given heading, counts it for the faction and spawns the asset's placement effect. A rejected placement leaves
    the asset pending; a successful one ends the local placement mode.
@@ -568,8 +550,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
 }
 
 
-/* Address: 0x0056A2A0.
-   Rebuilds the army stock panel: the active faction's pooled army assets that have a texture (at most 24,
+/* Rebuilds the army stock panel: the active faction's pooled army assets that have a texture (at most 24,
    none while the world input is disabled) fill g_UiCommandSpriteVariantARecords and the slot buttons in a
    grid of at most four columns; the frame is sized to the grid (smaller margins below 800 pixels width) and
    hidden when the stock is empty, unused slots are hidden.
@@ -662,8 +643,7 @@ void InGameArmyStock_RebuildGrid(UiNodeBase *node)
 }
 
 
-/* Address: 0x0056AFD0.
-   Technology window close button (action 0x1011, g_InGameUiActionHandlersPage10[17]): shows the world view again,
+/* Technology window close button (action 0x1011, g_InGameUiActionHandlersPage10[17]): shows the world view again,
    closes the window (page 0 of the game window page stack) and, if something is selected, sends
    INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE with -1 (cancel) for the first selected building, which gives back what
    opening the page took away.
@@ -697,8 +677,7 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
 }
 
 
-/* Address: 0x0056C660.
-   UI action 0x1200 (game menu quit button): opens the quit game window (page 4 of the in-game window page
+/* UI action 0x1200 (game menu quit button): opens the quit game window (page 4 of the in-game window page
    stack). Its restart button is only offered in local games, its surrender button only while the local
    faction is still in play (world input enabled).
 */
@@ -728,8 +707,7 @@ void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 sour
 }
 
 
-/* Address: 0x0056CFA0.
-   Build catalog entry click (action 0x100B, g_InGameUiActionHandlersPage10[11]): finds the entry among the 48
+/* Build catalog entry click (action 0x100B, g_InGameUiActionHandlersPage10[11]): finds the entry among the 48
    build catalog slots of the current column layout and queues its army asset for the active faction, or with Ctrl
    (activationInputState & KEYBOARD_STATE_CTRL) cancels a queued one with refund. Ignored while paused or while the
    world input is disabled.
@@ -788,8 +766,7 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
 }
 
 
-/* Address: 0x0056D090.
-   Special build catalog entry click (action 0x100C, g_InGameUiActionHandlersPage10[12]): the same as
+/* Special build catalog entry click (action 0x100C, g_InGameUiActionHandlersPage10[12]): the same as
    InGameBuildCatalog_QueueOrCancelEntry for the 42 slots of the special build catalog.
 */
 void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
@@ -846,8 +823,7 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
 }
 
 
-/* Address: 0x0056D180.
-   Army stock slot click (action 0x1001, g_InGameUiActionHandlersPage10[1]): first drops any army still waiting
+/* Army stock slot click (action 0x1001, g_InGameUiActionHandlersPage10[1]): first drops any army still waiting
    for placement (command 0x14F0), then takes the slot's army for placement on the map, or sells it with Ctrl
    (activationInputState & KEYBOARD_STATE_CTRL). Ignored while paused, while the world input is disabled and while
    world runtime flag 0x10 is set.
@@ -925,8 +901,7 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
 }
 
 
-/* Address: 0x0056D540.
-   Selection group button click (action 0x100A, g_InGameUiActionHandlersPage10[10]; the 8 buttons of
+/* Selection group button click (action 0x100A, g_InGameUiActionHandlersPage10[10]; the 8 buttons of
    g_UiAction100AControlOffsets): the mouse version of the 1..8 group keys. A plain click recalls the group, a
    modifier key merges (SELECTION_TRANSFER_MERGE), the right button stores the selection into the group
    (SELECTION_TRANSFER_TO_GROUP) and a double click also centres the view. Every variant except the plain recall
@@ -983,8 +958,7 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
 }
 
 
-/* Address: 0x0056D620.
-   Second results screen button (action 0x1025, g_InGameUiActionHandlersPage10[37]; resultsSecondaryExitButton,
+/* Second results screen button (action 0x1025, g_InGameUiActionHandlersPage10[37]; resultsSecondaryExitButton,
    only offered in network games): sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED on this machine only.
 */
 void InGameResultsScreen_CloseLocally(UiNodeBase *source)
@@ -994,8 +968,7 @@ void InGameResultsScreen_CloseLocally(UiNodeBase *source)
   return;
 }
 
-/* Address: 0x0056D640.
-   Results chart mode buttons (action 0x1026, g_InGameUiActionHandlersPage10[38]): selects the clicked one of the
+/* Results chart mode buttons (action 0x1026, g_InGameUiActionHandlersPage10[38]): selects the clicked one of the
    two buttons and copies the chosen mode (0 or 1) into the modeFlags of the three results charts (graph or table
    drawing) and into the image subresource of the results screen background.
 */
@@ -1029,8 +1002,7 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
 }
 
 
-/* Address: 0x0056D920.
-   Hides the grid vertex markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); called
+/* Hides the grid vertex markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); called
    when the editor is switched off (InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState).
 */
 void UiCommandModeG_HideGridVertexMarkers(WorldRuntimeContext *context)
@@ -1041,8 +1013,7 @@ void UiCommandModeG_HideGridVertexMarkers(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056DD50.
-   Height tool option 0 (action 0x1108, g_InGameUiActionHandlersPage11[8]; also the editor hotkeys in
+/* Height tool option 0 (action 0x1108, g_InGameUiActionHandlersPage11[8]; also the editor hotkeys in
    ui/ingame/runtime.c): selects heightToolOption0 among the four height tool buttons and sets g_UiCommandModeC = 0.
 */
 void InGameCommandModeC_Select0(UiSpriteButtonControl *source)
@@ -1058,8 +1029,7 @@ void InGameCommandModeC_Select0(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056DDA0.
-   Height tool option 1 (action 0x1109, g_InGameUiActionHandlersPage11[9]; also the editor hotkeys in
+/* Height tool option 1 (action 0x1109, g_InGameUiActionHandlersPage11[9]; also the editor hotkeys in
    ui/ingame/runtime.c): selects heightToolOption1 among the four height tool buttons and sets g_UiCommandModeC = 1.
 */
 void InGameCommandModeC_Select1(UiSpriteButtonControl *source)
@@ -1075,8 +1045,7 @@ void InGameCommandModeC_Select1(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056DDF0.
-   Height tool option 2 (action 0x110A, g_InGameUiActionHandlersPage11[10]; also the editor hotkeys in
+/* Height tool option 2 (action 0x110A, g_InGameUiActionHandlersPage11[10]; also the editor hotkeys in
    ui/ingame/runtime.c): selects heightToolOption2 among the four height tool buttons and sets g_UiCommandModeC = 2.
 */
 void InGameCommandModeC_Select2(UiSpriteButtonControl *source)
@@ -1092,8 +1061,7 @@ void InGameCommandModeC_Select2(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056DE40.
-   Height tool option 3 (action 0x110B, g_InGameUiActionHandlersPage11[11]; also the editor hotkeys in
+/* Height tool option 3 (action 0x110B, g_InGameUiActionHandlersPage11[11]; also the editor hotkeys in
    ui/ingame/runtime.c): selects heightToolOption3 among the four height tool buttons and sets g_UiCommandModeC = 3.
 */
 void InGameCommandModeC_Select3(UiSpriteButtonControl *source)
@@ -1109,8 +1077,7 @@ void InGameCommandModeC_Select3(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056DE90.
-   Material tool option 0 (action 0x110C, g_InGameUiActionHandlersPage11[12]; also the editor hotkeys in
+/* Material tool option 0 (action 0x110C, g_InGameUiActionHandlersPage11[12]; also the editor hotkeys in
    ui/ingame/runtime.c): selects materialToolOption0 among the four material tool buttons and sets
    g_UiCommandModeD = 0.
 */
@@ -1127,8 +1094,7 @@ void InGameCommandModeD_Select0(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056DEE0.
-   Material tool option 1 (action 0x110D, g_InGameUiActionHandlersPage11[13]; also the editor hotkeys in
+/* Material tool option 1 (action 0x110D, g_InGameUiActionHandlersPage11[13]; also the editor hotkeys in
    ui/ingame/runtime.c): selects materialToolOption1 among the four material tool buttons and sets
    g_UiCommandModeD = 1.
 */
@@ -1145,8 +1111,7 @@ void InGameCommandModeD_Select1(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056DF30.
-   Material tool option 2 (action 0x110E, g_InGameUiActionHandlersPage11[14]; also the editor hotkeys in
+/* Material tool option 2 (action 0x110E, g_InGameUiActionHandlersPage11[14]; also the editor hotkeys in
    ui/ingame/runtime.c): selects materialToolOption2 among the four material tool buttons and sets
    g_UiCommandModeD = 2.
 */
@@ -1163,8 +1128,7 @@ void InGameCommandModeD_Select2(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056DF80.
-   Material tool option 3 (action 0x110F, g_InGameUiActionHandlersPage11[15]; also the editor hotkeys in
+/* Material tool option 3 (action 0x110F, g_InGameUiActionHandlersPage11[15]; also the editor hotkeys in
    ui/ingame/runtime.c): selects materialToolOption3 among the four material tool buttons and sets
    g_UiCommandModeD = 3.
 */
@@ -1181,8 +1145,7 @@ void InGameCommandModeD_Select3(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E050.
-   Unit placement option 0 (action 0x1111, g_InGameUiActionHandlersPage11[17]; also the editor hotkeys in
+/* Unit placement option 0 (action 0x1111, g_InGameUiActionHandlersPage11[17]; also the editor hotkeys in
    ui/ingame/runtime.c): selects unitPlacementOption0 among the three unit placement buttons and sets
    g_UiCommandModeA = 0.
 */
@@ -1198,8 +1161,7 @@ void InGameCommandModeA_Select0(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E090.
-   Unit placement option 1 (action 0x1112, g_InGameUiActionHandlersPage11[18]; also the editor hotkeys in
+/* Unit placement option 1 (action 0x1112, g_InGameUiActionHandlersPage11[18]; also the editor hotkeys in
    ui/ingame/runtime.c): selects unitPlacementOption1 among the three unit placement buttons and sets
    g_UiCommandModeA = 1.
 */
@@ -1215,8 +1177,7 @@ void InGameCommandModeA_Select1(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E0D0.
-   Unit placement option 2 (action 0x1113, g_InGameUiActionHandlersPage11[19]; also the editor hotkeys in
+/* Unit placement option 2 (action 0x1113, g_InGameUiActionHandlersPage11[19]; also the editor hotkeys in
    ui/ingame/runtime.c): selects unitPlacementOption2 among the three unit placement buttons and sets
    g_UiCommandModeA = 2.
 */
@@ -1232,8 +1193,7 @@ void InGameCommandModeA_Select2(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E110.
-   Object placement option 0 (action 0x1114, g_InGameUiActionHandlersPage11[20]; also the editor hotkeys
+/* Object placement option 0 (action 0x1114, g_InGameUiActionHandlersPage11[20]; also the editor hotkeys
    in ui/ingame/runtime.c): selects objectPlacementOption0 among the three object placement buttons and sets
    g_UiCommandModeB = 0.
 */
@@ -1249,8 +1209,7 @@ void InGameCommandModeB_Select0(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E150.
-   Object placement option 1 (action 0x1115, g_InGameUiActionHandlersPage11[21]; also the editor hotkeys
+/* Object placement option 1 (action 0x1115, g_InGameUiActionHandlersPage11[21]; also the editor hotkeys
    in ui/ingame/runtime.c): selects objectPlacementOption1 among the three object placement buttons and sets
    g_UiCommandModeB = 1.
 */
@@ -1266,8 +1225,7 @@ void InGameCommandModeB_Select1(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E190.
-   Object placement option 2 (action 0x1116, g_InGameUiActionHandlersPage11[22]; also the editor hotkeys
+/* Object placement option 2 (action 0x1116, g_InGameUiActionHandlersPage11[22]; also the editor hotkeys
    in ui/ingame/runtime.c): selects objectPlacementOption2 among the three object placement buttons and sets
    g_UiCommandModeB = 2.
 */
@@ -1283,8 +1241,7 @@ void InGameCommandModeB_Select2(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E1D0.
-   Smoothing tool option 0 (action 0x1117, g_InGameUiActionHandlersPage11[23]; also the editor hotkeys in
+/* Smoothing tool option 0 (action 0x1117, g_InGameUiActionHandlersPage11[23]; also the editor hotkeys in
    ui/ingame/runtime.c): selects smoothingToolOption0 and sets g_UiCommandModeE = 0. Unlike options 1 and 2 its
    exclusive group also contains smoothingRelaxLandButton.
 */
@@ -1301,8 +1258,7 @@ void InGameCommandModeE_Select0(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E220.
-   Smoothing tool option 1 (action 0x1118, g_InGameUiActionHandlersPage11[24]; also the editor hotkeys in
+/* Smoothing tool option 1 (action 0x1118, g_InGameUiActionHandlersPage11[24]; also the editor hotkeys in
    ui/ingame/runtime.c): selects smoothingToolOption1 among the three smoothing tool buttons and sets
    g_UiCommandModeE = 1.
 */
@@ -1318,8 +1274,7 @@ void InGameCommandModeE_Select1(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E260.
-   Smoothing tool option 2 (action 0x1119, g_InGameUiActionHandlersPage11[25]; also the editor hotkeys in
+/* Smoothing tool option 2 (action 0x1119, g_InGameUiActionHandlersPage11[25]; also the editor hotkeys in
    ui/ingame/runtime.c): selects smoothingToolOption2 among the three smoothing tool buttons and sets
    g_UiCommandModeE = 2.
 */
@@ -1335,8 +1290,7 @@ void InGameCommandModeE_Select2(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E2A0.
-   Smoothing page button smoothingRelaxGatedButton (action 0x111A, g_InGameUiActionHandlersPage11[26]; also
+/* Smoothing page button smoothingRelaxGatedButton (action 0x111A, g_InGameUiActionHandlersPage11[26]; also
    an editor hotkey in ui/ingame/runtime.c): runs 128 sign-gated terrain relaxation passes over the field, in a
    network game through command 0x3200 on every machine.
 */
@@ -1356,8 +1310,7 @@ void InGameCommandRange_DispatchState0(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056E2E0.
-   Smoothing page button smoothingRelaxLandButton (action 0x111B, g_InGameUiActionHandlersPage11[27]; also
+/* Smoothing page button smoothingRelaxLandButton (action 0x111B, g_InGameUiActionHandlersPage11[27]; also
    an editor hotkey in ui/ingame/runtime.c): like InGameCommandRange_DispatchState0 with the ungated land tool
    relaxation mode.
 */
@@ -1377,8 +1330,7 @@ void InGameCommandRange_DispatchState1(UiNodeBase *source)
 }
 
 
-/* Address: 0x0056E320.
-   Region tool option 0 (action 0x111C, g_InGameUiActionHandlersPage11[28]): selects regionToolOption0 of the
+/* Region tool option 0 (action 0x111C, g_InGameUiActionHandlersPage11[28]): selects regionToolOption0 of the
    two region tool buttons, sets g_UiCommandModeF = 0 and copies it into the world runtime (+0xB4), where the
    region markers of the world view read it.
 */
@@ -1395,8 +1347,7 @@ void InGameCommandModeF_Select0(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x0056E370.
-   Region tool option 1 (action 0x111D, g_InGameUiActionHandlersPage11[29]): selects regionToolOption1 and
+/* Region tool option 1 (action 0x111D, g_InGameUiActionHandlersPage11[29]): selects regionToolOption1 and
    sets g_UiCommandModeF and its world runtime copy (+0xB4) to 1.
 */
 void InGameCommandModeF_Select1(UiSpriteButtonControl *source)
@@ -1412,8 +1363,7 @@ void InGameCommandModeF_Select1(UiSpriteButtonControl *source)
 }
 
 
-/* Address: 0x00570F20.
-   Empty callback: InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState installs it as
+/* Empty callback: InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState installs it as
    fieldRegion.clearTransientStateCallback of the world runtime while the editor is active.
 */
 void UiCommandRuntime_CallbackNoOp(void)
@@ -1422,8 +1372,7 @@ void UiCommandRuntime_CallbackNoOp(void)
   return;
 }
 
-/* Address: 0x0055F280.
-   In-game command handler 0x150 (quit game window and player departure): CLOSE_SESSION ends the session,
+/* In-game command handler 0x150 (quit game window and player departure): CLOSE_SESSION ends the session,
    SURRENDER destroys every army of the player's faction. Without flags the player has left: another player's
    departure is announced in the message history (text 0xFF08); the local player's own departure marks the
    session as left and, in a network game, shuts the network backend down and falls back to a one-player setup.
@@ -1506,8 +1455,7 @@ void InGameCommand_HandlePlayerDeparture
 }
 
 
-/* Address: 0x0056D980.
-   Terrain colours of the smoothing tool (InGameCommandModeG_Select2): rebuilds the terrain lighting colour ramp
+/* Terrain colours of the smoothing tool (InGameCommandModeG_Select2): rebuilds the terrain lighting colour ramp
    from the world runtime's lighting colours (lighting.baseColorArgb, rampStepColorArgb) with their alpha removed and the secondary
    colour (secondaryColorArgb) made opaque, relights the field grid with the light angles stored in the root, then sets
    UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED and the limit read by the terrain triangle and marker drawing.
@@ -1528,8 +1476,7 @@ void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
 }
 
 
-/* Address: 0x0056DA50.
-   Shows the region markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); only the region tool
+/* Shows the region markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); only the region tool
    (InGameCommandModeG_Select5) uses it.
 */
 void UiCommandModeG_ShowRegionMarkers(WorldRuntimeContext *context)
@@ -1549,8 +1496,7 @@ static GraphicsTextureSourceAsset *TerrainMaterial_SwatchTexture(uint32_t materi
   return g_TerrainMaterialTextureSets[materialIndex]->entries[0].sourceAsset;
 }
 
-/* Address: 0x00571440.
-   Selects terrain material absoluteIndex for the material tool (InGameCommandMatrix_SelectMappedControl and the
+/* Selects terrain material absoluteIndex for the material tool (InGameCommandMatrix_SelectMappedControl and the
    editor hotkeys/initialisation in ui/ingame/runtime.c): shows its texture in materialToolSelectedSwatch,
    scrolls the twelve-swatch page in rows of three until the material is visible, fills the twelve swatches from
    g_TerrainMaterialTextureSets (empty entries show nothing) and selects the material's swatch.
@@ -1607,8 +1553,7 @@ void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *ro
 }
 
 
-/* Address: 0x0055F440.
-   Changes the global g_UiCommandRuntimeFlags: first clears clearMask, then sets setMask, then toggles toggleMask
+/* Changes the global g_UiCommandRuntimeFlags: first clears clearMask, then sets setMask, then toggles toggleMask
    (the masks come in the reverse order as arguments). Local games call it directly, network games send the
    same masks as player command 0x310. playerRuntimeId is not used: the flags are not per player.
 */
@@ -1622,8 +1567,7 @@ void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntim
 }
 
 
-/* Address: 0x0056D860.
-   Hides the surface point marker of the world view (clears WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
+/* Hides the surface point marker of the world view (clears WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
    mode tabs G3/G4 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
 void UiCommandModeG_HideSurfacePointMarker(WorldRuntimeContext *context)
@@ -1634,8 +1578,7 @@ void UiCommandModeG_HideSurfacePointMarker(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056D880.
-   Shows the terrain point markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
+/* Shows the terrain point markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
    mode tabs G0/G1 (height and material tools).
 */
 void UiCommandModeG_ShowTerrainPointMarkers(WorldRuntimeContext *context)
@@ -1646,8 +1589,7 @@ void UiCommandModeG_ShowTerrainPointMarkers(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056D940.
-   Sets WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY (view ray and markers use only the secondary field surface);
+/* Sets WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY (view ray and markers use only the secondary field surface);
    editor mode tabs G0 and G2.
 */
 void UiCommandModeG_SetSecondarySurfaceOnly(WorldRuntimeContext *context)
@@ -1658,8 +1600,7 @@ void UiCommandModeG_SetSecondarySurfaceOnly(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056D8C0.
-   Shows the army metrics overlay of the world view (sets WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS); editor mode tabs
+/* Shows the army metrics overlay of the world view (sets WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS); editor mode tabs
    G3-G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the editor is switched off.
 */
 void UiCommandModeG_ShowArmyMetrics(WorldRuntimeContext *context)
@@ -1670,8 +1611,7 @@ void UiCommandModeG_ShowArmyMetrics(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056D8E0.
-   Hides the army metrics overlay and ends a drag selection (clears WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS and
+/* Hides the army metrics overlay and ends a drag selection (clears WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS and
    WORLD_RUNTIME_FLAG_DRAG_SELECTING, which also draws the selection frame); editor mode tabs G0-G2.
 */
 void UiCommandModeG_HideArmyMetricsAndEndDragSelect(WorldRuntimeContext *context)
@@ -1683,8 +1623,7 @@ void UiCommandModeG_HideArmyMetricsAndEndDragSelect(WorldRuntimeContext *context
 }
 
 
-/* Address: 0x0056D840.
-   Shows the surface point marker of the world view (sets WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
+/* Shows the surface point marker of the world view (sets WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
    mode tabs G0, G1, G2 and G5.
 */
 void UiCommandModeG_ShowSurfacePointMarker(WorldRuntimeContext *context)
@@ -1695,8 +1634,7 @@ void UiCommandModeG_ShowSurfacePointMarker(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056D8A0.
-   Hides the terrain point markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
+/* Hides the terrain point markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
    mode tabs G2-G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
 void UiCommandModeG_HideTerrainPointMarkers(WorldRuntimeContext *context)
@@ -1707,8 +1645,7 @@ void UiCommandModeG_HideTerrainPointMarkers(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056D960.
-   Clears WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY; editor mode tabs G1, G3-G5 and
+/* Clears WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY; editor mode tabs G1, G3-G5 and
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
 void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context)
@@ -1719,8 +1656,7 @@ void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056D9F0.
-   Terrain colours of every editor mode except smoothing (and of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
+/* Terrain colours of every editor mode except smoothing (and of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
    when the editor is switched off): rebuilds the terrain colour ramp from the world runtime's lighting colours
    (lighting.baseColorArgb, rampStepColorArgb, secondaryColorArgb) unchanged, relights the field grid with the light
    angles stored in the root, clears bit 0x1000 of g_UiCommandModeGColorVariantFlags and sets the limit to 0x00FFFFFF. The
@@ -1741,8 +1677,7 @@ void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
 }
 
 
-/* Address: 0x0056DA70.
-   Hides the region markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); every editor mode tab
+/* Hides the region markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); every editor mode tab
    except G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
 void UiCommandModeG_HideRegionMarkers(WorldRuntimeContext *context)
@@ -1753,8 +1688,7 @@ void UiCommandModeG_HideRegionMarkers(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056D900.
-   Shows the grid vertex markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); every
+/* Shows the grid vertex markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); every
    editor mode tab.
 */
 void UiCommandModeG_ShowGridVertexMarkers(WorldRuntimeContext *context)
@@ -1765,8 +1699,7 @@ void UiCommandModeG_ShowGridVertexMarkers(WorldRuntimeContext *context)
 }
 
 
-/* Address: 0x0056DA90.
-   Common part of the editor mode tabs InGameCommandModeG_Select0..5: selects the clicked tab among the six, shows
+/* Common part of the editor mode tabs InGameCommandModeG_Select0..5: selects the clicked tab among the six, shows
    the mode's pages in modePreviewPageStack, modeDetailPageStack and modeCommandPageStack (page tables
    g_UiCommandModeG*PageIndices) and stores the mode in g_UiCommandModeG. Returns the in-game root.
 */

@@ -77,8 +77,7 @@ static void GraphicsPrimitivePacket_HalveVertexRgb(GraphicsPrimitivePacket *pack
   packet->vertices[2].diffuseColor = (int)vertex2HalvedColor;
 }
 
-/* Address: 0x00486080.
-   Sorts a filled primitive queue for drawing and links the sorted nodes into the traversal list read by
+/* Sorts a filled primitive queue for drawing and links the sorted nodes into the traversal list read by
    GraphicsPrimitiveQueue_Begin/Next. Each node gets a 32-bit key: blended packets (any blend-mode bit) the sum
    of their three vertex depths (below 0x80000000), opaque packets their texture entry with bits 0x30000000 of
    the render flags subtracted from 0xB0000000 (0x80000000 and above). Four stable byte-wise radix passes (low
@@ -131,8 +130,7 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
 }
 
 
-/* Address: 0x004D0A10.
-   Allocates the global primitive queue pool for packetCapacity packets (header, two nodes and one packet
+/* Allocates the global primitive queue pool for packetCapacity packets (header, two nodes and one packet
    each) and remembers the capacity for GraphicsPrimitiveQueue_ResetGlobal. Returns 0 on success (the pool is
    then in g_PrimitiveQueueStorage), or the arena error when the allocation fails; g_PrimitiveQueueStorage is
    then left unchanged.
@@ -154,8 +152,7 @@ uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacit
 }
 
 
-/* Address: 0x004D0A40.
-   Empties the global primitive queue (g_PrimitiveQueueStorage) for a new frame and lays out its pool:
+/* Empties the global primitive queue (g_PrimitiveQueueStorage) for a new frame and lays out its pool:
    primaryNodes right after the 0x20-byte header, then radixScratchPool, then the packets, each part sized for
    the capacity given to GraphicsPrimitiveQueue_AllocateGlobalPool. Never fails; returns the queue.
    Called by the frontend 3D views (ui/frontend/runtime.c) and the offscreen model renderer.
@@ -178,8 +175,7 @@ GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal(void)
 }
 
 
-/* Address: 0x004D0A90.
-   Returns the number of packets queued in queue. Used by FrontendModelPointerContext_RenderWorldViewQueuesClipped
+/* Returns the number of packets queued in queue. Used by FrontendModelPointerContext_RenderWorldViewQueuesClipped
    (ui/frontend/runtime.c) after each drawn pass.
 */
 uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
@@ -189,8 +185,7 @@ uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
 }
 
 
-/* Address: 0x004D0AA0.
-   Starts walking a sorted primitive queue: returns the packet of the node at traversalCursor (set by
+/* Starts walking a sorted primitive queue: returns the packet of the node at traversalCursor (set by
    GraphicsPrimitiveQueue_RadixSortForRendering) and advances the cursor to the next node. Returns NULL when
    the queue is empty (queued packets are never NULL); GraphicsPrimitiveQueue_Next continues the walk.
 */
@@ -208,8 +203,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *qu
 }
 
 
-/* Address: 0x004D0AE0.
-   Continues a walk begun by GraphicsPrimitiveQueue_Begin: returns the packet of the node at traversalCursor
+/* Continues a walk begun by GraphicsPrimitiveQueue_Begin: returns the packet of the node at traversalCursor
    and advances the cursor. Returns NULL once the cursor reaches GRAPHICS_PRIMITIVE_QUEUE_END_NODE.
 */
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
@@ -228,8 +222,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *que
 }
 
 
-/* Address: 0x004D0B20.
-   Appends a triangle packet for the model renderer: copies screen position, backend coordinates and depth of
+/* Appends a triangle packet for the model renderer: copies screen position, backend coordinates and depth of
    the three projected vertices and the texture coordinates from triangle, and sets renderFlags. The colours,
    material and texture are filled in afterwards by GraphicsPrimitiveQueue_SetVertexColors/SetMaterial. Returns
    true (CF set) when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
@@ -298,8 +291,7 @@ bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,Gr
 }
 
 
-/* Address: 0x004D0C80.
-   Sets the three vertex colours of the packet appended last. When not all three colours are fully opaque
+/* Sets the three vertex colours of the packet appended last. When not all three colours are fully opaque
    (alpha 0xFF) and the packet's blend mode is opaque (0) or 4, the blend mode becomes 6 (the XOR clears the
    old mode). Called by the model renderer (graphics/render/model.c) after GraphicsPrimitiveQueue_AppendTriangle.
 */
@@ -329,8 +321,7 @@ void GraphicsPrimitiveQueue_SetVertexColors
 }
 
 
-/* Address: 0x004D0D00.
-   Sets the modulation colour of the packet appended last and, when textureEntry is not NULL, its texture
+/* Sets the modulation colour of the packet appended last and, when textureEntry is not NULL, its texture
    (marking the packet GRAPHICS_PRIMITIVE_FLAG_TEXTURED); otherwise the texture is cleared. Called by the model
    renderer (graphics/render/model.c) after GraphicsPrimitiveQueue_AppendTriangle.
 */
@@ -354,8 +345,7 @@ void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTex
 }
 
 
-/* Address: 0x004D0D50.
-   Adds (deltaU, deltaV) to the texture coordinates of all three vertices of the packet appended last, for
+/* Adds (deltaU, deltaV) to the texture coordinates of all three vertices of the packet appended last, for
    scrolling textures. Called by ModelRender_SubmitTriangle (graphics/render/model.c).
 */
 void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoordinateFixed deltaV,
@@ -404,8 +394,7 @@ static void GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(GraphicsPrimi
   vertex->depth = source->viewPointB.z;
 }
 
-/* Address: 0x004D0DA0.
-   Terrain counterpart of GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle for the second projected surface:
+/* Terrain counterpart of GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle for the second projected surface:
    appends a packet from the terrain vertices' second screen/depth block (+0x2C..+0x3C), the per-vertex colours
    (masked with g_UiCommandModeGColorVariantLimit for vertices whose +0x4C is negative) and the texture
    coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2, texture index, palette entry). Blend mode 6; textured
@@ -483,8 +472,7 @@ static void GraphicsPrimitiveVertex_SetFromProjectedAttributes(GraphicsPrimitive
   vertex->depth = (GraphicsPrimitiveDepthFixed)source->texturedPacketAttributes[4];
 }
 
-/* Address: 0x004D0F20.
-   Appends a textured terrain triangle: copies each terrain vertex's screen position, backend coordinates and
+/* Appends a textured terrain triangle: copies each terrain vertex's screen position, backend coordinates and
    depth (+0x0C..+0x1C) and its colour, the texture coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2,
    texture-set index, palette entry), the modulation colour from g_TerrainSecondaryPalette, the first texture
    of g_TerrainMaterialTextureSets[index] and the render flags g_UiCommandModeGColorVariantFlags. Returns the
@@ -536,8 +524,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
 }
 
 
-/* Address: 0x004FFC10.
-   Broad-phase helper: returns a 32-bit mask with one bit per 1 << SPATIAL_BIN_SHIFT wide bin touched by
+/* Broad-phase helper: returns a 32-bit mask with one bit per 1 << SPATIAL_BIN_SHIFT wide bin touched by
    the interval [center - radius, center + radius] on one world axis (Q12). Bin indices wrap modulo 32, so
    the mask is a coarse spatial hash used by the collision and target searches.
 */
@@ -561,8 +548,7 @@ DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthI
 }
 
 
-/* Address: 0x004FFC50.
-   Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): CF set when
+/* Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): CF set when
    axis 0 masks and axis 1 masks both share a bin, i.e. the objects may overlap.
 */
 bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,

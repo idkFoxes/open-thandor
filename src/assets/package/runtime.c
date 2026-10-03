@@ -11,8 +11,7 @@
 
 /* Implementation ownership: assets/package/runtime. */
 
-/* Address: 0x005460E0.
-   Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
+/* Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
    'lev' asset of converter version 0x70001, and the level\*.str text page must load as the level's text
    aliases (keyed by the level's title text id). CF clear means the package stays mounted; on any failure it is
    unmounted again and CF is set (a failed mount returns without unmounting).
@@ -78,8 +77,7 @@ static THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDes
 }
 
 
-/* Address: 0x0040E840.
-   Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the
+/* Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the
    archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry header and
    its payload are appended at the end of the file. compressionMethod indexes g_PckEncoderTable, except
    PCK_COMPRESSION_STORED, which appends the source dword-aligned as it is; the first source dword becomes
@@ -178,8 +176,7 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
 }
 
 
-/* Address: 0x0040ED00.
-   Loads path into a caller buffer of the given capacity: from the first mounted package that has it, otherwise
+/* Loads path into a caller buffer of the given capacity: from the first mounted package that has it, otherwise
    from the loose file (PACKAGE_LOAD_* flags in the top two bits of the capacity select loose-only loading and a
    first try next to the executable). Returns true and stores the byte count in *outByteCountOrError; returns
    false with an error code there instead, FATAL_ERROR_OUT_OF_MEMORY when the entry does not fit (or is to be
@@ -313,8 +310,7 @@ static bool Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uint32_
 }
 
 
-/* Address: 0x0040E450.
-   Like Package_Mount, but takes the last free mount slot: lookups scan the table from the front, so this
+/* Like Package_Mount, but takes the last free mount slot: lookups scan the table from the front, so this
    archive loses against every other one. FileSystem_Init mounts engine.pck this way. Same result as
    Package_Mount.
 */
@@ -407,8 +403,7 @@ static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,Fil
 }
 
 
-/* Address: 0x0040E6F0.
-   Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as
+/* Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as
    deleted): the archive header loses one entry and its size, everything behind the entry is moved down over
    it through g_PackageScratchBuffer, the file is truncated there and the in-memory directory is reloaded.
    Returns true on success; on failure returns false with the file-system error code (or
@@ -503,8 +498,7 @@ static void *Package_LoadLooseFile(uint16_t *path,uint32_t *outErrorCode)
 }
 
 
-/* Address: 0x0040EE30.
-   Loads an asset into a newly allocated buffer: from the first mounted package that has the path, otherwise as
+/* Loads an asset into a newly allocated buffer: from the first mounted package that has the path, otherwise as
    a loose file (first relative to the executable directory, then as given). The buffer is untyped here;
    callers cast it to their gfx, fld, lev, mdl, sound, text, ... layout. Returns the buffer (never NULL on
    success); on failure returns NULL and stores the error code in *outErrorCode (outErrorCode may be NULL).
@@ -555,8 +549,7 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
 }
 
 
-/* Address: 0x0040E3A0.
-   Mounts the package archive path (next to the executable first, then as given) in the first free mount slot
+/* Mounts the package archive path (next to the executable first, then as given) in the first free mount slot
    and reads its directory into a fresh PACKAGE_DIRECTORY_BYTES entry-header array. Lookups scan the slots in
    the same order, so earlier mounts win. Returns true and stores the file handle in *outFileHandleOrError;
    returns false with an error code there instead when no slot is free, the file cannot be opened or the
@@ -664,8 +657,7 @@ static void Package_SortFoundEntries(PckEntryHeader *entries,int entryCount)
 }
 
 
-/* Address: 0x0040EB70.
-   Lists the entries of the mounted package fileHandle whose path matches pattern (Package_WildcardPathMatches):
+/* Lists the entries of the mounted package fileHandle whose path matches pattern (Package_WildcardPathMatches):
    copies each path into a PCK_ENTRY_HEADER_BYTES output record while the capacity lasts and sorts the records
    by path (UTF-16 code-unit order). Returns true with the match count in *outMatchCount (each record is
    PCK_ENTRY_HEADER_BYTES); returns false when the handle is not mounted, leaving *outMatchCount unchanged
@@ -713,8 +705,7 @@ bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader
 }
 
 
-/* Address: 0x0040E500.
-   Unmounts the package fileHandle: frees its entry-header array, closes the file and clears the mount slot.
+/* Unmounts the package fileHandle: frees its entry-header array, closes the file and clears the mount slot.
    Does nothing for a zero or unknown handle.
 */
 void Package_Unmount(EngineFileHandle fileHandle)
@@ -734,8 +725,7 @@ void Package_Unmount(EngineFileHandle fileHandle)
 }
 
 
-/* Address: 0x0040ECA0.
-   Compares a UTF-16 archive path against a pattern for the package entry search. '?' matches any one code
+/* Compares a UTF-16 archive path against a pattern for the package entry search. '?' matches any one code
    unit; '*' only skips the candidate to its next dot or terminator (no full globbing), which is enough for
    patterns like "level\*.lev". The comparison is case-sensitive. CF clear means match.
 */
@@ -761,8 +751,7 @@ bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
 }
 
 
-/* Address: 0x0040EAF0.
-   Reads the packed data of entry from the package fileHandle into g_PackageScratchBuffer and unpacks it into
+/* Reads the packed data of entry from the package fileHandle into g_PackageScratchBuffer and unpacks it into
    destination with the decoder of its compression method (g_PckDecoderTable). Returns true on success with the
    decoder's byte count in *outByteCount; on failure returns false with the seek, read or decoder error code in
    *outErrorCode and leaves the entry path in g_PackageLastErrorPath. Either out pointer may be NULL.
@@ -796,8 +785,7 @@ bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFi
 }
 
 
-/* Address: 0x0040E2B0.
-   Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load. The length is measured
+/* Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load. The length is measured
    in code units (at most 0x100, terminator included) but used as a byte count: the original copies twice as
    many code units as the path has (SUB EDI,ESI then REP MOVSW), running past the terminator and, for paths
    over 0x80 units, into g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer.
@@ -831,8 +819,7 @@ THANDOR_ALLOWS_OVERREAD void Package_SetLastErrorPath(uint16_t *path)
 }
 
 
-/* Address: 0x0040E640.
-   Finds the entry whose name equals path exactly (no wildcards, case-sensitive: package paths are stored in
+/* Finds the entry whose name equals path exactly (no wildcards, case-sensitive: package paths are stored in
    lower case) in the package mounted as fileHandle and returns its entry header. Returns NULL when no entry
    matches, and also for a path longer than an entry name, an unmounted handle or an empty package. Called
    directly by Package_UpsertEntry and Package_DeleteEntry (no callback table).
@@ -898,8 +885,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
 }
 
 
-/* Address: 0x0040EA20.
-   Finds path in the mounted packages, scanning the mount slots from the front so that the first mounted
+/* Finds path in the mounted packages, scanning the mount slots from the front so that the first mounted
    package that has the entry wins. The path is lowercased in place first (package paths are stored in lower
    case). Returns the entry header and stores the package's handle in *outFileHandle; returns NULL (leaving
    *outFileHandle unchanged) when the path is too long for an entry or no package has it. A found entry is
@@ -1003,8 +989,7 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
 }
 
 
-/* Address: 0x0040E570.
-   Loads the directory of the mounted package fileHandle into its mount slot: reads the archive header for the
+/* Loads the directory of the mounted package fileHandle into its mount slot: reads the archive header for the
    entry count, then every entry header, recording the file offset of the entry (its header; the packed
    payload follows it) and seeking past the payload to the next header. Returns true on success; false with
    the file-system error, or FATAL_ERROR_GENERAL_FAILURE when fileHandle is not mounted, in *outErrorCode

@@ -111,192 +111,144 @@
 /* UiFrame_Update calls between two DirectInputMouse_RefreshDeviceIfIdle calls (g_DirectInputMouseRefreshCountdown). */
 #define UI_FRAME_DIRECT_INPUT_REFRESH_INTERVAL 48
 
-/* 0x004B49A0 */
 void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPanelControl *control);
 
-/* 0x004B4D40 */
 void UiResizableWindowControl_DrawFrameTitleAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiResizableWindowControl *control);
 
-/* 0x004B3420 */
 void UiTitledWindowControl_DrawFrameTitleAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiTitledWindowControl *control);
 
-/* 0x004AF890 */
 void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void);
 
-/* 0x004AF920 */
 void UiFrame_ProcessAndPresent(void);
 
-/* 0x004B48D0 */
 void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack);
 
-/* 0x004B52D0 */
 void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control);
 
-/* 0x004B5770 */
 bool UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control);
 
-/* 0x004B1000 */
 void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root);
 
-/* 0x004B1110 */
 bool UiRootStack_Pop(UiRootNode *root);
 
-/* 0x004B2790 */
 void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocationDelta,UiWindowControl *control);
 
-/* 0x004B36C0 */
 void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control);
 
-/* 0x004B3C00 */
 UiNodeBase * UiFillPanelControl_HitTestChildrenOnly
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
-/* 0x004B3C80 */
 void UiHorizontalGaugeControl_DrawFrameFillAndLabel
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiHorizontalGaugeControl *control);
 
-/* 0x004B46A0 */
 void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiPageStackControl *control);
 
-/* 0x004B4700 */
 void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control);
 
-/* 0x004B4790 */
 UiNodeBase * UiLayoutContainerControl_HitTestChildrenOnly
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
-/* 0x004B47B0 */
 void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control);
 
-/* 0x004B4800 */
 void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control);
 
-/* 0x004B4D10 */
 void UiResizableWindowControl_RelocateAndRefreshInteractionState
           (UiSerializedRelocationDelta relocationDelta,UiResizableWindowControl *control);
 
-/* 0x004B53E0 */
 void UiResizableWindowControl_UpdateMoveOrResize
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control);
 
-/* 0x004BC660 */
 void UiImageControl_LayoutChildrenToParent(UiImageControl *control);
 
-/* 0x004AF3B0 */
 void UiFrame_FlushInputAndResetPendingTicks(void);
 
-/* 0x004AF9D0 */
 bool UiRootStack_BringToFront(UiRootNode *root);
 
-/* 0x004B0F30 */
 void UiWindowResources_Init(void);
 
-/* 0x004B1240 */
 void UiRootStack_Relayout(void);
 
-/* 0x004B3EE0 */
 GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
-/* 0x004B4740 */
 void UiLayoutContainerControl_ApplyFlagsRecursive
           (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiPageStackControl *control);
 
-/* 0x004B5120 */
 void UiResizableWindowControl_BeginMoveResizeOrWindowAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control);
 
-/* 0x004B5660 */
 GraphicsCursorFrameIndex UiResizableWindowControl_QueryResizeCursorCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiResizableWindowControl *control);
 
-/* 0x00569A80 */
 UiGridDimensions UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount);
 
-/* 0x00569AE0 */
 UiGridDimensions UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount);
 
-/* 0x004B0940 */
 void UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control);
 
-/* 0x004B0990 */
 void UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control);
 
-/* 0x004B1420 */
 void UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeBase *firstNode);
 
-/* 0x004B4850 */
 void UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root);
 
-/* 0x004B4890 */
 void UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root);
 
-/* 0x004B50D0 */
 void UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *control);
 
-/* 0x004AF680 */
 void UiFrame_Update(UiStopMessageCode stopMessageCode);
 
-/* 0x004AF7E0 */
 void UiFrame_Draw(void);
 
-/* 0x004B0800 */
 UiNodeBase * UiContainer_HitTestChildren(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
-/* 0x004B13B0 */
 void UiWindow_BlitTiledInterior(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,UiPixelCoordinate tileBottom
           ,UiPixelCoordinate tileRight,UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,
           void *node);
 
-/* 0x004B0510 */
 void UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiNodeBase *control);
 
-/* 0x004B05B0 */
 void UiContainer_DrawIntersectingChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiNodeBase *control);
 
-/* 0x004B1350 */
 void UiWindow_BlitTiledVerticalEdge(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,UiPixelCoordinate tileBottom,
           UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,void *node);
 
-/* 0x004B0640 */
 void UiContainer_LayoutChildren(UiNodeBase *control);
 
-/* 0x004B12F0 */
 void UiWindow_BlitTiledHorizontalEdge
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,
           UiPixelCoordinate tileRight,UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,void *node);
 
-/* 0x004B14D0 */
 void UiRootStack_InvalidateAll(void);
 
-extern UiNodeVtable g_UiTitledWindowControlVtable; /* 004B33D0 g_UiTitledWindowControlVtable */
-extern UiNodeVtable g_UiFillPanelControlVtable; /* 004B3A50 g_UiFillPanelControlVtable */
-extern UiNodeVtable g_UiHorizontalGaugeControlVtable; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
-extern UiNodeVtable g_UiLayoutContainerControlVtable; /* 004B4650 g_UiLayoutContainerControlVtable */
-extern UiNodeVtable g_UiPanelControlVtable; /* 004B4950 g_UiPanelControlVtable */
-extern UiNodeVtable g_UiResizableWindowControlVtable; /* 004B4CC0 g_UiResizableWindowControlVtable */
+extern UiNodeVtable g_UiTitledWindowControlVtable;
+extern UiNodeVtable g_UiFillPanelControlVtable;
+extern UiNodeVtable g_UiHorizontalGaugeControlVtable;
+extern UiNodeVtable g_UiLayoutContainerControlVtable;
+extern UiNodeVtable g_UiPanelControlVtable;
+extern UiNodeVtable g_UiResizableWindowControlVtable;
 
-extern uint32_t g_UiPendingFrameTicks; /* 004AF1F0 g_UiPendingFrameTicks */
-extern uint32_t g_UiInvalidationSuppressed; /* 004AF208 g_UiInvalidationSuppressed */
-extern UiRootNode *g_UiRootNode; /* 004B0E30 g_UiRootNode */
-extern GraphicsTextureSourceAsset *g_UiWindowTextureSource; /* 004B0E34 g_UiWindowTextureSource */
-extern GraphicsTextureSourceAsset *g_UiWindowClassTextureSource; /* 004B0E38 g_UiWindowClassTextureSource */
+extern uint32_t g_UiPendingFrameTicks;
+extern uint32_t g_UiInvalidationSuppressed;
+extern UiRootNode *g_UiRootNode;
+extern GraphicsTextureSourceAsset *g_UiWindowTextureSource;
+extern GraphicsTextureSourceAsset *g_UiWindowClassTextureSource;
 
 #endif /* THANDOR_UI_CONTROLS_LAYOUT_H */

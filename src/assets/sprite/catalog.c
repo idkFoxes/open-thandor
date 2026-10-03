@@ -10,8 +10,7 @@
 
 /* Implementation ownership: assets/sprite/catalog. */
 
-/* Address: 0x004BE480.
-   Empties the registry of already relocated sprite assets (the list SpriteAssetRegistry_FindById walks),
+/* Empties the registry of already relocated sprite assets (the list SpriteAssetRegistry_FindById walks),
    so the next load of any sprite registers and relocates it afresh.
 */
 void SpriteAssetRegistry_Reset(void)
@@ -20,8 +19,7 @@ void SpriteAssetRegistry_Reset(void)
   g_SpriteAssetRegistryHead = NULL;
 }
 
-/* Address: 0x004BE490.
-   Finds an already registered sprite asset by its id (+0xB8), walking the registry list from the most
+/* Finds an already registered sprite asset by its id (+0xB8), walking the registry list from the most
    recently registered one; NULL when no asset has that id. Lets model loading reuse a sprite that another
    model already loaded.
 */
@@ -38,8 +36,7 @@ SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
 }
 
 
-/* Address: 0x004BE4D0.
-   Checks that the asset is an 'spr' of converter version 0x20007, prepends it to the sprite registry and
+/* Checks that the asset is an 'spr' of converter version 0x20007, prepends it to the sprite registry and
    turns the three serialized offsets of every 0x40-byte pointer record (in every block of every group) into
    absolute pointers. Must run exactly once per loaded image. Returns 0 on success or
    FATAL_ERROR_SPRITE_ASSET_INVALID (the original's success EAX, the asset itself, was read by no caller).
@@ -91,8 +88,7 @@ uint32_t SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
   return 0;
 }
 
-/* Address: 0x004BE5A0.
-   Inverse of SpriteAsset_RegisterAndRelocatePointers: copies the relocated sprite asset (allocationSizeBytes
+/* Inverse of SpriteAsset_RegisterAndRelocatePointers: copies the relocated sprite asset (allocationSizeBytes
    long) to serializedDestination and turns the copy back into its serialized form, so it can be written out
    again: the runtime fields of every fixed 0x40-byte record are cleared and the three pointers of every
    pointer record become offsets from the asset start again. No caller or callback-table slot references it

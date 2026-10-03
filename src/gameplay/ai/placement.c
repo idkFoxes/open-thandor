@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/ai/placement. */
 
-/* Address: 0x0053A110.
-   Tests whether one more special site of this asset fits at a workspace-08 cell: the mode-7 placement query must
+/* Tests whether one more special site of this asset fits at a workspace-08 cell: the mode-7 placement query must
    report a nonzero count, the mode-4 query must fail, and the count rounded up to whole separation quanta must be
    at most 4; the result is then that of AiPlacement_ReserveSeparatedSpecialSiteChain. CF (true) means rejected.
 */
@@ -49,8 +48,7 @@ bool AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,
 }
 
 
-/* Address: 0x0053AE60.
-   Plans the special-site chain while the secondary workspace has no ARM_0050 entry: without ARM_0301 in the
+/* Plans the special-site chain while the secondary workspace has no ARM_0050 entry: without ARM_0301 in the
    primary workspace it proposes that building; with it (and when the ARM_0050 registry lookup reports false)
    it proposes technology 11 (entry kind 2) until the faction has researched it, then ARM_0050. Each candidate
    gets the special-site weight; nothing is added when no site is available.
@@ -91,8 +89,7 @@ void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionInde
 }
 
 
-/* Address: 0x00537B20.
-   Adds a field cell to the general site list (workspace 05, at most 32 entries) unless an entry already lies
+/* Adds a field cell to the general site list (workspace 05, at most 32 entries) unless an entry already lies
    closer than generalSiteMinimumAxisSeparationQ12 on both axes. The entry's score rewards closeness to the
    primary workspace and distance (capped) from workspaces 02 and 01, weighted by the ki.dat parameters at
    +0x84..+0xA0; unlike the flagged-site list below, these parameters are read from the right base.
@@ -166,8 +163,7 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
 }
 
 
-/* Address: 0x00537C10.
-   Adds a field cell to the flagged site list (workspace 06, at most 64 entries) unless an entry already lies
+/* Adds a field cell to the flagged site list (workspace 06, at most 64 entries) unless an entry already lies
    closer than flaggedSiteMinimumAxisSeparationQ12 on both axes; the score is built like the general site score.
    Original bug: the caps and weights are read at +0xC4..+0xE0 from the new entry's address in the workspace
    buffer (EDI still holds it) instead of from g_AiKnowledgeData, so they are whatever lies further on in the
@@ -335,8 +331,7 @@ static int AiSiteCandidate_TerrainFeaturePriority(int nearestDistance)
 }
 
 
-/* Address: 0x00537CF0.
-   Adds a resource site to the terrain-feature list (workspace 08, at most 32 entries): ARM_0330 on a cell with
+/* Adds a resource site to the terrain-feature list (workspace 08, at most 32 entries): ARM_0330 on a cell with
    xenite support, ARM_0332 otherwise. The cell is dropped when it lies within 2.0 of the 1:5 marker of any class-13
    structure in workspace 00, or when a structure of the same asset stands closer than
    terrainFeatureMinimumAxisSeparationQ12 on both axes. The priority is placementClearancePaddingQ12 minus the
@@ -406,8 +401,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
 }
 
 
-/* Address: 0x00539200.
-   Runs the mode-0 placement query for the asset at a workspace cell (its position and heading) and returns the
+/* Runs the mode-0 placement query for the asset at a workspace cell (its position and heading) and returns the
    query's result inverted: true when the asset cannot be placed there.
 */
 bool AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
@@ -421,8 +415,7 @@ bool AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,Fi
 }
 
 
-/* Address: 0x0053A1B0.
-   Runs the mode-4 placement query for the asset at a workspace cell (its position and heading) and returns
+/* Runs the mode-4 placement query for the asset at a workspace cell (its position and heading) and returns
    the query's result inverted: true when the asset cannot be placed there in that mode.
 */
 bool AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
@@ -436,8 +429,7 @@ bool AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,Fi
 }
 
 
-/* Address: 0x0053B570.
-   Counts how many separation quanta of special sites the asset could use at a workspace cell: when the mode-3
+/* Counts how many separation quanta of special sites the asset could use at a workspace cell: when the mode-3
    query reports a nonzero count and the mode-0 query fails, the count is rounded up to whole
    specialSiteSeparationQuantumQ12 units; otherwise the result is 0. Returns false (*outBucketCount untouched)
    only when both the mode-3 and the mode-0 query fail; otherwise stores the count and returns true.
@@ -481,8 +473,7 @@ bool AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId
 }
 
 
-/* Address: 0x0053ACD0.
-   Tests a workspace-08 site cell for the asset: the mode-3 placement query must succeed with a count of at least
+/* Tests a workspace-08 site cell for the asset: the mode-3 placement query must succeed with a count of at least
    one separation quantum (rounded up). More than 4 quanta accept the site outright; 1-4 quanta accept it only
    when AiPlacement_ReserveSeparatedSpecialSiteChain reports CF set. CF (true) means rejected.
 */
@@ -519,8 +510,7 @@ bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,Field
 }
 
 
-/* Address: 0x0053AD50.
-   Finds the first workspace-08 resource site that passes AiPlacement_ReserveMode3SiteCluster and lies at least
+/* Finds the first workspace-08 resource site that passes AiPlacement_ReserveMode3SiteCluster and lies at least
    specialSiteMinimumWorkspaceDistanceQ12 from workspaces 03 and 02, and weighs it: the site's base weight
    (ARM_0330 or other) x3 / (2 * assigned structures of that asset + 6); for a non-ARM_0330 site it is further
    scaled by (2 * unpowered + supplied energy demand) / (tritiumCurrentQ4 << 8) when the faction has tritium.
@@ -577,8 +567,7 @@ bool AiCandidatePlanning_ComputeSpecialSiteWeight
 }
 
 
-/* Address: 0x00539330.
-   Returns the position of the workspace-09 cell nearest (Manhattan distance) to the reference point at which
+/* Returns the position of the workspace-09 cell nearest (Manhattan distance) to the reference point at which
    the mode-1 placement query accepts the asset: returns true and stores the cell position in *outWorldYQ12 /
    *outWorldXQ12, or returns false (outputs untouched) when no such cell exists.
    Note the argument order: Y first, then X, like ArmyPlacement_CanPlaceAssetAtFieldPoint.
@@ -656,8 +645,7 @@ static uint32_t AiPlacement_AnchorManhattanDistanceToCell(Q12 anchorYQ12,Q12 anc
 }
 
 
-/* Address: 0x00539EF0.
-   Probes the ARM_0333 building positions around a workspace cell: up to four times it takes the nearest free
+/* Probes the ARM_0333 building positions around a workspace cell: up to four times it takes the nearest free
    workspace-09 anchor (AiPlacement_FindNearestPlaceableBaseSite), creates a temporary ARM_0333 instance
    there (so the next search finds the next anchor) and checks its Manhattan distance to the cell. CF is clear
    as soon as one of them lies closer than specialSiteSeparationQuantumQ12, and set when all are at least that

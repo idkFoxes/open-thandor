@@ -26,8 +26,7 @@ static WorldPositionXY GridScratch_CellCenterWorldPosition(FieldGridCellCoordina
   return worldPosition;
 }
 
-/* Address: 0x005349D0.
-   Plans a move of routeEntityRuntime towards the target world point on the scratch grid. The influence of the
+/* Plans a move of routeEntityRuntime towards the target world point on the scratch grid. The influence of the
    entity (and of the entity it overlaps) is lifted so it does not block itself, the traversal masks are set for
    its faction and grid class, and a blocked start cell is relocated to the nearest open cell. When the straight
    line to the target is blocked, path costs are propagated from the target and the route is backtracked to the
@@ -265,8 +264,7 @@ static bool GridReachability_IsMarkedRingEdgeCell(GridScratchCell *rowAboveCell,
          (rowAboveCell[scratchWidth * 2 - 1].pathCost == 0) || (rowAboveCell[scratchWidth * 2].pathCost == 0);
 }
 
-/* Address: 0x00536500.
-   Tests whether an obstacle of radiusMetric at the world point would split the open area around it. Every
+/* Tests whether an obstacle of radiusMetric at the world point would split the open area around it. Every
    scratch cell is marked visited with count 0; the footprint of 3 * radius is unmarked (its cells get a non-zero
    count), the open region around the point is flood-marked inside it, and the inner footprint of radius is
    unmarked again. The first marked cell on the outer footprint's edge has its piece of the ring cleared; any
@@ -476,8 +474,7 @@ static void GridScratch_FloodFillFromPlacedRuntimeModels(WorldOwnerListNode *own
   } while (ownerNode != NULL);
 }
 
-/* Address: 0x00533620.
-   Rebuilds the terrain classification of the scratch grid (4x4 scratch cells per field cell): clears the
+/* Rebuilds the terrain classification of the scratch grid (4x4 scratch cells per field cell): clears the
    faction and class bits, derives terrain class bits 24..30 from water depth and slope of each field cell
    and faction presence bits 1..7 from its occupancy bytes, and marks map-edge cells GRID_SCRATCH_BLOCKED.
    Then every class-24 area is grown by one field cell, and each runtime model flood-fills the region it stands
@@ -675,8 +672,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
 }
 
 
-/* Address: 0x005332C0.
-   Sizes the pathing scratch grids for a field grid (4x4 scratch cells per field cell, 8-byte GridScratchCell
+/* Sizes the pathing scratch grids for a field grid (4x4 scratch cells per field cell, 8-byte GridScratchCell
    records): allocates the primary and secondary scratch grids and the 0x180000-byte path-cost pointer queue
    (g_GridPathCostQueueBegin..End), each replacing and freeing the previous buffer. Returns true on success;
    on failure returns false and writes the allocator error to *outError (untouched on success).
@@ -726,8 +722,7 @@ bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outErr
 }
 
 
-/* Address: 0x00533360.
-   Frees the path-cost queue and both scratch grids allocated by GridScratch_AllocateForFieldGrid and
+/* Frees the path-cost queue and both scratch grids allocated by GridScratch_AllocateForFieldGrid and
    clears the three pointers, so a later session starts without stale buffers.
 */
 void GridScratch_ReleaseBuffers(void)
@@ -742,8 +737,7 @@ void GridScratch_ReleaseBuffers(void)
 }
 
 
-/* Address: 0x00533400.
-   Tail of tick-wheel case 7: after the occupancy rebuild, turns each non-edge field cell's occupancy bytes
+/* Tail of tick-wheel case 7: after the occupancy rebuild, turns each non-edge field cell's occupancy bytes
    of faction slots 1..7 into scratch bits 1..7 and ORs them into the cell's 4x4 scratch block and a ring of
    surrounding scratch cells, so faction presence is dilated into the scratch grid used by pathing.
 */
@@ -868,8 +862,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
 }
 
 
-/* Address: 0x00533BA0.
-   Tests whether a world point may be used for pathing: projects it onto the grid-scratch cells (the same
+/* Tests whether a world point may be used for pathing: projects it onto the grid-scratch cells (the same
    skewed field projection as the placement tests, with 10 instead of 12 fraction bits) and rejects it (CF set)
    when it lies outside the scratch grid, the cell is GRID_SCRATCH_BLOCKED, or the cell has distance band bit
    8 + lowBandIndex or bit 24 + highBandIndex set.
@@ -903,8 +896,7 @@ bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t 
 }
 
 
-/* Address: 0x00536C90.
-   Plans the routes of every runtime model near the move of routeEntityRuntime together, on a copy of the scratch
+/* Plans the routes of every runtime model near the move of routeEntityRuntime together, on a copy of the scratch
    grid (the real grid is swapped back at the end). Up to 32 models whose depth-bin masks overlap the box around
    the move are collected and heap-sorted by priority (other factions lowest, then the own faction plus the
    definition's +0x0C weight); after their influence is added to the copy, other-faction models only stamp their
@@ -1083,8 +1075,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
 }
 
 
-/* Address: 0x00534F50.
-   Opens a disc of radiusWorldUnits (plus g_GridInfluenceRadiusOffset[6] and the margin) around the world point in
+/* Opens a disc of radiusWorldUnits (plus g_GridInfluenceRadiusOffset[6] and the margin) around the world point in
    the scratch grid: every cell whose centre lies inside loses its visited and blocked bits and has its pathCost
    counter incremented (GridReachability_RebuildConnectedRegionAroundWorldPoint uses the count as "inside").
    The disc is covered by vertical walks (constant world X) from the centre row leftwards and rightwards, then
@@ -1190,8 +1181,7 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
 }
 
 
-/* Address: 0x005369A0.
-   Stamps the planned movement of one model into the (copied) scratch grid so that models planned later avoid
+/* Stamps the planned movement of one model into the (copied) scratch grid so that models planned later avoid
    it: the model's own influence is lifted, the straight segment from its position to its target (the given
    target for sourceRouteEntityRuntime itself, its current movement target otherwise) gets low distance bands
    of its clearance radius every 0x240 world units. A blocked start snaps the target to the nearest open cell,
@@ -1387,8 +1377,7 @@ static GridScratchCell *GridPathCost_FindCheaperHexNeighbor(GridScratchCell *cel
   return bestNeighborCell;
 }
 
-/* Address: 0x00534660.
-   Follows the propagated path costs downhill from startCell (the mover's cell, at startRow/startColumn) to the
+/* Follows the propagated path costs downhill from startCell (the mover's cell, at startRow/startColumn) to the
    cheapest of the six neighbours, as long as that neighbour can still be seen from startCell in a straight line
    (GridPathLine_TestHexSegmentBlocked with callerBlockingMask, dropped once a high-cost cell is entered); at least
    one step is taken. Returns true when that cell is the cost origin itself (cost 0, the target was reached);
@@ -1434,8 +1423,7 @@ bool GridPathCost_BacktrackBestHexRoute
 }
 
 
-/* Address: 0x00534960.
-   Used when the start cell (row, column) was not reached by the cost propagation from the reference (target)
+/* Used when the start cell (row, column) was not reached by the cost propagation from the reference (target)
    cell: flood-marks the unreached region around the start and returns the cell of that region with the smallest
    hex distance to the reference cell (written to *outRow/*outColumn), the closest the mover can get to the
    target.
@@ -1463,8 +1451,7 @@ void GridPathRegion_MarkUnreachableFromCell
 }
 
 
-/* Address: 0x005333B0.
-   Copies the whole primary scratch grid into the secondary one (two dwords per 8-byte GridScratchCell, a
+/* Copies the whole primary scratch grid into the secondary one (two dwords per 8-byte GridScratchCell, a
    REP MOVSD in the original), so pathing can plan on a copy and swap back afterwards.
 */
 void __cdecl GridScratch_CopyPrimaryToSecondary(void)
@@ -1485,8 +1472,7 @@ void __cdecl GridScratch_CopyPrimaryToSecondary(void)
   return;
 }
 
-/* Address: 0x005333E0.
-   Swaps the primary and secondary scratch grid pointers (XCHG in the original), making the copy made by
+/* Swaps the primary and secondary scratch grid pointers (XCHG in the original), making the copy made by
    GridScratch_CopyPrimaryToSecondary the working grid, or restoring the original afterwards.
 */
 void GridScratch_SwapPrimarySecondary(void)
@@ -1503,8 +1489,7 @@ void GridScratch_SwapPrimarySecondary(void)
 }
 
 
-/* Address: 0x00533580.
-   Scanline flood fill over the scratch grid: marks the horizontal run of cells around currentCell that have no
+/* Scanline flood fill over the scratch grid: marks the horizontal run of cells around currentCell that have no
    traversalMask bit as visited, then recurses into every such cell of the row above and the row below that span.
    A blocked or already visited start cell does nothing.
 */
@@ -1626,8 +1611,7 @@ static void GridPathCost_RelaxNeighbor(GridPathCostQueueState *queue,GridScratch
   }
 }
 
-/* Address: 0x00533EF0.
-   Fills GridScratchCell.pathCost outwards from the cell (startRow, startColumn), which gets cost 0, over the six
+/* Fills GridScratchCell.pathCost outwards from the cell (startRow, startColumn), which gets cost 0, over the six
    hex neighbours with a FIFO queue (g_GridPathCostQueueBegin..End), lowering a neighbour's cost whenever a
    cheaper step is found. The queue is processed in passes of GRID_PATH_COST_QUEUE_PASS_ENTRIES entries; after a
    pass it stops once originCell (the mover's cell) or one of its neighbours has a cost, or after remainingPasses
@@ -1667,8 +1651,7 @@ void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasse
 }
 
 
-/* Address: 0x00534200.
-   Prepares the scratch grid for a cost propagation: clears the visited bit and sets pathCost to
+/* Prepares the scratch grid for a cost propagation: clears the visited bit and sets pathCost to
    GRID_PATH_COST_UNREACHED in every cell, sixteen cells per unrolled iteration.
 */
 void GridScratch_ResetTraversalFlagsAndCosts(void)
@@ -1758,8 +1741,7 @@ static bool GridPathRegion_IsUnvisitedUnreachedOpenCell(GridScratchCell *cell)
          ((g_GridPathEntityClassMask & cellState) == 0 || (g_GridPathBlockingMask & cellState) == 0);
 }
 
-/* Address: 0x00534780.
-   Scanline flood fill for GridPathRegion_MarkUnreachableFromCell: marks the horizontal run of unreached cells
+/* Scanline flood fill for GridPathRegion_MarkUnreachableFromCell: marks the horizontal run of unreached cells
    around currentCell as visited (stopping at reached, blocked or faction-blocked cells), keeps the run cell
    nearest (hex distance) to g_GridPathUnreachableRegionReference{Row,Column} as the best cell if it beats
    bestCost, and recurses into the unvisited open cells of the rows above and below. Returns the best distance
@@ -1853,8 +1835,7 @@ GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
 }
 
 
-/* Address: 0x00534E70.
-   Footprint walker for GridFootprint_ClearTraversalFlagsAroundWorldPoint: from scratchRecord (a cell whose centre
+/* Footprint walker for GridFootprint_ClearTraversalFlagsAroundWorldPoint: from scratchRecord (a cell whose centre
    is at cellWorldY/X) it walks downwards, two scratch rows and one column left per step, i.e. straight down in
    world space, while the cell centre lies within g_GridInfluenceSquaredThreshold[6] of the centre point. Each cell
    loses its blocked and visited bits and has its pathCost counter incremented. Stops before a blocked cell.
@@ -1889,8 +1870,7 @@ int GridFootprint_ClearTraversalFlagsDiagonalNegative
 }
 
 
-/* Address: 0x00534EE0.
-   Mirror of GridFootprint_ClearTraversalFlagsDiagonalNegative walking upwards (two scratch rows up and one
+/* Mirror of GridFootprint_ClearTraversalFlagsDiagonalNegative walking upwards (two scratch rows up and one
    column right per step), with the same clearing and the same return value.
 */
 int GridFootprint_ClearTraversalFlagsDiagonalPositive
@@ -1921,8 +1901,7 @@ int GridFootprint_ClearTraversalFlagsDiagonalPositive
 }
 
 
-/* Address: 0x005363C0.
-   Scanline flood fill for GridReachability_RebuildConnectedRegionAroundWorldPoint: marks the horizontal run of
+/* Scanline flood fill for GridReachability_RebuildConnectedRegionAroundWorldPoint: marks the horizontal run of
    open cells around currentCell as visited, then recurses into the open cells of the hex-adjacent spans in the
    rows above and below. A cell is open when none of GRID_REACHABILITY_OPEN_STOP_MASK is set (blocked, terrain
    classes 28..30, low bands 0..6, already visited).
@@ -1966,8 +1945,7 @@ void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratc
 }
 
 
-/* Address: 0x00536440.
-   Scanline flood fill that undoes GridReachability_MarkOpenRegionRecursive for one connected piece: clears the
+/* Scanline flood fill that undoes GridReachability_MarkOpenRegionRecursive for one connected piece: clears the
    visited bit across the connected cells that are visited and inside the footprint (pathCost counter non-zero),
    with the same hex-adjacent recursion into the rows above and below.
 */
@@ -2040,8 +2018,7 @@ static int GridPathCost_HexDistance(int columnDelta,int rowDelta)
 }
 
 
-/* Address: 0x005342F0.
-   Checks whether a mover can leave the scratch cell (cellRow, cellColumn): when the cell or one of its six hex
+/* Checks whether a mover can leave the scratch cell (cellRow, cellColumn): when the cell or one of its six hex
    neighbours is free of g_GridPathBlockingMask and GRID_SCRATCH_BLOCKED, returns false and leaves *outRow and
    *outColumn untouched. Otherwise returns true and writes the nearest (hex distance) free cell within +-16
    rows/columns, or the cell itself when there is none.
@@ -2183,8 +2160,7 @@ static GridScratchCell *GridPathLine_AdvanceDownRows(GridScratchCell *lineCursor
 }
 
 
-/* Address: 0x005344B0.
-   Rasterises the straight line from startCell (at startRow, startColumn) to endCell over the scratch grid and
+/* Rasterises the straight line from startCell (at startRow, startColumn) to endCell over the scratch grid and
    returns true as soon as a cell other than startCell is blocked (bit 31), lacks the mover's faction
    presence bit (g_GridPathEntityClassMask), or has a g_GridPathBlockingMask or callerBlockingMask bit; false
    when the whole line is clear. The line is always walked left to right;

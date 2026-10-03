@@ -10,8 +10,7 @@
 
 /* Implementation ownership: platform/system/time_locale. */
 
-/* Address: 0x005867B0.
-   Stops every periodic timer: unregisters each callback still present in the 32 slots (which also
+/* Stops every periodic timer: unregisters each callback still present in the 32 slots (which also
    kills its WinMM timer).
 */
 void TimerSystem_Shutdown(void)
@@ -31,8 +30,7 @@ void TimerSystem_Shutdown(void)
 }
 
 
-/* Address: 0x00586BA0.
-   Detects the CPU features, installs the date/time/locale services in their function pointers and
+/* Detects the CPU features, installs the date/time/locale services in their function pointers and
    caches the user's locale settings (language id, number separators, date/time separators and order,
    AM/PM designators) in g_LocaleSystemState for the date and number formatters.
    Numeric fields are parsed from the GetLocaleInfoA text; string fields are widened to UTF-16.
@@ -81,8 +79,7 @@ void Locale_Init(void)
 }
 
 
-/* Address: 0x00586790.
-   Installs the WinMM periodic-timer services and the Win32 message pump in their function pointers.
+/* Installs the WinMM periodic-timer services and the Win32 message pump in their function pointers.
    It cannot fail: the original returns with CF clear, which ProcessEntry relies on.
 */
 void __cdecl TimerSystem_Init(void)
@@ -93,8 +90,7 @@ void __cdecl TimerSystem_Init(void)
   g_Win32PumpMessages = Win32_PumpMessages;
 }
 
-/* Address: 0x005867E0.
-   The WinMM timer procedure every periodic timer of TimerSystem_RegisterPeriodic runs through, on WinMM's
+/* The WinMM timer procedure every periodic timer of TimerSystem_RegisterPeriodic runs through, on WinMM's
    timer thread: dwUser (slotOffset) is the byte offset of the timer's callbacks[] slot, and a valid, occupied
    slot's engine callback is called without arguments.
 */
@@ -112,8 +108,7 @@ void __stdcall WinMM_TimerDispatchCallback
 }
 
 
-/* Address: 0x00586820.
-   Starts a periodic timer: puts callback into the first free of the 32 slots and has WinMM call it
+/* Starts a periodic timer: puts callback into the first free of the 32 slots and has WinMM call it
    frequencyHz times per second (period 1000 / frequencyHz ms, truncated) through
    WinMM_TimerDispatchCallback, on WinMM's timer thread. With all slots taken the request is ignored.
 */
@@ -144,8 +139,7 @@ void TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc
 }
 
 
-/* Address: 0x00586DD0.
-   Writes a date as UTF-16 text in the user's order (LOCALE_ILDATE: 0 month-day-year, 1 day-month-year,
+/* Writes a date as UTF-16 text in the user's order (LOCALE_ILDATE: 0 month-day-year, 1 day-month-year,
    else year-month-day) with the user's date separator, without zero padding. Returns the byte length
    without the terminator.
 */
@@ -198,8 +192,7 @@ uint32_t Locale_FormatDateFieldsUtf16
   return completedByteOffset - (int)destination;
 }
 
-/* Address: 0x00586F10.
-   Writes today's local date like Locale_FormatDateFieldsUtf16 (user's order and separator). Returns the
+/* Writes today's local date like Locale_FormatDateFieldsUtf16 (user's order and separator). Returns the
    byte length without the terminator.
 */
 uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
@@ -283,8 +276,7 @@ uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
 }
 
 
-/* Address: 0x00587080.
-   Returns today's local date packed as (year << 16) | (month << 8) | day, so packed dates compare in
+/* Returns today's local date packed as (year << 16) | (month << 8) | day, so packed dates compare in
    calendar order.
 */
 uint32_t Locale_GetPackedCurrentDate(void)
@@ -296,8 +288,7 @@ uint32_t Locale_GetPackedCurrentDate(void)
 }
 
 
-/* Address: 0x005870C0.
-   Writes hour:minute as UTF-16 text with the user's time separator. 24-hour locales get both fields
+/* Writes hour:minute as UTF-16 text with the user's time separator. 24-hour locales get both fields
    zero-padded; 12-hour locales (LOCALE_ITIME 0) get an unpadded hour 0..11 and a designator appended.
    The designator is swapped in the original: hours below 12 get the S2359 (PM) text, the others the
    S1159 (AM) text, and noon shows as 0. Returns the byte length without the terminator.
@@ -357,8 +348,7 @@ uint32_t Locale_FormatTimeFieldsUtf16
   return completedByteOffset - (int)destination;
 }
 
-/* Address: 0x005871B0.
-   Writes the current local time like Locale_FormatTimeFieldsUtf16 (same padding and the same swapped
+/* Writes the current local time like Locale_FormatTimeFieldsUtf16 (same padding and the same swapped
    AM/PM designators). Returns the byte length without the terminator.
 */
 uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
@@ -423,8 +413,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
 }
 
 
-/* Address: 0x005872B0.
-   Returns the current local time packed as (hour << 16) | (minute << 8) | second.
+/* Returns the current local time packed as (hour << 16) | (minute << 8) | second.
 */
 uint32_t Locale_GetPackedCurrentTime(void)
 
@@ -436,8 +425,7 @@ uint32_t Locale_GetPackedCurrentTime(void)
 }
 
 
-/* Address: 0x005872F0.
-   Guesses the player's telephone country code from the Windows user language: English 44, German 49,
+/* Guesses the player's telephone country code from the Windows user language: English 44, German 49,
    French 33, Italian 39, Spanish 34, Russian 7, anything else 0.
 */
 uint32_t Locale_GetDefaultTelephoneCountryCode(void)
@@ -474,8 +462,7 @@ uint32_t Locale_GetDefaultTelephoneCountryCode(void)
 }
 
 
-/* Address: 0x00587350.
-   Copies the default computer label (L"Computer", or the machine name FileSystem_Init put there) to
+/* Copies the default computer label (L"Computer", or the machine name FileSystem_Init put there) to
    destination: always the whole 0x40-byte buffer including its zero padding.
 */
 void Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
@@ -495,8 +482,7 @@ void Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
 }
 
 
-/* Address: 0x00586880.
-   Stops the periodic timer of callback: clears its slot (the first match) and kills the paired WinMM
+/* Stops the periodic timer of callback: clears its slot (the first match) and kills the paired WinMM
    timer; the stale timer id stays in the table. An unknown callback is ignored.
 */
 void TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
@@ -518,8 +504,7 @@ void TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
 }
 
 
-/* Address: 0x00586B70.
-   Parses the leading decimal digits of a GetLocaleInfoA number field ("1", "3;0", ...); stops at the
+/* Parses the leading decimal digits of a GetLocaleInfoA number field ("1", "3;0", ...); stops at the
    first non-digit. No sign, whitespace or overflow handling.
 */
 uint32_t Locale_ParseUnsignedDecimalAscii(uint8_t *text)

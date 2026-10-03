@@ -27,22 +27,17 @@
 #define LEVEL_ENDING_MOVIE_NAME_LA UTF16_CHAR_PAIR('l','a')      /* end movie 4 */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00531080 */
 bool LevelAsset_PrepareEndingMoviePath
           (uint16_t *currentLevelPath,LevelAssetHeader *asset,uint16_t **outMoviePath,uint32_t *outError);
 
-/* 0x005311D0 */
 bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
-/* 0x00532020 */
 bool InGameLevelRuntime_LoadResourcesAfterExternalTables
           (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
-/* 0x005329C0 */
 void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime);
 
-/* 0x00532CA0 */
 bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_LEVEL_H */

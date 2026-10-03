@@ -25,51 +25,38 @@
 #define GRAPHICS_PALETTE_BANK_SLOT_CAPACITY 0x200
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004AE520 */
 bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase);
 
-/* 0x004AD800 */
 bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount);
 
-/* 0x004AD820 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode);
 
-/* 0x004AD860 */
 void GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset);
 
-/* 0x004AD880 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteAsset);
 
-/* 0x004AD8D0 */
 void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset);
 
-/* 0x004AD8F0 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset,uint32_t *outErrorCode);
 
-/* 0x004AD920 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset);
 
-/* 0x004AE7E0 */
 GraphicsPaletteTextureSourceAsset * GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           (GraphicsPaletteTextureSourceAsset *appendedAsset,
           GraphicsPaletteTextureSourceAsset *baseAsset);
 
-/* 0x004AE3F0 */
 void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
           (GraphicsPaletteIndex sourcePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
           GraphicsTextureSourceHeaderView *textureSource);
 
-/* 0x004AE2E0 */
 void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
           (uint32_t oldColorIndex,uint32_t newColorIndex,GraphicsPaletteIndex paletteBank,
           GraphicsTextureSourceHeaderView *textureSource);
 
-/* 0x004AE370 */
 uint32_t GraphicsPaletteTextureSource_CountCombinedUsedColors
           (GraphicsPaletteIndex candidatePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
           GraphicsTextureSourceHeaderView *textureSource);
 
-/* 0x004AE230 */
 void GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
           (GraphicsPaletteIndex paletteIndex,GraphicsTextureSourceHeaderView *textureSource);
 

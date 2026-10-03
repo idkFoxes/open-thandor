@@ -36,54 +36,39 @@
 #define PACKAGE_LOAD_SKIP_PACKAGES 0x80000000 /* load only the loose file */
 #define PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST 0x40000000 /* try the loose file next to the executable first */
 
-/* 0x005460E0 */
 bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
 
-/* 0x0040E840 */
 bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle);
 
-/* 0x0040ED00 */
 bool Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
            uint32_t *outByteCountOrError);
 
-/* 0x0040E450 */
 bool Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError);
 
-/* 0x0040E6F0 */
 bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
-/* 0x0040EE30 */
 void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode);
 
-/* 0x0040E3A0 */
 bool Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError);
 
-/* 0x0040EB70 */
 bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                        uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount);
 
-/* 0x0040E500 */
 void Package_Unmount(EngineFileHandle fileHandle);
 
-/* 0x0040ECA0 */
 bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate);
 
-/* 0x0040EAF0 */
 bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
                              uint32_t *outByteCount,uint32_t *outErrorCode);
 
-/* 0x0040E2B0 */
 void Package_SetLastErrorPath(uint16_t *path);
 
-/* 0x0040E640 */
 PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle);
 
-/* 0x0040EA20 */
 PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *outFileHandle);
 
-/* 0x0040E570 */
 bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 #endif /* THANDOR_ASSETS_PACKAGE_RUNTIME_H */

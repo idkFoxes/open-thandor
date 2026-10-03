@@ -11,7 +11,6 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0040262C g_WideNumberFormatState */
 __declspec(align(4)) WideNumberFormatState g_WideNumberFormatState = {
     .decimalSeparatorLength = 1,
     .groupSeparatorLength = 1,

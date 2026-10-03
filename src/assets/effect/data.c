@@ -11,5 +11,4 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0051DBD0 g_EffectDefinitionRegistry */
 __declspec(align(16)) EffectDefinition *g_EffectDefinitionRegistry[256] = {0};

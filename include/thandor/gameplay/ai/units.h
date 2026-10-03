@@ -20,41 +20,32 @@
 #define AI_UNIT_STATE94_GROUP_ASSIGNED 0x1
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0053B0E0 */
 void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-/* 0x0053B4C0 */
 void AiUnitBehavior_SelectBestAnchorAction
           (MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-/* 0x0053B1D0 */
 AiGeneralSiteDistanceSelection AiUnitBehavior_ComputeGeneralSiteDistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
-/* 0x0053B260 */
 AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
           (FactionRuntimeIndex factionIndex,AiCandidateScore32 currentBestScore,
           MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot);
 
-/* 0x0053B330 */
 AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
-/* 0x0053B3E0 */
 void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext);
 
-/* 0x0053B420 */
 void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext);
 
-/* 0x0053B480 */
 void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,WorldRuntimeContext *worldRuntimeContext);
 
-/* 0x0053B620 */
 void AiUnitBehavior_UpdatePioneerVehicle
           (MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntime,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);

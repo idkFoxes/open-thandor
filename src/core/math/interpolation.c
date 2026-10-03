@@ -10,8 +10,7 @@
 
 /* Implementation ownership: core/math/interpolation. */
 
-/* Address: 0x0053CA30.
-   Plays a six-channel keyframe spline at timeQ12: finds the first keyframe later than the time, evaluates
+/* Plays a six-channel keyframe spline at timeQ12: finds the first keyframe later than the time, evaluates
    the cubic segment before it and applies channels 0..2 as the position and 3..5 as magnitude/yaw/pitch
    to worldRuntime, caching the six derivatives. Returns true (CF set) while the spline runs; past the last
    keyframe it applies that keyframe, clears the derivatives and returns false.
@@ -91,8 +90,7 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
 }
 
 
-/* Address: 0x0053CBB0.
-   Orbit variant of WorldMotionSpline_EvaluateAndApplyAtTime: evaluates the six-channel keyframe spline at
+/* Orbit variant of WorldMotionSpline_EvaluateAndApplyAtTime: evaluates the six-channel keyframe spline at
    timeQ12 and applies channels 0..2 as the orbit origin (position80) and 3..5 as distance/yaw/pitch, from
    which the world runtime rebuilds position60; the six derivatives are cached. Returns 1 (CF set) while the
    spline runs; past the last keyframe it applies that keyframe, clears the derivatives and returns 0.
@@ -164,8 +162,7 @@ uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
 }
 
 
-/* Address: 0x0053CD10.
-   Prepares a world motion path (the frontend ROM transition's view flight): makes the yaw channel (4) continuous, so the spline turns the
+/* Prepares a world motion path (the frontend ROM transition's view flight): makes the yaw channel (4) continuous, so the spline turns the
    short way across the 0/0x10000 wrap, then builds and solves a natural cubic spline for each of the six
    keyframe channels into the global coefficient tables the evaluators read.
 */
@@ -252,8 +249,7 @@ void WorldMotionSpline_BuildSixChannelCurves
 }
 
 
-/* Address: 0x004CCC00.
-   Starts fading out a dynamic light (shading record) over fadeOutTicks: a negative transition duration
+/* Starts fading out a dynamic light (shading record) over fadeOutTicks: a negative transition duration
    makes InterpolationStateTable_Advance256ByTicks shrink the radius to zero and then free the light. A
    light still fading in keeps its current fraction; a zero duration switches the light off at once.
 */
@@ -302,8 +298,7 @@ void InterpolationState_SetNegatedTargetAndRescaleProgress
 }
 
 
-/* Address: 0x004CCC80.
-   Advances the radius transitions of all 256 dynamic lights (shading records) by elapsedTicks. An active
+/* Advances the radius transitions of all 256 dynamic lights (shading records) by elapsedTicks. An active
    light in transition gets radius = target * elapsed / duration (squared for the shading pass); a finished
    fade-in becomes steady, a finished fade-out (negative duration) frees the light.
 */
@@ -345,8 +340,7 @@ void InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedT
 }
 
 
-/* Address: 0x0053D230.
-   Solves the spline equation system built by CubicSpline_BuildNaturalCoefficientSystem in place: an LU
+/* Solves the spline equation system built by CubicSpline_BuildNaturalCoefficientSystem in place: an LU
    (Doolittle) decomposition of the matrix without pivoting, whose unit-L forward substitution runs along row
    by row, followed by back substitution with U. rhsVector then holds the four coefficients of every segment.
 */
@@ -390,8 +384,7 @@ void CubicSpline_SolveCoefficientSystem(CubicSplineEquationCount equationCount,f
 }
 
 
-/* Address: 0x0053CF10.
-   Builds the equation system of a piecewise cubic spline through one channel of the keyframes (times and values
+/* Builds the equation system of a piecewise cubic spline through one channel of the keyframes (times and values
    Q12, converted to float seconds/units): segment s has the unknowns a + b*t + c*t^2 + d*t^3 in columns 4s..4s+3.
    Per segment, row 4s and 4s+3 fix the values at both keyframes, row 4s+2 makes the slope continuous and row
    4s+5 the curvature; row 1 sets the start slope to startDerivative and the last segment's row 4s+2 the end slope
@@ -520,8 +513,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
 }
 
 
-/* Address: 0x0053D160.
-   One LU-decomposition step of CubicSpline_SolveCoefficientSystem, in place on the 32x32 matrix M:
+/* One LU-decomposition step of CubicSpline_SolveCoefficientSystem, in place on the 32x32 matrix M:
    M[row][column] = (M[row][column] - sum over k = 0..lastPriorIndex of M[row][k] * M[k][column]) / pivot.
    With pivot 1 this yields an element of U, with the diagonal element of U as pivot an element of L.
 */
@@ -554,8 +546,7 @@ void CubicSpline_ForwardEliminateColumn
 }
 
 
-/* Address: 0x0053D1C0.
-   One substitution step of CubicSpline_SolveCoefficientSystem on the right-hand side b with the 32x32 matrix M:
+/* One substitution step of CubicSpline_SolveCoefficientSystem on the right-hand side b with the 32x32 matrix M:
    b[target] = (b[target] - sum over k = firstSolvedIndex..lastSolvedIndex of M[target][k] * b[k]) / pivot.
    Used with pivot 1 for the forward (unit-L) pass and with the diagonal of U for the back substitution.
 */
@@ -581,8 +572,7 @@ void CubicSpline_BackSubstituteRow(float pivot,CubicSplineMatrixIndex lastSolved
 }
 
 
-/* Address: 0x0053CA10.
-   Zeroes the six derivatives cached by the world-motion spline evaluators, so a finished or newly built
+/* Zeroes the six derivatives cached by the world-motion spline evaluators, so a finished or newly built
    spline reports no motion.
 */
 void WorldMotionSpline_ClearCachedDerivatives(void)
@@ -600,8 +590,7 @@ void WorldMotionSpline_ClearCachedDerivatives(void)
 }
 
 
-/* Address: 0x0053D2E0.
-   Value of one solved spline segment at a Q12 time: the segment's four float coefficients a + b*t +
+/* Value of one solved spline segment at a Q12 time: the segment's four float coefficients a + b*t +
    c*t^2 + d*t^3 are evaluated (Horner) at t = time / 4096 and the result is rounded back to Q12.
 */
 int32_t CubicSpline_EvaluateValueQ12
@@ -620,8 +609,7 @@ int32_t CubicSpline_EvaluateValueQ12
                     ) * g_Q12FloatScale4096);
 }
 
-/* Address: 0x0053D320.
-   First derivative b + 2c*t + 3d*t^2 of one spline segment at a Q12 time. Unlike the value it stays a
+/* First derivative b + 2c*t + 3d*t^2 of one spline segment at a Q12 time. Unlike the value it stays a
    float (per 1.0 = 4096 units of Q12 time), which the evaluators cache per channel as the current motion.
 */
 float CubicSpline_EvaluateDerivativeQ12

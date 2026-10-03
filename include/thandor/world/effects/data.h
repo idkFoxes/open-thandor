@@ -10,10 +10,10 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern GraphicsTextureSet *g_EffectTextureSet; /* 0051DBC0 g_EffectTextureSet */
+extern GraphicsTextureSet *g_EffectTextureSet;
 
-extern GraphicsPaletteAsset *g_EffectPalette; /* 0051DBC4 g_EffectPalette */
+extern GraphicsPaletteAsset *g_EffectPalette;
 
-extern EffectRuntimeSlot *g_EffectRuntimeSlots; /* 0051DBC8 g_EffectRuntimeSlots */
+extern EffectRuntimeSlot *g_EffectRuntimeSlots;
 
 #endif

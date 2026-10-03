@@ -85,97 +85,70 @@
 #define TEXT_ID_SESSION_PLAYER_COUNT_TEMPLATE 0x211C /* selector 0 = players, selector 1 = player limit */
 #define TEXT_ID_NETWORK_PLAYER_ARRIVED 0xFF03        /* selector 0 = player name */
 
-/* 0x004AEB10 */
 void UiTransferMailbox_ServiceAndRetransmitTimer(void);
 
-/* 0x0054ECB0 */
 void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendRootRuntimeAddress32 frontendRuntime);
 
-/* 0x0054F680 */
 bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg);
 
-/* 0x00545640 */
 void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
-/* 0x00545660 */
 void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
           (int playerRuntimeId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
-/* 0x0054E230 */
 bool UiTransfer_SendDiscoveryProbe(void);
 
-/* 0x0054E470 */
 bool UiTransfer_SendPlayerDescriptor(void);
 
-/* 0x0054E4E0 */
 void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendRootRuntimeAddress32 frontendRuntime);
 
-/* 0x0054E9B0 */
 void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRuntimeAddress32 frontendRuntime);
 
-/* 0x0054EEF0 */
 void FrontendTransfer_SendCapabilityHeartbeat(void);
 
-/* 0x005723F0 */
 bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
 
-/* 0x00572920 */
 void FrontendTransfer_SendCommandSubmit(void);
 
-/* 0x004AF110 */
 void UiTransferMailbox_ClearReceivedState(void);
 
-/* 0x004AF170 */
 void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount); /* NULL while nothing complete */
 
-/* 0x004AF1C0 */
 void UiTransferMailbox_RandomizeSequenceToken(void);
 
-/* 0x0054E260 */
 void FrontendTransfer_HandleSessionListAndJoinAckPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendRootRuntimeAddress32 frontendRuntime);
 
-/* 0x0054EF30 */
 void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot);
 
-/* 0x0054FBA0 */
 bool FrontendTransfer_ConsumeProcessedFlagForMenuTick(void);
 
-/* 0x005722C0 */
 void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
           (NetworkSessionContext *sourceContext,FrontendTransferPacketUnion *packet);
 
-/* 0x00572560 */
 void FrontendTransfer_DispatchStagedCommandRecords(void);
 
-/* 0x00572AA0 */
 bool FrontendTransfer_ConsumeProcessedFlag(void);
 
-/* 0x00407160 */
 void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
           uint32_t *inputBlocks);
 
-/* 0x004072F0 */
 void UiTransfer_DecryptPacketBlocks
           (uint32_t *roundKeys16,void *destination,UiTransferPayloadByteCount byteCount,void *source);
 
-/* 0x004AF140 */
 void UiTransferMailbox_MarkUnavailable(void);
 
-/* 0x004AF1A0 */
 void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *allocation);
 
-/* 0x0054F9A0 */
 void FrontendTransfer_SendLobbyCommandAndSnapshotRequest(void);
 
-/* 0x004AEF70 */
 bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet);
 
 #endif /* THANDOR_NETWORK_PROTOCOL_TRANSFER_H */

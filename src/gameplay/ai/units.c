@@ -10,8 +10,7 @@
 
 /* Implementation ownership: gameplay/ai/units. */
 
-/* Address: 0x0053B0E0.
-   Per AI tick for the faction's own units (workspace 01): clears the collected-army list, lets busy units
+/* Per AI tick for the faction's own units (workspace 01): clears the collected-army list, lets busy units
    (ARMY_MOVEMENT_ACTIVE / _ROUTE_POINT_REACHED in the movement state at +0x18, the entity's commandFlags) wait
    for their behaviour cooldown (common +0x8C), skips units with ARMY_MOVEMENT_LOCKED, and dispatches the rest by model class: class 18 to UpdateSpecialClass12Entity, the ground,
    tracked, walker, water and glider classes (1/2/3/19/17) to SelectBestAnchorAction. The class is read with a
@@ -67,8 +66,7 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
 }
 
 
-/* Address: 0x0053B4C0.
-   Decides what an idle military unit (ground, tracked, walker,
+/* Decides what an idle military unit (ground, tracked, walker,
                                        glider or water class) does next. Three scorers run in turn, each
    given the best score so far and returning it unchanged unless it found better: a general site (workspace 05)
    -> move there (kind 1), the faction anchor -> move there (kind 2), a secondary-workspace target (kind 3).
@@ -124,8 +122,7 @@ void AiUnitBehavior_SelectBestAnchorAction
 }
 
 
-/* Address: 0x0053B1D0.
-   Scores the general sites (workspace 05) for a unit and returns the best one if it beats currentBestScore:
+/* Scores the general sites (workspace 05) for a unit and returns the best one if it beats currentBestScore:
    score = ((max(0, bias - Manhattan distance) * scale + site score) >> 12) * the unit's aiSiteScoreWeight,
    so nearer and richer sites score higher. Returns currentBestScore and a NULL entry when none beats it.
    modelDefinition is not used.
@@ -215,8 +212,7 @@ static AiCandidateScore32 AiUnitBehavior_ScoreFactionAnchorPoint
 }
 
 
-/* Address: 0x0053B260.
-   Scores the faction's primary and secondary anchor points (each only while its cooldown runs) for a unit like
+/* Scores the faction's primary and secondary anchor points (each only while its cooldown runs) for a unit like
    the general sites: ((max(0, bias - distance) * scale) >> 12) * aiFactionAnchorScoreWeight, and returns the
    highest of these and currentBestScore. modelDefinition is not used.
 */
@@ -244,8 +240,7 @@ AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
 }
 
 
-/* Address: 0x0053B330.
-   Scores the target entries of workspace 07 for a unit, or those of workspace 03 at three quarters of the score
+/* Scores the target entries of workspace 07 for a unit, or those of workspace 03 at three quarters of the score
    when workspace 07 is empty: ((max(0, bias - Manhattan distance) * scale) >> 12) * aiSecondaryWorkspaceScoreWeight.
    Returns the best entry if it beats currentBestScore, else currentBestScore and NULL. modelDefinition is not
    used.
@@ -306,8 +301,7 @@ AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDi
 }
 
 
-/* Address: 0x0053B3E0.
-   Sends the unit to a general site (a workspace-05 AiScoredSiteWorkspaceEntry: X, Y, score): marks it as
+/* Sends the unit to a general site (a workspace-05 AiScoredSiteWorkspaceEntry: X, Y, score): marks it as
    AI-commanded and no longer group-assigned, zeroes the site's score (the bonus
    AiUnitBehavior_ComputeGeneralSiteDistanceScore adds for it, so the next unit is less drawn there) and queues
    the move. worldRuntimeContext is not used.
@@ -325,8 +319,7 @@ void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot
 }
 
 
-/* Address: 0x0053B420.
-   Sends the unit to the faction's anchor point: the primary anchor while its cooldown runs, otherwise the
+/* Sends the unit to the faction's anchor point: the primary anchor while its cooldown runs, otherwise the
    secondary one. Marks the unit as AI-commanded and no longer group-assigned, then queues the move.
    worldRuntimeContext is not used.
 */
@@ -353,8 +346,7 @@ void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,Arm
 }
 
 
-/* Address: 0x0053B480.
-   Collects an idle unit that is not yet group-assigned into workspace 14 (at most 64 units), from which
+/* Collects an idle unit that is not yet group-assigned into workspace 14 (at most 64 units), from which
    AiUnitGroup_AssignCollectedEntitiesToBestTarget later sends them together to one target.
    worldRuntimeContext is not used.
 */
@@ -429,8 +421,7 @@ static int AiUnitBehavior_ScorePioneerSite
 }
 
 
-/* Address: 0x0053B620.
-   AI behaviour of a runtime-class-18 unit (the pioneer vehicle, which turns into a building at a resource
+/* AI behaviour of a runtime-class-18 unit (the pioneer vehicle, which turns into a building at a resource
    site): drives it to the best free resource site of workspace 08. Called from AiUnitBehavior_UpdateOwnUnits and, while
    movement flag 0x100 is set, from its movement update. Once it has arrived (flag clear): with as many
    workspace-00 as workspace-04 entries it moves on 0x2D05 along its heading; otherwise it drives to the best

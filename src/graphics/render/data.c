@@ -11,7 +11,6 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 0041EE80 g_ShadingIntensityScaleMmx */
 __declspec(align(16)) SoftwareBgraWordLanes g_ShadingIntensityScaleMmx[256] = {
     /*   0 */ {0},
     /*   1 */ {.alpha = 16},
@@ -270,70 +269,50 @@ __declspec(align(16)) SoftwareBgraWordLanes g_ShadingIntensityScaleMmx[256] = {
     /* 254 */ {.alpha = 4079},
     /* 255 */ {.alpha = 4095}};
 
-/* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
 __declspec(align(16)) uint64_t g_GraphicsShadingRasterizeMmxPackedDwordOneZero = 0x1ull;
 
-/* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
 __declspec(align(8)) uint64_t g_GraphicsShadingMmxPacked3BitPerByteMask = 0x707070707070707ull;
 
-/* 0041F700 g_VertexColorAlphaPreserveMaskMMX */
 __declspec(align(16)) uint64_t g_VertexColorAlphaPreserveMaskMMX = 0xFF000000ull;
 
-/* 0041F708 g_VertexColorRgbHalveMaskMMX */
 __declspec(align(8)) uint64_t g_VertexColorRgbHalveMaskMMX = 0xFEFEFEull;
 
-/* 00485840 g_GraphicsRefreshTextureAlpha */
 __declspec(align(16)) GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = (void *)GraphicsTextureSet_RefreshNoOp;
 
-/* 00485844 PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 */
 __declspec(align(4)) GraphicsPrimitiveQueueRadixSortProc *PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 = (void *)GraphicsPrimitiveQueue_RadixSortForRendering;
 
-/* 00485868 g_ProjectionScaleFixed */
 __declspec(align(8)) int32_t g_ProjectionScaleFixed = 0;
 
-/* 0048588C g_ActivePrimitiveQueue */
 __declspec(align(4)) GraphicsPrimitiveQueue *g_ActivePrimitiveQueue = 0;
 
-/* 00485890 g_ProjectionClipRect */
 __declspec(align(16)) GraphicsFixedRect g_ProjectionClipRect = {0};
 
-/* 004858A0 g_ViewProjectionMatrixFixed */
 __declspec(align(16)) GraphicsFixedMatrix3x4 g_ViewProjectionMatrixFixed = {0};
 
-/* 00485954 g_AuxiliaryRotationMatrixFixed */
 __declspec(align(4)) GraphicsFixedMatrix3x4 g_AuxiliaryRotationMatrixFixed = {0};
 
-/* 00485A40 g_PrimitiveRadixBucketWords */
 __declspec(align(16)) uint32_t g_PrimitiveRadixBucketWords[256] = {0};
 
-/* 004BCF68 g_GraphicsIntensityClampTableBase */
 __declspec(align(8)) uint32_t g_GraphicsIntensityClampTableBase = 0;
 
-/* 004BD450 g_ModelViewCompositeTransform */
 __declspec(align(16)) GraphicsFixedMatrix3x4 g_ModelViewCompositeTransform = {0};
 
-/* 004BD480 g_ModelViewDirectionLocal */
 __declspec(align(16)) GraphicsFixedVec3 g_ModelViewDirectionLocal = {0};
 
-/* 004BD48C g_ModelViewDirectionWorld */
 __declspec(align(4)) GraphicsFixedVec3 g_ModelViewDirectionWorld = {0};
 
-/* 004BD498 g_ModelAuxiliaryForwardDirectionLocal (followed by 0x90 code filler up to 004BD4B0) */
 __declspec(align(8)) GraphicsFixedVec3 g_ModelAuxiliaryForwardDirectionLocal = {0};
 
-/* 004C2D50 g_GraphicsShadingCompactRecords */
 __declspec(align(16)) GraphicsShadingRuntimeRecord g_GraphicsShadingCompactRecords[256] = {0};
 
-/* 004C6D50 g_GraphicsShadingCompactRecordCount */
 __declspec(align(16)) GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount = 0;
 
-/* 004C6D54 g_GraphicsShadingNearbyRecords */
 __declspec(align(4)) GraphicsShadingRuntimeRecord g_GraphicsShadingNearbyRecords[256] = {0};
 
-/* 004CAD54 g_GraphicsShadingNearbyRecordCount: GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelLightingMmxMultiplierRows. */
+/* GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelLightingMmxMultiplierRows. */
 __declspec(align(4)) GraphicsShadingRecordCount g_GraphicsShadingNearbyRecordCount = 0;
 
-/* 004CAD60 g_ModelLightingMmxMultiplierRows: SoftwareBgraWordLanes[819] (MODEL_LIGHTING_MMX_ROW_COUNT), PMULHW
+/* SoftwareBgraWordLanes[819] (MODEL_LIGHTING_MMX_ROW_COUNT), PMULHW
    multipliers (alpha lane 0x4000) of the model vertex lighting. One table in the original, reached from two base rows:
    ModelRender_ComputeVertexIntensityDefaultPath indexes from row MODEL_DISTANCE_ATTENUATION_ROW0 (136, 0x004CB1A0)
    with the signed light-facing dot >> 21, ModelRender_ComputeVertexIntensityScaledPath from row
@@ -1167,83 +1146,56 @@ __declspec(align(16)) SoftwareBgraWordLanes g_ModelLightingMmxMultiplierRows[819
     /* 135 */ {.alpha = 16384},
     /* 136 */ {.alpha = 16384}};
 
-/* 004CC6F8 g_ModelLightingVertexToLightVectorScratch */
 __declspec(align(8)) GraphicsFixedVec3 g_ModelLightingVertexToLightVectorScratch = {0};
 
-/* 004CC704 g_ModelLightingTransformedSurfaceNormalScratch */
 __declspec(align(4)) GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch = {0};
 
-/* 004CCE00 g_GraphicsShadingTextureDimension */
 __declspec(align(16)) uint32_t g_GraphicsShadingTextureDimension = 0;
 
-/* 004CCE04 g_GraphicsShadingGridHalfSize */
 __declspec(align(4)) uint32_t g_GraphicsShadingGridHalfSize = 0;
 
-/* 004CCE08 g_GraphicsShadingGeneratedTexturePixelCursor */
 __declspec(align(8)) uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor = 0;
 
-/* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
 __declspec(align(4)) uint32_t g_GraphicsShadingGeneratedTextureTileX = 0;
 
-/* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
 __declspec(align(16)) uint32_t g_GraphicsShadingGeneratedTextureTileY = 0;
 
-/* 004CCE14 g_GraphicsShadingGeneratedTextureSubresourceIndex */
 __declspec(align(4)) GraphicsSubresourceIndex g_GraphicsShadingGeneratedTextureSubresourceIndex = 0;
 
-/* 004CCE18 g_GraphicsShadingSubresourceCount */
 __declspec(align(8)) uint32_t g_GraphicsShadingSubresourceCount = 0;
 
-/* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
 __declspec(align(4)) uint32_t g_GraphicsShadingGeneratedTextureTileXQ20 = 0;
 
-/* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
 __declspec(align(16)) uint32_t g_GraphicsShadingGeneratedTextureTileYQ20 = 0;
 
-/* 004CCE24 g_GraphicsShadingGridStepQ20 */
 __declspec(align(4)) uint32_t g_GraphicsShadingGridStepQ20 = 0;
 
-/* 004CCE28 g_GraphicsShadingGridStepQ20Current */
 __declspec(align(8)) int32_t g_GraphicsShadingGridStepQ20Current = 0;
 
-/* 004CCE2C g_GraphicsShadingGeneratedAsset */
 __declspec(align(4)) GraphicsTextureSourceAsset *g_GraphicsShadingGeneratedAsset = 0;
 
-/* 004CCE30 g_GraphicsShadingGridScratch */
 __declspec(align(16)) void *g_GraphicsShadingGridScratch = 0;
 
-/* 004CCE34 g_GraphicsShadingGridScratchInterior */
 __declspec(align(4)) pointer g_GraphicsShadingGridScratchInterior = 0;
 
-/* 004CCE38 g_GraphicsShadingTextureSet */
 __declspec(align(8)) GraphicsTextureSet *g_GraphicsShadingTextureSet = 0;
 
-/* 004CCE3C g_GraphicsShadingGeneratedTextureCompletedTraversalCount */
 __declspec(align(4)) uint32_t g_GraphicsShadingGeneratedTextureCompletedTraversalCount = 0;
 
-/* 004CCE40 g_GraphicsShadingPositiveGridOriginQ12 */
 __declspec(align(16)) int32_t g_GraphicsShadingPositiveGridOriginQ12 = 0;
 
-/* 004CCE44 g_GraphicsShadingNegativeGridOriginQ12 */
 __declspec(align(4)) int32_t g_GraphicsShadingNegativeGridOriginQ12 = 0;
 
-/* 004CCE48 g_GeneratedTextureScratchRuntime */
 __declspec(align(8)) GeneratedTextureScratchRuntime g_GeneratedTextureScratchRuntime = {.reserved14 = 0x90909090, .reserved1A4 = 0x90909090};
 
-/* 004D0A00 g_PrimitiveQueueStorage */
 __declspec(align(16)) GraphicsPrimitiveQueue *g_PrimitiveQueueStorage = 0;
 
-/* 004D0A04 g_PrimitiveQueuePoolCapacity */
 __declspec(align(4)) uint32_t g_PrimitiveQueuePoolCapacity = 0;
 
-/* 004D1238 g_SoftwareDepthBuffer */
 __declspec(align(8)) int32_t *g_SoftwareDepthBuffer = 0;
 
-/* 00503A80 g_TerrainSecondaryPalette */
 __declspec(align(16)) GraphicsPaletteAsset *g_TerrainSecondaryPalette = 0;
 
-/* 0050A380 g_GraphicsTransformInputScratchVec3 */
 __declspec(align(16)) GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3 = {0};
 
-/* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
 __declspec(align(16)) GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3 = {0};

@@ -14,17 +14,13 @@
 /* Submodule: assets/sprite/catalog. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x004BE480 */
 void SpriteAssetRegistry_Reset(void);
 
-/* 0x004BE490 */
 SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId);
 
-/* 0x004BE4D0 */
 uint32_t SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset);
 
 
-/* 0x004BE5A0 */
 void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetHeader *relocatedSourceImage);
 
 #endif /* THANDOR_ASSETS_SPRITE_CATALOG_H */
