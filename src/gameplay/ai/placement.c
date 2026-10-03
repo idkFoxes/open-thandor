@@ -21,27 +21,31 @@ bool AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,
 {
   AiKnowledgeDataImage *knowledgeData;
   uint32_t placementCount;
-  uint32_t headingOrQuantum;
-  bool chainFailed;
+  uint32_t heading;
+  uint32_t quantum;
 
   knowledgeData = g_AiKnowledgeData;
-  headingOrQuantum = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
-  if ((ArmyPlacement_CanPlaceAssetAtFieldPoint
-                    (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,headingOrQuantum,
-                     workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                     (UiRootNode *)worldRuntime,&placementCount)) && (placementCount != 0)) {
-    /* ceil(placementCount / quantum) < 5 */
-    if ((!ArmyPlacement_CanPlaceAssetAtFieldPoint
-                      (4,0,headingOrQuantum,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                       factionIndex,(UiRootNode *)worldRuntime,NULL)) &&
-       (headingOrQuantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
-       ((placementCount - 1) + headingOrQuantum) / headingOrQuantum < 5)) {
-      chainFailed = AiPlacement_ReserveSeparatedSpecialSiteChain
-                        (armyAssetId,workspaceRecord,factionIndex,worldRuntime);
-      return chainFailed;
-    }
+  heading = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
+  if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
+                (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,heading,
+                 workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
+                 (UiRootNode *)worldRuntime,&placementCount)) {
+    return true;
   }
-  return true;
+  if (placementCount == 0) {
+    return true;
+  }
+  if (ArmyPlacement_CanPlaceAssetAtFieldPoint
+                (4,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                 factionIndex,(UiRootNode *)worldRuntime,NULL)) {
+    return true;
+  }
+  /* ceil(placementCount / quantum) must stay below 5 */
+  quantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
+  if (((placementCount - 1) + quantum) / quantum >= 5) {
+    return true;
+  }
+  return AiPlacement_ReserveSeparatedSpecialSiteChain(armyAssetId,workspaceRecord,factionIndex,worldRuntime);
 }
 
 
@@ -444,33 +448,35 @@ bool AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId
 {
   AiKnowledgeDataImage *knowledgeData;
   uint32_t placementCount;
-  uint32_t headingOrBucketCount;
+  uint32_t heading;
+  uint32_t quantum;
+  uint32_t bucketCount;
 
   knowledgeData = g_AiKnowledgeData;
-  headingOrBucketCount = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
+  heading = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
   if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
-                    (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,headingOrBucketCount,
-                     workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
-                     (UiRootNode *)worldRuntime,&placementCount)) {
+                (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,heading,
+                 workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
+                 (UiRootNode *)worldRuntime,&placementCount)) {
     if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
-                      (0,0,headingOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                       factionIndex,(UiRootNode *)worldRuntime,NULL)) {
+                  (0,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                   factionIndex,(UiRootNode *)worldRuntime,NULL)) {
       return false;
     }
-    headingOrBucketCount = 0;
+    bucketCount = 0;
   }
   else if ((placementCount != 0) &&
           (!ArmyPlacement_CanPlaceAssetAtFieldPoint
-                             (0,0,headingOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                              factionIndex,(UiRootNode *)worldRuntime,NULL))) {
+                         (0,0,heading,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                          factionIndex,(UiRootNode *)worldRuntime,NULL))) {
     /* Round the placement count up to whole separation quanta. */
-    headingOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
-    headingOrBucketCount = ((placementCount - 1) + headingOrBucketCount) / headingOrBucketCount;
+    quantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
+    bucketCount = ((placementCount - 1) + quantum) / quantum;
   }
   else {
-    headingOrBucketCount = 0;
+    bucketCount = 0;
   }
-  *outBucketCount = headingOrBucketCount;
+  *outBucketCount = bucketCount;
   return true;
 }
 
@@ -485,26 +491,29 @@ bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,Field
 
 {
   AiKnowledgeDataImage *knowledgeData;
-  uint32_t quantumOrBucketCount;
-  bool chainFailed;
+  uint32_t quantum;
+  uint32_t bucketCount;
   uint32_t placementCount;
 
   knowledgeData = g_AiKnowledgeData;
-  /* ceil(placementCount / quantum) */
-  if ((!ArmyPlacement_CanPlaceAssetAtFieldPoint
-                    (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
-                     (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
-                     workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,
-                     &placementCount)) ||
-     (quantumOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
-     quantumOrBucketCount = ((placementCount - 1) + quantumOrBucketCount) / quantumOrBucketCount,
-          quantumOrBucketCount == 0)) {
+  if (!ArmyPlacement_CanPlaceAssetAtFieldPoint
+                (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
+                 (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
+                 workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime,
+                 &placementCount)) {
     return true;
   }
-  if ((quantumOrBucketCount < 5) &&
-     (chainFailed = AiPlacement_ReserveSeparatedSpecialSiteChain
-                        (armyAssetId,workspaceRecord,factionIndex,worldRuntime), !chainFailed)) {
+  /* ceil(placementCount / quantum) */
+  quantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
+  bucketCount = ((placementCount - 1) + quantum) / quantum;
+  if (bucketCount == 0) {
     return true;
+  }
+  if (bucketCount < 5) {
+    /* A small cluster is accepted only when the separated chain reports CF set. */
+    if (!AiPlacement_ReserveSeparatedSpecialSiteChain(armyAssetId,workspaceRecord,factionIndex,worldRuntime)) {
+      return true;
+    }
   }
   return false;
 }
@@ -523,16 +532,18 @@ bool AiCandidatePlanning_ComputeSpecialSiteWeight
 {
   FieldGridCell *workspaceRecord;
   uint32_t baseWeight;
-  int countOrTritium;
+  int remainingSites;
+  int assignedCount;
+  int tritiumScaled;
   uint32_t weight;
   AiTerrainFeatureWorkspaceEntry *featureEntry;
   bool clusterRejected;
   AiKnowledgeDataImage *knowledgeData;
 
   knowledgeData = g_AiKnowledgeData;
-  countOrTritium = g_AiWorkspace08Count;
+  remainingSites = g_AiWorkspace08Count;
   featureEntry = g_AiWorkspace08TerrainFeatureSites;
-  for (; countOrTritium != 0; featureEntry++, countOrTritium--) {
+  for (; remainingSites != 0; featureEntry++, remainingSites--) {
     workspaceRecord = featureEntry->cell;
     clusterRejected = AiPlacement_ReserveMode3SiteCluster
                       (featureEntry->armyAssetId,workspaceRecord,factionIndex,worldRuntime);
@@ -542,20 +553,20 @@ bool AiCandidatePlanning_ComputeSpecialSiteWeight
         && ((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <=
             (int)AiHostileWorkspace_GetNearestVisibleHostileDistance
                    (workspaceRecord->worldY,workspaceRecord->worldX))) {
-      countOrTritium = AiPrimaryWorkspace_CountAssignedEntriesById(featureEntry->armyAssetId);
+      assignedCount = AiPrimaryWorkspace_CountAssignedEntriesById(featureEntry->armyAssetId);
       baseWeight = (knowledgeData->parameters).specialSite14aBaseWeight;
       if (featureEntry->armyAssetId != ARM_0330_BUILDING_MDL0303) {
         baseWeight = (knowledgeData->parameters).specialSite14cBaseWeight;
       }
-      weight = (baseWeight * 3) / (countOrTritium * 2 + 6U);
+      weight = (baseWeight * 3) / (assignedCount * 2 + 6U);
       if (featureEntry->armyAssetId != ARM_0330_BUILDING_MDL0303) {
-        countOrTritium = g_GameFactionRuntimeImage.records[factionIndex].tritiumCurrentQ4 << 8;
-        if (countOrTritium != 0) {
+        tritiumScaled = g_GameFactionRuntimeImage.records[factionIndex].tritiumCurrentQ4 << 8;
+        if (tritiumScaled != 0) {
           weight = (uint32_t)(((int64_t)(int)weight *
                          (int64_t)
                          (int)(g_GameFactionRuntimeImage.records[factionIndex].unpoweredEnergyDemandQ4 *
                                2 + g_GameFactionRuntimeImage.records[factionIndex].
-                                   suppliedEnergyDemandQ4)) / (int64_t)countOrTritium);
+                                   suppliedEnergyDemandQ4)) / (int64_t)tritiumScaled);
         }
       }
       *outWeight = weight;

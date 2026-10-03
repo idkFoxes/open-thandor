@@ -2266,6 +2266,105 @@ void ArmyRuntimeClass_UpdateGroundMovement
 }
 
 
+/* Step rate of a terrain-contact step: (stride (definition +0xC0) << 13) / (3D foot travel + 2 * lift height
+   (definition +0xC4)), or 0x2000 when that sum is zero. */
+static void ArticulatedContact_SetStepRateFromTravel(ArmyArticulatedRuntimeSlotView *armyRuntime,
+          uint32_t footTravelLength)
+
+{
+  ModelDefinition *movementDefinition;
+  int travelPlusLift;
+  int strideLength;
+
+  movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
+  travelPlusLift = footTravelLength + movementDefinition->classParameterC4 * 2;
+  strideLength = movementDefinition->classParameterC0;
+  (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
+  if (travelPlusLift != 0) {
+    (armyRuntime->articulatedContact).fallbackPosition1Q12 =
+         (Q12)((int64_t)(uint64_t)(uint32_t)(strideLength << 13) / (int64_t)travelPlusLift);
+  }
+  return;
+}
+
+
+/* The foot was set down beside the other foot instead of at its target: the owner's route point counts as
+   reached and the step is marked obstructed (a second obstruction in a row clears both step flags). */
+static void ArticulatedContact_MarkStepObstructed(ArmyArticulatedRuntimeSlotView *armyRuntime)
+
+{
+  GameEntityCommandFlags *entityCommandFlags;
+  Q12 *contactStateFlags;
+
+  /* the owner's common.commandFlags is its movementStateFlags */
+  entityCommandFlags = &(armyRuntime->linkedEntityRuntime->common).commandFlags;
+  *entityCommandFlags = *entityCommandFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
+  contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
+  if ((*contactStateFlags & ARMY_ARTICULATED_STEP_OBSTRUCTED) != 0) {
+    *contactStateFlags = *contactStateFlags & ~(ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT);
+  }
+  *contactStateFlags = *contactStateFlags | ARMY_ARTICULATED_STEP_OBSTRUCTED;
+  return;
+}
+
+
+/* Left foot step rate from its 3D travel between the previous contact (+0x78/+0x80/+0x88) and the new one
+   (X +0x90, sampled Y and height). */
+static void ArticulatedContact_SetLeftStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,int footZ,
+          uint32_t footY)
+
+{
+  ArticulatedContact_SetStepRateFromTravel
+            (armyRuntime,
+             FixedMath_Length3(footZ - armyRuntime->definitionClassValue88,
+                               footY - armyRuntime->definitionClassValue80,
+                               armyRuntime->runtimeState90 - armyRuntime->movementTarget0Q12));
+  return;
+}
+
+
+/* Obstructed left step: sets the left foot down right beside the right foot (twice the lateral offset to the
+   left of its previous contact), marks the step obstructed and derives the step rate. Stops after storing the
+   foot position when that spot has no ground sample. */
+static void ArticulatedContact_PlaceLeftFootBesideRightFoot(AngleTurn32 headingAngle16,
+          ArmyArticulatedRuntimeSlotView *armyRuntime,WorldRuntimeContext *worldRuntime)
+
+{
+  FieldGridAsset *activeFieldGrid;
+  uint32_t sideAngle;
+  uint32_t footX;
+  uint32_t footY;
+  uint32_t sampledFootY;
+  int sampledFootZ;
+  FixedSinCos lateralSinCos;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
+  UQ12 footRadius;
+
+  sideAngle = headingAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  lateralSinCos = FixedMath_SinCosScaled(sideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
+  footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
+  footX = armyRuntime->movementTarget1Q12 + lateralSinCos.cosValue * 2;
+  footY = armyRuntime->definitionClassValue84 + lateralSinCos.sinValue * 2;
+  activeFieldGrid = worldRuntime->fieldGrid;
+  armyRuntime->runtimeState90 = footX;
+  armyRuntime->runtimeState98 = footY;
+  lateralSinCos = FixedMath_SinCosScaled(sideAngle,footRadius);
+  if (!FieldGrid_InterpolateTerrainHeightAndNormal
+                     (lateralSinCos.sinValue + footY,lateralSinCos.cosValue + footX,activeFieldGrid,
+                      &terrainHeightQ12,&terrainNormalAngles)) {
+    return;
+  }
+  armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
+  armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
+  sampledFootY = armyRuntime->runtimeState98;
+  sampledFootZ = armyRuntime->articulatedHeightOrStateA0;
+  ArticulatedContact_MarkStepObstructed(armyRuntime);
+  ArticulatedContact_SetLeftStepRate(armyRuntime,sampledFootZ,sampledFootY);
+  return;
+}
+
+
 /* Address: 0x00522090.
    Plans a walking step of the left foot towards heading headingAngle16 (routeDistanceQ12 = distance to the
    route point). The foot target is one stride (definition +0xC0) past the spot beside the right foot, or on
@@ -2279,20 +2378,18 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
           ArmyArticulatedRuntimeSlotView *armyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
-  GameEntityCommandFlags *entityCommandFlags;
   Q12 *contactStateFlags;
   void *movementDefinition;
   FieldGridAsset *activeFieldGrid;
-  /* reach from the root, the target X, the target Y, then the foot travel length */
-  uint32_t footXOrLength;
-  /* stride reach, then the side angle again */
-  uint32_t reachOrSideAngle;
-  /* the point ahead X, then the target height, then the travel length plus lift */
-  int aheadXOrFootZ;
-  uint32_t sideAngle;
-  /* the point ahead Y, then the stride length */
-  int aheadYOrStride;
+  uint32_t reachFromRoot;
+  uint32_t strideReach;
+  int aheadX;
+  int aheadY;
+  uint32_t footX;
   uint32_t footY;
+  uint32_t sampledFootY;
+  int sampledFootZ;
+  uint32_t sideAngle;
   FixedSinCos lateralSinCos;
   FixedSinCos headingSinCos;
   ModelRuntimeSlot *blockingModelRuntime;
@@ -2311,28 +2408,28 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
   sideAngle = headingAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   lateralSinCos = FixedMath_SinCosScaled(sideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
   footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
-  footXOrLength = FixedMath_Length2((lateralSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C) -
+  reachFromRoot = FixedMath_Length2((lateralSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C) -
                             (rootNode->worldTransform).translation.y,
                             (lateralSinCos.cosValue + armyRuntime->runtimeState94) -
                             (rootNode->worldTransform).translation.x);
   /* classParameterC0: stride length */
-  reachOrSideAngle = footXOrLength + ((ModelDefinition *)movementDefinition)->classParameterC0;
-  if (reachOrSideAngle < (uint32_t)routeDistanceQ12) {
-    headingSinCos = FixedMath_SinCosScaled(headingAngle16,reachOrSideAngle);
-    aheadXOrFootZ = headingSinCos.cosValue + (rootNode->worldTransform).translation.x;
-    aheadYOrStride = headingSinCos.sinValue + (rootNode->worldTransform).translation.y;
+  strideReach = reachFromRoot + ((ModelDefinition *)movementDefinition)->classParameterC0;
+  if (strideReach < (uint32_t)routeDistanceQ12) {
+    headingSinCos = FixedMath_SinCosScaled(headingAngle16,strideReach);
+    aheadX = headingSinCos.cosValue + (rootNode->worldTransform).translation.x;
+    aheadY = headingSinCos.sinValue + (rootNode->worldTransform).translation.y;
   }
   else {
     ArmyRuntime_UpdateMovementAndWaypoints
               (worldRuntime,(ArmyMovementRuntime *)armyRuntime->linkedEntityRuntime,&waypointWorldXQ12,
                &waypointWorldYQ12);
-    aheadYOrStride = waypointWorldYQ12;
-    aheadXOrFootZ = waypointWorldXQ12;
+    aheadY = waypointWorldYQ12;
+    aheadX = waypointWorldXQ12;
   }
-  footXOrLength = aheadXOrFootZ + lateralSinCos.cosValue;
-  footY = aheadYOrStride + lateralSinCos.sinValue;
+  footX = aheadX + lateralSinCos.cosValue;
+  footY = aheadY + lateralSinCos.sinValue;
   activeFieldGrid = worldRuntime->fieldGrid;
-  armyRuntime->runtimeState90 = footXOrLength;
+  armyRuntime->runtimeState90 = footX;
   armyRuntime->runtimeState98 = footY;
   /* the ground is sampled footRadius further out to the side */
   lateralSinCos = FixedMath_SinCosScaled(sideAngle,footRadius);
@@ -2340,19 +2437,20 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
     return;
   }
   if (FieldGrid_InterpolateTerrainHeightAndNormal
-                     (lateralSinCos.sinValue + footY,lateralSinCos.cosValue + footXOrLength,activeFieldGrid,
+                     (lateralSinCos.sinValue + footY,lateralSinCos.cosValue + footX,activeFieldGrid,
                       &terrainHeightQ12,&terrainNormalAngles)) {
     armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
     armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
-    footXOrLength = armyRuntime->runtimeState98;
-    aheadXOrFootZ = armyRuntime->articulatedHeightOrStateA0;
+    sampledFootY = armyRuntime->runtimeState98;
+    sampledFootZ = armyRuntime->articulatedHeightOrStateA0;
     blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
-                       (footXOrLength,armyRuntime->runtimeState90,(RuntimeCollisionQueryView *)armyRuntime
+                       (sampledFootY,armyRuntime->runtimeState90,(RuntimeCollisionQueryView *)armyRuntime
                         ,worldRuntime);
     if (blockingModelRuntime == NULL) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
       *contactStateFlags = *contactStateFlags & ~ARMY_ARTICULATED_STEP_OBSTRUCTED;
-      goto ComputeStepFromContact;
+      ArticulatedContact_SetLeftStepRate(armyRuntime,sampledFootZ,sampledFootY);
+      return;
     }
     ArmyRuntime_HandleCollisionPartner
               ((ModelRuntimeSlot *)armyRuntime,
@@ -2360,47 +2458,65 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                blockingModelRuntime,worldRuntime);
   }
-  /* obstructed: put the left foot right beside the right foot */
-  reachOrSideAngle = headingAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
-  lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
+  /* blocked or no ground at the target */
+  ArticulatedContact_PlaceLeftFootBesideRightFoot(headingAngle16,armyRuntime,worldRuntime);
+  return;
+}
+
+
+/* Right foot step rate from its 3D travel between the previous contact (+0x7C/+0x84/+0x8C) and the new one
+   (X +0x94, sampled Y and height). */
+static void ArticulatedContact_SetRightStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,uint32_t footZ,
+          int footY)
+
+{
+  ArticulatedContact_SetStepRateFromTravel
+            (armyRuntime,
+             FixedMath_Length3(footZ - armyRuntime->runtimeState8C,
+                               footY - armyRuntime->definitionClassValue84,
+                               armyRuntime->runtimeState94 - armyRuntime->movementTarget1Q12));
+  return;
+}
+
+
+/* Obstructed right step: sets the right foot down right beside the left foot (twice the lateral offset to the
+   right of its previous contact), marks the step obstructed and derives the step rate. Stops after storing the
+   foot position when that spot has no ground sample. */
+static void ArticulatedContact_PlaceRightFootBesideLeftFoot(AngleTurn32 headingAngle16,
+          ArmyArticulatedRuntimeSlotView *armyRuntime,WorldRuntimeContext *worldRuntime)
+
+{
+  FieldGridAsset *activeFieldGrid;
+  uint32_t sideAngle;
+  uint32_t footX;
+  int footY;
+  int sampledFootY;
+  uint32_t sampledFootZ;
+  FixedSinCos lateralSinCos;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
+  UQ12 footRadius;
+
+  sideAngle = headingAngle16 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  lateralSinCos = FixedMath_SinCosScaled(sideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
   footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
-  footXOrLength = armyRuntime->movementTarget1Q12 + lateralSinCos.cosValue * 2;
-  footY = armyRuntime->definitionClassValue84 + lateralSinCos.sinValue * 2;
+  footX = armyRuntime->movementTarget0Q12 + lateralSinCos.cosValue * 2;
+  footY = armyRuntime->definitionClassValue80 + lateralSinCos.sinValue * 2;
   activeFieldGrid = worldRuntime->fieldGrid;
-  armyRuntime->runtimeState90 = footXOrLength;
-  armyRuntime->runtimeState98 = footY;
-  lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,footRadius);
+  armyRuntime->runtimeState94 = footX;
+  armyRuntime->articulatedCoordinateOrState9C = footY;
+  lateralSinCos = FixedMath_SinCosScaled(sideAngle,footRadius);
   if (!FieldGrid_InterpolateTerrainHeightAndNormal
-                     (lateralSinCos.sinValue + footY,lateralSinCos.cosValue + footXOrLength,activeFieldGrid,
+                     (lateralSinCos.sinValue + footY,lateralSinCos.cosValue + footX,activeFieldGrid,
                       &terrainHeightQ12,&terrainNormalAngles)) {
     return;
   }
-  armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
-  armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
-  footXOrLength = armyRuntime->runtimeState98;
-  aheadXOrFootZ = armyRuntime->articulatedHeightOrStateA0;
-  /* the owner's common.commandFlags is its movementStateFlags */
-  entityCommandFlags = &(armyRuntime->linkedEntityRuntime->common).commandFlags;
-  *entityCommandFlags = *entityCommandFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
-  if (((armyRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_OBSTRUCTED) != 0) {
-    contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-    *contactStateFlags = *contactStateFlags & ~(ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT);
-  }
-  contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-  *contactStateFlags = *contactStateFlags | ARMY_ARTICULATED_STEP_OBSTRUCTED;
-ComputeStepFromContact:
-  /* step rate = (stride << 13) / (3D foot travel + 2 * lift height (definition +0xC4)), 0x2000 if zero */
-  movementDefinition = armyRuntime->definitionOrAsset;
-  footXOrLength = FixedMath_Length3(aheadXOrFootZ - armyRuntime->definitionClassValue88,
-                            footXOrLength - armyRuntime->definitionClassValue80,
-                            armyRuntime->runtimeState90 - armyRuntime->movementTarget0Q12);
-  aheadXOrFootZ = footXOrLength + ((ModelDefinition *)movementDefinition)->classParameterC4 * 2;
-  aheadYOrStride = ((ModelDefinition *)movementDefinition)->classParameterC0;
-  (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
-  if (aheadXOrFootZ != 0) {
-    (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-         (Q12)((int64_t)(uint64_t)(uint32_t)(aheadYOrStride << 13) / (int64_t)aheadXOrFootZ);
-  }
+  armyRuntime->runtimeStateA4 = terrainHeightQ12;
+  armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
+  sampledFootY = armyRuntime->articulatedCoordinateOrState9C;
+  sampledFootZ = armyRuntime->runtimeStateA4;
+  ArticulatedContact_MarkStepObstructed(armyRuntime);
+  ArticulatedContact_SetRightStepRate(armyRuntime,sampledFootZ,sampledFootY);
   return;
 }
 
@@ -2413,19 +2529,18 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
           ArmyArticulatedRuntimeSlotView *armyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
-  GameEntityCommandFlags *entityCommandFlags;
   Q12 *contactStateFlags;
   void *movementDefinition;
   FieldGridAsset *activeFieldGrid;
-  /* reach from the root, the target X, the target height, then the foot travel length */
-  uint32_t footXOrLength;
-  /* stride reach, then the side angle again */
-  uint32_t reachOrSideAngle;
-  /* the point ahead X, then the target Y, then the travel length plus lift */
-  int aheadXOrFootY;
+  uint32_t reachFromRoot;
+  uint32_t strideReach;
+  int aheadX;
+  int aheadY;
+  uint32_t footX;
+  int footY;
+  int sampledFootY;
+  uint32_t sampledFootZ;
   uint32_t sideAngle;
-  /* the point ahead Y, then the target Y, then the stride length */
-  int aheadYOrStride;
   FixedSinCos lateralSinCos;
   FixedSinCos headingSinCos;
   ModelRuntimeSlot *blockingModelRuntime;
@@ -2444,47 +2559,48 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
   sideAngle = headingAngle16 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   lateralSinCos = FixedMath_SinCosScaled(sideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
   footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
-  footXOrLength = FixedMath_Length2((lateralSinCos.sinValue + armyRuntime->runtimeState98) -
+  reachFromRoot = FixedMath_Length2((lateralSinCos.sinValue + armyRuntime->runtimeState98) -
                             (rootNode->worldTransform).translation.y,
                             (lateralSinCos.cosValue + armyRuntime->runtimeState90) -
                             (rootNode->worldTransform).translation.x);
   /* classParameterC0: stride length */
-  reachOrSideAngle = footXOrLength + ((ModelDefinition *)movementDefinition)->classParameterC0;
-  if (reachOrSideAngle < (uint32_t)routeDistanceQ12) {
-    headingSinCos = FixedMath_SinCosScaled(headingAngle16,reachOrSideAngle);
-    aheadXOrFootY = headingSinCos.cosValue + (rootNode->worldTransform).translation.x;
-    aheadYOrStride = headingSinCos.sinValue + (rootNode->worldTransform).translation.y;
+  strideReach = reachFromRoot + ((ModelDefinition *)movementDefinition)->classParameterC0;
+  if (strideReach < (uint32_t)routeDistanceQ12) {
+    headingSinCos = FixedMath_SinCosScaled(headingAngle16,strideReach);
+    aheadX = headingSinCos.cosValue + (rootNode->worldTransform).translation.x;
+    aheadY = headingSinCos.sinValue + (rootNode->worldTransform).translation.y;
   }
   else {
     ArmyRuntime_UpdateMovementAndWaypoints
               (worldRuntime,(ArmyMovementRuntime *)armyRuntime->linkedEntityRuntime,&waypointWorldXQ12,
                &waypointWorldYQ12);
-    aheadYOrStride = waypointWorldYQ12;
-    aheadXOrFootY = waypointWorldXQ12;
+    aheadY = waypointWorldYQ12;
+    aheadX = waypointWorldXQ12;
   }
-  footXOrLength = aheadXOrFootY + lateralSinCos.cosValue;
-  aheadYOrStride = aheadYOrStride + lateralSinCos.sinValue;
+  footX = aheadX + lateralSinCos.cosValue;
+  footY = aheadY + lateralSinCos.sinValue;
   activeFieldGrid = worldRuntime->fieldGrid;
-  armyRuntime->runtimeState94 = footXOrLength;
-  armyRuntime->articulatedCoordinateOrState9C = aheadYOrStride;
+  armyRuntime->runtimeState94 = footX;
+  armyRuntime->articulatedCoordinateOrState9C = footY;
   lateralSinCos = FixedMath_SinCosScaled(sideAngle,footRadius);
   if (activeFieldGrid == NULL) {
     return;
   }
   if (FieldGrid_InterpolateTerrainHeightAndNormal
-                     (lateralSinCos.sinValue + aheadYOrStride,lateralSinCos.cosValue + footXOrLength,activeFieldGrid,
+                     (lateralSinCos.sinValue + footY,lateralSinCos.cosValue + footX,activeFieldGrid,
                       &terrainHeightQ12,&terrainNormalAngles)) {
     armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
     armyRuntime->runtimeStateA4 = terrainHeightQ12;
-    aheadXOrFootY = armyRuntime->articulatedCoordinateOrState9C;
-    footXOrLength = armyRuntime->runtimeStateA4;
+    sampledFootY = armyRuntime->articulatedCoordinateOrState9C;
+    sampledFootZ = armyRuntime->runtimeStateA4;
     blockingModelRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
-                       (aheadXOrFootY,armyRuntime->runtimeState94,(RuntimeCollisionQueryView *)armyRuntime
+                       (sampledFootY,armyRuntime->runtimeState94,(RuntimeCollisionQueryView *)armyRuntime
                         ,worldRuntime);
     if (blockingModelRuntime == NULL) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
       *contactStateFlags = *contactStateFlags & ~ARMY_ARTICULATED_STEP_OBSTRUCTED;
-      goto ComputeStepFromContact;
+      ArticulatedContact_SetRightStepRate(armyRuntime,sampledFootZ,sampledFootY);
+      return;
     }
     ArmyRuntime_HandleCollisionPartner
               ((ModelRuntimeSlot *)armyRuntime,
@@ -2492,47 +2608,8 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
                (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                blockingModelRuntime,worldRuntime);
   }
-  /* obstructed: put the right foot right beside the left foot */
-  reachOrSideAngle = headingAngle16 - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
-  lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
-  footRadius = (armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.contactRadiusQ12;
-  footXOrLength = armyRuntime->movementTarget0Q12 + lateralSinCos.cosValue * 2;
-  aheadXOrFootY = armyRuntime->definitionClassValue80 + lateralSinCos.sinValue * 2;
-  activeFieldGrid = worldRuntime->fieldGrid;
-  armyRuntime->runtimeState94 = footXOrLength;
-  armyRuntime->articulatedCoordinateOrState9C = aheadXOrFootY;
-  lateralSinCos = FixedMath_SinCosScaled(reachOrSideAngle,footRadius);
-  if (!FieldGrid_InterpolateTerrainHeightAndNormal
-                     (lateralSinCos.sinValue + aheadXOrFootY,lateralSinCos.cosValue + footXOrLength,activeFieldGrid,
-                      &terrainHeightQ12,&terrainNormalAngles)) {
-    return;
-  }
-  armyRuntime->runtimeStateA4 = terrainHeightQ12;
-  armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
-  aheadXOrFootY = armyRuntime->articulatedCoordinateOrState9C;
-  footXOrLength = armyRuntime->runtimeStateA4;
-  /* the owner's common.commandFlags is its movementStateFlags */
-  entityCommandFlags = &(armyRuntime->linkedEntityRuntime->common).commandFlags;
-  *entityCommandFlags = *entityCommandFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
-  if (((armyRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_OBSTRUCTED) != 0) {
-    contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-    *contactStateFlags = *contactStateFlags & ~(ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT);
-  }
-  contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-  *contactStateFlags = *contactStateFlags | ARMY_ARTICULATED_STEP_OBSTRUCTED;
-ComputeStepFromContact:
-  /* step rate as in ArmyArticulatedRuntime_UpdateLeftTerrainContact */
-  movementDefinition = armyRuntime->definitionOrAsset;
-  footXOrLength = FixedMath_Length3(footXOrLength - armyRuntime->runtimeState8C,
-                            aheadXOrFootY - armyRuntime->definitionClassValue84,
-                            armyRuntime->runtimeState94 - armyRuntime->movementTarget1Q12);
-  aheadXOrFootY = footXOrLength + ((ModelDefinition *)movementDefinition)->classParameterC4 * 2;
-  aheadYOrStride = ((ModelDefinition *)movementDefinition)->classParameterC0;
-  (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
-  if (aheadXOrFootY != 0) {
-    (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-         (Q12)((int64_t)(uint64_t)(uint32_t)(aheadYOrStride << 13) / (int64_t)aheadXOrFootY);
-  }
+  /* blocked or no ground at the target */
+  ArticulatedContact_PlaceRightFootBesideLeftFoot(headingAngle16,armyRuntime,worldRuntime);
   return;
 }
 

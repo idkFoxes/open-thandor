@@ -29,11 +29,12 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   UiNodeVtable *rootVtable;
   int localPlayerRuntimeId;
   FrontendLoadedLevelAsset *loadedLevel;
-  uint32_t activeCountOffsetOrLocalRow; /* active factions left, then a control offset, then the local row */
-  uint32_t rowOrAssignmentIndex;
+  uint32_t activeFactionsLeft;
+  uint32_t assignableFactionsLeft;
+  uint32_t localPlayerRow;
+  uint32_t assignmentIndex;
   uint32_t rowCursor;
   UiTextResourceId *rowTextId;
-  uint32_t assignableCountOrOffset; /* assignable factions left, then a control offset */
   FrontendPlayerRuntimeRecord *playerRecord;
   uint16_t *titleText;
   uint16_t *templateText;
@@ -46,146 +47,147 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
-  activeCountOffsetOrLocalRow = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
-  assignableCountOrOffset = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
-  /* Rows 1..assignable count: factions a player may take; mode button active, caption "Computer". */
-  rowOrAssignmentIndex = 0;
+  activeFactionsLeft = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
+  assignableFactionsLeft = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
+  /* Rows 1..assignable count: factions a player may take; mode button active, caption "Computer".
+     Original quirk: at least one row is always set up (a level without assignable factions would wrap the
+     counter). */
+  rowCursor = 0;
   do {
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
     rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_COMPUTER;
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowOrAssignmentIndex];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowOrAssignmentIndex];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~(FRONTEND_CONTROL_INACTIVE | UI_SELECTABLE_SELECTED_OR_CHECKED);
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowOrAssignmentIndex];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowOrAssignmentIndex];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
-    rowCursor = rowOrAssignmentIndex + 1;
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
-    g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowOrAssignmentIndex + 1] =
+    g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    activeCountOffsetOrLocalRow--;
-    assignableCountOrOffset--;
-    rowOrAssignmentIndex = rowCursor;
-  } while (assignableCountOrOffset != 0);
+    rowCursor++;
+    activeFactionsLeft--;
+    assignableFactionsLeft--;
+  } while (assignableFactionsLeft != 0);
   /* Further active factions (computer only): mode button active, the rest of the row hidden and inactive. */
-  for (; activeCountOffsetOrLocalRow != 0; activeCountOffsetOrLocalRow--) {
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags &=
+  for (; activeFactionsLeft != 0; activeFactionsLeft--) {
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->textResourceId;
+    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_COMPUTER;
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags |=
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags |=
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags |=
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->base.nodeFlags |=
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->base.nodeFlags |=
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     rowCursor++;
   }
   /* Unused rows up to 7: everything hidden and inactive, caption "No-one", faction slot cleared. */
   for (; rowCursor < 7; rowCursor++) {
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
-    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->textResourceId;
+    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_NOBODY;
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags &=
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->base.nodeFlags |=
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->base.nodeFlags |=
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
-    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] = 0;
   }
   /* Colour buttons of rows 7..1 show the faction name of the level's player slot; none is selected. */
   do {
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor - 1];
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->textResourceId =
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor - 1];
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId =
          ((LevelPlayerSlotRecord *)((uint8_t *)loadedLevel->playerSlots +
                                     g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]))->aiClassOrMode +
          TEXT_ID_FACTION_NAME_BASE + rowCursor;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags &=
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    localPlayerRuntimeId = g_LocalPlayerRuntimeId;
     rowCursor--;
   } while (rowCursor != 0);
   /* Players round-robin over the assignable factions (as FrontendPlayerRuntime_InitializeFactionAssignments);
-     their rows switch to "Player". activeCountOffsetOrLocalRow ends as the local player's zero-based row. */
-  rowOrAssignmentIndex = 1;
-  activeCountOffsetOrLocalRow = 0;
+     their rows switch to "Player". localPlayerRow ends as the local player's zero-based row. */
+  localPlayerRuntimeId = g_LocalPlayerRuntimeId;
+  assignmentIndex = 1;
+  localPlayerRow = 0;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   remainingPlayerRecords = g_FrontendPlayerRuntimeBlockCount;
   do {
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex - 1];
-    playerRecord->factionAssignment.factionAssignmentIndex = rowOrAssignmentIndex;
-    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->textResourceId;
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[assignmentIndex - 1];
+    playerRecord->factionAssignment.factionAssignmentIndex = assignmentIndex;
+    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
     playerRecord->factionAssignment.readyOrWaitState = 0;
     playerRecord->factionAssignment.consensusValue = 0;
     *rowTextId = TEXT_ID_FACTION_MODE_PLAYER;
     if (localPlayerRuntimeId == playerRecord->playerRuntimeId) {
-      activeCountOffsetOrLocalRow = rowOrAssignmentIndex - 1;
+      localPlayerRow = assignmentIndex - 1;
     }
-    rowOrAssignmentIndex++;
+    assignmentIndex++;
     playerRecord++;
-    if (loadedLevel->worldSettings.assignableFactionCount < rowOrAssignmentIndex) {
-      rowOrAssignmentIndex = rowOrAssignmentIndex - loadedLevel->worldSettings.assignableFactionCount;
+    if (loadedLevel->worldSettings.assignableFactionCount < assignmentIndex) {
+      assignmentIndex = assignmentIndex - loadedLevel->worldSettings.assignableFactionCount;
     }
     remainingPlayerRecords--;
   } while (remainingPlayerRecords != 0);
   /* tick and show the local player's play checkbox */
   ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,
-       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow]))
+       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow]))
        ->selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
   ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,
-       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow]))
+       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[localPlayerRow]))
        ->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)frontendRootPage);
   rootVtable = frontendRootPage->rootNode.vtable;
@@ -282,7 +284,9 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   uint32_t selectedWidth;
   uint32_t selectedHeight;
   uint32_t selectedBitsPerPixel;
-  int colorBitsCounterOrParentLink;
+  int currentColorBits;
+  int remainingFonts;
+  UiNodeBase *parentCursor;
   GraphicsTextureSourceAsset **fontTextureSource;
   uint32_t selectedModeError;
   uint32_t restoredModeError;
@@ -300,7 +304,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   previousWidth = g_FramebufferWidth;
   g_CursorVisibilityToken--;
   /* the current colour depth: the RGB bits of the pixel format, rounded up to a multiple of 16 below */
-  colorBitsCounterOrParentLink = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
+  currentColorBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
           g_SoftwarePixelFormatConfig.blueBitCount;
   if (!g_GraphicsSetDisplayMode
                     (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
@@ -311,7 +315,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
                      persistentSelection.height,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.width,&selectedModeError)) {
-    if (!g_GraphicsSetDisplayMode(previousAdapterIndex,colorBitsCounterOrParentLink + 15U & ~15U,previousHeight,
+    if (!g_GraphicsSetDisplayMode(previousAdapterIndex,currentColorBits + 15U & ~15U,previousHeight,
                                   previousWidth,&restoredModeError)) {
       FatalError_ExitIfFailed(restoredModeError,true);
     }
@@ -341,19 +345,17 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   g_GraphicsTextureSourceConvertPaletteEntries
             ((GraphicsPaletteTextureSourceAsset *)g_UiWindowClassTextureSource);
   fontTextureSource = g_FontTextureSources;
-  colorBitsCounterOrParentLink = 2; /* both fonts */
-  do {
+  for (remainingFonts = 2; remainingFonts != 0; remainingFonts--) { /* both fonts */
     g_GraphicsTextureSourceConvertPaletteEntries((GraphicsPaletteTextureSourceAsset *)*fontTextureSource);
     fontTextureSource++;
-    colorBitsCounterOrParentLink--;
-  } while (colorBitsCounterOrParentLink != 0);
+  }
   g_CursorVisibilityToken++;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
   /* walk up the parent links to the frontend template root */
-  colorBitsCounterOrParentLink = (int)((UiNodeBase *)control)->parent;
-  while (colorBitsCounterOrParentLink != -1) {
+  parentCursor = ((UiNodeBase *)control)->parent;
+  while (parentCursor != UI_NODE_NONE) {
     control = ((UiNodeBase *)control)->parent;
-    colorBitsCounterOrParentLink = (int)((UiNodeBase *)control)->parent;
+    parentCursor = ((UiNodeBase *)control)->parent;
   }
   /* the new resolution decides whether the dialog pages cover the menu room */
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
@@ -658,7 +660,9 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   uint32_t persistedValue;
   uint32_t shadingDepthQuarter;
   int shadingDepth;
-  UiNodeBase *parentCursorOrSelectedRow;
+  UiNodeBase *parentCursor;
+  UiNodeBase *selectedShadingRow;
+  UiNodeBase *selectedTextureRow;
   /* source is the frontend template's settings3DButton (+0x2794). */
   FrontendUiImage *frontendUi;
   
@@ -671,12 +675,12 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   }
   persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
   UiSelectableControl_SetSelected(persistedValue,&source->shadingEnabledControl);
-  parentCursorOrSelectedRow = source->base.parent;
+  parentCursor = source->base.parent;
   rootNode = source;
   /* climb to the root of the control's UI tree */
-  while (parentCursorOrSelectedRow != UI_NODE_NONE) {
+  while (parentCursor != UI_NODE_NONE) {
     rootNode = (FrontendGraphicsRuntimeSettingsPageState *)(rootNode->base).parent;
-    parentCursorOrSelectedRow = rootNode->base.parent;
+    parentCursor = rootNode->base.parent;
   }
   if (persistedValue == 0) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_SHADING_LEVEL,&rootNode->base);
@@ -690,24 +694,24 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   shadingDepthQuarter = PersistentSettings_Read(16,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   shadingDepth = shadingDepthQuarter * 4;
   if (persistedValue == 32) {
-    parentCursorOrSelectedRow = (UiNodeBase *)&source->shadingResolutionRows;
+    selectedShadingRow = (UiNodeBase *)&source->shadingResolutionRows;
     if (shadingDepth == 64) {
-      parentCursorOrSelectedRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 1);
+      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 1);
     }
     else if (shadingDepth == 128) {
-      parentCursorOrSelectedRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 2);
+      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 2);
     }
   }
   else if (persistedValue == 64) {
-    parentCursorOrSelectedRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 3);
+    selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 3);
     if (shadingDepth == 128) {
-      parentCursorOrSelectedRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 4);
+      selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 4);
     }
   }
   else {
-    parentCursorOrSelectedRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 5);
+    selectedShadingRow = (UiNodeBase *)(source->shadingResolutionRows.rows + 5);
   }
-  UiSelectableGroup_SelectExclusive(6,parentCursorOrSelectedRow,
+  UiSelectableGroup_SelectExclusive(6,selectedShadingRow,
       FRONTEND_UI(frontendUi,shadingLevelGrid128Depth128),
       FRONTEND_UI(frontendUi,shadingLevelGrid64Depth128),
       FRONTEND_UI(frontendUi,shadingLevelGrid64Depth64),
@@ -717,15 +721,15 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   /* texture rows: low, medium, high */
   persistedValue = PersistentSettings_Read(TEXTURE_QUALITY_MEDIUM,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (persistedValue == TEXTURE_QUALITY_HIGH) {
-    parentCursorOrSelectedRow = (UiNodeBase *)(source->textureResolutionRows.rows + 2);
+    selectedTextureRow = (UiNodeBase *)(source->textureResolutionRows.rows + 2);
   }
   else if (persistedValue == TEXTURE_QUALITY_MEDIUM) {
-    parentCursorOrSelectedRow = (UiNodeBase *)(source->textureResolutionRows.rows + 1);
+    selectedTextureRow = (UiNodeBase *)(source->textureResolutionRows.rows + 1);
   }
   else {
-    parentCursorOrSelectedRow = (UiNodeBase *)&source->textureResolutionRows;
+    selectedTextureRow = (UiNodeBase *)&source->textureResolutionRows;
   }
-  UiSelectableGroup_SelectExclusive(3,parentCursorOrSelectedRow,
+  UiSelectableGroup_SelectExclusive(3,selectedTextureRow,
       FRONTEND_UI(frontendUi,textureQualityHigh),
       FRONTEND_UI(frontendUi,textureQualityMedium),
       FRONTEND_UI(frontendUi,textureQualityLow));
@@ -1012,7 +1016,8 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   IDirectSoundBuffer *activeMusicBuffer;
   SoundSampleAsset *musicSample;
   DirectSoundVoiceSet *musicVoiceSet;
-  uint32_t gainOrAudioFlags;
+  uint32_t musicGain;
+  uint32_t savedAudioFlags;
   uint32_t musicEnabledBit;
   uint32_t newAudioFlags;
   bool isSelected;
@@ -1033,8 +1038,8 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
       else {
         g_FrontendMusicVoiceSet = musicVoiceSet;
         Resource_Release(musicSample);
-        gainOrAudioFlags = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
-        if (!g_SoundPlayLooping(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet,&activeMusicBuffer)) {
+        musicGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
+        if (!g_SoundPlayLooping(musicGain,musicGain,musicVoiceSet,&activeMusicBuffer)) {
           g_SoundReleaseSampleVoiceSet(musicVoiceSet);
           g_FrontendMusicVoiceSet = NULL;
           activeMusicBuffer = g_FrontendMusicActiveBuffer;
@@ -1050,8 +1055,8 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     g_FrontendMusicActiveBuffer = NULL;
     g_FrontendMusicVoiceSet = NULL;
   }
-  gainOrAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  newAudioFlags = musicEnabledBit | gainOrAudioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC;
+  savedAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  newAudioFlags = musicEnabledBit | savedAudioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC;
   PersistentSettings_Write(newAudioFlags,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   parentCursor = control->base.parent;
   /* climb to the root of the control's UI tree */

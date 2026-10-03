@@ -98,6 +98,78 @@ bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,ui
 }
 
 
+/* Copies the compact image's header into destinationGrid, clears all cells and expands every 0x10-byte record
+   into its cell: record dwords 0..3 go to persistedAux54, terrainHeight, waterSurfaceDelta and
+   flagsAndMaterial. The cell count comes from header dwords 0x2E/0x2F (gridWidth/gridHeight); a count of 0 is not
+   guarded (the expand loop would run 2^32 times). */
+static void PckCodec_ExpandFieldGridImage(FieldGridAsset *destinationGrid,AssetMagic *compactImage)
+{
+  uint32_t cellCount;
+  uint32_t dwordsLeft;
+  AssetMagic *compactReadCursor;
+  AssetMagic *expandedHeaderCursor;
+  uint32_t *expandedZeroCursor;
+  FieldGridCell *expandedCell;
+
+  cellCount = compactImage[46] * compactImage[47];
+  compactReadCursor = compactImage;
+  expandedHeaderCursor = (AssetMagic *)destinationGrid;
+  for (dwordsLeft = FIELD_GRID_HEADER_DWORDS; dwordsLeft != 0; dwordsLeft--) {
+    *expandedHeaderCursor = *compactReadCursor;
+    compactReadCursor++;
+    expandedHeaderCursor++;
+  }
+  /* the header cursor now points at cells[0]; clear all cells dword by dword */
+  expandedCell = (FieldGridCell *)expandedHeaderCursor;
+  expandedZeroCursor = (uint32_t *)expandedHeaderCursor;
+  for (dwordsLeft = cellCount * FIELD_GRID_CELL_DWORDS; dwordsLeft != 0; dwordsLeft--) {
+    *expandedZeroCursor = 0;
+    expandedZeroCursor++;
+  }
+  do {
+    expandedCell->persistedAux54 = compactReadCursor[0];
+    expandedCell->terrainHeight = compactReadCursor[1];
+    expandedCell->waterSurfaceDelta = compactReadCursor[2];
+    expandedCell->flagsAndMaterial = (FieldCellPackedFlagsAndMaterial)compactReadCursor[3];
+    compactReadCursor = compactReadCursor + 4;
+    expandedCell++;
+    cellCount--;
+  } while (cellCount != 0);
+}
+
+/* Regenerates the world coordinates of every cell row by row: worldX = column * 0x901 + row * 0x480,
+   worldY = row * -1999 (Q12, 32-bit wrap). */
+static void PckCodec_GenerateFieldGridWorldCoordinates(FieldGridAsset *grid)
+{
+  FieldGridDimension gridWidth;
+  FieldGridDimension rowsRemaining;
+  FieldGridDimension columnsRemaining;
+  FieldGridCell *cell;
+  int rowStartX;
+  int worldX;
+  Q12 worldYQ12;
+
+  gridWidth = grid->gridWidth;
+  rowsRemaining = grid->gridHeight;
+  cell = grid->cells;
+  rowStartX = 0;
+  worldYQ12 = 0;
+  do {
+    worldX = rowStartX;
+    columnsRemaining = gridWidth;
+    do {
+      cell->worldX = worldX;
+      cell->worldY = worldYQ12;
+      worldX = worldX + FIELD_GRID_WORLD_COLUMN_STEP_X;
+      cell++;
+      columnsRemaining = columnsRemaining - 1;
+    } while (columnsRemaining != 0);
+    rowStartX = rowStartX + FIELD_GRID_WORLD_ROW_STEP_X;
+    worldYQ12 = worldYQ12 + FIELD_GRID_WORLD_ROW_STEP_Y;
+    rowsRemaining = rowsRemaining - 1;
+  } while (rowsRemaining != 0);
+}
+
 /* Address: 0x0040AAA0.
    PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image,
    restores the header, expands every 0x10-byte record into a zeroed FieldGridCell and regenerates the cell world
@@ -112,88 +184,26 @@ bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,Fi
 
 {
   uint32_t bytes;
-  AssetMagic pendingCellDword;
   AssetMagic *compactFieldImageBase;
-  int countOrRowStartX;
-  FieldGridDimension columnsRemaining;
-  int cellCountOrWorldX;
-  FieldGridDimension rowsRemaining;
-  Q12 currentWorldYQ12;
-  AssetMagic *compactReadCursor;
-  FieldGridCell *currentWorldCoordinateCell;
-  uint32_t *expandedZeroCursor;
-  AssetMagic *expandedHeaderCursor;
-  FieldGridCell *expandedCell;
   uint32_t allocError;
   uint32_t freeStatus;
-  FieldGridDimension gridWidth;
-  
+
   bytes = *(uint32_t *)source;
   allocError = g_MemoryApi.alloc(bytes,(void **)&compactFieldImageBase);
   if (allocError != 0) {
-    compactFieldImageBase = (AssetMagic *)allocError;
+    return PckCodec_Fail(outErrorCode,allocError);
   }
-  else {
-    if (PckCodec_DecodeHuffmanRle
-            (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - PCK_FIELD_GRID_PREFIX_BYTES,
-             source + PCK_FIELD_GRID_PREFIX_BYTES,NULL,NULL)) {
-      /* header dwords 0x2E/0x2F are gridWidth/gridHeight */
-      cellCountOrWorldX = compactFieldImageBase[46] * compactFieldImageBase[47];
-      compactReadCursor = compactFieldImageBase;
-      expandedHeaderCursor = (AssetMagic *)destinationGrid;
-      for (countOrRowStartX = FIELD_GRID_HEADER_DWORDS; countOrRowStartX != 0; countOrRowStartX--) {
-        *expandedHeaderCursor = *compactReadCursor;
-        compactReadCursor++;
-        expandedHeaderCursor++;
-      }
-      /* the header cursor now points at cells[0]; clear all cells dword by dword */
-      expandedCell = (FieldGridCell *)expandedHeaderCursor;
-      expandedZeroCursor = (uint32_t *)expandedHeaderCursor;
-      for (countOrRowStartX = cellCountOrWorldX * FIELD_GRID_CELL_DWORDS; countOrRowStartX != 0;
-          countOrRowStartX--) {
-        *expandedZeroCursor = 0;
-        expandedZeroCursor++;
-      }
-      /* per cell: record dwords 0..3 to persistedAux54, terrainHeight, waterSurfaceDelta, flagsAndMaterial */
-      do {
-        pendingCellDword = compactReadCursor[1];
-        expandedCell->persistedAux54 = *compactReadCursor;
-        expandedCell->terrainHeight = pendingCellDword;
-        pendingCellDword = compactReadCursor[3];
-        expandedCell->waterSurfaceDelta = compactReadCursor[2];
-        expandedCell->flagsAndMaterial = pendingCellDword;
-        compactReadCursor = compactReadCursor + 4;
-        expandedCell++;
-        cellCountOrWorldX--;
-      } while (cellCountOrWorldX != 0);
-      cellCountOrWorldX = 0;
-      currentWorldYQ12 = 0;
-      gridWidth = destinationGrid->gridWidth;
-      rowsRemaining = destinationGrid->gridHeight;
-      currentWorldCoordinateCell = destinationGrid->cells;
-      columnsRemaining = gridWidth;
-      countOrRowStartX = 0;
-      do {
-        do {
-          currentWorldCoordinateCell->worldX = cellCountOrWorldX;
-          currentWorldCoordinateCell->worldY = currentWorldYQ12;
-          cellCountOrWorldX = cellCountOrWorldX + FIELD_GRID_WORLD_COLUMN_STEP_X;
-          currentWorldCoordinateCell++;
-          columnsRemaining = columnsRemaining - 1;
-        } while (columnsRemaining != 0);
-        cellCountOrWorldX = countOrRowStartX + FIELD_GRID_WORLD_ROW_STEP_X;
-        currentWorldYQ12 = currentWorldYQ12 + FIELD_GRID_WORLD_ROW_STEP_Y;
-        rowsRemaining = rowsRemaining - 1;
-        columnsRemaining = gridWidth;
-        countOrRowStartX = cellCountOrWorldX;
-      } while (rowsRemaining != 0);
-      freeStatus = g_MemoryApi.free(compactFieldImageBase);
-      return PckCodec_Succeed(outByteCount,freeStatus);
-    }
+  if (!PckCodec_DecodeHuffmanRle
+          (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - PCK_FIELD_GRID_PREFIX_BYTES,
+           source + PCK_FIELD_GRID_PREFIX_BYTES,NULL,NULL)) {
+    /* Original quirk: reports the free's return value, not the decoder's error code */
     freeStatus = g_MemoryApi.free(compactFieldImageBase);
-    compactFieldImageBase = (AssetMagic *)freeStatus;
+    return PckCodec_Fail(outErrorCode,freeStatus);
   }
-  return PckCodec_Fail(outErrorCode,(uint32_t)compactFieldImageBase);
+  PckCodec_ExpandFieldGridImage(destinationGrid,compactFieldImageBase);
+  PckCodec_GenerateFieldGridWorldCoordinates(destinationGrid);
+  freeStatus = g_MemoryApi.free(compactFieldImageBase);
+  return PckCodec_Succeed(outByteCount,freeStatus);
 }
 
 
@@ -537,12 +547,96 @@ bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,u
 }
 
 
+/* Loads the 256-byte frequency table into the symbol table, clears the leaf and internal node workspaces (0x800
+   dwords behind the symbol table) and copies the frequencies into the leaf weights. */
+static void PckCodec_DecoderLoadFrequencies(uint8_t *frequencyTable)
+{
+  uint32_t *workspaceClearCursor;
+  int clearDwordCount;
+  int symbolIndex;
+
+  for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
+    g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount = frequencyTable[symbolIndex];
+  }
+  workspaceClearCursor = (uint32_t *)g_PckHuffmanLeafNodeWorkspace256;
+  for (clearDwordCount = 2048; clearDwordCount != 0; clearDwordCount--) {
+    *workspaceClearCursor = 0;
+    workspaceClearCursor++;
+  }
+  for (symbolIndex = 0; symbolIndex < PCK_HUFFMAN_SYMBOL_COUNT; symbolIndex++) {
+    g_PckHuffmanLeafNodeWorkspace256[symbolIndex].weight = g_PckHuffmanSymbolWorkspace256[symbolIndex].frequencyCount;
+  }
+}
+
+/* Same tree construction as PckCodec_EncodeHuffmanRle, so both sides get identical codes. Returns the root (the
+   last internal node created), or NULL when all 256 internal nodes are used up. Leaves have no zeroChild.
+   Original quirk: with fewer than two weighted symbols no internal node is created and the "root" is the node
+   just before the internal node workspace (the last leaf). */
+static PckHuffmanNode *PckCodec_DecoderBuildTree(void)
+{
+  PckHuffmanNodePtr nextInternalNode;
+  PckHuffmanNode *lowestNode;
+  PckHuffmanNode *secondLowestNode;
+  uint32_t lowestWeight;
+  uint32_t secondLowestWeight;
+
+  nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
+  while (PckCodec_EncoderFindTwoLightestNodes(&lowestNode,&lowestWeight,&secondLowestNode,&secondLowestWeight)) {
+    nextInternalNode->weight = lowestWeight + secondLowestWeight;
+    nextInternalNode->zeroChild = lowestNode;
+    nextInternalNode->oneChild = secondLowestNode;
+    lowestNode->parent = nextInternalNode;
+    secondLowestNode->parent = nextInternalNode;
+    lowestNode->weight = 0;
+    secondLowestNode->weight = 0;
+    nextInternalNode++;
+    /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
+       where the internal node workspace ends. */
+    if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) {
+      return NULL;
+    }
+  }
+  return nextInternalNode - 1;
+}
+
+/* Walks from the root to a leaf, consuming one bit of *codeBits (lowest first: 0 = zeroChild, 1 = oneChild)
+   and advancing *bitOffset per step. Returns the leaf; its index in the leaf workspace is the symbol. */
+static PckHuffmanNode *PckCodec_DecoderReadSymbol(PckHuffmanNode *root,uint32_t *codeBits,
+          PckHuffmanBitOffset *bitOffset)
+{
+  PckHuffmanNode *node;
+
+  node = root;
+  do {
+    if ((*codeBits & 1) == 0) {
+      node = node->zeroChild;
+    }
+    else {
+      node = node->oneChild;
+    }
+    *codeBits = *codeBits >> 1;
+    *bitOffset = *bitOffset + 1;
+  } while (node->zeroChild != NULL);
+  return node;
+}
+
+/* Moves the input byte cursor past every whole byte consumed, leaving a bit offset of 0..7. */
+static uint8_t *PckCodec_DecoderSkipWholeBytes(uint8_t *inputByte,PckHuffmanBitOffset *bitOffset)
+{
+  while (7 < *bitOffset) {
+    *bitOffset = *bitOffset - 8;
+    inputByte++;
+  }
+  return inputByte;
+}
+
 /* Address: 0x0040A790.
    PCK compression method 0 reader. Rebuilds the encoder's Huffman tree from the 256-byte frequency table at
    the start of source, then decodes literal and run tokens (format in codec.h) until outputSizeBytes bytes are
    written. Returns true on success; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when the tree
    overflows the workspace. sourceSizeBytes is not checked: the bitstream is trusted.
-   Original quirk: the byte count reported on success is the leftover run counter (EAX), not a size.
+   Original quirk: the byte count reported on success is not a size but what is left of the last token: the
+   unused code bits of a literal, or the run counter of a run (EAX).
 */
 bool PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
@@ -550,144 +644,55 @@ bool PckCodec_DecodeHuffmanRle
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
-  PckHuffmanSymbolState symbolState;
-  /* lowest weight while building the tree, then the input bits at the current offset */
-  uint32_t lowWeightOrBitWindow;
-  /* literal code bits, then the run length; also the byte count reported on success */
-  PckHuffmanRunLength codeBitsOrRunLength;
-  PckHuffmanBitOffset nextBitOffset;
+  PckHuffmanNode *root;
+  PckHuffmanNode *symbolNode;
+  uint8_t *inputByte;
   PckHuffmanBitOffset inputBitOffset;
-  int remainingCount;
-  /* second-lowest weight while building the tree, then the code bits of a run's byte */
-  uint32_t secondWeightOrCodeBits;
-  PckHuffmanNode *lowestWeightNode;
-  PckHuffmanNodePtr literalNode;
-  PckHuffmanNodePtr runSymbolNode;
-  uint8_t *frequencyByteCursor;
-  PckHuffmanNode *scanNode;
-  uint32_t *inputCursor;
-  PckHuffmanSymbolState *symbolStateCursor;
-  PckHuffmanNode *leafOrSecondLowestNode;
-  PckHuffmanNodePtr nextInternalNode;
+  uint32_t bitWindow;
+  uint32_t codeBits;
+  PckHuffmanRunLength runLength;
+  /* what is left of the last token; reported as the byte count (see the quirk above) */
+  PckHuffmanRunLength lastTokenLeftover;
 
-  /* The symbol table ends where the leaf node workspace begins. */
-  symbolStateCursor = g_PckHuffmanSymbolWorkspace256;
-  frequencyByteCursor = source;
-  do {
-    symbolState.frequencyCount = *frequencyByteCursor; /* MOVZX of the stored 8-bit frequency */
-    *symbolStateCursor = symbolState;
-    frequencyByteCursor++;
-    symbolStateCursor++;
-  } while (symbolStateCursor < g_PckHuffmanLeafNodeWorkspace256);
-  /* 0x800 dwords: the leaf and internal node workspaces behind the symbol table */
-  for (remainingCount = 2048; remainingCount != 0; remainingCount--) {
-    symbolStateCursor->frequencyCount = 0;
-    symbolStateCursor++;
+  PckCodec_DecoderLoadFrequencies(source);
+  root = PckCodec_DecoderBuildTree();
+  if (root == NULL) {
+    return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
-  symbolStateCursor = g_PckHuffmanSymbolWorkspace256;
-  leafOrSecondLowestNode = g_PckHuffmanLeafNodeWorkspace256;
-  do {
-    leafOrSecondLowestNode->weight = symbolStateCursor->frequencyCount;
-    symbolStateCursor++;
-    leafOrSecondLowestNode++;
-  } while (symbolStateCursor < g_PckHuffmanLeafNodeWorkspace256);
-  /* Same tree construction as PckCodec_EncodeHuffmanRle, so both sides get identical codes. */
-  nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
-  for (;;) {
-    scanNode = g_PckHuffmanLeafNodeWorkspace256;
-    lowWeightOrBitWindow = UINT32_MAX;
-    remainingCount = PCK_HUFFMAN_NODE_COUNT;
-    secondWeightOrCodeBits = UINT32_MAX;
-    do {
-      if (scanNode->weight != 0) {
-        if (scanNode->weight < lowWeightOrBitWindow) {
-          if (lowWeightOrBitWindow < secondWeightOrCodeBits) {
-            secondWeightOrCodeBits = lowWeightOrBitWindow;
-            leafOrSecondLowestNode = lowestWeightNode;
-          }
-          lowWeightOrBitWindow = scanNode->weight;
-          lowestWeightNode = scanNode;
-        }
-        else if (scanNode->weight < secondWeightOrCodeBits) {
-          secondWeightOrCodeBits = scanNode->weight;
-          leafOrSecondLowestNode = scanNode;
-        }
-      }
-      scanNode++;
-      remainingCount--;
-    } while (remainingCount != 0);
-    /* Fewer than two weighted nodes left: the tree is complete. */
-    if ((int)secondWeightOrCodeBits < 0) break;
-    nextInternalNode->weight = lowWeightOrBitWindow + secondWeightOrCodeBits;
-    nextInternalNode->zeroChild = lowestWeightNode;
-    nextInternalNode->oneChild = leafOrSecondLowestNode;
-    lowestWeightNode->parent = nextInternalNode;
-    leafOrSecondLowestNode->parent = nextInternalNode;
-    lowestWeightNode->weight = 0;
-    leafOrSecondLowestNode->weight = 0;
-    nextInternalNode++;
-    /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
-       where the internal node workspace ends. */
-    if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) {
-      return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
-    }
-  }
-  /* The root is the last internal node created (nextInternalNode - 1); leaves have no zeroChild. The input
-     is read as a dword window that advances byte by byte. */
+  /* The input is read as a dword window that advances byte by byte. */
   inputBitOffset = 0;
-  inputCursor = (uint32_t *)(source + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES);
+  inputByte = source + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES;
   do {
-    lowWeightOrBitWindow = *inputCursor >> (inputBitOffset & 31);
-    nextBitOffset = inputBitOffset + 1;
-    if ((lowWeightOrBitWindow & 1) == 0) {
-      /* literal token */
-      codeBitsOrRunLength = lowWeightOrBitWindow >> 1;
-      literalNode = nextInternalNode - 1;
+    bitWindow = *(uint32_t *)inputByte >> (inputBitOffset & 31);
+    if ((bitWindow & 1) == 0) {
+      /* literal token: flag bit 0, then the code of the byte */
+      codeBits = bitWindow >> 1;
+      inputBitOffset = inputBitOffset + 1;
+      symbolNode = PckCodec_DecoderReadSymbol(root,&codeBits,&inputBitOffset);
+      *destination = (uint8_t)(symbolNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
+      destination++;
+      inputByte = PckCodec_DecoderSkipWholeBytes(inputByte,&inputBitOffset);
+      outputSizeBytes--;
+      lastTokenLeftover = codeBits;
+    }
+    else {
+      /* run token: flag bit 1, 4-bit (length - 3), then the code of the repeated byte */
+      codeBits = bitWindow >> 5;
+      inputBitOffset = inputBitOffset + 5;
+      symbolNode = PckCodec_DecoderReadSymbol(root,&codeBits,&inputBitOffset);
+      inputByte = PckCodec_DecoderSkipWholeBytes(inputByte,&inputBitOffset);
+      runLength = (bitWindow >> 1 & 0xf) + PCK_HUFFMAN_MIN_RUN_LENGTH;
+      /* a run is cut short when the output is full; the counter then keeps its value */
       do {
-        if ((codeBitsOrRunLength & 1) == 0) {
-          literalNode = literalNode->zeroChild;
-        }
-        else {
-          literalNode = literalNode->oneChild;
-        }
-        codeBitsOrRunLength = codeBitsOrRunLength >> 1;
-        nextBitOffset++;
-      } while (literalNode->zeroChild != NULL);
-      *destination = (uint8_t)(literalNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
-      destination++;
-      for (inputBitOffset = nextBitOffset; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8)
-      {
-        inputCursor = (uint32_t *)((uint8_t *)inputCursor + 1);
-      }
-      outputSizeBytes--;
-      continue;
+        *destination = (uint8_t)(symbolNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
+        destination++;
+        outputSizeBytes--;
+        if (outputSizeBytes == 0) break;
+        runLength--;
+      } while (runLength != 0);
+      lastTokenLeftover = runLength;
     }
-    /* run token: flag bit, 4-bit (length - 3), then the code of the repeated byte */
-    secondWeightOrCodeBits = lowWeightOrBitWindow >> 5;
-    inputBitOffset = inputBitOffset + 5;
-    runSymbolNode = nextInternalNode - 1;
-    do {
-      if ((secondWeightOrCodeBits & 1) == 0) {
-        runSymbolNode = runSymbolNode->zeroChild;
-      }
-      else {
-        runSymbolNode = runSymbolNode->oneChild;
-      }
-      secondWeightOrCodeBits = secondWeightOrCodeBits >> 1;
-      inputBitOffset++;
-    } while (runSymbolNode->zeroChild != NULL);
-    for (; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8) {
-      inputCursor = (uint32_t *)((uint8_t *)inputCursor + 1);
-    }
-    codeBitsOrRunLength = (lowWeightOrBitWindow >> 1 & 0xf) + PCK_HUFFMAN_MIN_RUN_LENGTH;
-    do {
-      *destination = (uint8_t)(runSymbolNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
-      destination++;
-      outputSizeBytes--;
-      if (outputSizeBytes == 0) break;
-      codeBitsOrRunLength--;
-    } while (codeBitsOrRunLength != 0);
   } while (outputSizeBytes != 0);
-  return PckCodec_Succeed(outByteCount,codeBitsOrRunLength);
+  return PckCodec_Succeed(outByteCount,lastTokenLeftover);
 }
 

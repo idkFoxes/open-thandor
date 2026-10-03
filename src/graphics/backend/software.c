@@ -320,11 +320,12 @@ SoftwareFramebufferAccess *SoftwareFramebuffer_Create
 {
   SoftwareFramebufferAccess *framebuffer;
   uint32_t *cursor;
-  uint32_t pixelBytesOrDwordsLeft;
+  uint32_t pixelBytes;
+  uint32_t dwordsLeft;
   uint32_t frameAllocationError;
 
-  pixelBytesOrDwordsLeft = width * height * bytesPerPixel;
-  frameAllocationError = g_MemoryApi.alloc(pixelBytesOrDwordsLeft + sizeof(SoftwareFramebufferAccess),
+  pixelBytes = width * height * bytesPerPixel;
+  frameAllocationError = g_MemoryApi.alloc(pixelBytes + sizeof(SoftwareFramebufferAccess),
                                            (void **)&framebuffer);
   if (frameAllocationError != 0) {
     *outError = frameAllocationError;
@@ -337,7 +338,7 @@ SoftwareFramebufferAccess *SoftwareFramebuffer_Create
   framebuffer->pixels = (uint8_t *)(framebuffer + 1);
   cursor = (uint32_t *)(framebuffer + 1);
   /* whole dwords only; the original also leaves up to 3 trailing bytes as allocated */
-  for (pixelBytesOrDwordsLeft = pixelBytesOrDwordsLeft >> 2; pixelBytesOrDwordsLeft != 0; pixelBytesOrDwordsLeft--) {
+  for (dwordsLeft = pixelBytes >> 2; dwordsLeft != 0; dwordsLeft--) {
     *cursor = 0;
     cursor++;
   }
@@ -1298,6 +1299,33 @@ void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,Graphi
 }
 
 
+/* Copies rowCount rows (> 0) of rowBytes bytes (> 0) from sourceRow to destRow, stepping each by its stride.
+   Rows whose byte length is a multiple of 4 are copied in dwords, others byte by byte; both copy forwards. */
+static void SoftwareFramebuffer_CopyRows(uint8_t *destRow,int destStrideBytes,const uint8_t *sourceRow,
+          int sourceStrideBytes,uint32_t rowBytes,uint32_t rowCount)
+{
+  uint32_t i;
+
+  if ((rowBytes & 3) != 0) {
+    for (; rowCount != 0; rowCount--) {
+      for (i = 0; i < rowBytes; i++) {
+        destRow[i] = sourceRow[i];
+      }
+      sourceRow = sourceRow + sourceStrideBytes;
+      destRow = destRow + destStrideBytes;
+    }
+  }
+  else {
+    for (; rowCount != 0; rowCount--) {
+      for (i = 0; i < rowBytes >> 2; i++) {
+        ((uint32_t *)destRow)[i] = ((const uint32_t *)sourceRow)[i];
+      }
+      sourceRow = sourceRow + sourceStrideBytes;
+      destRow = destRow + destStrideBytes;
+    }
+  }
+}
+
 /* Address: 0x004AD410.
    g_GraphicsFramebufferCopyRegionToOrigin (slot 0x004A8F34): copies the copyWidth x copyHeight rectangle at
    (sourceX, sourceY) of source to the top-left corner of destination. Nothing is copied unless both have the
@@ -1311,84 +1339,49 @@ void SoftwareFramebuffer_CopyRegionToOrigin(GraphicsPixelDimension copyHeight,Gr
 
 {
   SoftwareFramebufferPixelSize pixelBytes;
-  int sourceStrideBytes;
+  int sourcePixelOffset;
   int destPixelOffset;
-  uint32_t bytesOrWordsLeft;
-  int sourceOffsetOrDestStride;
+  int sourceStrideBytes;
+  int destStrideBytes;
   uint32_t rowBytes;
-  uint8_t *sourceRow;
-  uint8_t *destRowStartOrSourceCursor;
-  uint8_t *destRow;
-  uint8_t *sourceRowStartOrDestCursor;
-  
+
   pixelBytes = source->bytesPerPixel;
-  if (((pixelBytes == destination->bytesPerPixel) && ((int)copyWidth <= (int)destination->width)) &&
-     ((int)copyHeight <= (int)destination->height)) {
-    if (sourceY < 0) {
-      sourceOffsetOrDestStride = 0;
-      destPixelOffset = destination->width * -sourceY;
-      copyHeight = copyHeight + sourceY;
-      sourceY = 0;
-    }
-    else {
-      destPixelOffset = 0;
-      sourceOffsetOrDestStride = source->width * sourceY;
-    }
-    if (sourceX < 0) {
-      destPixelOffset = destPixelOffset - sourceX;
-      copyWidth = copyWidth + sourceX;
-      sourceX = 0;
-    }
-    else {
-      sourceOffsetOrDestStride = sourceOffsetOrDestStride + sourceX;
-    }
-    if ((int)source->width < (int)(sourceX + copyWidth)) {
-      copyWidth = copyWidth - ((sourceX + copyWidth) - source->width);
-    }
-    if ((int)source->height < (int)(sourceY + copyHeight)) {
-      copyHeight = copyHeight - ((sourceY + copyHeight) - source->height);
-    }
-    sourceStrideBytes = source->width * pixelBytes;
-    sourceRow = source->pixels + sourceOffsetOrDestStride * pixelBytes;
-    sourceOffsetOrDestStride = destination->width * pixelBytes;
-    rowBytes = pixelBytes * copyWidth;
-    destRow = destination->pixels + destPixelOffset * pixelBytes;
-    if ((0 < (int)copyHeight) && (0 < (int)rowBytes)) {
-      bytesOrWordsLeft = rowBytes;
-      destRowStartOrSourceCursor = destRow;
-      sourceRowStartOrDestCursor = sourceRow;
-      if ((rowBytes & 3) != 0) {
-        do {
-          for (; bytesOrWordsLeft != 0; bytesOrWordsLeft--) {
-            *destRow = *sourceRow;
-            sourceRow++;
-            destRow++;
-          }
-          sourceRow = sourceRowStartOrDestCursor + sourceStrideBytes;
-          destRow = destRowStartOrSourceCursor + sourceOffsetOrDestStride;
-          copyHeight--;
-          bytesOrWordsLeft = rowBytes;
-          destRowStartOrSourceCursor = destRow;
-          sourceRowStartOrDestCursor = sourceRow;
-        } while (copyHeight != 0);
-        return;
-      }
-      do {
-        destRowStartOrSourceCursor = sourceRow;
-        sourceRowStartOrDestCursor = destRow;
-        /* here the two cursors swap roles: destRowStartOrSourceCursor reads, sourceRowStartOrDestCursor writes */
-        for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft--) {
-          *(uint32_t *)sourceRowStartOrDestCursor = *(uint32_t *)destRowStartOrSourceCursor;
-          destRowStartOrSourceCursor = destRowStartOrSourceCursor + 4;
-          sourceRowStartOrDestCursor = sourceRowStartOrDestCursor + 4;
-        }
-        sourceRow = sourceRow + sourceStrideBytes;
-        destRow = destRow + sourceOffsetOrDestStride;
-        copyHeight--;
-      } while (copyHeight != 0);
-    }
+  if (pixelBytes != destination->bytesPerPixel || (int)copyWidth > (int)destination->width ||
+      (int)copyHeight > (int)destination->height) {
+    return;
   }
-  return;
+  if (sourceY < 0) {
+    sourcePixelOffset = 0;
+    destPixelOffset = destination->width * -sourceY;
+    copyHeight = copyHeight + sourceY;
+    sourceY = 0;
+  }
+  else {
+    destPixelOffset = 0;
+    sourcePixelOffset = source->width * sourceY;
+  }
+  if (sourceX < 0) {
+    destPixelOffset = destPixelOffset - sourceX;
+    copyWidth = copyWidth + sourceX;
+    sourceX = 0;
+  }
+  else {
+    sourcePixelOffset = sourcePixelOffset + sourceX;
+  }
+  if ((int)source->width < (int)(sourceX + copyWidth)) {
+    copyWidth = copyWidth - ((sourceX + copyWidth) - source->width);
+  }
+  if ((int)source->height < (int)(sourceY + copyHeight)) {
+    copyHeight = copyHeight - ((sourceY + copyHeight) - source->height);
+  }
+  sourceStrideBytes = source->width * pixelBytes;
+  destStrideBytes = destination->width * pixelBytes;
+  rowBytes = pixelBytes * copyWidth;
+  if ((0 < (int)copyHeight) && (0 < (int)rowBytes)) {
+    SoftwareFramebuffer_CopyRows(destination->pixels + destPixelOffset * pixelBytes, destStrideBytes,
+                                 source->pixels + sourcePixelOffset * pixelBytes, sourceStrideBytes, rowBytes,
+                                 copyHeight);
+  }
 }
 
 
@@ -1405,84 +1398,49 @@ void SoftwareFramebuffer_CopyOriginToRegion(GraphicsPixelDimension copyHeight,Gr
 
 {
   SoftwareFramebufferPixelSize pixelBytes;
-  int destStrideBytes;
+  int destPixelOffset;
   int sourcePixelOffset;
-  uint32_t bytesOrWordsLeft;
-  int destOffsetOrSourceStride;
+  int destStrideBytes;
+  int sourceStrideBytes;
   uint32_t rowBytes;
-  uint8_t *sourceRow;
-  uint8_t *destRowStartOrSourceCursor;
-  uint8_t *destRow;
-  uint8_t *sourceRowStartOrDestCursor;
-  
+
   pixelBytes = destination->bytesPerPixel;
-  if (((pixelBytes == source->bytesPerPixel) && ((int)copyWidth <= (int)source->width)) &&
-     ((int)copyHeight <= (int)source->height)) {
-    if (destinationY < 0) {
-      destOffsetOrSourceStride = 0;
-      sourcePixelOffset = source->width * -destinationY;
-      copyHeight = copyHeight + destinationY;
-      destinationY = 0;
-    }
-    else {
-      sourcePixelOffset = 0;
-      destOffsetOrSourceStride = destination->width * destinationY;
-    }
-    if (destinationX < 0) {
-      sourcePixelOffset = sourcePixelOffset - destinationX;
-      copyWidth = copyWidth + destinationX;
-      destinationX = 0;
-    }
-    else {
-      destOffsetOrSourceStride = destOffsetOrSourceStride + destinationX;
-    }
-    if ((int)destination->width < (int)(destinationX + copyWidth)) {
-      copyWidth = copyWidth - ((destinationX + copyWidth) - destination->width);
-    }
-    if ((int)destination->height < (int)(destinationY + copyHeight)) {
-      copyHeight = copyHeight - ((destinationY + copyHeight) - destination->height);
-    }
-    destStrideBytes = destination->width * pixelBytes;
-    destRow = destination->pixels + destOffsetOrSourceStride * pixelBytes;
-    destOffsetOrSourceStride = source->width * pixelBytes;
-    rowBytes = pixelBytes * copyWidth;
-    sourceRow = source->pixels + sourcePixelOffset * pixelBytes;
-    if ((0 < (int)copyHeight) && (0 < (int)rowBytes)) {
-      bytesOrWordsLeft = rowBytes;
-      destRowStartOrSourceCursor = destRow;
-      sourceRowStartOrDestCursor = sourceRow;
-      if ((rowBytes & 3) != 0) {
-        do {
-          for (; bytesOrWordsLeft != 0; bytesOrWordsLeft--) {
-            *destRow = *sourceRow;
-            sourceRow++;
-            destRow++;
-          }
-          destRow = destRowStartOrSourceCursor + destStrideBytes;
-          sourceRow = sourceRowStartOrDestCursor + destOffsetOrSourceStride;
-          copyHeight--;
-          bytesOrWordsLeft = rowBytes;
-          destRowStartOrSourceCursor = destRow;
-          sourceRowStartOrDestCursor = sourceRow;
-        } while (copyHeight != 0);
-        return;
-      }
-      do {
-        destRowStartOrSourceCursor = sourceRow;
-        sourceRowStartOrDestCursor = destRow;
-        /* here the two cursors swap roles: destRowStartOrSourceCursor reads, sourceRowStartOrDestCursor writes */
-        for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft--) {
-          *(uint32_t *)sourceRowStartOrDestCursor = *(uint32_t *)destRowStartOrSourceCursor;
-          destRowStartOrSourceCursor = destRowStartOrSourceCursor + 4;
-          sourceRowStartOrDestCursor = sourceRowStartOrDestCursor + 4;
-        }
-        destRow = destRow + destStrideBytes;
-        sourceRow = sourceRow + destOffsetOrSourceStride;
-        copyHeight--;
-      } while (copyHeight != 0);
-    }
+  if (pixelBytes != source->bytesPerPixel || (int)copyWidth > (int)source->width ||
+      (int)copyHeight > (int)source->height) {
+    return;
   }
-  return;
+  if (destinationY < 0) {
+    destPixelOffset = 0;
+    sourcePixelOffset = source->width * -destinationY;
+    copyHeight = copyHeight + destinationY;
+    destinationY = 0;
+  }
+  else {
+    sourcePixelOffset = 0;
+    destPixelOffset = destination->width * destinationY;
+  }
+  if (destinationX < 0) {
+    sourcePixelOffset = sourcePixelOffset - destinationX;
+    copyWidth = copyWidth + destinationX;
+    destinationX = 0;
+  }
+  else {
+    destPixelOffset = destPixelOffset + destinationX;
+  }
+  if ((int)destination->width < (int)(destinationX + copyWidth)) {
+    copyWidth = copyWidth - ((destinationX + copyWidth) - destination->width);
+  }
+  if ((int)destination->height < (int)(destinationY + copyHeight)) {
+    copyHeight = copyHeight - ((destinationY + copyHeight) - destination->height);
+  }
+  destStrideBytes = destination->width * pixelBytes;
+  sourceStrideBytes = source->width * pixelBytes;
+  rowBytes = pixelBytes * copyWidth;
+  if ((0 < (int)copyHeight) && (0 < (int)rowBytes)) {
+    SoftwareFramebuffer_CopyRows(destination->pixels + destPixelOffset * pixelBytes, destStrideBytes,
+                                 source->pixels + sourcePixelOffset * pixelBytes, sourceStrideBytes, rowBytes,
+                                 copyHeight);
+  }
 }
 
 
@@ -3234,54 +3192,53 @@ void SoftwareMaskBuffer_ApplyCircularRegionBit(UiBooleanState32 invertSelection,
 {
   uint32_t maskWidth;
   int radiusPixels;
+  uint32_t radiusSquared;
   int rowDistanceSquared;
+  uint32_t distanceSquared;
   uint32_t rowsRemaining;
   uint32_t columnX;
   uint8_t *maskCursor;
   GraphicsTextureLogicalSize logicalSize;
   int rowY;
-  
+  bool selected;
+
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   rowsRemaining = logicalSize.logicalHeightPixels;
   maskWidth = logicalSize.logicalWidthPixels;
-  radiusPixels = radiusStep * 28;
   maskCursor = maskRuntime->maskPixels;
-  if ((invertSelection != 0) && (radiusPixels = radiusStep * -28 + maskWidth + rowsRemaining, radiusPixels < 0)) {
-    radiusPixels = 0;
+  if (invertSelection != 0) {
+    radiusPixels = radiusStep * -28 + maskWidth + rowsRemaining;
+    if (radiusPixels < 0) {
+      radiusPixels = 0;
+    }
   }
-  columnX = 0;
+  else {
+    radiusPixels = radiusStep * 28;
+  }
+  radiusSquared = (uint32_t)(radiusPixels * radiusPixels);
+  /* do-whiles kept: a zero width still visits one pixel per row, a zero height wraps the row counter */
   rowY = 0;
-  rowDistanceSquared = -centerY * -centerY;
-  if (invertSelection == 0) {
-    do {
-      do {
-        if ((columnX - centerX) * (columnX - centerX) + rowDistanceSquared <= (uint32_t)(radiusPixels * radiusPixels)) {
-          *maskCursor = *maskCursor | 1;
-        }
-        columnX++;
-        maskCursor++;
-      } while (columnX < maskWidth);
-      rowY++;
-      columnX = 0;
-      rowDistanceSquared = (rowY - centerY) * (rowY - centerY);
-      rowsRemaining--;
-    } while (rowsRemaining != 0);
-    return;
-  }
   do {
+    rowDistanceSquared = (rowY - centerY) * (rowY - centerY);
+    columnX = 0;
     do {
-      if ((uint32_t)(radiusPixels * radiusPixels) <= (columnX - centerX) * (columnX - centerX) + rowDistanceSquared) {
+      distanceSquared = (columnX - centerX) * (columnX - centerX) + rowDistanceSquared;
+      /* both tests include the circle's edge */
+      if (invertSelection == 0) {
+        selected = distanceSquared <= radiusSquared;
+      }
+      else {
+        selected = radiusSquared <= distanceSquared;
+      }
+      if (selected) {
         *maskCursor = *maskCursor | 1;
       }
       columnX++;
       maskCursor++;
     } while (columnX < maskWidth);
     rowY++;
-    columnX = 0;
-    rowDistanceSquared = (rowY - centerY) * (rowY - centerY);
     rowsRemaining--;
   } while (rowsRemaining != 0);
-  return;
 }
 
 
@@ -3388,37 +3345,90 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
           SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  uint32_t bandBytesOrBlocksLeft;
+  uint32_t bandBytes;
+  uint32_t blocksLeft;
   int bandRow;
   uint32_t *maskWordCursor;
   GraphicsTextureLogicalSize logicalSize;
-  
+
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
-  if ((uint32_t)bandIndex < 25) {
-    bandBytesOrBlocksLeft = logicalSize.logicalWidthPixels * 15;
-    if (reverseRows == 0) {
-      bandRow = bandIndex - 1;
-      if (bandRow < 0) {
-        return;
+  if ((uint32_t)bandIndex >= 25) {
+    return;
+  }
+  bandBytes = logicalSize.logicalWidthPixels * 15;
+  if (reverseRows == 0) {
+    bandRow = bandIndex - 1;
+    if (bandRow < 0) {
+      return;
+    }
+  }
+  else {
+    bandRow = 24 - bandIndex;
+  }
+  maskWordCursor = (uint32_t *)(maskRuntime->maskPixels + bandRow * bandBytes);
+  /* Original quirk: a do-while, so a band of fewer than 16 bytes wraps the counter to 2^32 steps */
+  blocksLeft = bandBytes >> 4;
+  do {
+    *maskWordCursor = *maskWordCursor | ARGB8888_CHANNEL_ONES;
+    maskWordCursor[1] = maskWordCursor[1] | ARGB8888_CHANNEL_ONES;
+    maskWordCursor[2] = maskWordCursor[2] | ARGB8888_CHANNEL_ONES;
+    maskWordCursor[3] = maskWordCursor[3] | ARGB8888_CHANNEL_ONES;
+    maskWordCursor = maskWordCursor + 4;
+    blocksLeft--;
+  } while (blocksLeft != 0);
+}
+
+
+/* Exchanges two whole 0x20-byte vertices. */
+static void SoftwareRenderer_SwapVertices(GraphicsPrimitiveVertexRaw *first,GraphicsPrimitiveVertexRaw *second)
+{
+  GraphicsPrimitiveVertexRaw saved;
+
+  saved = *first;
+  *first = *second;
+  *second = saved;
+}
+
+/* Sorts the three vertices of a packet by screenY (ascending; the comparisons decide ties exactly as the
+   original's branch tree), with one swap or one three-way rotation. */
+static void SoftwareRenderer_SortVerticesByScreenY(GraphicsPrimitiveVertexRaw *vertices)
+{
+  int screenY0;
+  int screenY1;
+  int screenY2;
+  GraphicsPrimitiveVertexRaw saved;
+
+  screenY0 = vertices[0].screenY;
+  screenY1 = vertices[1].screenY;
+  screenY2 = vertices[2].screenY;
+  if (screenY1 < screenY0) {
+    if (screenY1 <= screenY2) {
+      if (screenY2 < screenY0) {
+        /* y1 <= y2 < y0: new order 1, 2, 0 */
+        saved = vertices[1];
+        vertices[1] = vertices[2];
+        vertices[2] = vertices[0];
+        vertices[0] = saved;
+      }
+      else {
+        SoftwareRenderer_SwapVertices(&vertices[1], &vertices[0]);
       }
     }
     else {
-      bandRow = 24 - bandIndex;
+      SoftwareRenderer_SwapVertices(&vertices[0], &vertices[2]);
     }
-    maskWordCursor = (uint32_t *)(maskRuntime->maskPixels + bandRow * bandBytesOrBlocksLeft);
-    bandBytesOrBlocksLeft = bandBytesOrBlocksLeft >> 4;
-    do {
-      *maskWordCursor = *maskWordCursor | ARGB8888_CHANNEL_ONES;
-      maskWordCursor[1] = maskWordCursor[1] | ARGB8888_CHANNEL_ONES;
-      maskWordCursor[2] = maskWordCursor[2] | ARGB8888_CHANNEL_ONES;
-      maskWordCursor[3] = maskWordCursor[3] | ARGB8888_CHANNEL_ONES;
-      maskWordCursor = maskWordCursor + 4;
-      bandBytesOrBlocksLeft--;
-    } while (bandBytesOrBlocksLeft != 0);
   }
-  return;
+  else if (screenY2 < screenY0) {
+    /* y2 < y0 <= y1: new order 2, 0, 1 */
+    saved = vertices[2];
+    vertices[2] = vertices[1];
+    vertices[1] = vertices[0];
+    vertices[0] = saved;
+  }
+  else if (screenY2 < screenY1) {
+    SoftwareRenderer_SwapVertices(&vertices[1], &vertices[2]);
+  }
 }
-
 
 /* Address: 0x004FE840.
    Readies one packet for the software raster handlers: sorts the three 0x20-byte vertices by screen Y, snaps
@@ -3429,178 +3439,41 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
 void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
 
 {
-  GraphicsPrimitiveVertexRaw *thirdVertexSlot;
-  GraphicsPrimitiveScreenCoordinate *screenYField;
-  GraphicsPrimitiveDepthFixed *depthField;
-  GraphicsPrimitiveTextureCoordinateFixed *textureCoordField;
-  int screenY0;
-  int screenY1;
-  int screenY2;
-  PackedArgb32 movedColorOrFirstColor;
-  PackedArgb32 savedColorOrSecondColor;
+  GraphicsPrimitiveVertexRaw *vertex;
+  PackedArgb32 firstColor;
+  PackedArgb32 secondColor;
   PackedArgb32 thirdColor;
   GraphicsTextureSetEntry *textureEntryRef;
-  GraphicsPrimitiveScreenCoordinate movedScreenY;
-  GraphicsPrimitiveBackendCoordinate movedBackendCoord0;
-  GraphicsPrimitiveBackendCoordinate movedBackendCoord1;
-  GraphicsPrimitiveDepthFixed movedDepth;
-  GraphicsPrimitiveTextureCoordinateFixed movedTextureU;
-  GraphicsPrimitiveTextureCoordinateFixed movedTextureV;
-  GraphicsPrimitiveScreenCoordinate savedScreenX;
-  GraphicsPrimitiveScreenCoordinate savedScreenY;
-  GraphicsPrimitiveBackendCoordinate savedBackendCoord0;
-  GraphicsPrimitiveBackendCoordinate savedBackendCoord1;
-  GraphicsPrimitiveDepthFixed savedDepth;
-  GraphicsPrimitiveTextureCoordinateFixed savedTextureU;
-  GraphicsPrimitiveTextureCoordinateFixed savedTextureV;
   int32_t depthEpoch;
   uint8_t texelShift;
-  GraphicsPrimitiveVertexRaw *swapTarget;
-  GraphicsPrimitiveVertexRaw *swapSource;
-  GraphicsPrimitiveVertexRaw *rotateSource;
-  
-  screenY0 = packet->vertices[0].screenY;
-  screenY1 = packet->vertices[1].screenY;
-  screenY2 = packet->vertices[2].screenY;
-  rotateSource = packet->vertices + 1;
-  thirdVertexSlot = packet->vertices + 2;
-  swapSource = thirdVertexSlot;
-  if (screenY1 < screenY0) {
-    swapTarget = packet->vertices;
-    if ((screenY1 <= screenY2) &&
-       (swapTarget = packet->vertices + 1, swapSource = packet->vertices,
-       rotateSource = thirdVertexSlot, screenY2 < screenY0))
-    goto rotate;
-  }
-  else {
-    swapTarget = thirdVertexSlot;
-    if (screenY2 < screenY0) {
-rotate:
-      savedScreenX = swapTarget->screenX;
-      savedScreenY = swapTarget->screenY;
-      savedBackendCoord0 = swapTarget->backendCoord0;
-      savedBackendCoord1 = swapTarget->backendCoord1;
-      savedDepth = swapTarget->depth;
-      savedTextureU = swapTarget->textureU;
-      savedTextureV = swapTarget->textureV;
-      savedColorOrSecondColor = swapTarget->diffuseColor;
-      movedScreenY = rotateSource->screenY;
-      movedBackendCoord0 = rotateSource->backendCoord0;
-      movedBackendCoord1 = rotateSource->backendCoord1;
-      movedDepth = rotateSource->depth;
-      movedTextureU = rotateSource->textureU;
-      movedTextureV = rotateSource->textureV;
-      movedColorOrFirstColor = rotateSource->diffuseColor;
-      swapTarget->screenX = rotateSource->screenX;
-      swapTarget->screenY = movedScreenY;
-      swapTarget->backendCoord0 = movedBackendCoord0;
-      swapTarget->backendCoord1 = movedBackendCoord1;
-      swapTarget->depth = movedDepth;
-      swapTarget->textureU = movedTextureU;
-      swapTarget->textureV = movedTextureV;
-      swapTarget->diffuseColor = movedColorOrFirstColor;
-      movedScreenY = packet->vertices[0].screenY;
-      movedBackendCoord0 = packet->vertices[0].backendCoord0;
-      movedBackendCoord1 = packet->vertices[0].backendCoord1;
-      movedDepth = packet->vertices[0].depth;
-      movedTextureU = packet->vertices[0].textureU;
-      movedTextureV = packet->vertices[0].textureV;
-      movedColorOrFirstColor = packet->vertices[0].diffuseColor;
-      rotateSource->screenX = packet->vertices[0].screenX;
-      rotateSource->screenY = movedScreenY;
-      rotateSource->backendCoord0 = movedBackendCoord0;
-      rotateSource->backendCoord1 = movedBackendCoord1;
-      rotateSource->depth = movedDepth;
-      rotateSource->textureU = movedTextureU;
-      rotateSource->textureV = movedTextureV;
-      rotateSource->diffuseColor = movedColorOrFirstColor;
-      packet->vertices[0].screenX = savedScreenX;
-      packet->vertices[0].screenY = savedScreenY;
-      packet->vertices[0].backendCoord0 = savedBackendCoord0;
-      packet->vertices[0].backendCoord1 = savedBackendCoord1;
-      packet->vertices[0].depth = savedDepth;
-      packet->vertices[0].textureU = savedTextureU;
-      packet->vertices[0].textureV = savedTextureV;
-      packet->vertices[0].diffuseColor = savedColorOrSecondColor;
-      goto quantize;
-    }
-    swapTarget = rotateSource;
-    if (screenY1 <= screenY2)
-    goto quantize;
-  }
-  savedScreenX = swapTarget->screenX;
-  savedScreenY = swapTarget->screenY;
-  savedBackendCoord0 = swapTarget->backendCoord0;
-  savedBackendCoord1 = swapTarget->backendCoord1;
-  savedDepth = swapTarget->depth;
-  savedTextureU = swapTarget->textureU;
-  savedTextureV = swapTarget->textureV;
-  savedColorOrSecondColor = swapTarget->diffuseColor;
-  movedScreenY = swapSource->screenY;
-  movedBackendCoord0 = swapSource->backendCoord0;
-  movedBackendCoord1 = swapSource->backendCoord1;
-  movedDepth = swapSource->depth;
-  movedTextureU = swapSource->textureU;
-  movedTextureV = swapSource->textureV;
-  movedColorOrFirstColor = swapSource->diffuseColor;
-  swapTarget->screenX = swapSource->screenX;
-  swapTarget->screenY = movedScreenY;
-  swapTarget->backendCoord0 = movedBackendCoord0;
-  swapTarget->backendCoord1 = movedBackendCoord1;
-  swapTarget->depth = movedDepth;
-  swapTarget->textureU = movedTextureU;
-  swapTarget->textureV = movedTextureV;
-  swapTarget->diffuseColor = movedColorOrFirstColor;
-  swapSource->screenX = savedScreenX;
-  swapSource->screenY = savedScreenY;
-  swapSource->backendCoord0 = savedBackendCoord0;
-  swapSource->backendCoord1 = savedBackendCoord1;
-  swapSource->depth = savedDepth;
-  swapSource->textureU = savedTextureU;
-  swapSource->textureV = savedTextureV;
-  swapSource->diffuseColor = savedColorOrSecondColor;
-quantize:
+  int i;
+
+  SoftwareRenderer_SortVerticesByScreenY(packet->vertices);
   depthEpoch = g_SoftwareDepthEpoch;
-  movedColorOrFirstColor = packet->vertices[0].diffuseColor;
-  savedColorOrSecondColor = packet->vertices[1].diffuseColor;
+  firstColor = packet->vertices[0].diffuseColor;
+  secondColor = packet->vertices[1].diffuseColor;
   thirdColor = packet->vertices[2].diffuseColor;
-  /* 0xfffff000 drops the Q12 fraction: whole pixels */
-  packet->vertices[0].screenX = packet->vertices[0].screenX & ~(uint32_t)Q12_FRACTION_MASK;
-  screenYField = &packet->vertices[0].screenY;
-  *screenYField = *screenYField & ~(uint32_t)Q12_FRACTION_MASK;
-  depthField = &packet->vertices[0].depth;
-  *depthField = *depthField + depthEpoch;
-  packet->vertices[1].screenX = packet->vertices[1].screenX & ~(uint32_t)Q12_FRACTION_MASK;
-  screenYField = &packet->vertices[1].screenY;
-  *screenYField = *screenYField & ~(uint32_t)Q12_FRACTION_MASK;
-  depthField = &packet->vertices[1].depth;
-  *depthField = *depthField + depthEpoch;
-  packet->vertices[2].screenX = packet->vertices[2].screenX & ~(uint32_t)Q12_FRACTION_MASK;
-  screenYField = &packet->vertices[2].screenY;
-  *screenYField = *screenYField & ~(uint32_t)Q12_FRACTION_MASK;
-  depthField = &packet->vertices[2].depth;
-  *depthField = *depthField + depthEpoch;
+  for (i = 0; i < 3; i++) {
+    vertex = &packet->vertices[i];
+    /* 0xfffff000 drops the Q12 fraction: whole pixels */
+    vertex->screenX = vertex->screenX & ~(uint32_t)Q12_FRACTION_MASK;
+    vertex->screenY = vertex->screenY & ~(uint32_t)Q12_FRACTION_MASK;
+    vertex->depth = vertex->depth + depthEpoch;
+  }
   packet->renderFlags = packet->renderFlags & ~GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED;
-  if ((movedColorOrFirstColor == savedColorOrSecondColor) && (movedColorOrFirstColor == thirdColor)) {
+  if ((firstColor == secondColor) && (firstColor == thirdColor)) {
     packet->renderFlags = packet->renderFlags | GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED;
   }
   if ((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) != 0) {
     textureEntryRef = packet->textureEntry;
     texelShift = 8 - (char)textureEntryRef->widthLog2;
-    textureCoordField = &packet->vertices[0].textureU;
-    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
-    textureCoordField = &packet->vertices[1].textureU;
-    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
-    textureCoordField = &packet->vertices[2].textureU;
-    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
+    for (i = 0; i < 3; i++) {
+      packet->vertices[i].textureU = packet->vertices[i].textureU >> (texelShift & SHIFT_COUNT_MASK);
+    }
     texelShift = 8 - (char)textureEntryRef->heightLog2;
-    textureCoordField = &packet->vertices[0].textureV;
-    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
-    textureCoordField = &packet->vertices[1].textureV;
-    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
-    textureCoordField = &packet->vertices[2].textureV;
-    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
+    for (i = 0; i < 3; i++) {
+      packet->vertices[i].textureV = packet->vertices[i].textureV >> (texelShift & SHIFT_COUNT_MASK);
+    }
   }
-  return;
 }
 

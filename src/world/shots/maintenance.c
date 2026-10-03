@@ -52,45 +52,45 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
 {
   PackedArgb32 nodeTintArgb;
   PackedArgb32 definitionTintArgb;
-  FieldGridRegionMask primaryOccupancyMask;
-  uint32_t probeOccupancyMask;
+  FieldGridRegionMask occupancyMask;
+  uint32_t beamMiddleOccupancyMask;
+  uint32_t beamEndOccupancyMask;
   uint64_t tintProductWords;
-  FixedDirection probeOffset;
+  FixedDirection beamMiddleOffset;
+  FixedDirection beamEndOffset;
   TerrainOccupancyResolvedMasks resolvedMasks;
-  uint32_t combinedOccupancyMask;
   ShotRuntimeSlot *shotRuntime;
-  
+
   shotRuntime = modelNode->shotRuntime;
-  primaryOccupancyMask =
+  occupancyMask =
        TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
                  (Q12_ONE,modelNode->worldTransform.translation.y,
                   modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
   if ((shotRuntime->definitionOrSavedId.definition->trajectoryMode ==
        SHOT_TRAJECTORY_DIRECT_LINE) && (modelNode->renderDepthBiasOrState != 0)) {
     /* renderDepthBiasOrState holds the beam length (see the primaryUpdate callback) */
-    probeOffset = FixedMath_DirectionFromAnglesScaled
-                       (modelNode->modelPayload.worldRotationAngle1,
-                        modelNode->modelPayload.worldRotationAngle0,
-                        modelNode->renderDepthBiasOrState >> 1);
-    probeOccupancyMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                      (Q12_ONE,probeOffset.y + modelNode->worldTransform.translation.y,
-                       probeOffset.x + modelNode->worldTransform.translation.x,
+    beamMiddleOffset = FixedMath_DirectionFromAnglesScaled
+                            (modelNode->modelPayload.worldRotationAngle1,
+                             modelNode->modelPayload.worldRotationAngle0,
+                             modelNode->renderDepthBiasOrState >> 1);
+    beamMiddleOccupancyMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+                      (Q12_ONE,beamMiddleOffset.y + modelNode->worldTransform.translation.y,
+                       beamMiddleOffset.x + modelNode->worldTransform.translation.x,
                        worldRuntime->fieldGrid);
-    combinedOccupancyMask = primaryOccupancyMask | probeOccupancyMask;
-    probeOffset = FixedMath_DirectionFromAnglesScaled
-                       (modelNode->modelPayload.worldRotationAngle1,
-                        modelNode->modelPayload.worldRotationAngle0,
-                        modelNode->renderDepthBiasOrState);
-    probeOccupancyMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                      (Q12_ONE,probeOffset.y + modelNode->worldTransform.translation.y,
-                       probeOffset.x + modelNode->worldTransform.translation.x,
+    beamEndOffset = FixedMath_DirectionFromAnglesScaled
+                         (modelNode->modelPayload.worldRotationAngle1,
+                          modelNode->modelPayload.worldRotationAngle0,
+                          modelNode->renderDepthBiasOrState);
+    beamEndOccupancyMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+                      (Q12_ONE,beamEndOffset.y + modelNode->worldTransform.translation.y,
+                       beamEndOffset.x + modelNode->worldTransform.translation.x,
                        worldRuntime->fieldGrid);
-    primaryOccupancyMask = probeOccupancyMask | combinedOccupancyMask;
+    occupancyMask = occupancyMask | beamMiddleOccupancyMask | beamEndOccupancyMask;
   }
   modelNode->runtimeFlags =
        modelNode->runtimeFlags & ~(TERRAIN_OCCUPANCY_FLAG_PRESENT | TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE);
   resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
-                     (modelNode->runtimeFlags,0,primaryOccupancyMask,
+                     (modelNode->runtimeFlags,0,occupancyMask,
                       (char)worldRuntime->activeFactionRuntimeIndex);
   modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
   shotRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
@@ -129,28 +129,27 @@ void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
   GraphicsFixedVec3 *worldPosition;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
-  bool cellMasked;
   ShotRuntimeSlot *shotRuntime;
-  
+
   shotRuntime = modelNode->shotRuntime;
-  if ((worldRuntime->dwordArray != NULL) &&
-     (soundSlotIndex = shotRuntime->definitionOrSavedId.definition->soundSlotIndex,
-     soundSlotIndex < worldRuntime->dwordArrayCount)) {
-    slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
-    worldPosition = &modelNode->worldTransform.translation;
-    if (slot != NULL) {
-      cellMasked = TerrainGrid_TestProjectedCellMaskBits01
-                        (modelNode->worldTransform.translation.y,worldPosition->x,worldRuntime);
-      if (!cellMasked) {
-        SpatialSound_UpdateDesiredPositionedGains
-                  (shotRuntime->definitionOrSavedId.definition->
-                   positionedSoundMaximumDistanceQ12,
-                   shotRuntime->definitionOrSavedId.definition->positionedSoundGainQ15,
-                   worldPosition,slot);
-      }
-    }
+  if (worldRuntime->dwordArray == NULL) {
+    return;
   }
-  return;
+  soundSlotIndex = shotRuntime->definitionOrSavedId.definition->soundSlotIndex;
+  if (soundSlotIndex >= worldRuntime->dwordArrayCount) {
+    return;
+  }
+  slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+  worldPosition = &modelNode->worldTransform.translation;
+  if (slot == NULL) {
+    return;
+  }
+  if (TerrainGrid_TestProjectedCellMaskBits01(worldPosition->y,worldPosition->x,worldRuntime)) {
+    return;
+  }
+  SpatialSound_UpdateDesiredPositionedGains
+            (shotRuntime->definitionOrSavedId.definition->positionedSoundMaximumDistanceQ12,
+             shotRuntime->definitionOrSavedId.definition->positionedSoundGainQ15,worldPosition,slot);
 }
 
 

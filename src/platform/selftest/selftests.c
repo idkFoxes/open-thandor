@@ -380,6 +380,59 @@ static void Thandor_SelfTestMovieEncode(void)
     Thandor_Log("movieenc: hash %08X", hash);
 }
 
+/* OPEN_THANDOR_SELFTEST=trianglesetup runs SoftwareRenderer_PrepareTrianglePacket (vertex sort by screen Y,
+   pixel snapping, depth epoch, texture coordinate scaling) on 20000 random triangles - a quarter of them with
+   equal Y values, so the tie cases of the sort are hit - and logs an FNV-1a hash over every prepared packet.
+   Run it with two builds to check that a rewrite of the setup kept its output. */
+static uint32_t SelfTest_TriangleRandom(uint32_t *seed)
+{
+    *seed = *seed * 1103515245u + 12345u;
+    return *seed >> 8;
+}
+
+static void Thandor_SelfTestTriangleSetup(void)
+{
+    static GraphicsPrimitivePacket packet;
+    uint32_t textureEntry[8];
+    uint32_t seed = 4711;
+    uint32_t hash = 2166136261u;
+    uint32_t caseIndex;
+    uint32_t i;
+    int vertexIndex;
+    for (caseIndex = 0; caseIndex < 20000; caseIndex++) {
+        memset(textureEntry, 0, sizeof textureEntry);
+        textureEntry[1] = 3 + SelfTest_TriangleRandom(&seed) % 6;
+        textureEntry[2] = 3 + SelfTest_TriangleRandom(&seed) % 6;
+        memset(&packet, 0, sizeof packet);
+        for (vertexIndex = 0; vertexIndex < 3; vertexIndex++) {
+            GraphicsPrimitiveVertexRaw *v = &packet.vertices[vertexIndex];
+            int y = (int)(SelfTest_TriangleRandom(&seed) % 900) - 100;
+            if ((caseIndex & 3) == 0 && vertexIndex > 0 && (SelfTest_TriangleRandom(&seed) & 1) != 0) {
+                v->screenY = packet.vertices[vertexIndex - 1].screenY; /* tie with the previous vertex */
+            }
+            else {
+                v->screenY = (y << 12) | (int)(SelfTest_TriangleRandom(&seed) & 0xfff);
+            }
+            v->screenX = (((int)(SelfTest_TriangleRandom(&seed) % 1500) - 200) << 12) |
+                         (int)(SelfTest_TriangleRandom(&seed) & 0xfff);
+            v->depth = 0x20000000 + (int)(SelfTest_TriangleRandom(&seed) % 0x400000u) * 256;
+            v->textureU = (int)(SelfTest_TriangleRandom(&seed) % 0x200000u) - 0x80000;
+            v->textureV = (int)(SelfTest_TriangleRandom(&seed) % 0x200000u) - 0x80000;
+            v->diffuseColor = SelfTest_TriangleRandom(&seed) * 257u;
+        }
+        packet.modulationColor = SelfTest_TriangleRandom(&seed);
+        packet.textureEntry = (GraphicsTextureSetEntry *)textureEntry;
+        packet.renderFlags = (GraphicsPrimitiveDispatchFlags)((SelfTest_TriangleRandom(&seed) % 32) << 12);
+        g_SoftwareDepthEpoch = (int32_t)(SelfTest_TriangleRandom(&seed) % 0x1000000u);
+        SoftwareRenderer_PrepareTrianglePacket(&packet);
+        packet.textureEntry = NULL; /* the pointer differs between runs */
+        for (i = 0; i < sizeof packet; i++) {
+            hash = (hash ^ ((const uint8_t *)&packet)[i]) * 16777619u;
+        }
+    }
+    Thandor_Log("trianglesetup: 20000 triangles, hash %08X", hash);
+}
+
 static void Thandor_SelfTestScanAddresses(void)
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
@@ -586,6 +639,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "pcx") == 0) {
         Thandor_SelfTestPcx();
+        return 1;
+    }
+    if (name != NULL && strcmp(name, "trianglesetup") == 0) {
+        Thandor_SelfTestTriangleSetup();
         return 1;
     }
     if (name != NULL && strcmp(name, "movieenc") == 0) {

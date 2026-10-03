@@ -25,40 +25,41 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   uint8_t *clampTable;
   uint8_t clampedColorByte;
   uint8_t clampedAlphaByte;
-  uint32_t flagsOrPreviousTint;
+  uint32_t runtimeFlags;
+  uint32_t previousTint;
   int colorIntensity;
   PackedArgb32 tintArgb;
   int alphaIntensity;
-  
+
   colorIntensity = 255;
   alphaIntensity = 255;
-  flagsOrPreviousTint = modelNodeRuntime->runtimeFlags;
-  if ((flagsOrPreviousTint & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) {
+  runtimeFlags = modelNodeRuntime->runtimeFlags;
+  if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) {
     colorIntensity = 0;
     alphaIntensity = 0;
-    if ((flagsOrPreviousTint & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0) {
+    if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0) {
       colorIntensity = 255;
       alphaIntensity = 0;
-      if ((flagsOrPreviousTint & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
+      if ((runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
         colorIntensity = 135;
         alphaIntensity = 255;
       }
     }
   }
-  if ((flagsOrPreviousTint & MODEL_NODE_FLAG_FORCE_TRANSPARENT) != 0) {
+  if ((runtimeFlags & MODEL_NODE_FLAG_FORCE_TRANSPARENT) != 0) {
     alphaIntensity = 0;
   }
-  flagsOrPreviousTint = modelNodeRuntime->tintArgb;
-  /* The clamp table is 64-KiB aligned: the original puts the target intensity in AL/BL and the previous
-     tint byte in AH/BH, i.e. indexes it with (previous << 8) | target. */
+  previousTint = modelNodeRuntime->tintArgb;
+  /* The clamp table is 64-KiB aligned: the target intensity is the low index byte and the previous tint
+     byte the high one, i.e. it is indexed with (previous << 8) | target. */
   clampTable = (uint8_t *)g_GraphicsIntensityClampTableBase;
-  clampedColorByte = clampTable[((flagsOrPreviousTint >> 16) & 0xff) << 8 | (uint32_t)colorIntensity];
-  clampedAlphaByte = clampTable[(flagsOrPreviousTint >> 24) << 8 | (uint32_t)alphaIntensity];
+  clampedColorByte = clampTable[((previousTint >> 16) & 0xff) << 8 | (uint32_t)colorIntensity];
+  clampedAlphaByte = clampTable[(previousTint >> 24) << 8 | (uint32_t)alphaIntensity];
   tintArgb = (uint32_t)clampedAlphaByte << 24 | (uint32_t)clampedColorByte << 16 | (uint32_t)clampedColorByte << 8 |
              (uint32_t)clampedColorByte;
   /* The original compares with the previous tint shifted right by 16 (CMP EDX,ECX at 0x004BD27F), so the new
      tint is applied on practically every call, not only when it changed. */
-  if (tintArgb != flagsOrPreviousTint >> 16) {
+  if (tintArgb != previousTint >> 16) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNodeRuntime);
   }
   return;
@@ -127,7 +128,8 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
 {
   ModelResource *resourceView;
   uint32_t childrenRemaining;
-  int vertexCountOrChildIndex;
+  int verticesRemaining;
+  int childIndex;
   GraphicsFixedVec3 *point;
   uint8_t *geometryRecord;
   ModelPackedGeometryRecordCount geometryRecordsRemaining;
@@ -139,8 +141,7 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
     for (geometryRecordsRemaining = resourceView->packedGeometryRecordCount; geometryRecordsRemaining != 0;
         geometryRecordsRemaining--) {
       point = (GraphicsFixedVec3 *)(geometryRecord + 32);
-      for (vertexCountOrChildIndex = *(int *)(geometryRecord + 8); vertexCountOrChildIndex != 0;
-          vertexCountOrChildIndex--) {
+      for (verticesRemaining = *(int *)(geometryRecord + 8); verticesRemaining != 0; verticesRemaining--) {
         FixedTransform_ApplyPoint
                   ((GraphicsFixedVec3 *)&g_ModelBoundsTransformedPointX,point,
                    &modelNode->worldTransform);
@@ -167,12 +168,12 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
       geometryRecord = geometryRecord + *(int *)geometryRecord;
     }
   }
-  vertexCountOrChildIndex = 0;
+  childIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNode->childNodes[vertexCountOrChildIndex] != NULL) {
-      ModelNodeRuntime_AccumulateTransformedBoundsRecursive(modelNode->childNodes[vertexCountOrChildIndex]);
+    if (modelNode->childNodes[childIndex] != NULL) {
+      ModelNodeRuntime_AccumulateTransformedBoundsRecursive(modelNode->childNodes[childIndex]);
     }
-    vertexCountOrChildIndex++;
+    childIndex++;
   }
   return;
 }
@@ -339,6 +340,85 @@ ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
 }
 
 
+/* Transforms one bounds corner by g_GraphicsTransformScratchMatrix3x4. Returns its clip bit when it lies behind
+   the near plane (z < g_ProjectionScaleFixed); otherwise stores its screen point in
+   g_ModelProjectedBoundsCornerScratch8[cornerIndex] and returns 0. */
+static uint8_t ModelBounds_ProjectCorner
+          (int cornerIndex,GraphicsWorldCoordinateQ12 x,GraphicsWorldCoordinateQ12 y,GraphicsWorldCoordinateQ12 z)
+
+{
+  GraphicsProjectedPointPair projectedCorner;
+
+  g_GraphicsTransformInputScratchVec3.x = x;
+  g_GraphicsTransformInputScratchVec3.y = y;
+  g_GraphicsTransformInputScratchVec3.z = z;
+  FixedTransform_ApplyPoint
+            (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
+             &g_GraphicsTransformScratchMatrix3x4);
+  if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
+    return (uint8_t)MODEL_BOUNDS_CORNER_BIT(cornerIndex);
+  }
+  projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
+  g_ModelProjectedBoundsCornerScratch8[cornerIndex].x = projectedCorner.projectedX >> Q12_SHIFT;
+  g_ModelProjectedBoundsCornerScratch8[cornerIndex].y = projectedCorner.projectedY >> Q12_SHIFT;
+  return 0;
+}
+
+
+/* Projects the eight corners of the resource's local bounds; corner i = (x i&1, y i&2, z i&4). Returns the mask
+   of corners behind the near plane (bit i = corner i). */
+static uint8_t ModelResource_ProjectBoundsCorners(ModelResource *resourceView)
+
+{
+  GraphicsWorldCoordinateQ12 x0 = resourceView->localBoundsX0Q12;
+  GraphicsWorldCoordinateQ12 x1 = resourceView->localBoundsX1Q12;
+  GraphicsWorldCoordinateQ12 y0 = resourceView->localBoundsY0Q12;
+  GraphicsWorldCoordinateQ12 y1 = resourceView->localBoundsY1Q12;
+  GraphicsWorldCoordinateQ12 z0 = resourceView->localBoundsZ0Q12;
+  GraphicsWorldCoordinateQ12 z1 = resourceView->localBoundsZ1Q12;
+  uint8_t clippedCornerMask;
+
+  clippedCornerMask = ModelBounds_ProjectCorner(0,x0,y0,z0);
+  clippedCornerMask |= ModelBounds_ProjectCorner(1,x1,y0,z0);
+  clippedCornerMask |= ModelBounds_ProjectCorner(2,x0,y1,z0);
+  clippedCornerMask |= ModelBounds_ProjectCorner(3,x1,y1,z0);
+  clippedCornerMask |= ModelBounds_ProjectCorner(4,x0,y0,z1);
+  clippedCornerMask |= ModelBounds_ProjectCorner(5,x1,y0,z1);
+  clippedCornerMask |= ModelBounds_ProjectCorner(6,x0,y1,z1);
+  clippedCornerMask |= ModelBounds_ProjectCorner(7,x1,y1,z1);
+  return clippedCornerMask;
+}
+
+
+/* The twelve triangles of the bounds box faces, in the order the original tests them. */
+static const uint8_t g_ModelBoundsHitTriangleCorners[12][3] = {
+  {2,1,0},{2,1,3},{6,5,4},{6,5,7},{2,4,0},{2,6,4},
+  {3,5,1},{3,7,5},{4,1,0},{1,5,4},{3,6,2},{3,6,7}
+};
+
+
+/* True when the pointer lies inside one of the projected box triangles that has no corner behind the near
+   plane; stops at the first hit. */
+static bool ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_t clippedCornerMask)
+
+{
+  int triangleIndex;
+  const uint8_t *corners;
+
+  for (triangleIndex = 0; triangleIndex < 12; triangleIndex++) {
+    corners = g_ModelBoundsHitTriangleCorners[triangleIndex];
+    if (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(corners[0],corners[1],corners[2])) == 0) &&
+        GraphicsProjectedPoint_IsInsideTriangle
+                  (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + corners[0],
+                   g_ModelProjectedBoundsCornerScratch8 + corners[1],
+                   g_ModelProjectedBoundsCornerScratch8 + corners[2])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 /* Address: 0x0050A7A0.
    Pointer hit test of a model hierarchy (FrontendModelPointerContext_FindBestEligibleModelHitTarget): projects the
    eight corners of the node's local bounding box and tests the pointer against the twelve triangles of its faces
@@ -353,197 +433,27 @@ bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
 
 {
   ModelResource *resourceView;
-  GraphicsWorldCoordinateQ12 boundsX1;
   ModelRuntimeNode *childNode;
   uint8_t clippedCornerMask;
-  GraphicsFixedMatrix3x4 *transformA;
   uint32_t childrenRemaining;
-  int childByteOffset;
-  bool cornerVisibleOrHit;
-  GraphicsProjectedPointPair projectedCorner;
+  int childIndex;
 
   resourceView = modelNode->modelPayload.modelResource;
-  transformA = &modelNode->worldTransform;
   if ((resourceView->boundingRadiusQ12 != 0) &&
      ((resourceView->hitTestFlags20C & MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST) == 0)) {
     FixedTransform_Compose
-              (&g_GraphicsTransformScratchMatrix3x4,transformA,&g_ViewProjectionMatrixFixed);
-    /* corner i = (x i&1, y i&2, z i&4) of the bounds; bit i of clippedCornerMask: corner i behind the near
-       plane (z < g_ProjectionScaleFixed), else g_ModelProjectedBoundsCornerScratch8[i] holds its screen point */
-    g_GraphicsTransformInputScratchVec3.x = resourceView->localBoundsX0Q12;
-    boundsX1 = resourceView->localBoundsX1Q12;
-    g_GraphicsTransformInputScratchVec3.y = resourceView->localBoundsY0Q12;
-    g_GraphicsTransformInputScratchVec3.z = resourceView->localBoundsZ0Q12;
-    FixedTransform_ApplyPoint
-              (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
-               &g_GraphicsTransformScratchMatrix3x4);
-    cornerVisibleOrHit = (int)g_ProjectionScaleFixed <= g_GraphicsTransformOutputScratchVec3.z;
-    if (cornerVisibleOrHit) {
-      projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[0].x = projectedCorner.projectedX >> Q12_SHIFT;
-      g_ModelProjectedBoundsCornerScratch8[0].y = projectedCorner.projectedY >> Q12_SHIFT;
-    }
-    clippedCornerMask = !cornerVisibleOrHit;
-    g_GraphicsTransformInputScratchVec3.x = boundsX1;
-    FixedTransform_ApplyPoint
-              (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
-               &g_GraphicsTransformScratchMatrix3x4);
-    if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(1);
-    }
-    else {
-      projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[1].x = projectedCorner.projectedX >> Q12_SHIFT;
-      g_ModelProjectedBoundsCornerScratch8[1].y = projectedCorner.projectedY >> Q12_SHIFT;
-    }
-    g_GraphicsTransformInputScratchVec3.x = resourceView->localBoundsX0Q12;
-    g_GraphicsTransformInputScratchVec3.y = resourceView->localBoundsY1Q12;
-    FixedTransform_ApplyPoint
-              (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
-               &g_GraphicsTransformScratchMatrix3x4);
-    if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(2);
-    }
-    else {
-      projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[2].x = projectedCorner.projectedX >> Q12_SHIFT;
-      g_ModelProjectedBoundsCornerScratch8[2].y = projectedCorner.projectedY >> Q12_SHIFT;
-    }
-    g_GraphicsTransformInputScratchVec3.x = boundsX1;
-    FixedTransform_ApplyPoint
-              (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
-               &g_GraphicsTransformScratchMatrix3x4);
-    if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(3);
-    }
-    else {
-      projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[3].x = projectedCorner.projectedX >> Q12_SHIFT;
-      g_ModelProjectedBoundsCornerScratch8[3].y = projectedCorner.projectedY >> Q12_SHIFT;
-    }
-    g_GraphicsTransformInputScratchVec3.x = resourceView->localBoundsX0Q12;
-    g_GraphicsTransformInputScratchVec3.y = resourceView->localBoundsY0Q12;
-    g_GraphicsTransformInputScratchVec3.z = resourceView->localBoundsZ1Q12;
-    FixedTransform_ApplyPoint
-              (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
-               &g_GraphicsTransformScratchMatrix3x4);
-    if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(4);
-    }
-    else {
-      projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[4].x = projectedCorner.projectedX >> Q12_SHIFT;
-      g_ModelProjectedBoundsCornerScratch8[4].y = projectedCorner.projectedY >> Q12_SHIFT;
-    }
-    g_GraphicsTransformInputScratchVec3.x = boundsX1;
-    FixedTransform_ApplyPoint
-              (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
-               &g_GraphicsTransformScratchMatrix3x4);
-    if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(5);
-    }
-    else {
-      projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[5].x = projectedCorner.projectedX >> Q12_SHIFT;
-      g_ModelProjectedBoundsCornerScratch8[5].y = projectedCorner.projectedY >> Q12_SHIFT;
-    }
-    transformA = (GraphicsFixedMatrix3x4 *)resourceView->localBoundsX0Q12;
-    g_GraphicsTransformInputScratchVec3.y = resourceView->localBoundsY1Q12;
-    g_GraphicsTransformInputScratchVec3.x = (GraphicsWorldCoordinateQ12)transformA;
-    FixedTransform_ApplyPoint
-              (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
-               &g_GraphicsTransformScratchMatrix3x4);
-    if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(6);
-    }
-    else {
-      projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      transformA = (GraphicsFixedMatrix3x4 *)(projectedCorner.projectedX >> Q12_SHIFT);
-      g_ModelProjectedBoundsCornerScratch8[6].y = projectedCorner.projectedY >> Q12_SHIFT;
-      g_ModelProjectedBoundsCornerScratch8[6].x = (GraphicsProjectedCoordinate)transformA;
-    }
-    g_GraphicsTransformInputScratchVec3.x = boundsX1;
-    FixedTransform_ApplyPoint
-              (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
-               &g_GraphicsTransformScratchMatrix3x4);
-    if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(7);
-    }
-    else {
-      projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      transformA = (GraphicsFixedMatrix3x4 *)(projectedCorner.projectedX >> Q12_SHIFT);
-      g_ModelProjectedBoundsCornerScratch8[7].y = projectedCorner.projectedY >> Q12_SHIFT;
-      g_ModelProjectedBoundsCornerScratch8[7].x = (GraphicsProjectedCoordinate)transformA;
-    }
-    if (((((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(2,1,0)) == 0) &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
-                               g_ModelProjectedBoundsCornerScratch8 + 1,
-                               g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
-          (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(2,1,3)) == 0 &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
-                               g_ModelProjectedBoundsCornerScratch8 + 1,
-                               g_ModelProjectedBoundsCornerScratch8 + 3), cornerVisibleOrHit)))) ||
-         (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(6,5,4)) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                             (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 6,
-                              g_ModelProjectedBoundsCornerScratch8 + 5,
-                              g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))) ||
-        (((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(6,5,7)) == 0 &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 6,
-                               g_ModelProjectedBoundsCornerScratch8 + 5,
-                               g_ModelProjectedBoundsCornerScratch8 + 7), cornerVisibleOrHit)) ||
-          ((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(2,4,0)) == 0 &&
-            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
-                                g_ModelProjectedBoundsCornerScratch8 + 4,
-                                g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
-           (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(2,6,4)) == 0 &&
-            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
-                                g_ModelProjectedBoundsCornerScratch8 + 6,
-                                g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))))) ||
-         ((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(3,5,1)) == 0 &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
-                               g_ModelProjectedBoundsCornerScratch8 + 5,
-                               g_ModelProjectedBoundsCornerScratch8 + 1), cornerVisibleOrHit)) ||
-          (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(3,7,5)) == 0 &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
-                               g_ModelProjectedBoundsCornerScratch8 + 7,
-                               g_ModelProjectedBoundsCornerScratch8 + 5), cornerVisibleOrHit)))))))) ||
-       (((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(4,1,0)) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                             (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 4,
-                              g_ModelProjectedBoundsCornerScratch8 + 1,
-                              g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
-         (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(1,5,4)) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                             (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 1,
-                              g_ModelProjectedBoundsCornerScratch8 + 5,
-                              g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))) ||
-        ((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(3,6,2)) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                             (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
-                              g_ModelProjectedBoundsCornerScratch8 + 6,
-                              g_ModelProjectedBoundsCornerScratch8 + 2), cornerVisibleOrHit)) ||
-         (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(3,6,7)) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
-                             (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
-                              g_ModelProjectedBoundsCornerScratch8 + 6,
-                              g_ModelProjectedBoundsCornerScratch8 + 7), cornerVisibleOrHit)))))))) {
+              (&g_GraphicsTransformScratchMatrix3x4,&modelNode->worldTransform,&g_ViewProjectionMatrixFixed);
+    clippedCornerMask = ModelResource_ProjectBoundsCorners(resourceView);
+    if (ModelBounds_PointerHitsProjectedBox(pointerY,pointerX,clippedCornerMask)) {
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER) != 0) {
         *outDistanceQ12 =
-             FixedMath_Length3(((resourceView->localBoundsZ0Q12 + resourceView->localBoundsZ1Q12 >> 1) +
+             FixedMath_Length3((((resourceView->localBoundsZ0Q12 + resourceView->localBoundsZ1Q12) >> 1) +
                                modelNode->worldTransform.translation.z) -
                                context->hitReferenceWorldZQ12,
-                               ((resourceView->localBoundsY0Q12 + resourceView->localBoundsY1Q12 >> 1) +
+                               (((resourceView->localBoundsY0Q12 + resourceView->localBoundsY1Q12) >> 1) +
                                modelNode->worldTransform.translation.y) -
                                context->hitReferenceWorldYQ12,
-                               ((resourceView->localBoundsX0Q12 + resourceView->localBoundsX1Q12 >> 1) +
+                               (((resourceView->localBoundsX0Q12 + resourceView->localBoundsX1Q12) >> 1) +
                                modelNode->worldTransform.translation.x) -
                                context->hitReferenceWorldXQ12);
         return true;
@@ -558,17 +468,17 @@ bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
       return true;
     }
   }
-  childByteOffset = 0;
+  childIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0;
        childrenRemaining = childrenRemaining - 1) {
-    childNode = *(ModelRuntimeNode **)((int)modelNode->childNodes + childByteOffset);
+    childNode = modelNode->childNodes[childIndex];
     if (childNode != NULL) {
       if (ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                          (pointerY,pointerX,childNode,context,outDistanceQ12)) {
         return true;
       }
     }
-    childByteOffset = childByteOffset + 4;
+    childIndex++;
   }
   return false;
 }
@@ -929,21 +839,19 @@ bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransformCursor;
   bool childWalked;
-  AssetRecordByteCount definitionAssetBase;
+  ModelResource *definitionResource;
 
   if ((definitionNode->nodeFlags & 0xf) != 0) {
     return false;
   }
   childCountRemaining = definitionNode->childCount;
-  definitionAssetBase = definitionNode->spriteAssetReference.savedId;
+  definitionResource = definitionNode->spriteAssetReference.modelResource;
   childIndex = 0;
   for (; childCountRemaining != 0; childCountRemaining--) {
     attachmentTransformCursor =
          (ModelAttachmentTransformRecord *)
-         (definitionAssetBase +
-         ((ModelResource *)definitionAssetBase)->packedLookupTableRelativeOffset);
-    for (transformRecordsRemaining =
-             ((ModelResource *)definitionAssetBase)->packedLookupTableEntryCount;
+         ((uint8_t *)definitionResource + definitionResource->packedLookupTableRelativeOffset);
+    for (transformRecordsRemaining = definitionResource->packedLookupTableEntryCount;
         transformRecordsRemaining != 0;
         transformRecordsRemaining--) {
       /* packedKindAndSelector: kind in bits 0..3, child slot index above */
@@ -955,17 +863,19 @@ bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                        (modelRuntime,
                         (MdlSerializedNodeHeader *)
                         definitionNode->childSerializedOffsets[childIndex]);
-        if (!childWalked &&
-           (attachmentSlot = modelRuntime->attachmentCount, attachmentSlot < 6)) {
-          modelRuntime->attachmentCount++;
-          modelRuntime->attachments[attachmentSlot].sourceTransform = attachmentTransformCursor;
+        if (!childWalked) {
+          attachmentSlot = modelRuntime->attachmentCount;
+          if (attachmentSlot < 6) {
+            modelRuntime->attachmentCount++;
+            modelRuntime->attachments[attachmentSlot].sourceTransform = attachmentTransformCursor;
+          }
         }
         break;
       }
       attachmentTransformCursor++;
     }
-    /* The original advances the child index only when an attachment transform matched
-       (DEC EDX before the shared INC EDX when none did). */
+    /* The original advances the child index only when an attachment transform matched (it undoes the shared
+       increment when none did). */
     if (transformRecordsRemaining != 0) {
       childIndex++;
     }
@@ -1414,52 +1324,53 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
 {
   ArmyWeaponDefinitionView *aimDefinition;
   uint32_t pitchAngle;
-  int pitchStepOrRateLimit;
+  int pitchStep;
+  int rateLimit;
   int acceleratedVelocity;
   bool snapToTarget;
-  uint32_t clampedTargetOrRemaining;
+  uint32_t clampedTarget;
 
   pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
   aimDefinition = smoothingState->modelDefinition;
-  clampedTargetOrRemaining = targetPitchAngle16;
+  clampedTarget = targetPitchAngle16;
   if ((int)aimDefinition->maximumPitchAngle < (int)targetPitchAngle16) {
-    clampedTargetOrRemaining = aimDefinition->maximumPitchAngle;
+    clampedTarget = aimDefinition->maximumPitchAngle;
   }
-  if ((int)clampedTargetOrRemaining < (int)aimDefinition->minimumPitchAngle) {
-    clampedTargetOrRemaining = aimDefinition->minimumPitchAngle;
+  if ((int)clampedTarget < (int)aimDefinition->minimumPitchAngle) {
+    clampedTarget = aimDefinition->minimumPitchAngle;
   }
-  pitchStepOrRateLimit = smoothingState->pitchTurnVelocityAngle16 * g_InGameSimulationStepTicks;
+  pitchStep = smoothingState->pitchTurnVelocityAngle16 * g_InGameSimulationStepTicks;
   snapToTarget = true; /* already there, or reached within this step */
-  if (clampedTargetOrRemaining != pitchAngle) {
-    if ((int)pitchAngle <= (int)clampedTargetOrRemaining) {
+  if (clampedTarget != pitchAngle) {
+    if ((int)pitchAngle <= (int)clampedTarget) {
       /* target above */
-      if (pitchStepOrRateLimit < 0) {
+      if (pitchStep < 0) {
         smoothingState->pitchTurnVelocityAngle16 = 0; /* moving away: stop */
         snapToTarget = false;
       }
-      else if (pitchStepOrRateLimit < (int)(clampedTargetOrRemaining - pitchAngle)) {
-        pitchAngle = pitchAngle + pitchStepOrRateLimit;
-        pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick;
+      else if (pitchStep < (int)(clampedTarget - pitchAngle)) {
+        pitchAngle = pitchAngle + pitchStep;
+        rateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick;
         acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 +
                 g_InGameSimulationStepTicks * aimDefinition->pitchTurnRateAccelerationAnglePerTick;
-        smoothingState->pitchTurnVelocityAngle16 = pitchStepOrRateLimit;
-        if (acceleratedVelocity < pitchStepOrRateLimit) {
+        smoothingState->pitchTurnVelocityAngle16 = rateLimit;
+        if (acceleratedVelocity < rateLimit) {
           smoothingState->pitchTurnVelocityAngle16 = acceleratedVelocity;
         }
         snapToTarget = false;
       }
     }
-    else if (0 < pitchStepOrRateLimit) {
+    else if (0 < pitchStep) {
       smoothingState->pitchTurnVelocityAngle16 = 0; /* moving away: stop */
       snapToTarget = false;
     }
-    else if ((int)(clampedTargetOrRemaining - pitchAngle) < pitchStepOrRateLimit) {
-      pitchAngle = pitchAngle + pitchStepOrRateLimit;
-      pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick;
+    else if ((int)(clampedTarget - pitchAngle) < pitchStep) {
+      pitchAngle = pitchAngle + pitchStep;
+      rateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick;
       acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 -
               g_InGameSimulationStepTicks * aimDefinition->pitchTurnRateAccelerationAnglePerTick;
-      smoothingState->pitchTurnVelocityAngle16 = -pitchStepOrRateLimit;
-      if (-pitchStepOrRateLimit < acceleratedVelocity) {
+      smoothingState->pitchTurnVelocityAngle16 = -rateLimit;
+      if (-rateLimit < acceleratedVelocity) {
         smoothingState->pitchTurnVelocityAngle16 = acceleratedVelocity;
       }
       snapToTarget = false;
@@ -1468,17 +1379,15 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
   if (!snapToTarget) {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
     modelNodeRuntime->modelPayload.localRotationAngle1 = pitchAngle;
-    clampedTargetOrRemaining = pitchAngle - clampedTargetOrRemaining & FIXED_ANGLE16_MASK;
+    return (pitchAngle - clampedTarget) & FIXED_ANGLE16_MASK; /* remaining difference */
   }
-  else {
-    pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
-    smoothingState->pitchTurnVelocityAngle16 = 0;
-    if (clampedTargetOrRemaining != pitchAngle) {
-      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-      modelNodeRuntime->modelPayload.localRotationAngle1 = clampedTargetOrRemaining;
-    }
+  pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
+  smoothingState->pitchTurnVelocityAngle16 = 0;
+  if (clampedTarget != pitchAngle) {
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+    modelNodeRuntime->modelPayload.localRotationAngle1 = clampedTarget;
   }
-  return clampedTargetOrRemaining;
+  return clampedTarget;
 }
 
 

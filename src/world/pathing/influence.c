@@ -19,13 +19,13 @@ void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   ModelRuntimeNode *modelNode;
-  void *entityDefinition;
-  
+  ModelDefinition *entityDefinition;
+
   modelNode = (entityRuntime->common).ownership.modelNode;
-  entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (((ModelDefinition *)entityDefinition)->footprintRadius != 0) {
+  entityDefinition = (ModelDefinition *)(entityRuntime->common).ownership.definitionOrClassRecord;
+  if (entityDefinition->footprintRadius != 0) {
     GridInfluence_SetLowDistanceBandsAroundWorldPoint
-              (((ModelDefinition *)entityDefinition)->footprintRadius,
+              (entityDefinition->footprintRadius,
                (modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x);
   }
 }
@@ -40,13 +40,13 @@ void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   ModelRuntimeNode *modelNode;
-  void *entityDefinition;
-  
+  ModelDefinition *entityDefinition;
+
   modelNode = (entityRuntime->common).ownership.modelNode;
-  entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (((ModelDefinition *)entityDefinition)->footprintRadius != 0) {
+  entityDefinition = (ModelDefinition *)(entityRuntime->common).ownership.definitionOrClassRecord;
+  if (entityDefinition->footprintRadius != 0) {
     GridInfluence_ClearLowDistanceBandsAroundWorldPoint
-              (((ModelDefinition *)entityDefinition)->footprintRadius,
+              (entityDefinition->footprintRadius,
                (modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x);
   }
 }
@@ -133,40 +133,28 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode *enti
 
 {
   int cellsRemaining;
-  int nextCellsRemaining;
-  uint32_t *scratchRecordCursor; /* dword view of the 8-byte scratch cells: [2n] = stateMask of cell n */
-  bool fullBlockRemaining;
-  
+  int cellInBlock;
+  uint32_t *stateMaskCursor; /* dword view of the 8-byte scratch cells: [2n] = stateMask of cell n */
+  WorldOwnerListNode *entityNode;
+  ModelDefinition *entityDefinition;
+
+  /* Original quirk: the cells are cleared in whole blocks of 16 (at least one block), so a cell count that is not
+     a multiple of 16 clears up to 15 cells past the end of the grid. */
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
-  scratchRecordCursor = &g_GridScratchPrimary->stateMask;
+  stateMaskCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
   do {
-    *scratchRecordCursor = *scratchRecordCursor & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[2] = scratchRecordCursor[2] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[4] = scratchRecordCursor[4] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[6] = scratchRecordCursor[6] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[8] = scratchRecordCursor[8] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[10] = scratchRecordCursor[10] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[12] = scratchRecordCursor[12] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[14] = scratchRecordCursor[14] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[16] = scratchRecordCursor[16] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[18] = scratchRecordCursor[18] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[20] = scratchRecordCursor[20] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[22] = scratchRecordCursor[22] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[24] = scratchRecordCursor[24] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[26] = scratchRecordCursor[26] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[28] = scratchRecordCursor[28] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor[30] = scratchRecordCursor[30] & ~GRID_SCRATCH_DISTANCE_BANDS;
-    scratchRecordCursor = scratchRecordCursor + 32;
-    nextCellsRemaining = cellsRemaining - 16;
-    fullBlockRemaining = 15 < cellsRemaining;
-    cellsRemaining = nextCellsRemaining;
-  } while (nextCellsRemaining != 0 && fullBlockRemaining);
-  for (; entityListHead != NULL; entityListHead = entityListHead->nextNode)
-  {
-    if (entityListHead->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [((ModelDefinition *)(((GameEntityRuntime *)entityListHead->runtimePayload)->common).ownership.
-          definitionOrClassRecord)->runtimeClassId])(entityListHead->runtimePayload);
+    for (cellInBlock = 0; cellInBlock < 16; cellInBlock++) {
+      stateMaskCursor[cellInBlock * 2] = stateMaskCursor[cellInBlock * 2] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    }
+    stateMaskCursor = stateMaskCursor + 32;
+    cellsRemaining = cellsRemaining - 16;
+  } while (cellsRemaining > 0);
+  for (entityNode = entityListHead; entityNode != NULL; entityNode = entityNode->nextNode) {
+    if (entityNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      entityDefinition = (ModelDefinition *)(((GameEntityRuntime *)entityNode->runtimePayload)->common).ownership.
+                         definitionOrClassRecord;
+      (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[entityDefinition->runtimeClassId])
+        (entityNode->runtimePayload);
     }
   }
 }
@@ -353,6 +341,21 @@ void GridInfluence_ClearHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits r
 }
 
 
+/* Ring mask of the band walkers: bit n (0..7) is set when squaredDistance lies within ring n, i.e. is at most
+   g_GridInfluenceSquaredThreshold<n> (unsigned compare). */
+static uint32_t GridInfluence_RingBandMask(uint32_t squaredDistance)
+{
+  return (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) << 1 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) << 2 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) << 3 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) << 4 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) << 5 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) << 6 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) << 7;
+}
+
+
 /* Address: 0x00535190.
    Band walker for GridInfluence_SetLowDistanceBandsAroundWorldPoint: from scratchCell (a cell whose centre is at
    cellWorldY/X) it walks downwards, two scratch rows and one column left per step (straight down in world space),
@@ -367,36 +370,27 @@ int GridInfluence_SetLowDistanceBandsDiagonalNegative
           uint32_t *scratchCell)
 
 {
-  int bandMaskOrNextStep;
+  int squaredXDistance;
   int squaredYDistance;
   int cellsWritten;
-  uint32_t squaredDistance;
-  
+  uint32_t bandMask;
+
+  /* the walk is straight down in world space, so the X distance stays the same */
+  squaredXDistance = (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
   squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-  bandMaskOrNextStep = 0;
-  do {
-    cellsWritten = bandMaskOrNextStep;
-    squaredDistance =
-         squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
-    /* bit n set when the cell centre lies inside ring n */
-    bandMaskOrNextStep = (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) +
-            (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
-            2) * 2) * 2;
-    if (bandMaskOrNextStep == 0) {
-      return cellsWritten;
-    }
+  cellsWritten = 0;
+  bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  while (bandMask != 0) {
     cellWorldYQ12 = cellWorldYQ12 - GRID_SCRATCH_ROW_PAIR_WORLD_Y;
-    *scratchCell = *scratchCell | bandMaskOrNextStep * GRID_SCRATCH_LOW_BAND0;
+    *scratchCell = *scratchCell | bandMask * GRID_SCRATCH_LOW_BAND0;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchCell = scratchCell + g_GridScratchWidth * 4 - 2;
-    bandMaskOrNextStep = cellsWritten + 1;
-  } while ((*scratchCell & GRID_SCRATCH_BLOCKED) == 0);
+    if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
+      return cellsWritten; /* the cell just written is not counted */
+    }
+    cellsWritten = cellsWritten + 1;
+    bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  }
   return cellsWritten;
 }
 
@@ -411,35 +405,26 @@ int GridInfluence_SetLowDistanceBandsDiagonalPositive
           uint32_t *scratchCell)
 
 {
-  int bandMaskOrNextStep;
+  int squaredXDistance;
   int squaredYDistance;
   int cellsWritten;
-  uint32_t squaredDistance;
-  
+  uint32_t bandMask;
+
+  squaredXDistance = (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
   squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-  bandMaskOrNextStep = 0;
-  do {
-    cellsWritten = bandMaskOrNextStep;
-    squaredDistance =
-         squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
-    bandMaskOrNextStep = (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) +
-            (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
-            2) * 2) * 2;
-    if (bandMaskOrNextStep == 0) {
-      return cellsWritten;
-    }
+  cellsWritten = 0;
+  bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  while (bandMask != 0) {
     cellWorldYQ12 = cellWorldYQ12 + GRID_SCRATCH_ROW_PAIR_WORLD_Y;
-    *scratchCell = *scratchCell | bandMaskOrNextStep * GRID_SCRATCH_LOW_BAND0;
+    *scratchCell = *scratchCell | bandMask * GRID_SCRATCH_LOW_BAND0;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
-    bandMaskOrNextStep = cellsWritten + 1;
-  } while ((*scratchCell & GRID_SCRATCH_BLOCKED) == 0);
+    if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
+      return cellsWritten; /* the cell just written is not counted */
+    }
+    cellsWritten = cellsWritten + 1;
+    bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  }
   return cellsWritten;
 }
 
@@ -454,35 +439,26 @@ int GridInfluence_SetHighDistanceBandsDiagonalNegative
           uint32_t *scratchCell)
 
 {
-  int bandMaskOrNextStep;
+  int squaredXDistance;
   int squaredYDistance;
   int cellsWritten;
-  uint32_t squaredDistance;
-  
+  uint32_t bandMask;
+
+  squaredXDistance = (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
   squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-  bandMaskOrNextStep = 0;
-  do {
-    cellsWritten = bandMaskOrNextStep;
-    squaredDistance =
-         squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
-    bandMaskOrNextStep = (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) +
-            (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
-            2) * 2) * 2;
-    if (bandMaskOrNextStep == 0) {
-      return cellsWritten;
-    }
+  cellsWritten = 0;
+  bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  while (bandMask != 0) {
     cellWorldYQ12 = cellWorldYQ12 - GRID_SCRATCH_ROW_PAIR_WORLD_Y;
-    *scratchCell = *scratchCell | bandMaskOrNextStep * GRID_SCRATCH_HIGH_BAND0;
+    *scratchCell = *scratchCell | bandMask * GRID_SCRATCH_HIGH_BAND0;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchCell = scratchCell + g_GridScratchWidth * 4 - 2;
-    bandMaskOrNextStep = cellsWritten + 1;
-  } while ((*scratchCell & GRID_SCRATCH_BLOCKED) == 0);
+    if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
+      return cellsWritten; /* the cell just written is not counted */
+    }
+    cellsWritten = cellsWritten + 1;
+    bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  }
   return cellsWritten;
 }
 
@@ -497,35 +473,26 @@ int GridInfluence_SetHighDistanceBandsDiagonalPositive
           uint32_t *scratchCell)
 
 {
-  int bandMaskOrNextStep;
+  int squaredXDistance;
   int squaredYDistance;
   int cellsWritten;
-  uint32_t squaredDistance;
-  
+  uint32_t bandMask;
+
+  squaredXDistance = (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
   squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-  bandMaskOrNextStep = 0;
-  do {
-    cellsWritten = bandMaskOrNextStep;
-    squaredDistance =
-         squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
-    bandMaskOrNextStep = (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) +
-            (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
-            2) * 2) * 2;
-    if (bandMaskOrNextStep == 0) {
-      return cellsWritten;
-    }
+  cellsWritten = 0;
+  bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  while (bandMask != 0) {
     cellWorldYQ12 = cellWorldYQ12 + GRID_SCRATCH_ROW_PAIR_WORLD_Y;
-    *scratchCell = *scratchCell | bandMaskOrNextStep * GRID_SCRATCH_HIGH_BAND0;
+    *scratchCell = *scratchCell | bandMask * GRID_SCRATCH_HIGH_BAND0;
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
-    bandMaskOrNextStep = cellsWritten + 1;
-  } while ((*scratchCell & GRID_SCRATCH_BLOCKED) == 0);
+    if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
+      return cellsWritten; /* the cell just written is not counted */
+    }
+    cellsWritten = cellsWritten + 1;
+    bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  }
   return cellsWritten;
 }
 
@@ -540,35 +507,26 @@ int GridInfluence_ClearLowDistanceBandsDiagonalNegative
           uint32_t *scratchCell)
 
 {
-  int bandMaskOrNextStep;
+  int squaredXDistance;
   int squaredYDistance;
   int cellsWritten;
-  uint32_t squaredDistance;
-  
+  uint32_t bandMask;
+
+  squaredXDistance = (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
   squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-  bandMaskOrNextStep = 0;
-  do {
-    cellsWritten = bandMaskOrNextStep;
-    squaredDistance =
-         squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
-    bandMaskOrNextStep = (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) +
-            (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
-            2) * 2) * 2;
-    if (bandMaskOrNextStep == 0) {
-      return cellsWritten;
-    }
+  cellsWritten = 0;
+  bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  while (bandMask != 0) {
     cellWorldYQ12 = cellWorldYQ12 - GRID_SCRATCH_ROW_PAIR_WORLD_Y;
-    *scratchCell = *scratchCell & ~(bandMaskOrNextStep * GRID_SCRATCH_LOW_BAND0);
+    *scratchCell = *scratchCell & ~(bandMask * GRID_SCRATCH_LOW_BAND0);
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchCell = scratchCell + g_GridScratchWidth * 4 - 2;
-    bandMaskOrNextStep = cellsWritten + 1;
-  } while ((*scratchCell & GRID_SCRATCH_BLOCKED) == 0);
+    if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
+      return cellsWritten; /* the cell just written is not counted */
+    }
+    cellsWritten = cellsWritten + 1;
+    bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  }
   return cellsWritten;
 }
 
@@ -583,35 +541,26 @@ int GridInfluence_ClearLowDistanceBandsDiagonalPositive
           uint32_t *scratchCell)
 
 {
-  int bandMaskOrNextStep;
+  int squaredXDistance;
   int squaredYDistance;
   int cellsWritten;
-  uint32_t squaredDistance;
-  
+  uint32_t bandMask;
+
+  squaredXDistance = (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
   squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-  bandMaskOrNextStep = 0;
-  do {
-    cellsWritten = bandMaskOrNextStep;
-    squaredDistance =
-         squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
-    bandMaskOrNextStep = (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) +
-            (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
-            2) * 2) * 2;
-    if (bandMaskOrNextStep == 0) {
-      return cellsWritten;
-    }
+  cellsWritten = 0;
+  bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  while (bandMask != 0) {
     cellWorldYQ12 = cellWorldYQ12 + GRID_SCRATCH_ROW_PAIR_WORLD_Y;
-    *scratchCell = *scratchCell & ~(bandMaskOrNextStep * GRID_SCRATCH_LOW_BAND0);
+    *scratchCell = *scratchCell & ~(bandMask * GRID_SCRATCH_LOW_BAND0);
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
-    bandMaskOrNextStep = cellsWritten + 1;
-  } while ((*scratchCell & GRID_SCRATCH_BLOCKED) == 0);
+    if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
+      return cellsWritten; /* the cell just written is not counted */
+    }
+    cellsWritten = cellsWritten + 1;
+    bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  }
   return cellsWritten;
 }
 
@@ -626,35 +575,26 @@ int GridInfluence_ClearHighDistanceBandsDiagonalNegative
           uint32_t *scratchCell)
 
 {
-  int bandMaskOrNextStep;
+  int squaredXDistance;
   int squaredYDistance;
   int cellsWritten;
-  uint32_t squaredDistance;
-  
+  uint32_t bandMask;
+
+  squaredXDistance = (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
   squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-  bandMaskOrNextStep = 0;
-  do {
-    cellsWritten = bandMaskOrNextStep;
-    squaredDistance =
-         squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
-    bandMaskOrNextStep = (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) +
-            (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
-            2) * 2) * 2;
-    if (bandMaskOrNextStep == 0) {
-      return cellsWritten;
-    }
+  cellsWritten = 0;
+  bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  while (bandMask != 0) {
     cellWorldYQ12 = cellWorldYQ12 - GRID_SCRATCH_ROW_PAIR_WORLD_Y;
-    *scratchCell = *scratchCell & ~(bandMaskOrNextStep * GRID_SCRATCH_HIGH_BAND0);
+    *scratchCell = *scratchCell & ~(bandMask * GRID_SCRATCH_HIGH_BAND0);
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchCell = scratchCell + g_GridScratchWidth * 4 - 2;
-    bandMaskOrNextStep = cellsWritten + 1;
-  } while ((*scratchCell & GRID_SCRATCH_BLOCKED) == 0);
+    if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
+      return cellsWritten; /* the cell just written is not counted */
+    }
+    cellsWritten = cellsWritten + 1;
+    bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  }
   return cellsWritten;
 }
 
@@ -669,35 +609,26 @@ int GridInfluence_ClearHighDistanceBandsDiagonalPositive
           uint32_t *scratchCell)
 
 {
-  int bandMaskOrNextStep;
+  int squaredXDistance;
   int squaredYDistance;
   int cellsWritten;
-  uint32_t squaredDistance;
-  
+  uint32_t bandMask;
+
+  squaredXDistance = (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
   squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
-  bandMaskOrNextStep = 0;
-  do {
-    cellsWritten = bandMaskOrNextStep;
-    squaredDistance =
-         squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12);
-    bandMaskOrNextStep = (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) +
-            ((uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) +
-            (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
-            2) * 2) * 2;
-    if (bandMaskOrNextStep == 0) {
-      return cellsWritten;
-    }
+  cellsWritten = 0;
+  bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  while (bandMask != 0) {
     cellWorldYQ12 = cellWorldYQ12 + GRID_SCRATCH_ROW_PAIR_WORLD_Y;
-    *scratchCell = *scratchCell & ~(bandMaskOrNextStep * GRID_SCRATCH_HIGH_BAND0);
+    *scratchCell = *scratchCell & ~(bandMask * GRID_SCRATCH_HIGH_BAND0);
     squaredYDistance = (cellWorldYQ12 - centerWorldYQ12) * (cellWorldYQ12 - centerWorldYQ12);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
-    bandMaskOrNextStep = cellsWritten + 1;
-  } while ((*scratchCell & GRID_SCRATCH_BLOCKED) == 0);
+    if ((*scratchCell & GRID_SCRATCH_BLOCKED) != 0) {
+      return cellsWritten; /* the cell just written is not counted */
+    }
+    cellsWritten = cellsWritten + 1;
+    bandMask = GridInfluence_RingBandMask(squaredYDistance + squaredXDistance);
+  }
   return cellsWritten;
 }
 
