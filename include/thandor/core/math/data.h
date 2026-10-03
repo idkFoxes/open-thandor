@@ -1,0 +1,38 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/core/math/data.h
+ */
+
+#ifndef THANDOR_CORE_MATH_DATA_H
+#define THANDOR_CORE_MATH_DATA_H
+
+#include <thandor/generated/types.h>
+#include <thandor/generated/ui_templates.h>
+
+extern RandomGeneratorState g_RandomGeneratorState; /* 004030A0 g_RandomGeneratorState */
+
+/* 004246A0 one sine over 1.5 turns in Q28, from a quarter turn before angle 0: sin(-16384..-1) at
+   004246A0, sin(0..16383) at 004346A0 (FIXED_SINE_TABLE_SIN), cos(0..65535) at 004446A0
+   (FIXED_SINE_TABLE_COS); signed and full-turn lookups run on from one part into the next */
+extern int32_t g_FixedSineQ28[98304];
+
+extern GraphicsFixedMatrix3x4 g_FixedTransformInputRotationScratch; /* 004BEAA0 g_FixedTransformInputRotationScratch */
+
+extern GraphicsFixedMatrix3x4 g_FixedTransformComposedRotationScratch; /* 004BEAD0 g_FixedTransformComposedRotationScratch */
+
+extern GraphicsFixedVec3 g_ModelTransformInput; /* 004BEB00 g_ModelTransformInput */
+
+extern GraphicsFixedVec3 g_ModelTransformOutput; /* 004BEB0C g_ModelTransformOutput */
+
+extern float *g_WorldMotionSplineMatrixWorkspaces[6]; /* 0053C9A0 g_WorldMotionSplineMatrixWorkspaces */
+
+extern float *g_WorldMotionSplineCoefficientTables[6]; /* 0053C9B8 g_WorldMotionSplineCoefficientTables */
+
+extern float g_WorldMotionSplineCachedDerivatives[6]; /* 0053C9D0 g_WorldMotionSplineCachedDerivatives */
+
+extern int32_t g_WorldMotionSplineEquationCounts[6]; /* 0053C9E8 g_WorldMotionSplineEquationCounts */
+
+extern float g_Q12FloatScale4096; /* 0053CA00 g_Q12FloatScale4096 */
+
+#endif

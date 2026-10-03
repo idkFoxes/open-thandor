@@ -1,0 +1,18 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/settings/data.c
+ */
+
+/* Data of the original image that this module uses (moved here from the generated image data in
+   step 4c); declared in <thandor/core/settings/data.h>. Original addresses in the comments. */
+
+#include <thandor/thandor.h>
+
+#pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
+
+/* 004027C0 g_LocaleCountryCodeOverride */
+__declspec(align(16)) uint32_t g_LocaleCountryCodeOverride = 0;
+
+/* 004028D0 g_PersistentSettings */
+__declspec(align(16)) PersistentSettingsRuntime g_PersistentSettings = {.path = L"thandor.dat"};
