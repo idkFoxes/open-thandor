@@ -122,12 +122,14 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
 
 {
   InGameRuntimeRoot *inGameRoot;
+  ArmyRuntimeSlot *selectedArmy;
+  ModelRuntimeSlot *technologyBuilding;
 
   /* note the crossed bases: modelToken is an army-slot offset, armyToken one from g_ModelRuntimeRebaseDelta */
-  if ((((modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne != 0) &&
-       (armyToken + g_ModelRuntimeRebaseDelta != 0)) &&
-      (((ArmyRuntimeSlot *)(modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne))->modelNodeRuntime != NULL)) &&
-     ((ModelRuntimeSlot *)(armyToken + g_ModelRuntimeRebaseDelta))->rootModelNodeOrSavedOffset.modelNode != NULL) {
+  selectedArmy = (ArmyRuntimeSlot *)(modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+  technologyBuilding = (ModelRuntimeSlot *)(armyToken + g_ModelRuntimeRebaseDelta);
+  if (selectedArmy != NULL && technologyBuilding != NULL && selectedArmy->modelNodeRuntime != NULL &&
+      technologyBuilding->rootModelNodeOrSavedOffset.modelNode != NULL) {
     FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection(playerIndex,0,0,modelToken);
     inGameRoot = g_InGameRuntimeRoot;
     if (playerIndex == g_LocalPlayerRuntimeId) {
@@ -227,49 +229,45 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
   destBlock = g_FrontendPlayerRuntimeBlocks + 1;
   commandSource = g_FrontendPlayerCommandRecords;
   commandDest = g_FrontendPlayerCommandRecords;
-  scanRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1;
-  if (0 < scanRemaining) {
-    do {
-      sourceBlock->heartbeatExpiryTicks = sourceBlock->heartbeatExpiryTicks - 1;
-      if (sourceBlock->heartbeatExpiryTicks == 0) {
-        /* remove: only the source cursors advance */
-        g_FrontendPlayerRuntimeBlockCount--;
-        removalText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
-        RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText);
-        FrontendRecentTextHistory_InsertAndRebuild5(removalText);
-        removedPlayerIds[removedCount] = sourceBlock->playerRuntimeId;
-        removedCount++;
+  for (scanRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1; 0 < scanRemaining; scanRemaining--) {
+    sourceBlock->heartbeatExpiryTicks = sourceBlock->heartbeatExpiryTicks - 1;
+    if (sourceBlock->heartbeatExpiryTicks == 0) {
+      /* remove: only the source cursors advance */
+      g_FrontendPlayerRuntimeBlockCount--;
+      removalText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
+      RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText);
+      FrontendRecentTextHistory_InsertAndRebuild5(removalText);
+      removedPlayerIds[removedCount] = sourceBlock->playerRuntimeId;
+      removedCount++;
+    }
+    else {
+      /* keep: REP MOVSD of the 0x13B0-byte player block, then of its 8-dword command record */
+      if (destBlock != sourceBlock) {
+        *destBlock = *sourceBlock;
+        *commandDest = *commandSource;
       }
-      else {
-        /* keep: REP MOVSD of the 0x13B0-byte player block, then of its 8-dword command record */
-        if (destBlock != sourceBlock) {
-          *destBlock = *sourceBlock;
-          *commandDest = *commandSource;
-        }
-        destBlock++;
-        commandDest++;
-      }
-      sourceBlock++;
-      commandSource++;
-      scanRemaining--;
-    } while (scanRemaining != 0);
+      destBlock++;
+      commandDest++;
+    }
+    sourceBlock++;
+    commandSource++;
   }
-  if (removedCount != 0) {
-    do {
-      endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-      g_FrontendPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
-           FRONTEND_PACKET_10007_PLAYER_REMOVAL;
-      /* POP: the last removed id first */
-      g_FrontendPlayerRemovalPacket10007.removedPlayerToken = removedPlayerIds[removedCount - 1];
-      sendRemaining = g_FrontendPlayerRuntimeBlockCount;
-      while (sendRemaining = sendRemaining - 1, sendRemaining != 0) {
-        UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPlayerRemovalPacket10007.header);
-        endpoint = endpoint + FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE;
-      }
-      removedCount--;
-    } while (removedCount != 0);
-    FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(0xffffffff,0,0,0);
+  if (removedCount == 0) {
+    return;
   }
+  for (; removedCount != 0; removedCount--) {
+    endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
+    g_FrontendPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
+         FRONTEND_PACKET_10007_PLAYER_REMOVAL;
+    /* POP: the last removed id first */
+    g_FrontendPlayerRemovalPacket10007.removedPlayerToken = removedPlayerIds[removedCount - 1];
+    /* every client: player blocks 1..n-1 */
+    for (sendRemaining = g_FrontendPlayerRuntimeBlockCount - 1; sendRemaining != 0; sendRemaining--) {
+      UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPlayerRemovalPacket10007.header);
+      endpoint = endpoint + FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE;
+    }
+  }
+  FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(0xffffffff,0,0,0);
   return;
 }
 
@@ -327,6 +325,24 @@ void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentTo
 }
 
 
+/* True when every client (player blocks 1..n-1; block 0 is the host) has a non-zero readyOrWaitState. */
+static bool FrontendPlayerRuntime_AreAllClientsReady(void)
+
+{
+  FrontendPlayerRuntimeBlockCount remainingClients;
+  FrontendPlayerRuntimeRecord *clientBlock;
+
+  clientBlock = g_FrontendPlayerRuntimeBlocks + 1;
+  for (remainingClients = g_FrontendPlayerRuntimeBlockCount - 1; remainingClients != 0; remainingClients--) {
+    if (clientBlock->factionAssignment.readyOrWaitState == 0) {
+      return false;
+    }
+    clientBlock++;
+  }
+  return true;
+}
+
+
 /* Address: 0x00544130.
    Handler of FRONTEND_COMMAND_BRIEFING_READY, which a client sends when it presses the mission briefing's
    "Begin" button (FrontendSessionAction_ApplySpeedOrToggleReady). On the client that pressed it, the button is
@@ -337,12 +353,9 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
-  FrontendPlayerRuntimeBlockCount remainingBlocks;
-  FrontendPlayerRuntimeRecord *nextBlock;
-  SessionNetworkRoleFlags hostFlagOrRemaining;
-  SessionNetworkRoleFlags searchRemaining;
+  FrontendPlayerRuntimeBlockCount searchRemaining;
   FrontendPlayerRuntimeRecord *playerBlock;
-  
+
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     if (playerId != g_LocalPlayerRuntimeId) {
       return;
@@ -350,31 +363,24 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
     FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags |= UI_NODE_SUPPRESSED;
     return;
   }
-  /* only the host keeps track; the first test reads the host flag, later ones the remaining count */
-  searchRemaining = g_FrontendPlayerRuntimeBlockCount;
-  playerBlock = g_FrontendPlayerRuntimeBlocks;
-  hostFlagOrRemaining = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST;
-  while (hostFlagOrRemaining != SESSION_NETWORK_ROLE_LOCAL && playerId != playerBlock->playerRuntimeId) {
-    playerBlock++;
-    searchRemaining--;
-    hostFlagOrRemaining = searchRemaining;
-  }
-  if (hostFlagOrRemaining == SESSION_NETWORK_ROLE_LOCAL) {
+  /* only the host keeps track */
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
     return;
   }
-  playerBlock->factionAssignment.readyOrWaitState = 1;
-  /* are all clients ready? block 0 is the host */
+  /* block 0 is tested without a count check; an unknown id does nothing */
+  searchRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
-  do {
-    remainingBlocks--;
-    if (remainingBlocks == 0) {
-      FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+  while (playerId != playerBlock->playerRuntimeId) {
+    playerBlock++;
+    searchRemaining--;
+    if (searchRemaining == 0) {
       return;
     }
-    nextBlock = playerBlock + 1;
-    playerBlock++;
-  } while (nextBlock->factionAssignment.readyOrWaitState != 0);
+  }
+  playerBlock->factionAssignment.readyOrWaitState = 1;
+  if (FrontendPlayerRuntime_AreAllClientsReady()) {
+    FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+  }
   return;
 }
 
@@ -529,6 +535,7 @@ void FrontendPlayerRuntime_InitializeFactionAssignments(void)
   FrontendLoadedLevelAsset *loadedLevel;
   uint32_t activeRemaining;
   uint32_t factionSlot;
+  uint32_t assignedFaction;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   uint32_t assignableRemaining;
   FrontendPlayerRuntimeRecord *playerBlock;
@@ -555,17 +562,18 @@ void FrontendPlayerRuntime_InitializeFactionAssignments(void)
       factionSlot++;
     } while (factionSlot < 8);
   }
-  factionSlot = 1;
+  /* round-robin over the assignable factions 1..assignableFactionCount */
+  assignedFaction = 1;
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    playerBlock->factionAssignment.factionAssignmentIndex = factionSlot;
+    playerBlock->factionAssignment.factionAssignmentIndex = assignedFaction;
     playerBlock->factionAssignment.readyOrWaitState = 0;
     playerBlock->factionAssignment.consensusValue = 0;
-    factionSlot++;
+    assignedFaction++;
     playerBlock++;
-    if (loadedLevel->worldSettings.assignableFactionCount < factionSlot) {
-      factionSlot = factionSlot - loadedLevel->worldSettings.assignableFactionCount;
+    if (loadedLevel->worldSettings.assignableFactionCount < assignedFaction) {
+      assignedFaction = assignedFaction - loadedLevel->worldSettings.assignableFactionCount;
     }
     remainingBlocks--;
   } while (remainingBlocks != 0);
@@ -695,41 +703,64 @@ void FrontendPlayerRuntime_SetSlowRenderingFlagById
 void FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(PlayerRuntimeId playerRuntimeId)
 
 {
-  FrontendPlayerRuntimeBlockCount readyScanRemaining;
-  FrontendPlayerRuntimeRecord *readyScanBlock;
   FrontendPlayerRuntimeBlockCount searchRemaining;
   FrontendPlayerRuntimeRecord *playerBlock;
-  
-  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    searchRemaining = g_FrontendPlayerRuntimeBlockCount;
-    playerBlock = g_FrontendPlayerRuntimeBlocks;
-    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-      do {
-        if (playerRuntimeId == playerBlock->playerRuntimeId) {
-          playerBlock->factionAssignment.readyOrWaitState = 1;
-          readyScanBlock = g_FrontendPlayerRuntimeBlocks;
-          readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
-          break;
-        }
-        searchRemaining--;
-        playerBlock++;
-        readyScanBlock = g_FrontendPlayerRuntimeBlocks;
-        readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
-      } while (searchRemaining != 0);
-      /* every block after the host's own (block 0) must be ready */
-      do {
-        readyScanRemaining--;
-        if (readyScanRemaining == 0) {
-          UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)g_InGameRuntimeRoot);
-          return;
-        }
-        playerBlock = readyScanBlock + 1;
-        readyScanBlock++;
-      } while (playerBlock->factionAssignment.readyOrWaitState != 0);
+
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
+    if (playerRuntimeId == g_LocalPlayerRuntimeId) {
+      UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)g_InGameRuntimeRoot);
     }
+    return;
   }
-  else if (playerRuntimeId == g_LocalPlayerRuntimeId) {
-    UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)g_InGameRuntimeRoot);
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
+    return;
+  }
+  /* an unknown id (the per-frame re-check) marks nobody */
+  searchRemaining = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  do {
+    if (playerRuntimeId == playerBlock->playerRuntimeId) {
+      playerBlock->factionAssignment.readyOrWaitState = 1;
+      break;
+    }
+    searchRemaining--;
+    playerBlock++;
+  } while (searchRemaining != 0);
+  if (FrontendPlayerRuntime_AreAllClientsReady()) {
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)g_InGameRuntimeRoot);
+  }
+  return;
+}
+
+
+/* True when every player block (0..n-1, the host included) has a non-zero readyOrWaitState. Assumes at least
+   one block (do/while as in the original). */
+static bool FrontendPlayerRuntime_HaveAllPlayersReported(void)
+
+{
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
+
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  do {
+    if (playerBlock->factionAssignment.readyOrWaitState == 0) {
+      return false;
+    }
+    remainingBlocks--;
+    playerBlock++;
+  } while (remainingBlocks != 0);
+  return true;
+}
+
+
+/* Ends the in-game session's start pause, if it is still waiting for the players. */
+static void FrontendPlayerRuntime_EndInGameStartPause(void)
+
+{
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
+    g_UiCommandRuntimeFlags &=
+         ~(UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS);
   }
   return;
 }
@@ -748,50 +779,34 @@ void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
 
 {
   FrontendPlayerRuntimeBlockCount searchRemaining;
-  FrontendPlayerRuntimeBlockCount readyScanRemaining;
   FrontendPlayerRuntimeRecord *playerBlock;
-  FrontendPlayerRuntimeRecord *readyScanBlock;
-  
-  searchRemaining = g_FrontendPlayerRuntimeBlockCount;
-  playerBlock = g_FrontendPlayerRuntimeBlocks;
+
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
+    searchRemaining = g_FrontendPlayerRuntimeBlockCount;
+    playerBlock = g_FrontendPlayerRuntimeBlocks;
     do {
-      if (playerRuntimeId == playerBlock->playerRuntimeId) {
-        playerBlock->factionAssignment.readyOrWaitState++;
-        readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
-        readyScanBlock = g_FrontendPlayerRuntimeBlocks;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL)
-        {
-          if (playerRuntimeId != 0) {
-            return;
-          }
-          if (playerBlock->factionAssignment.readyOrWaitState < 2) {
-            return;
-          }
-          /* Client: the host (id 0) reached consensus. */
-          if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
-            g_UiCommandRuntimeFlags &=
-                 ~(UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS);
-          }
-          return;
-        }
-        break;
-      }
+      if (playerRuntimeId == playerBlock->playerRuntimeId) break;
       searchRemaining--;
-      readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
-      readyScanBlock = g_FrontendPlayerRuntimeBlocks;
       playerBlock++;
     } while (searchRemaining != 0);
-    /* host: wait until every player has reported */
-    do {
-      if (readyScanBlock->factionAssignment.readyOrWaitState == 0) {
+    /* an unknown id counts nothing but still runs the host's check below, on a client too */
+    if (searchRemaining != 0) {
+      playerBlock->factionAssignment.readyOrWaitState++;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
+        /* Client: the host (id 0) reached consensus. */
+        if (playerRuntimeId == 0 && 2 <= playerBlock->factionAssignment.readyOrWaitState) {
+          FrontendPlayerRuntime_EndInGameStartPause();
+        }
         return;
       }
-      readyScanRemaining--;
-      readyScanBlock++;
-    } while (readyScanRemaining != 0);
+    }
+    /* host: wait until every player has reported */
+    if (!FrontendPlayerRuntime_HaveAllPlayersReported()) {
+      return;
+    }
     if (g_FrontendPlayerRuntimeBlocks->factionAssignment.readyOrWaitState < 2) {
+      /* always networked here, so the direct call is never taken */
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
@@ -801,10 +816,7 @@ void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
       return;
     }
   }
-  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
-    g_UiCommandRuntimeFlags &=
-         ~(UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS);
-  }
+  FrontendPlayerRuntime_EndInGameStartPause();
   return;
 }
 
@@ -857,6 +869,8 @@ void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
           RuntimeToken armyRuntimeOffset1,RuntimeToken armyRuntimeOffset0)
 
 {
+  GameEntityRuntime *army2;
+
   if (armyRuntimeOffset0 != 0 &&
       ((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common.ownership.modelNode !=
       NULL) {
@@ -871,18 +885,19 @@ void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
               ((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
-  if ((armyRuntimeOffset2 != 0) &&
-     (armyRuntimeOffset2 = armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne,
-     ((GameEntityRuntime *)armyRuntimeOffset2)->common.ownership.modelNode != NULL)) {
-    SelectionPointerArray_RemoveFirstMatch
-              ((GameEntityRuntime *)armyRuntimeOffset2,
-               &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+  /* stays NULL (the raw offset 0) when the third argument is empty */
+  army2 = NULL;
+  if (armyRuntimeOffset2 != 0) {
+    army2 = (GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    if (army2->common.ownership.modelNode != NULL) {
+      SelectionPointerArray_RemoveFirstMatch
+                (army2,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+    }
   }
   /* Original quirk (0x0055FCA1): a fourth, unconditional removal with the third argument as left in EAX: the
      rebased pointer, or the raw offset 0 when it was empty. */
   SelectionPointerArray_RemoveFirstMatch
-            ((GameEntityRuntime *)armyRuntimeOffset2,
-             &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+            (army2,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
     InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
@@ -921,108 +936,76 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
 
 {
   GameEntityRuntime *selectionEntry;
-  InGameRuntimeRoot *node;
-  int memberOrEntryRemaining;
-  int scanRemaining;
-  int entriesRemaining;
-  ArmyRuntimeSlot **groupMemberSlot;
-  SelectionPlayerRuntimeBlock *sourceCursor;
-  SelectionPlayerRuntimeBlock *groupOrScanCursor;
-  SelectionPlayerRuntimeBlock *nextScanCursor;
-  SelectionPlayerRuntimeBlock *destCursor;
-  bool foundEmpty;
+  InGameRuntimeRoot *inGameRoot;
+  int entryIndex;
+  int scanIndex;
+  int memberIndex;
+  ArmyRuntimeSlot **factionGroupMembers;
+  GameEntityRuntime **groupEntries;
+  GameEntityRuntime **selectionEntries;
+  GameEntityRuntime **sourceEntries;
+  GameEntityRuntime **destEntries;
   FixedVectorQ12 averagePosition;
 
-  /* &g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32[selectionGroupIndex * 32]
-     (32 army pointers per group) */
-  groupOrScanCursor = (SelectionPlayerRuntimeBlock *)
-           (selectionGroupIndex * (32 * sizeof(ArmyRuntimeSlot *)) +
-            THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,runtimeGroupMembers8x32)) +
-            factionIndex * sizeof(GameFactionRuntimeRecord));
-  sourceCursor = groupOrScanCursor;
-  destCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  /* the 32 army pointers of the group (they hold the same pointers as a selection) */
+  groupEntries = (GameEntityRuntime **)&g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32
+                  [selectionGroupIndex * SELECTION_GROUP_ENTRY_COUNT];
+  selectionEntries = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection.entries;
   if ((transferModeFlags & SELECTION_TRANSFER_TO_GROUP) != 0) {
-    entriesRemaining = SELECTION_GROUP_ENTRY_COUNT;
-    sourceCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-    do {
-      destCursor = sourceCursor;
-      selectionEntry = destCursor->selection.entries[0];
+    /* first take every selected army out of all groups of the faction */
+    for (entryIndex = 0; entryIndex < SELECTION_GROUP_ENTRY_COUNT; entryIndex++) {
+      selectionEntry = selectionEntries[entryIndex];
       if (selectionEntry != NULL) {
-        memberOrEntryRemaining = SELECTION_GROUP_COUNT * SELECTION_GROUP_ENTRY_COUNT;
-        groupMemberSlot = g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32;
-        do {
-          if (selectionEntry == (GameEntityRuntime *)*groupMemberSlot) {
-            *groupMemberSlot = NULL;
-          }
-          groupMemberSlot++;
-          memberOrEntryRemaining--;
-        } while (memberOrEntryRemaining != 0);
-      }
-      entriesRemaining--;
-      sourceCursor = (SelectionPlayerRuntimeBlock *)(destCursor->selection.entries + 1);
-    } while (entriesRemaining != 0);
-    /* back to the first selection entry (the typed expression is Ghidra's): selection -> group */
-    sourceCursor = (SelectionPlayerRuntimeBlock *)&destCursor[-1].chatRecipientMaskAndWriteOffset;
-    destCursor = groupOrScanCursor;
-  }
-  entriesRemaining = SELECTION_GROUP_ENTRY_COUNT;
-  if ((transferModeFlags & SELECTION_TRANSFER_MERGE) == 0) {
-    for (; entriesRemaining != 0; entriesRemaining--) {
-      destCursor->selection.entries[0] = sourceCursor->selection.entries[0];
-      sourceCursor = (SelectionPlayerRuntimeBlock *)(sourceCursor->selection.entries + 1);
-      destCursor = (SelectionPlayerRuntimeBlock *)(destCursor->selection.entries + 1);
-    }
-  }
-  else {
-    memberOrEntryRemaining = SELECTION_GROUP_ENTRY_COUNT;
-    do {
-      selectionEntry = sourceCursor->selection.entries[0];
-      scanRemaining = entriesRemaining;
-      groupOrScanCursor = destCursor;
-      if (selectionEntry != NULL) {
-        do {
-          if (selectionEntry == groupOrScanCursor->selection.entries[0]) break;
-          scanRemaining--;
-          groupOrScanCursor = (SelectionPlayerRuntimeBlock *)(groupOrScanCursor->selection.entries + 1);
-        } while (scanRemaining != 0);
-        /* Not yet in the destination group (the scan ran out; entriesRemaining is 0x20 here): store it in
-           the first empty slot. */
-        if (scanRemaining == 0) {
-          foundEmpty = true;
-          scanRemaining = entriesRemaining;
-          groupOrScanCursor = destCursor;
-          do {
-            nextScanCursor = groupOrScanCursor;
-            if (scanRemaining == 0) break;
-            scanRemaining--;
-            nextScanCursor = (SelectionPlayerRuntimeBlock *)(groupOrScanCursor->selection.entries + 1);
-            foundEmpty = groupOrScanCursor->selection.entries[0] == NULL;
-            groupOrScanCursor = nextScanCursor;
-          } while (!foundEmpty);
-          if (foundEmpty) {
-            /* = nextScanCursor's previous entry, i.e. the empty slot found */
-            nextScanCursor->selection.entries[-1] =
-                 sourceCursor->selection.entries[0];
+        factionGroupMembers = g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32;
+        for (memberIndex = 0; memberIndex < SELECTION_GROUP_COUNT * SELECTION_GROUP_ENTRY_COUNT; memberIndex++) {
+          if (selectionEntry == (GameEntityRuntime *)factionGroupMembers[memberIndex]) {
+            factionGroupMembers[memberIndex] = NULL;
           }
         }
       }
-      sourceCursor = (SelectionPlayerRuntimeBlock *)(sourceCursor->selection.entries + 1);
-      memberOrEntryRemaining--;
-    } while (memberOrEntryRemaining != 0);
+    }
+    sourceEntries = selectionEntries;
+    destEntries = groupEntries;
+  }
+  else {
+    sourceEntries = groupEntries;
+    destEntries = selectionEntries;
+  }
+  if ((transferModeFlags & SELECTION_TRANSFER_MERGE) == 0) {
+    for (entryIndex = 0; entryIndex < SELECTION_GROUP_ENTRY_COUNT; entryIndex++) {
+      destEntries[entryIndex] = sourceEntries[entryIndex];
+    }
+  }
+  else {
+    /* every source army not yet in the destination goes into its first empty slot (dropped when it is full) */
+    for (entryIndex = 0; entryIndex < SELECTION_GROUP_ENTRY_COUNT; entryIndex++) {
+      selectionEntry = sourceEntries[entryIndex];
+      if (selectionEntry == NULL) continue;
+      for (scanIndex = 0; scanIndex < SELECTION_GROUP_ENTRY_COUNT; scanIndex++) {
+        if (selectionEntry == destEntries[scanIndex]) break;
+      }
+      if (scanIndex != SELECTION_GROUP_ENTRY_COUNT) continue;
+      for (scanIndex = 0; scanIndex < SELECTION_GROUP_ENTRY_COUNT; scanIndex++) {
+        if (destEntries[scanIndex] == NULL) {
+          destEntries[scanIndex] = selectionEntry;
+          break;
+        }
+      }
+    }
   }
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
             (&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-  node = g_InGameRuntimeRoot;
+  inGameRoot = g_InGameRuntimeRoot;
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
-    InGameBuildCatalog_RebuildGrid((UiNodeBase *)node);
+    InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
     if ((transferModeFlags & SELECTION_TRANSFER_CENTER_VIEW) != 0) {
       if (SelectionInfoEntitySlots_ComputeAverageWorldPosition(&averagePosition)) {
         WorldRuntime_PointCameraAtTarget
-                  (node->worldRuntime.motion.pitchAngle,
-                   node->worldRuntime.motion.headingAngle,
-                   node->worldRuntime.motion.committedDistanceQ12,averagePosition.zQ12,
-                   averagePosition.yQ12,averagePosition.xQ12,&node->worldRuntime);
+                  (inGameRoot->worldRuntime.motion.pitchAngle,
+                   inGameRoot->worldRuntime.motion.headingAngle,
+                   inGameRoot->worldRuntime.motion.committedDistanceQ12,averagePosition.zQ12,
+                   averagePosition.yQ12,averagePosition.xQ12,&inGameRoot->worldRuntime);
       }
     }
   }
@@ -1043,24 +1026,27 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
           TechnologyIndexOrRestoreCode technologyIndexOrRestore,ArmyRuntimeSavedOffset modelOffset)
 
 {
-  GameEntityRuntimeFlags *entityFlags;
   SelectionPlayerRuntimeBlock *playerBlock;
-  GameEntityRuntime *entity;
-  
+  GameEntityRuntime *building;
+
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  if ((modelOffset != 0) &&
-     (entity = (GameEntityRuntime *)(modelOffset + g_ModelRuntimeRebaseDelta),
-     entity->common.ownership.modelNode != NULL)) {
-    playerBlock->technologyPageBuilding = 0;
-    if (technologyIndexOrRestore != 0) {
-      if ((int)technologyIndexOrRestore < 0) {
-        entityFlags = &entity->common.runtimeFlags;
-        *entityFlags = *entityFlags | playerBlock->heldResearchUnpaidFlag;
-      }
-      else {
-        Technology_ApplyRecordToEntity(technologyIndexOrRestore,entity);
-      }
-    }
+  if (modelOffset == 0) {
+    return;
+  }
+  building = (GameEntityRuntime *)(modelOffset + g_ModelRuntimeRebaseDelta);
+  if (building->common.ownership.modelNode == NULL) {
+    return;
+  }
+  playerBlock->technologyPageBuilding = 0;
+  if (technologyIndexOrRestore == 0) {
+    return;
+  }
+  if ((int)technologyIndexOrRestore < 0) {
+    /* cancelled: give back the held ARMY_MODEL_STATE_RESEARCH_UNPAID bit */
+    building->common.runtimeFlags = building->common.runtimeFlags | playerBlock->heldResearchUnpaidFlag;
+  }
+  else {
+    Technology_ApplyRecordToEntity(technologyIndexOrRestore,building);
   }
   return;
 }
@@ -1185,6 +1171,18 @@ void FrontendPlayerSelection_ApplyEntryOrAll
 }
 
 
+/* Ends Frontend_Init's wait for the players, if it is still waiting (and restarts the network tick counter). */
+static void FrontendPlayerRuntime_EndFrontendPlayerWait(void)
+
+{
+  if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
+    g_FrontendNetworkTickCounter = 0;
+    g_FrontendRuntimeFlags &= ~FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS;
+  }
+  return;
+}
+
+
 /* Address: 0x00544020.
    Handler of FRONTEND_COMMAND_PLAYER_READY: counts the player's report in its readyOrWaitState. When every
    player has reported, the host sends the command a second time; once the host's count reaches 2 (or at once
@@ -1197,50 +1195,35 @@ void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
 
 {
   FrontendPlayerRuntimeBlockCount searchRemaining;
-  FrontendPlayerRuntimeBlockCount readyScanRemaining;
   FrontendPlayerRuntimeRecord *playerBlock;
-  FrontendPlayerRuntimeRecord *readyScanBlock;
-  
-  searchRemaining = g_FrontendPlayerRuntimeBlockCount;
-  playerBlock = g_FrontendPlayerRuntimeBlocks;
+
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
+    searchRemaining = g_FrontendPlayerRuntimeBlockCount;
+    playerBlock = g_FrontendPlayerRuntimeBlocks;
     do {
-      if (playerId == playerBlock->playerRuntimeId) {
-        playerBlock->factionAssignment.readyOrWaitState++;
-        readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
-        readyScanBlock = g_FrontendPlayerRuntimeBlocks;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL)
-        {
-          if (playerId != 0) {
-            return;
-          }
-          if (playerBlock->factionAssignment.readyOrWaitState < 2) {
-            return;
-          }
-          /* Client: the host (id 0) reached consensus. */
-          if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
-            g_FrontendNetworkTickCounter = 0;
-            g_FrontendRuntimeFlags &= ~FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS;
-          }
-          return;
-        }
-        break;
-      }
+      if (playerId == playerBlock->playerRuntimeId) break;
       searchRemaining--;
-      readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
-      readyScanBlock = g_FrontendPlayerRuntimeBlocks;
       playerBlock++;
     } while (searchRemaining != 0);
-    /* host: wait until every player has reported */
-    do {
-      if (readyScanBlock->factionAssignment.readyOrWaitState == 0) {
+    /* an unknown id (the expiry pass reports -1) counts nothing but still runs the host's check below, on a
+       client too */
+    if (searchRemaining != 0) {
+      playerBlock->factionAssignment.readyOrWaitState++;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
+        /* Client: the host (id 0) reached consensus. */
+        if (playerId == 0 && 2 <= playerBlock->factionAssignment.readyOrWaitState) {
+          FrontendPlayerRuntime_EndFrontendPlayerWait();
+        }
         return;
       }
-      readyScanRemaining--;
-      readyScanBlock++;
-    } while (readyScanRemaining != 0);
+    }
+    /* host: wait until every player has reported */
+    if (!FrontendPlayerRuntime_HaveAllPlayersReported()) {
+      return;
+    }
     if (g_FrontendPlayerRuntimeBlocks->factionAssignment.readyOrWaitState < 2) {
+      /* always networked here, so the direct call is never taken */
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
@@ -1250,10 +1233,7 @@ void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
       return;
     }
   }
-  if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
-    g_FrontendNetworkTickCounter = 0;
-    g_FrontendRuntimeFlags &= ~FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS;
-  }
+  FrontendPlayerRuntime_EndFrontendPlayerWait();
   return;
 }
 
@@ -1308,6 +1288,40 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
 }
 
 
+/* Finds the player block with playerId and its lobby message record (the records run parallel to the blocks,
+   FRONTEND_PLAYER_MESSAGE_RECORD_BYTES apart). In the lobby states (hosting, joined) the players are counted
+   with g_FrontendPlayerRuntimeCount, otherwise with g_FrontendPlayerRuntimeBlockCount. False when not found. */
+static bool FrontendPlayerMessageBuffer_FindRecordById
+          (PlayerRuntimeId playerId,FrontendPlayerRuntimeRecord **playerBlockOut,uint8_t **messageRecordOut)
+
+{
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  uint8_t *messageRecord;
+
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  messageRecord = (uint8_t *)(uintptr_t)g_FrontendPlayerMessageBuffers;
+  if (g_FrontendNetworkState == FRONTEND_NETWORK_STATE_JOINED ||
+      g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING) {
+    remainingBlocks = g_FrontendPlayerRuntimeCount;
+  }
+  else {
+    remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  }
+  while (remainingBlocks != 0 && playerId != playerBlock->playerRuntimeId) {
+    remainingBlocks--;
+    playerBlock++;
+    messageRecord = messageRecord + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES;
+  }
+  if (remainingBlocks == 0) {
+    return false;
+  }
+  *playerBlockOut = playerBlock;
+  *messageRecordOut = messageRecord;
+  return true;
+}
+
+
 /* Address: 0x00545490.
    Handler of FRONTEND_COMMAND_CHAT_BEGIN, the first command of a lobby chat line
    (FrontendPlayerMessage_SubmitSevenSlotText): rewinds the sender's message record so the following
@@ -1318,26 +1332,14 @@ void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
           (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
-  FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  uint32_t *messageBuffer;
+  uint8_t *messageRecord;
 
-  playerBlock = g_FrontendPlayerRuntimeBlocks;
-  messageBuffer = (uint32_t *)(uintptr_t)g_FrontendPlayerMessageBuffers;
-  if ((g_FrontendNetworkState == FRONTEND_NETWORK_STATE_JOINED) ||
-     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount,
-     g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
-    remainingBlocks = g_FrontendPlayerRuntimeCount;
-  }
-  while (remainingBlocks != 0 && playerId != playerBlock->playerRuntimeId) {
-    remainingBlocks--;
-    playerBlock++;
-    messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES / 4;
-  }
-  if (remainingBlocks == 0) {
+  if (!FrontendPlayerMessageBuffer_FindRecordById(playerId,&playerBlock,&messageRecord)) {
     return;
   }
-  *messageBuffer = FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET;
+  /* dword 0: the write offset, rewound to the start of the text */
+  *(uint32_t *)messageRecord = FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET;
   return;
 }
 
@@ -1353,30 +1355,18 @@ void FrontendPlayerMessageBuffer_AppendTripleById
 
 {
   int writeOffset;
-  FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  int *messageBuffer;
-  
-  playerBlock = g_FrontendPlayerRuntimeBlocks;
-  messageBuffer = (int *)g_FrontendPlayerMessageBuffers;
-  if ((g_FrontendNetworkState == FRONTEND_NETWORK_STATE_JOINED) ||
-     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount,
-     g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
-    remainingBlocks = g_FrontendPlayerRuntimeCount;
-  }
-  while (remainingBlocks != 0 && playerId != playerBlock->playerRuntimeId) {
-    remainingBlocks--;
-    playerBlock++;
-    messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES / 4;
-  }
-  if (remainingBlocks == 0) {
+  uint8_t *messageRecord;
+
+  if (!FrontendPlayerMessageBuffer_FindRecordById(playerId,&playerBlock,&messageRecord)) {
     return;
   }
-  writeOffset = *messageBuffer;
-  *messageBuffer = *messageBuffer + PLAYER_CHAT_PIECE_BYTES;
-  *(FrontendMessageValueC *)((uint8_t *)messageBuffer + writeOffset) = valueC;
-  *(FrontendMessageValueB *)((uint8_t *)messageBuffer + writeOffset + 4) = valueB;
-  *(FrontendMessageValueA *)((uint8_t *)messageBuffer + writeOffset + 8) = valueA;
+  /* dword 0 of the record is the write offset */
+  writeOffset = *(int *)messageRecord;
+  *(int *)messageRecord = *(int *)messageRecord + PLAYER_CHAT_PIECE_BYTES;
+  *(FrontendMessageValueC *)(messageRecord + writeOffset) = valueC;
+  *(FrontendMessageValueB *)(messageRecord + writeOffset + 4) = valueB;
+  *(FrontendMessageValueA *)(messageRecord + writeOffset + 8) = valueA;
   return;
 }
 
@@ -1390,35 +1380,20 @@ void FrontendPlayerMessageBuffer_PublishTextById
           (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
-  FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  int messageBuffer;
-  uint16_t *stream;
+  uint8_t *messageRecord;
   uint16_t *messageText;
-  
-  playerBlock = g_FrontendPlayerRuntimeBlocks;
-  messageBuffer = g_FrontendPlayerMessageBuffers;
-  if ((g_FrontendNetworkState == FRONTEND_NETWORK_STATE_JOINED) ||
-     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount,
-     g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
-    remainingBlocks = g_FrontendPlayerRuntimeCount;
-  }
-  while (remainingBlocks != 0 && playerId != playerBlock->playerRuntimeId) {
-    remainingBlocks--;
-    playerBlock++;
-    messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES;
-  }
-  if (remainingBlocks == 0) {
+
+  if (!FrontendPlayerMessageBuffer_FindRecordById(playerId,&playerBlock,&messageRecord)) {
     return;
   }
   /* the 0x30 text bytes, widened into a 0x60-byte buffer */
   Text_CopyNarrowToUtf16(96,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,
-                         (uint8_t *)(messageBuffer + FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET));
+                         messageRecord + FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET);
   messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
-  stream = messageText;
-  RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,stream);
-  RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
-  FrontendRecentTextHistory_InsertAndRebuild5(stream);
+  RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,messageText);
+  RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,messageText);
+  FrontendRecentTextHistory_InsertAndRebuild5(messageText);
   return;
 }
 
@@ -1541,18 +1516,21 @@ void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
 
 {
   SelectionPlayerRuntimeBlock *playerBlock;
-  uint32_t armyFlags;
-  ModelRuntimeSlot *army;
-  
+  uint32_t buildingStateFlags;
+  ModelRuntimeSlot *building;
+
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  if ((modelOffset != 0) &&
-     (army = (ModelRuntimeSlot *)(modelOffset + g_ModelRuntimeRebaseDelta),
-      army->rootModelNodeOrSavedOffset.modelNode != NULL)) {
-    armyFlags = army->classState.stateFlags;
-    playerBlock->technologyPageBuilding = (uint32_t)army;
-    playerBlock->heldResearchUnpaidFlag = armyFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID;
-    army->classState.stateFlags = army->classState.stateFlags & ~ARMY_MODEL_STATE_RESEARCH_UNPAID;
+  if (modelOffset == 0) {
+    return;
   }
+  building = (ModelRuntimeSlot *)(modelOffset + g_ModelRuntimeRebaseDelta);
+  if (building->rootModelNodeOrSavedOffset.modelNode == NULL) {
+    return;
+  }
+  buildingStateFlags = building->classState.stateFlags;
+  playerBlock->technologyPageBuilding = (uint32_t)building;
+  playerBlock->heldResearchUnpaidFlag = buildingStateFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID;
+  building->classState.stateFlags = building->classState.stateFlags & ~ARMY_MODEL_STATE_RESEARCH_UNPAID;
   return;
 }
 

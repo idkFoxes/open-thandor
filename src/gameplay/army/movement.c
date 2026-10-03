@@ -3334,6 +3334,28 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
 }
 
 
+/* Sets the step rate of a planned foot step (articulatedContact.fallbackPosition1Q12): stride length
+   (definition +0xC0) << 13 divided by footTravel plus 4 * lift height (definition +0xC4), or 2.0 when that
+   sum is 0. Returns false in that case. */
+static bool ArmyArticulatedRuntime_SetStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,uint32_t footTravel)
+
+{
+  ModelDefinition *movementDefinition;
+  int travelPlusLift;
+  int strideLength;
+
+  movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
+  travelPlusLift = footTravel + movementDefinition->classParameterC4 * 4;
+  strideLength = movementDefinition->classParameterC0;
+  (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
+  if (travelPlusLift == 0) {
+    return false;
+  }
+  (armyRuntime->articulatedContact).fallbackPosition1Q12 =
+       (Q12)((int64_t)(uint64_t)(uint32_t)(strideLength << 13) / (int64_t)travelPlusLift);
+  return true;
+}
+
 /* Address: 0x00522550.
    Plans a closing step of the left foot: the body heading target and the left foot heading become
    headingAngle16, and the left foot target is set right beside the right foot's target (2 * lateralOffsetQ12
@@ -3346,9 +3368,6 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
           WorldRuntimeContext *worldRuntime)
 
 {
-  int travelPlusLift;
-  void *movementDefinition;
-  int strideLength;
   uint32_t footTravel;
   uint32_t sideAngle;
   FixedSinCos offsetSinCos;
@@ -3373,18 +3392,11 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
                        &terrainHeightQ12,&terrainNormalAngles)) {
       armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
       armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
-      movementDefinition = armyRuntime->definitionOrAsset;
       footTravel = FixedMath_Length3(armyRuntime->articulatedHeightOrStateA0 -
                                 armyRuntime->definitionClassValue88,
                                 armyRuntime->runtimeState98 - armyRuntime->definitionClassValue80,
                                 armyRuntime->runtimeState90 - armyRuntime->movementTarget0Q12);
-      /* definition +0xC4: lift height, +0xC0: stride length */
-      travelPlusLift = footTravel + ((ModelDefinition *)movementDefinition)->classParameterC4 * 4;
-      strideLength = ((ModelDefinition *)movementDefinition)->classParameterC0;
-      (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
-      if (travelPlusLift != 0) {
-        (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-             (Q12)((int64_t)(uint64_t)(uint32_t)(strideLength << 13) / (int64_t)travelPlusLift);
+      if (ArmyArticulatedRuntime_SetStepRate(armyRuntime,footTravel)) {
         (armyRuntime->articulatedContact).fallbackPosition0Q12 &= ~ARMY_ARTICULATED_STEP_OBSTRUCTED;
       }
     }
@@ -3402,9 +3414,6 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
           WorldRuntimeContext *worldRuntime)
 
 {
-  int travelPlusLift;
-  void *movementDefinition;
-  int strideLength;
   uint32_t footTravel;
   uint32_t sideAngle;
   FixedSinCos offsetSinCos;
@@ -3429,17 +3438,11 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
                        &terrainHeightQ12,&terrainNormalAngles)) {
       armyRuntime->runtimeStateA4 = terrainHeightQ12;
       armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
-      movementDefinition = armyRuntime->definitionOrAsset;
       footTravel = FixedMath_Length3(armyRuntime->runtimeStateA4 - armyRuntime->runtimeState8C,
                                 armyRuntime->articulatedCoordinateOrState9C -
                                 armyRuntime->definitionClassValue84,
                                 armyRuntime->runtimeState94 - armyRuntime->movementTarget1Q12);
-      travelPlusLift = footTravel + ((ModelDefinition *)movementDefinition)->classParameterC4 * 4;
-      strideLength = ((ModelDefinition *)movementDefinition)->classParameterC0;
-      (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
-      if (travelPlusLift != 0) {
-        (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-             (Q12)((int64_t)(uint64_t)(uint32_t)(strideLength << 13) / (int64_t)travelPlusLift);
+      if (ArmyArticulatedRuntime_SetStepRate(armyRuntime,footTravel)) {
         (armyRuntime->articulatedContact).fallbackPosition0Q12 &= ~ARMY_ARTICULATED_STEP_OBSTRUCTED;
       }
     }
@@ -3447,6 +3450,161 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
   return;
 }
 
+
+/* Left turn of ArmyArticulatedRuntime_UpdateSelectedTerrainContact (steeringAngle16 up to 0x8000): clamps
+   the steering angle to the maximum turn per step, plans the left foot target and heading, the body heading
+   target, the stored half turn and the step rate. */
+static void ArmyArticulatedRuntime_PlanLeftTurnStep
+          (AngleTurn32 steeringAngle16,ArmyArticulatedRuntimeSlotView *armyRuntime,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  ModelDefinition *movementDefinition;
+  ModelRuntimeNode *rootNode;
+  FieldGridAsset *fieldGrid;
+  int64_t scaledOffsetProduct;
+  uint32_t pivotDistance;
+  uint32_t footHeading;
+  int pivotX;
+  int pivotY;
+  int stepCenterX;
+  int stepCenterY;
+  uint32_t footTargetX;
+  uint32_t footTargetY;
+  int footTargetHeight;
+  uint32_t footTravel;
+  FixedSinCos offsetSinCos;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
+
+  /* definition +0xC8: maximum turn per step */
+  movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
+  if ((uint32_t)movementDefinition->classParameterC8 < steeringAngle16) {
+    steeringAngle16 = (AngleTurn32)movementDefinition->classParameterC8;
+  }
+  /* pivot 1.5 * lateral offset behind the root */
+  rootNode = armyRuntime->modelNodeRuntime;
+  footHeading = armyRuntime->classState60 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
+  scaledOffsetProduct = (int64_t)(armyRuntime->articulatedContact).lateralOffsetQ12 * (3 * Q12_ONE / 2);
+  pivotDistance = FIXED_PRODUCT_SHR(scaledOffsetProduct,Q12_SHIFT);
+  offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
+  pivotX = offsetSinCos.cosValue + (rootNode->worldTransform).translation.x;
+  pivotY = offsetSinCos.sinValue + (rootNode->worldTransform).translation.y;
+  /* rotate forward from the pivot by the steering angle, then step out to the left */
+  footHeading = (footHeading + steeringAngle16) - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
+  (armyRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue.headingOrTurnValue =
+       footHeading;
+  offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
+  stepCenterX = pivotX + offsetSinCos.cosValue;
+  stepCenterY = pivotY + offsetSinCos.sinValue;
+  footHeading = footHeading + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  offsetSinCos = FixedMath_SinCosScaled(footHeading,(armyRuntime->articulatedContact).lateralOffsetQ12);
+  armyRuntime->runtimeState90 = offsetSinCos.cosValue + stepCenterX;
+  armyRuntime->runtimeState98 = offsetSinCos.sinValue + stepCenterY;
+  offsetSinCos = FixedMath_SinCosScaled
+                     (footHeading,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
+                            contactRadiusQ12);
+  fieldGrid = worldRuntime->fieldGrid;
+  armyRuntime->ownerValue64 = ((int)steeringAngle16 >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
+  if (fieldGrid != NULL &&
+      FieldGrid_InterpolateTerrainHeightAndNormal
+                (offsetSinCos.sinValue + armyRuntime->runtimeState98,
+                 offsetSinCos.cosValue + armyRuntime->runtimeState90,fieldGrid,
+                 &terrainHeightQ12,&terrainNormalAngles)) {
+    armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
+    armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
+  }
+  /* upper 16 bits of the step state = steeringAngle16 / 2 (bit 15 gets its lowest bit) */
+  (armyRuntime->articulatedContact).fallbackPosition0Q12 =
+       (armyRuntime->articulatedContact).fallbackPosition0Q12 & 0xffff;
+  footTargetX = armyRuntime->runtimeState90;
+  footTargetY = armyRuntime->runtimeState98;
+  footTargetHeight = armyRuntime->articulatedHeightOrStateA0;
+  (armyRuntime->articulatedContact).fallbackPosition0Q12 =
+       (armyRuntime->articulatedContact).fallbackPosition0Q12 | steeringAngle16 << 15;
+  footTravel = FixedMath_Length3(footTargetHeight - armyRuntime->definitionClassValue88,
+                                 footTargetY - armyRuntime->definitionClassValue80,
+                                 footTargetX - armyRuntime->movementTarget0Q12);
+  ArmyArticulatedRuntime_SetStepRate(armyRuntime,footTravel);
+}
+
+/* Right turn of ArmyArticulatedRuntime_UpdateSelectedTerrainContact (steeringAngle16 above 0x8000): the same
+   with the right foot and the negative steering angle steeringAngle16 - 0x10000. */
+static void ArmyArticulatedRuntime_PlanRightTurnStep
+          (AngleTurn32 steeringAngle16,ArmyArticulatedRuntimeSlotView *armyRuntime,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  ModelDefinition *movementDefinition;
+  ModelRuntimeNode *rootNode;
+  FieldGridAsset *fieldGrid;
+  uint32_t minimumSteeringAngle;
+  int signedSteeringAngle;
+  int64_t scaledOffsetProduct;
+  uint32_t pivotDistance;
+  uint32_t footHeading;
+  int pivotX;
+  int pivotY;
+  int stepCenterX;
+  int stepCenterY;
+  uint32_t footTargetX;
+  int footTargetY;
+  uint32_t footTargetHeight;
+  uint32_t footTravel;
+  FixedSinCos offsetSinCos;
+  Q12 terrainHeightQ12;
+  uint32_t terrainNormalAngles;
+
+  /* definition +0xC8: maximum turn per step */
+  movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
+  minimumSteeringAngle = FIXED_ANGLE16_FULL_TURN - movementDefinition->classParameterC8;
+  if (steeringAngle16 < minimumSteeringAngle) {
+    steeringAngle16 = minimumSteeringAngle;
+  }
+  rootNode = armyRuntime->modelNodeRuntime;
+  signedSteeringAngle = steeringAngle16 - FIXED_ANGLE16_FULL_TURN;
+  footHeading = armyRuntime->classState60 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
+  scaledOffsetProduct = (int64_t)(armyRuntime->articulatedContact).lateralOffsetQ12 * (3 * Q12_ONE / 2);
+  pivotDistance = FIXED_PRODUCT_SHR(scaledOffsetProduct,Q12_SHIFT);
+  offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
+  pivotX = offsetSinCos.cosValue + (rootNode->worldTransform).translation.x;
+  pivotY = offsetSinCos.sinValue + (rootNode->worldTransform).translation.y;
+  footHeading = (footHeading + signedSteeringAngle) - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
+  (armyRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.headingOrTurnValue =
+       footHeading;
+  offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
+  stepCenterX = pivotX + offsetSinCos.cosValue;
+  stepCenterY = pivotY + offsetSinCos.sinValue;
+  footHeading = footHeading - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  offsetSinCos = FixedMath_SinCosScaled(footHeading,(armyRuntime->articulatedContact).lateralOffsetQ12);
+  armyRuntime->runtimeState94 = offsetSinCos.cosValue + stepCenterX;
+  armyRuntime->articulatedCoordinateOrState9C = offsetSinCos.sinValue + stepCenterY;
+  offsetSinCos = FixedMath_SinCosScaled
+                     (footHeading,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
+                            contactRadiusQ12);
+  fieldGrid = worldRuntime->fieldGrid;
+  armyRuntime->ownerValue64 = (signedSteeringAngle >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
+  if (fieldGrid != NULL &&
+      FieldGrid_InterpolateTerrainHeightAndNormal
+                (offsetSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C,
+                 offsetSinCos.cosValue + armyRuntime->runtimeState94,fieldGrid,
+                 &terrainHeightQ12,&terrainNormalAngles)) {
+    armyRuntime->runtimeStateA4 = terrainHeightQ12;
+    armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
+  }
+  (armyRuntime->articulatedContact).fallbackPosition0Q12 =
+       (armyRuntime->articulatedContact).fallbackPosition0Q12 & 0xffff;
+  footTargetX = armyRuntime->runtimeState94;
+  footTargetY = armyRuntime->articulatedCoordinateOrState9C;
+  footTargetHeight = armyRuntime->runtimeStateA4;
+  (armyRuntime->articulatedContact).fallbackPosition0Q12 =
+       (armyRuntime->articulatedContact).fallbackPosition0Q12 |
+       signedSteeringAngle * ARMY_ARTICULATED_STEP_HALF_TURN_SCALE;
+  footTravel = FixedMath_Length3(footTargetHeight - armyRuntime->runtimeState8C,
+                                 footTargetY - armyRuntime->definitionClassValue84,
+                                 footTargetX - armyRuntime->movementTarget1Q12);
+  ArmyArticulatedRuntime_SetStepRate(armyRuntime,footTravel);
+}
 
 /* Address: 0x00522770.
    Plans the first step of a turn on the spot. steeringAngle16 (0..0xFFFF, clamped to +-the maximum turn per
@@ -3463,141 +3621,11 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
           WorldRuntimeContext *worldRuntime)
 
 {
-  Q12 *contactStateFlags;
-  void *movementDefinition;
-  /* the target Y, or (right foot) the target height */
-  uint32_t footYOrZ;
-  int64_t scaledOffsetProduct;
-  /* pivot/target X, the target height (left) or Y (right), then the travel length plus lift */
-  int pointXOrSegment;
-  /* the target X, then the foot travel length */
-  uint32_t footXOrLength;
-  int signedSteeringAngle;
-  uint32_t footHeading;
-  uint32_t pivotDistance;
-  /* pivot/target Y, then the stride length */
-  int pointYOrStride;
-  FixedSinCos offsetSinCos;
-  Q12 terrainHeightQ12;
-  uint32_t terrainNormalAngles;
-  FieldGridAsset *fieldGrid;
-  ModelRuntimeNode *rootNode;
-
-  movementDefinition = armyRuntime->definitionOrAsset;
   if (steeringAngle16 < FIXED_ANGLE16_HALF_TURN + 1) {
-    if (*(uint32_t *)((int)movementDefinition + 200) < steeringAngle16) {
-      steeringAngle16 = *(AngleTurn32 *)((int)movementDefinition + 200);
-    }
-    /* pivot 1.5 * lateral offset behind the root */
-    rootNode = armyRuntime->modelNodeRuntime;
-    footHeading = armyRuntime->classState60 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
-    scaledOffsetProduct = (int64_t)(armyRuntime->articulatedContact).lateralOffsetQ12 * (3 * Q12_ONE / 2);
-    pivotDistance = FIXED_PRODUCT_SHR(scaledOffsetProduct,Q12_SHIFT);
-    offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
-    pointXOrSegment = offsetSinCos.cosValue + (rootNode->worldTransform).translation.x;
-    pointYOrStride = offsetSinCos.sinValue + (rootNode->worldTransform).translation.y;
-    /* rotate forward from the pivot by the steering angle, then step out to the left */
-    footHeading = (footHeading + steeringAngle16) - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
-    (armyRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue.headingOrTurnValue =
-         footHeading;
-    offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
-    pointXOrSegment = pointXOrSegment + offsetSinCos.cosValue;
-    pointYOrStride = pointYOrStride + offsetSinCos.sinValue;
-    footHeading = footHeading + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
-    offsetSinCos = FixedMath_SinCosScaled(footHeading,(armyRuntime->articulatedContact).lateralOffsetQ12);
-    armyRuntime->runtimeState90 = offsetSinCos.cosValue + pointXOrSegment;
-    armyRuntime->runtimeState98 = offsetSinCos.sinValue + pointYOrStride;
-    offsetSinCos = FixedMath_SinCosScaled
-                       (footHeading,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
-                              contactRadiusQ12);
-    fieldGrid = worldRuntime->fieldGrid;
-    armyRuntime->ownerValue64 = ((int)steeringAngle16 >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
-    if (fieldGrid != NULL) {
-      if (FieldGrid_InterpolateTerrainHeightAndNormal
-                         (offsetSinCos.sinValue + armyRuntime->runtimeState98,
-                          offsetSinCos.cosValue + armyRuntime->runtimeState90,fieldGrid,
-                          &terrainHeightQ12,&terrainNormalAngles)) {
-        armyRuntime->articulatedHeightOrStateA0 = terrainHeightQ12;
-        armyRuntime->fallbackWorldYQ12 = terrainNormalAngles;
-      }
-    }
-    /* upper 16 bits of the step state = steeringAngle16 / 2 (bit 15 gets its lowest bit) */
-    contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-    *contactStateFlags = *contactStateFlags & 0xffff;
-    footXOrLength = armyRuntime->runtimeState90;
-    footYOrZ = armyRuntime->runtimeState98;
-    pointXOrSegment = armyRuntime->articulatedHeightOrStateA0;
-    contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-    *contactStateFlags = *contactStateFlags | steeringAngle16 << 15;
-    movementDefinition = armyRuntime->definitionOrAsset;
-    footXOrLength = FixedMath_Length3(pointXOrSegment - armyRuntime->definitionClassValue88,
-                              footYOrZ - armyRuntime->definitionClassValue80,
-                              footXOrLength - armyRuntime->movementTarget0Q12);
-    pointXOrSegment = footXOrLength + ((ModelDefinition *)movementDefinition)->classParameterC4 * 4;
-    pointYOrStride = ((ModelDefinition *)movementDefinition)->classParameterC0;
-    (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
-    if (pointXOrSegment != 0) {
-      (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-           (Q12)((int64_t)(uint64_t)(uint32_t)(pointYOrStride << 13) / (int64_t)pointXOrSegment);
-      return;
-    }
+    ArmyArticulatedRuntime_PlanLeftTurnStep(steeringAngle16,armyRuntime,worldRuntime);
   }
   else {
-    /* right turn: the same with the right foot and a negative steering angle */
-    footHeading = FIXED_ANGLE16_FULL_TURN - *(int *)((int)movementDefinition + 200);
-    if (steeringAngle16 < footHeading) {
-      steeringAngle16 = footHeading;
-    }
-    rootNode = armyRuntime->modelNodeRuntime;
-    signedSteeringAngle = steeringAngle16 - FIXED_ANGLE16_FULL_TURN;
-    footHeading = armyRuntime->classState60 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
-    scaledOffsetProduct = (int64_t)(armyRuntime->articulatedContact).lateralOffsetQ12 * (3 * Q12_ONE / 2);
-    pivotDistance = FIXED_PRODUCT_SHR(scaledOffsetProduct,Q12_SHIFT);
-    offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
-    pointXOrSegment = offsetSinCos.cosValue + (rootNode->worldTransform).translation.x;
-    pointYOrStride = offsetSinCos.sinValue + (rootNode->worldTransform).translation.y;
-    footHeading = (footHeading + signedSteeringAngle) - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
-    (armyRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.headingOrTurnValue =
-         footHeading;
-    offsetSinCos = FixedMath_SinCosScaled(footHeading,pivotDistance);
-    pointXOrSegment = pointXOrSegment + offsetSinCos.cosValue;
-    pointYOrStride = pointYOrStride + offsetSinCos.sinValue;
-    footHeading = footHeading - FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
-    offsetSinCos = FixedMath_SinCosScaled(footHeading,(armyRuntime->articulatedContact).lateralOffsetQ12);
-    armyRuntime->runtimeState94 = offsetSinCos.cosValue + pointXOrSegment;
-    armyRuntime->articulatedCoordinateOrState9C = offsetSinCos.sinValue + pointYOrStride;
-    offsetSinCos = FixedMath_SinCosScaled
-                       (footHeading,(armyRuntime->articulatedContact).contactRadiusOrLinkedSlotMask.
-                              contactRadiusQ12);
-    fieldGrid = worldRuntime->fieldGrid;
-    armyRuntime->ownerValue64 = (signedSteeringAngle >> 1) + armyRuntime->classState60 & FIXED_ANGLE16_MASK;
-    if (fieldGrid != NULL) {
-      if (FieldGrid_InterpolateTerrainHeightAndNormal
-                         (offsetSinCos.sinValue + armyRuntime->articulatedCoordinateOrState9C,
-                          offsetSinCos.cosValue + armyRuntime->runtimeState94,fieldGrid,
-                          &terrainHeightQ12,&terrainNormalAngles)) {
-        armyRuntime->runtimeStateA4 = terrainHeightQ12;
-        armyRuntime->fallbackWorldXQ12 = terrainNormalAngles;
-      }
-    }
-    contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-    *contactStateFlags = *contactStateFlags & 0xffff;
-    footXOrLength = armyRuntime->runtimeState94;
-    pointXOrSegment = armyRuntime->articulatedCoordinateOrState9C;
-    footYOrZ = armyRuntime->runtimeStateA4;
-    contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-    *contactStateFlags = *contactStateFlags | signedSteeringAngle * ARMY_ARTICULATED_STEP_HALF_TURN_SCALE;
-    movementDefinition = armyRuntime->definitionOrAsset;
-    footXOrLength = FixedMath_Length3(footYOrZ - armyRuntime->runtimeState8C,
-                              pointXOrSegment - armyRuntime->definitionClassValue84,
-                              footXOrLength - armyRuntime->movementTarget1Q12);
-    pointXOrSegment = footXOrLength + ((ModelDefinition *)movementDefinition)->classParameterC4 * 4;
-    pointYOrStride = ((ModelDefinition *)movementDefinition)->classParameterC0;
-    (armyRuntime->articulatedContact).fallbackPosition1Q12 = 2 * Q12_ONE;
-    if (pointXOrSegment != 0) {
-      (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-           (Q12)((int64_t)(uint64_t)(uint32_t)(pointYOrStride << 13) / (int64_t)pointXOrSegment);
-    }
+    ArmyArticulatedRuntime_PlanRightTurnStep(steeringAngle16,armyRuntime,worldRuntime);
   }
   return;
 }

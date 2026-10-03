@@ -20,29 +20,27 @@
 uint32_t WidePath_GetExtensionCode(uint16_t *path)
 
 {
-  uint32_t *extensionCursor;
-  short currentCodeUnit;
+  uint16_t *extension;
+  uint16_t currentCodeUnit;
 
   /* A backslash restarts the search, so only a '.' in the last component counts. */
-  do {
-    extensionCursor = NULL;
-    while( true ) {
-      currentCodeUnit = (short)*(uint32_t *)path;
-      if (currentCodeUnit == 0) {
-        if (extensionCursor == NULL) {
-          return 0;
-        }
-        /* bytes: char4 << 24 | char3 << 16 | char2 << 8 | char1 (the SHL/SHLD chain of the original) */
-        return (((((extensionCursor[1] & 0xffffff) >> 16) << 8 | (extensionCursor[1] & 0xff)) << 8 |
-                ((*extensionCursor & 0xffffff) >> 16)) << 8) | (*extensionCursor & 0xff);
-      }
-      path++;
-      if (currentCodeUnit == '\\') break;
-      if (currentCodeUnit == '.') {
-        extensionCursor = (uint32_t *)path;
-      }
+  extension = NULL;
+  while (*path != 0) {
+    currentCodeUnit = *path;
+    path++;
+    if (currentCodeUnit == '\\') {
+      extension = NULL;
     }
-  } while( true );
+    else if (currentCodeUnit == '.') {
+      extension = path;
+    }
+  }
+  if (extension == NULL) {
+    return 0;
+  }
+  /* bytes: char4 << 24 | char3 << 16 | char2 << 8 | char1 (low byte of each code unit) */
+  return (uint32_t)(extension[3] & 0xff) << 24 | (uint32_t)(extension[2] & 0xff) << 16 |
+         (uint32_t)(extension[1] & 0xff) << 8 | (uint32_t)(extension[0] & 0xff);
 }
 
 /* Address: 0x0040F2B0.
@@ -55,33 +53,33 @@ uint32_t WidePath_GetExtensionCode(uint16_t *path)
 bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path)
 
 {
-  uint32_t *extensionWriteCursor;
-  short currentCodeUnit;
+  uint16_t *extension;
+  uint16_t currentCodeUnit;
 
   /* A backslash restarts the search, so only a '.' in the last component counts. */
-  do {
-    extensionWriteCursor = NULL;
-    while( true ) {
-      currentCodeUnit = (short)*(uint32_t *)path;
-      if (currentCodeUnit == 0) {
-        if (extensionWriteCursor == NULL) {
-          *path = '.';
-          extensionWriteCursor = (uint32_t *)(path + 1);
-        }
-        /* first two code units: characters 1 and 2 */
-        *extensionWriteCursor = ((extensionCode & 0xff) << 8 | (extensionCode >> 8) << 24) >> 8;
-        /* code units 3 and 4: the upper 16 bits unspread (char3 | char4 << 8, then 0), which also writes
-           the terminator for a three-character extension */
-        extensionWriteCursor[1] = extensionCode >> 16;
-        return false;
-      }
-      path++;
-      if (currentCodeUnit == '\\') break;
-      if (currentCodeUnit == '.') {
-        extensionWriteCursor = (uint32_t *)path;
-      }
+  extension = NULL;
+  while (*path != 0) {
+    currentCodeUnit = *path;
+    path++;
+    if (currentCodeUnit == '\\') {
+      extension = NULL;
     }
-  } while( true );
+    else if (currentCodeUnit == '.') {
+      extension = path;
+    }
+  }
+  if (extension == NULL) {
+    *path = '.';
+    extension = path + 1;
+  }
+  /* first two code units: characters 1 and 2 */
+  extension[0] = (uint16_t)(extensionCode & 0xff);
+  extension[1] = (uint16_t)((extensionCode >> 8) & 0xff);
+  /* code units 3 and 4: the upper 16 bits unspread (char3 | char4 << 8, then 0), which also writes
+     the terminator for a three-character extension */
+  extension[2] = (uint16_t)(extensionCode >> 16);
+  extension[3] = 0;
+  return false;
 }
 
 
@@ -213,44 +211,38 @@ uint32_t WidePath_ParseTrailingNumberBeforeExtension(uint16_t *path)
 
 {
   uint32_t parsedValue;
-  int scanCountOrPlaceValue;
+  int scanUnitsLeft;
+  uint32_t placeValue;
   uint32_t scannedCodeUnitCount;
-  uint32_t digitValue;
-  uint16_t *terminatorCursor;
+  uint16_t *scanCursor;
   uint16_t *digitScanCursor;
   uint16_t currentCodeUnit;
   uint16_t digitCodeUnit;
-  
-  scanCountOrPlaceValue = WIDE_PATH_NUMBER_SCAN_MAX_UNITS;
-  do {
-    terminatorCursor = path;
-    if (scanCountOrPlaceValue == 0) break;
-    scanCountOrPlaceValue--;
-    terminatorCursor = path + 1;
-    currentCodeUnit = *path;
-    path = terminatorCursor;
-  } while (currentCodeUnit != 0);
-  /* one past the terminator minus 6: the last code unit before the ".ext" */
-  terminatorCursor = terminatorCursor - 6;
+
+  /* find the terminator (at most WIDE_PATH_NUMBER_SCAN_MAX_UNITS units); scanCursor ends one past it */
+  scanUnitsLeft = WIDE_PATH_NUMBER_SCAN_MAX_UNITS;
+  scanCursor = path;
+  while (scanUnitsLeft != 0) {
+    scanUnitsLeft--;
+    currentCodeUnit = *scanCursor;
+    scanCursor++;
+    if (currentCodeUnit == 0) break;
+  }
+  /* one past the terminator minus 6: the last code unit before the ".ext". The digit count continues
+     the terminator search's count, so the digits stop at the start of the string (the first digit is
+     read unconditionally). */
+  digitScanCursor = scanCursor - 6;
   parsedValue = 0;
-  scannedCodeUnitCount = scanCountOrPlaceValue + 6;
-  scanCountOrPlaceValue = 1;
-  digitScanCursor = terminatorCursor;
-  while( true ) {
+  scannedCodeUnitCount = scanUnitsLeft + 6;
+  placeValue = 1;
+  do {
     digitCodeUnit = *digitScanCursor;
     scannedCodeUnitCount++;
     digitScanCursor--;
-    digitValue = digitCodeUnit - '0';
-    if (digitCodeUnit < '0') {
-      return parsedValue;
-    }
-    if (digitValue > 9) break;
-    parsedValue = parsedValue + digitValue * scanCountOrPlaceValue;
-    scanCountOrPlaceValue = scanCountOrPlaceValue * 10;
-    if (WIDE_PATH_NUMBER_SCAN_MAX_UNITS - 1 < scannedCodeUnitCount) {
-      return parsedValue;
-    }
-  }
+    if (digitCodeUnit < '0' || digitCodeUnit > '9') break;
+    parsedValue = parsedValue + (uint32_t)(digitCodeUnit - '0') * placeValue;
+    placeValue = placeValue * 10;
+  } while (scannedCodeUnitCount <= WIDE_PATH_NUMBER_SCAN_MAX_UNITS - 1);
   return parsedValue;
 }
 

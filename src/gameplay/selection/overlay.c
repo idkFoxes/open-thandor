@@ -10,6 +10,282 @@
 
 /* Implementation ownership: gameplay/selection/overlay. */
 
+/* Command mode: builds (releaseMode == GRAPHICS_STATE_DISABLED) or releases the ghost of the army the previewed
+   pointer-mode command would create. */
+static void InGameWorldOverlay_UpdateCommandPreviewArmy
+          (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime)
+
+{
+  ArmyRuntimeSlot *createdArmy;
+  ModelRuntimeNode *previewModelNode;
+
+  if (releaseMode != GRAPHICS_STATE_DISABLED) {
+    if (g_InGameCommandPreviewArmyRuntime != NULL) {
+      ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,g_InGameCommandPreviewArmyRuntime);
+      g_InGameCommandPreviewArmyRuntime = NULL;
+    }
+    return;
+  }
+  g_InGameCommandPreviewArmyRuntime = NULL;
+  if ((((g_InGamePointerInteractionStateFlags &
+         (WORLD_POINTER_STATE_OVER_OWN_ARMY | WORLD_POINTER_STATE_SELECTION_CAPTURE)) == 0) &&
+      (g_InGameCommandPreviewArmyAssetId != 0)) &&
+     (g_InGameCommandPreviewSurfaceHeightQ12OrSentinel != WORLD_POINTER_NO_HIT)) {
+    createdArmy = ArmyRuntime_CreateInstanceFromAsset
+                       (1,g_InGameCommandPreviewHeading16,g_InGameCommandPreviewWorldXQ12,
+                        g_InGameCommandPreviewWorldYQ12,
+                        worldRuntime->activeFactionRuntimeIndex,
+                        g_InGameCommandPreviewArmyAssetId,worldRuntime,NULL);
+    if (createdArmy != NULL) {
+      previewModelNode = (((GameEntityRuntime *)createdArmy)->common).ownership.modelNode;
+      g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)createdArmy;
+      previewModelNode->tintArgb = OVERLAY_PREVIEW_TINT_ARGB;
+      ModelNodeRuntime_RebuildTransformsFromRoot(previewModelNode);
+    }
+  }
+}
+
+
+/* Placement mode: builds the ghost of the pending army at the (possibly snapped) placement point.
+   pendingPlacementAsset is g_InGamePendingPlacementArmyAsset as read on entry to the overlay callback. */
+static void InGameWorldOverlay_BuildPlacementPreviewArmy
+          (int32_t pendingPlacementAsset,WorldRuntimeContext *worldRuntime)
+
+{
+  PackedArgb32 *childTint;
+  ModelRuntimeNode *previewModelNode;
+  ModelDefinition *armyDefinition;
+  ArmyPlacementCandidateCount acceptedCandidateCount;
+  GameEntityRuntime *previewArmy;
+  Q12 validatedWorldXQ12;
+  Q12 validatedWorldYQ12;
+  PackedArgb32 previewTint;
+  bool validated;
+  bool placeable;
+  PckArmyAssetIdCatalog armyAssetId;
+
+  g_InGamePlacementPreviewArmyRuntime = NULL;
+  if ((g_InGamePendingPlacementArmyAsset == 0) ||
+     (g_InGamePlacementSurfaceHeightQ12OrSentinel == WORLD_POINTER_NO_HIT)) {
+    return;
+  }
+  previewTint = OVERLAY_PREVIEW_TINT_ARGB;
+  g_ArmyPlacementLateRejectionCount = 1;
+  validated = ArmyPlacement_ValidateAssetAtPointAndCellCorners
+                   (0,g_InGamePlacementHeading16,g_InGamePlacementWorldXQ12,
+                    g_InGamePlacementWorldYQ12,
+                    *(ArmyPlacementContext *)(g_InGamePendingPlacementArmyAsset + 8),
+                    worldRuntime->activeFactionRuntimeIndex,worldRuntime);
+  acceptedCandidateCount = g_ArmyPlacementLateRejectionCount;
+  if (validated) {
+    g_ArmyPlacementLateRejectionCount = 0;
+    if (acceptedCandidateCount < 2) {
+      /* Original quirk: a validated point with a single accepted candidate gets no ghost at all */
+      return;
+    }
+    previewTint = OVERLAY_PREVIEW_TINT_MULTI_CANDIDATE_ARGB;
+  }
+  armyAssetId = *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8);
+  /* the point the validator accepted (possibly snapped) */
+  validatedWorldXQ12 = g_ArmyPlacementValidatedWorldXQ12;
+  validatedWorldYQ12 = g_ArmyPlacementValidatedWorldYQ12;
+  g_ArmyPlacementLateRejectionCount = 1;
+  placeable = ArmyPlacement_CanPlaceAssetAtFieldPoint
+                   (1,0,g_InGamePlacementHeading16,validatedWorldYQ12,validatedWorldXQ12,armyAssetId,
+                    worldRuntime->activeFactionRuntimeIndex,(UiRootNode *)worldRuntime,NULL);
+  if ((!placeable) && (g_ArmyPlacementLateRejectionCount < 2)) {
+    previewTint = previewTint & OVERLAY_PREVIEW_TINT_BLOCKED_MASK;
+  }
+  g_ArmyPlacementLateRejectionCount = 0;
+  previewArmy = (GameEntityRuntime *)ArmyRuntime_CreateInstanceFromAsset
+                     (1,g_InGamePlacementHeading16,validatedWorldYQ12,validatedWorldXQ12,
+                      worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntime,NULL);
+  if (previewArmy == NULL) {
+    return;
+  }
+  previewModelNode = (previewArmy->common).ownership.modelNode;
+  g_InGamePlacementPreviewArmyRuntime = previewArmy;
+  previewModelNode->tintArgb = previewTint;
+  armyDefinition = *(ModelDefinition **)(previewArmy->common).ownership.definitionOrClassRecord;
+  ModelNodeRuntime_RebuildTransformsFromRoot(previewModelNode);
+  if (((armyDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
+      (3 < previewModelNode->childCount)) &&
+     (previewModelNode->childNodes[3] != NULL)) {
+    /* class-13 armies keep child node 3 opaque */
+    childTint = &previewModelNode->childNodes[3]->tintArgb;
+    *childTint = *childTint | 0xff000000;
+  }
+}
+
+
+/* Places an EGATH0 marker at the exit point of every own class-13 army with a rally point set (at most
+   OVERLAY_OWNED_MARKER_CAPACITY). Returns false when the world owner list is empty. */
+static bool InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *worldRuntime)
+
+{
+  ModelRuntimeNode *ownerNode;
+  ModelRuntimeSlot *factoryModelRuntime;
+  EffectDefinition *markerDefinition;
+  EffectRuntimeSlot *createdEffect;
+  Q12 surfaceHeightQ12;
+  uint32_t markerIndex;
+
+  if (EffectDefinitionRegistry_FindById(EFF_0143_EGATH0,&markerDefinition) != 0) {
+    return true;
+  }
+  ownerNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+  if (ownerNode == NULL) {
+    return false;
+  }
+  markerIndex = 0;
+  for (; ownerNode != NULL; ownerNode = (ModelRuntimeNode *)(ownerNode->common).nextNode) {
+    if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    factoryModelRuntime = (ownerNode->runtimePayload).modelRuntime;
+    if (factoryModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_13) {
+      continue;
+    }
+    if (((factoryModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RALLY_POINT_SET) == 0 ||
+        (factoryModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex !=
+         worldRuntime->activeFactionRuntimeIndex)) {
+      continue;
+    }
+    /* the unit factory's exit point: X at +0x78, Y at +0x7C (classLinkState.classState78 / 7C) */
+    FieldGrid_InterpolateTopSurfaceHeight
+              ((factoryModelRuntime->classLinkState).classState7C,
+               (factoryModelRuntime->classLinkState).classState78,worldRuntime->fieldGrid,&surfaceHeightQ12);
+    createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
+                       (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
+                        FIXED_ANGLE16_QUARTER_TURN,0,surfaceHeightQ12,(factoryModelRuntime->classLinkState).classState7C,
+                        (factoryModelRuntime->classLinkState).classState78,markerDefinition,
+                        worldRuntime);
+    if (createdEffect != NULL) {
+      g_InGameOwnedEntityTransientEffectMarkers[markerIndex] = createdEffect;
+      markerIndex = markerIndex + 1;
+      createdEffect->modelNodeOrSavedOffset.modelNode->tintArgb = 0xffffffff;
+      g_InGameOwnedEntityTransientEffectMarkerCount =
+           g_InGameOwnedEntityTransientEffectMarkerCount + 1;
+      if (OVERLAY_OWNED_MARKER_CAPACITY - 1 < markerIndex) break;
+    }
+  }
+  return true;
+}
+
+
+static bool InGameWorldOverlay_CommandTargetMarkersFull(void)
+
+{
+  return OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount;
+}
+
+
+/* Places the waypoint (EWAYP0) and target (ETARG0) markers of the selected own armies. The markers use scale
+   0x1000 (1.0 in Q12) except at an army target, which uses the target's own marker scale (its definition's
+   footprintRadius); stops once OVERLAY_COMMAND_TARGET_MARKER_CAPACITY markers exist. */
+static void InGameWorldOverlay_BuildCommandTargetMarkers(WorldRuntimeContext *worldRuntime)
+
+{
+  EffectDefinition *waypointDefinition;
+  EffectDefinition *targetDefinition;
+  GameEntityRuntime **selectionSlots;
+  GameEntityRuntime *entityRuntime;
+  GameEntityRuntime *commandTargetEntity;
+  ModelRuntimeNode *targetModelNode;
+  int slotIndex;
+  uint32_t waypointIndex;
+
+  if (EffectDefinitionRegistry_FindById(EFF_0148_EWAYP0,&waypointDefinition) != 0) {
+    return;
+  }
+  if (EffectDefinitionRegistry_FindById(EFF_0149_ETARG0,&targetDefinition) != 0) {
+    return;
+  }
+  selectionSlots = g_SelectionInfoEntitySlots->entries;
+  for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
+    entityRuntime = selectionSlots[slotIndex];
+    if ((entityRuntime == NULL) ||
+       (worldRuntime->activeFactionRuntimeIndex != (entityRuntime->common).ownership.ownerIndex)) {
+      continue;
+    }
+    if ((((ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+         runtimeDefinition->accelerationPerTick != 0)
+       && (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_ACTIVE) != 0)) {
+      InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
+                (Q12_ONE,(entityRuntime->common).ownership.modelNode,
+                 (entityRuntime->common).pathCoordinate1Q12,(entityRuntime->common).pathCoordinate0Q12,
+                 waypointDefinition,worldRuntime);
+      if (InGameWorldOverlay_CommandTargetMarkersFull()) {
+        return;
+      }
+      if (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) != 0) {
+        /* further waypoints: the army's queued waypoints (at least one is visited) */
+        waypointIndex = 0;
+        do {
+          InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
+                    (Q12_ONE,(entityRuntime->common).ownership.modelNode,
+                     ((ArmyMovementRuntime *)entityRuntime)->queuedWaypoints[waypointIndex].worldYQ12,
+                     ((ArmyMovementRuntime *)entityRuntime)->queuedWaypoints[waypointIndex].worldXQ12,
+                     waypointDefinition,worldRuntime);
+          waypointIndex++;
+          if (InGameWorldOverlay_CommandTargetMarkersFull()) {
+            return;
+          }
+        } while (waypointIndex < ((ArmyMovementRuntime *)entityRuntime)->queuedWaypointCount);
+      }
+    }
+    if (((entityRuntime->common).commandTarget.targetFlags & 2) != 0) {
+      InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
+                (Q12_ONE,(entityRuntime->common).ownership.modelNode,
+                 (entityRuntime->common).commandTarget.targetWorldYQ12,
+                 (entityRuntime->common).commandTarget.targetWorldXQ12,targetDefinition,
+                 worldRuntime);
+      if (InGameWorldOverlay_CommandTargetMarkersFull()) {
+        return;
+      }
+    }
+    commandTargetEntity = (entityRuntime->common).commandTarget.targetEntity;
+    if ((((entityRuntime->common).commandTarget.targetFlags & 1) != 0) && (commandTargetEntity != NULL)) {
+      targetModelNode = (commandTargetEntity->common).ownership.modelNode;
+      InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
+                (((ModelRuntimeSlot *)(commandTargetEntity->common).ownership.definitionOrClassRecord)->
+                 definitionOrSavedId.runtimeDefinition->footprintRadius,
+                 (entityRuntime->common).ownership.modelNode,
+                 (targetModelNode->worldTransform).translation.y,
+                 (targetModelNode->worldTransform).translation.x,targetDefinition,
+                 worldRuntime);
+      if (InGameWorldOverlay_CommandTargetMarkersFull()) {
+        return;
+      }
+    }
+  }
+}
+
+
+/* Detaches the model node of each of the markerCount markers from the world, forgets it and resets the count. */
+static void InGameWorldOverlay_ReleaseMarkers(EffectRuntimeSlot **markers,uint32_t *markerCount)
+
+{
+  EffectRuntimeSlot *effectSlot;
+  ModelRuntimeNode *markerModelNode;
+  uint32_t markerTotal;
+  uint32_t markerIndex;
+
+  markerTotal = *markerCount;
+  if (markerTotal == 0) {
+    return;
+  }
+  for (markerIndex = 0; markerIndex < markerTotal; markerIndex++) {
+    effectSlot = markers[markerIndex];
+    markerModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
+    InterpolationState_SetNegatedTargetAndRescaleProgress(0,markerModelNode->shadingRecord);
+    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)markerModelNode);
+    (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
+  }
+  *markerCount = 0;
+}
+
+
 /* Address: 0x00568300.
    World overlay callback: builds (releaseMode == GRAPHICS_STATE_DISABLED) or releases the transient objects
    drawn over the map - the ghost army previewing a placement or command-mode command, EGATH0 markers at the
@@ -20,34 +296,8 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime)
 
 {
-  PackedArgb32 *childTint;
-  ModelRuntimeNode *currentModelNode;
-  int *classRecord;
-  ModelRuntimeSlot *factoryModelRuntime;
-  EffectRuntimeSlot *effectSlot;
   int32_t pendingPlacementAsset;
-  ArmyPlacementCandidateCount acceptedCandidateCount;
-  GameEntityRuntime *entityRuntime;
-  Q12 worldXQ12;
-  uint32_t indexOrCount;
-  int recordOrCount;
-  Q12 validatedWorldYQ12;
-  PackedArgb32 previewTint;
-  GameEntityRuntime **selectionSlotCursor;
-  ModelRuntimeNode *modelNodeCursor;
-  EffectRuntimeSlot **ownedEffectCursor;
-  EffectRuntimeSlot **commandTargetEffectCursor;
-  bool checkResult;
-  ArmyRuntimeSlot *createdArmy;
-  bool placeable;
-  EffectDefinition *markerDefinition;
-  Q12 surfaceHeightQ12;
-  EffectRuntimeSlot *createdEffect;
-  EffectDefinition *targetDefinition;
-  PckArmyAssetIdCatalog armyAssetId;
-  WorldRuntimeContext *worldRuntimeCopy;
-  GameEntityRuntime *commandTargetEntity;
-  
+
   pendingPlacementAsset = g_InGamePendingPlacementArmyAsset;
   if (((worldRuntime->interaction).nodeFlags & 8) != 0) {
     return;
@@ -59,225 +309,31 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
     return;
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
-    checkResult = SelectionInfo_TestNotOwnAircraftPadsWithAircraft
-                       (worldRuntime->activeFactionRuntimeIndex);
-    if (!checkResult) {
-      /* command mode: ghost of the army the previewed pointer-mode command would create */
-      if (releaseMode == GRAPHICS_STATE_DISABLED) {
-        g_InGameCommandPreviewArmyRuntime = NULL;
-        if ((((g_InGamePointerInteractionStateFlags &
-               (WORLD_POINTER_STATE_OVER_OWN_ARMY | WORLD_POINTER_STATE_SELECTION_CAPTURE)) == 0) &&
-            (g_InGameCommandPreviewArmyAssetId != 0)) &&
-           (g_InGameCommandPreviewSurfaceHeightQ12OrSentinel != WORLD_POINTER_NO_HIT)) {
-          createdArmy = ArmyRuntime_CreateInstanceFromAsset
-                             (1,g_InGameCommandPreviewHeading16,g_InGameCommandPreviewWorldXQ12,
-                              g_InGameCommandPreviewWorldYQ12,
-                              worldRuntime->activeFactionRuntimeIndex,
-                              g_InGameCommandPreviewArmyAssetId,worldRuntime,NULL);
-          if (createdArmy != NULL) {
-            currentModelNode = (((GameEntityRuntime *)createdArmy)->common).ownership.modelNode;
-            g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)createdArmy;
-            currentModelNode->tintArgb = OVERLAY_PREVIEW_TINT_ARGB;
-            ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
-          }
-        }
-      }
-      else if (g_InGameCommandPreviewArmyRuntime != NULL) {
-        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,g_InGameCommandPreviewArmyRuntime);
-        g_InGameCommandPreviewArmyRuntime = NULL;
-      }
+    if (!SelectionInfo_TestNotOwnAircraftPadsWithAircraft(worldRuntime->activeFactionRuntimeIndex)) {
+      InGameWorldOverlay_UpdateCommandPreviewArmy(releaseMode,worldRuntime);
     }
   }
   else if (releaseMode == GRAPHICS_STATE_DISABLED) {
-    /* placement mode: ghost of the pending army at the (possibly snapped) placement point */
-    g_InGamePlacementPreviewArmyRuntime = NULL;
-    if ((g_InGamePendingPlacementArmyAsset != 0) &&
-       (g_InGamePlacementSurfaceHeightQ12OrSentinel != WORLD_POINTER_NO_HIT)) {
-      previewTint = OVERLAY_PREVIEW_TINT_ARGB;
-      g_ArmyPlacementLateRejectionCount = 1;
-      checkResult = ArmyPlacement_ValidateAssetAtPointAndCellCorners
-                         (0,g_InGamePlacementHeading16,g_InGamePlacementWorldXQ12,
-                          g_InGamePlacementWorldYQ12,
-                          *(ArmyPlacementContext *)(g_InGamePendingPlacementArmyAsset + 8),
-                          worldRuntime->activeFactionRuntimeIndex,worldRuntime);
-      acceptedCandidateCount = g_ArmyPlacementLateRejectionCount;
-      if (checkResult) {
-        g_ArmyPlacementLateRejectionCount = 0;
-        if (acceptedCandidateCount < 2) goto RefreshMarkers;
-        previewTint = OVERLAY_PREVIEW_TINT_MULTI_CANDIDATE_ARGB;
-      }
-      armyAssetId = *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8);
-      /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
-      worldXQ12 = g_ArmyPlacementValidatedWorldXQ12;
-      validatedWorldYQ12 = g_ArmyPlacementValidatedWorldYQ12;
-      g_ArmyPlacementLateRejectionCount = 1;
-      worldRuntimeCopy = worldRuntime;
-      placeable = ArmyPlacement_CanPlaceAssetAtFieldPoint
-                         (1,0,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
-                          *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8),
-                          worldRuntime->activeFactionRuntimeIndex,(UiRootNode *)worldRuntime,NULL);
-      if ((!placeable) && (g_ArmyPlacementLateRejectionCount < 2)) {
-        previewTint = previewTint & OVERLAY_PREVIEW_TINT_BLOCKED_MASK;
-      }
-      g_ArmyPlacementLateRejectionCount = 0;
-      entityRuntime = (GameEntityRuntime *)ArmyRuntime_CreateInstanceFromAsset
-                         (1,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
-                          worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntimeCopy,NULL);
-      if (entityRuntime != NULL) {
-        currentModelNode = (entityRuntime->common).ownership.modelNode;
-        classRecord = (entityRuntime->common).ownership.definitionOrClassRecord;
-        g_InGamePlacementPreviewArmyRuntime = entityRuntime;
-        currentModelNode->tintArgb = previewTint;
-        recordOrCount = *classRecord;
-        ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
-        if (((((ModelDefinition *)recordOrCount)->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
-            (3 < currentModelNode->childCount)) &&
-           (currentModelNode->childNodes[3] != NULL)) {
-          /* class-13 armies keep child node 3 opaque */
-          childTint = &currentModelNode->childNodes[3]->tintArgb;
-          *childTint = *childTint | 0xff000000;
-        }
-      }
-    }
+    InGameWorldOverlay_BuildPlacementPreviewArmy(pendingPlacementAsset,worldRuntime);
   }
   else if (g_InGamePlacementPreviewArmyRuntime != NULL) {
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,g_InGamePlacementPreviewArmyRuntime);
     g_InGamePlacementPreviewArmyRuntime = NULL;
   }
-RefreshMarkers:
   if (releaseMode == GRAPHICS_STATE_DISABLED) {
-    if (EffectDefinitionRegistry_FindById(EFF_0143_EGATH0,&markerDefinition) == 0) {
-      modelNodeCursor = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-      indexOrCount = 0;
-      if (modelNodeCursor == NULL) {
-        return;
-      }
-      do {
-        if (((modelNodeCursor->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (factoryModelRuntime = (modelNodeCursor->runtimePayload).modelRuntime,
-            factoryModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)) &&
-           ((((factoryModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RALLY_POINT_SET) != 0 &&
-            (factoryModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
-             worldRuntime->activeFactionRuntimeIndex)))) {
-          /* the unit factory's exit point: X at +0x78, Y at +0x7C (classLinkState.classState78 / 7C) */
-          FieldGrid_InterpolateTopSurfaceHeight
-                    ((factoryModelRuntime->classLinkState).classState7C,
-                     (factoryModelRuntime->classLinkState).classState78,worldRuntime->fieldGrid,&surfaceHeightQ12);
-          createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
-                             (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
-                              FIXED_ANGLE16_QUARTER_TURN,0,surfaceHeightQ12,(factoryModelRuntime->classLinkState).classState7C,
-                              (factoryModelRuntime->classLinkState).classState78,markerDefinition,
-                              worldRuntime);
-          if (createdEffect != NULL) {
-            g_InGameOwnedEntityTransientEffectMarkers[indexOrCount] = createdEffect;
-            indexOrCount = indexOrCount + 1;
-            createdEffect->modelNodeOrSavedOffset.modelNode->tintArgb = 0xffffffff;
-            g_InGameOwnedEntityTransientEffectMarkerCount =
-                 g_InGameOwnedEntityTransientEffectMarkerCount + 1;
-            if (OVERLAY_OWNED_MARKER_CAPACITY - 1 < indexOrCount) break;
-          }
-        }
-        modelNodeCursor = (ModelRuntimeNode *)(modelNodeCursor->common).nextNode;
-      } while (modelNodeCursor != NULL);
+    if (!InGameWorldOverlay_BuildOwnedEntityMarkers(worldRuntime)) {
+      /* Original quirk: with an empty world owner list no waypoint or target markers are built either */
+      return;
     }
-    if (EffectDefinitionRegistry_FindById(EFF_0148_EWAYP0,&markerDefinition) == 0) {
-      if (EffectDefinitionRegistry_FindById(EFF_0149_ETARG0,&targetDefinition) == 0) {
-        /* the markers use scale 0x1000 (1.0 in Q12) except at an army target, which uses the target's own
-           marker scale (its definition's footprintRadius); at most OVERLAY_COMMAND_TARGET_MARKER_CAPACITY markers */
-        recordOrCount = SELECTION_ENTRY_CAPACITY;
-        selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
-        do {
-          entityRuntime = *selectionSlotCursor;
-          if ((entityRuntime != NULL) &&
-             (worldRuntime->activeFactionRuntimeIndex == (entityRuntime->common).ownership.ownerIndex)) {
-            if ((((ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
-                 runtimeDefinition->accelerationPerTick != 0)
-               && (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_ACTIVE) != 0)) {
-              InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                        (Q12_ONE,(entityRuntime->common).ownership.modelNode,
-                         (entityRuntime->common).pathCoordinate1Q12,(entityRuntime->common).pathCoordinate0Q12,
-                         markerDefinition,worldRuntime);
-              if (OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount) {
-                return;
-              }
-              if (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) != 0) {
-                /* further waypoints: the army's queued waypoints */
-                indexOrCount = 0;
-                do {
-                  InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                            (Q12_ONE,(entityRuntime->common).ownership.modelNode,
-                             ((ArmyMovementRuntime *)entityRuntime)->queuedWaypoints[indexOrCount].worldYQ12,
-                             ((ArmyMovementRuntime *)entityRuntime)->queuedWaypoints[indexOrCount].worldXQ12,
-                             markerDefinition,worldRuntime);
-                  indexOrCount++;
-                  if (OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount) {
-                    return;
-                  }
-                } while (indexOrCount < ((ArmyMovementRuntime *)entityRuntime)->queuedWaypointCount);
-              }
-            }
-            if ((((entityRuntime->common).commandTarget.targetFlags & 2) != 0) &&
-               (InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                          (Q12_ONE,(entityRuntime->common).ownership.modelNode,
-                           (entityRuntime->common).commandTarget.targetWorldYQ12,
-                           (entityRuntime->common).commandTarget.targetWorldXQ12,targetDefinition,
-                           worldRuntime),
-                OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount)) {
-              return;
-            }
-            commandTargetEntity = (entityRuntime->common).commandTarget.targetEntity;
-            if (((((entityRuntime->common).commandTarget.targetFlags & 1) != 0) &&
-                (commandTargetEntity != NULL)) &&
-               (currentModelNode = (commandTargetEntity->common).ownership.modelNode,
-               InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                         (((ModelRuntimeSlot *)(commandTargetEntity->common).ownership.definitionOrClassRecord)->
-                          definitionOrSavedId.runtimeDefinition->footprintRadius,
-                          (entityRuntime->common).ownership.modelNode,
-                          (currentModelNode->worldTransform).translation.y,
-                          (currentModelNode->worldTransform).translation.x,targetDefinition,
-                          worldRuntime),
-               OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount)) {
-              return;
-            }
-          }
-          selectionSlotCursor = selectionSlotCursor + 1;
-          recordOrCount--;
-        } while (recordOrCount != 0);
-      }
-    }
+    InGameWorldOverlay_BuildCommandTargetMarkers(worldRuntime);
   }
   else {
     /* release: detach every marker's model node from the world and forget it */
-    ownedEffectCursor = g_InGameOwnedEntityTransientEffectMarkers;
-    recordOrCount = g_InGameOwnedEntityTransientEffectMarkerCount;
-    if (g_InGameOwnedEntityTransientEffectMarkerCount != 0) {
-      do {
-        effectSlot = *ownedEffectCursor;
-        currentModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
-        InterpolationState_SetNegatedTargetAndRescaleProgress(0,currentModelNode->shadingRecord);
-        WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)currentModelNode);
-        (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
-        ownedEffectCursor = ownedEffectCursor + 1;
-        recordOrCount--;
-      } while (recordOrCount != 0);
-      g_InGameOwnedEntityTransientEffectMarkerCount = 0;
-    }
-    commandTargetEffectCursor = g_InGameCommandTargetTransientEffectMarkers;
-    indexOrCount = g_InGameCommandTargetTransientEffectMarkerCount;
-    if (g_InGameCommandTargetTransientEffectMarkerCount != 0) {
-      do {
-        effectSlot = *commandTargetEffectCursor;
-        currentModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
-        InterpolationState_SetNegatedTargetAndRescaleProgress(0,currentModelNode->shadingRecord);
-        WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)currentModelNode);
-        (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
-        commandTargetEffectCursor = commandTargetEffectCursor + 1;
-        indexOrCount = indexOrCount - 1;
-      } while (indexOrCount != 0);
-      g_InGameCommandTargetTransientEffectMarkerCount = 0;
-    }
+    InGameWorldOverlay_ReleaseMarkers
+              (g_InGameOwnedEntityTransientEffectMarkers,&g_InGameOwnedEntityTransientEffectMarkerCount);
+    InGameWorldOverlay_ReleaseMarkers
+              (g_InGameCommandTargetTransientEffectMarkers,&g_InGameCommandTargetTransientEffectMarkerCount);
   }
-  return;
 }
 
 
@@ -293,33 +349,35 @@ void SelectionOverlay_RenderSelectedArmyMetrics
 
 {
   ModelRuntimeNode *modelNode;
-  int remainingSlots;
-  GameEntityRuntime **selectionSlotCursor;
-  
-  remainingSlots = SELECTION_ENTRY_CAPACITY;
-  selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
-  do {
-    if ((*selectionSlotCursor != NULL) &&
-       ((modelNode = ((*selectionSlotCursor)->common).ownership.modelNode, (modelNode->runtimeFlags & 4) != 0 ||
-        (((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0 && ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0)))))) {
-      g_ModelProjectedBoundsPixels.minX = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
-      g_ModelProjectedBoundsPixels.minY = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
-      g_ModelProjectedBoundsPixels.maxX = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
-      g_ModelProjectedBoundsPixels.maxY = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
-      ModelProjectedBounds_AccumulateHierarchyRecursive(&g_ModelProjectedBoundsPixels,modelNode);
-      if ((g_ModelProjectedBoundsPixels.minX < g_ModelProjectedBoundsPixels.maxX) &&
-         (g_ModelProjectedBoundsPixels.minY < g_ModelProjectedBoundsPixels.maxY)) {
-        SelectionPanel_RenderArmyRuntimeMetrics
-                  (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
-                   g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
-                   g_ModelProjectedBoundsPixels.minX,
-                   (RuntimeModelFactionPrefix *)*selectionSlotCursor); /* EDX: the entity (lost local) */
-      }
+  GameEntityRuntime *selectedEntity;
+  GameEntityRuntime **selectionSlots;
+  int slotIndex;
+
+  selectionSlots = g_SelectionInfoEntitySlots->entries;
+  for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
+    selectedEntity = selectionSlots[slotIndex];
+    if (selectedEntity == NULL) {
+      continue;
     }
-    selectionSlotCursor++;
-    remainingSlots--;
-  } while (remainingSlots != 0);
-  return;
+    modelNode = (selectedEntity->common).ownership.modelNode;
+    if (!(((modelNode->runtimeFlags & 4) != 0) ||
+          (((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) &&
+           ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0)))) {
+      continue;
+    }
+    g_ModelProjectedBoundsPixels.minX = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
+    g_ModelProjectedBoundsPixels.minY = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
+    g_ModelProjectedBoundsPixels.maxX = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
+    g_ModelProjectedBoundsPixels.maxY = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
+    ModelProjectedBounds_AccumulateHierarchyRecursive(&g_ModelProjectedBoundsPixels,modelNode);
+    if ((g_ModelProjectedBoundsPixels.minX < g_ModelProjectedBoundsPixels.maxX) &&
+       (g_ModelProjectedBoundsPixels.minY < g_ModelProjectedBoundsPixels.maxY)) {
+      SelectionPanel_RenderArmyRuntimeMetrics
+                (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
+                 g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
+                 g_ModelProjectedBoundsPixels.minX,(RuntimeModelFactionPrefix *)selectedEntity);
+    }
+  }
 }
 
 
@@ -962,46 +1020,45 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
   uint32_t boundingRadius;
   int markerSlotIndex;
   int remainingMarkers;
-  int *markerCursor;
+  EffectRuntimeSlot **markerCursor;
+  ModelRuntimeNode *existingMarkerNode;
   Q12 surfaceHeightQ12;
   EffectRuntimeSlot *createdEffect;
-  
+
   markerSlotIndex = g_InGameCommandTargetTransientEffectMarkerCount;
-  if ((worldXQ12 != ((ModelRuntimeNode *)sourceWorldNode)->worldTransform.translation.x) ||
-     (worldYQ12 != ((ModelRuntimeNode *)sourceWorldNode)->worldTransform.translation.y)) {
-    /* each marker is an EffectRuntimeSlot * */
-    markerCursor = (int *)g_InGameCommandTargetTransientEffectMarkers;
-    for (remainingMarkers = g_InGameCommandTargetTransientEffectMarkerCount; remainingMarkers != 0; remainingMarkers--) {
-      if ((worldXQ12 ==
-           ((EffectRuntimeSlot *)*markerCursor)->modelNodeOrSavedOffset.modelNode->worldTransform.translation.x) &&
-         (worldYQ12 ==
-          ((EffectRuntimeSlot *)*markerCursor)->modelNodeOrSavedOffset.modelNode->worldTransform.translation.y)) {
-        return;
-      }
-      markerCursor++;
-    }
-    FieldGrid_InterpolateTopSurfaceHeight
-              (worldYQ12,worldXQ12,((WorldRuntimeContext *)inGameRuntime)->fieldGrid,&surfaceHeightQ12);
-    createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,FIXED_ANGLE16_QUARTER_TURN,0,
-                       surfaceHeightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
-    if (createdEffect == NULL) {
-      /* Original quirk: no failure check; the original stores and dereferences its failure value */
-      createdEffect = (EffectRuntimeSlot *)FATAL_ERROR_GENERAL_FAILURE;
-    }
-    g_InGameCommandTargetTransientEffectMarkers[markerSlotIndex] = createdEffect;
-    markerModelNode = createdEffect->modelNodeOrSavedOffset.modelNode;
-    g_InGameCommandTargetTransientEffectMarkerCount++;
-    boundingRadius = markerModelNode->subtreeBoundingRadiusQ12;
-    markerModelNode->tintArgb = 0xffffffff;
-    if ((scaleQ12 != Q12_ONE) && (boundingRadius != 0)) {
-      translationZ = &(markerModelNode->worldTransform).translation.z;
-      *translationZ = *translationZ + 324;
-      markerModelNode->runtimeFlags = markerModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_APPLY_SCALE;
-      /* unsigned 32x32->64 MUL / DIV, as in the original; 6656 is 6.5 in Q12 */
-      markerModelNode->modelScaleQ12 = (Q12)(((uint64_t)(uint32_t)scaleQ12 * 6656) / (uint64_t)boundingRadius);
-    }
+  if ((worldXQ12 == ((ModelRuntimeNode *)sourceWorldNode)->worldTransform.translation.x) &&
+     (worldYQ12 == ((ModelRuntimeNode *)sourceWorldNode)->worldTransform.translation.y)) {
+    return;
   }
-  return;
+  markerCursor = g_InGameCommandTargetTransientEffectMarkers;
+  for (remainingMarkers = g_InGameCommandTargetTransientEffectMarkerCount; remainingMarkers != 0; remainingMarkers--) {
+    existingMarkerNode = (*markerCursor)->modelNodeOrSavedOffset.modelNode;
+    if ((worldXQ12 == existingMarkerNode->worldTransform.translation.x) &&
+       (worldYQ12 == existingMarkerNode->worldTransform.translation.y)) {
+      return;
+    }
+    markerCursor++;
+  }
+  FieldGrid_InterpolateTopSurfaceHeight
+            (worldYQ12,worldXQ12,((WorldRuntimeContext *)inGameRuntime)->fieldGrid,&surfaceHeightQ12);
+  createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
+                    (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,FIXED_ANGLE16_QUARTER_TURN,0,
+                     surfaceHeightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
+  if (createdEffect == NULL) {
+    /* Original quirk: no failure check; the original stores and dereferences its failure value */
+    createdEffect = (EffectRuntimeSlot *)FATAL_ERROR_GENERAL_FAILURE;
+  }
+  g_InGameCommandTargetTransientEffectMarkers[markerSlotIndex] = createdEffect;
+  markerModelNode = createdEffect->modelNodeOrSavedOffset.modelNode;
+  g_InGameCommandTargetTransientEffectMarkerCount++;
+  boundingRadius = markerModelNode->subtreeBoundingRadiusQ12;
+  markerModelNode->tintArgb = 0xffffffff;
+  if ((scaleQ12 != Q12_ONE) && (boundingRadius != 0)) {
+    translationZ = &(markerModelNode->worldTransform).translation.z;
+    *translationZ = *translationZ + 324;
+    markerModelNode->runtimeFlags = markerModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_APPLY_SCALE;
+    /* unsigned 32x32->64 MUL / DIV, as in the original; 6656 is 6.5 in Q12 */
+    markerModelNode->modelScaleQ12 = (Q12)(((uint64_t)(uint32_t)scaleQ12 * 6656) / (uint64_t)boundingRadius);
+  }
 }
 

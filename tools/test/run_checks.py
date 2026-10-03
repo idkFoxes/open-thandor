@@ -139,7 +139,10 @@ def check_determinism():
     folder = make_copy('det', args.new)
     code, text = run_tool(os.path.join(out_dir, 'determinism.txt'),
                           [os.path.join(HERE, 'run_determinism.py'), folder, '--reference',
-                           os.path.join(HERE, 'determinism_reference')], 1800)
+                           os.path.join(HERE, 'determinism_reference'),
+                           # rare unexplained production mismatch at tick 68 (ot-scratch/findings.md): keep the
+                           # per-army values of that tick in GAME_DIR_chk_det_d<k>/statehash.txt for the next one
+                           '--detail', '68'], 1800)
     lines = [l for l in text.splitlines() if l.split() and l.split()[0] in ('battle', 'turrets', 'production')]
     details = '; '.join(l.split()[0] + ' ok' if l.split()[1] == 'ok:' else ' '.join(l.split(' (rerun')[0].split())
                         for l in lines) or 'no result (exit %s)' % code

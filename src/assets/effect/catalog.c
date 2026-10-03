@@ -25,25 +25,23 @@ bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
   AssetRecordCount remainingEntryCount;
   EffectDefinition *definition;
 
-  registrationStatusCode = FATAL_ERROR_EFFECT_ASSET_INVALID;
-  if ((asset->entryCountHeader.common.magic == ASSET_MAGIC_EFF) &&
-     (asset->entryCountHeader.common.converterVersion == PCK_CONVERTER_EFF_00040007)) {
-    definition = (EffectDefinition *)(asset + 1);
-    for (remainingEntryCount = asset->entryCountHeader.entryCount; remainingEntryCount != 0;
-         remainingEntryCount--) {
-      if (!EffectDefinition_RegisterAndLoadSprite(definition,&registrationStatusCode)) {
-        goto ReturnFailure;
-      }
-      definition++;
-    }
-    return true;
-  }
-  else {
+  if ((asset->entryCountHeader.common.magic != ASSET_MAGIC_EFF) ||
+     (asset->entryCountHeader.common.converterVersion != PCK_CONVERTER_EFF_00040007)) {
     Package_SetLastErrorPath((uint16_t *)asset);
+    *outError = FATAL_ERROR_EFFECT_ASSET_INVALID;
+    return false;
   }
-ReturnFailure:
-  *outError = registrationStatusCode;
-  return false;
+  registrationStatusCode = FATAL_ERROR_EFFECT_ASSET_INVALID;
+  definition = (EffectDefinition *)(asset + 1);
+  for (remainingEntryCount = asset->entryCountHeader.entryCount; remainingEntryCount != 0;
+       remainingEntryCount--) {
+    if (!EffectDefinition_RegisterAndLoadSprite(definition,&registrationStatusCode)) {
+      *outError = registrationStatusCode;
+      return false;
+    }
+    definition++;
+  }
+  return true;
 }
 
 
@@ -101,60 +99,59 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void)
 bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError)
 
 {
-  SpriteAssetHeader *assetOrError;
+  SpriteAssetHeader *loadedSpriteAsset;
   SpriteAssetHeader *existingSpriteAsset;
   int registrySlotsRemaining;
   EffectDefinition **registrySlotCursor;
-  bool extensionFailed;
   uint32_t loadErrorCode;
   uint32_t spriteRegisterError;
 
+  if (EffectRuntime_FindDefinitionById(definition->definitionId) != NULL) {
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
+    *outError = FATAL_ERROR_EFFECT_ID_DUPLICATE;
+    return false;
+  }
   registrySlotCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
-  if (EffectRuntime_FindDefinitionById(definition->definitionId) == NULL) {
-    /* Original quirk: the lookup's failure value is the error reported when the .spr extension cannot be set */
-    assetOrError = (SpriteAssetHeader *)FATAL_ERROR_EFFECT_ID_NOT_FOUND;
-    for (; registrySlotsRemaining != 0; registrySlotsRemaining--) {
-      if (*registrySlotCursor == NULL) {
-        *registrySlotCursor = definition;
-        extensionFailed = WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16);
-        if (extensionFailed) goto ReturnFailure;
-        assetOrError = Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
-        if (assetOrError == NULL) {
-          assetOrError = (SpriteAssetHeader *)loadErrorCode;
-          goto ReturnFailure;
-        }
-        existingSpriteAsset = SpriteAssetRegistry_FindById(assetOrError->registryHeader.registryId);
-        if (existingSpriteAsset == NULL) {
-          definition->ownedNestedResourcePresent++;
-          definition->ownedNestedResource = assetOrError;
-          spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers(assetOrError);
-          if (spriteRegisterError != 0) {
-            assetOrError = (SpriteAssetHeader *)spriteRegisterError;
-            goto ReturnFailure;
-          }
-        }
-        else {
-          definition->ownedNestedResource = existingSpriteAsset;
-          Resource_Release(assetOrError);
-        }
-        return true;
-      }
-      registrySlotCursor++;
-    }
+  while (registrySlotsRemaining != 0 && *registrySlotCursor != NULL) {
+    registrySlotCursor++;
+    registrySlotsRemaining--;
+  }
+  if (registrySlotsRemaining == 0) {
     /* the registry capacity goes to the error text */
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,EFFECT_DEFINITION_REGISTRY_SLOT_COUNT,
                             g_PackageLastErrorPath);
-    assetOrError = (SpriteAssetHeader *)FATAL_ERROR_EFFECT_REGISTRY_FULL;
+    *outError = FATAL_ERROR_EFFECT_REGISTRY_FULL;
+    return false;
+  }
+  *registrySlotCursor = definition;
+  if (WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16)) {
+    /* Original quirk: a failure to set the .spr extension reports FATAL_ERROR_EFFECT_ID_NOT_FOUND (the
+       definition stays registered) */
+    *outError = FATAL_ERROR_EFFECT_ID_NOT_FOUND;
+    return false;
+  }
+  loadedSpriteAsset = Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
+  if (loadedSpriteAsset == NULL) {
+    *outError = loadErrorCode;
+    return false;
+  }
+  existingSpriteAsset = SpriteAssetRegistry_FindById(loadedSpriteAsset->registryHeader.registryId);
+  if (existingSpriteAsset == NULL) {
+    definition->ownedNestedResourcePresent++;
+    definition->ownedNestedResource = loadedSpriteAsset;
+    spriteRegisterError = SpriteAsset_RegisterAndRelocatePointers(loadedSpriteAsset);
+    if (spriteRegisterError != 0) {
+      *outError = spriteRegisterError;
+      return false;
+    }
   }
   else {
-    g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
-    assetOrError = (SpriteAssetHeader *)FATAL_ERROR_EFFECT_ID_DUPLICATE;
+    definition->ownedNestedResource = existingSpriteAsset;
+    Resource_Release(loadedSpriteAsset);
   }
-ReturnFailure:
-  *outError = (uint32_t)assetOrError;
-  return false;
+  return true;
 }
 
 
@@ -171,21 +168,21 @@ uint32_t EffectDefinitionRegistry_FindById(PckEffectDefinitionIdCatalog definiti
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
 
-  registryCursor = g_EffectDefinitionRegistry;
-  registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
-  candidateDefinition = NULL;
-  if (definitionId != 0) {
-    while (candidateDefinition = *registryCursor, candidateDefinition == NULL || candidateDefinition->definitionId != definitionId) {
-      registryCursor++;
-      registrySlotsRemaining--;
-      if (registrySlotsRemaining == 0) {
-        g_WideNumberFormatUtf16
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
-        return FATAL_ERROR_EFFECT_ID_NOT_FOUND;
-      }
-    }
+  if (definitionId == 0) {
+    *outDefinition = NULL;
+    return 0;
   }
-  *outDefinition = candidateDefinition;
-  return 0;
+  registryCursor = g_EffectDefinitionRegistry;
+  for (registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
+    candidateDefinition = *registryCursor;
+    if (candidateDefinition != NULL && candidateDefinition->definitionId == definitionId) {
+      *outDefinition = candidateDefinition;
+      return 0;
+    }
+    registryCursor++;
+  }
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
+  return FATAL_ERROR_EFFECT_ID_NOT_FOUND;
 }
 

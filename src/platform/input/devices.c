@@ -95,6 +95,17 @@ uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 }
 
 
+/* DirectInputMouse_Init failure exit for the DirectInput setup: records the failed stage (0 = DirectInput
+   object, 1 = device, 2 = data format, 3 = cooperative level, 4 = buffer size) as text in
+   g_PackageLastErrorPath and reports FATAL_ERROR_DIRECTINPUT_SETUP. */
+static bool DirectInputMouse_FailSetup(int32_t initStage,uint32_t *outError)
+{
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
+  *outError = FATAL_ERROR_DIRECTINPUT_SETUP;
+  return false;
+}
+
+
 /* Address: 0x00576CF0.
    Starts the mouse: binds DirectInputCreateA from the DLL, hides the Windows cursor, creates an exclusive
    foreground buffered DirectInput mouse, hooks display-mode changes, starts the cursor-animation (20 Hz)
@@ -106,10 +117,10 @@ uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 bool DirectInputMouse_Init(uint32_t *outError)
 
 {
-  GraphicsSubresourceIndex copiedFrameField;
+  GraphicsSubresourceIndex activeFirstSubresource;
   uint16_t keyState;
   TH_LEGACY_HRESULT directInputResult;
-  GraphicsTextureSourceAsset *cursorDataOrError;
+  GraphicsTextureSourceAsset *cursorAsset;
   GraphicsCursorFrameRecord *frameRecord;
   uint32_t remainingFrames;
   uint32_t subresourceIndex;
@@ -121,9 +132,7 @@ bool DirectInputMouse_Init(uint32_t *outError)
   uint32_t cursorFrameBytes;
   uint32_t cursorLoadErrorCode;
   GraphicsTextureLogicalSize logicalSize;
-  int32_t initStage;
-  
-  initStage = 0;
+
   directInputModule = DynDLL_Load(dynapi_3);
   if (directInputModule == NULL) {
     FatalError_ExitIfFailed(FATAL_ERROR_DLL_LOAD_FAILED,true); /* does not return */
@@ -132,101 +141,98 @@ bool DirectInputMouse_Init(uint32_t *outError)
   FatalError_ExitIfFailed(resolveError,resolveError != 0);
   SetCursor(NULL);
   directInputResult = pDirectInputCreateA(g_hInstance,DIRECTINPUT_VERSION,&g_DirectInput,NULL);
-  if (directInputResult == 0) {
-    initStage = 1;
-    directInputResult = g_DirectInput->lpVtbl->CreateDevice
-                      (g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,NULL);
-    if (directInputResult == 0) {
-      initStage = 2;
-      directInputResult = g_MouseDevice->lpVtbl->SetDataFormat(g_MouseDevice,&MouseDataFormat);
-      if (directInputResult == 0) {
-        initStage = 3;
-#ifdef THANDOR_TEST_AIDS
-        directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
-                          (g_MouseDevice,g_MainWindow,DirectInputMouse_CooperativeLevel());
-#else
-        directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
-                          (g_MouseDevice,g_MainWindow,DISCL_EXCLUSIVE | DISCL_FOREGROUND);
-#endif
-        if (directInputResult == 0) {
-          initStage = 4;
-          directInputResult = g_MouseDevice->lpVtbl->SetProperty
-                            (g_MouseDevice,DIPROP_BUFFERSIZE,&MouseBufferProperty.diph);
-          if (directInputResult == 0) {
-            g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
-            /* chain in front of the graphics display-mode switch (XCHG in the original) */
-            g_DirectInputMouseChainedSetDisplayMode = g_GraphicsSetDisplayMode;
-            LOCK();
-            g_GraphicsSetDisplayMode = DirectInputMouse_SetDisplayMode;
-            UNLOCK();
-            TimerSystem_RegisterPeriodic(CURSOR_ANIMATION_TIMER_HZ,GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
-            TimerSystem_RegisterPeriodic(MOUSE_POLL_TIMER_HZ,DirectInputMouse_PollBufferedEvents);
-            g_PointerFlushEvents = DirectInputMouse_FlushBufferedEvents;
-            g_PointerSetPosition = DirectInputMouse_SetPosition;
-            cursorDataOrError = Package_LoadEntry(u_engine_mouse_gfx_00416864,&cursorLoadErrorCode);
-            if (cursorDataOrError == NULL) {
-              cursorDataOrError = (GraphicsTextureSourceAsset *)cursorLoadErrorCode;
-            }
-            else {
-              maxWidth = 0;
-              maxHeight = 0;
-              subresourceIndex = 0;
-              g_CursorSourceAsset = cursorDataOrError;
-              do {
-                logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,cursorDataOrError);
-                subresourceIndex++;
-                if ((int)maxWidth < (int)logicalSize.logicalWidthPixels) {
-                  maxWidth = logicalSize.logicalWidthPixels;
-                }
-                if ((int)maxHeight < (int)logicalSize.logicalHeightPixels) {
-                  maxHeight = logicalSize.logicalHeightPixels;
-                }
-              } while (subresourceIndex < (cursorDataOrError->tableDescriptor).subresourceCount);
-              g_CursorMaxWidth = maxWidth;
-              g_CursorMaxHeight = maxHeight;
-              if (!Resource_Load(u_engine_mouse_dat_00416886,&cursorFrameData,&cursorFrameBytes,
-                                 &cursorLoadErrorCode)) {
-                cursorDataOrError = (GraphicsTextureSourceAsset *)cursorLoadErrorCode;
-              }
-              else {
-                remainingFrames = cursorFrameBytes / sizeof(GraphicsCursorFrameRecord);
-                frameRecord = (GraphicsCursorFrameRecord *)cursorFrameData;
-                g_CursorFrameRecords = frameRecord;
-                g_CursorFrameCount = remainingFrames;
-                /* every cursor starts on the first frame of its animations */
-                do {
-                  copiedFrameField = frameRecord->activeAnimationFirstSubresourceIndex;
-                  frameRecord->idleSubresourceIndex = frameRecord->idleAnimationFirstSubresourceIndex;
-                  frameRecord->activeSubresourceIndex = copiedFrameField;
-                  frameRecord++;
-                  remainingFrames--;
-                } while (remainingFrames != 0);
-                keyState = GetKeyState(VK_NUMLOCK);
-                if ((keyState & 1) != 0) {
-                  g_KeyboardStateMask |= KEYBOARD_STATE_NUM_LOCK;
-                }
-                keyState = GetKeyState(VK_SCROLL);
-                if ((keyState & 1) != 0) {
-                  g_KeyboardStateMask |= KEYBOARD_STATE_SCROLL_LOCK;
-                }
-                keyState = GetKeyState(VK_CAPITAL);
-                if ((keyState & 1) != 0) {
-                  g_KeyboardStateMask |= KEYBOARD_STATE_CAPS_LOCK;
-                }
-                return true;
-              }
-            }
-            /* cursor asset load failed: its error code */
-            *outError = (uint32_t)cursorDataOrError;
-            return false;
-          }
-        }
-      }
-    }
+  if (directInputResult != 0) {
+    return DirectInputMouse_FailSetup(0,outError);
   }
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
-  *outError = FATAL_ERROR_DIRECTINPUT_SETUP;
-  return false;
+  directInputResult = g_DirectInput->lpVtbl->CreateDevice
+                    (g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,NULL);
+  if (directInputResult != 0) {
+    return DirectInputMouse_FailSetup(1,outError);
+  }
+  directInputResult = g_MouseDevice->lpVtbl->SetDataFormat(g_MouseDevice,&MouseDataFormat);
+  if (directInputResult != 0) {
+    return DirectInputMouse_FailSetup(2,outError);
+  }
+#ifdef THANDOR_TEST_AIDS
+  directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
+                    (g_MouseDevice,g_MainWindow,DirectInputMouse_CooperativeLevel());
+#else
+  directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
+                    (g_MouseDevice,g_MainWindow,DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+#endif
+  if (directInputResult != 0) {
+    return DirectInputMouse_FailSetup(3,outError);
+  }
+  directInputResult = g_MouseDevice->lpVtbl->SetProperty
+                    (g_MouseDevice,DIPROP_BUFFERSIZE,&MouseBufferProperty.diph);
+  if (directInputResult != 0) {
+    return DirectInputMouse_FailSetup(4,outError);
+  }
+  g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
+  /* chain in front of the graphics display-mode switch (XCHG in the original) */
+  g_DirectInputMouseChainedSetDisplayMode = g_GraphicsSetDisplayMode;
+  LOCK();
+  g_GraphicsSetDisplayMode = DirectInputMouse_SetDisplayMode;
+  UNLOCK();
+  TimerSystem_RegisterPeriodic(CURSOR_ANIMATION_TIMER_HZ,GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
+  TimerSystem_RegisterPeriodic(MOUSE_POLL_TIMER_HZ,DirectInputMouse_PollBufferedEvents);
+  g_PointerFlushEvents = DirectInputMouse_FlushBufferedEvents;
+  g_PointerSetPosition = DirectInputMouse_SetPosition;
+
+  /* cursor images: the largest image size sizes the cursor buffers */
+  cursorAsset = Package_LoadEntry(u_engine_mouse_gfx_00416864,&cursorLoadErrorCode);
+  if (cursorAsset == NULL) {
+    *outError = cursorLoadErrorCode;
+    return false;
+  }
+  maxWidth = 0;
+  maxHeight = 0;
+  subresourceIndex = 0;
+  g_CursorSourceAsset = cursorAsset;
+  do {
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,cursorAsset);
+    subresourceIndex++;
+    if ((int)maxWidth < (int)logicalSize.logicalWidthPixels) {
+      maxWidth = logicalSize.logicalWidthPixels;
+    }
+    if ((int)maxHeight < (int)logicalSize.logicalHeightPixels) {
+      maxHeight = logicalSize.logicalHeightPixels;
+    }
+  } while (subresourceIndex < (cursorAsset->tableDescriptor).subresourceCount);
+  g_CursorMaxWidth = maxWidth;
+  g_CursorMaxHeight = maxHeight;
+
+  /* cursor frame table */
+  if (!Resource_Load(u_engine_mouse_dat_00416886,&cursorFrameData,&cursorFrameBytes,&cursorLoadErrorCode)) {
+    *outError = cursorLoadErrorCode;
+    return false;
+  }
+  remainingFrames = cursorFrameBytes / sizeof(GraphicsCursorFrameRecord);
+  frameRecord = (GraphicsCursorFrameRecord *)cursorFrameData;
+  g_CursorFrameRecords = frameRecord;
+  g_CursorFrameCount = remainingFrames;
+  /* every cursor starts on the first frame of its animations */
+  do {
+    activeFirstSubresource = frameRecord->activeAnimationFirstSubresourceIndex;
+    frameRecord->idleSubresourceIndex = frameRecord->idleAnimationFirstSubresourceIndex;
+    frameRecord->activeSubresourceIndex = activeFirstSubresource;
+    frameRecord++;
+    remainingFrames--;
+  } while (remainingFrames != 0);
+
+  keyState = GetKeyState(VK_NUMLOCK);
+  if ((keyState & 1) != 0) {
+    g_KeyboardStateMask |= KEYBOARD_STATE_NUM_LOCK;
+  }
+  keyState = GetKeyState(VK_SCROLL);
+  if ((keyState & 1) != 0) {
+    g_KeyboardStateMask |= KEYBOARD_STATE_SCROLL_LOCK;
+  }
+  keyState = GetKeyState(VK_CAPITAL);
+  if ((keyState & 1) != 0) {
+    g_KeyboardStateMask |= KEYBOARD_STATE_CAPS_LOCK;
+  }
+  return true;
 }
 
 
@@ -321,6 +327,129 @@ void DirectInputMouse_Shutdown(void)
 }
 
 
+/* DirectInputMouse_PollBufferedEvents step: applies the buffered event in g_MouseDeviceEvent to the
+   mouse position, wheel delta or button mask and returns its cursor event type in *outEventType. Axes
+   carry a relative delta; buttons are down while bit 7 of dwData is set. Returns false (state untouched)
+   for other axes and buttons, which are ignored. */
+static bool DirectInputMouse_ApplyDeviceEvent(GraphicsCursorEventType *outEventType)
+{
+  bool buttonDown;
+
+  buttonDown = (g_MouseDeviceEvent.dwData & DIRECTINPUT_BUTTON_DOWN_BIT) != 0;
+  if (g_MouseDeviceEvent.dwOfs == DIMOFS_X) {
+    g_MouseX = g_MouseX + g_MouseDeviceEvent.dwData;
+    *outEventType = MOTION_OR_WHEEL;
+  }
+  else if (g_MouseDeviceEvent.dwOfs == DIMOFS_Y) {
+    g_MouseY = g_MouseY + g_MouseDeviceEvent.dwData;
+    *outEventType = MOTION_OR_WHEEL;
+  }
+  else if (g_MouseDeviceEvent.dwOfs == DIMOFS_Z) {
+    g_MouseWheelDelta = (int)g_MouseDeviceEvent.dwData / WHEEL_DELTA;
+    *outEventType = MOTION_OR_WHEEL;
+  }
+  else if (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON0) {
+    if (buttonDown) {
+      g_MouseButtonMask = g_MouseButtonMask | LEFT;
+      *outEventType = LEFT_PRESS;
+    }
+    else {
+      g_MouseButtonMask = g_MouseButtonMask & ~LEFT;
+      *outEventType = LEFT_RELEASE;
+    }
+  }
+  else if ((g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON2) || (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON3)) {
+    if (buttonDown) {
+      g_MouseButtonMask = g_MouseButtonMask | MIDDLE;
+      *outEventType = MIDDLE_PRESS;
+    }
+    else {
+      g_MouseButtonMask = g_MouseButtonMask & ~MIDDLE;
+      *outEventType = MIDDLE_RELEASE;
+    }
+  }
+  else if (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON1) {
+    if (buttonDown) {
+      g_MouseButtonMask = g_MouseButtonMask | RIGHT;
+      *outEventType = RIGHT_PRESS;
+    }
+    else {
+      g_MouseButtonMask = g_MouseButtonMask & ~RIGHT;
+      *outEventType = RIGHT_RELEASE;
+    }
+  }
+  else {
+    return false;
+  }
+  return true;
+}
+
+
+/* DirectInputMouse_PollBufferedEvents step: appends one eventType entry to the g_CursorInputEvents ring,
+   clamping the mouse position to the framebuffer on the way (the distance beyond each edge, plus one,
+   goes to g_CursorOverflow*). The entry records the clamped position, wheel delta, clock and buttons. */
+static void DirectInputMouse_AppendCursorEvent(GraphicsCursorEventType eventType)
+{
+  uint32_t eventIndex;
+  uint32_t nextWriteIndex;
+  GraphicsCursorInputEvent18 *eventRecord;
+  GraphicsCursorButtonState buttonState;
+  UiPointerWheelDelta wheelDelta;
+  uint32_t clockValue;
+  uint32_t limitedXPlusOne;
+  uint32_t limitedYPlusOne;
+  int pointerX;
+  int pointerY;
+  int clampedY;
+
+  eventIndex = g_CursorInputWriteIndex;
+  nextWriteIndex = eventIndex + 1;
+  if (CURSOR_INPUT_EVENT_RING_SIZE - 1 < nextWriteIndex) {
+    nextWriteIndex = 0;
+  }
+  eventRecord = g_CursorInputEvents + eventIndex;
+  g_CursorInputWriteIndex = nextWriteIndex;
+  eventRecord->eventType = eventType;
+  buttonState = g_MouseButtonMask;
+  wheelDelta = g_MouseWheelDelta;
+  clockValue = g_CursorInputClockValue;
+  g_CursorOverflowLeft = 0;
+  g_CursorOverflowRight = 0;
+  g_CursorOverflowTop = 0;
+  g_CursorOverflowBottom = 0;
+  /* right and bottom edges: compared one past the position, as in the original */
+  limitedXPlusOne = g_MouseX + 1;
+  limitedYPlusOne = g_MouseY + 1;
+  if ((int)g_FramebufferWidth <= (int)limitedXPlusOne) {
+    g_CursorOverflowRight = (limitedXPlusOne - g_FramebufferWidth) + 1;
+    limitedXPlusOne = g_FramebufferWidth;
+  }
+  if ((int)g_FramebufferHeight <= (int)limitedYPlusOne) {
+    g_CursorOverflowBottom = (limitedYPlusOne - g_FramebufferHeight) + 1;
+    limitedYPlusOne = g_FramebufferHeight;
+  }
+  pointerX = limitedXPlusOne - 1;
+  pointerY = limitedYPlusOne - 1;
+  /* left and top edges */
+  g_MouseX = pointerX;
+  if (pointerX < 1) {
+    g_MouseX = 0;
+    g_CursorOverflowLeft = 1 - pointerX;
+  }
+  clampedY = pointerY;
+  if (pointerY < 1) {
+    clampedY = 0;
+    g_CursorOverflowTop = 1 - pointerY;
+  }
+  g_MouseY = clampedY;
+  eventRecord->pointerX = g_MouseX;
+  eventRecord->pointerY = clampedY;
+  eventRecord->wheelDelta = wheelDelta;
+  eventRecord->clockValue = clockValue;
+  eventRecord->buttonState = buttonState;
+}
+
+
 /* Address: 0x00577080.
    Mouse-poll timer callback (64 Hz): drains the buffered DirectInput mouse events, updates the mouse
    position (clamped to the framebuffer, the excess kept in g_CursorOverflow*), button mask and wheel
@@ -331,21 +460,11 @@ void DirectInputMouse_Shutdown(void)
 void DirectInputMouse_PollBufferedEvents(void)
 
 {
-  uint32_t wasBusyOrEventIndex;
-  uint32_t clockValue;
-  UiPointerWheelDelta wheelDelta;
-  GraphicsCursorButtonState buttonState;
   TH_LEGACY_HRESULT directInputResult;
   GraphicsCursorEventType eventType;
-  uint32_t clampedXPlusOne;
-  int clampedXOrY;
-  uint32_t nextWriteIndex;
-  uint32_t clampedYPlusOne;
-  int unclampedY;
-  GraphicsCursorInputEvent18 *eventRecord;
   uint32_t errorAttempts;
   int processedCount;
-  
+
   processedCount = 0;
 #ifdef THANDOR_TEST_AIDS
   /* test aid (not in the original): while an input script (OPEN_THANDOR_SCRIPT) drives the game, the real
@@ -355,118 +474,34 @@ void DirectInputMouse_PollBufferedEvents(void)
   }
 #endif
   /* XCHG: the timer callback and the main thread (UiPointer_DispatchPendingEvents) both come here */
-  wasBusyOrEventIndex = THANDOR_ATOMIC_EXCHANGE(&g_MousePollBusy,1);
-  errorAttempts = 0;
-  if (wasBusyOrEventIndex == 0) {
-    /* read buffered events until the buffer is empty or 16 errors occurred */
-    for (;;) {
-      g_MouseDeviceDataCount = 1;
-      directInputResult = g_MouseDevice->lpVtbl->GetDeviceData
-                        (g_MouseDevice,sizeof(DIDEVICEOBJECTDATA_DX3),&g_MouseDeviceEvent,&g_MouseDeviceDataCount,0);
-      wasBusyOrEventIndex = g_CursorInputWriteIndex;
-      if (directInputResult == DI_OK) {
-        if (g_MouseDeviceDataCount != 1) break;
-        processedCount++;
-        g_MouseWheelDelta = 0;
-        /* axes carry a relative delta; buttons are down while bit 7 of dwData is set */
-        if (g_MouseDeviceEvent.dwOfs == DIMOFS_X) {
-          eventType = MOTION_OR_WHEEL;
-          g_MouseX = g_MouseX + g_MouseDeviceEvent.dwData;
-        }
-        else if (g_MouseDeviceEvent.dwOfs == DIMOFS_Y) {
-          eventType = MOTION_OR_WHEEL;
-          g_MouseY = g_MouseY + g_MouseDeviceEvent.dwData;
-        }
-        else if (g_MouseDeviceEvent.dwOfs == DIMOFS_Z) {
-          g_MouseWheelDelta = (int)g_MouseDeviceEvent.dwData / WHEEL_DELTA;
-          eventType = MOTION_OR_WHEEL;
-        }
-        else if (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON0) {
-          eventType = LEFT_PRESS;
-          if ((g_MouseDeviceEvent.dwData & DIRECTINPUT_BUTTON_DOWN_BIT) == 0) {
-            eventType = LEFT_RELEASE;
-            g_MouseButtonMask = g_MouseButtonMask & ~LEFT;
-          }
-          else {
-            g_MouseButtonMask = g_MouseButtonMask | LEFT;
-          }
-        }
-        else if ((g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON2) || (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON3)) {
-          eventType = MIDDLE_PRESS;
-          if ((g_MouseDeviceEvent.dwData & DIRECTINPUT_BUTTON_DOWN_BIT) == 0) {
-            eventType = MIDDLE_RELEASE;
-            g_MouseButtonMask = g_MouseButtonMask & ~MIDDLE;
-          }
-          else {
-            g_MouseButtonMask = g_MouseButtonMask | MIDDLE;
-          }
-        }
-        else {
-          if (g_MouseDeviceEvent.dwOfs != DIMOFS_BUTTON1) continue; /* other axes/buttons: ignored */
-          eventType = RIGHT_PRESS;
-          if ((g_MouseDeviceEvent.dwData & DIRECTINPUT_BUTTON_DOWN_BIT) == 0) {
-            eventType = RIGHT_RELEASE;
-            g_MouseButtonMask = g_MouseButtonMask & ~RIGHT;
-          }
-          else {
-            g_MouseButtonMask = g_MouseButtonMask | RIGHT;
-          }
-        }
-        nextWriteIndex = g_CursorInputWriteIndex + 1;
-        if (CURSOR_INPUT_EVENT_RING_SIZE - 1 < nextWriteIndex) {
-          nextWriteIndex = 0;
-        }
-        eventRecord = g_CursorInputEvents + g_CursorInputWriteIndex;
-        g_CursorInputWriteIndex = nextWriteIndex;
-        eventRecord->eventType = eventType;
-        buttonState = g_MouseButtonMask;
-        wheelDelta = g_MouseWheelDelta;
-        clockValue = g_CursorInputClockValue;
-        g_CursorOverflowLeft = 0;
-        g_CursorOverflowRight = 0;
-        g_CursorOverflowTop = 0;
-        g_CursorOverflowBottom = 0;
-        clampedXPlusOne = g_MouseX + 1;
-        clampedYPlusOne = g_MouseY + 1;
-        if ((int)g_FramebufferWidth <= (int)clampedXPlusOne) {
-          g_CursorOverflowRight = (clampedXPlusOne - g_FramebufferWidth) + 1;
-          clampedXPlusOne = g_FramebufferWidth;
-        }
-        if ((int)g_FramebufferHeight <= (int)clampedYPlusOne) {
-          g_CursorOverflowBottom = (clampedYPlusOne - g_FramebufferHeight) + 1;
-          clampedYPlusOne = g_FramebufferHeight;
-        }
-        clampedXOrY = clampedXPlusOne - 1;
-        unclampedY = clampedYPlusOne - 1;
-        g_MouseX = clampedXOrY;
-        if (clampedXOrY < 1) {
-          g_MouseX = 0;
-          g_CursorOverflowLeft = 1 - clampedXOrY;
-        }
-        clampedXOrY = unclampedY;
-        if (unclampedY < 1) {
-          clampedXOrY = 0;
-          g_CursorOverflowTop = 1 - unclampedY;
-        }
-        g_MouseY = clampedXOrY;
-        g_CursorInputEvents[wasBusyOrEventIndex].pointerX = g_MouseX;
-        g_CursorInputEvents[wasBusyOrEventIndex].pointerY = clampedXOrY;
-        g_CursorInputEvents[wasBusyOrEventIndex].wheelDelta = wheelDelta;
-        g_CursorInputEvents[wasBusyOrEventIndex].clockValue = clockValue;
-        g_CursorInputEvents[wasBusyOrEventIndex].buttonState = buttonState;
-        continue;
-      }
-      if (directInputResult == DIERR_INPUTLOST) {
-        /* reacquire and read again */
-        directInputResult = g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
-        if (directInputResult == DI_OK) continue;
-      }
-      errorAttempts++;
-      if (MOUSE_POLL_MAX_ERRORS - 1 < errorAttempts) break;
-    }
-    g_MouseEventsProcessed = g_MouseEventsProcessed + processedCount;
-    g_MousePollBusy = 0;
+  if (THANDOR_ATOMIC_EXCHANGE(&g_MousePollBusy,1) != 0) {
+    return;
   }
+  /* read buffered events until the buffer is empty or 16 errors occurred */
+  errorAttempts = 0;
+  while (errorAttempts < MOUSE_POLL_MAX_ERRORS) {
+    g_MouseDeviceDataCount = 1;
+    directInputResult = g_MouseDevice->lpVtbl->GetDeviceData
+                      (g_MouseDevice,sizeof(DIDEVICEOBJECTDATA_DX3),&g_MouseDeviceEvent,&g_MouseDeviceDataCount,0);
+    if (directInputResult == DI_OK) {
+      if (g_MouseDeviceDataCount != 1) {
+        break; /* buffer empty */
+      }
+      processedCount++;
+      g_MouseWheelDelta = 0;
+      if (DirectInputMouse_ApplyDeviceEvent(&eventType)) {
+        DirectInputMouse_AppendCursorEvent(eventType);
+      }
+      continue;
+    }
+    /* a lost device is reacquired and read again */
+    if ((directInputResult == DIERR_INPUTLOST) && (g_MouseDevice->lpVtbl->Acquire(g_MouseDevice) == DI_OK)) {
+      continue;
+    }
+    errorAttempts++;
+  }
+  g_MouseEventsProcessed = g_MouseEventsProcessed + processedCount;
+  g_MousePollBusy = 0;
   return;
 }
 
@@ -564,6 +599,122 @@ void DirectInputMouse_FlushBufferedEvents(void)
 }
 
 
+/* Keyboard_OnKeyDown/OnKeyUp: the KEYBOARD_STATE_* bit of a Shift, Ctrl or Alt key (VK_SHIFT, VK_CONTROL
+   and VK_MENU give both sides' bits), 0 for every other key. */
+static uint32_t Keyboard_ModifierStateBits(KeyboardVirtualKeyCode virtualKey)
+{
+  switch (virtualKey) {
+  case VK_LSHIFT:   return KEYBOARD_STATE_LEFT_SHIFT;
+  case VK_SHIFT:    return KEYBOARD_STATE_SHIFT;
+  case VK_RSHIFT:   return KEYBOARD_STATE_RIGHT_SHIFT;
+  case VK_LMENU:    return KEYBOARD_STATE_LEFT_ALT;
+  case VK_MENU:     return KEYBOARD_STATE_ALT;
+  case VK_RMENU:    return KEYBOARD_STATE_RIGHT_ALT;
+  case VK_LCONTROL: return KEYBOARD_STATE_LEFT_CTRL;
+  case VK_CONTROL:  return KEYBOARD_STATE_CTRL;
+  case VK_RCONTROL: return KEYBOARD_STATE_RIGHT_CTRL;
+  default:          return 0;
+  }
+}
+
+
+/* Keyboard_OnKeyDown/OnKeyUp: the KEYBOARD_STATE_* bit of a lock key, 0 for every other key. */
+static uint32_t Keyboard_LockStateBit(KeyboardVirtualKeyCode virtualKey)
+{
+  switch (virtualKey) {
+  case VK_CAPITAL: return KEYBOARD_STATE_CAPS_LOCK;
+  case VK_NUMLOCK: return KEYBOARD_STATE_NUM_LOCK;
+  case VK_SCROLL:  return KEYBOARD_STATE_SCROLL_LOCK;
+  default:         return 0;
+  }
+}
+
+
+/* Keyboard_OnKeyDown/OnKeyUp: the 0x10000-family code of a navigation key (the cursor block, VK_SELECT and
+   the numpad digits and decimal point, which map to the same codes), 0 for every other key. */
+static uint32_t Keyboard_NavigationKeyCode(KeyboardVirtualKeyCode virtualKey)
+{
+  switch (virtualKey) {
+  case VK_DELETE:
+  case VK_DECIMAL: return KEYBOARD_KEY_CODE_DELETE;
+  case VK_INSERT:
+  case VK_NUMPAD0: return KEYBOARD_KEY_CODE_INSERT;
+  case VK_HOME:
+  case VK_NUMPAD7: return KEYBOARD_KEY_CODE_HOME;
+  case VK_END:
+  case VK_NUMPAD1: return KEYBOARD_KEY_CODE_END;
+  case VK_PRIOR:
+  case VK_NUMPAD9: return KEYBOARD_KEY_CODE_PAGE_UP;
+  case VK_NEXT:
+  case VK_NUMPAD3: return KEYBOARD_KEY_CODE_PAGE_DOWN;
+  case VK_LEFT:
+  case VK_NUMPAD4: return KEYBOARD_KEY_CODE_LEFT;
+  case VK_RIGHT:
+  case VK_NUMPAD6: return KEYBOARD_KEY_CODE_RIGHT;
+  case VK_UP:
+  case VK_NUMPAD8: return KEYBOARD_KEY_CODE_UP;
+  case VK_DOWN:
+  case VK_NUMPAD2: return KEYBOARD_KEY_CODE_DOWN;
+  case VK_SELECT:
+  case VK_NUMPAD5: return KEYBOARD_KEY_CODE_NUMPAD_5;
+  default:         return 0;
+  }
+}
+
+
+/* Keyboard_OnKeyDown: the KEYBOARD_KEY_CODE_* event code of a non-modifier, non-lock key in *outKeyCode.
+   Digits and letters give KEYBOARD_KEY_CODE_CHAR of their ASCII code (letters lowercase), the numpad
+   operators their plain ASCII character. Returns false for keys that queue no event. */
+static bool Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *outKeyCode)
+{
+  uint32_t navigationCode;
+
+  switch (virtualKey) {
+  case VK_SPACE:     *outKeyCode = KEYBOARD_KEY_CODE_SPACE; return true;
+  case VK_ESCAPE:    *outKeyCode = KEYBOARD_KEY_CODE_ESCAPE; return true;
+  case VK_RETURN:
+  case VK_SEPARATOR: *outKeyCode = KEYBOARD_KEY_CODE_ENTER; return true;
+  case VK_TAB:       *outKeyCode = KEYBOARD_KEY_CODE_TAB; return true;
+  case VK_BACK:      *outKeyCode = KEYBOARD_KEY_CODE_BACKSPACE; return true;
+  case VK_PRINT:
+  case VK_SNAPSHOT:  *outKeyCode = KEYBOARD_KEY_CODE_PRINT; return true;
+  case VK_EXECUTE:
+  case VK_PAUSE:     *outKeyCode = KEYBOARD_KEY_CODE_PAUSE; return true;
+  case VK_F1:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(1); return true;
+  case VK_F2:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(2); return true;
+  case VK_F3:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(3); return true;
+  case VK_F4:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(4); return true;
+  case VK_F5:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(5); return true;
+  case VK_F6:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(6); return true;
+  case VK_F7:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(7); return true;
+  case VK_F8:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(8); return true;
+  case VK_F9:        *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(9); return true;
+  case VK_F10:       *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(10); return true;
+  case VK_F11:       *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(11); return true;
+  case VK_F12:       *outKeyCode = KEYBOARD_KEY_CODE_FUNCTION(12); return true;
+  case VK_MULTIPLY:  *outKeyCode = '*'; return true;
+  case VK_DIVIDE:    *outKeyCode = '/'; return true;
+  case VK_ADD:       *outKeyCode = '+'; return true;
+  case VK_SUBTRACT:  *outKeyCode = '-'; return true;
+  default:           break;
+  }
+  if (('0' <= virtualKey) && (virtualKey <= '9')) {
+    *outKeyCode = KEYBOARD_KEY_CODE_CHAR(virtualKey);
+    return true;
+  }
+  if (('A' <= virtualKey) && (virtualKey <= 'Z')) {
+    *outKeyCode = KEYBOARD_KEY_CODE_CHAR(virtualKey + ('a' - 'A'));
+    return true;
+  }
+  navigationCode = Keyboard_NavigationKeyCode(virtualKey);
+  if (navigationCode == 0) {
+    return false;
+  }
+  *outKeyCode = navigationCode;
+  return true;
+}
+
+
 /* Address: 0x005774A0.
    WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle
    theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), and every other
@@ -576,97 +727,42 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
   KeyboardInputEvent *eventRecord;
   KeyboardEventRingIndex writeIndex;
   uint32_t queuedStateMask;
-  uint32_t mappedCodeOrMask;
+  uint32_t modifierBits;
+  uint32_t lockBit;
+  uint32_t keyCode;
   uint32_t nextWriteIndex;
 
   queuedStateMask = g_KeyboardStateMask;
-  writeIndex = g_KeyboardWriteIndex;
-  mappedCodeOrMask = KEYBOARD_STATE_LEFT_SHIFT;
-  if (((((virtualKey == VK_LSHIFT) || (mappedCodeOrMask = KEYBOARD_STATE_SHIFT, virtualKey == VK_SHIFT)) || (mappedCodeOrMask = KEYBOARD_STATE_RIGHT_SHIFT, virtualKey == VK_RSHIFT)
-       ) || (((mappedCodeOrMask = KEYBOARD_STATE_LEFT_ALT, virtualKey == VK_LMENU || (mappedCodeOrMask = KEYBOARD_STATE_ALT, virtualKey == VK_MENU)) ||
-             ((mappedCodeOrMask = KEYBOARD_STATE_RIGHT_ALT, virtualKey == VK_RMENU ||
-              ((mappedCodeOrMask = KEYBOARD_STATE_LEFT_CTRL, virtualKey == VK_LCONTROL || (mappedCodeOrMask = KEYBOARD_STATE_CTRL, virtualKey == VK_CONTROL)))))))) ||
-     (mappedCodeOrMask = KEYBOARD_STATE_RIGHT_CTRL, virtualKey == VK_RCONTROL)) {
-    g_KeyboardStateMask = g_KeyboardStateMask | mappedCodeOrMask;
+  modifierBits = Keyboard_ModifierStateBits(virtualKey);
+  if (modifierBits != 0) {
+    g_KeyboardStateMask = g_KeyboardStateMask | modifierBits;
+    return;
   }
-  else {
-    mappedCodeOrMask = KEYBOARD_STATE_CAPS_LOCK;
-    if (((virtualKey != VK_CAPITAL) && (mappedCodeOrMask = KEYBOARD_STATE_NUM_LOCK, virtualKey != VK_NUMLOCK)) &&
-       (mappedCodeOrMask = KEYBOARD_STATE_SCROLL_LOCK, virtualKey != VK_SCROLL)) {
-      mappedCodeOrMask = KEYBOARD_KEY_CODE_SPACE;
-      if ((((virtualKey != VK_SPACE) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_ESCAPE, virtualKey != VK_ESCAPE)) &&
-          ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_ENTER, virtualKey != VK_RETURN &&
-             ((virtualKey != VK_SEPARATOR && (mappedCodeOrMask = KEYBOARD_KEY_CODE_TAB, virtualKey != VK_TAB)))) &&
-            (mappedCodeOrMask = KEYBOARD_KEY_CODE_BACKSPACE, virtualKey != VK_BACK)) &&
-           (((((mappedCodeOrMask = KEYBOARD_KEY_CODE_PRINT, virtualKey != VK_PRINT && (virtualKey != VK_SNAPSHOT)) &&
-              (mappedCodeOrMask = KEYBOARD_KEY_CODE_PAUSE, virtualKey != VK_EXECUTE)) &&
-             ((virtualKey != VK_PAUSE && (mappedCodeOrMask = KEYBOARD_KEY_CODE_DELETE, virtualKey != VK_DELETE)))) &&
-            ((mappedCodeOrMask = KEYBOARD_KEY_CODE_INSERT, virtualKey != VK_INSERT &&
-             ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(1), virtualKey != VK_F1 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(2), virtualKey != VK_F2))))))))))
-         && (((((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(3), virtualKey != VK_F3 &&
-                ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(4), virtualKey != VK_F4 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(5), virtualKey != VK_F5)) &&
-                  (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(6), virtualKey != VK_F6)) &&
-                 (((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(7), virtualKey != VK_F7 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(8), virtualKey != VK_F8)) &&
-                  ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(9), virtualKey != VK_F9 &&
-                   ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(10), virtualKey != VK_F10 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(11), virtualKey != VK_F11))))
-                  )))))) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(12), virtualKey != VK_F12)) &&
-              ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_HOME, virtualKey != VK_HOME && (mappedCodeOrMask = KEYBOARD_KEY_CODE_END, virtualKey != VK_END)) &&
-                (mappedCodeOrMask = KEYBOARD_KEY_CODE_PAGE_UP, virtualKey != VK_PRIOR)) &&
-               ((mappedCodeOrMask = KEYBOARD_KEY_CODE_PAGE_DOWN, virtualKey != VK_NEXT && (mappedCodeOrMask = KEYBOARD_KEY_CODE_LEFT, virtualKey != VK_LEFT))))))
-             && (((mappedCodeOrMask = KEYBOARD_KEY_CODE_RIGHT, virtualKey != VK_RIGHT &&
-                  ((mappedCodeOrMask = KEYBOARD_KEY_CODE_UP, virtualKey != VK_UP && (mappedCodeOrMask = KEYBOARD_KEY_CODE_DOWN, virtualKey != VK_DOWN))))
-                 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_SELECT)))))) {
-        /* digits and letters: KEYBOARD_KEY_CODE_CHAR of the ASCII code, letters in lowercase */
-        mappedCodeOrMask = KEYBOARD_KEY_CODE_CHAR(virtualKey);
-        if (virtualKey < '0') {
-          return;
-        }
-        if ('9' < virtualKey) {
-          if (virtualKey < 'A') {
-            return;
-          }
-          mappedCodeOrMask = KEYBOARD_KEY_CODE_CHAR(virtualKey + ('a' - 'A'));
-          if (((('Z' < virtualKey) && (mappedCodeOrMask = '*', virtualKey != VK_MULTIPLY)) &&
-              (mappedCodeOrMask = '/', virtualKey != VK_DIVIDE)) &&
-             ((mappedCodeOrMask = '+', virtualKey != VK_ADD && (mappedCodeOrMask = '-', virtualKey != VK_SUBTRACT)))) {
-            if (virtualKey < VK_NUMPAD0) {
-              return;
-            }
-            if (VK_DECIMAL < virtualKey) {
-              return;
-            }
-            mappedCodeOrMask = KEYBOARD_KEY_CODE_INSERT;
-            if ((((virtualKey != VK_NUMPAD0) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_END, virtualKey != VK_NUMPAD1)) &&
-                ((mappedCodeOrMask = KEYBOARD_KEY_CODE_DOWN, virtualKey != VK_NUMPAD2 &&
-                 (((mappedCodeOrMask = KEYBOARD_KEY_CODE_PAGE_DOWN, virtualKey != VK_NUMPAD3 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_LEFT, virtualKey != VK_NUMPAD4)) &&
-                  (mappedCodeOrMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_NUMPAD5)))))) &&
-               (((mappedCodeOrMask = KEYBOARD_KEY_CODE_RIGHT, virtualKey != VK_NUMPAD6 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_HOME, virtualKey != VK_NUMPAD7)) &&
-                ((mappedCodeOrMask = KEYBOARD_KEY_CODE_UP, virtualKey != VK_NUMPAD8 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_PAGE_UP, virtualKey != VK_NUMPAD9))))))
-            {
-              mappedCodeOrMask = KEYBOARD_KEY_CODE_DELETE;
-            }
-          }
-        }
-      }
-      eventRecord = g_KeyboardEvents + g_KeyboardWriteIndex;
-      nextWriteIndex = g_KeyboardWriteIndex + 1;
-      g_KeyboardWriteIndex = g_KeyboardWriteIndex + 1;
-      eventRecord->keyCode = mappedCodeOrMask;
-      g_KeyboardEvents[writeIndex].stateMask = queuedStateMask;
-      /* KEYBOARD_KEY_CODE_SPECIAL family: remember the key as held */
-      if ((mappedCodeOrMask & KEYBOARD_KEY_CODE_FAMILY_MASK) == KEYBOARD_KEY_CODE_SPECIAL(0)) {
-        g_KeyboardSpecialKeyDown[mappedCodeOrMask & KEYBOARD_KEY_CODE_INDEX_MASK] = 1;
-      }
-      /* wrap the ring */
-      if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
-        g_KeyboardWriteIndex = 0;
-      }
-      return;
+  lockBit = Keyboard_LockStateBit(virtualKey);
+  if (lockBit != 0) {
+    /* toggle once per press; auto-repeat finds the latch set */
+    if ((g_KeyboardToggleLatchMask & lockBit) == 0) {
+      g_KeyboardToggleLatchMask = g_KeyboardToggleLatchMask | lockBit;
+      g_KeyboardStateMask = g_KeyboardStateMask ^ lockBit;
     }
-    if ((g_KeyboardToggleLatchMask & mappedCodeOrMask) == 0) {
-      g_KeyboardToggleLatchMask = g_KeyboardToggleLatchMask | mappedCodeOrMask;
-      g_KeyboardStateMask = g_KeyboardStateMask ^ mappedCodeOrMask;
-    }
+    return;
+  }
+  if (!Keyboard_MapKeyDownCode(virtualKey,&keyCode)) {
+    return;
+  }
+  writeIndex = g_KeyboardWriteIndex;
+  eventRecord = g_KeyboardEvents + writeIndex;
+  nextWriteIndex = writeIndex + 1;
+  g_KeyboardWriteIndex = nextWriteIndex;
+  eventRecord->keyCode = keyCode;
+  eventRecord->stateMask = queuedStateMask;
+  /* KEYBOARD_KEY_CODE_SPECIAL family: remember the key as held */
+  if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == KEYBOARD_KEY_CODE_SPECIAL(0)) {
+    g_KeyboardSpecialKeyDown[keyCode & KEYBOARD_KEY_CODE_INDEX_MASK] = 1;
+  }
+  /* wrap the ring */
+  if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
+    g_KeyboardWriteIndex = 0;
   }
   return;
 }
@@ -674,79 +770,34 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 
 /* Address: 0x00577880.
    WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock
-   toggle, and releases the g_KeyboardSpecialKeyDown entry of a 0x10000-family key (the held state the in-game
-   camera keys poll). Queues no event. CF clear when a non-modifier key was processed.
+   toggle, and releases the g_KeyboardSpecialKeyDown entry of a navigation key (cursor block, VK_SELECT,
+   numpad digits and decimal point; the held state the in-game camera keys poll). Original quirk: Escape,
+   Enter, Tab, Backspace, Print and Pause also set their entry on key-down but are never released here. Queues no event. CF clear when a non-modifier key was processed.
 */
 void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
 {
-  uint32_t mappedKeyStateCode;
-  uint32_t mappedCodeOrToggleMask;
+  uint32_t modifierBits;
+  uint32_t navigationCode;
 
-  /* releasing Shift also clears Caps Lock; VK_CAPITAL itself is not handled here, so its toggle latch is
-     never re-armed by a key-up */
-  mappedKeyStateCode = KEYBOARD_STATE_CAPS_LOCK | KEYBOARD_STATE_LEFT_SHIFT;
-  if ((((((virtualKey == VK_LSHIFT) || (mappedKeyStateCode = KEYBOARD_STATE_CAPS_LOCK | KEYBOARD_STATE_SHIFT, virtualKey == VK_SHIFT)) ||
-        (mappedKeyStateCode = KEYBOARD_STATE_CAPS_LOCK | KEYBOARD_STATE_RIGHT_SHIFT, virtualKey == VK_RSHIFT)) ||
-       ((mappedKeyStateCode = KEYBOARD_STATE_LEFT_ALT, virtualKey == VK_LMENU ||
-        (mappedKeyStateCode = KEYBOARD_STATE_ALT, virtualKey == VK_MENU)))) ||
-      ((mappedKeyStateCode = KEYBOARD_STATE_RIGHT_ALT, virtualKey == VK_RMENU ||
-       ((mappedKeyStateCode = KEYBOARD_STATE_LEFT_CTRL, virtualKey == VK_LCONTROL ||
-        (mappedKeyStateCode = KEYBOARD_STATE_CTRL, virtualKey == VK_CONTROL)))))) ||
-     (mappedKeyStateCode = KEYBOARD_STATE_RIGHT_CTRL, virtualKey == VK_RCONTROL)) {
-    g_KeyboardStateMask = g_KeyboardStateMask & ~mappedKeyStateCode;
-  }
-  else {
-    mappedCodeOrToggleMask = KEYBOARD_STATE_NUM_LOCK;
-    if ((virtualKey != VK_NUMLOCK) && (mappedCodeOrToggleMask = KEYBOARD_STATE_SCROLL_LOCK, virtualKey != VK_SCROLL)) {
-      mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NOT_SPECIAL;
-      if (((((virtualKey != VK_SPACE) &&
-            (((virtualKey != VK_ESCAPE && (virtualKey != VK_RETURN)) && (virtualKey != VK_SEPARATOR)))) &&
-           (((virtualKey != VK_TAB && (virtualKey != VK_BACK)) && (virtualKey != VK_PRINT)))) &&
-          ((virtualKey != VK_SNAPSHOT && (virtualKey != VK_EXECUTE)))) &&
-         (((virtualKey != VK_PAUSE &&
-           (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_DELETE, virtualKey != VK_DELETE && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_INSERT, virtualKey != VK_INSERT)) &&
-            (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_HOME, virtualKey != VK_HOME)))) &&
-          (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_END, virtualKey != VK_END && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_PAGE_UP, virtualKey != VK_PRIOR)) &&
-           ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_PAGE_DOWN, virtualKey != VK_NEXT &&
-            (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_LEFT, virtualKey != VK_LEFT && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_RIGHT, virtualKey != VK_RIGHT)) &&
-             ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_UP, virtualKey != VK_UP &&
-              ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_DOWN, virtualKey != VK_DOWN && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_SELECT)))))))))
-           ))))) {
-        mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NOT_SPECIAL;
-        if (virtualKey < '0') {
-          return;
-        }
-        if ('9' < virtualKey) {
-          if (virtualKey < 'A') {
-            return;
-          }
-          if ('Z' < virtualKey) {
-            if (virtualKey < VK_NUMPAD0) {
-              return;
-            }
-            if (VK_F12 < virtualKey) {
-              return;
-            }
-            mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_INSERT;
-            if ((((((virtualKey != VK_NUMPAD0) && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_END, virtualKey != VK_NUMPAD1)) &&
-                  (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_DOWN, virtualKey != VK_NUMPAD2)) &&
-                 ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_PAGE_DOWN, virtualKey != VK_NUMPAD3 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_LEFT, virtualKey != VK_NUMPAD4)))) &&
-                (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_NUMPAD5 &&
-                  ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_RIGHT, virtualKey != VK_NUMPAD6 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_HOME, virtualKey != VK_NUMPAD7))))
-                 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_UP, virtualKey != VK_NUMPAD8)))) &&
-               ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_PAGE_UP, virtualKey != VK_NUMPAD9 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_DELETE, virtualKey != VK_DECIMAL)))) {
-              mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NOT_SPECIAL;
-            }
-          }
-        }
-      }
-      if ((mappedCodeOrToggleMask & KEYBOARD_KEY_CODE_FAMILY_MASK) == KEYBOARD_KEY_CODE_SPECIAL(0)) {
-        g_KeyboardSpecialKeyDown[mappedCodeOrToggleMask & KEYBOARD_KEY_CODE_INDEX_MASK] = 0;
-      }
-      return;
+  modifierBits = Keyboard_ModifierStateBits(virtualKey);
+  if (modifierBits != 0) {
+    /* releasing Shift also clears Caps Lock */
+    if ((virtualKey == VK_LSHIFT) || (virtualKey == VK_SHIFT) || (virtualKey == VK_RSHIFT)) {
+      modifierBits = modifierBits | KEYBOARD_STATE_CAPS_LOCK;
     }
-    g_KeyboardToggleLatchMask = g_KeyboardToggleLatchMask & ~mappedCodeOrToggleMask;
+    g_KeyboardStateMask = g_KeyboardStateMask & ~modifierBits;
+    return;
+  }
+  /* VK_CAPITAL is not handled here, so its toggle latch is never re-armed by a key-up */
+  if ((virtualKey == VK_NUMLOCK) || (virtualKey == VK_SCROLL)) {
+    g_KeyboardToggleLatchMask = g_KeyboardToggleLatchMask & ~Keyboard_LockStateBit(virtualKey);
+    return;
+  }
+  /* only the navigation keys release a g_KeyboardSpecialKeyDown entry */
+  navigationCode = Keyboard_NavigationKeyCode(virtualKey);
+  if (navigationCode != 0) {
+    g_KeyboardSpecialKeyDown[navigationCode & KEYBOARD_KEY_CODE_INDEX_MASK] = 0;
   }
   return;
 }

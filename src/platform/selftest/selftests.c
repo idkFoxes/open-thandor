@@ -433,6 +433,52 @@ static void Thandor_SelfTestTriangleSetup(void)
     Thandor_Log("trianglesetup: 20000 triangles, hash %08X", hash);
 }
 
+/* OPEN_THANDOR_SELFTEST=keymap sends every virtual key 0..255 through Keyboard_OnKeyDown / Keyboard_OnKeyUp,
+   alone and with each modifier (Shift, Ctrl, Alt, Caps/Num/Scroll Lock) held, reads the queued events with
+   Keyboard_ReadNextEvent and logs an FNV-1a hash over the event codes, their state masks, g_KeyboardStateMask and
+   g_KeyboardSpecialKeyDown after every step. Run it with two builds to check that a rewrite of the key mapping
+   kept it. */
+static uint32_t SelfTest_KeymapDrain(uint32_t hash)
+{
+    uint32_t keyCode;
+    uint32_t stateMask;
+    uint32_t i;
+    while (Keyboard_ReadNextEvent(&keyCode, &stateMask)) {
+        hash = (hash ^ keyCode) * 16777619u;
+        hash = (hash ^ stateMask) * 16777619u;
+    }
+    hash = (hash ^ g_KeyboardStateMask) * 16777619u;
+    for (i = 0; i < sizeof g_KeyboardSpecialKeyDown; i++) {
+        hash = (hash ^ g_KeyboardSpecialKeyDown[i]) * 16777619u;
+    }
+    return hash;
+}
+
+static void Thandor_SelfTestKeymap(void)
+{
+    static const uint32_t modifiers[] = {0, 0x10, 0x11, 0x12, 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0x14, 0x90, 0x91};
+    uint32_t hash = 2166136261u;
+    uint32_t modifierIndex;
+    uint32_t virtualKey;
+    for (modifierIndex = 0; modifierIndex < sizeof modifiers / sizeof modifiers[0]; modifierIndex++) {
+        if (modifiers[modifierIndex] != 0) {
+            Keyboard_OnKeyDown(modifiers[modifierIndex]);
+            hash = SelfTest_KeymapDrain(hash);
+        }
+        for (virtualKey = 0; virtualKey < 256; virtualKey++) {
+            Keyboard_OnKeyDown(virtualKey);
+            hash = SelfTest_KeymapDrain(hash);
+            Keyboard_OnKeyUp(virtualKey);
+            hash = SelfTest_KeymapDrain(hash);
+        }
+        if (modifiers[modifierIndex] != 0) {
+            Keyboard_OnKeyUp(modifiers[modifierIndex]);
+            hash = SelfTest_KeymapDrain(hash);
+        }
+    }
+    Thandor_Log("keymap: hash %08X", hash);
+}
+
 static void Thandor_SelfTestScanAddresses(void)
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
@@ -639,6 +685,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "pcx") == 0) {
         Thandor_SelfTestPcx();
+        return 1;
+    }
+    if (name != NULL && strcmp(name, "keymap") == 0) {
+        Thandor_SelfTestKeymap();
         return 1;
     }
     if (name != NULL && strcmp(name, "trianglesetup") == 0) {

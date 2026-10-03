@@ -29,6 +29,29 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
 
 /* Implementation ownership: ui/controls/input. */
 
+/* A release of captureButton ends the pointer capture of control (the capture target read before the event):
+   the node gets the release (rightRelease for the right button, nonRightRelease otherwise), loses the capture
+   and the pointer position is dispatched again as motion. Returns false, doing nothing, when control does not
+   hold a capture with that button. */
+static bool UiPointer_ReleaseCapture
+          (UiNodeBase *control,UiPointerCaptureButton captureButton,UiPointerWheelDelta wheelDelta,
+          UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+{
+  if ((control == UI_NODE_NONE) || (g_UiPointerCaptureButton != captureButton)) {
+    return false;
+  }
+  if (captureButton == UI_POINTER_CAPTURE_RIGHT) {
+    control->vtable->rightRelease(wheelDelta,pointerY,pointerX,control);
+  }
+  else {
+    control->vtable->nonRightRelease(wheelDelta,pointerY,pointerX,control);
+  }
+  g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
+  g_UiPointerCaptureTarget = UI_NODE_NONE;
+  UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
+  return true;
+}
+
 /* Address: 0x004AF500.
    Delivers the queued mouse events to the UI under the frame lock (polling DirectInput first when it is
    the active mouse). Presses and motion go to the node under the pointer; a release goes to the node
@@ -56,55 +79,48 @@ void UiPointer_DispatchPendingEvents(void)
   if (g_PointerSetPosition == DirectInputMouse_SetPosition) {
     DirectInputMouse_PollBufferedEvents();
   }
-  while (control = g_UiPointerCaptureTarget, g_GraphicsCursorConsumeEvent(&pointerEvent)) {
+  while (g_GraphicsCursorConsumeEvent(&pointerEvent)) {
+    control = g_UiPointerCaptureTarget; /* the consume call does not touch the capture */
     pointerX = pointerEvent.pointerX;
     wheelDelta = pointerEvent.wheelDelta;
     pointerY = pointerEvent.pointerY;
     buttonMask = pointerEvent.buttonState;
     eventKind = (char)pointerEvent.eventType; /* GraphicsCursorEventType */
-    if (eventKind < RIGHT_RELEASE) {
-      if (eventKind == MIDDLE_RELEASE) {
-        if ((control != UI_NODE_NONE) &&
-           (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_MIDDLE)) {
-          control->vtable->nonRightRelease(wheelDelta,pointerY,pointerX,control);
-          g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-          g_UiPointerCaptureTarget = UI_NODE_NONE;
-          UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
-          Random_NextPrimary(); /* original quirk: only this release steps the primary random stream */
-        }
+    switch (eventKind) {
+    case MOTION_OR_WHEEL:
+      UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
+      break;
+    case LEFT_PRESS:
+      UiPointer_DispatchLeftPress(buttonMask,wheelDelta,pointerY,pointerX);
+      break;
+    case MIDDLE_PRESS:
+      UiPointer_DispatchMiddlePress(buttonMask,wheelDelta,pointerY,pointerX);
+      break;
+    case RIGHT_PRESS:
+      UiPointer_DispatchRightPress(buttonMask,wheelDelta,pointerY,pointerX);
+      break;
+    case 4: /* unused code, handled like a left release */
+    case LEFT_RELEASE:
+      UiPointer_ReleaseCapture(control,UI_POINTER_CAPTURE_LEFT,wheelDelta,pointerY,pointerX);
+      break;
+    case MIDDLE_RELEASE:
+      if (UiPointer_ReleaseCapture(control,UI_POINTER_CAPTURE_MIDDLE,wheelDelta,pointerY,pointerX)) {
+        Random_NextPrimary(); /* original quirk: only this release steps the primary random stream */
       }
-      else if (eventKind < 4) { /* motion and the presses */
-        if (eventKind == RIGHT_PRESS) {
-          UiPointer_DispatchRightPress(buttonMask,wheelDelta,pointerY,pointerX);
-        }
-        else if (eventKind < MIDDLE_PRESS) {
-          if (eventKind == LEFT_PRESS) {
-            UiPointer_DispatchLeftPress(buttonMask,wheelDelta,pointerY,pointerX);
-          }
-          else {
-            UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
-          }
-        }
-        else {
-          UiPointer_DispatchMiddlePress(buttonMask,wheelDelta,pointerY,pointerX);
-        }
-      }
-      /* LEFT_RELEASE (and the unused code 4) */
-      else if ((control != UI_NODE_NONE) &&
-              (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_LEFT)) {
-        control->vtable->nonRightRelease(wheelDelta,pointerY,pointerX,control);
-        g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-        g_UiPointerCaptureTarget = UI_NODE_NONE;
+      break;
+    case RIGHT_RELEASE:
+      UiPointer_ReleaseCapture(control,UI_POINTER_CAPTURE_RIGHT,wheelDelta,pointerY,pointerX);
+      break;
+    default:
+      /* codes the queue never holds: the original compare chain treats those below 0 as motion and those
+         above RIGHT_RELEASE as a right release */
+      if (eventKind < MOTION_OR_WHEEL) {
         UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       }
-    }
-    /* RIGHT_RELEASE */
-    else if ((control != UI_NODE_NONE) &&
-            (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT)) {
-      control->vtable->rightRelease(wheelDelta,pointerY,pointerX,control);
-      g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-      g_UiPointerCaptureTarget = UI_NODE_NONE;
-      UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
+      else {
+        UiPointer_ReleaseCapture(control,UI_POINTER_CAPTURE_RIGHT,wheelDelta,pointerY,pointerX);
+      }
+      break;
     }
   }
   g_SpinLockReleaseAndInvoke
@@ -130,64 +146,91 @@ void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
 }
 
 
+/* The node after node in pre-order (first child, else the next sibling of node or of its nearest ancestor
+   that has one), following only links UiKeyboard_CheckedLink accepts. At the end of the tree it returns the
+   topmost ancestor (the walk wraps around) and sets *wrapped. */
+static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,bool *wrapped)
+{
+  UiNodeBase *nextNode;
+  UiNodeBase *parent;
+
+  nextNode = UiKeyboard_CheckedLink(node,"firstChild",node->firstChild);
+  if (nextNode != UI_NODE_NONE) {
+    return nextNode;
+  }
+  nextNode = UiKeyboard_CheckedLink(node,"nextSibling",node->nextSibling);
+  while (nextNode == UI_NODE_NONE) {
+    parent = UiKeyboard_CheckedLink(node,"parent",node->parent);
+    if (parent == UI_NODE_NONE) {
+      *wrapped = true;
+      return node;
+    }
+    node = parent;
+    nextNode = UiKeyboard_CheckedLink(node,"nextSibling",node->nextSibling);
+  }
+  return nextNode;
+}
+
+/* A key the focus node passed on (keyboardEvent returned true): offers it to the following focus targets in
+   pre-order, skipping suppressed ones and wrapping around at most once through the topmost ancestor. The
+   first one whose keyboardEvent returns false (takes the key) gets the keyboard focus. Returns true when
+   nobody took the key (the walk came back to the focus node or would wrap a second time). */
+static bool UiKeyboard_PassToFollowingFocusTargets
+          (UiNodeBase *control,UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
+{
+  bool wrappedOnce;
+  bool wrapped;
+  bool passToNext;
+
+  wrappedOnce = false;
+  passToNext = true;
+  while (passToNext) {
+    wrapped = false;
+    control = UiKeyboard_NextInPreOrder(control,&wrapped);
+    if (wrapped) {
+      if (wrappedOnce) {
+        return true;
+      }
+      wrappedOnce = true;
+    }
+    if ((control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) continue;
+    if (control == g_UiKeyboardFocusNode) {
+      return true;
+    }
+    if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
+    passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
+  }
+  UiKeyboardFocus_Set(control);
+  return false;
+}
+
 /* Address: 0x004AF3D0.
    Delivers the queued key events to the UI under the frame lock. A key goes to the focused node; if it
-   passes the key on (CF), the next focus targets in tree order get it and the first one that takes it
-   receives the focus. Keys nobody takes, or pressed with no focus, go to the top root's keyboard
-   fallback. While a node has captured the pointer (a mouse button is held), keys are discarded.
+   passes the key on (keyboardEvent returns true, CF in the original), the next focus targets in tree order
+   get it and the first one that takes it receives the focus. Keys nobody takes, or pressed with no focus, go
+   to the top root's keyboard fallback. While a node has captured the pointer (a mouse button is held), keys
+   are discarded.
 */
 void UiKeyboard_DispatchPendingEvents(void)
 
 {
-  bool wrappedOnce;
   bool dispatchToRoot;
   UiKeyboardEventCode keyCode;
   UiKeyboardStateMask keyboardStateMask;
   UiNodeBase *control;
-  UiNodeBase *walkNode;
-  bool passToNext;
 
   g_SpinLockAcquire(g_UiRuntimeFrameLock);
   while (g_KeyboardReadEvent(&keyCode,&keyboardStateMask)) {
     if (g_UiPointerCaptureTarget != UI_NODE_NONE) continue;
     control = g_UiKeyboardFocusNode;
-    dispatchToRoot = true;
-    if (control != UI_NODE_NONE) {
+    if (control == UI_NODE_NONE) {
+      dispatchToRoot = true;
+    }
+    else if (control->vtable->keyboardEvent(keyboardStateMask,keyCode,control)) {
+      dispatchToRoot = UiKeyboard_PassToFollowingFocusTargets(control,keyboardStateMask,keyCode);
+    }
+    else {
       dispatchToRoot = false;
-      wrappedOnce = false;
-      passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
-      /* CF set: offer the event to the following focus targets in pre-order, wrapping around once
-         through the topmost ancestor; the first one that takes it gets the keyboard focus. */
-      while (passToNext) {
-        walkNode = UiKeyboard_CheckedLink(control,"firstChild",control->firstChild);
-        if (walkNode == UI_NODE_NONE) {
-          while (walkNode = UiKeyboard_CheckedLink(control,"nextSibling",control->nextSibling),
-                walkNode == UI_NODE_NONE) {
-            walkNode = UiKeyboard_CheckedLink(control,"parent",control->parent);
-            if (walkNode == UI_NODE_NONE) break;
-            control = walkNode;
-          }
-          if (walkNode == UI_NODE_NONE) {
-            if (wrappedOnce) {
-              dispatchToRoot = true;
-              break;
-            }
-            wrappedOnce = true;
-            walkNode = control;
-          }
-        }
-        control = walkNode;
-        if ((control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) continue;
-        if (control == g_UiKeyboardFocusNode) {
-          dispatchToRoot = true;
-          break;
-        }
-        if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
-        passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
-        if (!passToNext) {
-          UiKeyboardFocus_Set(control);
-        }
-      }
     }
     if ((dispatchToRoot) && (g_UiRootNode != UI_ROOT_STACK_END) &&
        (g_UiRootNode->callbacks->keyboardFallback != NULL)) {
@@ -200,6 +243,26 @@ void UiKeyboard_DispatchPendingEvents(void)
 }
 
 
+/* The node after node in pre-order: its first child, else the next sibling of node or of its nearest ancestor
+   that has one; UI_NODE_NONE at the end of the tree (no wrap-around). */
+static UiNodeBase *UiKeyboardFocus_NextInPreOrderOrNone(UiNodeBase *node)
+{
+  UiNodeBase *nextNode;
+
+  nextNode = node->firstChild;
+  if (nextNode != UI_NODE_NONE) {
+    return nextNode;
+  }
+  while (node != UI_NODE_NONE) {
+    nextNode = node->nextSibling;
+    if (nextNode != UI_NODE_NONE) {
+      return nextNode;
+    }
+    node = node->parent;
+  }
+  return UI_NODE_NONE;
+}
+
 /* Address: 0x004B0030.
    Gives the keyboard focus to the first node from root on that is a preferred focus target, else to the
    last fallback focus target found (suppressed nodes are skipped); without any the focus stays as it is.
@@ -208,38 +271,26 @@ void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
 
 {
   UiNodeBase *fallbackFocusNode;
-  UiNodeBase *searchNodeCursor;
-  UiNodeBase *nextNode;
+  UiNodeBase *node;
 
   /* Pre-order walk starting at root (continuing past its subtree through the parents' siblings):
      the first unsuppressed preferred focus target wins, else the last unsuppressed fallback. */
   fallbackFocusNode = UI_NODE_NONE;
-  searchNodeCursor = root;
-  while( true ) {
-    if ((searchNodeCursor->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-      if ((searchNodeCursor->nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) != 0) break;
-      if ((searchNodeCursor->nodeFlags & UI_NODE_FALLBACK_FOCUS_TARGET) != 0) {
-        fallbackFocusNode = searchNodeCursor;
-      }
+  for (node = root; node != UI_NODE_NONE; node = UiKeyboardFocus_NextInPreOrderOrNone(node)) {
+    if ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
+    if ((node->nodeFlags & UI_NODE_PREFERRED_FOCUS_TARGET) != 0) break;
+    if ((node->nodeFlags & UI_NODE_FALLBACK_FOCUS_TARGET) != 0) {
+      fallbackFocusNode = node;
     }
-    nextNode = searchNodeCursor->firstChild;
-    if (nextNode == UI_NODE_NONE) {
-      while ((searchNodeCursor != UI_NODE_NONE) &&
-             (nextNode = searchNodeCursor->nextSibling, nextNode == UI_NODE_NONE)) {
-        searchNodeCursor = searchNodeCursor->parent;
-      }
-      if (searchNodeCursor == UI_NODE_NONE) {
-        searchNodeCursor = fallbackFocusNode;
-        if (fallbackFocusNode == UI_NODE_NONE) {
-          return;
-        }
-        break;
-      }
-    }
-    searchNodeCursor = nextNode;
   }
-  if (searchNodeCursor != g_UiKeyboardFocusNode) {
-    UiKeyboardFocus_Set(searchNodeCursor);
+  if (node == UI_NODE_NONE) {
+    node = fallbackFocusNode;
+    if (node == UI_NODE_NONE) {
+      return;
+    }
+  }
+  if (node != g_UiKeyboardFocusNode) {
+    UiKeyboardFocus_Set(node);
   }
   return;
 }
@@ -273,11 +324,9 @@ bool UiRangeSliderControl_HandleKeyboard
   int32_t adjustedSliderValue;
   UiKeyboardEventCode decreaseKey;
   UiKeyboardEventCode increaseKey;
-  bool delegatedResult;
 
   if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    return delegatedResult;
+    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
   if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
     decreaseKey = KEYBOARD_KEY_CODE_LEFT;
@@ -288,22 +337,29 @@ bool UiRangeSliderControl_HandleKeyboard
     increaseKey = KEYBOARD_KEY_CODE_UP;
   }
   if (keyCode == decreaseKey) {
-    if (((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) ||
-       (adjustedSliderValue = control->value - control->stepValue,
-       adjustedSliderValue < control->minimumValue)) {
+    if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
       adjustedSliderValue = control->minimumValue;
+    }
+    else {
+      adjustedSliderValue = control->value - control->stepValue;
+      if (adjustedSliderValue < control->minimumValue) {
+        adjustedSliderValue = control->minimumValue;
+      }
     }
   }
   else if (keyCode == increaseKey) {
-    if (((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) ||
-       (adjustedSliderValue = control->value + control->stepValue,
-       control->maximumValue < adjustedSliderValue)) {
+    if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
       adjustedSliderValue = control->maximumValue;
+    }
+    else {
+      adjustedSliderValue = control->value + control->stepValue;
+      if (control->maximumValue < adjustedSliderValue) {
+        adjustedSliderValue = control->maximumValue;
+      }
     }
   }
   else {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
-    return delegatedResult;
+    return UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   }
   control->value = adjustedSliderValue;
   if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != NULL)) {
@@ -908,6 +964,56 @@ static __inline PackedArgb32 UiScaler_BlendBilinear
 }
 
 
+/* One screen pixel of UiSelectionGeometryControl_DrawClipped: the 2x2 texels around the Q12 source position
+   (sourceU, sourceV) of a sourceWidth x sourceHeight 32-bit texture (pixel data at pixelDataOffset from the
+   asset; texels outside it count as 0), bilinearly blended by the position's fractions. */
+static PackedArgb32 UiSelectionGeometryControl_SampleBilinear
+          (GraphicsTextureSourceAsset *sourceTexture,int pixelDataOffset,int sourceWidth,int sourceHeight,
+          uint32_t sourceU,uint32_t sourceV)
+{
+  int sourceRow;
+  int sourceColumn;
+  int nextColumn;
+  int texelIndex;
+  PackedArgb32 sourcePixelSample0; /* texel (column, row) */
+  PackedArgb32 sourcePixelSample1; /* texel (column + 1, row) */
+  PackedArgb32 sourcePixelSample2; /* texel (column, row + 1) */
+  PackedArgb32 sourcePixelSample3; /* texel (column + 1, row + 1) */
+
+  sourcePixelSample0 = 0;
+  sourcePixelSample1 = 0;
+  sourcePixelSample2 = 0;
+  sourcePixelSample3 = 0;
+  sourceRow = (int)sourceV >> Q12_SHIFT;
+  sourceColumn = (int)sourceU >> Q12_SHIFT;
+  texelIndex = sourceWidth * sourceRow + sourceColumn;
+  nextColumn = sourceColumn + 1;
+  if (sourceRow < sourceHeight) {
+    if ((-1 < sourceRow) && (sourceColumn < sourceWidth)) {
+      if (-1 < sourceColumn) {
+        sourcePixelSample0 =
+             *(PackedArgb32 *)((uint8_t *)sourceTexture + texelIndex * 4 + pixelDataOffset);
+      }
+      if ((-1 < nextColumn) && (nextColumn < sourceWidth)) {
+        sourcePixelSample1 =
+             *(PackedArgb32 *)((uint8_t *)sourceTexture + texelIndex * 4 + pixelDataOffset + 4);
+      }
+    }
+    if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
+      if (-1 < sourceColumn) {
+        sourcePixelSample2 =
+             *(PackedArgb32 *)((uint8_t *)sourceTexture + (texelIndex + sourceWidth) * 4 + pixelDataOffset);
+      }
+      if ((-1 < nextColumn) && (nextColumn < sourceWidth)) {
+        sourcePixelSample3 =
+             *(PackedArgb32 *)((uint8_t *)sourceTexture + (texelIndex + sourceWidth) * 4 + pixelDataOffset + 4);
+      }
+    }
+  }
+  return UiScaler_BlendBilinear(sourcePixelSample0,sourcePixelSample1,sourcePixelSample2,sourcePixelSample3,
+                                (int)(sourceU & Q12_FRACTION_MASK) >> 4,(int)(sourceV & Q12_FRACTION_MASK) >> 4);
+}
+
 /* Address: 0x00515CC0.
    drawClipped slot of g_UiSelectionGeometryControlVtable. Fills the node (clipped) with its texture,
    rotated by rotationAngle and scaled by sampleScaleQ12 about sourceOrigin: every screen pixel is mapped
@@ -927,32 +1033,33 @@ void UiSelectionGeometryControl_DrawClipped
   int64_t rotationProductA;
   int64_t rotationProductB;
   int64_t rotationProductC;
-  int sourceColumn;
-  uint32_t sinTermOrSourceU;
-  uint32_t stepTermOrRowStartU;
-  uint32_t stepTermOrRowStartV;
-  int sourceRow;
-  int clipHeightOrColumnTerm;
+  int cosTerm;
+  uint32_t sinTerm;
+  uint32_t stepTermU;
+  uint32_t stepTermV;
   int clipWidth;
-  int texelIndexOrFraction;
-  uint8_t *destPixel;
-  bool framebufferUnavailable;
+  int clipHeight;
   uint32_t pixelStepU;
   uint32_t pixelStepV;
-  uint64_t rowStepU;
+  uint32_t rowStepU;
+  uint64_t rowStepUWide; /* rowStepU zero-extended, so its high half is always 0 */
   int rowStepUHigh;
-  int cosTermOrRowStepV;
-  uint64_t sourceStartU;
+  int rowStepV;
+  uint64_t sourceStartU; /* a zero-extended 32-bit value, so its high half is always 0 */
+  int sourceStartUHigh;
+  int sourceStartV;
+  uint32_t sourceU;
   uint32_t sourceV;
-  PackedArgb32 sourcePixelSample0; /* texel (column, row) */
-  PackedArgb32 sourcePixelSample1; /* texel (column + 1, row) */
-  PackedArgb32 sourcePixelSample2; /* texel (column, row + 1) */
-  PackedArgb32 sourcePixelSample3; /* texel (column + 1, row + 1) */
+  uint32_t rowStartU;
+  uint32_t rowStartV;
+  uint8_t *destPixel;
+  uint8_t *destRowStart;
+  int remainingColumns;
+  int remainingRows;
+  bool framebufferUnavailable;
   PackedArgb32 blendedPixel;
   uint64_t packedLanes;
   uint64_t quantizeMaskLanes; /* the four 16-bit quantize masks as one 64-bit lane vector */
-  int remainingColumns;
-  uint8_t *destRowStart;
 
   /* intersect the clip rectangle with the node */
   if (clipLeft < (control->base).left) {
@@ -968,189 +1075,121 @@ void UiSelectionGeometryControl_DrawClipped
     clipBottom = (control->base).bottom;
   }
   clipWidth = clipRight - clipLeft;
-  if (((clipWidth != 0 && clipLeft <= clipRight) &&
-      (clipHeightOrColumnTerm = clipBottom - clipTop, clipHeightOrColumnTerm != 0 && clipTop <= clipBottom)) &&
-     (control->textureSource != NULL)) {
-    rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
-    cosTermOrRowStepV = -(FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT));
-    rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
-    sinTermOrSourceU = FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT);
-    /* scale*(sin, cos) mapped through the field-grid lattice factors: products by the column factor are taken
-       >> Q20_SHIFT, those by the row factor >> (Q20_SHIFT + 1) (half a row, the lattice skew) */
-    rotationProductA = (int64_t)(int)sinTermOrSourceU * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-    rotationProductB = (int64_t)cosTermOrRowStepV * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
-    stepTermOrRowStartU = FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT + 1);
-    rotationProductB = (int64_t)cosTermOrRowStepV * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-    rotationProductC = (int64_t)(int)-sinTermOrSourceU * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
-    stepTermOrRowStartV = FIXED_PRODUCT_SHR(rotationProductC, Q20_SHIFT + 1);
-    sinTermOrSourceU =
-         (FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT)) - stepTermOrRowStartV;
-    cosTermOrRowStepV = stepTermOrRowStartV * 2;
-    rowStepU = (uint64_t)sinTermOrSourceU;
-    sourceStartU = (uint64_t)
-             (control->sourceOriginXQ12 -
-             (sinTermOrSourceU * (((control->base).top + (control->base).bottom >> 1) - clipTop) +
-             ((FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) -
-              stepTermOrRowStartU) *
-             (((control->base).left + (control->base).right >> 1) - clipLeft)));
-    /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
-    pixelStepU =
-         (FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) - stepTermOrRowStartU;
-    pixelStepV = stepTermOrRowStartU * 2;
-    texelIndexOrFraction = control->sourceOriginYQ12 -
-             (cosTermOrRowStepV * (((control->base).top + (control->base).bottom >> 1) - clipTop) +
-             stepTermOrRowStartU * 2 * (((control->base).left + (control->base).right >> 1) - clipLeft));
-    sourceTexture = control->textureSource;
-    subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
-    /* fields of the first subresource record (asset + subresourceTableOffset) */
-    if (*(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PALETTE_INDEX) < 0) {
-      sourceWidth =
-           *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_WIDTH);
-      sourceHeight =
-           *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_HEIGHT);
-      pixelDataOffset =
-           *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_OFFSET);
-      framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
-      if (!framebufferUnavailable) {
-        rowStepUHigh = (int)(rowStepU >> 32);
-        sinTermOrSourceU = (uint32_t)sourceStartU;
-        sourceColumn = (int)(sourceStartU >> 32);
-        clipBottom = clipHeightOrColumnTerm;
-        remainingColumns = clipWidth;
-        if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-          destPixel = g_FramebufferAccess->pixels +
-                    g_FramebufferRowStrideBytes * clipTop + clipLeft * 2;
-          sourceV = sourceColumn + texelIndexOrFraction;
-          stepTermOrRowStartU = sinTermOrSourceU;
-          stepTermOrRowStartV = sourceV;
-          destRowStart = destPixel;
-          do {
-            do {
-              sourcePixelSample0 = 0;
-              sourcePixelSample1 = 0;
-              sourcePixelSample2 = 0;
-              sourcePixelSample3 = 0;
-              sourceRow = (int)sourceV >> Q12_SHIFT;
-              sourceColumn = (int)sinTermOrSourceU >> Q12_SHIFT;
-              texelIndexOrFraction = sourceWidth * sourceRow + sourceColumn;
-              clipHeightOrColumnTerm = sourceColumn + 1;
-              if (sourceRow < sourceHeight) {
-                if ((-1 < sourceRow) && (sourceColumn < sourceWidth)) {
-                  if (-1 < sourceColumn) {
-                    sourcePixelSample0 =
-                         *(PackedArgb32 *)
-                          ((uint8_t *)sourceTexture + texelIndexOrFraction * 4 + pixelDataOffset);
-                  }
-                  if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
-                    sourcePixelSample1 =
-                         *(PackedArgb32 *)
-                          ((uint8_t *)sourceTexture + texelIndexOrFraction * 4 + pixelDataOffset + 4);
-                  }
-                }
-                if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
-                  if (-1 < sourceColumn) {
-                    sourcePixelSample2 =
-                         *(PackedArgb32 *)
-                          ((uint8_t *)sourceTexture + (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset);
-                  }
-                  if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
-                    sourcePixelSample3 =
-                         *(PackedArgb32 *)
-                          ((uint8_t *)sourceTexture + (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + 4);
-                  }
-                }
-              }
-              blendedPixel = UiScaler_BlendBilinear
-                                       (sourcePixelSample0,sourcePixelSample1,sourcePixelSample2,
-                                        sourcePixelSample3,(int)(sinTermOrSourceU & Q12_FRACTION_MASK) >> 4,
-                                        (int)(sourceV & Q12_FRACTION_MASK) >> 4);
-              /* 32-bit colour to 16-bit: PUNPCKLBW/PSRLW 4, PAND quantize masks, PMADDWD pack weights,
-                 then (q >> 40) + (q >> 8) with PADDW; the low word is the pixel. */
-              memcpy(&quantizeMaskLanes,&g_SoftwarePixelMmxConstants.quantizeMasksQ12,sizeof(quantizeMaskLanes));
-              packedLanes = pmaddwd(UiScaler_UnpackBytesToWordLanes(blendedPixel,4) & quantizeMaskLanes,
-                                    g_SoftwarePixelMmxConstants.packWeights);
-              *(short *)destPixel = (short)(packedLanes >> 40) + (short)(packedLanes >> 8);
-              sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;
-              sourceV = sourceV + pixelStepV;
-              destPixel = destPixel + 2;
-              remainingColumns = remainingColumns - 1;
-            } while (remainingColumns != 0);
-            sinTermOrSourceU = stepTermOrRowStartU + (int)rowStepU;
-            sourceV = stepTermOrRowStartV + rowStepUHigh + cosTermOrRowStepV;
-            destPixel = destRowStart + g_FramebufferRowStrideBytes;
-            clipBottom = clipBottom - 1; /* now the remaining row count */
-            stepTermOrRowStartU = sinTermOrSourceU;
-            stepTermOrRowStartV = sourceV;
-            remainingColumns = clipWidth;
-            destRowStart = destPixel;
-          } while (clipBottom != 0);
-        }
-        else {
-          destPixel = g_FramebufferAccess->pixels +
-                    g_FramebufferRowStrideBytes * clipTop + clipLeft * 4;
-          sourceV = sourceColumn + texelIndexOrFraction;
-          stepTermOrRowStartU = sinTermOrSourceU;
-          stepTermOrRowStartV = sourceV;
-          destRowStart = destPixel;
-          do {
-            do {
-              sourcePixelSample0 = 0;
-              sourcePixelSample1 = 0;
-              sourcePixelSample2 = 0;
-              sourcePixelSample3 = 0;
-              sourceRow = (int)sourceV >> Q12_SHIFT;
-              sourceColumn = (int)sinTermOrSourceU >> Q12_SHIFT;
-              texelIndexOrFraction = sourceWidth * sourceRow + sourceColumn;
-              clipHeightOrColumnTerm = sourceColumn + 1;
-              if (sourceRow < sourceHeight) {
-                if ((-1 < sourceRow) && (sourceColumn < sourceWidth)) {
-                  if (-1 < sourceColumn) {
-                    sourcePixelSample0 =
-                         *(PackedArgb32 *)
-                          ((uint8_t *)sourceTexture + texelIndexOrFraction * 4 + pixelDataOffset);
-                  }
-                  if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
-                    sourcePixelSample1 =
-                         *(PackedArgb32 *)
-                          ((uint8_t *)sourceTexture + texelIndexOrFraction * 4 + pixelDataOffset + 4);
-                  }
-                }
-                if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
-                  if (-1 < sourceColumn) {
-                    sourcePixelSample2 =
-                         *(PackedArgb32 *)
-                          ((uint8_t *)sourceTexture + (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset);
-                  }
-                  if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
-                    sourcePixelSample3 =
-                         *(PackedArgb32 *)
-                          ((uint8_t *)sourceTexture + (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + 4);
-                  }
-                }
-              }
-              *(PackedArgb32 *)destPixel =
-                   UiScaler_BlendBilinear
-                             (sourcePixelSample0,sourcePixelSample1,sourcePixelSample2,sourcePixelSample3,
-                              (int)(sinTermOrSourceU & Q12_FRACTION_MASK) >> 4,(int)(sourceV & Q12_FRACTION_MASK) >> 4);
-              sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;
-              sourceV = sourceV + pixelStepV;
-              destPixel = destPixel + 4;
-              remainingColumns = remainingColumns - 1;
-            } while (remainingColumns != 0);
-            sinTermOrSourceU = stepTermOrRowStartU + (int)rowStepU;
-            sourceV = stepTermOrRowStartV + rowStepUHigh + cosTermOrRowStepV;
-            destPixel = destRowStart + g_FramebufferRowStrideBytes;
-            clipBottom = clipBottom - 1; /* now the remaining row count */
-            stepTermOrRowStartU = sinTermOrSourceU;
-            stepTermOrRowStartV = sourceV;
-            remainingColumns = clipWidth;
-            destRowStart = destPixel;
-          } while (clipBottom != 0);
-        }
-        g_GraphicsFramebufferEndAccess();
-      }
-    }
+  clipHeight = clipBottom - clipTop;
+  if ((clipWidth == 0) || (clipRight < clipLeft) || (clipHeight == 0) || (clipBottom < clipTop) ||
+      (control->textureSource == NULL)) {
+    return;
   }
+  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
+  cosTerm = -(FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT));
+  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
+  sinTerm = FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT);
+  /* scale*(sin, cos) mapped through the field-grid lattice factors: products by the column factor are taken
+     >> Q20_SHIFT, those by the row factor >> (Q20_SHIFT + 1) (half a row, the lattice skew) */
+  rotationProductA = (int64_t)(int)sinTerm * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+  rotationProductB = (int64_t)cosTerm * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+  stepTermU = FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT + 1);
+  rotationProductB = (int64_t)cosTerm * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+  rotationProductC = (int64_t)(int)-sinTerm * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+  stepTermV = FIXED_PRODUCT_SHR(rotationProductC, Q20_SHIFT + 1);
+  /* per-row texture step */
+  rowStepU = (FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT)) - stepTermV;
+  rowStepV = stepTermV * 2;
+  rowStepUWide = (uint64_t)rowStepU;
+  sourceStartU = (uint64_t)
+           (control->sourceOriginXQ12 -
+           (rowStepU * (((control->base).top + (control->base).bottom >> 1) - clipTop) +
+           ((FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) -
+            stepTermU) *
+           (((control->base).left + (control->base).right >> 1) - clipLeft)));
+  /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
+  pixelStepU =
+       (FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) - stepTermU;
+  pixelStepV = stepTermU * 2;
+  sourceStartV = control->sourceOriginYQ12 -
+           (rowStepV * (((control->base).top + (control->base).bottom >> 1) - clipTop) +
+           stepTermU * 2 * (((control->base).left + (control->base).right >> 1) - clipLeft));
+  sourceTexture = control->textureSource;
+  subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
+  /* fields of the first subresource record (asset + subresourceTableOffset) */
+  if (*(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PALETTE_INDEX) >= 0) {
+    return;
+  }
+  sourceWidth =
+       *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_WIDTH);
+  sourceHeight =
+       *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+  pixelDataOffset =
+       *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_OFFSET);
+  framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
+  if (framebufferUnavailable) {
+    return;
+  }
+  rowStepUHigh = (int)(rowStepUWide >> 32);
+  sourceU = (uint32_t)sourceStartU;
+  sourceStartUHigh = (int)(sourceStartU >> 32);
+  remainingRows = clipHeight;
+  remainingColumns = clipWidth;
+  if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
+    destPixel = g_FramebufferAccess->pixels +
+              g_FramebufferRowStrideBytes * clipTop + clipLeft * 2;
+    sourceV = sourceStartUHigh + sourceStartV;
+    rowStartU = sourceU;
+    rowStartV = sourceV;
+    destRowStart = destPixel;
+    do {
+      do {
+        blendedPixel = UiSelectionGeometryControl_SampleBilinear
+                                 (sourceTexture,pixelDataOffset,sourceWidth,sourceHeight,sourceU,sourceV);
+        /* 32-bit colour to 16-bit: PUNPCKLBW/PSRLW 4, PAND quantize masks, PMADDWD pack weights,
+           then (q >> 40) + (q >> 8) with PADDW; the low word is the pixel. */
+        memcpy(&quantizeMaskLanes,&g_SoftwarePixelMmxConstants.quantizeMasksQ12,sizeof(quantizeMaskLanes));
+        packedLanes = pmaddwd(UiScaler_UnpackBytesToWordLanes(blendedPixel,4) & quantizeMaskLanes,
+                              g_SoftwarePixelMmxConstants.packWeights);
+        *(short *)destPixel = (short)(packedLanes >> 40) + (short)(packedLanes >> 8);
+        sourceU = sourceU + (int)pixelStepU;
+        sourceV = sourceV + pixelStepV;
+        destPixel = destPixel + 2;
+        remainingColumns = remainingColumns - 1;
+      } while (remainingColumns != 0);
+      sourceU = rowStartU + (int)rowStepUWide;
+      sourceV = rowStartV + rowStepUHigh + rowStepV;
+      destPixel = destRowStart + g_FramebufferRowStrideBytes;
+      remainingRows = remainingRows - 1;
+      rowStartU = sourceU;
+      rowStartV = sourceV;
+      remainingColumns = clipWidth;
+      destRowStart = destPixel;
+    } while (remainingRows != 0);
+  }
+  else {
+    destPixel = g_FramebufferAccess->pixels +
+              g_FramebufferRowStrideBytes * clipTop + clipLeft * 4;
+    sourceV = sourceStartUHigh + sourceStartV;
+    rowStartU = sourceU;
+    rowStartV = sourceV;
+    destRowStart = destPixel;
+    do {
+      do {
+        *(PackedArgb32 *)destPixel =
+             UiSelectionGeometryControl_SampleBilinear
+                       (sourceTexture,pixelDataOffset,sourceWidth,sourceHeight,sourceU,sourceV);
+        sourceU = sourceU + (int)pixelStepU;
+        sourceV = sourceV + pixelStepV;
+        destPixel = destPixel + 4;
+        remainingColumns = remainingColumns - 1;
+      } while (remainingColumns != 0);
+      sourceU = rowStartU + (int)rowStepUWide;
+      sourceV = rowStartV + rowStepUHigh + rowStepV;
+      destPixel = destRowStart + g_FramebufferRowStrideBytes;
+      remainingRows = remainingRows - 1;
+      rowStartU = sourceU;
+      rowStartV = sourceV;
+      remainingColumns = clipWidth;
+      destRowStart = destPixel;
+    } while (remainingRows != 0);
+  }
+  g_GraphicsFramebufferEndAccess();
   return;
 }
 
@@ -1165,45 +1204,146 @@ void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
           UiSelectionGeometryControl *control)
 
 {
-  int cosTermOrBoundsLeft;
+  int cosTerm;
+  int boundsLeft;
   int boundsRight;
   int boundsTop;
   int boundsBottom;
   int64_t rotationProductA;
   int64_t rotationProductB;
   int64_t rotationProductC;
-  uint32_t sinTermOrStepY;
+  uint32_t sinTerm;
   uint32_t stepTermX;
-  
+  uint32_t stepTermY;
+
   rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
-  cosTermOrBoundsLeft = -(FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT));
+  cosTerm = -(FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT));
   rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
-  sinTermOrStepY = FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT);
+  sinTerm = FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT);
   /* scale*(sin, cos) mapped through the field-grid lattice factors: products by the column factor are taken
      >> Q20_SHIFT, those by the row factor >> (Q20_SHIFT + 1) (half a row, the lattice skew) */
-  rotationProductA = (int64_t)(int)sinTermOrStepY * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-  rotationProductB = (int64_t)cosTermOrBoundsLeft * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+  rotationProductA = (int64_t)(int)sinTerm * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+  rotationProductB = (int64_t)cosTerm * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
   stepTermX = FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT + 1);
-  rotationProductB = (int64_t)cosTermOrBoundsLeft * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
-  rotationProductC = (int64_t)(int)-sinTermOrStepY * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
-  sinTermOrStepY = FIXED_PRODUCT_SHR(rotationProductC, Q20_SHIFT + 1);
-  cosTermOrBoundsLeft = (control->base).left;
+  rotationProductB = (int64_t)cosTerm * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+  rotationProductC = (int64_t)(int)-sinTerm * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+  stepTermY = FIXED_PRODUCT_SHR(rotationProductC, Q20_SHIFT + 1);
+  boundsLeft = (control->base).left;
   boundsRight = (control->base).right;
   boundsTop = (control->base).top;
   boundsBottom = (control->base).bottom;
   control->selectedSourceXQ12 =
        control->sourceOriginXQ12 -
-       (((FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT)) - sinTermOrStepY) *
+       (((FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT)) - stepTermY) *
         (((control->base).top + (control->base).bottom >> 1) - pointerY) +
        ((FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) - stepTermX) *
        (((control->base).left + (control->base).right >> 1) - pointerX));
   control->selectedSourceYQ12 =
-       (control->sourceOriginYQ12 - stepTermX * 2 * ((cosTermOrBoundsLeft + boundsRight >> 1) - pointerX)) -
-       sinTermOrStepY * 2 * ((boundsTop + boundsBottom >> 1) - pointerY);
+       (control->sourceOriginYQ12 - stepTermX * 2 * ((boundsLeft + boundsRight >> 1) - pointerX)) -
+       stepTermY * 2 * ((boundsTop + boundsBottom >> 1) - pointerY);
   UiActionQueue_Enqueue(control->actionId,control);
   return;
 }
 
+
+/* Whether the pointer lies inside root and root takes part in the pointer hit test. */
+static bool UiPointer_RootContainsPointer(UiRootNode *root,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+{
+  return ((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
+         ((root->base).left <= pointerX) && ((root->base).top <= pointerY) &&
+         (pointerX < (root->base).right) && (pointerY < (root->base).bottom);
+}
+
+/* Press target in the root stack: the hit test of the topmost root (from topRoot down) that contains the
+   pointer. After each root the pointer misses, that root's method08 (if any) is called with the root below
+   it (possibly UI_ROOT_STACK_END) and ends the search when it returns true. A hit in a root below topRoot
+   brings that root to the front first; when UiRootStack_BringToFront returns true the press is dropped.
+   Returns UI_NODE_NONE when the press goes nowhere. */
+static UiNodeBase *UiPointer_HitTestRootStack
+          (UiRootNode *topRoot,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+{
+  UiRootCallbacks *missedCallbacks;
+  UiNodeBase *node;
+  UiRootNode *root;
+
+  for (root = topRoot; root != UI_ROOT_STACK_END; ) {
+    if (UiPointer_RootContainsPointer(root,pointerY,pointerX)) {
+      node = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
+      if ((root != topRoot) && UiRootStack_BringToFront(root)) {
+        return UI_NODE_NONE;
+      }
+      return node;
+    }
+    missedCallbacks = root->callbacks;
+    root = root->previousRoot;
+    if ((missedCallbacks->method08 != NULL) && missedCallbacks->method08(root)) {
+      return UI_NODE_NONE;
+    }
+  }
+  return UI_NODE_NONE;
+}
+
+/* Press target for the left and middle buttons. A hovered image control (hoverTarget, read before the
+   capture check) stops being the hover target; it keeps the press when the pointer is on one of its opaque
+   pixels, else it loses its hover state bits and the root stack is hit-tested from topRoot. Returns
+   UI_NODE_NONE when the press goes nowhere. */
+static UiNodeBase *UiPointer_FindNonRightPressTarget
+          (UiImageControl *hoverTarget,UiRootNode *topRoot,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+{
+  UiSelectableStateFlags *stateFlagsField;
+  UiNodeBase *opaqueHit;
+
+  if (hoverTarget != NULL) {
+    opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,hoverTarget);
+    g_UiImageControlHoverTarget = NULL;
+    if (opaqueHit != UI_NODE_NONE) {
+      return (UiNodeBase *)hoverTarget;
+    }
+    stateFlagsField = &(hoverTarget->selectable).stateFlags;
+    *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
+  }
+  return UiPointer_HitTestRootStack(topRoot,pointerY,pointerX);
+}
+
+/* Press tail for all three buttons: node captures the pointer for captureButton, its
+   UI_NODE_REPEAT_OR_DOUBLE_CLICK flag records repeatClick, it takes the keyboard focus when it is a focus
+   target and gets the press and then, unless the press handler released the capture already, the capture
+   target gets the drag (rightPress/rightDrag for the right button, nonRightPress/nonRightDrag otherwise). */
+static void UiPointer_CaptureAndPress
+          (UiNodeBase *node,UiPointerCaptureButton captureButton,bool repeatClick,UiPointerWheelDelta wheelDelta,
+          UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+{
+  UiNodeVtable *nodeVtable;
+
+  g_UiPointerCaptureButton = captureButton;
+  if (repeatClick) {
+    node->nodeFlags = node->nodeFlags | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
+  }
+  else {
+    node->nodeFlags = node->nodeFlags & ~UI_NODE_REPEAT_OR_DOUBLE_CLICK;
+  }
+  nodeVtable = node->vtable;
+  g_UiPointerCaptureTarget = node;
+  if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
+    UiKeyboardFocus_Set(node);
+  }
+  if (captureButton == UI_POINTER_CAPTURE_RIGHT) {
+    nodeVtable->rightPress(wheelDelta,pointerY,pointerX,node);
+  }
+  else {
+    nodeVtable->nonRightPress(wheelDelta,pointerY,pointerX,node);
+  }
+  /* the press handler may have released the capture already */
+  if (g_UiPointerCaptureTarget == UI_NODE_NONE) {
+    return;
+  }
+  if (captureButton == UI_POINTER_CAPTURE_RIGHT) {
+    g_UiPointerCaptureTarget->vtable->rightDrag(wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
+  }
+  else {
+    g_UiPointerCaptureTarget->vtable->nonRightDrag(wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
+  }
+}
 
 /* Address: 0x004AFA60.
    Left button press: the node under the pointer (a hovered image control on an opaque pixel, else the hit
@@ -1215,80 +1355,22 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
-  UiSelectableStateFlags *stateFlagsField;
-  UiNodeFlags *nodeFlagsField;
-  UiRootCallbacks **callbacksField;
-  UiNodeVtable *nodeVtable;
+  UiImageControl *hoverTarget;
   UiRootNode *topRoot;
-  UiNodeBase *opaqueHit;
-  UiImageControl *node;
-  UiRootNode *root;
-  bool handled;
+  UiNodeBase *node;
 
-  node = g_UiImageControlHoverTarget;
+  hoverTarget = g_UiImageControlHoverTarget;
   topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
     return;
   }
-  /* A hovered image control keeps the press when the pointer is on one of its opaque pixels. */
-  opaqueHit = UI_NODE_NONE;
-  if (g_UiImageControlHoverTarget != NULL) {
-    opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
-    g_UiImageControlHoverTarget = NULL;
-    if (opaqueHit == UI_NODE_NONE) {
-      stateFlagsField = &(node->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-    }
-  }
-  if (opaqueHit == UI_NODE_NONE) {
-    /* Otherwise hit-test the root stack from the top; a root's method08 may end the search. */
-    root = topRoot;
-    if (root == UI_ROOT_STACK_END) {
-      return;
-    }
-    while (!((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
-             ((root->base).left <= pointerX)) && ((root->base).top <= pointerY) &&
-             (pointerX < (root->base).right) && (pointerY < (root->base).bottom))) {
-      callbacksField = &root->callbacks;
-      root = root->previousRoot;
-      if (((*callbacksField)->method08 != NULL) &&
-         (handled = (*(*callbacksField)->method08)(root), handled)) {
-        return;
-      }
-      if (root == UI_ROOT_STACK_END) {
-        return;
-      }
-    }
-    node = (UiImageControl *)(*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-    if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
-      return;
-    }
-    if (node == (UiImageControl *)UI_NODE_NONE) {
-      return;
-    }
-  }
-  g_UiPointerCaptureButton = UI_POINTER_CAPTURE_LEFT;
-  if ((buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) == CURSOR_BUTTON_NONE) {
-    nodeFlagsField = &(node->selectable).base.nodeFlags;
-    *nodeFlagsField = *nodeFlagsField & ~UI_NODE_REPEAT_OR_DOUBLE_CLICK;
-  }
-  else {
-    nodeFlagsField = &(node->selectable).base.nodeFlags;
-    *nodeFlagsField = *nodeFlagsField | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
-  }
-  nodeVtable = (node->selectable).base.vtable;
-  g_UiPointerCaptureTarget = (UiNodeBase *)node;
-  if (((node->selectable).base.nodeFlags &
-      (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
-    UiKeyboardFocus_Set((UiNodeBase *)node);
-  }
-  nodeVtable->nonRightPress(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
-  /* the press handler may have released the capture already */
-  if (g_UiPointerCaptureTarget == UI_NODE_NONE) {
+  node = UiPointer_FindNonRightPressTarget(hoverTarget,topRoot,pointerY,pointerX);
+  if (node == UI_NODE_NONE) {
     return;
   }
-  g_UiPointerCaptureTarget->vtable->nonRightDrag
-            (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
+  UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_LEFT,
+                            (buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) != CURSOR_BUTTON_NONE,
+                            wheelDelta,pointerY,pointerX);
   return;
 }
 
@@ -1303,74 +1385,20 @@ void UiPointer_DispatchMiddlePress
           UiPixelCoordinate pointerX)
 
 {
-  UiSelectableStateFlags *stateFlagsField;
-  UiNodeFlags *nodeFlagsField;
-  UiRootCallbacks **callbacksField;
-  UiNodeVtable *nodeVtable;
+  UiImageControl *hoverTarget;
   UiRootNode *topRoot;
-  UiNodeBase *opaqueHit;
-  UiImageControl *node;
-  UiRootNode *root;
-  bool handled;
-  
-  node = g_UiImageControlHoverTarget;
+  UiNodeBase *node;
+
+  hoverTarget = g_UiImageControlHoverTarget;
   topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
     return;
   }
-  /* A hovered image control keeps the press when the pointer is on one of its opaque pixels. */
-  opaqueHit = UI_NODE_NONE;
-  if (g_UiImageControlHoverTarget != NULL) {
-    opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
-    g_UiImageControlHoverTarget = NULL;
-    if (opaqueHit == UI_NODE_NONE) {
-      stateFlagsField = &(node->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-    }
-  }
-  if (opaqueHit == UI_NODE_NONE) {
-    /* Otherwise hit-test the root stack from the top; a root's method08 may end the search. */
-    root = topRoot;
-    if (root == UI_ROOT_STACK_END) {
-      return;
-    }
-    while (!((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
-             ((root->base).left <= pointerX)) && ((root->base).top <= pointerY) &&
-             (pointerX < (root->base).right) && (pointerY < (root->base).bottom))) {
-      callbacksField = &root->callbacks;
-      root = root->previousRoot;
-      if (((*callbacksField)->method08 != NULL) &&
-         (handled = (*(*callbacksField)->method08)(root), handled)) {
-        return;
-      }
-      if (root == UI_ROOT_STACK_END) {
-        return;
-      }
-    }
-    node = (UiImageControl *)(*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-    if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
-      return;
-    }
-    if (node == (UiImageControl *)UI_NODE_NONE) {
-      return;
-    }
-  }
-  g_UiPointerCaptureButton = UI_POINTER_CAPTURE_MIDDLE;
-  nodeFlagsField = &(node->selectable).base.nodeFlags;
-  *nodeFlagsField = *nodeFlagsField | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
-  nodeVtable = (node->selectable).base.vtable;
-  g_UiPointerCaptureTarget = (UiNodeBase *)node;
-  if (((node->selectable).base.nodeFlags &
-      (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
-    UiKeyboardFocus_Set((UiNodeBase *)node);
-  }
-  nodeVtable->nonRightPress(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
-  /* the press handler may have released the capture already */
-  if (g_UiPointerCaptureTarget == UI_NODE_NONE) {
+  node = UiPointer_FindNonRightPressTarget(hoverTarget,topRoot,pointerY,pointerX);
+  if (node == UI_NODE_NONE) {
     return;
   }
-  g_UiPointerCaptureTarget->vtable->nonRightDrag
-            (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
+  UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_MIDDLE,true,wheelDelta,pointerY,pointerX);
   return;
 }
 
@@ -1387,63 +1415,45 @@ void UiPointer_DispatchRightPress
 
 {
   UiSelectableStateFlags *stateFlagsField;
-  UiRootCallbacks **callbacksField;
-  UiNodeVtable *nodeVtable;
   UiRootNode *topRoot;
   UiNodeBase *node;
-  UiRootNode *root;
-  bool handled;
-  
+
   topRoot = g_UiRootNode;
-  if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) {
-    root = topRoot;
-    if (g_UiImageControlHoverTarget != NULL) {
-      stateFlagsField = &(g_UiImageControlHoverTarget->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-    }
-    while (root != UI_ROOT_STACK_END) {
-      if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
-           ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
-         ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) {
-        node = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-        if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
-          return;
-        }
-        if (node == UI_NODE_NONE) {
-          return;
-        }
-        g_UiPointerCaptureButton = UI_POINTER_CAPTURE_RIGHT;
-        if ((buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) == 0) {
-          node->nodeFlags = node->nodeFlags & ~UI_NODE_REPEAT_OR_DOUBLE_CLICK;
-        }
-        else {
-          node->nodeFlags = node->nodeFlags | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
-        }
-        nodeVtable = node->vtable;
-        g_UiPointerCaptureTarget = node;
-        if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
-          UiKeyboardFocus_Set(node);
-        }
-        nodeVtable->rightPress(wheelDelta,pointerY,pointerX,node);
-        /* the press handler may have released the capture already */
-        if (g_UiPointerCaptureTarget == UI_NODE_NONE) {
-          return;
-        }
-        g_UiPointerCaptureTarget->vtable->rightDrag
-                  (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
-        return;
-      }
-      callbacksField = &root->callbacks;
-      root = root->previousRoot;
-      if (((*callbacksField)->method08 != NULL) &&
-         (handled = (*(*callbacksField)->method08)(root), handled)) {
-        return;
-      }
-    }
+  if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
+    return;
   }
+  if (g_UiImageControlHoverTarget != NULL) {
+    stateFlagsField = &(g_UiImageControlHoverTarget->selectable).stateFlags;
+    *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
+  }
+  node = UiPointer_HitTestRootStack(topRoot,pointerY,pointerX);
+  if (node == UI_NODE_NONE) {
+    return;
+  }
+  UiPointer_CaptureAndPress(node,UI_POINTER_CAPTURE_RIGHT,(buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) != 0,
+                            wheelDelta,pointerY,pointerX);
   return;
 }
 
+
+/* The node after node in pre-order: its first child, else the next sibling of node or of its nearest ancestor
+   that has one; at the end of the tree the topmost ancestor (the walk wraps around). */
+static UiNodeBase *UiKeyboardFocus_NextInPreOrderWrapping(UiNodeBase *node)
+{
+  UiNodeBase *nextNode;
+
+  nextNode = node->firstChild;
+  if (nextNode != UI_NODE_NONE) {
+    return nextNode;
+  }
+  for (nextNode = node->nextSibling; nextNode == UI_NODE_NONE; nextNode = node->nextSibling) {
+    if (node->parent == UI_NODE_NONE) {
+      return node;
+    }
+    node = node->parent;
+  }
+  return nextNode;
+}
 
 /* Address: 0x004AFFA0.
    Moves the keyboard focus to the next focus target after the current one in depth-first tree order,
@@ -1454,25 +1464,15 @@ void UiKeyboardFocus_MoveNext(void)
 
 {
   UiNodeBase *node;
-  UiNodeBase *nextNode;
 
   node = g_UiKeyboardFocusNode;
   if (g_UiKeyboardFocusNode == UI_NODE_NONE) {
     return;
   }
-  /* Pre-order walk from the focus node, wrapping around through the topmost ancestor. */
+  /* Pre-order walk from the focus node, wrapping around through the topmost ancestor, until a focus target
+     that is the focus node itself or is not suppressed. */
   do {
-    nextNode = node->firstChild;
-    if (nextNode == UI_NODE_NONE) {
-      while ((nextNode = node->nextSibling, nextNode == UI_NODE_NONE) &&
-             (node->parent != UI_NODE_NONE)) {
-        node = node->parent;
-      }
-      if (nextNode == UI_NODE_NONE) {
-        nextNode = node;
-      }
-    }
-    node = nextNode;
+    node = UiKeyboardFocus_NextInPreOrderWrapping(node);
   } while (((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) ||
            ((node != g_UiKeyboardFocusNode) && ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0)));
   if (node == g_UiKeyboardFocusNode) {

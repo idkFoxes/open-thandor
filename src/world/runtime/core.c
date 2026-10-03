@@ -48,6 +48,32 @@ static __inline uint32_t WorldLighting_BlendColors
   return packed;
 }
 
+/* Triangular blend of two 16-bit values over the phase byte (0 = primary, 0x80 = alternate, back towards
+   primary at 0xff); the value that would lie below the other one gets WORLD_LIGHTING_PACKED_HALF_WRAP
+   added, so the blend runs forward through the 16-bit wrap. Returns the low 16 bits of the result. */
+static uint32_t WorldLighting_BlendPackedLow16(uint32_t primaryValue,uint32_t alternateValue,uint32_t phaseByte)
+
+{
+  int primaryWeighted;
+  int alternateWeighted;
+
+  if (phaseByte < 128) {
+    if (alternateValue < primaryValue) {
+      alternateValue = alternateValue + WORLD_LIGHTING_PACKED_HALF_WRAP;
+    }
+    alternateWeighted = alternateValue * phaseByte;
+    primaryWeighted = primaryValue * (128 - phaseByte);
+  }
+  else {
+    if (primaryValue < alternateValue) {
+      primaryValue = primaryValue + WORLD_LIGHTING_PACKED_HALF_WRAP;
+    }
+    primaryWeighted = primaryValue * (phaseByte - 128);
+    alternateWeighted = alternateValue * (128 - (phaseByte - 128));
+  }
+  return (uint32_t)(primaryWeighted + alternateWeighted) >> 7 & 0xffff;
+}
+
 /* Address: 0x00532FA0.
    Periodic terrain lighting cycle (tick-wheel case 0, plus two session setup paths): when the level
    defines a cycle duration, the simulation tick's phase in the cycle picks a cosine blend between the
@@ -61,10 +87,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
 {
   SoftwareBgraWordLanes forwardFactors;
   SoftwareBgraWordLanes inverseFactors;
-  PackedArgb32 primaryColorB;
-  PackedArgb32 alternateColorA;
-  PackedArgb32 alternateColorB;
-  InGameLevelConditionStorage *levelConditions;
+  struct LevelWorldSettings *settings;
   uint32_t mixedColor0A;
   uint32_t mixedColor0B;
   uint32_t mixedColor1A;
@@ -73,136 +96,79 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
   uint32_t mixedColor2B;
   uint32_t mixedColor3A;
   uint32_t mixedColor3B;
-  uint32_t cycleDurationOrPhase;
-  int primaryOriginXWeighted;
-  int primaryWidthWeighted;
-  uint32_t phaseByteOrAlternateSize;
-  uint32_t blendIndexOrPrimaryValue;
-  uint32_t alternateOriginOrBlendWeight;
-  int alternateOriginXWeighted;
-  int alternateWidthWeighted;
-  WorldRuntimeContext *worldRuntime;
+  uint32_t cycleDuration;
+  uint32_t phase;
+  uint32_t phaseByte;
+  uint32_t blendIndex;
+  uint32_t blendWeight;
   int inverseBlendWeight;
-  PackedArgb32 primaryColorA;
-  
-  levelConditions = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  cycleDurationOrPhase = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-          terrainLightingCycleDurationTicks;
+  uint32_t blendedLightAzimuth;
+  uint32_t blendedAuxiliaryAzimuth;
+  WorldRuntimeContext *worldRuntime;
+
+  settings = &g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings;
+  cycleDuration = settings->terrainLightingCycleDurationTicks;
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
-  if (cycleDurationOrPhase != 0) {
+  if (cycleDuration != 0) {
     /* phase in the cycle as a 16-bit angle; its cosine (Q28, -1..1) becomes a blend index 0..256 */
-    cycleDurationOrPhase =
-         (g_GameFactionRuntimeImage.tail.simulationTick % cycleDurationOrPhase << 16) / cycleDurationOrPhase;
-    blendIndexOrPrimaryValue = g_FixedCosQ28[cycleDurationOrPhase] + (uint32_t)Q28_ONE >> 21;
-    primaryColorA =
-         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-         terrainRampStepColorArgb;
-    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            terrainBaseColorArgb;
-    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainRampStepColorArgb;
-    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainBaseColorArgb;
-    forwardFactors = g_SoftwareBilinearForwardFactors[blendIndexOrPrimaryValue];
-    inverseFactors = g_SoftwareBilinearInverseFactors[blendIndexOrPrimaryValue];
-    mixedColor0A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
-    mixedColor0B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
-    primaryColorA =
-         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-         terrainLightingColor128Argb;
-    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            terrainSecondaryColorArgb;
-    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainLightingColor128Argb;
-    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainSecondaryColorArgb;
-    mixedColor1A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
-    mixedColor1B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
-    primaryColorA =
-         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-         terrainLightingColor130Argb;
-    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            terrainLightingColor134Argb;
-    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainLightingColor130Argb;
-    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainLightingColor134Argb;
-    mixedColor2A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
-    mixedColor2B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
-    primaryColorA =
-         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-         terrainLightingColor138Argb;
-    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            terrainLightingColor13CArgb;
-    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainLightingColor138Argb;
-    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainLightingColor13CArgb;
-    mixedColor3A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
-    mixedColor3B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
+    phase = (g_GameFactionRuntimeImage.tail.simulationTick % cycleDuration << 16) / cycleDuration;
+    blendIndex = (g_FixedCosQ28[phase] + (uint32_t)Q28_ONE) >> 21;
+    forwardFactors = g_SoftwareBilinearForwardFactors[blendIndex];
+    inverseFactors = g_SoftwareBilinearInverseFactors[blendIndex];
+    mixedColor0A = WorldLighting_BlendColors(settings->terrainRampStepColorArgb,
+                                             settings->alternateTerrainRampStepColorArgb,
+                                             forwardFactors,inverseFactors);
+    mixedColor0B = WorldLighting_BlendColors(settings->terrainBaseColorArgb,
+                                             settings->alternateTerrainBaseColorArgb,
+                                             forwardFactors,inverseFactors);
+    mixedColor1A = WorldLighting_BlendColors(settings->terrainLightingColor128Argb,
+                                             settings->alternateTerrainLightingColor128Argb,
+                                             forwardFactors,inverseFactors);
+    mixedColor1B = WorldLighting_BlendColors(settings->terrainSecondaryColorArgb,
+                                             settings->alternateTerrainSecondaryColorArgb,
+                                             forwardFactors,inverseFactors);
+    mixedColor2A = WorldLighting_BlendColors(settings->terrainLightingColor130Argb,
+                                             settings->alternateTerrainLightingColor130Argb,
+                                             forwardFactors,inverseFactors);
+    mixedColor2B = WorldLighting_BlendColors(settings->terrainLightingColor134Argb,
+                                             settings->alternateTerrainLightingColor134Argb,
+                                             forwardFactors,inverseFactors);
+    mixedColor3A = WorldLighting_BlendColors(settings->terrainLightingColor138Argb,
+                                             settings->alternateTerrainLightingColor138Argb,
+                                             forwardFactors,inverseFactors);
+    mixedColor3B = WorldLighting_BlendColors(settings->terrainLightingColor13CArgb,
+                                             settings->alternateTerrainLightingColor13CArgb,
+                                             forwardFactors,inverseFactors);
     /* A colors without alpha; B colors opaque, except the secondary colour keeps its alpha */
     WorldRuntime_SetTerrainLightingConfiguration
               (mixedColor3B | 0xff000000,mixedColor3A & 0xffffff,mixedColor2B | 0xff000000,
-               mixedColor2A & 0xffffff,
-               mixedColor1B |
-               g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-               terrainSecondaryColorArgb & 0xff000000,
+               mixedColor2A & 0xffffff,mixedColor1B | settings->terrainSecondaryColorArgb & 0xff000000,
                mixedColor1A & 0xffffff,mixedColor0B | 0xff000000,mixedColor0A & 0xffffff,worldRuntime);
-    /* Low 16 bits of the pairs: triangular blend over the phase byte (0x80 = half cycle); the value that
-       would lie below the other one gets WORLD_LIGHTING_PACKED_HALF_WRAP added, so the blend runs forward through the 16-bit wrap.
-       High 16 bits: the same cosine weight as the colours. */
-    phaseByteOrAlternateSize = cycleDurationOrPhase >> 8;
-    blendIndexOrPrimaryValue =
-         (uint32_t)(uint16_t)levelConditions->levelImage.worldSettings.packedFieldRegionOriginYHigh16XLow16;
-    alternateOriginOrBlendWeight = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
-                           alternatePackedFieldRegionOriginYHigh16XLow16;
-    if (phaseByteOrAlternateSize < 128) {
-      if (alternateOriginOrBlendWeight < blendIndexOrPrimaryValue) {
-        alternateOriginOrBlendWeight = alternateOriginOrBlendWeight + WORLD_LIGHTING_PACKED_HALF_WRAP;
-      }
-      alternateOriginXWeighted = alternateOriginOrBlendWeight * phaseByteOrAlternateSize;
-      primaryOriginXWeighted = blendIndexOrPrimaryValue * (128 - phaseByteOrAlternateSize);
-    }
-    else {
-      if (blendIndexOrPrimaryValue < alternateOriginOrBlendWeight) {
-        blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + WORLD_LIGHTING_PACKED_HALF_WRAP;
-      }
-      primaryOriginXWeighted = blendIndexOrPrimaryValue * (phaseByteOrAlternateSize - 128);
-      alternateOriginXWeighted = alternateOriginOrBlendWeight * (128 - (phaseByteOrAlternateSize - 128));
-    }
-    alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + (uint32_t)Q28_ONE >> 21;
-    inverseBlendWeight = 256 - alternateOriginOrBlendWeight;
-    blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
-                           packedFieldRegionHeightHigh16WidthLow16;
-    cycleDurationOrPhase = cycleDurationOrPhase >> 8;
-    phaseByteOrAlternateSize = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
-                           alternatePackedFieldRegionHeightHigh16WidthLow16;
-    if (cycleDurationOrPhase < 128) {
-      if (phaseByteOrAlternateSize < blendIndexOrPrimaryValue) {
-        phaseByteOrAlternateSize = phaseByteOrAlternateSize + WORLD_LIGHTING_PACKED_HALF_WRAP;
-      }
-      alternateWidthWeighted = phaseByteOrAlternateSize * cycleDurationOrPhase;
-      primaryWidthWeighted = blendIndexOrPrimaryValue * (128 - cycleDurationOrPhase);
-    }
-    else {
-      if (blendIndexOrPrimaryValue < phaseByteOrAlternateSize) {
-        blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + WORLD_LIGHTING_PACKED_HALF_WRAP;
-      }
-      primaryWidthWeighted = blendIndexOrPrimaryValue * (cycleDurationOrPhase - 128);
-      alternateWidthWeighted = phaseByteOrAlternateSize * (128 - (cycleDurationOrPhase - 128));
-    }
+    /* The packed pairs hold the light direction (origin pair: elevation high, azimuth low) and the auxiliary
+       angles (height/width pair). Low 16 bits: triangular blend over the phase byte (see
+       WorldLighting_BlendPackedLow16). High 16 bits: the same cosine weight as the colours. */
+    phaseByte = phase >> 8;
+    blendedLightAzimuth =
+         WorldLighting_BlendPackedLow16((uint16_t)settings->packedFieldRegionOriginYHigh16XLow16,
+                                        (uint16_t)settings->alternatePackedFieldRegionOriginYHigh16XLow16,
+                                        phaseByte);
+    blendWeight = (g_FixedCosQ28[phase] + (uint32_t)Q28_ONE) >> 21;
+    inverseBlendWeight = 256 - blendWeight;
+    blendedAuxiliaryAzimuth =
+         WorldLighting_BlendPackedLow16((uint16_t)settings->packedFieldRegionHeightHigh16WidthLow16,
+                                        (uint16_t)settings->alternatePackedFieldRegionHeightHigh16WidthLow16,
+                                        phaseByte);
     /* ((uint16_t *)&pair)[1]: the high 16 bits of a packed pair */
     WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-              ((int)((uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
-                                 alternatePackedFieldRegionHeightHigh16WidthLow16)[1] * inverseBlendWeight +
-                     (uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
-                                 packedFieldRegionHeightHigh16WidthLow16)[1] * (256 - inverseBlendWeight)) >> 8,
-               (uint32_t)(primaryWidthWeighted + alternateWidthWeighted) >> 7 & 0xffff,
-               (int)((uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
-                                 alternatePackedFieldRegionOriginYHigh16XLow16)[1] * inverseBlendWeight +
-                     ((uint16_t *)&levelConditions->levelImage.worldSettings.
-                       packedFieldRegionOriginYHigh16XLow16)[1] * alternateOriginOrBlendWeight) >> 8,
-               (uint32_t)(primaryOriginXWeighted + alternateOriginXWeighted) >> 7 & 0xffff,worldRuntime);
+              ((int)((uint32_t)((uint16_t *)&settings->alternatePackedFieldRegionHeightHigh16WidthLow16)[1] *
+                     inverseBlendWeight +
+                     (uint32_t)((uint16_t *)&settings->packedFieldRegionHeightHigh16WidthLow16)[1] *
+                     (256 - inverseBlendWeight)) >> 8,
+               blendedAuxiliaryAzimuth,
+               (int)((uint32_t)((uint16_t *)&settings->alternatePackedFieldRegionOriginYHigh16XLow16)[1] *
+                     inverseBlendWeight +
+                     ((uint16_t *)&settings->packedFieldRegionOriginYHigh16XLow16)[1] * blendWeight) >> 8,
+               blendedLightAzimuth,worldRuntime);
   }
 }
 
@@ -883,7 +849,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
     ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,(int *)modelRuntime);
     /* the army that owns the model */
     ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-    if (releasedObject== (void *)ownerArmy->assignedTargetArmyRuntime) {
+    if (releasedObject == (void *)ownerArmy->assignedTargetArmyRuntime) {
       ownerArmy->assignedTargetArmyRuntime = 0;
     }
     /* the command target is only a live reference while ARMY_COMMAND_MODE_TARGET_ARMY is set; it is cleared
@@ -922,40 +888,44 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   ModelDefinitionRecordPrefix *definitionRecord;
   WorldOwnerListNode *ownerNode;
   uint32_t overlayExtent;
-  
-  if (sourceRuntime != NULL) {
-    definitionRecord = ModelDefinitionRegistry_FindById
-                      (((AiLinkedDefinitionListView *)
-                        ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->
-                       definitionIds[0]);
-    if (definitionRecord != NULL) {
-      overlayExtent = UINT32_MAX;
-      ownerNode = worldRuntime->ownerListHead;
-      overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags;
-      if (ownerNode != NULL) {
-        if (((ModelDefinition *)definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
-          overlayExtent =
-               FIELD_CELL_XENITE_SUPPORT << ((uint8_t)((ModelDefinition *)definitionRecord)->classParameterC0 & 31);
-        }
-        overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
-                 [((ModelDefinition *)definitionRecord)->placementContactKindIndex];
-        do {
-          if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
-              worldRuntime->activeFactionRuntimeIndex ==
-              ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->
-              factionIndex &&
-              (modelOverlayBase = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.
-                                  runtimeDefinition->supportRadius,
-               modelOverlayBase != 0)) {
-            overlayCallback(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,
-                            ownerNode->worldXQ12,worldRuntime->fieldGrid);
-          }
-          ownerNode = ownerNode->nextNode;
-        } while (ownerNode != NULL);
-      }
+  ModelRuntimeSlot *modelRuntime;
+
+  if (sourceRuntime == NULL) {
+    return;
+  }
+  definitionRecord = ModelDefinitionRegistry_FindById
+                    (((AiLinkedDefinitionListView *)
+                      ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->definitionIds[0]);
+  if (definitionRecord == NULL) {
+    return;
+  }
+  overlayExtent = UINT32_MAX;
+  ownerNode = worldRuntime->ownerListHead;
+  overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags;
+  if (ownerNode == NULL) {
+    return;
+  }
+  if (((ModelDefinition *)definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
+    overlayExtent =
+         FIELD_CELL_XENITE_SUPPORT << ((uint8_t)((ModelDefinition *)definitionRecord)->classParameterC0 & 31);
+  }
+  overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
+           [((ModelDefinition *)definitionRecord)->placementContactKindIndex];
+  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    if (worldRuntime->activeFactionRuntimeIndex !=
+        modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) {
+      continue;
+    }
+    modelOverlayBase = modelRuntime->definitionOrSavedId.runtimeDefinition->supportRadius;
+    if (modelOverlayBase != 0) {
+      overlayCallback(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,
+                      ownerNode->worldXQ12,worldRuntime->fieldGrid);
     }
   }
-  return;
 }
 
 
@@ -1117,7 +1087,8 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   AngleTurn32 currentPitchAngle;
   UQ12 hitDistanceQ12;
   uint32_t endpointDistanceQ12;
-  int rayLengthOrOffsetY;
+  int rayLengthQ12;
+  int groundOffsetY;
   FixedSinCos groundOffsetXY;
   bool surfaceHit;
   Q12 rayDistanceQ12;
@@ -1125,16 +1096,16 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   FixedDirection endpointOffset;
 
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) == 0) {
-    rayLengthOrOffsetY = worldRuntime->maximumCameraDistanceQ12 << 2;
+    rayLengthQ12 = worldRuntime->maximumCameraDistanceQ12 << 2;
     surfaceHit = FieldGrid_RaycastTerrainSurfaceDistance
-                      (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthOrOffsetY,
+                      (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthQ12,
                        worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
                        worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid,&rayDistanceQ12,NULL);
     hitDistanceQ12 = rayDistanceQ12;
     if (surfaceHit) {
       /* terrain hit: a nearer secondary-surface hit wins */
       if ((FieldGrid_RaycastSecondarySurfaceDistance
-                        (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthOrOffsetY,
+                        (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthQ12,
                          worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
                          worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid,&secondaryDistanceQ12)) &&
           (secondaryDistanceQ12 < (int)hitDistanceQ12)) {
@@ -1158,12 +1129,12 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
                        (FixedMathScale32)
                        (((int64_t)(worldRuntime->motion).positionZQ12 *
                         (int64_t)g_FixedCosQ28[-currentPitchAngle]) / (int64_t)g_FixedSinQ28[-currentPitchAngle]));
-    rayLengthOrOffsetY = groundOffsetXY.sinValue;
+    groundOffsetY = groundOffsetXY.sinValue;
     worldRuntime->motion.targetPositionXQ12 = groundOffsetXY.cosValue + worldRuntime->motion.positionXQ12;
-    worldRuntime->motion.targetPositionYQ12 = rayLengthOrOffsetY + worldRuntime->motion.positionYQ12;
+    worldRuntime->motion.targetPositionYQ12 = groundOffsetY + worldRuntime->motion.positionYQ12;
     worldRuntime->motion.targetPositionZQ12 = 0;
     endpointDistanceQ12 =
-         FixedMath_Length3(worldRuntime->motion.positionZQ12,rayLengthOrOffsetY,groundOffsetXY.cosValue);
+         FixedMath_Length3(worldRuntime->motion.positionZQ12,groundOffsetY,groundOffsetXY.cosValue);
     worldRuntime->motion.targetDistanceQ12 = endpointDistanceQ12;
     WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
     return;

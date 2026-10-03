@@ -84,9 +84,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
       shooterFactionIndex = shooterArmy->factionIndex;
       /* the target's owning faction */
       targetFactionIndex = targetEntity->common.ownership.ownerIndex;
-      g_GameDataAuxState.pairPressureMatrix8x8[targetEntity->common.ownership.ownerIndex * 8 + shooterFactionIndex] =
-           g_GameDataAuxState.pairPressureMatrix8x8
-           [targetEntity->common.ownership.ownerIndex * 8 + shooterFactionIndex] + 256;
+      g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + shooterFactionIndex] += 256;
       if (shooterFactionIndex != 0 && targetFactionIndex != 0 && shooterFactionIndex != targetFactionIndex) {
         alreadyHostile = GameFactionRuntime_TestCapabilityBitClear(targetFactionIndex,shooterFactionIndex);
         inGameRoot = g_InGameRuntimeRoot;
@@ -140,43 +138,46 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
 bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
 
 {
-  ShotRuntimeSlot *runtimeSlotCursor;
-  int runtimeSlotsRemaining;
+  ShotRuntimeSlot *pool;
+  uint32_t *poolDword;
+  int poolDwordsRemaining;
   uint32_t loadError;
-  bool loadFailed;
   GraphicsTextureSet *loadedTextureSet;
   GraphicsPaletteAsset *loadedPalette;
 
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
   loadedTextureSet = g_GraphicsTextureSetLoadPackage(mutableBasePath,&loadError);
-  loadFailed = loadedTextureSet == NULL;
-  if (!loadFailed) {
-    MoviePlayback_AdvanceScheduledFrameAndTick();
-    g_ShotTextureSet = loadedTextureSet;
-    WidePath_SetExtensionCode(ASSET_MAGIC_PAL,mutableBasePath);
-    loadedPalette = g_GraphicsPaletteAssetLoadPackage(mutableBasePath,&loadError);
-    loadFailed = loadedPalette == NULL;
-    if (!loadFailed) {
-      MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_ShotPalette = loadedPalette;
-      loadError = g_MemoryApi.alloc(SHOT_RUNTIME_POOL_BYTES,(void **)&runtimeSlotCursor);
-      loadFailed = loadError != 0;
-      if (!loadFailed) {
-        /* pool address - 1 */
-        g_ShotRuntimeRebaseBaseMinusOne = (uint8_t *)runtimeSlotCursor - 1;
-        g_ShotRuntimeSlots = runtimeSlotCursor;
-        /* clears the pool dword by dword */
-        for (runtimeSlotsRemaining = SHOT_RUNTIME_POOL_BYTES / 4; runtimeSlotsRemaining != 0;
-            runtimeSlotsRemaining--) {
-          runtimeSlotCursor->definitionOrSavedId.definition = NULL;
-          runtimeSlotCursor = (ShotRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
-        }
-      }
-    }
+  if (loadedTextureSet == NULL) {
+    *outError = loadError;
+    return false;
   }
-  *outError = loadError;
-  return !loadFailed;
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  g_ShotTextureSet = loadedTextureSet;
+  WidePath_SetExtensionCode(ASSET_MAGIC_PAL,mutableBasePath);
+  loadedPalette = g_GraphicsPaletteAssetLoadPackage(mutableBasePath,&loadError);
+  if (loadedPalette == NULL) {
+    *outError = loadError;
+    return false;
+  }
+  MoviePlayback_AdvanceScheduledFrameAndTick();
+  g_ShotPalette = loadedPalette;
+  loadError = g_MemoryApi.alloc(SHOT_RUNTIME_POOL_BYTES,(void **)&pool);
+  if (loadError != 0) {
+    *outError = loadError;
+    return false;
+  }
+  /* pool address - 1 */
+  g_ShotRuntimeRebaseBaseMinusOne = (uint8_t *)pool - 1;
+  g_ShotRuntimeSlots = pool;
+  /* clears the pool dword by dword */
+  poolDword = (uint32_t *)pool;
+  for (poolDwordsRemaining = SHOT_RUNTIME_POOL_BYTES / 4; poolDwordsRemaining != 0; poolDwordsRemaining--) {
+    *poolDword = 0;
+    poolDword++;
+  }
+  *outError = 0;
+  return true;
 }
 
 
@@ -230,18 +231,20 @@ ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog defini
   ShotDefinition **registryCursor;
 
   registryCursor = g_ShotDefinitionRegistry;
-  registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-  while (registryDefinition = *registryCursor, registryDefinition == NULL || registryDefinition->definitionId != definitionId) {
-    registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      /* the original formats EAX, i.e. the last registry slot, not the missing id (PUSH EAX at 0x0052B699) */
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
-      return NULL;
+  registryDefinition = NULL;
+  for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
+    registryDefinition = *registryCursor;
+    if (registryDefinition != NULL && registryDefinition->definitionId == definitionId) {
+      return registryDefinition;
     }
+    registryCursor++;
   }
-  return registryDefinition;
+  /* Original quirk: the original formats EAX, i.e. the last registry slot, not the missing id
+     (PUSH EAX at 0x0052B699) */
+  g_WideNumberFormatUtf16
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
+  return NULL;
 }
 
 
@@ -265,11 +268,11 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
   ShotDefinition *registryDefinition;
   
   shotSlot = g_ShotRuntimeSlots;
-  shotSlotsRemaining = SHOT_RUNTIME_SLOT_COUNT;
-  /* NOT dword ptr [slot0 + 0x3C]: inverted on every call, purpose unknown */
+  /* Original quirk: the first slot's secondary effect countdown (slot0 + 0x3C) is inverted on every call,
+     purpose unknown */
   firstSlotCountdown = &g_ShotRuntimeSlots->ownerAndTrajectory.secondaryEffectCountdownTicks;
   *firstSlotCountdown = ~*firstSlotCountdown;
-  do {
+  for (shotSlotsRemaining = SHOT_RUNTIME_SLOT_COUNT; shotSlotsRemaining != 0; shotSlotsRemaining--) {
     rebasedRuntimeState = shotSlot->runtimeStateOrSavedOffset.runtimeStatePointer;
     savedOwnerArmy = shotSlot->ownerAndTrajectory.ownerArmyRuntime;
     if (shotSlot->modelNodeOrSavedOffset.modelNode != NULL) {
@@ -285,25 +288,27 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
            (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)shotSlot->modelNodeOrSavedOffset.modelNode);
       shotSlot->runtimeStateOrSavedOffset.runtimeStatePointer = rebasedRuntimeState;
       shotSlot->ownerAndTrajectory.ownerArmyRuntime = rebasedOwnerArmy;
+      /* the slot still holds the saved definition id in its definition field */
       registryCursor = g_ShotDefinitionRegistry;
-      registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-      while (registryDefinition = *registryCursor,
-             (registryDefinition == NULL) ||
-             (shotSlot->definitionOrSavedId.definition !=
-              (ShotDefinition *)registryDefinition->definitionId)) {
-        registryCursor++;
-        registrySlotsRemaining--;
-        if (registrySlotsRemaining == 0) {
-          /* saved definition no longer registered: drop the shot (definition = last registry entry) */
-          shotSlot->modelNodeOrSavedOffset.modelNode = NULL;
+      registryDefinition = NULL;
+      for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+           registrySlotsRemaining--) {
+        registryDefinition = *registryCursor;
+        if (registryDefinition != NULL &&
+            shotSlot->definitionOrSavedId.definition == (ShotDefinition *)registryDefinition->definitionId) {
           break;
         }
+        registryCursor++;
+      }
+      if (registrySlotsRemaining == 0) {
+        /* saved definition no longer registered: drop the shot.
+           Original quirk: the definition becomes the last registry entry */
+        shotSlot->modelNodeOrSavedOffset.modelNode = NULL;
       }
       shotSlot->definitionOrSavedId.definition = registryDefinition;
     }
     shotSlot++;
-    shotSlotsRemaining--;
-  } while (shotSlotsRemaining != 0);
+  }
 }
 
 
@@ -331,13 +336,13 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   AngleTurn16Stored32 elevationOffsetAngle;
   ShotSecondaryEffectCountdownTicks secondaryEffectInterval;
   PackedArgb32 definitionTintArgb;
-  ShotRuntimeSlot *slotsRemainingOrPool;
   GraphicsPaletteAsset *shotPalette;
   ShotModelRuntimeNode *shotModelNode;
   PackedArgb32 nodeTintArgb;
-  ShotRuntimeSlot *slotsRemaining;
+  int slotsRemaining;
   Q12 runtimeLaunchSpeedQ12;
-  uint32_t directionZOrNeighborhoodMask;
+  Q12 launchDirectionZQ12;
+  uint32_t neighborhoodMask;
   ShotRuntimeSlot *shotRuntimeCursor;
   uint64_t tintProduct;
   ShotLaunchAngles launchAngles;
@@ -347,16 +352,16 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   TerrainOccupancyResolvedMasks resolvedMasks;
   char runtimeClassIndex;
   
-  slotsRemaining = (ShotRuntimeSlot *)SHOT_RUNTIME_SLOT_COUNT; /* a counter kept in a pointer-typed variable */
-  shotRuntimeCursor = g_ShotRuntimeSlots;
-  slotsRemainingOrPool = g_ShotRuntimeSlots;
-  while ((slotsRemainingOrPool != NULL) &&
-         (shotRuntimeCursor->modelNodeOrSavedOffset.modelNode != NULL)) {
-    shotRuntimeCursor = shotRuntimeCursor + 1;
-    slotsRemaining = (ShotRuntimeSlot *)((int)slotsRemaining - 1);
-    slotsRemainingOrPool = slotsRemaining;
+  if (g_ShotRuntimeSlots == NULL) {
+    return; /* no shot pool */
   }
-  if (slotsRemainingOrPool == NULL) {
+  shotRuntimeCursor = g_ShotRuntimeSlots;
+  slotsRemaining = SHOT_RUNTIME_SLOT_COUNT;
+  while (slotsRemaining != 0 && shotRuntimeCursor->modelNodeOrSavedOffset.modelNode != NULL) {
+    shotRuntimeCursor++;
+    slotsRemaining--;
+  }
+  if (slotsRemaining == 0) {
     return; /* no free slot */
   }
   shotModelNode = (ShotModelRuntimeNode *)WorldObjectArray_AllocateFreeRecord(worldRuntime);
@@ -386,14 +391,14 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->modelPayload.worldRotationAngle2 = launchAngles.headingAngle;
   launchDirection = FixedMath_DirectionFromAnglesScaled
                      (launchAngles.elevationAngle,launchAngles.headingAngle,shotDefinition->launchSpeedQ12);
-  directionZOrNeighborhoodMask = launchDirection.z;
+  launchDirectionZQ12 = launchDirection.z;
   shotRuntimeCursor->ownerAndTrajectory.directionComponent0Q12 = launchDirection.x;
   if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
-    directionZOrNeighborhoodMask = directionZOrNeighborhoodMask + (shotDefinition->ballisticDivisorQ12 >> 1);
+    launchDirectionZQ12 = launchDirectionZQ12 + (shotDefinition->ballisticDivisorQ12 >> 1);
   }
   shotModelNode->renderDepthBiasOrState = 0;
   shotRuntimeCursor->ownerAndTrajectory.directionComponent1Q12 = launchDirection.y;
-  shotRuntimeCursor->ownerAndTrajectory.directionComponent2Q12 = directionZOrNeighborhoodMask;
+  shotRuntimeCursor->ownerAndTrajectory.directionComponent2Q12 = launchDirectionZQ12;
   shotRuntimeCursor->projectileAgeTicks = 0;
   shotPalette = g_ShotPalette;
   nestedModelResource = shotDefinition->ownedNestedResource;
@@ -431,11 +436,11 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->parentNode = NULL;
   shotModelNode->childCount = 0;
   runtimeClassIndex = (char)worldRuntime->activeFactionRuntimeIndex;
-  directionZOrNeighborhoodMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+  neighborhoodMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
                      (Q12_ONE,shotModelNode->worldTransform.translation.y,
                       shotModelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
   resolvedMasks =
-       TerrainOccupancyMask_ResolveRuntimeClassFlags(TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,directionZOrNeighborhoodMask,runtimeClassIndex);
+       TerrainOccupancyMask_ResolveRuntimeClassFlags(TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,neighborhoodMask,runtimeClassIndex);
   shotRuntimeCursor->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
   shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   nodeTintArgb = ModelRuntimeNode_GetStateTintArgb(shotModelNode);

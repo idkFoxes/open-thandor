@@ -11,6 +11,39 @@
 
 /* Implementation ownership: platform/filesystem/win32. */
 
+/* Copies the zero-terminated name at the start of each of the entryCount enumeration records into the
+   string area behind the table's pointer array (stringBytesLeft bytes) and points table[i] at it.
+   Returns false as soon as a copied code unit leaves 2 bytes or less of the area (so a full fit fails
+   too; the unit is still written); otherwise true with the end of the strings in *outStringEnd. */
+static bool FileSystem_CopyRecordNamesIntoTable
+          (uint16_t **table,uint32_t entryCount,const uint8_t *records,uint32_t stringBytesLeft,
+          uint8_t **outStringEnd)
+
+{
+  uint16_t *stringCursor;
+  const uint16_t *sourceCodeUnit;
+  uint16_t codeUnit;
+  uint32_t entryIndex;
+
+  stringCursor = (uint16_t *)(table + entryCount);
+  for (entryIndex = 0; entryIndex < entryCount; entryIndex++) {
+    table[entryIndex] = stringCursor;
+    sourceCodeUnit = (const uint16_t *)(records + entryIndex * FILESYSTEM_ENUMERATION_RECORD_BYTES);
+    do {
+      codeUnit = *sourceCodeUnit;
+      *stringCursor = codeUnit;
+      sourceCodeUnit++;
+      stringCursor++;
+      if (stringBytesLeft <= 2) {
+        return false;
+      }
+      stringBytesLeft -= 2;
+    } while (codeUnit != 0);
+  }
+  *outStringEnd = (uint8_t *)stringCursor;
+  return true;
+}
+
 /* Address: 0x0040F430.
    Lists a directory (or a drive's volume label) as a compact string table: the fixed-size name records of
    g_FileSystemEnumerateDirectoryOrVolumeEntries are collected in the largest free arena block, then copied
@@ -25,69 +58,42 @@ bool FileSystem_BuildEnumerationStringTable
           uint16_t ***outTable,uint32_t *outEntryCount)
 
 {
-  short codeUnit;
   uint8_t *recordBuffer;
-  uint32_t recordSizeBytes;
-  uint8_t *tableOrError;
-  FileSystemOutputCapacityBytes foundEntryCount;
-  FileSystemOutputCapacityBytes capacityBytesOrError;
-  FileSystemOutputCapacityBytes remainingEntries;
-  uint8_t *tablePointerSlot;
-  uint8_t *sourceCodeUnit;
-  uint8_t *sourceRecord;
-  uint8_t *stringCursor;
-  bool capacityFlag;
+  uint32_t recordBufferBytes;
+  uint16_t **table;
+  uint32_t tableBlockBytes;
+  uint32_t pointerArrayBytes;
+  uint32_t entryCount;
+  uint8_t *stringEnd;
 
-  if (g_MemoryApi.allocLargestFreeBlock((void **)&recordBuffer,&capacityBytesOrError) == 0) {
-    foundEntryCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                       (enumerationMode,reserved,capacityBytesOrError,recordBuffer,pathOrVolumeText);
-    recordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
-    if (foundEntryCount == 0) {
+  if (g_MemoryApi.allocLargestFreeBlock((void **)&recordBuffer,&recordBufferBytes) != 0) {
+    return false;
+  }
+  entryCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
+                (enumerationMode,reserved,recordBufferBytes,recordBuffer,pathOrVolumeText);
+  if (entryCount == 0) {
+    g_MemoryApi.free(recordBuffer);
+    *outTable = NULL;
+    *outEntryCount = 0;
+    return true;
+  }
+  /* give the unused tail of the record buffer back before taking the next largest block */
+  if ((g_MemoryApi.shrinkInPlace(entryCount * FILESYSTEM_ENUMERATION_RECORD_BYTES,recordBuffer) == 0) &&
+      (g_MemoryApi.allocLargestFreeBlock((void **)&table,&tableBlockBytes) == 0)) {
+    /* the pointer array must fit with room to spare for the strings behind it */
+    pointerArrayBytes = entryCount * 4;
+    if ((pointerArrayBytes <= tableBlockBytes) && (tableBlockBytes - pointerArrayBytes != 0) &&
+        FileSystem_CopyRecordNamesIntoTable
+                  (table,entryCount,recordBuffer,tableBlockBytes - pointerArrayBytes,&stringEnd)) {
+      g_MemoryApi.shrinkInPlace((uint32_t)(stringEnd - (uint8_t *)table),table);
       g_MemoryApi.free(recordBuffer);
-      *outTable = NULL;
-      *outEntryCount = 0;
+      *outEntryCount = entryCount;
+      *outTable = table;
       return true;
     }
-    /* give the unused tail of the record buffer back before taking the next largest block */
-    capacityBytesOrError = foundEntryCount * recordSizeBytes;
-    if (g_MemoryApi.shrinkInPlace(capacityBytesOrError,recordBuffer) == 0) {
-      if (g_MemoryApi.allocLargestFreeBlock((void **)&tableOrError,&capacityBytesOrError) == 0) {
-        /* the strings follow the array of foundEntryCount pointers */
-        stringCursor = tableOrError + foundEntryCount * 4;
-        capacityFlag = foundEntryCount * 4 <= capacityBytesOrError; /* the pointer array fits */
-        capacityBytesOrError = capacityBytesOrError + foundEntryCount * -4;
-        remainingEntries = foundEntryCount;
-        tablePointerSlot = tableOrError;
-        sourceRecord = recordBuffer;
-        if (capacityFlag && capacityBytesOrError != 0) {
-          do {
-            *(uint8_t **)tablePointerSlot = stringCursor;
-            sourceCodeUnit = sourceRecord;
-            do {
-              codeUnit = *(short *)sourceCodeUnit;
-              *(short *)stringCursor = codeUnit;
-              sourceCodeUnit = sourceCodeUnit + 2;
-              stringCursor = stringCursor + 2;
-              capacityFlag = capacityBytesOrError < 2; /* the block is exhausted */
-              capacityBytesOrError = capacityBytesOrError - 2;
-              if (capacityFlag || capacityBytesOrError == 0) goto freeTable;
-            } while (codeUnit != 0);
-            tablePointerSlot = tablePointerSlot + 4;
-            sourceRecord = sourceRecord + recordSizeBytes;
-            remainingEntries--;
-          } while (remainingEntries != 0);
-          g_MemoryApi.shrinkInPlace(stringCursor - tableOrError,tableOrError);
-          g_MemoryApi.free(recordBuffer);
-          *outEntryCount = foundEntryCount;
-          *outTable = (uint16_t **)tableOrError;
-          return true;
-        }
-freeTable:
-        g_MemoryApi.free(tableOrError);
-      }
-    }
-    g_MemoryApi.free(recordBuffer);
+    g_MemoryApi.free(table);
   }
+  g_MemoryApi.free(recordBuffer);
   return false;
 }
 
@@ -109,7 +115,7 @@ uint32_t __cdecl FileSystem_Init(void)
   ArenaPayloadByteCount configBytesLeft;
   uint16_t *labelCursor;
   uint32_t openError;
-  uint32_t engineHandleOrError; /* engine.pck's handle, or the mount error code */
+  uint32_t engineMountResult; /* the mount stores engine.pck's handle, or its error code on failure */
 
   /* open-thandor: the original took the executable path from the first command-line token, which
      is only a bare "thandor.exe" when started from a shell or batch file; the executable
@@ -205,10 +211,10 @@ uint32_t __cdecl FileSystem_Init(void)
     Win32File_Close(configFile);
   }
   Win32File_GetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
-  if (Package_MountLowPriority(u_engine_pck_0040e255,&engineHandleOrError)) {
-    g_EnginePackageLowPriorityMountHandle = engineHandleOrError;
+  if (Package_MountLowPriority(u_engine_pck_0040e255,&engineMountResult)) {
+    g_EnginePackageLowPriorityMountHandle = engineMountResult;
   }
-  return engineHandleOrError;
+  return engineMountResult;
 }
 
 
@@ -335,18 +341,14 @@ bool Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
 }
 
 
-/* Address: 0x0040EF50.
-   Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as
-   given. Returns true with the buffer in *outBuffer, or false with the open/size/read error in *outError
-   (0 when the size query failed), or FATAL_ERROR_OUT_OF_MEMORY with the file size left in
-   g_FatalErrorDetail1Utf16. *outBuffer is only written on success, *outError only on failure. No caller in
-   the recovered code (reached only through the function map).
-*/
-bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
+/* The whole-file load shared by FileSystem_LoadWholeFile and FileSystem_LoadWholeFileAlternatePath
+   (see there). */
+static bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
   void *handle;
-  uint32_t byteCountOrError;
+  uint32_t fileSize;
+  uint32_t loadError;
   uint32_t openError;
   void *fileBuffer;
 
@@ -362,26 +364,39 @@ bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *out
       return false;
     }
   }
-  /* a failed size query leaves 0 in byteCountOrError, which becomes the error code */
-  if (g_FileSystemGetSize(handle,&byteCountOrError)) {
-    if (g_MemoryApi.alloc(byteCountOrError,&fileBuffer) != 0) {
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)byteCountOrError,g_FatalErrorDetail1Utf16);
-      byteCountOrError = FATAL_ERROR_OUT_OF_MEMORY;
+  if (!g_FileSystemGetSize(handle,&fileSize)) {
+    loadError = fileSize; /* a failed size query stores 0 there, which becomes the error code */
+  }
+  else if (g_MemoryApi.alloc(fileSize,&fileBuffer) != 0) {
+    g_WideNumberFormatUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)fileSize,g_FatalErrorDetail1Utf16);
+    loadError = FATAL_ERROR_OUT_OF_MEMORY;
+  }
+  else {
+    loadError = g_FileSystemReadExact((FileIoByteCount)fileSize,fileBuffer,handle);
+    if (loadError == 0) {
+      g_FileSystemClose(handle);
+      *outBuffer = fileBuffer;
+      return true;
     }
-    else {
-      byteCountOrError = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,fileBuffer,handle);
-      if (byteCountOrError == 0) {
-        g_FileSystemClose(handle);
-        *outBuffer = fileBuffer;
-        return true;
-      }
-      g_MemoryApi.free(fileBuffer);
-    }
+    g_MemoryApi.free(fileBuffer);
   }
   g_FileSystemClose(handle);
-  *outError = byteCountOrError;
+  *outError = loadError;
   return false;
+}
+
+/* Address: 0x0040EF50.
+   Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as
+   given. Returns true with the buffer in *outBuffer, or false with the open/size/read error in *outError
+   (0 when the size query failed), or FATAL_ERROR_OUT_OF_MEMORY with the file size left in
+   g_FatalErrorDetail1Utf16. *outBuffer is only written on success, *outError only on failure. No caller in
+   the recovered code (reached only through the function map).
+*/
+bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
+
+{
+  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,outError);
 }
 
 /* Address: 0x0040F120.
@@ -393,43 +408,7 @@ bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *out
 bool FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
-  void *handle;
-  uint32_t byteCountOrError;
-  uint32_t openError;
-  void *fileBuffer;
-
-  /* first try the path relative to the executable directory */
-  WidePath_CombineDirectoryAndLeaf
-            (g_FileSystemCombinedPathScratchUtf16,pathUtf16,
-             g_ExecutableDirectoryUtf16);
-  openError = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&handle);
-  if (openError != 0) {
-    openError = g_FileSystemOpen(0,pathUtf16,&handle);
-    if (openError != 0) {
-      *outError = openError;
-      return false;
-    }
-  }
-  /* a failed size query leaves 0 in byteCountOrError, which becomes the error code */
-  if (g_FileSystemGetSize(handle,&byteCountOrError)) {
-    if (g_MemoryApi.alloc(byteCountOrError,&fileBuffer) != 0) {
-      g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)byteCountOrError,g_FatalErrorDetail1Utf16);
-      byteCountOrError = FATAL_ERROR_OUT_OF_MEMORY;
-    }
-    else {
-      byteCountOrError = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,fileBuffer,handle);
-      if (byteCountOrError == 0) {
-        g_FileSystemClose(handle);
-        *outBuffer = fileBuffer;
-        return true;
-      }
-      g_MemoryApi.free(fileBuffer);
-    }
-  }
-  g_FileSystemClose(handle);
-  *outError = byteCountOrError;
-  return false;
+  return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,outError);
 }
 
 /* Address: 0x0040F1F0.
@@ -688,8 +667,6 @@ bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathA
 {
   uint8_t pathChar;
   int charsRemaining;
-  uint8_t *previousCursor;
-  bool componentRejected;
 
   if ((flags & FILESYSTEM_DOS83_COMPONENT_ONLY) == 0) {
     if (pathAnsi[1] == ':') {
@@ -709,15 +686,17 @@ bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathA
       pathAnsi++;
     }
     /* check each '\'-separated name until the terminator */
-    while (componentRejected = Win32Path_ValidateDos83
-                             (flags | (FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION|
-                                      FILESYSTEM_DOS83_COMPONENT_ONLY),pathAnsi), !componentRejected) {
+    while (!Win32Path_ValidateDos83
+              (flags | (FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION|FILESYSTEM_DOS83_COMPONENT_ONLY),
+               pathAnsi)) {
       /* skip past the next '\'; the terminator ends a valid path */
-      while (pathChar = *pathAnsi, pathAnsi++, pathChar != '\\') {
+      do {
+        pathChar = *pathAnsi;
+        pathAnsi++;
         if (pathChar == 0) {
           return false;
         }
-      }
+      } while (pathChar != '\\');
     }
   }
   else {
@@ -763,73 +742,107 @@ bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathA
       pathAnsi++;
       charsRemaining--;
     } while (charsRemaining != 0);
-    if (charsRemaining != DOS83_BASE_NAME_MAX_CHARS) {
-      /* optional extension: '.' and up to 3 characters */
-      pathChar = *pathAnsi;
-      charsRemaining = DOS83_EXTENSION_MAX_CHARS;
-      if (pathChar != 0) {
-        if (pathChar == '.') {
-          do {
-            previousCursor = pathAnsi;
-            pathAnsi = previousCursor + 1;
-            pathChar = *pathAnsi;
-            if (pathChar == 0) {
-              return false;
-            }
-            if (pathChar == '*') {
+    if (charsRemaining == DOS83_BASE_NAME_MAX_CHARS) {
+      return true; /* empty base name (a leading '*' counts as empty too) */
+    }
+    /* optional extension: '.' and up to 3 characters */
+    pathChar = *pathAnsi;
+    if (pathChar == 0) {
+      return false;
+    }
+    if (pathChar == '.') {
+      for (charsRemaining = DOS83_EXTENSION_MAX_CHARS; charsRemaining != 0; charsRemaining--) {
+        pathAnsi++;
+        pathChar = *pathAnsi;
+        if (pathChar == 0) {
+          return false;
+        }
+        if (pathChar == '*') {
+          if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
+            return true;
+          }
+          break;
+        }
+        if (',' < pathChar) {
+          if (pathChar < '0') {
+            return true;
+          }
+          if ('9' < pathChar) {
+            if (pathChar == '?') {
               if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
                 return true;
               }
-              break;
             }
-            if (',' < pathChar) {
-              if (pathChar < '0') {
+            else {
+              if (pathChar < 'A') {
                 return true;
               }
-              if ('9' < pathChar) {
-                if (pathChar == '?') {
-                  if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-                    return true;
-                  }
+              if ('Z' < pathChar) {
+                if (pathChar == '\\') {
+                  return false;
                 }
-                else {
-                  if (pathChar < 'A') {
-                    return true;
-                  }
-                  if ('Z' < pathChar) {
-                    if (pathChar == '\\') {
-                      return false;
-                    }
-                    if (pathChar < 'a') {
-                      return true;
-                    }
-                    if ('z' < pathChar) {
-                      return true;
-                    }
-                  }
+                if (pathChar < 'a') {
+                  return true;
+                }
+                if ('z' < pathChar) {
+                  return true;
                 }
               }
             }
-            charsRemaining--;
-          } while (charsRemaining != 0);
-          pathChar = previousCursor[2];
-          if (pathChar == 0) {
-            return false;
           }
         }
-        if ((flags & FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION) == 0) {
-          return true;
-        }
-        if (pathChar != '\\') {
-          return true;
-        }
       }
-      return false;
+      /* the character after the last one checked must end the name */
+      pathChar = pathAnsi[1];
+      if (pathChar == 0) {
+        return false;
+      }
     }
+    if ((flags & FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION) == 0) {
+      return true;
+    }
+    if (pathChar != '\\') {
+      return true;
+    }
+    return false;
   }
   return true;
 }
 
+
+/* Whether the entry FindFirstFileA/FindNextFileA just stored in the scratch WIN32_FIND_DATAA belongs in
+   the listing: files are neither directory nor volume label; directories are directories other than
+   "." and "..". Any other mode matches nothing. */
+static bool Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode)
+
+{
+  if (mode == FILESYSTEM_ENUMERATE_FILES) {
+    return (g_Win32FileCreationTimeOrDosDateScratch &
+            (FILE_ATTRIBUTE_DIRECTORY | FILESYSTEM_ATTRIBUTE_VOLUME_LABEL)) == 0;
+  }
+  if (mode != FILESYSTEM_ENUMERATE_DIRECTORIES) {
+    return false;
+  }
+  if ((g_Win32FileCreationTimeOrDosDateScratch & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+    return false;
+  }
+  return (g_Win32FindDataFileNameA != '.') ||
+         ((g_Win32FindDataFileNameSecondCharA != '\0') &&
+          ((g_Win32FindDataFileNameSecondCharA != '.') || (g_Win32FindDataFileNameThirdCharA != '\0')));
+}
+
+/* Copies one FILESYSTEM_ENUMERATION_RECORD_BYTES record dword by dword. */
+static void Win32FileSystem_CopyEnumerationRecord(uint32_t *destination,const uint32_t *source)
+
+{
+  int dwordsRemaining;
+
+  for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
+    *destination = *source;
+    source++;
+    destination++;
+  }
+}
 
 /* Address: 0x00576910.
    Fills outputRecords with 0x200-byte UTF-16 name records: the files (FILESYSTEM_ENUMERATE_FILES) or
@@ -847,110 +860,65 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
 
 {
   HANDLE findHandle;
-  BOOL apiSucceeded;
   uint32_t recordCount;
-  int comparisonsRemaining;
-  int dwordsRemaining;
-  uint32_t *rightRecordDwords;
-  uint32_t *copySource;
+  uint32_t passesRemaining;
+  uint32_t comparisonsRemaining;
   uint16_t *destination;
   uint32_t *leftRecordDwords;
-  uint32_t *copyDestination;
-  int passesRemaining;
+  uint32_t *rightRecordDwords;
 
   if (mode == FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
     g_Win32DriveRootPathScratchA[0] = *pathOrVolumeText; /* the drive letter of the "X:\" root path scratch */
-    apiSucceeded = GetVolumeInformationA
-                      (g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratchA,128,
-                       NULL,NULL,NULL,NULL,0);
-    if (apiSucceeded == 0) {
+    if (GetVolumeInformationA
+          (g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratchA,128,NULL,NULL,NULL,NULL,0) == 0) {
       return 0;
     }
-    recordCount = 0;
     /* the check allows 0x100 bytes, but the copy may write a whole 0x200-byte record */
     if (255 < outputCapacityBytes) {
       Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,(uint16_t *)outputRecords,g_Win32PathScratchA);
       return 1;
     }
+    return 0;
   }
-  else {
-    Package_SetLastErrorPath((uint16_t *)pathOrVolumeText);
-    RichTextCommandStream_CopyToNarrow(sizeof g_Win32PathScratchA,g_Win32PathScratchA,
-                                       (uint16_t *)pathOrVolumeText);
-    /* the WIN32_FIND_DATAA lands in the file-time scratch block (dwFileAttributes first) */
-    findHandle = FindFirstFileA((LPCSTR)g_Win32PathScratchA,
-                                (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
-    if (findHandle == INVALID_HANDLE_VALUE) {
-      return 0;
+  Package_SetLastErrorPath((uint16_t *)pathOrVolumeText);
+  RichTextCommandStream_CopyToNarrow(sizeof g_Win32PathScratchA,g_Win32PathScratchA,
+                                     (uint16_t *)pathOrVolumeText);
+  /* the WIN32_FIND_DATAA lands in the file-time scratch block (dwFileAttributes first) */
+  findHandle = FindFirstFileA((LPCSTR)g_Win32PathScratchA,
+                              (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
+  if (findHandle == INVALID_HANDLE_VALUE) {
+    return 0;
+  }
+  recordCount = 0;
+  destination = (uint16_t *)outputRecords;
+  do {
+    if (Win32FileSystem_FoundEntryMatchesMode(mode) &&
+        (FILESYSTEM_ENUMERATION_RECORD_BYTES - 1 < outputCapacityBytes)) {
+      Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,destination,
+                             (uint8_t *)&g_Win32FindDataFileNameA);
+      destination = destination + FILESYSTEM_ENUMERATION_RECORD_BYTES / 2;
+      recordCount++;
+      outputCapacityBytes = outputCapacityBytes - FILESYSTEM_ENUMERATION_RECORD_BYTES;
     }
-    recordCount = 0;
-    destination = (uint16_t *)outputRecords;
-    do {
-      /* files: neither directory nor volume label; directories: not "." or ".." */
-      if ((mode == FILESYSTEM_ENUMERATE_FILES) ?
-          ((g_Win32FileCreationTimeOrDosDateScratch & (FILE_ATTRIBUTE_DIRECTORY | FILESYSTEM_ATTRIBUTE_VOLUME_LABEL)) == 0) :
-          ((mode == FILESYSTEM_ENUMERATE_DIRECTORIES) &&
-           ((g_Win32FileCreationTimeOrDosDateScratch & FILE_ATTRIBUTE_DIRECTORY) != 0) &&
-           ((g_Win32FindDataFileNameA != '.') ||
-            ((g_Win32FindDataFileNameSecondCharA != '\0') &&
-             ((g_Win32FindDataFileNameSecondCharA != '.') || (g_Win32FindDataFileNameThirdCharA != '\0')))))) {
-        if (FILESYSTEM_ENUMERATION_RECORD_BYTES - 1 < outputCapacityBytes) {
-          Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,destination,
-                                 (uint8_t *)&g_Win32FindDataFileNameA);
-          destination = destination + FILESYSTEM_ENUMERATION_RECORD_BYTES / 2;
-          recordCount++;
-          outputCapacityBytes = outputCapacityBytes - FILESYSTEM_ENUMERATION_RECORD_BYTES;
-        }
-      }
-      apiSucceeded = FindNextFileA(findHandle,(LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
-    } while (apiSucceeded != 0);
-    FindClose(findHandle);
-    /* bubble sort; each swap goes through g_Win32PathScratchA, which is only 0x100 bytes: the 0x200-byte
-       record also fills g_Win32PathScratchB behind it (original behaviour; relies on B directly following A,
-       0x00575A9C/0x00575B9C, which the generated image struct g_ImageData_0057594C keeps) */
-    if (1 < recordCount) {
-      comparisonsRemaining = recordCount - 1;
-      rightRecordDwords = (uint32_t *)(outputRecords + FILESYSTEM_ENUMERATION_RECORD_BYTES);
+  } while (FindNextFileA(findHandle,(LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch) != 0);
+  FindClose(findHandle);
+  /* bubble sort; each swap goes through g_Win32PathScratchA, which is only 0x100 bytes: the 0x200-byte
+     record also fills g_Win32PathScratchB behind it (original behaviour; relies on B directly following A,
+     0x00575A9C/0x00575B9C, which the generated image struct g_ImageData_0057594C keeps) */
+  if (1 < recordCount) {
+    for (passesRemaining = recordCount - 1; passesRemaining != 0; passesRemaining--) {
       leftRecordDwords = (uint32_t *)outputRecords;
-      passesRemaining = comparisonsRemaining;
-      do {
-        do {
-          if (Utf16String_CompareAsciiCaseInsensitiveFlags
-                ((uint16_t *)rightRecordDwords,(uint16_t *)leftRecordDwords) > 0) {
-            copySource = rightRecordDwords;
-            copyDestination = (uint32_t *)g_Win32PathScratchA;
-            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0;
-                 dwordsRemaining--) {
-              *copyDestination = *copySource;
-              copySource++;
-              copyDestination++;
-            }
-            copySource = leftRecordDwords;
-            copyDestination = rightRecordDwords;
-            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0;
-                 dwordsRemaining--) {
-              *copyDestination = *copySource;
-              copySource++;
-              copyDestination++;
-            }
-            copySource = (uint32_t *)g_Win32PathScratchA;
-            copyDestination = leftRecordDwords;
-            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0;
-                 dwordsRemaining--) {
-              *copyDestination = *copySource;
-              copySource++;
-              copyDestination++;
-            }
-          }
-          rightRecordDwords = rightRecordDwords + FILESYSTEM_ENUMERATION_RECORD_BYTES / 4;
-          leftRecordDwords = leftRecordDwords + FILESYSTEM_ENUMERATION_RECORD_BYTES / 4;
-          comparisonsRemaining--;
-        } while (comparisonsRemaining != 0);
-        comparisonsRemaining = passesRemaining - 1;
-        rightRecordDwords = (uint32_t *)(outputRecords + FILESYSTEM_ENUMERATION_RECORD_BYTES);
-        leftRecordDwords = (uint32_t *)outputRecords;
-        passesRemaining = comparisonsRemaining;
-      } while (comparisonsRemaining != 0);
+      rightRecordDwords = (uint32_t *)(outputRecords + FILESYSTEM_ENUMERATION_RECORD_BYTES);
+      for (comparisonsRemaining = passesRemaining; comparisonsRemaining != 0; comparisonsRemaining--) {
+        if (Utf16String_CompareAsciiCaseInsensitiveFlags
+              ((uint16_t *)rightRecordDwords,(uint16_t *)leftRecordDwords) > 0) {
+          Win32FileSystem_CopyEnumerationRecord((uint32_t *)g_Win32PathScratchA,rightRecordDwords);
+          Win32FileSystem_CopyEnumerationRecord(rightRecordDwords,leftRecordDwords);
+          Win32FileSystem_CopyEnumerationRecord(leftRecordDwords,(uint32_t *)g_Win32PathScratchA);
+        }
+        leftRecordDwords = leftRecordDwords + FILESYSTEM_ENUMERATION_RECORD_BYTES / 4;
+        rightRecordDwords = rightRecordDwords + FILESYSTEM_ENUMERATION_RECORD_BYTES / 4;
+      }
     }
   }
   return recordCount;
