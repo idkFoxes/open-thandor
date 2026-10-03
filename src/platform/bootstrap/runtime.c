@@ -647,11 +647,11 @@ static void CoreAssets_ReadCdPathFromRegistry(void)
   }
   status = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_QUERY_VALUE_EX_A].destination)
              (g_InstallRegistryKeyHandle,g_InstallRegistryValueNameCD,0,
-              &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
+              &g_InstallRegistryValueType,g_InstallRegistryValueDataA,
               &g_InstallRegistryValueDataCapacityBytes);
   if ((status == ERROR_SUCCESS) && (g_InstallRegistryValueType == REG_SZ)) {
     Text_CopyNarrowToUtf16
-              (sizeof g_InstallDirectoryScratchUtf16,g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
+              (sizeof g_InstallDirectoryScratchUtf16,g_InstallDirectoryScratchUtf16,g_InstallRegistryValueDataA);
     WidePath_CombineDirectoryAndLeaf
               (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)u_Thandor_00572e10,g_InstallDirectoryScratchUtf16);
   }

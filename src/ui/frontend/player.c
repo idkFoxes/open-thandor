@@ -635,7 +635,7 @@ void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve(g_SessionNetworkTickInterval + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,labelText,NULL);
+            (64,g_FrontendNetworkSpeedLabelUtf16,labelText,NULL);
   g_SessionNetworkTickInterval = g_SessionNetworkTickInterval << 1;
   return;
 }
@@ -1120,11 +1120,11 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
       SESSION_NETWORK_ROLE_LOCAL)) {
     /* +0x80C0: the 0x30 staged bytes, widened into a 0x60-byte buffer */
     Text_CopyNarrowToUtf16
-              (96,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText);
+              (96,g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText);
     messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
     stream = messageText;
     RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->playerNameUtf16,stream);
-    RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
+    RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendPlayerMessageScratchUtf16,stream);
     InGameRecentTextHistory_InsertAndRebuild8(stream);
   }
   return;
@@ -1388,11 +1388,11 @@ void FrontendPlayerMessageBuffer_PublishTextById
     return;
   }
   /* the 0x30 text bytes, widened into a 0x60-byte buffer */
-  Text_CopyNarrowToUtf16(96,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,
+  Text_CopyNarrowToUtf16(96,g_FrontendPlayerMessageScratchUtf16,
                          messageRecord + FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET);
   messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
   RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,messageText);
-  RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,messageText);
+  RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendPlayerMessageScratchUtf16,messageText);
   FrontendRecentTextHistory_InsertAndRebuild5(messageText);
   return;
 }
@@ -1469,7 +1469,7 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsR
     } while (blocksRemaining != 0);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,frontendRoot->playerRuntimeList.rowCount,
-               (uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
+               g_FrontendNetworkRuntimeCountTextUtf16);
     UiPointerList_RefreshSelectionAndQueueAction(&frontendRoot->playerRuntimeList);
   }
   return;

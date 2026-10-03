@@ -85,7 +85,7 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       UiRuntime_SetSynchronizationHooks(NULL,NULL);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
-      g_FrontendScenarioPathScratchUtf16 = 0;
+      g_FrontendScenarioPathScratchUtf16[0] = 0;
       return true;
     }
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT) != 0) {
@@ -94,7 +94,7 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       GridScratch_ReleaseBuffers();
       UiRuntime_SetSynchronizationHooks(NULL,NULL);
       InGameRuntime_ShutdownAndReleaseResources();
-      g_FrontendScenarioPathScratchUtf16 = 0;
+      g_FrontendScenarioPathScratchUtf16[0] = 0;
       return true;
     }
   } while (g_UiRootNode != UI_ROOT_STACK_END);
@@ -1233,7 +1233,7 @@ static bool InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint1
   world->activeFactionRuntimeIndex = localFactionIndex;
   world->selection.activePlayerRuntimeId = localPlayerId;
   WorldRuntime_AttachAndClearDwordArray
-            (INGAME_WORLD_DWORD_ARRAY_COUNT,(uint32_t *)&g_InGameWorldRuntimeDwordArray256,world);
+            (INGAME_WORLD_DWORD_ARRAY_COUNT,g_InGameWorldRuntimeDwordArray256,world);
   resetDefaultsError = GameData_ResetDefaults();
   if (resetDefaultsError != 0) {
     *outError = resetDefaultsError;
@@ -1643,9 +1643,9 @@ static bool InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage,
   inGameRoot->localPlayerMarkedCells = localPlayerBlock->markedCells;
   UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
   WidePath_CombineDirectoryAndLeaf
-            (&g_FrontendScenarioPathScratchUtf16,
+            (g_FrontendScenarioPathScratchUtf16,
              (levelImage->header).levelFileNameUtf16,(uint16_t *)u_level_0050daac);
-  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,&g_FrontendScenarioPathScratchUtf16);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   *outRoot = inGameRoot;
   return true;
 }
@@ -1697,7 +1697,7 @@ static bool InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoad
   world->activeFactionRuntimeIndex = (FactionRuntimeIndex)localFactionIndex;
   world->selection.activePlayerRuntimeId = 0;
   WorldRuntime_AttachAndClearDwordArray
-            (INGAME_WORLD_DWORD_ARRAY_COUNT,(uint32_t *)&g_InGameWorldRuntimeDwordArray256,world);
+            (INGAME_WORLD_DWORD_ARRAY_COUNT,g_InGameWorldRuntimeDwordArray256,world);
   if (GameData_LoadExternalTables()) {
     /* Original quirk: this failure reports the local player's faction index as its error code (the value left in
        the error register). */

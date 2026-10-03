@@ -107,11 +107,11 @@ static void FrontendNetworkSetupPage_ApplyClientOption(void)
   g_FrontendSelectedPlayerToken = 0xffffffff;
   UiTransfer_SendPlayerDescriptor();
   g_NetworkBackendSlot7
-            (&g_FrontendNetworkEndpointTextUtf16,
+            ((char *)g_FrontendNetworkEndpointTextUtf16,
              (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
   RichTextCommandStream_CopyExpanded
             (128,((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,hostAddressEdit))->textBuffer,
-             (uint16_t *)&g_FrontendNetworkEndpointTextUtf16,NULL);
+             g_FrontendNetworkEndpointTextUtf16,NULL);
 }
 
 /* Address: 0x0054C260.
@@ -143,7 +143,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     /* host: back to the lobby */
     g_NetworkBackendSlot7
-              (&g_FrontendNetworkEndpointTextUtf16,
+              ((char *)g_FrontendNetworkEndpointTextUtf16,
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,FRONTEND_UI(frontendUi,frontendRoot));
     UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
@@ -158,7 +158,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
               (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
                (UiPointerListControl *)FRONTEND_UI(frontendUi,hostLobbyPlayerList));
     g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,(uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,g_FrontendNetworkRuntimeCountTextUtf16
               );
     /* the local player becomes the only player record: name, local endpoint, command sync pending */
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -191,11 +191,11 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     /* client: back to the network game page with the host address filled in, and ask to join again */
     g_NetworkBackendSlot7
-              (&g_FrontendNetworkEndpointTextUtf16,
+              ((char *)g_FrontendNetworkEndpointTextUtf16,
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
     RichTextCommandStream_CopyExpanded
               (128,((UiRequiredTextEditControl *)FRONTEND_UI(frontendUi,hostAddressEdit))->textBuffer,
-               (uint16_t *)&g_FrontendNetworkEndpointTextUtf16,NULL);
+               g_FrontendNetworkEndpointTextUtf16,NULL);
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
       ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
@@ -261,7 +261,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   }
   FrontendNetworkSetupPage_ApplyNameOption();
   g_NetworkBackendSlot7
-            (&g_FrontendNetworkEndpointTextUtf16,
+            ((char *)g_FrontendNetworkEndpointTextUtf16,
              (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
@@ -347,7 +347,7 @@ void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *host
        hostAddressEdit->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
   UiTransfer_SendDiscoveryProbe();
   g_NetworkBackendSlot7
-            (&g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
+            ((char *)g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
             );
   return;
 }
@@ -465,13 +465,13 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
              ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,maxPlayersSlider))->value,
-             (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
+             g_FrontendNetworkPlayerCountTextUtf16);
   networkSpeed = g_SessionNetworkTickInterval >> 1;
   ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = networkSpeed;
   /* the speed caption */
   resolvedText = TextResource_Resolve(networkSpeed + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,resolvedText,NULL);
+            (64,g_FrontendNetworkSpeedLabelUtf16,resolvedText,NULL);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   FrontendNetworkSettings_SetGameName((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   if (appliedOptionMask == 7) {
@@ -511,7 +511,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
             (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
              (UiPointerListControl *)FRONTEND_UI(frontendUi,hostLobbyPlayerList));
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,(uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,g_FrontendNetworkRuntimeCountTextUtf16);
   firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
   sequenceToken = g_UiTransferSequenceToken;
   g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff; /* the local player never times out */

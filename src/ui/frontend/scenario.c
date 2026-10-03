@@ -91,9 +91,8 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   else {
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendRoot,chatInputSlot));
   }
-  g_FrontendModelPointerContextUpdateCallback
-            (g_CursorOverrideY,g_CursorOverrideX,
-             (FrontendModelPointerHitContext *)FRONTEND_UI(frontendRoot,menuRoomModelView));
+  (*g_FrontendModelPointerContextVtable.pointerMove)
+            (g_CursorOverrideY,g_CursorOverrideX,FRONTEND_UI(frontendRoot,menuRoomModelView));
   hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
                     (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
   if (hoveredNode == UI_NODE_NONE) {

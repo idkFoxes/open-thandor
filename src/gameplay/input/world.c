@@ -401,13 +401,14 @@ static void InGameWorldInput_BeginDragSelectionIfMoved(WorldRuntimeContext *inGa
    Original quirk: the count stops at 11, so every further value overwrites the twelfth slot; the flush still
    sends that slot as part of the fourth triplet. */
 static void InGameWorldInput_AppendDragSelectionBatchValue
-          (uint8_t *batchBase,int32_t *batchCount,InGameCommandPayloadTripletValue32 payloadValue)
+          (InGameCommandPayloadTripletValue32 *batchBase,int32_t *batchCount,
+           InGameCommandPayloadTripletValue32 payloadValue)
 
 {
   uint32_t slotIndex;
 
   slotIndex = (uint32_t)*batchCount;
-  ((InGameCommandPayloadTripletValue32 *)batchBase)[slotIndex] = payloadValue;
+  batchBase[slotIndex] = payloadValue;
   if (slotIndex < 11) {
     *batchCount = *batchCount + 1;
   }
@@ -421,19 +422,22 @@ static void InGameWorldInput_AppendDragSelectionBatchValue
 static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *inGameRuntime)
 
 {
-  uint32_t *clearCursor;
-  int clearCount;
+  int clearIndex;
   WorldOwnerListNode *runtimeNode;
   int ownerIndex;
   GameEntityRuntime *entry;
   InGameCommandPayloadTripletValue32 payloadValue;
 
-  /* clears both 12-dword batches and their two counters (0x1A dwords from 0x0055F0C4) */
-  clearCursor = (uint32_t *)&g_InGameSelectionInsertTripletDwords;
-  for (clearCount = 26; clearCount != 0; clearCount--) {
-    *clearCursor = 0;
-    clearCursor = clearCursor + 1;
+  /* clears both 12-dword batches and their two counters, in memory order (the original clears the 0x1A
+     dwords from 0x0055F0C4 to 0x0055F12C in one run) */
+  for (clearIndex = 0; clearIndex < 12; clearIndex++) {
+    g_InGameSelectionInsertTripletDwords[clearIndex] = 0;
   }
+  for (clearIndex = 0; clearIndex < 12; clearIndex++) {
+    g_InGameSelectionRemoveTripletDwords[clearIndex] = 0;
+  }
+  g_InGameSelectionInsertTripletDwordCount = 0;
+  g_InGameSelectionRemoveTripletDwordCount = 0;
   ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
   for (runtimeNode = inGameRuntime->ownerListHead; runtimeNode != NULL; runtimeNode = runtimeNode->nextNode) {
     if ((runtimeNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || ((runtimeNode->runtimeFlags & 2) == 0)) {
@@ -451,14 +455,14 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
           !InGameCommandQueue_ContainsTripletValue
                 (payloadValue,INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_INSERT)) {
         InGameWorldInput_AppendDragSelectionBatchValue
-                  (&g_InGameSelectionInsertTripletDwords,&g_InGameSelectionInsertTripletDwordCount,payloadValue);
+                  (g_InGameSelectionInsertTripletDwords,&g_InGameSelectionInsertTripletDwordCount,payloadValue);
       }
     }
     else if (!SelectionInfo_IsEntryAbsent(entry) &&
              !InGameCommandQueue_ContainsTripletValue
                    (payloadValue,INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_REMOVE)) {
       InGameWorldInput_AppendDragSelectionBatchValue
-                (&g_InGameSelectionRemoveTripletDwords,&g_InGameSelectionRemoveTripletDwordCount,payloadValue);
+                (g_InGameSelectionRemoveTripletDwords,&g_InGameSelectionRemoveTripletDwordCount,payloadValue);
     }
   }
   return;
@@ -474,7 +478,7 @@ static void InGameWorldInput_FlushDragSelectionBatches(void)
   int32_t countBeforeTriplet;
 
   if (g_InGameSelectionRemoveTripletDwordCount != 0) {
-    tripletCursor = (CommandPayload *)&g_InGameSelectionRemoveTripletDwords;
+    tripletCursor = (CommandPayload *)g_InGameSelectionRemoveTripletDwords;
     do {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
@@ -490,7 +494,7 @@ static void InGameWorldInput_FlushDragSelectionBatches(void)
     } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < countBeforeTriplet);
   }
   if (g_InGameSelectionInsertTripletDwordCount != 0) {
-    tripletCursor = (CommandPayload *)&g_InGameSelectionInsertTripletDwords;
+    tripletCursor = (CommandPayload *)g_InGameSelectionInsertTripletDwords;
     do {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerSelection_InsertThreeEntriesAndRefresh

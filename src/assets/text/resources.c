@@ -380,7 +380,7 @@ bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32
         case RICHTEXT_OP_CALL_NESTED:
         case RICHTEXT_OP_JUMP_NESTED:
           decimalValue = RichTextRecord_ParseDecimalDigits(recordStart);
-          *(void **)(recordStart + 1) = &g_MissingTextResourceFallbackStream;
+          *(void **)(recordStart + 1) = g_MissingTextResourceFallbackStream;
           *(uint32_t *)(recordStart + 3) = decimalValue;
           textCursor = recordStart + RICHTEXT_RECORD_UNITS_NESTED;
           break;

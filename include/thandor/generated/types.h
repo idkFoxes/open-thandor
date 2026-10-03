@@ -4829,17 +4829,17 @@ struct UiNodeVtable {
     void (*pointerWheel)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
 };
 
-#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
+/* Natural alignment as in the original: sizeof 20 (18 bytes of fields + 2 bytes tail padding); DirectSound_Init
+   and the voice-set creators clear WaveFormat_PCM_22050_Stereo16 with Memory_ZeroDwords(0x14). */
 struct WAVEFORMATEX {
-    WaveFormatTag wFormatTag; 
-    AudioChannelCount nChannels; 
-    AudioSampleRateHz nSamplesPerSec; 
-    AudioByteRate nAvgBytesPerSec; 
-    AudioBlockAlignBytes nBlockAlign; 
-    AudioBitsPerSample wBitsPerSample; 
-    WaveFormatExtraByteCount cbSize; 
+    WaveFormatTag wFormatTag;
+    AudioChannelCount nChannels;
+    AudioSampleRateHz nSamplesPerSec;
+    AudioByteRate nAvgBytesPerSec;
+    AudioBlockAlignBytes nBlockAlign;
+    AudioBitsPerSample wBitsPerSample;
+    WaveFormatExtraByteCount cbSize;
 };
-#pragma pack(pop)
 
 struct IDirectSoundBuffer_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectSoundBuffer *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
@@ -9422,7 +9422,6 @@ struct FrontendTaskAssignmentControlOffsetTables {
     struct FrontendTaskAssignmentControlOffsetRow factionControls;
     struct FrontendTaskAssignmentControlOffsetRow selectionRows;
     struct FrontendTaskAssignmentControlOffsetRow statusRows;
-    uint32_t networkBackendNameRows[6]; // 0x005434EC: row pointer table of the frontend network backend list (display names), filled when the list is built.
 };
 
 struct UiCommandDispatchRecord {

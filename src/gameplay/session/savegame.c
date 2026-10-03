@@ -124,14 +124,14 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
     /* the row record starts with the save's name, used as the file name */
     leaf = (uint16_t *)saveList->rowSlots[selectedIndex];
     WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
-               (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+              (g_ScenarioCatalogPathScratchUtf16,leaf,
+               g_ScenarioCatalogPathScratchUtf16);
+    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_ScenarioCatalogPathScratchUtf16);
     /* a failed delete is reported through the fatal-error dispatch (0x0056C20B) */
-    deleteError = g_FileSystemDelete(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    deleteError = g_FileSystemDelete(0,g_ScenarioCatalogPathScratchUtf16);
     FatalError_ReportIfFailed(deleteError,deleteError != 0);
     /* deleteButton - 0x760 = gameMenuSaveButton, the node RebuildCatalog expects */
     InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(deleteButton - 1888));
@@ -170,11 +170,11 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   UiListRowIndex selectedIndex;
 
   WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
+            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   rowCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
                (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
-                &g_ScenarioCatalogPathScratchUtf16);
+                (uint8_t *)g_ScenarioCatalogPathScratchUtf16);
   g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = NULL;
   /* per row a pointer and a 0x100-byte record: the row pointers first, then the records */
@@ -189,13 +189,13 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     *rowSlot = (ScenarioCatalogByteOffset)record;
     *record = 0;
     WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)enumRecord,
-               (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+              (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)enumRecord,
+               g_ScenarioCatalogPathScratchUtf16);
     openError = g_FileSystemOpen
-                      (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16,&handle);
+                      (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,g_ScenarioCatalogPathScratchUtf16,&handle);
     /* the catalog record is the second 0x100 bytes of the .sve; for a save that cannot be opened only the first
        dword is cleared */
     if (openError == 0) {
@@ -275,15 +275,15 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
     leaf = (uint16_t *)saveList->rowSlots[rowOrdinal - 1];
   }
   WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+            (g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
-             (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+            (g_ScenarioCatalogPathScratchUtf16,leaf,
+             g_ScenarioCatalogPathScratchUtf16);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_ScenarioCatalogPathScratchUtf16);
   saveFailed = InGameSaveGame_WritePackage
                     (THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,worldView),
-                     &g_ScenarioCatalogPathScratchUtf16);
+                     g_ScenarioCatalogPathScratchUtf16);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   /* Original quirk: the error code reported for a failed save is the selected row ordinal (selected index + 1),
      not an error from the save routine; the original never replaces that value before the report. */

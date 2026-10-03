@@ -273,7 +273,7 @@ void ModelRender_PrepareProjectedVertex
     }
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
-               (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
+               &g_ModelViewCompositeTransform);
     projectedScreenPoint = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z);
     vertex->z = savedVertexZQ12;
     vertex->y = savedVertexYQ12;
@@ -300,7 +300,7 @@ void ModelRender_PrepareProjectedVertex
     vertexColor = ModelRender_ComputeVertexIntensityDefaultPath
                       (vertex[2].y,&vertex[2].z,THANDOR_ADDR(g_ModelLightingMmxMultiplierRows[MODEL_DISTANCE_ATTENUATION_ROW0],0),g_SceneBoundsFixed.bound5,
                        g_SceneBoundsFixed.bound4,
-                       (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,vertexColor,
+                       &g_ModelAuxiliaryForwardDirectionLocal,vertexColor,
                        surfaceNormalQ12);
     vertex[3].z = vertexColor;
     return;
@@ -310,7 +310,7 @@ void ModelRender_PrepareProjectedVertex
                     (vertex[2].y,&vertex[2].z,
                      ((modelNode->modelPayload).modelResource)->lightingScaleQ12,
                      g_SceneBoundsFixed.bound7,g_SceneBoundsFixed.bound6,
-                     (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,vertexColor,vertex);
+                     &g_ModelAuxiliaryForwardDirectionLocal,vertexColor,vertex);
   vertex[3].z = vertexColor;
 }
 
@@ -494,7 +494,7 @@ bool ModelRender_PrepareProjectedVertexAlternatePath
   if (vertex[4].x == MODEL_VERTEX_NOT_PROJECTED) {
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
-               (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
+               &g_ModelViewCompositeTransform);
     if (vertex[3].y < (int)g_ProjectionScaleFixed) {
       vertex[4].x = MODEL_VERTEX_NEAR_CLIPPED;
       return true;
@@ -651,7 +651,7 @@ int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
   int32_t facingDotQ12;
 
   facingDotQ12 = FixedVec3_DotQ12((GraphicsFixedVec3 *)&triangle->planeNormalXQ12,
-                                  (GraphicsFixedVec3 *)&g_ModelViewDirectionLocal);
+                                  &g_ModelViewDirectionLocal);
   return facingDotQ12;
 }
 
@@ -855,7 +855,7 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
   scenePackedColor0 = scenePackedColor0 | ARGB8888_ALPHA_MASK;
   FixedTransform_ApplyDirection
             (&g_ModelLightingTransformedSurfaceNormalScratch,surfaceNormalQ12,
-             (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
+             &g_ModelViewCompositeTransform);
   ModelLighting_UnpackBytes(scenePackedColor0,3,color);
   ModelLighting_UnpackBytes(materialPackedColor,3,lanes);
   ModelLighting_MulHigh(color,lanes);
@@ -965,18 +965,18 @@ void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
   nodeWorldZ = (modelNodeRuntime->worldTransform).translation.z;
   nodeWorldTransform = &modelNodeRuntime->worldTransform;
   FixedTransform_Compose
-            ((GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform,nodeWorldTransform,
+            (&g_ModelViewCompositeTransform,nodeWorldTransform,
              &g_ViewProjectionMatrixFixed);
   viewAngles = FixedMath_VectorToAngles
                     (nodeWorldZ - g_ViewOriginFixed.z,nodeWorldY - g_ViewOriginFixed.y,
                      nodeWorldX - g_ViewOriginFixed.x);
   FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ModelViewDirectionWorld,viewAngles.elevationAngle,viewAngles.azimuthAngle);
+            (&g_ModelViewDirectionWorld,viewAngles.elevationAngle,viewAngles.azimuthAngle);
   FixedTransform_ApplyTransposeDirection
-            ((GraphicsFixedVec3 *)&g_ModelViewDirectionLocal,nodeWorldTransform,
-             (GraphicsFixedVec3 *)&g_ModelViewDirectionWorld);
+            (&g_ModelViewDirectionLocal,nodeWorldTransform,
+             &g_ModelViewDirectionWorld);
   FixedTransform_ApplyTransposeDirection
-            ((GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,nodeWorldTransform,
+            (&g_ModelAuxiliaryForwardDirectionLocal,nodeWorldTransform,
              &g_AuxiliaryForwardDirectionFixed);
 }
 

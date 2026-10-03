@@ -496,9 +496,9 @@ void FrontendResultsTable_DrawFormattedFactionFieldColumn
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,*(int32_t *)factionFieldCursor,
-                 (uint16_t *)&g_FrontendResultsValueTextUtf16);
+                 g_FrontendResultsValueTextUtf16);
       valueText = TextResource_Resolve(valueFormatResourceId);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,valueText);
+      RichTextCommandStream_PatchPayloadBySelector(0,g_FrontendResultsValueTextUtf16,valueText);
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,2,valueText,drawY + 6,penX);
       penX = penX + rowMetrics->rowAdvancePixels;
@@ -532,9 +532,9 @@ void FrontendResultsTable_DrawPointsColumn
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  factionRecord->economyProgressScore + factionRecord->relationScore,
-                 (uint16_t *)&g_FrontendResultsValueTextUtf16);
+                 g_FrontendResultsValueTextUtf16);
       valueText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,valueText);
+      RichTextCommandStream_PatchPayloadBySelector(0,g_FrontendResultsValueTextUtf16,valueText);
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,2,valueText,drawY + 6,penX);
       penX = penX + rowMetrics->rowAdvancePixels;
@@ -567,9 +567,9 @@ void FrontendResultsTable_DrawEconomyColumn
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 factionRecord->economyProgressScore,(uint16_t *)&g_FrontendResultsValueTextUtf16);
+                 factionRecord->economyProgressScore,g_FrontendResultsValueTextUtf16);
       valueText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,valueText);
+      RichTextCommandStream_PatchPayloadBySelector(0,g_FrontendResultsValueTextUtf16,valueText);
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,2,valueText,drawY + 6,penX);
       penX = penX + rowMetrics->rowAdvancePixels;
@@ -602,9 +602,9 @@ void FrontendResultsTable_DrawMilitaryColumn
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 factionRecord->relationScore,(uint16_t *)&g_FrontendResultsValueTextUtf16);
+                 factionRecord->relationScore,g_FrontendResultsValueTextUtf16);
       valueText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,valueText);
+      RichTextCommandStream_PatchPayloadBySelector(0,g_FrontendResultsValueTextUtf16,valueText);
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,2,valueText,drawY + 6,penX);
       penX = penX + rowMetrics->rowAdvancePixels;

@@ -1200,7 +1200,7 @@ void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control)
   PersistentSettings_Write(value,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,value,
-             (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
+             g_FrontendNetworkPlayerCountTextUtf16);
   return;
 }
 

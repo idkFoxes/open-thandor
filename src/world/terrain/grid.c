@@ -2203,7 +2203,7 @@ bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32
   } while (cellsRemaining != 0);
   writeError = FileSystem_WriteBufferToPath
                     ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
-                     (uint16_t *)&g_LevelResourcePathScratchUtf16);
+                     g_LevelResourcePathScratchUtf16);
   g_MemoryApi.free(fieldGridImageCopy);
   if (writeError != 0) {
     *outError = writeError;

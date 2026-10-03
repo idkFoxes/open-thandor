@@ -72,7 +72,7 @@ void SpatialSound_RebuildListenerTransformFromPose
   g_SpatialSoundListenerWorldToLocalBasis21 = 0;
   g_SpatialSoundListenerWorldToLocalBasis22 = Q28_ONE;
   FixedTransform_Compose
-            ((GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform,
+            (&g_SpatialSoundListenerTransform,
              &g_SpatialSoundListenerWorldToLocal,&g_SpatialSoundListenerRotation);
   return;
 }
@@ -100,7 +100,7 @@ static bool SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 m
 
   FixedTransform_ApplyPoint
             (&g_SpatialSoundRelative,worldPosition,
-             (GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform);
+             &g_SpatialSoundListenerTransform);
   lengthAngles = FixedMath_VectorToAnglesAndLength
                     (g_SpatialSoundRelative.y,g_SpatialSoundRelative.x,g_SpatialSoundRelative.z);
   azimuth = lengthAngles.azimuthAngle;

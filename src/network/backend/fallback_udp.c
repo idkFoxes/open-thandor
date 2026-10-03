@@ -339,16 +339,16 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
   WinSockHostEnt32 *resolvedHostEntry;
 
   if (!RichTextCommandStream_CopyToNarrow
-                    (255,(uint8_t *)&g_NetworkEndpointTextScratchA,(uint16_t *)endpointText)) {
+                    (255,g_NetworkEndpointTextScratchA,(uint16_t *)endpointText)) {
     return true;
   }
   /* empty text: the broadcast address of the local descriptor */
   ipv4AddressNetworkOrder = g_NetworkLocalEndpoint.ipv4AddressNetworkOrder;
-  if (g_NetworkEndpointTextScratchA != '\0') {
-    ipv4AddressNetworkOrder = g_WinSock_inet_addr((uint8_t *)&g_NetworkEndpointTextScratchA);
+  if (g_NetworkEndpointTextScratchA[0] != '\0') {
+    ipv4AddressNetworkOrder = g_WinSock_inet_addr(g_NetworkEndpointTextScratchA);
     if (ipv4AddressNetworkOrder == INADDR_NONE) {
       /* not a dotted address: look the host name up */
-      resolvedHostEntry = g_WinSock_gethostbyname((uint8_t *)&g_NetworkEndpointTextScratchA);
+      resolvedHostEntry = g_WinSock_gethostbyname(g_NetworkEndpointTextScratchA);
       if (resolvedHostEntry == NULL) {
         return true;
       }
@@ -597,16 +597,16 @@ bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut
   int addressLength; /* never initialised, in the original as well */
 
   if (!RichTextCommandStream_CopyToNarrow
-                    (255,(uint8_t *)&g_NetworkEndpointTextScratchA,addressText)) {
+                    (255,g_NetworkEndpointTextScratchA,addressText)) {
     return true;
   }
-  if (g_NetworkEndpointTextScratchA != '\0') {
+  if (g_NetworkEndpointTextScratchA[0] != '\0') {
     conversionResult = g_Ws2_32_WSAStringToAddressA
-                      (&g_NetworkEndpointTextScratchA,g_NetworkBackendActiveAddressFamily,
+                      (g_NetworkEndpointTextScratchA,g_NetworkBackendActiveAddressFamily,
                        NULL,(NetworkBackendSocketAddress16 *)endpointOut,&addressLength);
     if (conversionResult != 0) {
       /* not an address literal: resolve it as an IPv4 host name, with the bind endpoint's family and port */
-      hostEntry = g_Ws2_32_gethostbyname((uint8_t *)&g_NetworkEndpointTextScratchA);
+      hostEntry = g_Ws2_32_gethostbyname(g_NetworkEndpointTextScratchA);
       bindAddressHeader = g_NetworkFallbackBindEndpoint.addressHeader;
       if (hostEntry == NULL) {
         return true;
@@ -653,9 +653,9 @@ bool NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *ad
   textBufferLength = 255;
   conversionResult = g_Ws2_32_WSAAddressToStringA
                     (address,g_NetworkBackendActiveSocketAddressLength,NULL,
-                     &g_NetworkEndpointTextScratchA,&textBufferLength);
+                     g_NetworkEndpointTextScratchA,&textBufferLength);
   if (conversionResult == 0) {
-    return Text_CopyNarrowToUtf16(512,outputUtf16,&g_NetworkEndpointTextScratchA) == 0;
+    return Text_CopyNarrowToUtf16(512,outputUtf16,g_NetworkEndpointTextScratchA) == 0;
   }
   outputUtf16[0] = 0;
   outputUtf16[1] = 0;

@@ -232,17 +232,19 @@ uint32_t Win32File_GetLastWriteDosDate(uint16_t *path,uint32_t *outDosDateTime)
 
   statusCode = Win32File_Open(0,path,&fileHandle);
   if ((statusCode == 0) && (fileHandle != INVALID_HANDLE_VALUE)) {
+    /* last-write scratch FILETIME at g_Win32FindDataScratch+0x10 (see Win32Drive_GetVolumeSerialNumber) */
     gotFileTime =
-         GetFileTime(fileHandle,NULL,NULL,(LPFILETIME)&g_Win32FileLastWriteTimeScratch);
+         GetFileTime(fileHandle,NULL,NULL,(LPFILETIME)&g_Win32FindDataScratch.ftLastAccessTime.dwHighDateTime);
     Win32File_Close(fileHandle);
     statusCode = FATAL_ERROR_FILE_ACCESS_FAILED;
     if (gotFileTime != 0) {
-      /* FAT date into the high word, FAT time into the low word of the scratch dword */
+      /* FAT date into the high word, FAT time into the low word of the scratch dword (the find data's
+         dwFileAttributes slot) */
       FileTimeToDosDateTime
-                ((FILETIME *)&g_Win32FileLastWriteTimeScratch,
-                 (LPWORD)&g_Win32FileCreationTimeOrDosDateScratch + 1,
-                 (LPWORD)&g_Win32FileCreationTimeOrDosDateScratch);
-      *outDosDateTime = g_Win32FileCreationTimeOrDosDateScratch;
+                ((LPFILETIME)&g_Win32FindDataScratch.ftLastAccessTime.dwHighDateTime,
+                 (LPWORD)&g_Win32FindDataScratch.dwFileAttributes + 1,
+                 (LPWORD)&g_Win32FindDataScratch.dwFileAttributes);
+      *outDosDateTime = g_Win32FindDataScratch.dwFileAttributes;
       return 0;
     }
   }
@@ -264,12 +266,13 @@ uint32_t Win32File_GetLastWriteTimeHigh(uint16_t *path,uint32_t *outLastWriteTim
 
   statusCode = Win32File_Open(0,path,&fileHandle);
   if (statusCode == 0) {
+    /* last-write scratch FILETIME at g_Win32FindDataScratch+0x10 (see Win32Drive_GetVolumeSerialNumber) */
     gotFileTime =
-         GetFileTime(fileHandle,NULL,NULL,(LPFILETIME)&g_Win32FileLastWriteTimeScratch);
+         GetFileTime(fileHandle,NULL,NULL,(LPFILETIME)&g_Win32FindDataScratch.ftLastAccessTime.dwHighDateTime);
     Win32File_Close(fileHandle);
     statusCode = FATAL_ERROR_FILE_ACCESS_FAILED;
     if (gotFileTime != 0) {
-      *outLastWriteTimeHigh = g_Win32FileLastWriteTimeHighScratch;
+      *outLastWriteTimeHigh = g_Win32FindDataScratch.ftLastWriteTime.dwLowDateTime; /* its dwHighDateTime */
       return 0;
     }
   }
@@ -294,14 +297,17 @@ uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path)
 
   statusCode = Win32File_Open(0,(uint16_t *)path,&fileHandle);
   if (statusCode == 0) {
+    /* the three scratch FILETIMEs are packed from the start of g_Win32FindDataScratch (+0x00, +0x08,
+       +0x10), 4 bytes before the find data's own ftCreationTime/ftLastAccessTime/ftLastWriteTime
+       (original layout); the last-write high dword thus lands in ftLastWriteTime.dwLowDateTime */
     gotFileTimes =
-         GetFileTime(fileHandle,(LPFILETIME)&g_Win32FileCreationTimeOrDosDateScratch,
-                     (LPFILETIME)&g_Win32FileLastAccessTimeScratch,
-                     (LPFILETIME)&g_Win32FileLastWriteTimeScratch);
+         GetFileTime(fileHandle,(LPFILETIME)&g_Win32FindDataScratch.dwFileAttributes,
+                     (LPFILETIME)&g_Win32FindDataScratch.ftCreationTime.dwHighDateTime,
+                     (LPFILETIME)&g_Win32FindDataScratch.ftLastAccessTime.dwHighDateTime);
     Win32File_Close(fileHandle);
     statusCode = FATAL_ERROR_FILE_ACCESS_FAILED;
     if (gotFileTimes != 0) {
-      lastWriteTimeHigh = g_Win32FileLastWriteTimeHighScratch;
+      lastWriteTimeHigh = g_Win32FindDataScratch.ftLastWriteTime.dwLowDateTime;
       *outputLabel = 0;
       return lastWriteTimeHigh;
     }
@@ -608,18 +614,21 @@ Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLet
   Win32DriveCapacity capacity;
 
   g_Win32DriveRootPathScratchA[0] = (char)driveLetter; /* "X:\" root path scratch */
+  /* the four results land in the find-data scratch (original layout): sectors per cluster in
+     ftLastWriteTime.dwHighDateTime, bytes per sector in nFileSizeHigh, free clusters in nFileSizeLow,
+     total clusters in dwReserved0 */
   gotDiskSpace =
-       GetDiskFreeSpaceA(g_Win32DriveRootPathScratchA,(LPDWORD)&g_Win32DiskSectorsPerClusterScratch
-                         ,(LPDWORD)&g_Win32DiskBytesPerSectorScratch,
-                         (LPDWORD)&g_Win32DiskFreeClustersScratch,
-                         (LPDWORD)&g_Win32DiskTotalClustersScratch);
+       GetDiskFreeSpaceA(g_Win32DriveRootPathScratchA,(LPDWORD)&g_Win32FindDataScratch.ftLastWriteTime.dwHighDateTime
+                         ,(LPDWORD)&g_Win32FindDataScratch.nFileSizeHigh,
+                         (LPDWORD)&g_Win32FindDataScratch.nFileSizeLow,
+                         (LPDWORD)&g_Win32FindDataScratch.dwReserved0);
   totalBytes = 0;
   freeBytes = 0;
   if (gotDiskSpace != 0) {
-    freeBytes = g_Win32DiskFreeClustersScratch *
-                g_Win32DiskBytesPerSectorScratch * g_Win32DiskSectorsPerClusterScratch;
-    totalBytes = g_Win32DiskTotalClustersScratch *
-                 g_Win32DiskBytesPerSectorScratch * g_Win32DiskSectorsPerClusterScratch;
+    freeBytes = g_Win32FindDataScratch.nFileSizeLow *
+                g_Win32FindDataScratch.nFileSizeHigh * g_Win32FindDataScratch.ftLastWriteTime.dwHighDateTime;
+    totalBytes = g_Win32FindDataScratch.dwReserved0 *
+                 g_Win32FindDataScratch.nFileSizeHigh * g_Win32FindDataScratch.ftLastWriteTime.dwHighDateTime;
   }
   capacity.freeBytes = (uint32_t)freeBytes;
   capacity.totalBytes = (uint32_t)totalBytes;
@@ -817,18 +826,18 @@ static bool Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode
 
 {
   if (mode == FILESYSTEM_ENUMERATE_FILES) {
-    return (g_Win32FileCreationTimeOrDosDateScratch &
+    return (g_Win32FindDataScratch.dwFileAttributes &
             (FILE_ATTRIBUTE_DIRECTORY | FILESYSTEM_ATTRIBUTE_VOLUME_LABEL)) == 0;
   }
   if (mode != FILESYSTEM_ENUMERATE_DIRECTORIES) {
     return false;
   }
-  if ((g_Win32FileCreationTimeOrDosDateScratch & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+  if ((g_Win32FindDataScratch.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
     return false;
   }
-  return (g_Win32FindDataFileNameA != '.') ||
-         ((g_Win32FindDataFileNameSecondCharA != '\0') &&
-          ((g_Win32FindDataFileNameSecondCharA != '.') || (g_Win32FindDataFileNameThirdCharA != '\0')));
+  return (g_Win32FindDataScratch.cFileName[0] != '.') ||
+         ((g_Win32FindDataScratch.cFileName[1] != '\0') &&
+          ((g_Win32FindDataScratch.cFileName[1] != '.') || (g_Win32FindDataScratch.cFileName[2] != '\0')));
 }
 
 /* Copies one FILESYSTEM_ENUMERATION_RECORD_BYTES record dword by dword. */
@@ -883,9 +892,7 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   Package_SetLastErrorPath((uint16_t *)pathOrVolumeText);
   RichTextCommandStream_CopyToNarrow(sizeof g_Win32PathScratch[0],g_Win32PathScratch[0],
                                      (uint16_t *)pathOrVolumeText);
-  /* the WIN32_FIND_DATAA lands in the file-time scratch block (dwFileAttributes first) */
-  findHandle = FindFirstFileA((LPCSTR)g_Win32PathScratch[0],
-                              (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
+  findHandle = FindFirstFileA((LPCSTR)g_Win32PathScratch[0],&g_Win32FindDataScratch);
   if (findHandle == INVALID_HANDLE_VALUE) {
     return 0;
   }
@@ -895,12 +902,12 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
     if (Win32FileSystem_FoundEntryMatchesMode(mode) &&
         (FILESYSTEM_ENUMERATION_RECORD_BYTES - 1 < outputCapacityBytes)) {
       Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,destination,
-                             (uint8_t *)&g_Win32FindDataFileNameA);
+                             (uint8_t *)g_Win32FindDataScratch.cFileName);
       destination = destination + FILESYSTEM_ENUMERATION_RECORD_BYTES / 2;
       recordCount++;
       outputCapacityBytes = outputCapacityBytes - FILESYSTEM_ENUMERATION_RECORD_BYTES;
     }
-  } while (FindNextFileA(findHandle,(LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch) != 0);
+  } while (FindNextFileA(findHandle,&g_Win32FindDataScratch) != 0);
   FindClose(findHandle);
   /* bubble sort; each swap goes through the whole path scratch block: the 0x200-byte record fills both
      0x100-byte path buffers (original quirk: the original passes the first buffer, 0x00575A9C, and

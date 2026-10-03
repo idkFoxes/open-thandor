@@ -3033,22 +3033,19 @@ static void ArticulatedWalker_SetFootLocalOrientation
   FixedRollAzimuthElevation extractedAngles;
 
   FixedTransform_BuildRotationBasis
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
+            (&g_ArmySuspensionRotationMatrixScratchB,
              (footNode->modelPayload).worldRotationAngle2,
              (footNode->modelPayload).worldRotationAngle1,
              (footNode->modelPayload).worldRotationAngle0);
   FixedTransform_InvertRigidQ28
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB);
+            (&g_ArmySuspensionRotationMatrixScratchA,&g_ArmySuspensionRotationMatrixScratchB);
   FixedTransform_BuildRotationBasis
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,footHeading,
+            (&g_ArmySuspensionRotationMatrixScratchB,footHeading,
              groundNormalAngles.elevationAngle,groundNormalAngles.azimuthAngle);
   FixedTransform_Compose
-            ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA);
-  extractedAngles = FixedTransform_ExtractEulerAngles
-                     ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch);
+            (&g_ArmySuspensionRotationMatrixComposedScratch,&g_ArmySuspensionRotationMatrixScratchB,
+             &g_ArmySuspensionRotationMatrixScratchA);
+  extractedAngles = FixedTransform_ExtractEulerAngles(&g_ArmySuspensionRotationMatrixComposedScratch);
   (footNode->modelPayload).localRotationAngle0 = extractedAngles.azimuthAngle;
   (footNode->modelPayload).localRotationAngle1 = extractedAngles.elevationAngle;
   (footNode->modelPayload).localRotationAngle2 = extractedAngles.rollAngle;

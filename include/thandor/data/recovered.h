@@ -35,9 +35,6 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 /* ---- audio/spatial: listener rotation basis and the combined world-to-listener transform. */
 
 
-/* ---- network/protocol/transfer: version string shown to joining players ("1.5.45"). */
-#define g_GameVersionUtf16 (*(uint16_t (*)[7])&g_ImageObject_0050F07C.at_g_GameVersionUtf16)
-
 /* ---- ui/ingame: HUD number and countdown ("mm:ss") text scratch. */
 
 /* ---- ui/ingame/technology: per-slot offsets of the technology panel's row controls. */
@@ -49,7 +46,6 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 /* ---- gameplay/input/world: per pointer mode, the click handler, command id and preview army. */
 
 /* ---- ui/ingame: keyboard dispatch records {key code, modifier mask, handler} ending in 0. */
-#define g_InGameKeyboardDispatchRecordsTerminator (*(uint32_t *)&g_ImageObject_0056E5C0.at_g_InGameKeyboardDispatchRecordsTerminator)
 
 /* ---- graphics/backend/direct3d: enumerated and selected texture pixel formats. */
 
@@ -61,14 +57,8 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
    format 0xC (GR_TEXFMT_ARGB_4444), data NULL} after the vertex records; no code references it by
    address. */
 
-/* ---- platform/filesystem/win32: "\\.\X:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY
-   probe in Win32Drive_CheckMediaReady (drive letter at index 4); 9 bytes of NOP fill follow up to
-   FileSystem_Init. */
-#define g_Win32DriveDevicePathA (*(char (*)[7])&g_ImageObject_00575CA0.at_g_Win32DriveDevicePathA)
-
 /* ---- network/backend/fallback_udp: nonzero option value (0xFFFFFFFF) for setsockopt/ioctlsocket,
    "IP=" option. */
-#define s_CommandLineOptionIp (*(char (*)[4])&g_ImageObject_00584078.at_s_CommandLineOptionIp)
 
 /* Byte-offset access into a named object, for code that indexes records by computed offsets. */
 #define THANDOR_BYTE_AT(object, offset) ((uint8_t *)&(object) + (int)(offset))
@@ -83,9 +73,6 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 
 /* ---- platform/input: the DirectInput mouse data format's object list and axis GUIDs. */
 
-/* ---- ui/frontend: vtable of the 3D model pointer context (unaligned; slot 10 is
-   g_FrontendModelPointerContextUpdateCallback). */
-#define g_FrontendModelPointerContextVtable (*(UiNodeVtable *)&g_ImageObject_0050BB37.at_g_FrontendModelPointerContextVtable)
 
 /* ---- graphics/backend/glide: the import table walked by Glide3_InitAndEnumerate. */
 
@@ -102,13 +89,9 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 /* file patterns after u_save___sve_0050d9c8: L"level\\*.lev" and L"level\\*.cgn" */
 /* L"army0000.gfx" and "ARMY" after g_AiCommandGenerationRetainedTarget, followed by 0x90 fill up to
    0x0051b3c0 */
-#define g_UnreferencedArmyTag (*(char (*)[5])&g_ImageObject_0051B3AE.at_g_UnreferencedArmyTag)
 
 /* ---- graphics/backend/software, graphics/resources/texture: function-pointer slots of the software
    backend's hook table (statically holding the software implementations). */
 
-/* ---- graphics: L"Software" behind the hook table (followed by two NOP padding bytes before the code at
-   0x004A8F80); no code or data reference to it found. */
-#define g_UnreferencedSoftwareTextUtf16 (*(uint16_t (*)[9])&g_ImageObject_004A8F6C.at_g_UnreferencedSoftwareTextUtf16)
 
 #endif /* THANDOR_DATA_RECOVERED_H */

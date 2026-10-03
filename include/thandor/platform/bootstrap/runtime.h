@@ -24,7 +24,7 @@
 #define FRONTEND_PLAYER_LIST_ROW_BYTES 0x80 /* one row buffer of the lobby player list */
 #define INGAME_FACTION_STATUS_TEXT_BYTES 0x2000 /* g_InGameFactionStatusTextScratchUtf16 */
 #define INGAME_PLAYER_LIST_TEXT_BYTES 0x160 /* g_InGamePlayerListTextScratchUtf16 */
-#define SELECTION_PLAYER_BLOCK_COUNT 8 /* g_SelectionPlayerBlocks, see g_SelectionPlayerRuntimeBlockPointers[8] */
+#define SELECTION_PLAYER_BLOCK_COUNT 8 /* g_SelectionPlayerBlocks; linked from g_SelectionPlayerRuntimeBlockPointers by player runtime id */
 #define FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT 8 /* records in g_FrontendPlayerRuntimeBlocks (0x9D80 bytes) */
 #define CORE_ASSET_SCRATCH_SLICE_COUNT 7 /* tooltip texts of the in-game template's technologyAreaTab1..7, one zeroed allocation */
 #define CORE_ASSET_SCRATCH_SLICE_BYTES 0x200

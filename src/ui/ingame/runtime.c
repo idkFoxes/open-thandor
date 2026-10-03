@@ -2821,7 +2821,7 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
        (uint16_t *)(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE);
   /* player name: empty, or in network games the name of the player assigned to this faction */
   playerNameTextOffset = g_UiAction1012IconImageOffsets[slotIndex];
-  ((UiSingleLineTextControl *)((int)node + playerNameTextOffset))->text = (uint16_t *)&g_EmptyFrontendPlayerNameUtf16;
+  ((UiSingleLineTextControl *)((int)node + playerNameTextOffset))->text = g_EmptyFrontendPlayerNameUtf16;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     playerBlock = g_FrontendPlayerRuntimeBlocks;
     remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
@@ -3871,8 +3871,7 @@ void InGameUiCommand_BeginInteractionByMode
    per command, directly or through the command queue. */
 static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapControlView *mapControl)
 {
-  int remainingDwords;
-  uint32_t *tripletClearCursor;
+  int clearIndex;
   WorldOwnerListNode *runtimeNode;
   int ownerFactionIndex;
   GameEntityRuntime *entry;
@@ -3881,12 +3880,16 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   uint32_t tripletDwordCount;
   CommandPayload *tripletEntry;
 
-  /* clears both triplet buffers with their counts (26 dwords) */
-  tripletClearCursor = (uint32_t *)&g_InGameSelectionInsertTripletDwords;
-  for (remainingDwords = 26; remainingDwords != 0; remainingDwords--) {
-    *tripletClearCursor = 0;
-    tripletClearCursor++;
+  /* clears both triplet buffers, then their counts, in memory order (the original clears the 26 dwords from
+     0x0055F0C4 in one run) */
+  for (clearIndex = 0; clearIndex < 12; clearIndex++) {
+    g_InGameSelectionInsertTripletDwords[clearIndex] = 0;
   }
+  for (clearIndex = 0; clearIndex < 12; clearIndex++) {
+    g_InGameSelectionRemoveTripletDwords[clearIndex] = 0;
+  }
+  g_InGameSelectionInsertTripletDwordCount = 0;
+  g_InGameSelectionRemoveTripletDwordCount = 0;
   ownerFactionIndex = mapControl->activeFactionRuntimeIndex;
   for (runtimeNode = (WorldOwnerListNode *)mapControl->ownerListHead; runtimeNode != NULL;
       runtimeNode = runtimeNode->nextNode) {
@@ -3903,8 +3906,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
                                                    INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_INSERT)) {
         /* The value is stored before the count check: once the count has reached 11, further values keep
            overwriting the slot at that count. */
-        *(InGameCommandPayloadTripletValue32 *)
-             (&g_InGameSelectionInsertTripletDwords + tripletDwordCount * 4) = payloadValue;
+        g_InGameSelectionInsertTripletDwords[tripletDwordCount] = payloadValue;
         if (tripletDwordCount < 11) {
           g_InGameSelectionInsertTripletDwordCount++;
         }
@@ -3916,8 +3918,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
       if (!isEntryAbsent &&
           !InGameCommandQueue_ContainsTripletValue(payloadValue,
                                                    INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_REMOVE)) {
-        *(InGameCommandPayloadTripletValue32 *)
-             (&g_InGameSelectionRemoveTripletDwords + tripletDwordCount * 4) = payloadValue;
+        g_InGameSelectionRemoveTripletDwords[tripletDwordCount] = payloadValue;
         if (tripletDwordCount < 11) {
           g_InGameSelectionRemoveTripletDwordCount++;
         }
@@ -3925,7 +3926,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
     }
   }
   if (g_InGameSelectionRemoveTripletDwordCount != 0) {
-    tripletEntry = (CommandPayload *)&g_InGameSelectionRemoveTripletDwords;
+    tripletEntry = (CommandPayload *)g_InGameSelectionRemoveTripletDwords;
     do {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -3941,7 +3942,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
     } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < (int)tripletDwordCount);
   }
   if (g_InGameSelectionInsertTripletDwordCount != 0) {
-    tripletEntry = (CommandPayload *)&g_InGameSelectionInsertTripletDwords;
+    tripletEntry = (CommandPayload *)g_InGameSelectionInsertTripletDwords;
     do {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {

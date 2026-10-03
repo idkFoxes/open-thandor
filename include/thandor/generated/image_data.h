@@ -266,11 +266,9 @@ extern TextResourceOverrideTable *g_TextResourceOverrides; /* 0041AF94 g_TextRes
 extern uint8_t *g_FontRuntimeBuffer; /* 0041AF98 g_FontRuntimeBuffer */
 extern uint32_t g_RichTextRuntimeBufferUsedWords; /* 0041AF9C g_RichTextRuntimeBufferUsedWords */
 extern uint16_t g_EmptyTextResourceUtf16[2]; /* 0041AFA4 g_EmptyTextResourceUtf16 */
-typedef struct ImageObject_0041AFA8 {
-    uint8_t at_g_MissingTextResourceFallbackStream; /* 0041AFA8 g_MissingTextResourceFallbackStream */
-    uint8_t at_g_MissingTextResourceFallbackStream_rest_tail[3];
-} ImageObject_0041AFA8;
-extern ImageObject_0041AFA8 g_ImageObject_0041AFA8;
+/* 0041AFA8 g_MissingTextResourceFallbackStream: UTF-16 rich-text stream L"-" (code unit '-' plus terminator) that
+   unresolved nested-stream records point to */
+extern uint16_t g_MissingTextResourceFallbackStream[2];
 extern uint16_t u_error__TXT2STR__unknown_characte_0041afac[62]; /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
 extern GraphicsTextureSourceAsset *g_FontTextureSources[2]; /* 0041B028 g_FontTextureSources */
 /* 0041B030 the two font texture paths L"engine\\font.gfx" and L"engine\\fontk.gfx", back to back:
@@ -763,11 +761,7 @@ extern GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage; /
 extern GraphicsPaletteAssetLifecycleCallbackTable g_GraphicsPaletteAssetLifecycleCallbacks3; /* 004A8F58 g_GraphicsPaletteAssetLifecycleCallbacks3 */
 extern GraphicsPaletteAssetValidateProc *g_GraphicsPaletteAssetValidate; /* 004A8F64 g_GraphicsPaletteAssetValidate */
 extern GraphicsPaletteAssetResolveAllocationBaseProc *g_GraphicsPaletteAssetResolveAllocationBase; /* 004A8F68 g_GraphicsPaletteAssetResolveAllocationBase */
-typedef struct ImageObject_004A8F6C {
-    uint16_t at_g_UnreferencedSoftwareTextUtf16[9]; /* 004A8F6C g_UnreferencedSoftwareTextUtf16: uint16_t[9] L"Software" after the graphics hook table, followed by two NOP padding bytes; no code or data reference found. */
-    uint8_t at_g_UnreferencedSoftwareTextUtf16_rest_tail[2];
-} ImageObject_004A8F6C;
-extern ImageObject_004A8F6C g_ImageObject_004A8F6C;
+extern uint16_t g_UnreferencedSoftwareTextUtf16[9]; /* 004A8F6C g_UnreferencedSoftwareTextUtf16: L"Software" after the graphics hook table, followed by two NOP padding bytes (dropped); no code or data reference found. */
 
 /* original 0x004AD92C-0x004AE230 */
 typedef struct ImageObject_004AD92C {
@@ -866,11 +860,7 @@ extern UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage; /* 004B0EB0
 extern uint16_t g_UiWindowClassTexturePathUtf16[20]; /* 004B0EB8 g_UiWindowClassTexturePathUtf16 */
 extern uint16_t g_UiWindowClassTextPathUtf16[19]; /* 004B0EE0 g_UiWindowClassTextPathUtf16 */
 extern uint16_t g_UiWindowTexturePathUtf16[15]; /* 004B0F06 g_UiWindowTexturePathUtf16 */
-typedef struct ImageObject_004B0F24 {
-    UiPointerCaptureButton at_g_UiPointerCaptureButton; /* 004B0F24 g_UiPointerCaptureButton */
-    uint8_t at_g_UiPointerCaptureButton_rest_tail[3];
-} ImageObject_004B0F24;
-extern ImageObject_004B0F24 g_ImageObject_004B0F24;
+extern UiPointerCaptureButton g_UiPointerCaptureButton; /* 004B0F24 g_UiPointerCaptureButton */
 extern UiImageControl * g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
 
 /* original 0x004B1500-0x004B1510 */
@@ -957,12 +947,7 @@ typedef struct ImageObject_004B3C20 {
     UiNodeVtable at_g_UiHorizontalGaugeControlVtable; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
 } ImageObject_004B3C20;
 extern ImageObject_004B3C20 g_ImageObject_004B3C20;
-typedef struct ImageObject_004B3C68 {
-    uint16_t at_g_UiWindowPercentTextUtf16[5]; /* 004B3C68 g_UiWindowPercentTextUtf16 */
-    uint32_t at_g_UiWindowPercentTextUtf16_rest[3]; /* beyond the declared type */
-    uint8_t at_g_UiWindowPercentTextUtf16_rest_tail[2];
-} ImageObject_004B3C68;
-extern ImageObject_004B3C68 g_ImageObject_004B3C68;
+extern uint16_t g_UiWindowPercentTextUtf16[5]; /* 004B3C68 g_UiWindowPercentTextUtf16 */
 
 /* original 0x004B3EEC-0x004B3F40 */
 typedef struct ImageObject_004B3EEC {
@@ -1068,18 +1053,8 @@ typedef struct ImageObject_004BA58C {
 } ImageObject_004BA58C;
 extern ImageObject_004BA58C g_ImageObject_004BA58C;
 extern UiNodeVtable g_UiListControlVtable; /* 004BA590 g_UiListControlVtable */
-typedef struct ImageObject_004BA5D8 {
-    uint8_t at_g_UiPointerListExpandedLeftTextUtf16; /* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16 */
-    uint32_t at_g_UiPointerListExpandedLeftTextUtf16_rest[255]; /* beyond the declared type */
-    uint8_t at_g_UiPointerListExpandedLeftTextUtf16_rest_tail[3];
-} ImageObject_004BA5D8;
-extern ImageObject_004BA5D8 g_ImageObject_004BA5D8;
-typedef struct ImageObject_004BA9D8 {
-    uint8_t at_g_UiPointerListExpandedRightTextUtf16; /* 004BA9D8 g_UiPointerListExpandedRightTextUtf16 */
-    uint32_t at_g_UiPointerListExpandedRightTextUtf16_rest[257]; /* beyond the declared type */
-    uint8_t at_g_UiPointerListExpandedRightTextUtf16_rest_tail[3];
-} ImageObject_004BA9D8;
-extern ImageObject_004BA9D8 g_ImageObject_004BA9D8;
+extern uint16_t g_UiPointerListExpandedLeftTextUtf16[512]; /* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16: 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
+extern uint16_t g_UiPointerListExpandedRightTextUtf16[512]; /* 004BA9D8 g_UiPointerListExpandedRightTextUtf16: 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
 
 /* original 0x004BB988-0x004BB9E0 */
 typedef struct ImageObject_004BB988 {
@@ -1149,30 +1124,10 @@ typedef struct ImageObject_004BD440 {
     uint8_t at_gap_004BD440[16]; /* 004BD440 gap */
 } ImageObject_004BD440;
 extern ImageObject_004BD440 g_ImageObject_004BD440;
-typedef struct ImageObject_004BD450 {
-    uint8_t at_g_ModelViewCompositeTransform; /* 004BD450 g_ModelViewCompositeTransform */
-    uint32_t at_g_ModelViewCompositeTransform_rest[11]; /* beyond the declared type */
-    uint8_t at_g_ModelViewCompositeTransform_rest_tail[3];
-} ImageObject_004BD450;
-extern ImageObject_004BD450 g_ImageObject_004BD450;
-typedef struct ImageObject_004BD480 {
-    uint8_t at_g_ModelViewDirectionLocal; /* 004BD480 g_ModelViewDirectionLocal */
-    uint32_t at_g_ModelViewDirectionLocal_rest[2]; /* beyond the declared type */
-    uint8_t at_g_ModelViewDirectionLocal_rest_tail[3];
-} ImageObject_004BD480;
-extern ImageObject_004BD480 g_ImageObject_004BD480;
-typedef struct ImageObject_004BD48C {
-    uint8_t at_g_ModelViewDirectionWorld; /* 004BD48C g_ModelViewDirectionWorld */
-    uint32_t at_g_ModelViewDirectionWorld_rest[2]; /* beyond the declared type */
-    uint8_t at_g_ModelViewDirectionWorld_rest_tail[3];
-} ImageObject_004BD48C;
-extern ImageObject_004BD48C g_ImageObject_004BD48C;
-typedef struct ImageObject_004BD498 {
-    uint8_t at_g_ModelAuxiliaryForwardDirectionLocal; /* 004BD498 g_ModelAuxiliaryForwardDirectionLocal */
-    uint32_t at_g_ModelAuxiliaryForwardDirectionLocal_rest[5]; /* beyond the declared type */
-    uint8_t at_g_ModelAuxiliaryForwardDirectionLocal_rest_tail[3];
-} ImageObject_004BD498;
-extern ImageObject_004BD498 g_ImageObject_004BD498;
+extern GraphicsFixedMatrix3x4 g_ModelViewCompositeTransform; /* 004BD450 g_ModelViewCompositeTransform */
+extern GraphicsFixedVec3 g_ModelViewDirectionLocal; /* 004BD480 g_ModelViewDirectionLocal */
+extern GraphicsFixedVec3 g_ModelViewDirectionWorld; /* 004BD48C g_ModelViewDirectionWorld */
+extern GraphicsFixedVec3 g_ModelAuxiliaryForwardDirectionLocal; /* 004BD498 g_ModelAuxiliaryForwardDirectionLocal */
 
 /* original 0x004BD880-0x004BD8D0 */
 typedef struct ImageObject_004BD880 {
@@ -1344,22 +1299,13 @@ typedef struct ImageObject_0050B510 {
     uint8_t at_gap_0050B510[16]; /* 0050B510 gap */
 } ImageObject_0050B510;
 extern ImageObject_0050B510 g_ImageObject_0050B510;
-typedef struct ImageObject_0050B520 {
-    uint8_t at_g_SpatialSoundListenerTransform; /* 0050B520 g_SpatialSoundListenerTransform */
-    uint32_t at_g_SpatialSoundListenerTransform_rest[11]; /* beyond the declared type */
-    uint8_t at_g_SpatialSoundListenerTransform_rest_tail[3];
-} ImageObject_0050B520;
-extern ImageObject_0050B520 g_ImageObject_0050B520;
+extern GraphicsFixedMatrix3x4 g_SpatialSoundListenerTransform; /* 0050B520 g_SpatialSoundListenerTransform */
 extern GraphicsFixedMatrix3x4 g_SpatialSoundListenerRotation; /* 0050B550 g_SpatialSoundListenerRotation */
 extern GraphicsFixedMatrix3x4 g_SpatialSoundListenerWorldToLocal; /* 0050B580 g_SpatialSoundListenerWorldToLocal */
 extern GraphicsFixedVec3 g_SpatialSoundRelative; /* 0050B5B0 g_SpatialSoundRelative: sound position in the listener's frame */
 extern AudioMixerGainQ15 g_SoundEffectsGainQ15; /* 0050B5BC g_SoundEffectsGainQ15 */
 extern int32_t g_ReverseStereoMask; /* 0050B5C0 g_ReverseStereoMask */
-typedef struct ImageObject_0050B5C4 {
-    SpatialSoundSlot * at_g_SpatialSoundSlots; /* 0050B5C4 g_SpatialSoundSlots */
-    uint32_t at_g_SpatialSoundSlots_rest[2]; /* beyond the declared type */
-} ImageObject_0050B5C4;
-extern ImageObject_0050B5C4 g_ImageObject_0050B5C4;
+extern SpatialSoundSlot *g_SpatialSoundSlots; /* 0050B5C4 g_SpatialSoundSlots */
 
 /* original 0x0050BADC-0x0050BB10 */
 typedef struct ImageObject_0050BADC {
@@ -1368,11 +1314,7 @@ typedef struct ImageObject_0050BADC {
 extern ImageObject_0050BADC g_ImageObject_0050BADC;
 extern UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12; /* 0050BADE g_WorldMotionTargetDistanceConvergenceStepQ12 */
 extern Q12 g_WorldMotionPositionMagnitudeInputScaleQ12; /* 0050BAE2 g_WorldMotionPositionMagnitudeInputScaleQ12 */
-typedef struct ImageObject_0050BAE6 {
-    uint8_t at_k_CameraScreenDeltaDistanceScaleQ16; /* 0050BAE6 k_CameraScreenDeltaDistanceScaleQ16 */
-    uint8_t at_k_CameraScreenDeltaDistanceScaleQ16_rest_tail[3];
-} ImageObject_0050BAE6;
-extern ImageObject_0050BAE6 g_ImageObject_0050BAE6;
+extern uint32_t k_CameraScreenDeltaDistanceScaleQ16; /* 0050BAE6 k_CameraScreenDeltaDistanceScaleQ16 */
 extern Q12 g_WorldMotionDistanceInputScaleQ12; /* 0050BAEA g_WorldMotionDistanceInputScaleQ12 */
 extern AngleTurn32 g_WorldMotionHeadingInputScale; /* 0050BAEE g_WorldMotionHeadingInputScale */
 extern AngleTurn32 g_WorldMotionPitchInputScale; /* 0050BAF2 g_WorldMotionPitchInputScale */
@@ -1380,23 +1322,14 @@ extern int g_WorldMotionPointerWheelInputScale; /* 0050BAF6 g_WorldMotionPointer
 extern AngleTurn32 g_WorldMotionAlternateMinimumPitchAngle; /* 0050BAFA g_WorldMotionAlternateMinimumPitchAngle */
 extern AngleTurn32 g_WorldMotionAlternateMaximumPitchAngle; /* 0050BAFE g_WorldMotionAlternateMaximumPitchAngle */
 extern UQ12 g_WorldMotionAlternateMinimumDistanceQ12; /* 0050BB02 g_WorldMotionAlternateMinimumDistanceQ12 */
-typedef struct ImageObject_0050BB06 {
-    UQ12 at_g_WorldMotionAlternateMaximumDistanceQ12; /* 0050BB06 g_WorldMotionAlternateMaximumDistanceQ12 */
-    uint32_t at_g_WorldMotionAlternateMaximumDistanceQ12_rest[1]; /* beyond the declared type */
-    uint8_t at_g_WorldMotionAlternateMaximumDistanceQ12_rest_tail[2];
-} ImageObject_0050BB06;
-extern ImageObject_0050BB06 g_ImageObject_0050BB06;
+extern UQ12 g_WorldMotionAlternateMaximumDistanceQ12; /* 0050BB06 g_WorldMotionAlternateMaximumDistanceQ12 */
 
 /* original 0x0050BB34-0x0050BB80 */
 typedef struct ImageObject_0050BB34 {
     uint8_t at_gap_0050BB34[3]; /* 0050BB34 gap */
 } ImageObject_0050BB34;
 extern ImageObject_0050BB34 g_ImageObject_0050BB34;
-typedef struct ImageObject_0050BB37 {
-    UiNodeVtable at_g_FrontendModelPointerContextVtable; /* 0050BB37 g_FrontendModelPointerContextVtable */
-    uint8_t at_g_FrontendModelPointerContextVtable_rest_tail[1];
-} ImageObject_0050BB37;
-extern ImageObject_0050BB37 g_ImageObject_0050BB37;
+extern UiNodeVtable g_FrontendModelPointerContextVtable; /* 0050BB37 g_FrontendModelPointerContextVtable */
 
 /* original 0x0050D928-0x0050E0B0 */
 typedef struct ImageObject_0050D928 {
@@ -1451,12 +1384,7 @@ extern ScenarioCampaignDataPathTemplate2A g_ScenarioCampaignDataPathTemplateUtf1
 extern uint16_t u_save_0050daa2[5]; /* 0050DAA2 u_save_0050daa2 */
 extern uint16_t u_level_0050daac[6]; /* 0050DAAC u_level_0050daac */
 extern uint16_t u_level_0050dab8[6]; /* 0050DAB8 u_level_0050dab8 */
-typedef struct ImageObject_0050DAC4 {
-    uint8_t at_g_ScenarioCatalogPathScratchUtf16; /* 0050DAC4 g_ScenarioCatalogPathScratchUtf16 */
-    uint32_t at_g_ScenarioCatalogPathScratchUtf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_ScenarioCatalogPathScratchUtf16_rest_tail[3];
-} ImageObject_0050DAC4;
-extern ImageObject_0050DAC4 g_ImageObject_0050DAC4;
+extern uint16_t g_ScenarioCatalogPathScratchUtf16[256]; /* 0050DAC4 g_ScenarioCatalogPathScratchUtf16 */
 extern uint16_t g_ResourceRegistrationDirectoryUtf16[256]; /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
 extern uint16_t u_texte_techno_str_0050dec4[17]; /* 0050DEC4 u_texte_techno_str_0050dec4 */
 typedef struct ImageObject_0050DEE6 {
@@ -1480,11 +1408,7 @@ extern uint16_t u_daten_hex_0050e054[10]; /* 0050E054 u_daten_hex_0050e054 */
 extern uint16_t u_campagne_hex_0050e068[13]; /* 0050E068 u_campagne_hex_0050e068 */
 extern uint16_t u_stat_hex_0050e082[9]; /* 0050E082 u_stat_hex_0050e082 */
 extern uint16_t u_oldunit_hex_0050e094[12]; /* 0050E094 u_oldunit_hex_0050e094 */
-typedef struct ImageObject_0050E0AC {
-    uint8_t at_g_InGameResourceRegistrationBusyCount; /* 0050E0AC g_InGameResourceRegistrationBusyCount */
-    uint8_t at_g_InGameResourceRegistrationBusyCount_rest_tail[3];
-} ImageObject_0050E0AC;
-extern ImageObject_0050E0AC g_ImageObject_0050E0AC;
+extern uint8_t g_InGameResourceRegistrationBusyCount; /* 0050E0AC g_InGameResourceRegistrationBusyCount */
 
 /* original 0x0050E164-0x0050E1B0 */
 typedef struct ImageObject_0050E164 {
@@ -1523,21 +1447,12 @@ typedef struct ImageObject_0050F044 {
 extern ImageObject_0050F044 g_ImageObject_0050F044;
 extern int32_t g_FrontendPlayerRuntimeCount; /* 0050F050 g_FrontendPlayerRuntimeCount */
 extern uint16_t g_FrontendLocalPlayerNameUtf16[20]; /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
-typedef struct ImageObject_0050F07C {
-    uint16_t at_g_GameVersionUtf16[7]; /* 0050F07C g_GameVersionUtf16 */
-    uint32_t at_g_GameVersionUtf16_rest[1]; /* beyond the declared type */
-    uint8_t at_g_GameVersionUtf16_rest_tail[2];
-} ImageObject_0050F07C;
-extern ImageObject_0050F07C g_ImageObject_0050F07C;
+extern uint16_t g_GameVersionUtf16[7]; /* 0050F07C g_GameVersionUtf16: version string shown to joining players ("1.5.45") */
 extern UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint; /* 0050F090 g_FrontendSelectedNetworkEndpoint */
 extern uint32_t g_FrontendSessionToken; /* 0050F0A0 g_FrontendSessionToken */
 extern SessionTransferTimeoutTicks g_SessionTransferTimeoutTicks; /* 0050F0A4 g_SessionTransferTimeoutTicks */
 extern uint32_t g_FrontendTransferResponsePending; /* 0050F0A8 g_FrontendTransferResponsePending */
-typedef struct ImageObject_0050F0AC {
-    uint32_t at_g_LocalPlayerRuntimeId; /* 0050F0AC g_LocalPlayerRuntimeId */
-    uint32_t at_g_LocalPlayerRuntimeId_rest[4]; /* beyond the declared type */
-} ImageObject_0050F0AC;
-extern ImageObject_0050F0AC g_ImageObject_0050F0AC;
+extern uint32_t g_LocalPlayerRuntimeId; /* 0050F0AC g_LocalPlayerRuntimeId */
 extern FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks; /* 0050F0C0 g_FrontendPlayerRuntimeBlocks */
 extern FrontendPlayerRuntimeBlockCount g_FrontendPlayerRuntimeBlockCount; /* 0050F0C4 g_FrontendPlayerRuntimeBlockCount */
 extern SessionNetworkRoleFlags g_SessionNetworkRoleFlags; /* 0050F0C8 g_SessionNetworkRoleFlags */
@@ -1573,25 +1488,12 @@ typedef struct ImageObject_0051494C {
     uint8_t at_gap_0051494C[20]; /* 0051494C gap */
 } ImageObject_0051494C;
 extern ImageObject_0051494C g_ImageObject_0051494C;
-typedef struct ImageObject_00514960 {
-    SelectionPlayerRuntimeBlock * at_g_SelectionPlayerRuntimeBlockPointers[8]; /* 00514960 g_SelectionPlayerRuntimeBlockPointers */
-    uint32_t at_g_SelectionPlayerRuntimeBlockPointers_rest[248]; /* beyond the declared type */
-} ImageObject_00514960;
-extern ImageObject_00514960 g_ImageObject_00514960;
+extern SelectionPlayerRuntimeBlock *g_SelectionPlayerRuntimeBlockPointers[256]; /* 00514960 g_SelectionPlayerRuntimeBlockPointers: indexed by player runtime id (0..254, FrontendTransfer_FindLowestFreePlayerRuntimeId), 0x400 bytes in the original */
 extern SelectionPlayerRuntimeBlock *g_SelectionPlayerBlocks; /* 00514D60 g_SelectionPlayerBlocks */
 extern void *g_InGameFactionScratchBufferSetA8[8]; /* 00514D64 g_InGameFactionScratchBufferSetA8 */
 extern void *g_InGameFactionScratchBufferSetB8[8]; /* 00514D84 g_InGameFactionScratchBufferSetB8 */
-typedef struct ImageObject_00514DA4 {
-    uint8_t at_g_FrontendPlayerMessageScratchUtf16; /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
-    uint32_t at_g_FrontendPlayerMessageScratchUtf16_rest[23]; /* beyond the declared type */
-    uint8_t at_g_FrontendPlayerMessageScratchUtf16_rest_tail[3];
-} ImageObject_00514DA4;
-extern ImageObject_00514DA4 g_ImageObject_00514DA4;
-typedef struct ImageObject_00514E04 {
-    UiCommandPayloadTextBatch48 at_g_UiSevenSlotCommandPayloadText; /* 00514E04 g_UiSevenSlotCommandPayloadText */
-    uint32_t at_g_UiSevenSlotCommandPayloadText_rest[3]; /* beyond the declared type */
-} ImageObject_00514E04;
-extern ImageObject_00514E04 g_ImageObject_00514E04;
+extern uint16_t g_FrontendPlayerMessageScratchUtf16[48]; /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
+extern UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText; /* 00514E04 g_UiSevenSlotCommandPayloadText */
 
 /* original 0x00514FB4-0x00515010 */
 typedef struct ImageObject_00514FB4 {
@@ -1624,18 +1526,8 @@ typedef struct ImageObject_00515610 {
     UiNodeVtable at_g_UiNumericPairTextButtonVtable; /* 00515610 g_UiNumericPairTextButtonVtable */
 } ImageObject_00515610;
 extern ImageObject_00515610 g_ImageObject_00515610;
-typedef struct ImageObject_00515658 {
-    uint8_t at_g_UiNumericPairFirstValueScratchUtf16; /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
-    uint32_t at_g_UiNumericPairFirstValueScratchUtf16_rest[7]; /* beyond the declared type */
-    uint8_t at_g_UiNumericPairFirstValueScratchUtf16_rest_tail[3];
-} ImageObject_00515658;
-extern ImageObject_00515658 g_ImageObject_00515658;
-typedef struct ImageObject_00515678 {
-    uint8_t at_g_UiNumericPairSecondValueScratchUtf16; /* 00515678 g_UiNumericPairSecondValueScratchUtf16 */
-    uint32_t at_g_UiNumericPairSecondValueScratchUtf16_rest[9]; /* beyond the declared type */
-    uint8_t at_g_UiNumericPairSecondValueScratchUtf16_rest_tail[3];
-} ImageObject_00515678;
-extern ImageObject_00515678 g_ImageObject_00515678;
+extern uint16_t g_UiNumericPairFirstValueScratchUtf16[16]; /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
+extern uint16_t g_UiNumericPairSecondValueScratchUtf16[16]; /* 00515678 g_UiNumericPairSecondValueScratchUtf16 */
 
 /* original 0x00515720-0x00515780 */
 typedef struct ImageObject_00515720 {
@@ -1714,18 +1606,8 @@ typedef struct ImageObject_00516E90 {
     uint8_t at_gap_00516E90[16]; /* 00516E90 gap */
 } ImageObject_00516E90;
 extern ImageObject_00516E90 g_ImageObject_00516E90;
-typedef struct ImageObject_00516EA0 {
-    uint8_t at_g_FrontendResultsValueTextUtf16; /* 00516EA0 g_FrontendResultsValueTextUtf16 */
-    uint32_t at_g_FrontendResultsValueTextUtf16_rest[15]; /* beyond the declared type */
-    uint8_t at_g_FrontendResultsValueTextUtf16_rest_tail[3];
-} ImageObject_00516EA0;
-extern ImageObject_00516EA0 g_ImageObject_00516EA0;
-typedef struct ImageObject_00516EE0 {
-    uint8_t at_g_EndGameElapsedTimeScratchUtf16; /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
-    uint32_t at_g_EndGameElapsedTimeScratchUtf16_rest[31]; /* beyond the declared type */
-    uint8_t at_g_EndGameElapsedTimeScratchUtf16_rest_tail[3];
-} ImageObject_00516EE0;
-extern ImageObject_00516EE0 g_ImageObject_00516EE0;
+extern uint16_t g_FrontendResultsValueTextUtf16[32]; /* 00516EA0 g_FrontendResultsValueTextUtf16 */
+extern uint16_t g_EndGameElapsedTimeScratchUtf16[64]; /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
 typedef struct ImageObject_00516F60 {
     UiNodeVtable at_g_UiNodeVtable_00516F60; /* 00516F60 g_UiNodeVtable_00516F60 */
 } ImageObject_00516F60;
@@ -1750,11 +1632,7 @@ extern int g_FrontendResultsColumnAdvanceFactionFieldB8Pixels; /* 00516FE8 g_Fro
 extern int g_FrontendResultsColumnAdvanceFactionFieldBCPixels; /* 00516FEC g_FrontendResultsColumnAdvanceFactionFieldBCPixels */
 extern uint32_t g_FrontendResultsFramebufferBytesPerPixel; /* 00516FF0 g_FrontendResultsFramebufferBytesPerPixel */
 extern uint32_t g_FrontendResultsFramebufferScanlineStrideBytes; /* 00516FF4 g_FrontendResultsFramebufferScanlineStrideBytes */
-typedef struct ImageObject_00516FF8 {
-    uint32_t at_g_FrontendResultsFactionPackedPixelColors[7]; /* 00516FF8 g_FrontendResultsFactionPackedPixelColors */
-    uint32_t at_g_FrontendResultsFactionPackedPixelColors_rest[3]; /* beyond the declared type */
-} ImageObject_00516FF8;
-extern ImageObject_00516FF8 g_ImageObject_00516FF8;
+extern uint32_t g_FrontendResultsFactionPackedPixelColors[7]; /* 00516FF8 g_FrontendResultsFactionPackedPixelColors */
 
 /* original 0x00517068-0x005170C0 */
 typedef struct ImageObject_00517068 {
@@ -1806,11 +1684,7 @@ typedef struct ImageObject_00518074 {
 extern ImageObject_00518074 g_ImageObject_00518074;
 extern int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4]; /* 00518080 g_SoftwareBilinearPackedInterpolationWeights256: int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c) */
 extern uint32_t g_SoftwarePixelIntensityToNativeColorLut256[256]; /* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
-typedef struct ImageObject_00518C80 {
-    uint64_t at_g_SoftwareBlendUnityWordLanesQ14; /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
-    uint32_t at_g_SoftwareBlendUnityWordLanesQ14_rest[2]; /* beyond the declared type */
-} ImageObject_00518C80;
-extern ImageObject_00518C80 g_ImageObject_00518C80;
+extern uint64_t g_SoftwareBlendUnityWordLanesQ14; /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
 typedef struct ImageObject_00518C90 {
     UiNodeVtable at_g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
     uint32_t at_g_UiSoftwareTexturePreviewControlVtable_rest[2]; /* beyond the declared type */
@@ -1837,11 +1711,7 @@ extern ImageObject_0051972C g_ImageObject_0051972C;
 extern ArmyRuntimeSlot *g_ArmyRuntimeSlots; /* 00519730 g_ArmyRuntimeSlots */
 extern void *g_ArmyRuntimeRebaseBaseMinusOne; /* 00519734 g_ArmyRuntimeRebaseBaseMinusOne */
 extern ArmyGraphicsBinding g_ArmyGraphicsBindings[8]; /* 00519738 g_ArmyGraphicsBindings */
-typedef struct ImageObject_00519778 {
-    ArmyAssetRecordPrefix * at_g_ArmyAssetRecordRegistry[768]; /* 00519778 g_ArmyAssetRecordRegistry */
-    uint32_t at_g_ArmyAssetRecordRegistry_rest[2]; /* beyond the declared type */
-} ImageObject_00519778;
-extern ImageObject_00519778 g_ImageObject_00519778;
+extern ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768]; /* 00519778 g_ArmyAssetRecordRegistry */
 extern uint64_t g_ArmyPreviewAlphaPremultiplyMmxLut256[256]; /* 0051A380 g_ArmyPreviewAlphaPremultiplyMmxLut256: uint64_t[256] MMX qword per alpha a: three 16-bit lanes (a * 0x101) >> 4, alpha lane 0; PMULHW premultiply of the 2x2 downsample in the army preview (gameplay/army/runtime.c) */
 extern uint64_t g_ArmyPreviewAverageAlphaReciprocalMmxLut256[256]; /* 0051AB80 g_ArmyPreviewAverageAlphaReciprocalMmxLut256: uint64_t[256] MMX qword per average alpha a: three lanes ~0x3FF0/a (reciprocal), fourth lane a; un-premultiplies the averaged army preview pixel (gameplay/army/runtime.c) */
 extern uint64_t g_ArmyPreviewDownsampleAlphaRoundingBiasMmx; /* 0051B380 g_ArmyPreviewDownsampleAlphaRoundingBiasMmx */
@@ -1849,12 +1719,7 @@ extern ArmyCommandGeneration g_ArmyCommandGenerationStandard; /* 0051B388 g_Army
 extern ArmyCommandGeneration g_AiCommandGenerationCandidateBase; /* 0051B38C g_AiCommandGenerationCandidateBase */
 extern ArmyCommandGeneration g_AiCommandGenerationRetainedTarget; /* 0051B390 g_AiCommandGenerationRetainedTarget: ArmyCommandGeneration (uint32_t) 0x200 assigned to an army's commandGeneration by the AI combat code (gameplay/ai/combat.c) */
 extern uint16_t g_UnreferencedArmyTexturePathUtf16[13]; /* 0051B394 g_UnreferencedArmyTexturePathUtf16: UTF-16 L"army0000.gfx" after g_AiCommandGenerationRetainedTarget; no code reference found */
-typedef struct ImageObject_0051B3AE {
-    char at_g_UnreferencedArmyTag[5]; /* 0051B3AE g_UnreferencedArmyTag: char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
-    uint32_t at_g_UnreferencedArmyTag_rest[3]; /* beyond the declared type */
-    uint8_t at_g_UnreferencedArmyTag_rest_tail[1];
-} ImageObject_0051B3AE;
-extern ImageObject_0051B3AE g_ImageObject_0051B3AE;
+extern char g_UnreferencedArmyTag[5]; /* 0051B3AE g_UnreferencedArmyTag: char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
 
 /* original 0x0051DBB4-0x0051DFD0 */
 typedef struct ImageObject_0051DBB4 {
@@ -1899,24 +1764,9 @@ typedef struct ImageObject_00520EA0 {
 extern ImageObject_00520EA0 g_ImageObject_00520EA0;
 extern GraphicsFixedVec3 g_ArmySuspensionBlendVectorA; /* 00520EB0 g_ArmySuspensionBlendVectorA */
 extern GraphicsFixedVec3 g_ArmySuspensionBlendVectorB; /* 00520EBC g_ArmySuspensionBlendVectorB */
-typedef struct ImageObject_00520EC8 {
-    uint8_t at_g_ArmySuspensionRotationMatrixScratchA; /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
-    uint32_t at_g_ArmySuspensionRotationMatrixScratchA_rest[11]; /* beyond the declared type */
-    uint8_t at_g_ArmySuspensionRotationMatrixScratchA_rest_tail[3];
-} ImageObject_00520EC8;
-extern ImageObject_00520EC8 g_ImageObject_00520EC8;
-typedef struct ImageObject_00520EF8 {
-    uint8_t at_g_ArmySuspensionRotationMatrixScratchB; /* 00520EF8 g_ArmySuspensionRotationMatrixScratchB */
-    uint32_t at_g_ArmySuspensionRotationMatrixScratchB_rest[11]; /* beyond the declared type */
-    uint8_t at_g_ArmySuspensionRotationMatrixScratchB_rest_tail[3];
-} ImageObject_00520EF8;
-extern ImageObject_00520EF8 g_ImageObject_00520EF8;
-typedef struct ImageObject_00520F28 {
-    uint8_t at_g_ArmySuspensionRotationMatrixComposedScratch; /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch */
-    uint32_t at_g_ArmySuspensionRotationMatrixComposedScratch_rest[13]; /* beyond the declared type */
-    uint8_t at_g_ArmySuspensionRotationMatrixComposedScratch_rest_tail[3];
-} ImageObject_00520F28;
-extern ImageObject_00520F28 g_ImageObject_00520F28;
+extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchA; /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
+extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchB; /* 00520EF8 g_ArmySuspensionRotationMatrixScratchB */
+extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixComposedScratch; /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch; followed by 0x90 code alignment fill up to 00520F60 */
 
 /* original 0x00524110-0x00524130 */
 typedef struct ImageObject_00524110 {
@@ -2007,12 +1857,7 @@ extern uint16_t u_gfx_panel_select_gfx_0052ce18[21]; /* 0052CE18 u_gfx_panel_sel
 extern uint16_t u_gfx_panel_info_gfx_0052ce42[19]; /* 0052CE42 u_gfx_panel_info_gfx_0052ce42 */
 extern uint16_t u_gfx_panel_select_dat_0052ce68[21]; /* 0052CE68 u_gfx_panel_select_dat_0052ce68 */
 extern uint16_t u_gfx_panel_info_dat_0052ce92[19]; /* 0052CE92 u_gfx_panel_info_dat_0052ce92 */
-typedef struct ImageObject_0052CEB8 {
-    uint8_t at_g_SelectionPanelNumberScratchUtf16; /* 0052CEB8 g_SelectionPanelNumberScratchUtf16 */
-    uint32_t at_g_SelectionPanelNumberScratchUtf16_rest[7]; /* beyond the declared type */
-    uint8_t at_g_SelectionPanelNumberScratchUtf16_rest_tail[3];
-} ImageObject_0052CEB8;
-extern ImageObject_0052CEB8 g_ImageObject_0052CEB8;
+extern uint16_t g_SelectionPanelNumberScratchUtf16[16]; /* 0052CEB8 g_SelectionPanelNumberScratchUtf16 */
 extern GraphicsTextureSourceBlitProc *g_SelectionPanelBlitOpaque; /* 0052CED8 g_SelectionPanelBlitOpaque */
 extern GraphicsTextureSourceTiledBlitProc *g_SelectionPanelBlitClipped; /* 0052CEDC g_SelectionPanelBlitClipped */
 
@@ -2041,24 +1886,9 @@ typedef struct ImageObject_00530818 {
 extern ImageObject_00530818 g_ImageObject_00530818;
 extern void **g_InGameLoadedResourcePointers; /* 00530820 g_InGameLoadedResourcePointers */
 extern InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount; /* 00530824 g_InGameLoadedResourcePointerCount */
-typedef struct ImageObject_00530828 {
-    uint8_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16; /* 00530828 g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 */
-    uint32_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16_rest_tail[3];
-} ImageObject_00530828;
-extern ImageObject_00530828 g_ImageObject_00530828;
-typedef struct ImageObject_00530A28 {
-    uint8_t at_g_InGameLevelSoundParentDirectoryScratchUtf16; /* 00530A28 g_InGameLevelSoundParentDirectoryScratchUtf16 */
-    uint32_t at_g_InGameLevelSoundParentDirectoryScratchUtf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_InGameLevelSoundParentDirectoryScratchUtf16_rest_tail[3];
-} ImageObject_00530A28;
-extern ImageObject_00530A28 g_ImageObject_00530A28;
-typedef struct ImageObject_00530C28 {
-    uint8_t at_g_LevelResourcePathScratchUtf16; /* 00530C28 g_LevelResourcePathScratchUtf16 */
-    uint32_t at_g_LevelResourcePathScratchUtf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_LevelResourcePathScratchUtf16_rest_tail[3];
-} ImageObject_00530C28;
-extern ImageObject_00530C28 g_ImageObject_00530C28;
+extern uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256]; /* 00530828 g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 */
+extern uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256]; /* 00530A28 g_InGameLevelSoundParentDirectoryScratchUtf16 */
+extern uint16_t g_LevelResourcePathScratchUtf16[256]; /* 00530C28 g_LevelResourcePathScratchUtf16 */
 extern uint16_t g_LevelEndingMovieSourcePath[256]; /* 00530E28 g_LevelEndingMovieSourcePath */
 extern uint32_t g_InGameLevelTitleTextResourceIndex; /* 00531028 g_InGameLevelTitleTextResourceIndex */
 extern uint32_t g_InGameLevelCampaignAssociationIndex; /* 0053102C g_InGameLevelCampaignAssociationIndex */
@@ -2093,11 +1923,7 @@ extern GridScratchCell **g_GridPathCostQueueBegin; /* 005332A8 g_GridPathCostQue
 extern GridScratchCell **g_GridPathCostQueueEnd; /* 005332AC g_GridPathCostQueueEnd */
 extern GridScratchCell **g_GridPathCostQueuePassBoundary; /* 005332B0 g_GridPathCostQueuePassBoundary */
 extern uint32_t g_GridScratchWidth; /* 005332B4 g_GridScratchWidth */
-typedef struct ImageObject_005332B8 {
-    int32_t at_g_GridScratchHeight; /* 005332B8 g_GridScratchHeight */
-    uint32_t at_g_GridScratchHeight_rest[1]; /* beyond the declared type */
-} ImageObject_005332B8;
-extern ImageObject_005332B8 g_ImageObject_005332B8;
+extern int32_t g_GridScratchHeight; /* 005332B8 g_GridScratchHeight */
 
 /* original 0x00533D4C-0x00533D60 */
 typedef struct ImageObject_00533D4C {
@@ -2110,11 +1936,7 @@ extern uint32_t g_GridPathEntityClassMask; /* 00533ED0 g_GridPathEntityClassMask
 extern uint32_t g_GridPathBlockingMask; /* 00533ED4 g_GridPathBlockingMask */
 extern uint32_t g_GridPathHighCostMask; /* 00533ED8 g_GridPathHighCostMask */
 extern uint32_t g_GridPathUnreachableRegionReferenceColumn; /* 00533EDC g_GridPathUnreachableRegionReferenceColumn */
-typedef struct ImageObject_00533EE0 {
-    uint32_t at_g_GridPathUnreachableRegionReferenceRow; /* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
-    uint32_t at_g_GridPathUnreachableRegionReferenceRow_rest[3]; /* beyond the declared type */
-} ImageObject_00533EE0;
-extern ImageObject_00533EE0 g_ImageObject_00533EE0;
+extern uint32_t g_GridPathUnreachableRegionReferenceRow; /* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
 
 /* original 0x005367CC-0x005368E0 */
 typedef struct ImageObject_005367CC {
@@ -2138,11 +1960,7 @@ typedef struct ImageObject_005367E0 {
     uint32_t at_g_EntityPathingPriorityPairStorage_1__priority[61]; /* 005367E0 g_EntityPathingPriorityPairStorage[1].priority */
 } ImageObject_005367E0;
 extern ImageObject_005367E0 g_ImageObject_005367E0;
-typedef struct ImageObject_005368D4 {
-    uint32_t at_g_EntityPathingPriorityPairCount; /* 005368D4 g_EntityPathingPriorityPairCount */
-    uint32_t at_g_EntityPathingPriorityPairCount_rest[2]; /* beyond the declared type */
-} ImageObject_005368D4;
-extern ImageObject_005368D4 g_ImageObject_005368D4;
+extern uint32_t g_EntityPathingPriorityPairCount; /* 005368D4 g_EntityPathingPriorityPairCount */
 
 /* original 0x00536F08-0x00536FC0 */
 typedef struct ImageObject_00536F08 {
@@ -2176,20 +1994,12 @@ extern int32_t g_AiCombatTargetSourceCounterCountWeight; /* 00536FA8 g_AiCombatT
 extern int32_t g_AiCombatTargetScaleDeficitWeight; /* 00536FAC g_AiCombatTargetScaleDeficitWeight: int32_t weight 0x1100 for the hierarchy scale deficit (1.0 - condition ratio) term of the AI combat target score (gameplay/ai/combat.c) */
 extern int32_t g_AiCombatTargetClassBaseScoreMultiplier; /* 00536FB0 g_AiCombatTargetClassBaseScoreMultiplier: int32_t multiplier 0x800 applied to g_AiCombatTargetClassBaseScores[runtimeClassId] in the AI combat target score (gameplay/ai/combat.c) */
 extern AiCommandGenerationRightShiftBits g_AiCombatTargetSelectedCommandGenerationRightShiftBits; /* 00536FB4 g_AiCombatTargetSelectedCommandGenerationRightShiftBits */
-typedef struct ImageObject_00536FB8 {
-    AiCommandGenerationRightShiftBits at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits; /* 00536FB8 g_AiCombatTargetCurrentCommandGenerationRightShiftBits */
-    uint32_t at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits_rest[1]; /* beyond the declared type */
-} ImageObject_00536FB8;
-extern ImageObject_00536FB8 g_ImageObject_00536FB8;
+extern AiCommandGenerationRightShiftBits g_AiCombatTargetCurrentCommandGenerationRightShiftBits; /* 00536FB8 g_AiCombatTargetCurrentCommandGenerationRightShiftBits */
 
 /* original 0x00537410-0x00537420 */
 extern AiCandidateWorkspaceEntry *g_AiWorkspace13Candidates; /* 00537410 g_AiWorkspace13Candidates */
 extern uint32_t g_AiCandidateWorkspaceEntryCount; /* 00537414 g_AiCandidateWorkspaceEntryCount */
-typedef struct ImageObject_00537418 {
-    uint32_t at_g_AiPurchaseAppliedArmyClassMask; /* 00537418 g_AiPurchaseAppliedArmyClassMask */
-    uint32_t at_g_AiPurchaseAppliedArmyClassMask_rest[1]; /* beyond the declared type */
-} ImageObject_00537418;
-extern ImageObject_00537418 g_ImageObject_00537418;
+extern uint32_t g_AiPurchaseAppliedArmyClassMask; /* 00537418 g_AiPurchaseAppliedArmyClassMask */
 
 /* original 0x0053795C-0x005379E0 */
 typedef struct ImageObject_0053795C {
@@ -2223,22 +2033,14 @@ extern uint32_t g_AiWorkspace11Count; /* 005379BC g_AiWorkspace11Count */
 extern AiTechnologyPlanningCandidate *g_AiWorkspace12TechnologyCandidates; /* 005379C0 g_AiWorkspace12TechnologyCandidates */
 extern AiTechnologyPlanningCandidateCount g_AiWorkspace12Count; /* 005379C4 g_AiWorkspace12Count */
 extern uint32_t g_AiActiveGridMaskClasses[4]; /* 005379C8 g_AiActiveGridMaskClasses */
-typedef struct ImageObject_005379D8 {
-    ModelRuntimeSlot * at_g_AiWorkspaceOwnedAsset300Runtime; /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
-    uint32_t at_g_AiWorkspaceOwnedAsset300Runtime_rest[1]; /* beyond the declared type */
-} ImageObject_005379D8;
-extern ImageObject_005379D8 g_ImageObject_005379D8;
+extern ModelRuntimeSlot *g_AiWorkspaceOwnedAsset300Runtime; /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
 
 /* original 0x00539050-0x00539070 */
 typedef struct ImageObject_00539050 {
     uint8_t at_gap_00539050[16]; /* 00539050 gap */
 } ImageObject_00539050;
 extern ImageObject_00539050 g_ImageObject_00539050;
-typedef struct ImageObject_00539060 {
-    uint32_t at_g_AiConstructionPendingAssetConsumedCount; /* 00539060 g_AiConstructionPendingAssetConsumedCount */
-    uint32_t at_g_AiConstructionPendingAssetConsumedCount_rest[3]; /* beyond the declared type */
-} ImageObject_00539060;
-extern ImageObject_00539060 g_ImageObject_00539060;
+extern uint32_t g_AiConstructionPendingAssetConsumedCount; /* 00539060 g_AiConstructionPendingAssetConsumedCount */
 
 /* original 0x00539974-0x00539A40 */
 typedef struct ImageObject_00539974 {
@@ -2257,22 +2059,14 @@ typedef struct ImageObject_0053B0CC {
 } ImageObject_0053B0CC;
 extern ImageObject_0053B0CC g_ImageObject_0053B0CC;
 extern ArmyRuntimeSlot **g_AiWorkspace14CollectedArmies; /* 0053B0D0 g_AiWorkspace14CollectedArmies */
-typedef struct ImageObject_0053B0D4 {
-    uint32_t at_g_AiCollectedEntityCount; /* 0053B0D4 g_AiCollectedEntityCount */
-    uint32_t at_g_AiCollectedEntityCount_rest[2]; /* beyond the declared type */
-} ImageObject_0053B0D4;
-extern ImageObject_0053B0D4 g_ImageObject_0053B0D4;
+extern uint32_t g_AiCollectedEntityCount; /* 0053B0D4 g_AiCollectedEntityCount */
 
 /* original 0x0053B9CC-0x0053BA00 */
 typedef struct ImageObject_0053B9CC {
     uint8_t at_gap_0053B9CC[20]; /* 0053B9CC gap */
 } ImageObject_0053B9CC;
 extern ImageObject_0053B9CC g_ImageObject_0053B9CC;
-typedef struct ImageObject_0053B9E0 {
-    AiTechnologyCandidateScoreCallback * at_g_AiTechnologyCandidateScoreCallbackTable[6]; /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
-    uint32_t at_g_AiTechnologyCandidateScoreCallbackTable_rest[2]; /* beyond the declared type */
-} ImageObject_0053B9E0;
-extern ImageObject_0053B9E0 g_ImageObject_0053B9E0;
+extern AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6]; /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
 
 /* original 0x0053C154-0x0053C1A0 */
 typedef struct ImageObject_0053C154 {
@@ -2299,11 +2093,7 @@ extern AiKnowledgeDataImage *g_AiKnowledgeData; /* 0053C5E0 g_AiKnowledgeData */
 extern uint16_t u_engine_ki_dat_0053c5e4[14]; /* 0053C5E4 u_engine_ki_dat_0053c5e4 */
 extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantB15; /* 0053C600 g_AiArmyCandidateScoreWeightsVariantB15 */
 extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantA15; /* 0053C63C g_AiArmyCandidateScoreWeightsVariantA15 */
-typedef struct ImageObject_0053C678 {
-    AiArmyScoreWeights at_g_AiArmyCandidateScoreWeightsVariantC15; /* 0053C678 g_AiArmyCandidateScoreWeightsVariantC15 */
-    uint32_t at_g_AiArmyCandidateScoreWeightsVariantC15_rest[3]; /* beyond the declared type */
-} ImageObject_0053C678;
-extern ImageObject_0053C678 g_ImageObject_0053C678;
+extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantC15; /* 0053C678 g_AiArmyCandidateScoreWeightsVariantC15 */
 
 /* original 0x0053C808-0x0053C810 */
 typedef struct ImageObject_0053C808 {
@@ -2320,22 +2110,14 @@ extern float *g_WorldMotionSplineMatrixWorkspaces[6]; /* 0053C9A0 g_WorldMotionS
 extern float *g_WorldMotionSplineCoefficientTables[6]; /* 0053C9B8 g_WorldMotionSplineCoefficientTables */
 extern float g_WorldMotionSplineCachedDerivatives[6]; /* 0053C9D0 g_WorldMotionSplineCachedDerivatives */
 extern int32_t g_WorldMotionSplineEquationCounts[6]; /* 0053C9E8 g_WorldMotionSplineEquationCounts */
-typedef struct ImageObject_0053CA00 {
-    float at_g_Q12FloatScale4096; /* 0053CA00 g_Q12FloatScale4096 */
-    uint32_t at_g_Q12FloatScale4096_rest[3]; /* beyond the declared type */
-} ImageObject_0053CA00;
-extern ImageObject_0053CA00 g_ImageObject_0053CA00;
+extern float g_Q12FloatScale4096; /* 0053CA00 g_Q12FloatScale4096 */
 
 /* original 0x0053D358-0x0053D370 */
 typedef struct ImageObject_0053D358 {
     uint8_t at_gap_0053D358[8]; /* 0053D358 gap */
 } ImageObject_0053D358;
 extern ImageObject_0053D358 g_ImageObject_0053D358;
-typedef struct ImageObject_0053D360 {
-    TerrainCompositeTextureRuntime * at_g_TerrainCompositeTexture; /* 0053D360 g_TerrainCompositeTexture */
-    uint32_t at_g_TerrainCompositeTexture_rest[3]; /* beyond the declared type */
-} ImageObject_0053D360;
-extern ImageObject_0053D360 g_ImageObject_0053D360;
+extern TerrainCompositeTextureRuntime *g_TerrainCompositeTexture; /* 0053D360 g_TerrainCompositeTexture */
 
 /* original 0x0053DA68-0x00543B70 */
 typedef struct ImageObject_0053DA68 {
@@ -2347,16 +2129,9 @@ extern FrontendSessionDiscoveryRecord **g_FrontendSessionListRows; /* 0053DA84 g
 extern FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
 extern FrontendUiImage g_FrontendRootInitializationTemplate; /* 0053DA8C g_FrontendRootInitializationTemplate */
 extern FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeRecordPointers32[32]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
-typedef struct ImageObject_00543460 {
-    FrontendTaskAssignmentControlOffsetTables at_g_FrontendTaskAssignmentControlOffsets; /* 00543460 g_FrontendTaskAssignmentControlOffsets */
-    uint32_t at_g_FrontendTaskAssignmentControlOffsets_rest[250]; /* beyond the declared type */
-} ImageObject_00543460;
-extern ImageObject_00543460 g_ImageObject_00543460;
-typedef struct ImageObject_005438EC {
-    FrontendUiScratch at_g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
-    uint32_t at_g_FrontendUiDisplayModeAndTaskAssignmentScratch_rest[1]; /* beyond the declared type */
-} ImageObject_005438EC;
-extern ImageObject_005438EC g_ImageObject_005438EC;
+extern FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets; /* 00543460 g_FrontendTaskAssignmentControlOffsets */
+extern uint16_t *g_FrontendNetworkBackendNameRows[256]; /* 005434EC g_FrontendNetworkBackendNameRows: row pointer table of the frontend network backend list (display names), filled when the list is built */
+extern FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch: followed by 4 bytes 0x90 fill (dropped) */
 
 /* original 0x00543E34-0x00543F50 */
 typedef struct ImageObject_00543E34 {
@@ -2364,11 +2139,7 @@ typedef struct ImageObject_00543E34 {
 } ImageObject_00543E34;
 extern ImageObject_00543E34 g_ImageObject_00543E34;
 extern UiCommandQueueRecord g_FrontendCommandQueueRecords[16]; /* 00543E40 g_FrontendCommandQueueRecords */
-typedef struct ImageObject_00543F40 {
-    UiCommandQueueRecord * at_g_FrontendCommandQueueEnd; /* 00543F40 g_FrontendCommandQueueEnd */
-    uint32_t at_g_FrontendCommandQueueEnd_rest[3]; /* beyond the declared type */
-} ImageObject_00543F40;
-extern ImageObject_00543F40 g_ImageObject_00543F40;
+extern UiCommandQueueRecord *g_FrontendCommandQueueEnd; /* 00543F40 g_FrontendCommandQueueEnd: followed by 12 bytes 0x90 fill (dropped) */
 
 /* original 0x005456F0-0x005460E0 */
 extern uint32_t g_FrontendRootNode; /* 005456F0 g_FrontendRootNode */
@@ -2417,12 +2188,7 @@ extern uint16_t u_texte_inhalt_str_00545be0[17]; /* 00545BE0 u_texte_inhalt_str_
 extern uint16_t g_FrontendMissionBriefingMoviePathUtf16[16]; /* 00545C02 g_FrontendMissionBriefingMoviePathUtf16: L"flm\\lev0000.flm", the mission briefing movie path; the four digits at index 7 (00545C10) are overwritten with the level number; opened with Movie_Open (ui/frontend/scenario.c) */
 extern uint16_t g_CreditsTexturePathUtf16[22]; /* 00545C22 g_CreditsTexturePathUtf16 */
 extern uint16_t u_sound_music00_sam_00545c4e[18]; /* 00545C4E u_sound_music00_sam_00545c4e */
-typedef struct ImageObject_00545C72 {
-    uint16_t at_g_FrontendScenarioPathScratchUtf16; /* 00545C72 g_FrontendScenarioPathScratchUtf16 */
-    uint32_t at_g_FrontendScenarioPathScratchUtf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_FrontendScenarioPathScratchUtf16_rest_tail[2];
-} ImageObject_00545C72;
-extern ImageObject_00545C72 g_ImageObject_00545C72;
+extern uint16_t g_FrontendScenarioPathScratchUtf16[256]; /* 00545C72 g_FrontendScenarioPathScratchUtf16: level/campaign/save path (level\<name>.lev etc.) built for Package_LoadEntry */
 extern char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31]; /* 00545E72 s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 */
 extern char s_NAME__CLIENT__KARTE___00545e91[21]; /* 00545E91 s_NAME__CLIENT__KARTE___00545e91: the option names NAME=" CLIENT=" KARTE=" (used with explicit lengths); Original quirk: its terminating NUL is the first byte of g_LevelPackageFoundEntry */
 extern PckEntryHeader g_LevelPackageFoundEntry; /* 00545EA6 g_LevelPackageFoundEntry: one-entry output buffer (PCK_ENTRY_HEADER_BYTES) of Package_FindEntry for LevelPackage_ValidateAndMount (original: s_NAME__CLIENT__KARTE___00545e91 + 0x15) */
@@ -2490,39 +2256,15 @@ extern FrontendCommandPacketRecord g_FrontendPacket10011Buffer; /* 0054DD20 g_Fr
 extern FrontendPacket10012SyncPending g_FrontendPacket10012Buffer; /* 0054DD40 g_FrontendPacket10012Buffer */
 extern FrontendPacket10013HeartbeatAck g_FrontendPacket10013Buffer; /* 0054DD60 g_FrontendPacket10013Buffer */
 extern FrontendPacket10032HostValue g_FrontendPacket10032Buffer; /* 0054DD80 g_FrontendPacket10032Buffer */
-typedef struct ImageObject_0054DDA0 {
-    uint32_t at_g_FrontendPendingSessionPlayerCount; /* 0054DDA0 g_FrontendPendingSessionPlayerCount */
-    uint32_t at_g_FrontendPendingSessionPlayerCount_rest[1]; /* beyond the declared type */
-} ImageObject_0054DDA0;
-extern ImageObject_0054DDA0 g_ImageObject_0054DDA0;
+extern uint32_t g_FrontendPendingSessionPlayerCount; /* 0054DDA0 g_FrontendPendingSessionPlayerCount: followed by an all-zero dword (0x0054DDA4) no code reaches (dropped) */
 extern uint32_t g_FrontendExpectedPlayerRuntimeBlockCount; /* 0054DDA8 g_FrontendExpectedPlayerRuntimeBlockCount */
 extern uint32_t g_FrontendHostPublishRoundRobinCounter; /* 0054DDAC g_FrontendHostPublishRoundRobinCounter */
 extern uint32_t g_FrontendPlayerListRows[8]; /* 0054DDB0 g_FrontendPlayerListRows: pointers (as uint32_t) to the eight 0x80-byte lobby player list rows */
 extern UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch; /* 0054DDD0 g_FrontendNetworkEndpointScratch */
-typedef struct ImageObject_0054DDE0 {
-    uint8_t at_g_FrontendNetworkRuntimeCountTextUtf16; /* 0054DDE0 g_FrontendNetworkRuntimeCountTextUtf16 */
-    uint32_t at_g_FrontendNetworkRuntimeCountTextUtf16_rest[1]; /* beyond the declared type */
-    uint8_t at_g_FrontendNetworkRuntimeCountTextUtf16_rest_tail[3];
-} ImageObject_0054DDE0;
-extern ImageObject_0054DDE0 g_ImageObject_0054DDE0;
-typedef struct ImageObject_0054DDE8 {
-    uint8_t at_g_FrontendNetworkPlayerCountTextUtf16; /* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16 */
-    uint32_t at_g_FrontendNetworkPlayerCountTextUtf16_rest[1]; /* beyond the declared type */
-    uint8_t at_g_FrontendNetworkPlayerCountTextUtf16_rest_tail[3];
-} ImageObject_0054DDE8;
-extern ImageObject_0054DDE8 g_ImageObject_0054DDE8;
-typedef struct ImageObject_0054DDF0 {
-    uint8_t at_g_FrontendNetworkSpeedLabelUtf16; /* 0054DDF0 g_FrontendNetworkSpeedLabelUtf16 */
-    uint32_t at_g_FrontendNetworkSpeedLabelUtf16_rest[15]; /* beyond the declared type */
-    uint8_t at_g_FrontendNetworkSpeedLabelUtf16_rest_tail[3];
-} ImageObject_0054DDF0;
-extern ImageObject_0054DDF0 g_ImageObject_0054DDF0;
-typedef struct ImageObject_0054DE30 {
-    uint8_t at_g_FrontendNetworkEndpointTextUtf16; /* 0054DE30 g_FrontendNetworkEndpointTextUtf16 */
-    uint32_t at_g_FrontendNetworkEndpointTextUtf16_rest[255]; /* beyond the declared type */
-    uint8_t at_g_FrontendNetworkEndpointTextUtf16_rest_tail[3];
-} ImageObject_0054DE30;
-extern ImageObject_0054DE30 g_ImageObject_0054DE30;
+extern uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4]; /* 0054DDE0 g_FrontendNetworkRuntimeCountTextUtf16: decimal number of lobby players (payload 0 of the session player count text) */
+extern uint16_t g_FrontendNetworkPlayerCountTextUtf16[4]; /* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16: decimal maximum player count (payload 1 of the session player count text, bound to a template text control) */
+extern uint16_t g_FrontendNetworkSpeedLabelUtf16[32]; /* 0054DDF0 g_FrontendNetworkSpeedLabelUtf16: network speed caption, written with a capacity of 64 bytes */
+extern uint16_t g_FrontendNetworkEndpointTextUtf16[512]; /* 0054DE30 g_FrontendNetworkEndpointTextUtf16: local address text from g_NetworkBackendSlot7 */
 
 /* original 0x0054FBB0-0x0055C990 */
 typedef struct ImageObject_0054FBB0 {
@@ -2543,12 +2285,7 @@ extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildXeniteCost
 extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildTimeTextUtf16; /* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
 extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16; /* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
 extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16; /* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
-typedef struct ImageObject_005504DC {
-    uint8_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16; /* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16 */
-    uint32_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest[7]; /* beyond the declared type */
-    uint8_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest_tail[3];
-} ImageObject_005504DC;
-extern ImageObject_005504DC g_ImageObject_005504DC;
+extern uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16]; /* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16: decimal xenite amount, bound to a template text control */
 /* 005504FC g_InGameTechnologyCostRichText: one rich-text stream, patched in as payload 0 of the technology label
    (ui/ingame/technology.c): [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
    (005504FE), [9..24] the xenite cost text (0055050E, RICHTEXT_RECORD_UNITS_LITERAL_COLOR units in); the
@@ -2557,11 +2294,7 @@ extern uint16_t g_InGameTechnologyCostRichText[25];
 extern UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16; /* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
 extern UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16; /* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
 extern uint16_t g_InGameHudNumberTextUtf16[16]; /* 0055056E g_InGameHudNumberTextUtf16 */
-typedef struct ImageObject_0055058E {
-    uint8_t at_g_EmptyFrontendPlayerNameUtf16; /* 0055058E g_EmptyFrontendPlayerNameUtf16 */
-    uint8_t at_g_EmptyFrontendPlayerNameUtf16_rest_tail[1];
-} ImageObject_0055058E;
-extern ImageObject_0055058E g_ImageObject_0055058E;
+extern uint16_t g_EmptyFrontendPlayerNameUtf16[1]; /* 0055058E g_EmptyFrontendPlayerNameUtf16 */
 extern uint16_t g_InGameCountdownTextUtf16[8]; /* 00550590 g_InGameCountdownTextUtf16 */
 extern InGameUiImage g_InGameRuntimeDefaultImageTemplate; /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
 
@@ -2572,24 +2305,10 @@ typedef struct ImageObject_0055EFB0 {
 extern ImageObject_0055EFB0 g_ImageObject_0055EFB0;
 extern UiCommandQueueRecord g_InGameCommandQueueRecords[16]; /* 0055EFC0 g_InGameCommandQueueRecords */
 extern UiCommandQueueRecord *g_InGameCommandQueueEnd; /* 0055F0C0 g_InGameCommandQueueEnd */
-typedef struct ImageObject_0055F0C4 {
-    uint8_t at_g_InGameSelectionInsertTripletDwords; /* 0055F0C4 g_InGameSelectionInsertTripletDwords */
-    uint32_t at_g_InGameSelectionInsertTripletDwords_rest[11]; /* beyond the declared type */
-    uint8_t at_g_InGameSelectionInsertTripletDwords_rest_tail[3];
-} ImageObject_0055F0C4;
-extern ImageObject_0055F0C4 g_ImageObject_0055F0C4;
-typedef struct ImageObject_0055F0F4 {
-    uint8_t at_g_InGameSelectionRemoveTripletDwords; /* 0055F0F4 g_InGameSelectionRemoveTripletDwords */
-    uint32_t at_g_InGameSelectionRemoveTripletDwords_rest[11]; /* beyond the declared type */
-    uint8_t at_g_InGameSelectionRemoveTripletDwords_rest_tail[3];
-} ImageObject_0055F0F4;
-extern ImageObject_0055F0F4 g_ImageObject_0055F0F4;
+extern InGameCommandPayloadTripletValue32 g_InGameSelectionInsertTripletDwords[12]; /* 0055F0C4 g_InGameSelectionInsertTripletDwords: drag-selection insert batch, four triplets */
+extern InGameCommandPayloadTripletValue32 g_InGameSelectionRemoveTripletDwords[12]; /* 0055F0F4 g_InGameSelectionRemoveTripletDwords: drag-selection remove batch, four triplets */
 extern int32_t g_InGameSelectionInsertTripletDwordCount; /* 0055F124 g_InGameSelectionInsertTripletDwordCount */
-typedef struct ImageObject_0055F128 {
-    int32_t at_g_InGameSelectionRemoveTripletDwordCount; /* 0055F128 g_InGameSelectionRemoveTripletDwordCount */
-    uint32_t at_g_InGameSelectionRemoveTripletDwordCount_rest[1]; /* beyond the declared type */
-} ImageObject_0055F128;
-extern ImageObject_0055F128 g_ImageObject_0055F128;
+extern int32_t g_InGameSelectionRemoveTripletDwordCount; /* 0055F128 g_InGameSelectionRemoveTripletDwordCount: followed by 4 bytes 0x90 fill (dropped) */
 
 /* original 0x0055F7B4-0x0055F800 */
 typedef struct ImageObject_0055F7B4 {
@@ -2610,12 +2329,6 @@ typedef struct ImageObject_00562498 {
     uint8_t at_gap_00562498[1]; /* 00562498 gap */
 } ImageObject_00562498;
 extern ImageObject_00562498 g_ImageObject_00562498;
-typedef struct ImageObject_00562499 {
-    uint8_t at_InGameCommandHandlerCodeRegionEnd; /* 00562499 InGameCommandHandlerCodeRegionEnd */
-    uint32_t at_InGameCommandHandlerCodeRegionEnd_rest[1]; /* beyond the declared type */
-    uint8_t at_InGameCommandHandlerCodeRegionEnd_rest_tail[2];
-} ImageObject_00562499;
-extern ImageObject_00562499 g_ImageObject_00562499;
 extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10; /* 005624A0 g_InGameUiActionHandlersPage10 */
 extern InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11; /* 00562540 g_InGameUiActionHandlersPage11 */
 extern InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12; /* 005625B8 g_InGameUiActionHandlersPage12 */
@@ -2700,11 +2413,7 @@ extern int32_t g_InGamePanelTextureSubresource23Height; /* 005632F0 g_InGamePane
 extern int32_t g_InGamePanelTextureSubresource34Height; /* 005632F4 g_InGamePanelTextureSubresource34Height */
 extern int32_t g_InGamePanelTextureSubresource32Height; /* 005632F8 g_InGamePanelTextureSubresource32Height */
 extern UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord; /* 005632FC g_UiHoverSelectionRecord */
-typedef struct ImageObject_00563300 {
-    PckTechnologyIdCatalog at_g_InGameSelectedTechnologyId; /* 00563300 g_InGameSelectedTechnologyId */
-    uint32_t at_g_InGameSelectedTechnologyId_rest[7]; /* beyond the declared type */
-} ImageObject_00563300;
-extern ImageObject_00563300 g_ImageObject_00563300;
+extern PckTechnologyIdCatalog g_InGameSelectedTechnologyId; /* 00563300 g_InGameSelectedTechnologyId: followed by 28 bytes 0x90 fill (dropped) */
 extern uint32_t g_MoviePlaybackBaseFrameGroup; /* 00563320 g_MoviePlaybackBaseFrameGroup */
 extern uint32_t g_MoviePlaybackScheduleCounter; /* 00563324 g_MoviePlaybackScheduleCounter */
 extern uint32_t g_MoviePlaybackScheduleSpan; /* 00563328 g_MoviePlaybackScheduleSpan */
@@ -2752,23 +2461,14 @@ extern code *g_InGamePointerModeHandlers[8]; /* 00563748 g_InGamePointerModeHand
 extern uint32_t g_InGamePointerModeCommandIds[8]; /* 00563768 g_InGamePointerModeCommandIds: uint32_t[8]: command id per pointer mode (modifier mask & variant mask); gameplay/input/world.c */
 extern uint32_t g_InGamePointerModePreviewArmyIds[8]; /* 00563788 g_InGamePointerModePreviewArmyIds: uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
 extern ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount; /* 005637A8 g_ArmyPlacementLateRejectionCount */
-typedef struct ImageObject_005637AC {
-    uint8_t at_g_InGameWorldRuntimeDwordArray256; /* 005637AC g_InGameWorldRuntimeDwordArray256 */
-    uint32_t at_g_InGameWorldRuntimeDwordArray256_rest[255]; /* beyond the declared type */
-    uint8_t at_g_InGameWorldRuntimeDwordArray256_rest_tail[3];
-} ImageObject_005637AC;
-extern ImageObject_005637AC g_ImageObject_005637AC;
+extern uint32_t g_InGameWorldRuntimeDwordArray256[256]; /* 005637AC g_InGameWorldRuntimeDwordArray256 */
 extern uint32_t g_EndMovieSelectionIndex; /* 00563BAC g_EndMovieSelectionIndex */
 extern uint32_t g_EndMovieVariantIndex; /* 00563BB0 g_EndMovieVariantIndex */
 extern uint16_t *g_EndMoviePath; /* 00563BB4 g_EndMoviePath */
 extern uint32_t g_EndMoviePendingTicks; /* 00563BB8 g_EndMoviePendingTicks */
 extern uint32_t *g_OldUnitSecondaryTable; /* 00563BBC g_OldUnitSecondaryTable */
 extern uint32_t *g_OldUnitPrimaryTable; /* 00563BC0 g_OldUnitPrimaryTable */
-typedef struct ImageObject_00563BC4 {
-    OldUnitRecordCount at_g_OldUnitRecordCount; /* 00563BC4 g_OldUnitRecordCount */
-    uint32_t at_g_OldUnitRecordCount_rest[2]; /* beyond the declared type */
-} ImageObject_00563BC4;
-extern ImageObject_00563BC4 g_ImageObject_00563BC4;
+extern OldUnitRecordCount g_OldUnitRecordCount; /* 00563BC4 g_OldUnitRecordCount: followed by 8 bytes 0x90 fill (dropped) */
 
 /* original 0x005658BC-0x005658E0 */
 typedef struct ImageObject_005658BC {
@@ -2820,12 +2520,7 @@ typedef struct ImageObject_00567CA4 {
 extern ImageObject_00567CA4 g_ImageObject_00567CA4;
 
 /* original 0x0056A604-0x0056A610 */
-typedef struct ImageObject_0056A604 {
-    uint8_t at_g_InGameSessionStartedNetworked; /* 0056A604 g_InGameSessionStartedNetworked */
-    uint32_t at_g_InGameSessionStartedNetworked_rest[2]; /* beyond the declared type */
-    uint8_t at_g_InGameSessionStartedNetworked_rest_tail[3];
-} ImageObject_0056A604;
-extern ImageObject_0056A604 g_ImageObject_0056A604;
+extern uint8_t g_InGameSessionStartedNetworked; /* 0056A604 g_InGameSessionStartedNetworked (followed by NOP fill up to 0056A610) */
 
 /* original 0x0056D33C-0x0056D380 */
 typedef struct ImageObject_0056D33C {
@@ -2847,11 +2542,7 @@ extern uint32_t g_UiCommandModeC; /* 0056D724 g_UiCommandModeC */
 extern uint32_t g_UiCommandModeD; /* 0056D728 g_UiCommandModeD */
 extern uint32_t g_UiCommandModeE; /* 0056D72C g_UiCommandModeE */
 extern uint32_t g_UiCommandModeA; /* 0056D730 g_UiCommandModeA */
-typedef struct ImageObject_0056D734 {
-    uint32_t at_g_UiCommandModeB; /* 0056D734 g_UiCommandModeB */
-    uint32_t at_g_UiCommandModeB_rest[1]; /* beyond the declared type */
-} ImageObject_0056D734;
-extern ImageObject_0056D734 g_ImageObject_0056D734;
+extern uint32_t g_UiCommandModeB; /* 0056D734 g_UiCommandModeB: followed by an all-zero dword (0x0056D738) no code reaches (dropped) */
 extern uint32_t g_UiCommandModeF; /* 0056D73C g_UiCommandModeF */
 extern uint32_t g_UiCommandAbsoluteSelectionIndex; /* 0056D740 g_UiCommandAbsoluteSelectionIndex */
 extern uint32_t g_UiCommandSelectionPageBaseIndex; /* 0056D744 g_UiCommandSelectionPageBaseIndex */
@@ -2879,23 +2570,14 @@ extern uint32_t g_UiCommandDragStartScreenY; /* 0056D828 g_UiCommandDragStartScr
 extern uint32_t g_TerrainMaterialEditFieldGrid; /* 0056D82C g_TerrainMaterialEditFieldGrid */
 extern uint32_t g_TerrainMaterialEditDeltaBuffer; /* 0056D830 g_TerrainMaterialEditDeltaBuffer */
 extern uint32_t g_TerrainMaterialEditReferenceMaterialByte; /* 0056D834 g_TerrainMaterialEditReferenceMaterialByte */
-typedef struct ImageObject_0056D838 {
-    uint32_t at_g_TerrainMaterialEditReplacementMaterialByte; /* 0056D838 g_TerrainMaterialEditReplacementMaterialByte */
-    uint32_t at_g_TerrainMaterialEditReplacementMaterialByte_rest[1]; /* beyond the declared type */
-} ImageObject_0056D838;
-extern ImageObject_0056D838 g_ImageObject_0056D838;
+extern uint32_t g_TerrainMaterialEditReplacementMaterialByte; /* 0056D838 g_TerrainMaterialEditReplacementMaterialByte: followed by 4 bytes 0x90 fill (dropped) */
 
 /* original 0x0056E408-0x0056E5D0 */
 typedef struct ImageObject_0056E408 {
     uint8_t at_gap_0056E408[8]; /* 0056E408 gap */
 } ImageObject_0056E408;
 extern ImageObject_0056E408 g_ImageObject_0056E408;
-extern UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[36]; /* 0056E410 g_InGameKeyboardDispatchRecords */
-typedef struct ImageObject_0056E5C0 {
-    uint32_t at_g_InGameKeyboardDispatchRecordsTerminator; /* 0056E5C0 g_InGameKeyboardDispatchRecordsTerminator */
-    uint32_t at_g_InGameKeyboardDispatchRecordsTerminator_rest[3]; /* beyond the declared type */
-} ImageObject_0056E5C0;
-extern ImageObject_0056E5C0 g_ImageObject_0056E5C0;
+extern UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37]; /* 0056E410 g_InGameKeyboardDispatchRecords: 36 records + the terminator record [36] (key code 0, which ends the dispatch scan; its other two dwords are 0x90 fill); followed by 4 bytes 0x90 fill (dropped) */
 
 /* original 0x0056F278-0x0056F350 */
 typedef struct ImageObject_0056F278 {
@@ -3009,12 +2691,7 @@ extern uint32_t g_IntroMoviePendingTicks; /* 00572B00 g_IntroMoviePendingTicks *
 extern uint32_t g_InstallRegistryKeyHandle; /* 00572B04 g_InstallRegistryKeyHandle */
 extern uint32_t g_InstallRegistryValueDataCapacityBytes; /* 00572B08 g_InstallRegistryValueDataCapacityBytes: uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA); platform/bootstrap/runtime.c */
 extern uint32_t g_InstallRegistryValueType; /* 00572B0C g_InstallRegistryValueType */
-typedef struct ImageObject_00572B10 {
-    uint8_t at_g_InstallRegistryValueDataA; /* 00572B10 g_InstallRegistryValueDataA */
-    uint32_t at_g_InstallRegistryValueDataA_rest[63]; /* beyond the declared type */
-    uint8_t at_g_InstallRegistryValueDataA_rest_tail[3];
-} ImageObject_00572B10;
-extern ImageObject_00572B10 g_ImageObject_00572B10;
+extern uint8_t g_InstallRegistryValueDataA[256]; /* 00572B10 g_InstallRegistryValueDataA: RegQueryValueExA data buffer for the install "CD" value (capacity g_InstallRegistryValueDataCapacityBytes) */
 extern uint16_t g_InstallDirectoryScratchUtf16[256]; /* 00572C10 g_InstallDirectoryScratchUtf16 */
 extern uint16_t u_Thandor_00572e10[8]; /* 00572E10 u_Thandor_00572e10 */
 extern char s_Software_Planet4_Thandor_00572e20[25]; /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
@@ -3048,11 +2725,7 @@ typedef struct ImageObject_00573EE8 {
 extern ImageObject_00573EE8 g_ImageObject_00573EE8;
 extern DynamicModuleEntry g_DynamicModules[16]; /* 00573EF0 g_DynamicModules */
 extern uint32_t g_DynamicModuleCount; /* 00573F70 g_DynamicModuleCount */
-typedef struct ImageObject_00573F74 {
-    DynamicApiBinding at_g_BootstrapApiBindings[8]; /* 00573F74 g_BootstrapApiBindings */
-    uint32_t at_g_BootstrapApiBindings_rest[2]; /* beyond the declared type */
-} ImageObject_00573F74;
-extern ImageObject_00573F74 g_ImageObject_00573F74;
+extern DynamicApiBinding g_BootstrapApiBindings[9]; /* 00573F74 g_BootstrapApiBindings: 8 bindings + the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
 extern DirectDrawCreate *pDirectDrawCreate; /* 00573FBC pDirectDrawCreate */
 extern DirectDrawEnumerateA *pDirectDrawEnumerateA; /* 00573FC0 pDirectDrawEnumerateA */
 extern DirectInputCreateA *pDirectInputCreateA; /* 00573FC4 pDirectInputCreateA */
@@ -3172,11 +2845,7 @@ typedef struct ImageObject_005743A4 {
     uint32_t at_g_Ws2_32_shutdown[1]; /* 005743A4 g_Ws2_32_shutdown */
 } ImageObject_005743A4;
 extern ImageObject_005743A4 g_ImageObject_005743A4;
-typedef struct ImageObject_005743A8 {
-    WinSock_socketProc * at_g_Ws2_32_socket; /* 005743A8 g_Ws2_32_socket */
-    uint32_t at_g_Ws2_32_socket_rest[1]; /* beyond the declared type */
-} ImageObject_005743A8;
-extern ImageObject_005743A8 g_ImageObject_005743A8;
+extern WinSock_socketProc *g_Ws2_32_socket; /* 005743A8 g_Ws2_32_socket */
 typedef struct ImageObject_005743B0 {
     uint32_t at_g_Ws2_32_WSAAsyncSelect[1]; /* 005743B0 g_Ws2_32_WSAAsyncSelect */
 } ImageObject_005743B0;
@@ -3185,16 +2854,8 @@ typedef struct ImageObject_005743B4 {
     uint32_t at_g_Ws2_32_WSACancelBlockingCall[1]; /* 005743B4 g_Ws2_32_WSACancelBlockingCall */
 } ImageObject_005743B4;
 extern ImageObject_005743B4 g_ImageObject_005743B4;
-typedef struct ImageObject_005743B8 {
-    WinSock_WSACleanupProc * at_g_Ws2_32_WSACleanup; /* 005743B8 g_Ws2_32_WSACleanup */
-    uint32_t at_g_Ws2_32_WSACleanup_rest[7]; /* beyond the declared type */
-} ImageObject_005743B8;
-extern ImageObject_005743B8 g_ImageObject_005743B8;
-typedef struct ImageObject_005743D8 {
-    WinSock_WSAGetLastErrorProc * at_g_Ws2_32_WSAGetLastError; /* 005743D8 g_Ws2_32_WSAGetLastError */
-    uint32_t at_g_Ws2_32_WSAGetLastError_rest[4]; /* beyond the declared type */
-} ImageObject_005743D8;
-extern ImageObject_005743D8 g_ImageObject_005743D8;
+extern WinSock_WSACleanupProc *g_Ws2_32_WSACleanup; /* 005743B8 g_Ws2_32_WSACleanup */
+extern WinSock_WSAGetLastErrorProc *g_Ws2_32_WSAGetLastError; /* 005743D8 g_Ws2_32_WSAGetLastError */
 extern WSAIoctl_Proc *g_Ws2_32_WSAIoctl; /* 005743EC g_Ws2_32_WSAIoctl */
 typedef struct ImageObject_005743F0 {
     uint32_t at_g_Ws2_32_WSAIsBlocking[11]; /* 005743F0 g_Ws2_32_WSAIsBlocking */
@@ -3273,11 +2934,7 @@ typedef struct ImageObject_00574474 {
     uint32_t at_g_Ws2_32_WSACancelAsyncRequest[1]; /* 00574474 g_Ws2_32_WSACancelAsyncRequest */
 } ImageObject_00574474;
 extern ImageObject_00574474 g_ImageObject_00574474;
-typedef struct ImageObject_00574478 {
-    WSAAddressToStringA_Proc * at_g_Ws2_32_WSAAddressToStringA; /* 00574478 g_Ws2_32_WSAAddressToStringA */
-    uint32_t at_g_Ws2_32_WSAAddressToStringA_rest[9]; /* beyond the declared type */
-} ImageObject_00574478;
-extern ImageObject_00574478 g_ImageObject_00574478;
+extern WSAAddressToStringA_Proc *g_Ws2_32_WSAAddressToStringA; /* 00574478 g_Ws2_32_WSAAddressToStringA */
 extern WSAStringToAddressA_Proc *g_Ws2_32_WSAStringToAddressA; /* 005744A0 g_Ws2_32_WSAStringToAddressA */
 typedef struct ImageObject_005744A4 {
     char at_sz_KERNEL32[9]; /* 005744A4 sz_KERNEL32 */
@@ -4178,11 +3835,7 @@ typedef struct ImageObject_00575466 {
     uint8_t at_dynapi_244_padding[6];
 } ImageObject_00575466;
 extern ImageObject_00575466 g_ImageObject_00575466;
-typedef struct ImageObject_00575480 {
-    uint8_t at_g_FatalErrorNarrowBuffer[1024]; /* 00575480 g_FatalErrorNarrowBuffer */
-    uint32_t at_g_FatalErrorNarrowBuffer_rest[4]; /* beyond the declared type */
-} ImageObject_00575480;
-extern ImageObject_00575480 g_ImageObject_00575480;
+extern uint8_t g_FatalErrorNarrowBuffer[1024]; /* 00575480 g_FatalErrorNarrowBuffer */
 
 /* original 0x0057594C-0x00575CB0 */
 typedef struct ImageObject_0057594C {
@@ -4190,49 +3843,12 @@ typedef struct ImageObject_0057594C {
 } ImageObject_0057594C;
 extern ImageObject_0057594C g_ImageObject_0057594C;
 extern uint32_t g_Win32FileBytesTransferred; /* 00575950 g_Win32FileBytesTransferred */
-typedef struct ImageObject_00575954 {
-    uint32_t at_g_Win32FileCreationTimeOrDosDateScratch; /* 00575954 g_Win32FileCreationTimeOrDosDateScratch */
-    uint32_t at_g_Win32FileCreationTimeOrDosDateScratch_rest[1]; /* beyond the declared type */
-} ImageObject_00575954;
-extern ImageObject_00575954 g_ImageObject_00575954;
-typedef struct ImageObject_0057595C {
-    uint8_t at_g_Win32FileLastAccessTimeScratch; /* 0057595C g_Win32FileLastAccessTimeScratch */
-    uint32_t at_g_Win32FileLastAccessTimeScratch_rest[1]; /* beyond the declared type */
-    uint8_t at_g_Win32FileLastAccessTimeScratch_rest_tail[3];
-} ImageObject_0057595C;
-extern ImageObject_0057595C g_ImageObject_0057595C;
-typedef struct ImageObject_00575964 {
-    uint8_t at_g_Win32FileLastWriteTimeScratch; /* 00575964 g_Win32FileLastWriteTimeScratch */
-    uint8_t at_g_Win32FileLastWriteTimeScratch_rest_tail[3];
-} ImageObject_00575964;
-extern ImageObject_00575964 g_ImageObject_00575964;
-extern uint32_t g_Win32FileLastWriteTimeHighScratch; /* 00575968 g_Win32FileLastWriteTimeHighScratch */
-extern uint32_t g_Win32DiskSectorsPerClusterScratch; /* 0057596C g_Win32DiskSectorsPerClusterScratch */
-extern uint32_t g_Win32DiskBytesPerSectorScratch; /* 00575970 g_Win32DiskBytesPerSectorScratch */
-extern uint32_t g_Win32DiskFreeClustersScratch; /* 00575974 g_Win32DiskFreeClustersScratch */
-typedef struct ImageObject_00575978 {
-    uint32_t at_g_Win32DiskTotalClustersScratch; /* 00575978 g_Win32DiskTotalClustersScratch */
-    uint32_t at_g_Win32DiskTotalClustersScratch_rest[1]; /* beyond the declared type */
-} ImageObject_00575978;
-extern ImageObject_00575978 g_ImageObject_00575978;
-extern uint8_t g_Win32FindDataFileNameA; /* 00575980 g_Win32FindDataFileNameA */
-extern uint8_t g_Win32FindDataFileNameSecondCharA; /* 00575981 g_Win32FindDataFileNameSecondCharA */
-typedef struct ImageObject_00575982 {
-    uint8_t at_g_Win32FindDataFileNameThirdCharA; /* 00575982 g_Win32FindDataFileNameThirdCharA */
-    uint32_t at_g_Win32FindDataFileNameThirdCharA_rest[68]; /* beyond the declared type */
-    uint8_t at_g_Win32FindDataFileNameThirdCharA_rest_tail[1];
-} ImageObject_00575982;
-extern ImageObject_00575982 g_ImageObject_00575982;
+extern _WIN32_FIND_DATAA g_Win32FindDataScratch; /* 00575954 g_Win32FindDataScratch: the WIN32_FIND_DATAA of FindFirstFileA/FindNextFileA (cFileName at 00575980), reused as scratch by platform/filesystem/win32.c: GetFileTime FILETIMEs at +0x00/+0x08/+0x10 (4 bytes off the find-data FILETIME fields), the FileTimeToDosDateTime dword at +0x00, the GetDiskFreeSpaceA dwords at +0x18..+0x24 */
 extern pointer g_FileSystemInitComputerNameCapacityOrConfigCursor; /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
 extern uint32_t g_FileSystemConfigRemainingBytes; /* 00575A98 g_FileSystemConfigRemainingBytes */
 extern uint8_t g_Win32PathScratch[2][256]; /* 00575A9C g_Win32PathScratch: two 0x100-byte narrow path buffers ([1] at 00575B9C, second path of move/copy); the directory sort swaps 0x200-byte records through the whole block */
 extern char g_Win32DriveRootPathScratchA[4]; /* 00575C9C g_Win32DriveRootPathScratchA: char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
-typedef struct ImageObject_00575CA0 {
-    char at_g_Win32DriveDevicePathA[7]; /* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by NOP fill up to FileSystem_Init */
-    uint32_t at_g_Win32DriveDevicePathA_rest[2]; /* beyond the declared type */
-    uint8_t at_g_Win32DriveDevicePathA_rest_tail[1];
-} ImageObject_00575CA0;
-extern ImageObject_00575CA0 g_ImageObject_00575CA0;
+extern char g_Win32DriveDevicePathA[7]; /* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by 9 bytes of NOP fill up to FileSystem_Init; no C code references it */
 
 /* original 0x00576720-0x00576784 */
 typedef struct ImageObject_00576720 {
@@ -4263,11 +3879,7 @@ extern UiPointerWheelDelta g_MouseWheelDelta; /* 00576C14 g_MouseWheelDelta */
 extern GraphicsCursorButtonState g_MouseButtonMask; /* 00576C18 g_MouseButtonMask */
 extern uint32_t g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
 extern SoftwareDisplayModeHookProc *g_DirectInputMouseChainedSetDisplayMode; /* 00576C20 g_DirectInputMouseChainedSetDisplayMode */
-typedef struct ImageObject_00576C24 {
-    UiFrameRefreshCountdownFrames at_g_DirectInputMouseRefreshCountdown; /* 00576C24 g_DirectInputMouseRefreshCountdown */
-    uint32_t at_g_DirectInputMouseRefreshCountdown_rest[2]; /* beyond the declared type */
-} ImageObject_00576C24;
-extern ImageObject_00576C24 g_ImageObject_00576C24;
+extern UiFrameRefreshCountdownFrames g_DirectInputMouseRefreshCountdown; /* 00576C24 g_DirectInputMouseRefreshCountdown */
 
 /* original 0x00577BFC-0x00578080 */
 typedef struct ImageObject_00577BFC {
@@ -4288,23 +3900,11 @@ extern IDirect3D2 *g_Direct3D2; /* 00577C58 g_Direct3D2 */
 extern IDirect3DDevice2 *g_Direct3DDevice2; /* 00577C5C g_Direct3DDevice2 */
 extern IDirectDrawSurface *g_ZSurfaceBase; /* 00577C60 g_ZSurfaceBase */
 extern IDirectDrawSurface3 *g_ZSurface3; /* 00577C64 g_ZSurface3 */
-typedef struct ImageObject_00577C68 {
-    IDirect3DViewport2 * at_g_Direct3DViewport2; /* 00577C68 g_Direct3DViewport2 */
-    uint32_t at_g_Direct3DViewport2_rest[1]; /* beyond the declared type */
-} ImageObject_00577C68;
-extern ImageObject_00577C68 g_ImageObject_00577C68;
+extern IDirect3DViewport2 *g_Direct3DViewport2; /* 00577C68 g_Direct3DViewport2 */
 extern D3DRECT_DX6 g_CurrentClearRect; /* 00577C70 g_CurrentClearRect */
-typedef struct ImageObject_00577C80 {
-    DDSURFACEDESC_DX6 at_g_SurfaceDesc; /* 00577C80 g_SurfaceDesc */
-    uint32_t at_g_SurfaceDesc_rest[1]; /* beyond the declared type */
-} ImageObject_00577C80;
-extern ImageObject_00577C80 g_ImageObject_00577C80;
+extern DDSURFACEDESC_DX6 g_SurfaceDesc; /* 00577C80 g_SurfaceDesc */
 extern DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc; /* 00577CF0 g_GraphicsCursorSurfaceDesc: scratch descriptor the cursor save/restore Lock fills (lPitch at 00577D00, lpSurface at 00577D14) */
-typedef struct ImageObject_00577D60 {
-    D3DVIEWPORT2 at_g_Direct3DViewportState; /* 00577D60 g_Direct3DViewportState */
-    uint32_t at_g_Direct3DViewportState_rest[1]; /* beyond the declared type */
-} ImageObject_00577D60;
-extern ImageObject_00577D60 g_ImageObject_00577D60;
+extern D3DVIEWPORT2 g_Direct3DViewportState; /* 00577D60 g_Direct3DViewportState */
 extern DDPIXELFORMAT g_Direct3DOpaqueTextureFormat; /* 00577D90 g_Direct3DOpaqueTextureFormat */
 extern DDPIXELFORMAT g_Direct3DAlphaTextureFormat; /* 00577DB0 g_Direct3DAlphaTextureFormat */
 extern DDPIXELFORMAT g_Direct3DSelectedOpaqueTextureFormat; /* 00577DD0 g_Direct3DSelectedOpaqueTextureFormat */
@@ -4323,11 +3923,7 @@ extern int32_t g_CursorAlternateDrawX; /* 00577E44 g_CursorAlternateDrawX */
 extern int32_t g_CursorAlternateDrawY; /* 00577E48 g_CursorAlternateDrawY */
 extern int32_t g_GraphicsBackendAccessState; /* 00577E4C g_GraphicsBackendAccessState */
 extern GraphicsPrimitiveRenderStatePreset g_PrimitiveRenderStatePresets[5]; /* 00577E50 g_PrimitiveRenderStatePresets */
-typedef struct ImageObject_00577EA0 {
-    GraphicsDispatchTable at_g_GraphicsDispatchTable; /* 00577EA0 g_GraphicsDispatchTable */
-    uint32_t at_g_GraphicsDispatchTable_rest[2]; /* beyond the declared type */
-} ImageObject_00577EA0;
-extern ImageObject_00577EA0 g_ImageObject_00577EA0;
+extern GraphicsDispatchTable g_GraphicsDispatchTable; /* 00577EA0 g_GraphicsDispatchTable */
 extern D3DTLVERTEX_DX6 g_ImmediateTLVertices[4]; /* 00577FC0 g_ImmediateTLVertices */
 extern D3DRECT_DX6 g_LastViewportRect; /* 00578040 g_LastViewportRect */
 extern uint32_t g_ImmediateVertexCount; /* 00578050 g_ImmediateVertexCount */
@@ -4348,11 +3944,7 @@ extern GrResolution g_GlideEnumerationResolutionQuery; /* 0057ECD0 g_GlideEnumer
 extern GrResolution g_GlideSelectedResolutionQuery; /* 0057ECE0 g_GlideSelectedResolutionQuery: GrResolution: grQueryResolutions template {resolution set at run time, GR_QUERY_ANY refresh, 2, 1} to pick the best refresh rate; GraphicsGlide3_ApplyDisplayModeAndInitializeResources */
 extern uint32_t g_GlideRefreshRatesHz[9]; /* 0057ECF0 g_GlideRefreshRatesHz: uint32_t[9]: Hz per GR_REFRESH_* code (60,70,72,75,80,90,100,85,120); graphics/backend/glide.c */
 extern uint32_t g_GlideWindowContextHandle; /* 0057ED14 g_GlideWindowContextHandle */
-typedef struct ImageObject_0057ED18 {
-    uint32_t at_g_GlideRuntimeActiveCount; /* 0057ED18 g_GlideRuntimeActiveCount */
-    uint32_t at_g_GlideRuntimeActiveCount_rest[1]; /* beyond the declared type */
-} ImageObject_0057ED18;
-extern ImageObject_0057ED18 g_ImageObject_0057ED18;
+extern uint32_t g_GlideRuntimeActiveCount; /* 0057ED18 g_GlideRuntimeActiveCount */
 extern GlideLfbInfo g_GlidePrimaryLfbInfo; /* 0057ED20 g_GlidePrimaryLfbInfo */
 extern GlideLfbInfo g_GlideSecondaryLfbInfo; /* 0057ED34 g_GlideSecondaryLfbInfo */
 extern void *g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertices[0..2]; no code reads it (name is historical) */
@@ -4382,21 +3974,11 @@ extern IDirectSound *g_DirectSound; /* 00582EE0 g_DirectSound */
 extern IDirectSoundBuffer *g_PrimarySoundBuffer; /* 00582EE4 g_PrimarySoundBuffer */
 extern TH_LEGACY_LONG g_PrimaryVolume; /* 00582EE8 g_PrimaryVolume */
 extern TH_LEGACY_LONG g_PrimaryPan; /* 00582EEC g_PrimaryPan */
-typedef struct ImageObject_00582EF0 {
-    WAVEFORMATEX at_WaveFormat_PCM_22050_Stereo16; /* 00582EF0 WaveFormat_PCM_22050_Stereo16 */
-    uint32_t at_WaveFormat_PCM_22050_Stereo16_rest[3]; /* beyond the declared type */
-    uint8_t at_WaveFormat_PCM_22050_Stereo16_rest_tail[2];
-} ImageObject_00582EF0;
-extern ImageObject_00582EF0 g_ImageObject_00582EF0;
+extern WAVEFORMATEX WaveFormat_PCM_22050_Stereo16; /* 00582EF0 WaveFormat_PCM_22050_Stereo16 (20 bytes, followed by 12 bytes of NOP fill) */
 extern DSBUFFERDESC_DX6 PrimarySoundBufferDesc; /* 00582F10 PrimarySoundBufferDesc */
 extern DirectSoundVoiceSet **g_DirectSoundVoiceSetRegistry; /* 00582F24 g_DirectSoundVoiceSetRegistry */
 extern char g_CommandLineOptionSound[6]; /* 00582F28 g_CommandLineOptionSound */
-typedef struct ImageObject_00582F2E {
-    int32_t at_g_DirectSoundGainAttenuation[129]; /* 00582F2E g_DirectSoundGainAttenuation */
-    uint32_t at_g_DirectSoundGainAttenuation_rest[3]; /* beyond the declared type */
-    uint8_t at_g_DirectSoundGainAttenuation_rest_tail[2];
-} ImageObject_00582F2E;
-extern ImageObject_00582F2E g_ImageObject_00582F2E;
+extern int32_t g_DirectSoundGainAttenuation[129]; /* 00582F2E g_DirectSoundGainAttenuation: DirectSound attenuation (1/100 dB) per channel gain Q15 >> 8 */
 
 /* original 0x00583D28-0x00584080 */
 typedef struct ImageObject_00583D28 {
@@ -4414,24 +3996,10 @@ extern uint32_t g_NetworkBackendActiveSocketAddressLength; /* 00583F12 g_Network
 extern uint32_t g_NetworkBackendActiveSocketType; /* 00583F16 g_NetworkBackendActiveSocketType */
 extern uint32_t g_NetworkBackendActiveProtocol; /* 00583F1A g_NetworkBackendActiveProtocol */
 extern uint32_t g_NetworkBackendPortNetworkOrderCarrier; /* 00583F1E g_NetworkBackendPortNetworkOrderCarrier */
-typedef struct ImageObject_00583F22 {
-    NetworkBackendSocketAddress16 at_g_NetworkBackendBindAddress; /* 00583F22 g_NetworkBackendBindAddress */
-    uint32_t at_g_NetworkBackendBindAddress_rest[3]; /* beyond the declared type */
-    uint8_t at_g_NetworkBackendBindAddress_rest_tail[2];
-} ImageObject_00583F22;
-extern ImageObject_00583F22 g_ImageObject_00583F22;
-typedef struct ImageObject_00583F40 {
-    uint8_t at_g_NetworkEndpointTextScratchA; /* 00583F40 g_NetworkEndpointTextScratchA */
-    uint32_t at_g_NetworkEndpointTextScratchA_rest[63]; /* beyond the declared type */
-    uint8_t at_g_NetworkEndpointTextScratchA_rest_tail[3];
-} ImageObject_00583F40;
-extern ImageObject_00583F40 g_ImageObject_00583F40;
+extern NetworkBackendSocketAddress16 g_NetworkBackendBindAddress; /* 00583F22 g_NetworkBackendBindAddress (followed by 14 bytes of NOP fill) */
+extern uint8_t g_NetworkEndpointTextScratchA[256]; /* 00583F40 g_NetworkEndpointTextScratchA: narrow endpoint/address text (written with capacity 255) */
 extern NetworkBackendInstanceDescriptorPrefix NetworkBackendInstanceDescriptorPrefix_00584040; /* 00584040 NetworkBackendInstanceDescriptorPrefix_00584040 */
-typedef struct ImageObject_00584078 {
-    char at_s_CommandLineOptionIp[4]; /* 00584078 s_CommandLineOptionIp */
-    uint32_t at_s_CommandLineOptionIp_rest[1]; /* beyond the declared type */
-} ImageObject_00584078;
-extern ImageObject_00584078 g_ImageObject_00584078;
+extern char s_CommandLineOptionIp[3]; /* 00584078 s_CommandLineOptionIp: "IP=" without terminator (the option search gets the length 3) */
 
 /* original 0x00584E44-0x00584E50 */
 typedef struct ImageObject_00584E44 {
@@ -4448,11 +4016,7 @@ extern HINSTANCE g_hInstance; /* 005856B0 g_hInstance */
 extern HWND g_MainWindow; /* 005856B4 g_MainWindow */
 extern uint32_t g_WindowDestroyDepth; /* 005856B8 g_WindowDestroyDepth */
 extern uint32_t g_AppActive; /* 005856BC g_AppActive: uint32_t: WM_ACTIVATEAPP wParam (application active flag), initially 1; platform/bootstrap/runtime.c */
-typedef struct ImageObject_005856C0 {
-    Win32MainMessageStorage at_g_MainMessageStorage; /* 005856C0 g_MainMessageStorage */
-    uint32_t at_g_MainMessageStorage_rest[2]; /* beyond the declared type */
-} ImageObject_005856C0;
-extern ImageObject_005856C0 g_ImageObject_005856C0;
+extern Win32MainMessageStorage g_MainMessageStorage; /* 005856C0 g_MainMessageStorage */
 extern ArenaState g_Arena; /* 00585708 g_Arena */
 extern TimerSystemState g_TimerSystemState; /* 0058571C g_TimerSystemState */
 extern CommandLineArgumentMirrorState500 g_CommandLine; /* 0058581C g_CommandLine */
@@ -4460,11 +4024,7 @@ extern char sz_MainWindowTitle[15]; /* 00585D1C sz_MainWindowTitle */
 extern char sz_MainWindowClass[17]; /* 00585D2B sz_MainWindowClass */
 
 /* original 0x00586950-0x00586B70 */
-typedef struct ImageObject_00586950 {
-    uint8_t at_g_LocaleInfoScratch[16]; /* 00586950 g_LocaleInfoScratch */
-    uint32_t at_g_LocaleInfoScratch_rest[68]; /* beyond the declared type */
-} ImageObject_00586950;
-extern ImageObject_00586950 g_ImageObject_00586950;
+extern uint8_t g_LocaleInfoScratch[16]; /* 00586950 g_LocaleInfoScratch */
 extern LocaleSystemState g_LocaleSystemState; /* 00586A70 g_LocaleSystemState */
 
 /* original 0x005873BC-0x0058C000 */

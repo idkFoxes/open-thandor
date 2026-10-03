@@ -201,7 +201,7 @@ static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSessi
 
   if (!InGameRuntime_RunSessionUntilExit
          ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,loadExistingSession,
-          (uint16_t *)&g_FrontendScenarioPathScratchUtf16,&sessionError)) {
+          g_FrontendScenarioPathScratchUtf16,&sessionError)) {
     FatalError_ExitIfFailed(sessionError,true);
   }
   PersistentSettings_Flush();
@@ -261,9 +261,9 @@ static bool FrontendMainLoop_SelectCampaignSuccessorLevel(void)
     }
   }
   WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_FrontendScenarioPathScratchUtf16,levelRecordView->levels[0].levelFileName,
+            (g_FrontendScenarioPathScratchUtf16,levelRecordView->levels[0].levelFileName,
              (uint16_t *)u_level_0050daac);
-  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,(uint16_t *)&g_FrontendScenarioPathScratchUtf16);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,g_FrontendScenarioPathScratchUtf16);
   return true;
 }
 
@@ -340,7 +340,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
   g_FrontendLoadedLevelAsset = NULL;
-  loadedPackageEntry = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16,&packageLoadErrorCode);
+  loadedPackageEntry = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,&packageLoadErrorCode);
   checkedValue = FatalError_ExitIfFailed
                       (loadedPackageEntry != NULL ? (uint32_t)loadedPackageEntry : packageLoadErrorCode,
                        loadedPackageEntry == NULL);
@@ -349,7 +349,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
                                g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,fieldGridPath);
   WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_LevelResourcePathScratchUtf16,fieldGridPath,(uint16_t *)&g_ExecutableDirectoryUtf16);
+            (g_LevelResourcePathScratchUtf16,fieldGridPath,(uint16_t *)&g_ExecutableDirectoryUtf16);
   fieldGrid = Package_LoadEntry(fieldGridPath,&packageLoadErrorCode);
   if (fieldGrid == NULL) {
     /* Original quirk: a failed field grid load is not checked; the error code is used as the grid */
@@ -403,7 +403,7 @@ static bool FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,uint32_t ne
    selection. Returns false with Frontend_Init's error in *outError when building the menu fails. */
 static bool FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
 {
-  if (!FrontendMainLoop_SelectCampaignSuccessorLevel() && (g_FrontendScenarioPathScratchUtf16 == 0)) {
+  if (!FrontendMainLoop_SelectCampaignSuccessorLevel() && (g_FrontendScenarioPathScratchUtf16[0] == 0)) {
     return FrontendMainLoop_RebuildMenu
                      (FRONTEND_ROM_RECORD_SCENARIO_SELECTION,FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE,outError);
   }
@@ -1428,7 +1428,7 @@ void FrontendRuntime_UpdateCurrentFactionMetricCache(void)
   /* decimal, no fraction digits */
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,xeniteCurrentDisplay,
-             (uint16_t *)&g_FrontendCurrentFactionPrimaryResourceTextUtf16);
+             g_FrontendCurrentFactionPrimaryResourceTextUtf16);
   tritiumStorageLimit = g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumStorageLimitQ4;
   baselineEnergySupplyQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].baselineEnergySupplyQ4;
   runtimeRoot->secondaryResourceDisplayCurrent =
@@ -2218,7 +2218,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
         endpointDestinationDwordCursor++;
       }
       g_NetworkBackendSlot7
-                (&g_FrontendNetworkEndpointTextUtf16,
+                ((char *)g_FrontendNetworkEndpointTextUtf16,
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
       UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->rootNode);
       UiPointerList_InitializeColumnLayout
@@ -2327,10 +2327,10 @@ static void FrontendEndMovie_ShowResultsPage(InGameRuntimeRoot *runtimeRoot)
   elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
   g_LocaleFormatTimeFieldsUtf16
             ((uint32_t)(elapsedTimeUnits / 60),(uint32_t)(elapsedTimeUnits % 60),
-             (uint16_t *)&g_EndGameElapsedTimeScratchUtf16);
+             g_EndGameElapsedTimeScratchUtf16);
   resultsText = TextResource_Resolve(TEXT_ID_RESULTS_TITLE_TEMPLATE);
   levelTitleResourceId = g_InGameLevelTitleTextResourceIndex + TEXT_ID_LEVEL_TITLE_BASE;
-  RichTextCommandStream_PatchPayloadBySelector(1,&g_EndGameElapsedTimeScratchUtf16,resultsText);
+  RichTextCommandStream_PatchPayloadBySelector(1,g_EndGameElapsedTimeScratchUtf16,resultsText);
   RichTextCommandStream_PatchPayloadBySelector(0,TextResource_Resolve(levelTitleResourceId),resultsText);
   /* the continue button; 0x1025 is the second results button, local games hide it */
   UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)runtimeRoot);
@@ -2511,7 +2511,7 @@ static void FrontendInit_StartMenuMusic(void)
 }
 
 /* Fills the frontend's network-backend list with the backends' display names (0x100 bytes apart); the row
-   pointer table is networkBackendNameRows (0x005434EC), right after the control offset tables. */
+   pointer table is g_FrontendNetworkBackendNameRows (0x005434EC), right after the control offset tables. */
 static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *frontendUiState)
 {
   uint32_t backendCount;
@@ -2524,11 +2524,11 @@ static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *front
   }
   backendDisplayName = g_NetworkBackendInstanceTable->displayNameUtf16;
   for (backendIndex = 0; backendIndex < backendCount; backendIndex++) {
-    g_FrontendTaskAssignmentControlOffsets.networkBackendNameRows[backendIndex] = (uint32_t)backendDisplayName;
+    g_FrontendNetworkBackendNameRows[backendIndex] = backendDisplayName;
     backendDisplayName = backendDisplayName + 128; /* 0x100 bytes */
   }
   UiPointerList_InitializeMeasuredTextRows
-            (backendCount,(void **)g_FrontendTaskAssignmentControlOffsets.networkBackendNameRows,
+            (backendCount,(void **)g_FrontendNetworkBackendNameRows,
              (UiPointerListControl *)FRONTEND_UI(frontendUiState,networkProtocolList));
 }
 
@@ -2646,7 +2646,7 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   }
   g_FrontendCentralPaletteAsset = (uint32_t)centralPaletteAsset;
   RichTextCommandStream_PatchPayloadBySelector
-            (0,&g_FrontendNetworkEndpointTextUtf16,TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE));
+            (0,g_FrontendNetworkEndpointTextUtf16,TextResource_Resolve(TEXT_ID_NETWORK_ADDRESS_TEMPLATE));
   error = FrontendInit_LoadMenuSounds();
   if (error != 0) {
     *outError = error;

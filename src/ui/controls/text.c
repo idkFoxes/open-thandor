@@ -1556,12 +1556,12 @@ void UiNumericPairTextButton_DrawFormattedValues
     resolvedText = TextResource_Resolve((control->base).textResourceId);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->firstValue,
-               (uint16_t *)&g_UiNumericPairFirstValueScratchUtf16);
+               g_UiNumericPairFirstValueScratchUtf16);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->secondValue,
-               (uint16_t *)&g_UiNumericPairSecondValueScratchUtf16);
-    RichTextCommandStream_PatchPayloadBySelector(0,&g_UiNumericPairFirstValueScratchUtf16,resolvedText);
-    RichTextCommandStream_PatchPayloadBySelector(1,&g_UiNumericPairSecondValueScratchUtf16,resolvedText);
+               g_UiNumericPairSecondValueScratchUtf16);
+    RichTextCommandStream_PatchPayloadBySelector(0,g_UiNumericPairFirstValueScratchUtf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(1,g_UiNumericPairSecondValueScratchUtf16,resolvedText);
     UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,&control->base);
   }
   return;
@@ -4241,12 +4241,12 @@ int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText)
 
 {
   RichTextCommandStream_CopyExpanded
-            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText,NULL);
+            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedLeftTextUtf16,leftText,NULL);
   RichTextCommandStream_CopyExpanded
-            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText,NULL);
+            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedRightTextUtf16,rightText,NULL);
   /* The order is the comparator's: nothing after the call changes its flags (0x004BB5A5). */
   return (*(int (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
-            ((uint16_t *)&g_UiPointerListExpandedRightTextUtf16,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16);
+            (g_UiPointerListExpandedRightTextUtf16,g_UiPointerListExpandedLeftTextUtf16);
 }
 
 

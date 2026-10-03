@@ -123,7 +123,7 @@
 #define COMMAND_QUEUE_CAPACITY 16
 /* Received commands are executed only below these original addresses (CMP EAX,imm32; JNC skip). */
 #define FRONTEND_COMMAND_HANDLER_REGION_END 0x005456F0 /* g_FrontendRootNode in the original image */
-#define INGAME_COMMAND_HANDLER_REGION_END 0x00562499 /* InGameCommandHandlerCodeRegionEnd */
+#define INGAME_COMMAND_HANDLER_REGION_END 0x00562499 /* InGameCommandHandlerCodeRegionEnd: the 0x90 filler bytes before g_InGameUiActionHandlersPage10 in the original image */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00543F50 */

@@ -694,7 +694,7 @@ static void FrontendTransfer_SendSessionAdvertisement
     g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_AVAILABLE;
   }
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_TITLE_TEMPLATE);
-  RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),resolvedText);
+  RichTextCommandStream_PatchPayloadBySelector(0,g_GameVersionUtf16,resolvedText);
   RichTextCommandStream_CopyExpanded
             (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,resolvedText,NULL);
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
@@ -705,8 +705,8 @@ static void FrontendTransfer_SendSessionAdvertisement
   RichTextCommandStream_CopyExpanded
             (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText,NULL);
   resolvedText = TextResource_Resolve(TEXT_ID_SESSION_PLAYER_COUNT_TEMPLATE);
-  RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkRuntimeCountTextUtf16,resolvedText);
-  RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendNetworkPlayerCountTextUtf16,resolvedText);
+  RichTextCommandStream_PatchPayloadBySelector(0,g_FrontendNetworkRuntimeCountTextUtf16,resolvedText);
+  RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendNetworkPlayerCountTextUtf16,resolvedText);
   RichTextCommandStream_CopyExpanded(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText,NULL);
   g_FrontendPacket50001Buffer.header.packedTypeAndUnitCount =
        FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT;
@@ -787,7 +787,7 @@ static void FrontendTransfer_AdmitJoiningPlayer
   *(uint16_t *)((uint8_t *)joiningPlayerRecordDwordCursor - 18) = 0;
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)hostLobbyPlayerList->rowCount,
-             (uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
+             g_FrontendNetworkRuntimeCountTextUtf16);
   g_FrontendPacket10003Buffer.networkTickInterval = g_SessionNetworkTickInterval;
   g_FrontendPacket10003Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10003_JOIN_ACK;
   g_FrontendPacket10003Buffer.assignedPlayerRuntimeId = assignedPlayerRuntimeId;

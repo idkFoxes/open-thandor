@@ -85,7 +85,7 @@ void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
 
   translationDelta = FixedMath_DirectionFromAnglesScaled
                     (elevationAngle,worldRuntime->motion.headingAngle + FIXED_ANGLE16_THREE_QUARTER_TURN & FIXED_ANGLE16_MASK,
-                     screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
+                     screenDelta * k_CameraScreenDeltaDistanceScaleQ16);
   worldRuntime->motion.positionXQ12 += translationDelta.x;
   worldRuntime->motion.positionYQ12 += translationDelta.y;
   worldRuntime->motion.positionZQ12 += translationDelta.z;
@@ -117,7 +117,7 @@ void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,Wor
     azimuthAngle = azimuthAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
   }
   translationDelta = FixedMath_DirectionFromAnglesScaled
-                    (elevationAngle,azimuthAngle,screenDelta * _k_CameraScreenDeltaDistanceScaleQ16)
+                    (elevationAngle,azimuthAngle,screenDelta * k_CameraScreenDeltaDistanceScaleQ16)
   ;
   worldRuntime->motion.positionXQ12 += translationDelta.x;
   worldRuntime->motion.positionYQ12 += translationDelta.y;
@@ -144,7 +144,7 @@ void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
   translationDelta = FixedMath_DirectionFromAnglesScaled
                     (-worldRuntime->motion.pitchAngle,
                      worldRuntime->motion.headingAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,
-                     screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
+                     screenDelta * k_CameraScreenDeltaDistanceScaleQ16);
   worldRuntime->motion.positionXQ12 += translationDelta.x;
   worldRuntime->motion.positionYQ12 += translationDelta.y;
   worldRuntime->motion.positionZQ12 += translationDelta.z;
@@ -388,7 +388,7 @@ void WorldRuntime_TranslateCameraByScreenDelta
   FixedSinCos forwardDeltaXYQ12;
   FixedSinCos sideDeltaXYQ12;
 
-  distanceScale = (int)(_k_CameraScreenDeltaDistanceScaleQ16 * worldRuntime->motion.targetDistanceQ12) >> 16;
+  distanceScale = (int)(k_CameraScreenDeltaDistanceScaleQ16 * worldRuntime->motion.targetDistanceQ12) >> 16;
   headingAngle = worldRuntime->motion.headingAngle;
   forwardDeltaXYQ12 = FixedMath_SinCosScaled(headingAngle,screenDeltaDown * distanceScale);
   worldRuntime->motion.positionXQ12 -= forwardDeltaXYQ12.cosValue;

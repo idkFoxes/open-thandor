@@ -1772,9 +1772,9 @@ SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
 
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,15,1,value,
-             (uint16_t *)&g_SelectionPanelNumberScratchUtf16);
+             g_SelectionPanelNumberScratchUtf16);
   textExtent = RichTextCommandStream_MeasureLine
-                    (g_SelectionPanelNumberTextStyle,(uint16_t *)&g_SelectionPanelNumberScratchUtf16);
+                    (g_SelectionPanelNumberTextStyle,g_SelectionPanelNumberScratchUtf16);
   cell = SelectionPanel_GetCellRecord(cellIndex);
   cellX = originX + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_X);
   cellY = originY + *(int *)(cell + SELECTION_PANEL_CELL_OFFSET_Y);
@@ -1785,7 +1785,7 @@ SelectionPanelCellAdvance SelectionPanel_DrawNumberCellAndAdvance
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresource,g_SelectionPanelTextureSource);
   RichTextCommandStream_DrawSingleLine
             (clipBottom,clipRight,clipTop,clipLeft,g_SelectionPanelNumberTextStyle,
-             (uint16_t *)&g_SelectionPanelNumberScratchUtf16,
+             g_SelectionPanelNumberScratchUtf16,
              ((int)(spriteSize.logicalHeightPixels - textExtent.heightPixels) >> 1) + cellY,
              ((int)(spriteSize.logicalWidthPixels - textExtent.widthPixels) >> 1) + cellX);
   return SelectionPanel_AdvancePastCell(cell,cellY,cellX,spriteSize);

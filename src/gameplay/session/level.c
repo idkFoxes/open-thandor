@@ -459,8 +459,8 @@ static bool NewLevel_LoadSpatialSounds
        (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.soundBasePathOffset);
   WidePath_SetExtensionCode(ASSET_MAGIC_SAM,soundDirectoryPath);
   WidePath_SplitParentAndLeaf
-            ((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-             (uint16_t *)&g_InGameLevelSoundParentDirectoryScratchUtf16,soundDirectoryPath);
+            (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+             g_InGameLevelSoundParentDirectoryScratchUtf16,soundDirectoryPath);
   allocError = g_MemoryApi.allocLargestFreeBlock(&directoryListing,&listingCapacityBytes);
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
@@ -495,9 +495,9 @@ static bool NewLevel_LoadSpatialSounds
       }
       else {
         WidePath_CombineDirectoryAndLeaf
-                  ((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
-                   (uint16_t *)&g_InGameLevelSoundParentDirectoryScratchUtf16);
-        sampleLoaded = Resource_Load((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+                  (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
+                   g_InGameLevelSoundParentDirectoryScratchUtf16);
+        sampleLoaded = Resource_Load(g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
                                      &loadedSample,NULL,&loadErrorCode);
       }
       if (!sampleLoaded) {
@@ -995,8 +995,8 @@ static bool SavedLevel_LoadSpatialSounds
   WidePath_SetExtensionCode(ASSET_MAGIC_SAM,soundDirectoryPath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
   WidePath_SplitParentAndLeaf
-            ((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-             (uint16_t *)&g_InGameLevelSoundParentDirectoryScratchUtf16,soundDirectoryPath);
+            (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+             g_InGameLevelSoundParentDirectoryScratchUtf16,soundDirectoryPath);
   allocError = g_MemoryApi.allocLargestFreeBlock(&directoryListing,&listingCapacityBytes);
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
@@ -1031,9 +1031,9 @@ static bool SavedLevel_LoadSpatialSounds
       }
       else {
         WidePath_CombineDirectoryAndLeaf
-                  ((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
-                   (uint16_t *)&g_InGameLevelSoundParentDirectoryScratchUtf16);
-        sampleLoaded = Resource_Load((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+                  (g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,listedSoundPath,
+                   g_InGameLevelSoundParentDirectoryScratchUtf16);
+        sampleLoaded = Resource_Load(g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
                                      &loadedSample,NULL,&loadErrorCode);
       }
       if (!sampleLoaded) {
