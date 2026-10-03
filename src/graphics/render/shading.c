@@ -495,9 +495,9 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y = (modelNode->worldTransform).translation.y;
   g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z = (modelNode->worldTransform).translation.z;
   subtreeRadius = modelNode->subtreeBoundingRadiusQ12;
-  g_ModelCullViewRelativeX = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x - g_ViewOriginFixed.x;
-  g_ModelCullViewRelativeY = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y - g_ViewOriginFixed.y;
-  g_ModelCullViewRelativeZ = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z - g_ViewOriginFixed.z;
+  g_ModelCullViewRelative.x = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x - g_ViewOriginFixed.x;
+  g_ModelCullViewRelative.y = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y - g_ViewOriginFixed.y;
+  g_ModelCullViewRelative.z = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z - g_ViewOriginFixed.z;
   if (GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(modelNode)) {
     return;
   }
@@ -505,15 +505,15 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   frustumLimit = (int)((uint32_t)(subtreeRadius * 9) >> 2);
   for (plane = 0; plane < 4; plane++) {
     if (frustumLimit < FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + plane,
-                                        (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX)) {
+                                        &g_ModelCullViewRelative)) {
       return;
     }
   }
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,&g_GeneratedTextureScratchRuntime.currentModelOriginQ12,
+            (&g_ModelCullViewRelative,&g_GeneratedTextureScratchRuntime.currentModelOriginQ12,
              &g_ViewProjectionMatrixFixed);
-  if ((int)g_ModelCullViewRelativeZ <= (int)g_ProjectionScaleFixed ||
-      (int)(g_ModelCullViewRelativeZ - g_ProjectionScaleFixed) <=
+  if (g_ModelCullViewRelative.z <= g_ProjectionScaleFixed ||
+      g_ModelCullViewRelative.z - g_ProjectionScaleFixed <=
       ((modelNode->modelPayload).modelResource)->boundingRadiusQ12) {
     return;
   }

@@ -143,25 +143,25 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
       point = (GraphicsFixedVec3 *)(geometryRecord + 32);
       for (verticesRemaining = *(int *)(geometryRecord + 8); verticesRemaining != 0; verticesRemaining--) {
         FixedTransform_ApplyPoint
-                  ((GraphicsFixedVec3 *)&g_ModelBoundsTransformedPointX,point,
+                  (&g_ModelBoundsTransformedPoint,point,
                    &modelNode->worldTransform);
-        if (g_ModelBoundsTransformedPointX < g_ModelBoundsMinimumX) {
-          g_ModelBoundsMinimumX = g_ModelBoundsTransformedPointX;
+        if (g_ModelBoundsTransformedPoint.x < g_ModelBoundsMinimumX) {
+          g_ModelBoundsMinimumX = g_ModelBoundsTransformedPoint.x;
         }
-        else if (g_ModelBoundsMaximumX < g_ModelBoundsTransformedPointX) {
-          g_ModelBoundsMaximumX = g_ModelBoundsTransformedPointX;
+        else if (g_ModelBoundsMaximumX < g_ModelBoundsTransformedPoint.x) {
+          g_ModelBoundsMaximumX = g_ModelBoundsTransformedPoint.x;
         }
-        if (g_ModelBoundsTransformedPointY < g_ModelBoundsMinimumY) {
-          g_ModelBoundsMinimumY = g_ModelBoundsTransformedPointY;
+        if (g_ModelBoundsTransformedPoint.y < g_ModelBoundsMinimumY) {
+          g_ModelBoundsMinimumY = g_ModelBoundsTransformedPoint.y;
         }
-        else if (g_ModelBoundsMaximumY < g_ModelBoundsTransformedPointY) {
-          g_ModelBoundsMaximumY = g_ModelBoundsTransformedPointY;
+        else if (g_ModelBoundsMaximumY < g_ModelBoundsTransformedPoint.y) {
+          g_ModelBoundsMaximumY = g_ModelBoundsTransformedPoint.y;
         }
-        if (g_ModelBoundsTransformedPointZ < g_ModelBoundsMinimumZ) {
-          g_ModelBoundsMinimumZ = g_ModelBoundsTransformedPointZ;
+        if (g_ModelBoundsTransformedPoint.z < g_ModelBoundsMinimumZ) {
+          g_ModelBoundsMinimumZ = g_ModelBoundsTransformedPoint.z;
         }
-        else if (g_ModelBoundsMaximumZ < g_ModelBoundsTransformedPointZ) {
-          g_ModelBoundsMaximumZ = g_ModelBoundsTransformedPointZ;
+        else if (g_ModelBoundsMaximumZ < g_ModelBoundsTransformedPoint.z) {
+          g_ModelBoundsMaximumZ = g_ModelBoundsTransformedPoint.z;
         }
         point = (GraphicsFixedVec3 *)((uint8_t *)point + 64); /* the next vertex */
       }
@@ -290,7 +290,7 @@ void ModelNodeRuntime_UpdateDepthBinMasks(DepthIntervalRadius32 minimumRadius,Mo
 
 /* Address: 0x004BEB80.
    Transforms a model-local point record (anchor, launch or marker point) into world coordinates through the
-   node's world transform. The point is written to g_ModelTransformOutputX..Z and also returned.
+   node's world transform. The point is written to g_ModelTransformOutput and also returned.
 */
 ModelWorldPoint
 ModelNodeRuntime_TransformLocalPoint
@@ -300,11 +300,11 @@ ModelNodeRuntime_TransformLocalPoint
   ModelWorldPoint transformedPoint;
 
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,&localPointRecord->localPosition,
+            (&g_ModelTransformOutput,&localPointRecord->localPosition,
              &modelNodeRuntime->worldTransform);
-  transformedPoint.yQ12 = g_ModelTransformOutputY;
-  transformedPoint.xQ12 = g_ModelTransformOutputX;
-  transformedPoint.zQ12 = g_ModelTransformOutputZ;
+  transformedPoint.yQ12 = g_ModelTransformOutput.y;
+  transformedPoint.xQ12 = g_ModelTransformOutput.x;
+  transformedPoint.zQ12 = g_ModelTransformOutput.z;
   return transformedPoint;
 }
 
@@ -519,8 +519,8 @@ static ModelMeshGroupRelativeOffset *ModelResource_FindRaycastMeshGroup(ModelRes
 
 
 /* Address: 0x0050B1D0.
-   Ray test of a model hierarchy against the ray in g_ModelRaycastOriginX/Y/Z and
-   g_ModelRaycastWorldDirectionX/Y/ZQ28 (ModelRuntime_RaycastCandidateListNearest): when the ray passes the node's
+   Ray test of a model hierarchy against the ray in g_ModelRaycastOrigin and
+   g_ModelRaycastWorldDirectionQ28 (ModelRuntime_RaycastCandidateListNearest): when the ray passes the node's
    bounding sphere within
    g_ModelRaycastMaximumDistance, it is moved into the node's frame and tested against every triangle of the
    node's mesh group, then the children are tested. Returns the nearest hit distance and stores the nearest
@@ -560,13 +560,13 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
 
   /* bounding sphere test: the projection of the node centre onto the ray must lie within the ray's reach
      (widened by the radius) and the ray must pass the centre closer than the radius */
-  deltaX = modelNodeRuntime->worldTransform.translation.x - g_ModelRaycastOriginX;
-  deltaY = modelNodeRuntime->worldTransform.translation.y - g_ModelRaycastOriginY;
-  deltaZ = modelNodeRuntime->worldTransform.translation.z - g_ModelRaycastOriginZ;
+  deltaX = modelNodeRuntime->worldTransform.translation.x - g_ModelRaycastOrigin.x;
+  deltaY = modelNodeRuntime->worldTransform.translation.y - g_ModelRaycastOrigin.y;
+  deltaZ = modelNodeRuntime->worldTransform.translation.z - g_ModelRaycastOrigin.z;
   boundingRadius = modelNodeRuntime->subtreeBoundingRadiusQ12;
-  projectionWide = (int64_t)deltaY * (int64_t)(int)g_ModelRaycastWorldDirectionYQ28 +
-          (int64_t)deltaX * (int64_t)(int)g_ModelRaycastWorldDirectionXQ28 +
-          (int64_t)deltaZ * (int64_t)(int)g_ModelRaycastWorldDirectionZQ28;
+  projectionWide = (int64_t)deltaY * (int64_t)g_ModelRaycastWorldDirectionQ28.y +
+          (int64_t)deltaX * (int64_t)g_ModelRaycastWorldDirectionQ28.x +
+          (int64_t)deltaZ * (int64_t)g_ModelRaycastWorldDirectionQ28.z;
   projectedDistance = FIXED_PRODUCT_SHR(projectionWide,Q28_SHIFT);
   if ((projectedDistance < -boundingRadius) ||
       (g_ModelRaycastMaximumDistance + boundingRadius <= projectedDistance)) {
@@ -601,18 +601,16 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
   nodeY = modelNodeRuntime->worldTransform.translation.y;
   nodeZ = modelNodeRuntime->worldTransform.translation.z;
   meshGroupCursor = ModelResource_FindRaycastMeshGroup(resourceView);
-  g_ModelRaycastOriginX = g_ModelRaycastOriginX - nodeX;
-  g_ModelRaycastOriginY = g_ModelRaycastOriginY - nodeY;
-  g_ModelRaycastOriginZ = g_ModelRaycastOriginZ - nodeZ;
+  g_ModelRaycastOrigin.x = g_ModelRaycastOrigin.x - nodeX;
+  g_ModelRaycastOrigin.y = g_ModelRaycastOrigin.y - nodeY;
+  g_ModelRaycastOrigin.z = g_ModelRaycastOrigin.z - nodeZ;
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)&g_ModelRaycastLocalOriginX,
-             (GraphicsFixedVec3 *)&g_ModelRaycastOriginX,&g_GraphicsTransformScratchMatrix3x4);
-  g_ModelRaycastOriginX = g_ModelRaycastOriginX + nodeX;
-  g_ModelRaycastOriginY = g_ModelRaycastOriginY + nodeY;
-  g_ModelRaycastOriginZ = g_ModelRaycastOriginZ + nodeZ;
+            (&g_ModelRaycastLocalOrigin,&g_ModelRaycastOrigin,&g_GraphicsTransformScratchMatrix3x4);
+  g_ModelRaycastOrigin.x = g_ModelRaycastOrigin.x + nodeX;
+  g_ModelRaycastOrigin.y = g_ModelRaycastOrigin.y + nodeY;
+  g_ModelRaycastOrigin.z = g_ModelRaycastOrigin.z + nodeZ;
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)&g_ModelRaycastLocalDirectionXQ28,
-             (GraphicsFixedVec3 *)&g_ModelRaycastWorldDirectionXQ28,
+            (&g_ModelRaycastLocalDirectionQ28,&g_ModelRaycastWorldDirectionQ28,
              &g_GraphicsTransformScratchMatrix3x4);
 
   /* every triangle of every mesh of the mesh group */

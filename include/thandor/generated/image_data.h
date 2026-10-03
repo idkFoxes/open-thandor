@@ -253,14 +253,11 @@ typedef struct ImageObject_004172E8 {
     uint8_t at_gap_004172E8[24]; /* 004172E8 gap */
 } ImageObject_004172E8;
 extern ImageObject_004172E8 g_ImageObject_004172E8;
-typedef struct ImageObject_00417300 {
-    uint64_t at_g_SoundDecodeMmxWordLaneMask0; /* 00417300 g_SoundDecodeMmxWordLaneMask0 */
-    uint64_t at_g_SoundDecodeMmxWordLaneMask1; /* 00417308 g_SoundDecodeMmxWordLaneMask1 */
-    uint64_t at_g_SoundDecodeMmxWordLaneMask2; /* 00417310 g_SoundDecodeMmxWordLaneMask2 */
-    uint64_t at_g_SoundDecodeMmxWordLaneMask3; /* 00417318 g_SoundDecodeMmxWordLaneMask3 */
-    uint32_t at_g_SoundDecodeMmxWordLaneMask3_rest[4]; /* beyond the declared type */
-} ImageObject_00417300;
-extern ImageObject_00417300 g_ImageObject_00417300;
+extern uint64_t g_SoundDecodeMmxWordLaneMask0; /* 00417300 g_SoundDecodeMmxWordLaneMask0 */
+extern uint64_t g_SoundDecodeMmxWordLaneMask1; /* 00417308 g_SoundDecodeMmxWordLaneMask1 */
+extern uint64_t g_SoundDecodeMmxWordLaneMask2; /* 00417310 g_SoundDecodeMmxWordLaneMask2 */
+extern uint64_t g_SoundDecodeMmxWordLaneMask3; /* 00417318 g_SoundDecodeMmxWordLaneMask3 */
+extern uint32_t g_SoundDecodeMmxMasksTrailingWords[4]; /* 00417320 words 0, 1, 3, 5 after the lane masks; no code reference */
 extern short *g_CosineDerivedLookupAllocation; /* 00417330 g_CosineDerivedLookupAllocation */
 extern short *g_CosineDerivedLookupSecondTable; /* 00417334 g_CosineDerivedLookupSecondTable */
 extern SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet; /* 00417338 g_SoundCreateSampleVoiceSet */
@@ -307,23 +304,17 @@ typedef struct ImageObject_0041A740 {
     uint8_t at_gap_0041A740[16]; /* 0041A740 gap */
 } ImageObject_0041A740;
 extern ImageObject_0041A740 g_ImageObject_0041A740;
-typedef struct ImageObject_0041A750 {
-    PackedArgb32 at_g_RichTextColorPalette0Argb; /* 0041A750 g_RichTextColorPalette0Argb: PackedArgb32 rich-text colour palette entry 0 (0xFFB0B0B0 grey); the palette is indexed by the 3-bit palette field of the packed text style (richtext.c) and set by RICHTEXT_OP_COLOR_PALETTE_0; also the normal cost colour of the technology panel. */
-    PackedArgb32 at_g_RichTextColorPalette1Argb; /* 0041A754 g_RichTextColorPalette1Argb: PackedArgb32 rich-text colour palette entry 1 (0xFFE0E0E0 light grey), RICHTEXT_OP_COLOR_PALETTE_1. */
-    PackedArgb32 at_g_RichTextColorPalette2Argb; /* 0041A758 g_RichTextColorPalette2Argb: PackedArgb32 rich-text colour palette entry 2 (0xFF707070 dark grey), RICHTEXT_OP_COLOR_PALETTE_2. */
-    PackedArgb32 at_g_RichTextColorPalette3Argb; /* 0041A75C g_RichTextColorPalette3Argb: PackedArgb32 rich-text colour palette entry 3 (0xFFE0E0E0 light grey), RICHTEXT_OP_COLOR_PALETTE_3. */
-    PackedArgb32 at_g_RichTextColorPalette4Argb; /* 0041A760 g_RichTextColorPalette4Argb: PackedArgb32 rich-text colour palette entry 4 (0xFF209020 green); only reachable through the packed text style's palette index, no direct code reference. */
-    PackedArgb32 at_g_RichTextInsufficientResourceColorArgb; /* 0041A764 g_RichTextInsufficientResourceColorArgb: PackedArgb32 red (0xFFF02020) for technology costs the player cannot afford (ui/ingame/technology.c); also rich-text palette entry 5 by position. */
-} ImageObject_0041A750;
-extern ImageObject_0041A750 g_ImageObject_0041A750;
-typedef struct ImageObject_0041A768 {
-    uint32_t at_g_RichTextShadowOffsetPalette0; /* 0041A768 g_RichTextShadowOffsetPalette0: uint32_t text shadow offset in pixels for colour palette entry 0 (2); indexed like the colour palette. */
-    uint32_t at_g_RichTextShadowOffsetPalette1; /* 0041A76C g_RichTextShadowOffsetPalette1: uint32_t text shadow offset in pixels for colour palette entry 1 (2). */
-    uint32_t at_g_RichTextShadowOffsetPalette2; /* 0041A770 g_RichTextShadowOffsetPalette2: uint32_t text shadow offset in pixels for colour palette entry 2 (1). */
-    uint32_t at_g_RichTextShadowOffsetPalette3; /* 0041A774 g_RichTextShadowOffsetPalette3: uint32_t text shadow offset in pixels for colour palette entry 3 (2). */
-    uint32_t at_g_RichTextShadowOffsetPalette3_rest[2]; /* beyond the declared type */
-} ImageObject_0041A768;
-extern ImageObject_0041A768 g_ImageObject_0041A768;
+/* 0041A750 g_RichTextColorPaletteArgb: rich-text colour palette, indexed by the 3-bit palette field of the
+   packed text style (richtext.c) and set by RICHTEXT_OP_COLOR_PALETTE_0..3:
+   [0] 0xFFB0B0B0 grey, also the normal cost colour of the technology panel;
+   [1] 0xFFE0E0E0 light grey; [2] 0xFF707070 dark grey; [3] 0xFFE0E0E0 light grey;
+   [4] 0xFF209020 green, only reachable through the packed text style's palette index;
+   [5] 0xFFF02020 red, also the colour of technology costs the player cannot afford (ui/ingame/technology.c).
+   The original's palette field has 3 bits; entries 6 and 7 would read on into the shadow offsets. */
+extern PackedArgb32 g_RichTextColorPaletteArgb[6];
+/* 0041A768 g_RichTextShadowOffsetPalette: text shadow offset in pixels per colour palette entry, indexed like
+   g_RichTextColorPaletteArgb: 2, 2, 1, 2, 0, 0. */
+extern uint32_t g_RichTextShadowOffsetPalette[6];
 extern uint32_t g_ActiveFontIndex; /* 0041A780 g_ActiveFontIndex */
 extern uint32_t g_RichTextCurrentColorArgb; /* 0041A784 g_RichTextCurrentColorArgb */
 extern uint32_t g_RichTextCurrentShadowOffset; /* 0041A788 g_RichTextCurrentShadowOffset */
@@ -708,18 +699,9 @@ typedef struct ImageObject_004229B4 {
 } ImageObject_004229B4;
 extern ImageObject_004229B4 g_ImageObject_004229B4;
 extern UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
-typedef struct ImageObject_004235D8 {
-    DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch0; /* 004235D8 g_UiDisplayModeDistinctValueScratch0 */
-    DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch1; /* 004235DC g_UiDisplayModeDistinctValueScratch1 */
-    DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch2; /* 004235E0 g_UiDisplayModeDistinctValueScratch2 */
-    DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch3; /* 004235E4 g_UiDisplayModeDistinctValueScratch3 */
-    DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch4; /* 004235E8 g_UiDisplayModeDistinctValueScratch4 */
-    DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch5; /* 004235EC g_UiDisplayModeDistinctValueScratch5 */
-    DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch6; /* 004235F0 g_UiDisplayModeDistinctValueScratch6 */
-    DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch7; /* 004235F4 g_UiDisplayModeDistinctValueScratch7 */
-    uint32_t at_g_UiDisplayModeDistinctValueScratch7_rest[2]; /* beyond the declared type */
-} ImageObject_004235D8;
-extern ImageObject_004235D8 g_ImageObject_004235D8;
+/* 004235D8 g_UiDisplayModeDistinctValueScratch: the ascending list of distinct values (bit depths,
+   resolutions, adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
+extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8];
 
 /* original 0x00424324-0x004244E0 */
 extern UiRootCallbacks g_UiFourValueDialogRootCallbacks; /* 00424324 g_UiFourValueDialogRootCallbacks */
@@ -764,11 +746,8 @@ extern GraphicsDiagnosticCounter g_TextureBindStateChangeCount; /* 00485854 g_Te
 extern GraphicsDiagnosticCounter g_TextureDeviceReloadCount; /* 00485858 g_TextureDeviceReloadCount */
 extern GraphicsFixedVec3 g_ViewOriginFixed; /* 0048585C g_ViewOriginFixed */
 extern int32_t g_ProjectionScaleFixed; /* 00485868 g_ProjectionScaleFixed */
-typedef struct ImageObject_0048586C {
-    uint32_t at_g_ViewAngle0; /* 0048586C g_ViewAngle0 */
-    uint32_t at_g_ViewAngle1; /* 00485870 g_ViewAngle1 */
-} ImageObject_0048586C;
-extern ImageObject_0048586C g_ImageObject_0048586C;
+extern GraphicsViewAngle16 g_ViewAngle0; /* 0048586C g_ViewAngle0 */
+extern GraphicsViewAngle16 g_ViewAngle1; /* 00485870 g_ViewAngle1 */
 extern uint32_t g_ProjectionShift; /* 00485874 g_ProjectionShift */
 extern uint32_t g_ProjectionScaleProduct; /* 00485878 g_ProjectionScaleProduct */
 extern GraphicsWideFixed g_ProjectionNumerator; /* 0048587C g_ProjectionNumerator */
@@ -786,31 +765,15 @@ extern GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4]; /* 00485984 g_FrustumPl
 extern GraphicsFixedVec3 g_FrustumCornerRayFixed_0[4]; /* 004859B4 g_FrustumCornerRayFixed_0 */
 extern GraphicsSceneBounds8 g_SceneBoundsFixed; /* 004859E4 g_SceneBoundsFixed */
 extern int32_t g_ModelLodDepthThresholdQ8; /* 00485A04 g_ModelLodDepthThresholdQ8 */
-typedef struct ImageObject_00485A08 {
-    uint32_t at_g_ArmyPreviewViewOriginXQ12; /* 00485A08 g_ArmyPreviewViewOriginXQ12 */
-    uint32_t at_g_ArmyPreviewViewOriginYQ12; /* 00485A0C g_ArmyPreviewViewOriginYQ12 */
-    uint32_t at_g_ArmyPreviewViewOriginZQ12; /* 00485A10 g_ArmyPreviewViewOriginZQ12 */
-} ImageObject_00485A08;
-extern ImageObject_00485A08 g_ImageObject_00485A08;
-extern uint32_t g_ArmyPreviewProjectionScaleQ12; /* 00485A14 g_ArmyPreviewProjectionScaleQ12 */
-typedef struct ImageObject_00485A18 {
-    uint32_t at_g_ArmyPreviewViewAngle0; /* 00485A18 g_ArmyPreviewViewAngle0 */
-    uint32_t at_g_ArmyPreviewViewAngle1; /* 00485A1C g_ArmyPreviewViewAngle1 */
-} ImageObject_00485A18;
-extern ImageObject_00485A18 g_ImageObject_00485A18;
-extern uint32_t g_ArmyPreviewProjectionShift; /* 00485A20 g_ArmyPreviewProjectionShift */
-typedef struct ImageObject_00485A24 {
-    uint32_t at_g_ArmyPreviewAuxiliaryOrientation0; /* 00485A24 g_ArmyPreviewAuxiliaryOrientation0 */
-    uint32_t at_g_ArmyPreviewAuxiliaryOrientation1; /* 00485A28 g_ArmyPreviewAuxiliaryOrientation1 */
-} ImageObject_00485A24;
-extern ImageObject_00485A24 g_ImageObject_00485A24;
-extern uint32_t g_ArmyPreviewPrimaryColorArgb; /* 00485A2C g_ArmyPreviewPrimaryColorArgb */
-extern uint32_t g_ArmyPreviewSecondaryColorArgb; /* 00485A30 g_ArmyPreviewSecondaryColorArgb */
-typedef struct ImageObject_00485A34 {
-    uint32_t at_g_ArmyPreviewModelNodePointer; /* 00485A34 g_ArmyPreviewModelNodePointer */
-    uint32_t at_g_ArmyPreviewModelNodePointer_rest[2]; /* beyond the declared type */
-} ImageObject_00485A34;
-extern ImageObject_00485A34 g_ImageObject_00485A34;
+/* 00485A08..00485A24: origin X/Y/Z, projection scale, view angles 0/1, projection shift; passed whole to
+   g_GraphicsOffscreenRenderModelListToTextureSource */
+extern GraphicsOffscreenViewParameters g_ArmyPreviewViewParameters; /* 00485A08 g_ArmyPreviewViewParameters */
+extern AngleTurn32 g_ArmyPreviewAuxiliaryOrientation[2]; /* 00485A24 g_ArmyPreviewAuxiliaryOrientation */
+/* 00485A2C..00485A34: horizontalExtent = primary colour ARGB, verticalExtent = secondary colour ARGB; passed whole
+   to g_GraphicsOffscreenRenderModelListToTextureSource, which forwards them as the scene colour pairs of
+   Graphics_SetSceneBoundsAndColors */
+extern GraphicsOffscreenSceneExtents g_ArmyPreviewSceneExtents; /* 00485A2C g_ArmyPreviewSceneExtents */
+extern ModelRuntimeNode *g_ArmyPreviewModelNode; /* 00485A34 g_ArmyPreviewModelNode (one-entry model list) */
 extern uint32_t g_PrimitiveRadixBucketWords[256]; /* 00485A40 g_PrimitiveRadixBucketWords */
 
 /* original 0x00486D8C-0x004A6FB0 */
@@ -1313,13 +1276,7 @@ extern int32_t g_ModelBoundsMinimumY; /* 004BD2E8 g_ModelBoundsMinimumY */
 extern int32_t g_ModelBoundsMaximumY; /* 004BD2EC g_ModelBoundsMaximumY */
 extern int32_t g_ModelBoundsMinimumZ; /* 004BD2F0 g_ModelBoundsMinimumZ */
 extern int32_t g_ModelBoundsMaximumZ; /* 004BD2F4 g_ModelBoundsMaximumZ */
-typedef struct ImageObject_004BD2F8 {
-    int32_t at_g_ModelBoundsTransformedPointX; /* 004BD2F8 g_ModelBoundsTransformedPointX */
-    int32_t at_g_ModelBoundsTransformedPointY; /* 004BD2FC g_ModelBoundsTransformedPointY */
-    int32_t at_g_ModelBoundsTransformedPointZ; /* 004BD300 g_ModelBoundsTransformedPointZ */
-    uint32_t at_g_ModelBoundsTransformedPointZ_rest[3]; /* beyond the declared type */
-} ImageObject_004BD2F8;
-extern ImageObject_004BD2F8 g_ImageObject_004BD2F8;
+extern GraphicsFixedVec3 g_ModelBoundsTransformedPoint; /* 004BD2F8 g_ModelBoundsTransformedPoint */
 
 /* original 0x004BD440-0x004BD4B0 */
 typedef struct ImageObject_004BD440 {
@@ -1361,13 +1318,7 @@ typedef struct ImageObject_004BD890 {
     uint32_t at_g_ArmyPlacementContactKindDispatchTable_rest[3]; /* beyond the declared type */
 } ImageObject_004BD890;
 extern ImageObject_004BD890 g_ImageObject_004BD890;
-typedef struct ImageObject_004BD8B0 {
-    uint32_t at_g_ModelCullViewRelativeX; /* 004BD8B0 g_ModelCullViewRelativeX */
-    uint32_t at_g_ModelCullViewRelativeY; /* 004BD8B4 g_ModelCullViewRelativeY */
-    uint32_t at_g_ModelCullViewRelativeZ; /* 004BD8B8 g_ModelCullViewRelativeZ */
-    uint32_t at_g_ModelCullViewRelativeZ_rest[3]; /* beyond the declared type */
-} ImageObject_004BD8B0;
-extern ImageObject_004BD8B0 g_ImageObject_004BD8B0;
+extern GraphicsFixedVec3 g_ModelCullViewRelative; /* 004BD8B0 g_ModelCullViewRelative */
 typedef struct ImageObject_004BD8C8 {
     SpriteAssetHeader * at_g_SpriteAssetRegistryHead; /* 004BD8C8 g_SpriteAssetRegistryHead */
     uint32_t at_g_SpriteAssetRegistryHead_rest[1]; /* beyond the declared type */
@@ -1382,19 +1333,8 @@ extern ImageObject_004BEA6C g_ImageObject_004BEA6C;
 extern GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix; /* 004BEA70 g_ModelTransformScratchMatrix */
 extern GraphicsFixedMatrix3x4 g_FixedTransformInputRotationScratch; /* 004BEAA0 g_FixedTransformInputRotationScratch */
 extern GraphicsFixedMatrix3x4 g_FixedTransformComposedRotationScratch; /* 004BEAD0 g_FixedTransformComposedRotationScratch */
-typedef struct ImageObject_004BEB00 {
-    int32_t at_g_ModelTransformInputX; /* 004BEB00 g_ModelTransformInputX */
-    int32_t at_g_ModelTransformInputY; /* 004BEB04 g_ModelTransformInputY */
-    int32_t at_g_ModelTransformInputZ; /* 004BEB08 g_ModelTransformInputZ */
-} ImageObject_004BEB00;
-extern ImageObject_004BEB00 g_ImageObject_004BEB00;
-typedef struct ImageObject_004BEB0C {
-    Q12 at_g_ModelTransformOutputX; /* 004BEB0C g_ModelTransformOutputX */
-    Q12 at_g_ModelTransformOutputY; /* 004BEB10 g_ModelTransformOutputY */
-    Q12 at_g_ModelTransformOutputZ; /* 004BEB14 g_ModelTransformOutputZ */
-    uint32_t at_g_ModelTransformOutputZ_rest[2]; /* beyond the declared type */
-} ImageObject_004BEB0C;
-extern ImageObject_004BEB0C g_ImageObject_004BEB0C;
+extern GraphicsFixedVec3 g_ModelTransformInput; /* 004BEB00 g_ModelTransformInput */
+extern GraphicsFixedVec3 g_ModelTransformOutput; /* 004BEB0C g_ModelTransformOutput */
 
 /* original 0x004BED4C-0x004CC710 */
 typedef struct ImageObject_004BED4C {
@@ -1431,18 +1371,12 @@ extern ImageObject_004CCDE8 g_ImageObject_004CCDE8;
 extern uint32_t g_GraphicsShadingTextureDimension; /* 004CCE00 g_GraphicsShadingTextureDimension */
 extern uint32_t g_GraphicsShadingGridHalfSize; /* 004CCE04 g_GraphicsShadingGridHalfSize */
 extern uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor; /* 004CCE08 g_GraphicsShadingGeneratedTexturePixelCursor */
-typedef struct ImageObject_004CCE0C {
-    uint32_t at_g_GraphicsShadingGeneratedTextureTileX; /* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
-    uint32_t at_g_GraphicsShadingGeneratedTextureTileY; /* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
-} ImageObject_004CCE0C;
-extern ImageObject_004CCE0C g_ImageObject_004CCE0C;
+extern uint32_t g_GraphicsShadingGeneratedTextureTileX; /* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
+extern uint32_t g_GraphicsShadingGeneratedTextureTileY; /* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
 extern GraphicsSubresourceIndex g_GraphicsShadingGeneratedTextureSubresourceIndex; /* 004CCE14 g_GraphicsShadingGeneratedTextureSubresourceIndex */
 extern uint32_t g_GraphicsShadingSubresourceCount; /* 004CCE18 g_GraphicsShadingSubresourceCount */
-typedef struct ImageObject_004CCE1C {
-    uint32_t at_g_GraphicsShadingGeneratedTextureTileXQ20; /* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
-    uint32_t at_g_GraphicsShadingGeneratedTextureTileYQ20; /* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
-} ImageObject_004CCE1C;
-extern ImageObject_004CCE1C g_ImageObject_004CCE1C;
+extern uint32_t g_GraphicsShadingGeneratedTextureTileXQ20; /* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
+extern uint32_t g_GraphicsShadingGeneratedTextureTileYQ20; /* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
 extern uint32_t g_GraphicsShadingGridStepQ20; /* 004CCE24 g_GraphicsShadingGridStepQ20 */
 extern int32_t g_GraphicsShadingGridStepQ20Current; /* 004CCE28 g_GraphicsShadingGridStepQ20Current */
 extern GraphicsTextureSourceAsset *g_GraphicsShadingGeneratedAsset; /* 004CCE2C g_GraphicsShadingGeneratedAsset */
@@ -1518,12 +1452,7 @@ extern ImageObject_00501184 g_ImageObject_00501184;
 extern PackedArgb32 g_TerrainLightingColorRampArgb256[256]; /* 00501190 g_TerrainLightingColorRampArgb256 */
 extern PackedArgb32 g_TerrainDirectionalLightColorLut[257]; /* 00501590 g_TerrainDirectionalLightColorLut */
 extern uint32_t g_TerrainDirectionalLightSecondaryColor; /* 00501994 g_TerrainDirectionalLightSecondaryColor */
-typedef struct ImageObject_00501998 {
-    uint32_t at_g_TerrainLightDirectionX; /* 00501998 g_TerrainLightDirectionX */
-    uint32_t at_g_TerrainLightDirectionY; /* 0050199C g_TerrainLightDirectionY */
-    uint32_t at_g_TerrainLightDirectionZ; /* 005019A0 g_TerrainLightDirectionZ */
-} ImageObject_00501998;
-extern ImageObject_00501998 g_ImageObject_00501998;
+extern GraphicsFixedVec3 g_TerrainLightDirection; /* 00501998 g_TerrainLightDirection: Q28 unit vector */
 extern uint8_t *g_TerrainByteClampLookup; /* 005019A4 g_TerrainByteClampLookup */
 typedef struct ImageObject_005019A8 {
     TerrainDirectionRecord at_g_TerrainDirectionRecordTable256[256]; /* 005019A8 g_TerrainDirectionRecordTable256 */
@@ -1592,31 +1521,10 @@ typedef struct ImageObject_0050AE54 {
 } ImageObject_0050AE54;
 extern ImageObject_0050AE54 g_ImageObject_0050AE54;
 extern int32_t g_ModelRaycastMaximumDistance; /* 0050AE60 g_ModelRaycastMaximumDistance */
-typedef struct ImageObject_0050AE64 {
-    int32_t at_g_ModelRaycastOriginX; /* 0050AE64 g_ModelRaycastOriginX */
-    int32_t at_g_ModelRaycastOriginY; /* 0050AE68 g_ModelRaycastOriginY */
-    int32_t at_g_ModelRaycastOriginZ; /* 0050AE6C g_ModelRaycastOriginZ */
-} ImageObject_0050AE64;
-extern ImageObject_0050AE64 g_ImageObject_0050AE64;
-typedef struct ImageObject_0050AE70 {
-    int32_t at_g_ModelRaycastLocalOriginX; /* 0050AE70 g_ModelRaycastLocalOriginX */
-    int32_t at_g_ModelRaycastLocalOriginY; /* 0050AE74 g_ModelRaycastLocalOriginY */
-    int32_t at_g_ModelRaycastLocalOriginZ; /* 0050AE78 g_ModelRaycastLocalOriginZ */
-} ImageObject_0050AE70;
-extern ImageObject_0050AE70 g_ImageObject_0050AE70;
-typedef struct ImageObject_0050AE7C {
-    uint32_t at_g_ModelRaycastWorldDirectionXQ28; /* 0050AE7C g_ModelRaycastWorldDirectionXQ28 */
-    uint32_t at_g_ModelRaycastWorldDirectionYQ28; /* 0050AE80 g_ModelRaycastWorldDirectionYQ28 */
-    uint32_t at_g_ModelRaycastWorldDirectionZQ28; /* 0050AE84 g_ModelRaycastWorldDirectionZQ28 */
-} ImageObject_0050AE7C;
-extern ImageObject_0050AE7C g_ImageObject_0050AE7C;
-typedef struct ImageObject_0050AE88 {
-    uint32_t at_g_ModelRaycastLocalDirectionXQ28; /* 0050AE88 g_ModelRaycastLocalDirectionXQ28 */
-    uint32_t at_g_ModelRaycastLocalDirectionYQ28; /* 0050AE8C g_ModelRaycastLocalDirectionYQ28 */
-    uint32_t at_g_ModelRaycastLocalDirectionZQ28; /* 0050AE90 g_ModelRaycastLocalDirectionZQ28 */
-    uint32_t at_g_ModelRaycastLocalDirectionZQ28_rest[3]; /* beyond the declared type */
-} ImageObject_0050AE88;
-extern ImageObject_0050AE88 g_ImageObject_0050AE88;
+extern GraphicsFixedVec3 g_ModelRaycastOrigin; /* 0050AE64 g_ModelRaycastOrigin: Q12 world-space ray origin */
+extern GraphicsFixedVec3 g_ModelRaycastLocalOrigin; /* 0050AE70 g_ModelRaycastLocalOrigin: Q12 ray origin in the tested node's frame */
+extern GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28; /* 0050AE7C g_ModelRaycastWorldDirectionQ28: Q28 world-space ray direction */
+extern GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28; /* 0050AE88 g_ModelRaycastLocalDirectionQ28: Q28 ray direction in the tested node's frame */
 
 /* original 0x0050B510-0x0050B5D0 */
 typedef struct ImageObject_0050B510 {
@@ -1631,12 +1539,7 @@ typedef struct ImageObject_0050B520 {
 extern ImageObject_0050B520 g_ImageObject_0050B520;
 extern GraphicsFixedMatrix3x4 g_SpatialSoundListenerRotation; /* 0050B550 g_SpatialSoundListenerRotation */
 extern GraphicsFixedMatrix3x4 g_SpatialSoundListenerWorldToLocal; /* 0050B580 g_SpatialSoundListenerWorldToLocal */
-typedef struct ImageObject_0050B5B0 {
-    uint32_t at_g_SpatialSoundRelativeX; /* 0050B5B0 g_SpatialSoundRelativeX */
-    uint32_t at_g_SpatialSoundRelativeY; /* 0050B5B4 g_SpatialSoundRelativeY */
-    uint32_t at_g_SpatialSoundRelativeZ; /* 0050B5B8 g_SpatialSoundRelativeZ */
-} ImageObject_0050B5B0;
-extern ImageObject_0050B5B0 g_ImageObject_0050B5B0;
+extern GraphicsFixedVec3 g_SpatialSoundRelative; /* 0050B5B0 g_SpatialSoundRelative: sound position in the listener's frame */
 extern AudioMixerGainQ15 g_SoundEffectsGainQ15; /* 0050B5BC g_SoundEffectsGainQ15 */
 extern int32_t g_ReverseStereoMask; /* 0050B5C0 g_ReverseStereoMask */
 typedef struct ImageObject_0050B5C4 {
@@ -1688,60 +1591,39 @@ typedef struct ImageObject_0050D928 {
 } ImageObject_0050D928;
 extern ImageObject_0050D928 g_ImageObject_0050D928;
 extern TechnologyAsset *g_TechnologyAsset; /* 0050D930 g_TechnologyAsset */
-typedef struct ImageObject_0050D934 {
-    uint32_t at_g_LevelCameraBookmark1PositionXQ12; /* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
-    uint32_t at_g_LevelCameraBookmark1PositionYQ12; /* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
-    uint32_t at_g_LevelCameraBookmark1PositionZQ12; /* 0050D93C g_LevelCameraBookmark1PositionZQ12 */
-} ImageObject_0050D934;
-extern ImageObject_0050D934 g_ImageObject_0050D934;
+extern uint32_t g_LevelCameraBookmark1PositionXQ12; /* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
+extern uint32_t g_LevelCameraBookmark1PositionYQ12; /* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
+extern uint32_t g_LevelCameraBookmark1PositionZQ12; /* 0050D93C g_LevelCameraBookmark1PositionZQ12 */
 extern uint32_t g_LevelCameraBookmark1PositionMagnitudeQ12; /* 0050D940 g_LevelCameraBookmark1PositionMagnitudeQ12 */
 extern uint32_t g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16; /* 0050D944 g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 */
-typedef struct ImageObject_0050D948 {
-    uint32_t at_g_LevelCameraBookmark2PositionXQ12; /* 0050D948 g_LevelCameraBookmark2PositionXQ12 */
-    uint32_t at_g_LevelCameraBookmark2PositionYQ12; /* 0050D94C g_LevelCameraBookmark2PositionYQ12 */
-    uint32_t at_g_LevelCameraBookmark2PositionZQ12; /* 0050D950 g_LevelCameraBookmark2PositionZQ12 */
-} ImageObject_0050D948;
-extern ImageObject_0050D948 g_ImageObject_0050D948;
+extern uint32_t g_LevelCameraBookmark2PositionXQ12; /* 0050D948 g_LevelCameraBookmark2PositionXQ12 */
+extern uint32_t g_LevelCameraBookmark2PositionYQ12; /* 0050D94C g_LevelCameraBookmark2PositionYQ12 */
+extern uint32_t g_LevelCameraBookmark2PositionZQ12; /* 0050D950 g_LevelCameraBookmark2PositionZQ12 */
 extern uint32_t g_LevelCameraBookmark2PositionMagnitudeQ12; /* 0050D954 g_LevelCameraBookmark2PositionMagnitudeQ12 */
 extern uint32_t g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16; /* 0050D958 g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 */
-typedef struct ImageObject_0050D95C {
-    uint32_t at_g_LevelCameraBookmark3PositionXQ12; /* 0050D95C g_LevelCameraBookmark3PositionXQ12 */
-    uint32_t at_g_LevelCameraBookmark3PositionYQ12; /* 0050D960 g_LevelCameraBookmark3PositionYQ12 */
-    uint32_t at_g_LevelCameraBookmark3PositionZQ12; /* 0050D964 g_LevelCameraBookmark3PositionZQ12 */
-} ImageObject_0050D95C;
-extern ImageObject_0050D95C g_ImageObject_0050D95C;
+extern uint32_t g_LevelCameraBookmark3PositionXQ12; /* 0050D95C g_LevelCameraBookmark3PositionXQ12 */
+extern uint32_t g_LevelCameraBookmark3PositionYQ12; /* 0050D960 g_LevelCameraBookmark3PositionYQ12 */
+extern uint32_t g_LevelCameraBookmark3PositionZQ12; /* 0050D964 g_LevelCameraBookmark3PositionZQ12 */
 extern uint32_t g_LevelCameraBookmark3PositionMagnitudeQ12; /* 0050D968 g_LevelCameraBookmark3PositionMagnitudeQ12 */
 extern uint32_t g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16; /* 0050D96C g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 */
-typedef struct ImageObject_0050D970 {
-    uint32_t at_g_LevelCameraBookmark4PositionXQ12; /* 0050D970 g_LevelCameraBookmark4PositionXQ12 */
-    uint32_t at_g_LevelCameraBookmark4PositionYQ12; /* 0050D974 g_LevelCameraBookmark4PositionYQ12 */
-    uint32_t at_g_LevelCameraBookmark4PositionZQ12; /* 0050D978 g_LevelCameraBookmark4PositionZQ12 */
-} ImageObject_0050D970;
-extern ImageObject_0050D970 g_ImageObject_0050D970;
+extern uint32_t g_LevelCameraBookmark4PositionXQ12; /* 0050D970 g_LevelCameraBookmark4PositionXQ12 */
+extern uint32_t g_LevelCameraBookmark4PositionYQ12; /* 0050D974 g_LevelCameraBookmark4PositionYQ12 */
+extern uint32_t g_LevelCameraBookmark4PositionZQ12; /* 0050D978 g_LevelCameraBookmark4PositionZQ12 */
 extern uint32_t g_LevelCameraBookmark4PositionMagnitudeQ12; /* 0050D97C g_LevelCameraBookmark4PositionMagnitudeQ12 */
 extern uint32_t g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16; /* 0050D980 g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 */
-typedef struct ImageObject_0050D984 {
-    uint32_t at_g_LevelCameraBookmark5PositionXQ12; /* 0050D984 g_LevelCameraBookmark5PositionXQ12 */
-    uint32_t at_g_LevelCameraBookmark5PositionYQ12; /* 0050D988 g_LevelCameraBookmark5PositionYQ12 */
-    uint32_t at_g_LevelCameraBookmark5PositionZQ12; /* 0050D98C g_LevelCameraBookmark5PositionZQ12 */
-} ImageObject_0050D984;
-extern ImageObject_0050D984 g_ImageObject_0050D984;
+extern uint32_t g_LevelCameraBookmark5PositionXQ12; /* 0050D984 g_LevelCameraBookmark5PositionXQ12 */
+extern uint32_t g_LevelCameraBookmark5PositionYQ12; /* 0050D988 g_LevelCameraBookmark5PositionYQ12 */
+extern uint32_t g_LevelCameraBookmark5PositionZQ12; /* 0050D98C g_LevelCameraBookmark5PositionZQ12 */
 extern uint32_t g_LevelCameraBookmark5PositionMagnitudeQ12; /* 0050D990 g_LevelCameraBookmark5PositionMagnitudeQ12 */
 extern uint32_t g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16; /* 0050D994 g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 */
-typedef struct ImageObject_0050D998 {
-    uint32_t at_g_LevelCameraBookmark6PositionXQ12; /* 0050D998 g_LevelCameraBookmark6PositionXQ12 */
-    uint32_t at_g_LevelCameraBookmark6PositionYQ12; /* 0050D99C g_LevelCameraBookmark6PositionYQ12 */
-    uint32_t at_g_LevelCameraBookmark6PositionZQ12; /* 0050D9A0 g_LevelCameraBookmark6PositionZQ12 */
-} ImageObject_0050D998;
-extern ImageObject_0050D998 g_ImageObject_0050D998;
+extern uint32_t g_LevelCameraBookmark6PositionXQ12; /* 0050D998 g_LevelCameraBookmark6PositionXQ12 */
+extern uint32_t g_LevelCameraBookmark6PositionYQ12; /* 0050D99C g_LevelCameraBookmark6PositionYQ12 */
+extern uint32_t g_LevelCameraBookmark6PositionZQ12; /* 0050D9A0 g_LevelCameraBookmark6PositionZQ12 */
 extern uint32_t g_LevelCameraBookmark6PositionMagnitudeQ12; /* 0050D9A4 g_LevelCameraBookmark6PositionMagnitudeQ12 */
 extern uint32_t g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16; /* 0050D9A8 g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 */
-typedef struct ImageObject_0050D9AC {
-    uint32_t at_g_LevelCameraBookmark7PositionXQ12; /* 0050D9AC g_LevelCameraBookmark7PositionXQ12 */
-    uint32_t at_g_LevelCameraBookmark7PositionYQ12; /* 0050D9B0 g_LevelCameraBookmark7PositionYQ12 */
-    uint32_t at_g_LevelCameraBookmark7PositionZQ12; /* 0050D9B4 g_LevelCameraBookmark7PositionZQ12 */
-} ImageObject_0050D9AC;
-extern ImageObject_0050D9AC g_ImageObject_0050D9AC;
+extern uint32_t g_LevelCameraBookmark7PositionXQ12; /* 0050D9AC g_LevelCameraBookmark7PositionXQ12 */
+extern uint32_t g_LevelCameraBookmark7PositionYQ12; /* 0050D9B0 g_LevelCameraBookmark7PositionYQ12 */
+extern uint32_t g_LevelCameraBookmark7PositionZQ12; /* 0050D9B4 g_LevelCameraBookmark7PositionZQ12 */
 extern uint32_t g_LevelCameraBookmark7PositionMagnitudeQ12; /* 0050D9B8 g_LevelCameraBookmark7PositionMagnitudeQ12 */
 extern uint32_t g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16; /* 0050D9BC g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 */
 extern ScenarioCatalogHeader *g_ScenarioCatalog; /* 0050D9C0 g_ScenarioCatalog */
@@ -2398,22 +2280,10 @@ extern ImageObject_00530C28 g_ImageObject_00530C28;
 extern uint16_t g_LevelEndingMovieSourcePath[256]; /* 00530E28 g_LevelEndingMovieSourcePath */
 extern uint32_t g_InGameLevelTitleTextResourceIndex; /* 00531028 g_InGameLevelTitleTextResourceIndex */
 extern uint32_t g_InGameLevelCampaignAssociationIndex; /* 0053102C g_InGameLevelCampaignAssociationIndex */
-typedef struct ImageObject_00531030 {
-    uint32_t at_g_InGameLevelEffectVoiceSet0; /* 00531030 g_InGameLevelEffectVoiceSet0 */
-    uint32_t at_g_InGameLevelEffectVoiceSet1; /* 00531034 g_InGameLevelEffectVoiceSet1 */
-    uint32_t at_g_InGameLevelEffectVoiceSet2; /* 00531038 g_InGameLevelEffectVoiceSet2 */
-    uint32_t at_g_InGameLevelEffectVoiceSet3; /* 0053103C g_InGameLevelEffectVoiceSet3 */
-} ImageObject_00531030;
-extern ImageObject_00531030 g_ImageObject_00531030;
+extern DirectSoundVoiceSet *g_InGameLevelEffectVoiceSets[4]; /* 00531030 g_InGameLevelEffectVoiceSets */
 extern uint32_t g_InGameActiveEffectVoice; /* 00531040 g_InGameActiveEffectVoice */
 extern uint32_t g_InGameEffectsEnabled; /* 00531044 g_InGameEffectsEnabled */
-typedef struct ImageObject_00531048 {
-    uint32_t at_g_InGameLevelMusicVoiceSet0; /* 00531048 g_InGameLevelMusicVoiceSet0 */
-    uint32_t at_g_InGameLevelMusicVoiceSet1; /* 0053104C g_InGameLevelMusicVoiceSet1 */
-    uint32_t at_g_InGameLevelMusicVoiceSet2; /* 00531050 g_InGameLevelMusicVoiceSet2 */
-    uint32_t at_g_InGameLevelMusicVoiceSet3; /* 00531054 g_InGameLevelMusicVoiceSet3 */
-} ImageObject_00531048;
-extern ImageObject_00531048 g_ImageObject_00531048;
+extern DirectSoundVoiceSet *g_InGameLevelMusicVoiceSets[4]; /* 00531048 g_InGameLevelMusicVoiceSets */
 extern uint32_t g_InGameActiveMusicVoice; /* 00531058 g_InGameActiveMusicVoice */
 extern uint32_t g_InGameMusicNextTrackCountdown; /* 0053105C g_InGameMusicNextTrackCountdown */
 extern InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock; /* 00531060 g_InGameLevelRuntimeGlobalBlock */
@@ -2514,28 +2384,8 @@ typedef struct ImageObject_00536F48 {
     uint32_t at_g_ModelTraversalFallbackSecondaryThresholdTable3_rest[3]; /* beyond the declared type */
 } ImageObject_00536F48;
 extern ImageObject_00536F48 g_ImageObject_00536F48;
-typedef struct ImageObject_00536F60 {
-    uint32_t at_g_GridInfluenceRadiusOffset0; /* 00536F60 g_GridInfluenceRadiusOffset0 */
-    uint32_t at_g_GridInfluenceRadiusOffset1; /* 00536F64 g_GridInfluenceRadiusOffset1 */
-    uint32_t at_g_GridInfluenceRadiusOffset2; /* 00536F68 g_GridInfluenceRadiusOffset2 */
-    uint32_t at_g_GridInfluenceRadiusOffset3; /* 00536F6C g_GridInfluenceRadiusOffset3 */
-    uint32_t at_g_GridInfluenceRadiusOffset4; /* 00536F70 g_GridInfluenceRadiusOffset4 */
-    uint32_t at_g_GridInfluenceRadiusOffset5; /* 00536F74 g_GridInfluenceRadiusOffset5 */
-    uint32_t at_g_GridInfluenceRadiusOffset6; /* 00536F78 g_GridInfluenceRadiusOffset6 */
-    uint32_t at_g_GridInfluenceRadiusOffset7; /* 00536F7C g_GridInfluenceRadiusOffset7 */
-} ImageObject_00536F60;
-extern ImageObject_00536F60 g_ImageObject_00536F60;
-typedef struct ImageObject_00536F80 {
-    uint32_t at_g_GridInfluenceSquaredThreshold0; /* 00536F80 g_GridInfluenceSquaredThreshold0 */
-    uint32_t at_g_GridInfluenceSquaredThreshold1; /* 00536F84 g_GridInfluenceSquaredThreshold1 */
-    uint32_t at_g_GridInfluenceSquaredThreshold2; /* 00536F88 g_GridInfluenceSquaredThreshold2 */
-    uint32_t at_g_GridInfluenceSquaredThreshold3; /* 00536F8C g_GridInfluenceSquaredThreshold3 */
-    uint32_t at_g_GridInfluenceSquaredThreshold4; /* 00536F90 g_GridInfluenceSquaredThreshold4 */
-    uint32_t at_g_GridInfluenceSquaredThreshold5; /* 00536F94 g_GridInfluenceSquaredThreshold5 */
-    uint32_t at_g_GridInfluenceSquaredThreshold6; /* 00536F98 g_GridInfluenceSquaredThreshold6 */
-    uint32_t at_g_GridInfluenceSquaredThreshold7; /* 00536F9C g_GridInfluenceSquaredThreshold7 */
-} ImageObject_00536F80;
-extern ImageObject_00536F80 g_ImageObject_00536F80;
+extern uint32_t g_GridInfluenceRadiusOffset[8]; /* 00536F60 g_GridInfluenceRadiusOffset: uint32_t[8] grid influence ring radius offsets 1000..4100, indexed by ring / footprint radius class (world/pathing/influence.c, assets/model/definitions.c) */
+extern uint32_t g_GridInfluenceSquaredThreshold[8]; /* 00536F80 g_GridInfluenceSquaredThreshold: uint32_t[8] squared influence ring radii, ring n = (g_GridInfluenceRadiusOffset[n] + radius + margin)^2; [6] is also reused as the footprint clearance disc (world/pathing/influence.c, world/pathing/grid.c) */
 extern int32_t g_AiCombatTargetRadialClearanceWeight; /* 00536FA0 g_AiCombatTargetRadialClearanceWeight: int32_t weight 0x600 multiplying the radial clearance term of the AI combat target score (gameplay/ai/combat.c) */
 extern int32_t g_AiCombatTargetCandidateCounterCountWeight; /* 00536FA4 g_AiCombatTargetCandidateCounterCountWeight: int32_t weight 0x12000 for the candidate class counter term of the AI combat target score, divided by the Q12 hierarchy scale unity (gameplay/ai/combat.c) */
 extern int32_t g_AiCombatTargetSourceCounterCountWeight; /* 00536FA8 g_AiCombatTargetSourceCounterCountWeight: int32_t weight 0x20000 for the source class counter term of the AI combat target score (gameplay/ai/combat.c) */
@@ -2588,13 +2438,7 @@ extern ArmyAssetRecordPrefix **g_AiWorkspace11ProducibleAssets; /* 005379B8 g_Ai
 extern uint32_t g_AiWorkspace11Count; /* 005379BC g_AiWorkspace11Count */
 extern AiTechnologyPlanningCandidate *g_AiWorkspace12TechnologyCandidates; /* 005379C0 g_AiWorkspace12TechnologyCandidates */
 extern AiTechnologyPlanningCandidateCount g_AiWorkspace12Count; /* 005379C4 g_AiWorkspace12Count */
-typedef struct ImageObject_005379C8 {
-    uint32_t at_g_AiActiveGridMaskClass0; /* 005379C8 g_AiActiveGridMaskClass0 */
-    uint32_t at_g_AiActiveGridMaskClass1; /* 005379CC g_AiActiveGridMaskClass1 */
-    uint32_t at_g_AiActiveGridMaskClass2; /* 005379D0 g_AiActiveGridMaskClass2 */
-    uint32_t at_g_AiActiveGridMaskClass3; /* 005379D4 g_AiActiveGridMaskClass3 */
-} ImageObject_005379C8;
-extern ImageObject_005379C8 g_ImageObject_005379C8;
+extern uint32_t g_AiActiveGridMaskClasses[4]; /* 005379C8 g_AiActiveGridMaskClasses */
 typedef struct ImageObject_005379D8 {
     ModelRuntimeSlot * at_g_AiWorkspaceOwnedAsset300Runtime; /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
     uint32_t at_g_AiWorkspaceOwnedAsset300Runtime_rest[1]; /* beyond the declared type */
@@ -2618,17 +2462,7 @@ typedef struct ImageObject_00539974 {
 } ImageObject_00539974;
 extern ImageObject_00539974 g_ImageObject_00539974;
 extern uint32_t g_TechnologyCategoryMaximumReciprocalQ24Table8[8]; /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
-typedef struct ImageObject_005399A0 {
-    int32_t at_g_TechnologyCategoryMaximum0; /* 005399A0 g_TechnologyCategoryMaximum0 */
-    uint32_t at_g_TechnologyCategoryMaximum1; /* 005399A4 g_TechnologyCategoryMaximum1 */
-    uint32_t at_g_TechnologyCategoryMaximum2; /* 005399A8 g_TechnologyCategoryMaximum2 */
-    uint32_t at_g_TechnologyCategoryMaximum3; /* 005399AC g_TechnologyCategoryMaximum3 */
-    uint32_t at_g_TechnologyCategoryMaximum4; /* 005399B0 g_TechnologyCategoryMaximum4 */
-    uint32_t at_g_TechnologyCategoryMaximum5; /* 005399B4 g_TechnologyCategoryMaximum5 */
-    uint32_t at_g_TechnologyCategoryMaximum6; /* 005399B8 g_TechnologyCategoryMaximum6 */
-    uint32_t at_g_TechnologyCategoryMaximum7; /* 005399BC g_TechnologyCategoryMaximum7 */
-} ImageObject_005399A0;
-extern ImageObject_005399A0 g_ImageObject_005399A0;
+extern int32_t g_TechnologyCategoryMaximums[8]; /* 005399A0 g_TechnologyCategoryMaximums */
 extern int32_t g_AiArmyCandidateFlaggedDefinitionValueMaximum; /* 005399C0 g_AiArmyCandidateFlaggedDefinitionValueMaximum */
 extern int32_t g_AiStrategicClassTerrainWeights[5][3]; /* 005399C4 g_AiStrategicClassTerrainWeights */
 extern TechnologyCategoryMasks g_TechnologyCategoryMasks; /* 00539A00 g_TechnologyCategoryMasks */
@@ -3194,32 +3028,20 @@ extern uint32_t g_UiAction1012TargetPlayerIndices[7]; /* 005636E0 g_UiAction1012
 extern WorldObjectRecord *g_InGameWorldObjectRecords; /* 005636FC g_InGameWorldObjectRecords */
 extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne; /* 00563700 g_RuntimeObjectRebaseBaseMinusOne */
 extern uint32_t g_InGamePlacementHeading16; /* 00563704 g_InGamePlacementHeading16 */
-typedef struct ImageObject_00563708 {
-    uint32_t at_g_InGamePlacementPointerCaptureX; /* 00563708 g_InGamePlacementPointerCaptureX */
-    uint32_t at_g_InGamePlacementPointerCaptureY; /* 0056370C g_InGamePlacementPointerCaptureY */
-} ImageObject_00563708;
-extern ImageObject_00563708 g_ImageObject_00563708;
+extern uint32_t g_InGamePlacementPointerCaptureX; /* 00563708 g_InGamePlacementPointerCaptureX */
+extern uint32_t g_InGamePlacementPointerCaptureY; /* 0056370C g_InGamePlacementPointerCaptureY */
 extern int32_t g_InGamePendingPlacementArmyAsset; /* 00563710 g_InGamePendingPlacementArmyAsset */
 extern GameEntityRuntime *g_InGamePlacementPreviewArmyRuntime; /* 00563714 g_InGamePlacementPreviewArmyRuntime */
-typedef struct ImageObject_00563718 {
-    uint32_t at_g_InGamePlacementWorldYQ12; /* 00563718 g_InGamePlacementWorldYQ12 */
-    uint32_t at_g_InGamePlacementWorldXQ12; /* 0056371C g_InGamePlacementWorldXQ12 */
-} ImageObject_00563718;
-extern ImageObject_00563718 g_ImageObject_00563718;
+extern uint32_t g_InGamePlacementWorldYQ12; /* 00563718 g_InGamePlacementWorldYQ12 */
+extern uint32_t g_InGamePlacementWorldXQ12; /* 0056371C g_InGamePlacementWorldXQ12 */
 extern int32_t g_InGamePlacementSurfaceHeightQ12OrSentinel; /* 00563720 g_InGamePlacementSurfaceHeightQ12OrSentinel */
 extern GameEntityRuntime *g_InGameCommandPreviewArmyRuntime; /* 00563724 g_InGameCommandPreviewArmyRuntime */
 extern uint32_t g_InGameCommandPreviewHeading16; /* 00563728 g_InGameCommandPreviewHeading16 */
-typedef struct ImageObject_0056372C {
-    uint32_t at_g_InGameCommandPreviewWorldYQ12; /* 0056372C g_InGameCommandPreviewWorldYQ12 */
-    uint32_t at_g_InGameCommandPreviewWorldXQ12; /* 00563730 g_InGameCommandPreviewWorldXQ12 */
-} ImageObject_0056372C;
-extern ImageObject_0056372C g_ImageObject_0056372C;
+extern uint32_t g_InGameCommandPreviewWorldYQ12; /* 0056372C g_InGameCommandPreviewWorldYQ12 */
+extern uint32_t g_InGameCommandPreviewWorldXQ12; /* 00563730 g_InGameCommandPreviewWorldXQ12 */
 extern uint32_t g_InGameCommandPreviewSurfaceHeightQ12OrSentinel; /* 00563734 g_InGameCommandPreviewSurfaceHeightQ12OrSentinel */
-typedef struct ImageObject_00563738 {
-    uint32_t at_g_InGameCommandPointerCaptureX; /* 00563738 g_InGameCommandPointerCaptureX */
-    uint32_t at_g_InGameCommandPointerCaptureY; /* 0056373C g_InGameCommandPointerCaptureY */
-} ImageObject_00563738;
-extern ImageObject_00563738 g_ImageObject_00563738;
+extern uint32_t g_InGameCommandPointerCaptureX; /* 00563738 g_InGameCommandPointerCaptureX */
+extern uint32_t g_InGameCommandPointerCaptureY; /* 0056373C g_InGameCommandPointerCaptureY */
 extern uint32_t g_InGameCommandPreviewArmyAssetId; /* 00563740 g_InGameCommandPreviewArmyAssetId */
 extern uint32_t g_InGamePointerInteractionStateFlags; /* 00563744 g_InGamePointerInteractionStateFlags */
 extern code *g_InGamePointerModeHandlers[8]; /* 00563748 g_InGamePointerModeHandlers */
@@ -3342,26 +3164,14 @@ extern uint32_t g_UiCommandModeGTertiaryPageIndices[6]; /* 0056D794 g_UiCommandM
 extern int32_t g_UiCommandModeGControlOffsets[6]; /* 0056D7AC g_UiCommandModeGControlOffsets */
 extern void *g_UiCommandModeGHandlers[6]; /* 0056D7C4 g_UiCommandModeGHandlers */
 extern int32_t g_UiMappedCommandControlOffsets[12]; /* 0056D7DC g_UiMappedCommandControlOffsets */
-typedef struct ImageObject_0056D80C {
-    int32_t at_g_UiCommandSelectionAnchorWorldXQ12; /* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
-    int32_t at_g_UiCommandSelectionAnchorWorldYQ12; /* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
-} ImageObject_0056D80C;
-extern ImageObject_0056D80C g_ImageObject_0056D80C;
-typedef struct ImageObject_0056D814 {
-    int32_t at_g_UiCommandSelectionCurrentWorldXQ12; /* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
-    int32_t at_g_UiCommandSelectionCurrentWorldYQ12; /* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
-} ImageObject_0056D814;
-extern ImageObject_0056D814 g_ImageObject_0056D814;
-typedef struct ImageObject_0056D81C {
-    uint32_t at_g_UiCommandDragAnchorWorldXQ12; /* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
-    uint32_t at_g_UiCommandDragAnchorWorldYQ12; /* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
-} ImageObject_0056D81C;
-extern ImageObject_0056D81C g_ImageObject_0056D81C;
-typedef struct ImageObject_0056D824 {
-    uint32_t at_g_UiCommandDragStartScreenX; /* 0056D824 g_UiCommandDragStartScreenX */
-    uint32_t at_g_UiCommandDragStartScreenY; /* 0056D828 g_UiCommandDragStartScreenY */
-} ImageObject_0056D824;
-extern ImageObject_0056D824 g_ImageObject_0056D824;
+extern int32_t g_UiCommandSelectionAnchorWorldXQ12; /* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
+extern int32_t g_UiCommandSelectionAnchorWorldYQ12; /* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
+extern int32_t g_UiCommandSelectionCurrentWorldXQ12; /* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
+extern int32_t g_UiCommandSelectionCurrentWorldYQ12; /* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
+extern uint32_t g_UiCommandDragAnchorWorldXQ12; /* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
+extern uint32_t g_UiCommandDragAnchorWorldYQ12; /* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
+extern uint32_t g_UiCommandDragStartScreenX; /* 0056D824 g_UiCommandDragStartScreenX */
+extern uint32_t g_UiCommandDragStartScreenY; /* 0056D828 g_UiCommandDragStartScreenY */
 extern uint32_t g_TerrainMaterialEditFieldGrid; /* 0056D82C g_TerrainMaterialEditFieldGrid */
 extern uint32_t g_TerrainMaterialEditDeltaBuffer; /* 0056D830 g_TerrainMaterialEditDeltaBuffer */
 extern uint32_t g_TerrainMaterialEditReferenceMaterialByte; /* 0056D834 g_TerrainMaterialEditReferenceMaterialByte */
@@ -3489,11 +3299,8 @@ extern uint32_t g_MoviePackageHandle; /* 00572AD0 g_MoviePackageHandle */
 extern uint32_t g_LevelPackageHandle; /* 00572AD4 g_LevelPackageHandle */
 extern DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7]; /* 00572AD8 g_UiButtonSoundVoiceSets7 */
 extern FncModuleHeader *g_PcxFunctionModule; /* 00572AF4 g_PcxFunctionModule */
-typedef struct ImageObject_00572AF8 {
-    PcxEncodeProc * at_g_PcxFunctionExport3; /* 00572AF8 g_PcxFunctionExport3 */
-    PcxDecodeProc * at_g_PcxFunctionExport2; /* 00572AFC g_PcxFunctionExport2 */
-} ImageObject_00572AF8;
-extern ImageObject_00572AF8 g_ImageObject_00572AF8;
+extern PcxEncodeProc *g_PcxFunctionExport3; /* 00572AF8 g_PcxFunctionExport3: export 3 (capture encoder) of the pcx.fnc module; the C code calls Pcx_EncodeCapture directly, nothing reads it */
+extern PcxDecodeProc *g_PcxFunctionExport2; /* 00572AFC g_PcxFunctionExport2: export 2 (indexed-8 decoder) of the pcx.fnc module; the C code calls Pcx_DecodeIndexed8 directly, nothing reads it */
 extern uint32_t g_IntroMoviePendingTicks; /* 00572B00 g_IntroMoviePendingTicks */
 extern uint32_t g_InstallRegistryKeyHandle; /* 00572B04 g_InstallRegistryKeyHandle */
 extern uint32_t g_InstallRegistryValueDataCapacityBytes; /* 00572B08 g_InstallRegistryValueDataCapacityBytes: uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA); platform/bootstrap/runtime.c */
@@ -4964,49 +4771,8 @@ typedef struct ImageObject_0057ED18 {
 extern ImageObject_0057ED18 g_ImageObject_0057ED18;
 extern GlideLfbInfo g_GlidePrimaryLfbInfo; /* 0057ED20 g_GlidePrimaryLfbInfo */
 extern GlideLfbInfo g_GlideSecondaryLfbInfo; /* 0057ED34 g_GlideSecondaryLfbInfo */
-extern void *g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertex0/1/2; no code reads it (name is historical) */
-typedef struct ImageObject_0057ED54 {
-    uint32_t at_g_GlideVertex0ScreenX; /* 0057ED54 g_GlideVertex0ScreenX */
-    uint32_t at_g_GlideVertex0ScreenY; /* 0057ED58 g_GlideVertex0ScreenY */
-} ImageObject_0057ED54;
-extern ImageObject_0057ED54 g_ImageObject_0057ED54;
-extern uint32_t g_GlideVertex0ReciprocalDepth; /* 0057ED5C g_GlideVertex0ReciprocalDepth */
-typedef struct ImageObject_0057ED60 {
-    uint32_t at_g_GlideVertex0PerspectiveScale; /* 0057ED60 g_GlideVertex0PerspectiveScale */
-    uint32_t at_g_GlideVertex0PerspectiveScale_rest[1]; /* beyond the declared type */
-} ImageObject_0057ED60;
-extern ImageObject_0057ED60 g_ImageObject_0057ED60;
-extern uint32_t g_GlideVertex0ProjectedTextureU; /* 0057ED68 g_GlideVertex0ProjectedTextureU */
-extern uint32_t g_GlideVertex0ProjectedTextureV; /* 0057ED6C g_GlideVertex0ProjectedTextureV */
-extern uint32_t g_GlideVertex0DiffuseColor; /* 0057ED70 g_GlideVertex0DiffuseColor */
-typedef struct ImageObject_0057ED74 {
-    uint32_t at_g_GlideVertex1ScreenX; /* 0057ED74 g_GlideVertex1ScreenX */
-    uint32_t at_g_GlideVertex1ScreenY; /* 0057ED78 g_GlideVertex1ScreenY */
-} ImageObject_0057ED74;
-extern ImageObject_0057ED74 g_ImageObject_0057ED74;
-extern uint32_t g_GlideVertex1ReciprocalDepth; /* 0057ED7C g_GlideVertex1ReciprocalDepth */
-typedef struct ImageObject_0057ED80 {
-    uint32_t at_g_GlideVertex1PerspectiveScale; /* 0057ED80 g_GlideVertex1PerspectiveScale */
-    uint32_t at_g_GlideVertex1PerspectiveScale_rest[1]; /* beyond the declared type */
-} ImageObject_0057ED80;
-extern ImageObject_0057ED80 g_ImageObject_0057ED80;
-extern uint32_t g_GlideVertex1ProjectedTextureU; /* 0057ED88 g_GlideVertex1ProjectedTextureU */
-extern uint32_t g_GlideVertex1ProjectedTextureV; /* 0057ED8C g_GlideVertex1ProjectedTextureV */
-extern uint32_t g_GlideVertex1DiffuseColor; /* 0057ED90 g_GlideVertex1DiffuseColor */
-typedef struct ImageObject_0057ED94 {
-    uint32_t at_g_GlideVertex2ScreenX; /* 0057ED94 g_GlideVertex2ScreenX */
-    uint32_t at_g_GlideVertex2ScreenY; /* 0057ED98 g_GlideVertex2ScreenY */
-} ImageObject_0057ED94;
-extern ImageObject_0057ED94 g_ImageObject_0057ED94;
-extern uint32_t g_GlideVertex2ReciprocalDepth; /* 0057ED9C g_GlideVertex2ReciprocalDepth */
-typedef struct ImageObject_0057EDA0 {
-    uint32_t at_g_GlideVertex2PerspectiveScale; /* 0057EDA0 g_GlideVertex2PerspectiveScale */
-    uint32_t at_g_GlideVertex2PerspectiveScale_rest[1]; /* beyond the declared type */
-} ImageObject_0057EDA0;
-extern ImageObject_0057EDA0 g_ImageObject_0057EDA0;
-extern uint32_t g_GlideVertex2ProjectedTextureU; /* 0057EDA8 g_GlideVertex2ProjectedTextureU */
-extern uint32_t g_GlideVertex2ProjectedTextureV; /* 0057EDAC g_GlideVertex2ProjectedTextureV */
-extern uint32_t g_GlideVertex2DiffuseColor; /* 0057EDB0 g_GlideVertex2DiffuseColor */
+extern void *g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertices[0..2]; no code reads it (name is historical) */
+extern uint32_t g_GlideVertices[3][8]; /* 0057ED54 g_GlideVertices: uint32_t[3][8]: the three GrVertex records (float bit patterns) Glide3_DrawPrimitiveQueue fills and hands to grDrawTriangle; fields GLIDE_VERTEX_* (graphics/backend/glide.h), dword 4 of each record is unused */
 extern GlideTextureInfo g_GlideTextureInfo256Argb4444; /* 0057EDB4 g_GlideTextureInfo256Argb4444: GlideTextureInfo (GrTexInfo): {LOD 8, LOD 8, aspect 1:1, GR_TEXFMT_ARGB_4444, NULL}; not referenced by address */
 extern uint32_t g_GlideTmuCount; /* 0057EDC8 g_GlideTmuCount */
 extern GlideTextureUploadProc *g_GlideTextureColorUpload[3]; /* 0057EDCC g_GlideTextureColorUpload */

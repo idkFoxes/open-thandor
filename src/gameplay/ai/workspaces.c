@@ -234,8 +234,10 @@ static uint32_t AiPlanningRebuild_ScratchFootprintMask(const GridScratchCell *to
 static bool AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
 
 {
-  return (g_AiActiveGridMaskClass0 & neighborhoodMask) == 0 || (g_AiActiveGridMaskClass1 & neighborhoodMask) == 0 ||
-         (g_AiActiveGridMaskClass2 & neighborhoodMask) == 0 || (g_AiActiveGridMaskClass3 & neighborhoodMask) == 0;
+  return (g_AiActiveGridMaskClasses[0] & neighborhoodMask) == 0 ||
+         (g_AiActiveGridMaskClasses[1] & neighborhoodMask) == 0 ||
+         (g_AiActiveGridMaskClasses[2] & neighborhoodMask) == 0 ||
+         (g_AiActiveGridMaskClasses[3] & neighborhoodMask) == 0;
 }
 
 

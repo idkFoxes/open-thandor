@@ -79,8 +79,7 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 
 /* ---- graphics/backend/glide: refresh rates offered for Glide modes. */
 
-/* ---- graphics/backend/glide: pointers to the three GrVertex records g_GlideVertex0/1/2 (from
-   g_GlideVertex0ScreenX); no code reads the list (Glide3_DrawPrimitiveQueue pushes the vertex addresses
+/* ---- graphics/backend/glide: pointers to the three GrVertex records g_GlideVertices[0..2]; no code reads the list (Glide3_DrawPrimitiveQueue pushes the vertex addresses
    directly), the name is historical. */
 /* ---- graphics/backend/glide: a GrTexInfo {smallLodLog2 8, largeLodLog2 8 (256), aspect 0 (1:1),
    format 0xC (GR_TEXFMT_ARGB_4444), data NULL} after the vertex records; no code references it by
@@ -129,11 +128,6 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 /* L"army0000.gfx" and "ARMY" after g_AiCommandGenerationRetainedTarget, followed by 0x90 fill up to
    0x0051b3c0 */
 #define g_UnreferencedArmyTag (*(char (*)[5])&g_ImageObject_0051B3AE.at_g_UnreferencedArmyTag)
-
-/* ---- assets/text/richtext: colour palette entry 4 (green). The packed text style selects the palette
-   entry with 3 bits and indexes the colours from g_RichTextColorPalette0Argb, so entry 4 is this one and
-   entry 5 is g_RichTextInsufficientResourceColorArgb; no code names entry 4 directly. */
-#define g_RichTextColorPalette4Argb (*(PackedArgb32 *)&g_ImageObject_0041A750.at_g_RichTextColorPalette4Argb)
 
 /* ---- graphics/backend/software, graphics/resources/texture: function-pointer slots of the software
    backend's hook table (statically holding the software implementations). */

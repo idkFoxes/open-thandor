@@ -13,7 +13,7 @@
 
 /* Submodule: gameplay/ai/planning. */
 
-/* g_AiActiveGridMaskClass0..3 (AiPlanning_CollectActiveGridMaskClasses): an unused slot */
+/* g_AiActiveGridMaskClasses[0..3] (AiPlanning_CollectActiveGridMaskClasses): an unused slot */
 #define AI_GRID_MASK_CLASS_FREE 0xffffffff
 /* Random terms of the strategic building choice: 14 bits of g_RandomGeneratorState.next added to each
    terrain score as a tie breaker (AiStrategicClass_SelectTerrainSuitedBuilding), and 7 bits added to each

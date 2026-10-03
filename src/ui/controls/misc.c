@@ -908,100 +908,100 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
 
   /* distinct bit depths, ascending */
-  g_UiDisplayModeDistinctValueScratch0 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch1 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch2 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch3 = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[0] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[1] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[2] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[3] = UI_DISPLAY_MODE_NONE;
   displayMode = g_GraphicsDisplayModes;
   for (remainingModes = g_GraphicsDisplayModeCount; remainingModes != 0; remainingModes--) {
     insertValue = displayMode->bitsPerPixel;
-    if (insertValue != g_UiDisplayModeDistinctValueScratch0 && insertValue != g_UiDisplayModeDistinctValueScratch1 &&
-        insertValue != g_UiDisplayModeDistinctValueScratch2 && insertValue != g_UiDisplayModeDistinctValueScratch3) {
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch0,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch1,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch2,insertValue);
-      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch3,insertValue);
+    if (insertValue != g_UiDisplayModeDistinctValueScratch[0] && insertValue != g_UiDisplayModeDistinctValueScratch[1] &&
+        insertValue != g_UiDisplayModeDistinctValueScratch[2] && insertValue != g_UiDisplayModeDistinctValueScratch[3]) {
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[0],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[1],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[2],insertValue);
+      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[3],insertValue);
     }
     displayMode = displayMode + 1;
   }
   /* Each option button's mode value(s) sit in its <button>_prefix, the dwords just before the button (read
      back by the action callbacks as UiDisplayModeOptionPrefix.modeValue / .resolutionHeight). */
-  DISPLAY_SETTINGS_UI(root,colorDepthOption1_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch0;
-  DISPLAY_SETTINGS_UI(root,colorDepthOption2_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch1;
-  DISPLAY_SETTINGS_UI(root,colorDepthOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch2;
-  DISPLAY_SETTINGS_UI(root,colorDepthOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch3;
+  DISPLAY_SETTINGS_UI(root,colorDepthOption1_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[0];
+  DISPLAY_SETTINGS_UI(root,colorDepthOption2_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[1];
+  DISPLAY_SETTINGS_UI(root,colorDepthOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[2];
+  DISPLAY_SETTINGS_UI(root,colorDepthOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3];
 
   /* distinct resolutions, keyed width << 16 | height so that they sort by width, then height */
-  g_UiDisplayModeDistinctValueScratch0 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch1 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch2 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch3 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch4 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch5 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch6 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch7 = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[0] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[1] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[2] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[3] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[4] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[5] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[6] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[7] = UI_DISPLAY_MODE_NONE;
   displayMode = g_GraphicsDisplayModes;
   for (remainingModes = g_GraphicsDisplayModeCount; remainingModes != 0; remainingModes--) {
     insertValue = displayMode->width * UI_DISPLAY_MODE_WIDTH_SCALE + displayMode->height;
-    if (insertValue != g_UiDisplayModeDistinctValueScratch0 && insertValue != g_UiDisplayModeDistinctValueScratch1 &&
-        insertValue != g_UiDisplayModeDistinctValueScratch2 && insertValue != g_UiDisplayModeDistinctValueScratch3 &&
-        insertValue != g_UiDisplayModeDistinctValueScratch4 && insertValue != g_UiDisplayModeDistinctValueScratch5 &&
-        insertValue != g_UiDisplayModeDistinctValueScratch6 && insertValue != g_UiDisplayModeDistinctValueScratch7) {
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch0,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch1,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch2,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch3,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch4,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch5,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch6,insertValue);
-      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch7,insertValue);
+    if (insertValue != g_UiDisplayModeDistinctValueScratch[0] && insertValue != g_UiDisplayModeDistinctValueScratch[1] &&
+        insertValue != g_UiDisplayModeDistinctValueScratch[2] && insertValue != g_UiDisplayModeDistinctValueScratch[3] &&
+        insertValue != g_UiDisplayModeDistinctValueScratch[4] && insertValue != g_UiDisplayModeDistinctValueScratch[5] &&
+        insertValue != g_UiDisplayModeDistinctValueScratch[6] && insertValue != g_UiDisplayModeDistinctValueScratch[7]) {
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[0],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[1],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[2],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[3],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[4],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[5],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[6],insertValue);
+      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[7],insertValue);
     }
     displayMode = displayMode + 1;
   }
   /* Resolution buttons: width at -8, height at -0xC. */
-  DISPLAY_SETTINGS_UI(root,resolutionOption1_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch0 >> 16;
-  DISPLAY_SETTINGS_UI(root,resolutionOption1_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch0 & UI_DISPLAY_MODE_HEIGHT_MASK;
-  DISPLAY_SETTINGS_UI(root,resolutionOption2_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch1 >> 16;
-  DISPLAY_SETTINGS_UI(root,resolutionOption2_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch1 & UI_DISPLAY_MODE_HEIGHT_MASK;
-  DISPLAY_SETTINGS_UI(root,resolutionOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch2 >> 16;
-  DISPLAY_SETTINGS_UI(root,resolutionOption3_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch2 & UI_DISPLAY_MODE_HEIGHT_MASK;
-  DISPLAY_SETTINGS_UI(root,resolutionOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch3 >> 16;
-  DISPLAY_SETTINGS_UI(root,resolutionOption4_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch3 & UI_DISPLAY_MODE_HEIGHT_MASK;
-  DISPLAY_SETTINGS_UI(root,resolutionOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch4 >> 16;
-  DISPLAY_SETTINGS_UI(root,resolutionOption5_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch4 & UI_DISPLAY_MODE_HEIGHT_MASK;
-  DISPLAY_SETTINGS_UI(root,resolutionOption6_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch5 >> 16;
-  DISPLAY_SETTINGS_UI(root,resolutionOption6_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch5 & UI_DISPLAY_MODE_HEIGHT_MASK;
-  DISPLAY_SETTINGS_UI(root,resolutionOption7_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch6 >> 16;
-  DISPLAY_SETTINGS_UI(root,resolutionOption7_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch6 & UI_DISPLAY_MODE_HEIGHT_MASK;
-  DISPLAY_SETTINGS_UI(root,resolutionOption8_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch7 >> 16;
-  DISPLAY_SETTINGS_UI(root,resolutionOption8_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch7 & UI_DISPLAY_MODE_HEIGHT_MASK;
+  DISPLAY_SETTINGS_UI(root,resolutionOption1_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[0] >> 16;
+  DISPLAY_SETTINGS_UI(root,resolutionOption1_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch[0] & UI_DISPLAY_MODE_HEIGHT_MASK;
+  DISPLAY_SETTINGS_UI(root,resolutionOption2_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[1] >> 16;
+  DISPLAY_SETTINGS_UI(root,resolutionOption2_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch[1] & UI_DISPLAY_MODE_HEIGHT_MASK;
+  DISPLAY_SETTINGS_UI(root,resolutionOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[2] >> 16;
+  DISPLAY_SETTINGS_UI(root,resolutionOption3_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch[2] & UI_DISPLAY_MODE_HEIGHT_MASK;
+  DISPLAY_SETTINGS_UI(root,resolutionOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3] >> 16;
+  DISPLAY_SETTINGS_UI(root,resolutionOption4_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch[3] & UI_DISPLAY_MODE_HEIGHT_MASK;
+  DISPLAY_SETTINGS_UI(root,resolutionOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[4] >> 16;
+  DISPLAY_SETTINGS_UI(root,resolutionOption5_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch[4] & UI_DISPLAY_MODE_HEIGHT_MASK;
+  DISPLAY_SETTINGS_UI(root,resolutionOption6_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[5] >> 16;
+  DISPLAY_SETTINGS_UI(root,resolutionOption6_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch[5] & UI_DISPLAY_MODE_HEIGHT_MASK;
+  DISPLAY_SETTINGS_UI(root,resolutionOption7_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[6] >> 16;
+  DISPLAY_SETTINGS_UI(root,resolutionOption7_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch[6] & UI_DISPLAY_MODE_HEIGHT_MASK;
+  DISPLAY_SETTINGS_UI(root,resolutionOption8_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[7] >> 16;
+  DISPLAY_SETTINGS_UI(root,resolutionOption8_prefix)->resolutionHeight = g_UiDisplayModeDistinctValueScratch[7] & UI_DISPLAY_MODE_HEIGHT_MASK;
 
   /* distinct adapters */
-  g_UiDisplayModeDistinctValueScratch0 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch1 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch2 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch3 = UI_DISPLAY_MODE_NONE;
-  g_UiDisplayModeDistinctValueScratch4 = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[0] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[1] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[2] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[3] = UI_DISPLAY_MODE_NONE;
+  g_UiDisplayModeDistinctValueScratch[4] = UI_DISPLAY_MODE_NONE;
   displayMode = g_GraphicsDisplayModes;
   for (remainingModes = g_GraphicsDisplayModeCount; remainingModes != 0; remainingModes--) {
     insertValue = displayMode->adapterIndex;
-    if (insertValue != g_UiDisplayModeDistinctValueScratch0 && insertValue != g_UiDisplayModeDistinctValueScratch1 &&
-        insertValue != g_UiDisplayModeDistinctValueScratch2 && insertValue != g_UiDisplayModeDistinctValueScratch3 &&
-        insertValue != g_UiDisplayModeDistinctValueScratch4) {
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch0,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch1,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch2,insertValue);
-      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch3,insertValue);
-      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch4,insertValue);
+    if (insertValue != g_UiDisplayModeDistinctValueScratch[0] && insertValue != g_UiDisplayModeDistinctValueScratch[1] &&
+        insertValue != g_UiDisplayModeDistinctValueScratch[2] && insertValue != g_UiDisplayModeDistinctValueScratch[3] &&
+        insertValue != g_UiDisplayModeDistinctValueScratch[4]) {
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[0],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[1],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[2],insertValue);
+      insertValue = UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[3],insertValue);
+      UiDisplaySettings_InsertIntoSortedSlot(&g_UiDisplayModeDistinctValueScratch[4],insertValue);
     }
     displayMode = displayMode + 1;
   }
   /* Adapter buttons: adapter index at -8. */
-  DISPLAY_SETTINGS_UI(root,adapterOption1_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch0;
-  DISPLAY_SETTINGS_UI(root,adapterOption2_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch1;
-  DISPLAY_SETTINGS_UI(root,adapterOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch2;
-  DISPLAY_SETTINGS_UI(root,adapterOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch3;
-  DISPLAY_SETTINGS_UI(root,adapterOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch4;
+  DISPLAY_SETTINGS_UI(root,adapterOption1_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[0];
+  DISPLAY_SETTINGS_UI(root,adapterOption2_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[1];
+  DISPLAY_SETTINGS_UI(root,adapterOption3_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[2];
+  DISPLAY_SETTINGS_UI(root,adapterOption4_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[3];
+  DISPLAY_SETTINGS_UI(root,adapterOption5_prefix)->modeValue = g_UiDisplayModeDistinctValueScratch[4];
   /* the bit depth travels in a UiNodeBase * parameter slot of that function */
   redGreenBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
   UiDisplayModeSelection_RefreshEnumeratedOptions

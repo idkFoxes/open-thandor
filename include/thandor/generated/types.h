@@ -7701,7 +7701,7 @@ struct ModelDefinition {
     union EffectDefinitionReferenceOrSavedId damageEffectDefinitionReference;
     int damageEffectIntervalTicks; /* +0x258 */
     uint32_t damageEffectRandomTicks; /* +0x25C random extra interval, 0 = none */
-    uint32_t footprintRadiusClass; /* +0x260 index into g_GridInfluenceRadiusOffset0 (sets footprintRadius), negative = keep */
+    uint32_t footprintRadiusClass; /* +0x260 index into g_GridInfluenceRadiusOffset (sets footprintRadius), negative = keep */
     uint32_t terrainTraversalClass; /* +0x264 selects slope/water thresholds by placementContactKindIndex, negative = keep */
     uint32_t traversalSecondaryThreshold; /* +0x268 pitch below which ground movement slows (from terrainTraversalClass) */
     uint32_t primarySoundIndex; /* +0x26C one-shot sound (index into worldRuntime->dwordArray) */

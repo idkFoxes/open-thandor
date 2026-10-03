@@ -272,15 +272,15 @@ bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tria
   vertex1 = triangle->vertex1;
   vertex2 = triangle->vertex2;
   planeOffsetDot = (int64_t)normalY *
-          (int64_t)(((vertex0->y * 2 + vertex1->y + vertex2->y) >> 2) - g_ModelRaycastLocalOriginY) +
-          (int64_t)(((vertex0->x * 2 + vertex1->x + vertex2->x) >> 2) - g_ModelRaycastLocalOriginX) *
+          (int64_t)(((vertex0->y * 2 + vertex1->y + vertex2->y) >> 2) - g_ModelRaycastLocalOrigin.y) +
+          (int64_t)(((vertex0->x * 2 + vertex1->x + vertex2->x) >> 2) - g_ModelRaycastLocalOrigin.x) *
           (int64_t)normalX +
-          (int64_t)(((vertex0->z * 2 + vertex1->z + vertex2->z) >> 2) - g_ModelRaycastLocalOriginZ) *
+          (int64_t)(((vertex0->z * 2 + vertex1->z + vertex2->z) >> 2) - g_ModelRaycastLocalOrigin.z) *
           (int64_t)normalZ;
   planeOffsetHigh = (int)((uint64_t)planeOffsetDot >> 32);
-  directionProduct = (int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)normalY +
-          (int64_t)(int)g_ModelRaycastLocalDirectionXQ28 * (int64_t)normalX +
-          (int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)normalZ;
+  directionProduct = (int64_t)g_ModelRaycastLocalDirectionQ28.y * (int64_t)normalY +
+          (int64_t)g_ModelRaycastLocalDirectionQ28.x * (int64_t)normalX +
+          (int64_t)g_ModelRaycastLocalDirectionQ28.z * (int64_t)normalZ;
   directionDot = (int)FIXED_PRODUCT_SHR(directionProduct,Q28_SHIFT);
   if (directionDot == 0) {
     return false;
@@ -303,11 +303,11 @@ bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tria
 
   /* hit point relative to vertex 0 */
   negVertex0X = -vertex0->x;
-  hitRelativeX = FIXED_MUL_SHR(hitDistanceQ12,(int)g_ModelRaycastLocalDirectionXQ28,Q28_SHIFT) + g_ModelRaycastLocalOriginX + negVertex0X;
+  hitRelativeX = FIXED_MUL_SHR(hitDistanceQ12,g_ModelRaycastLocalDirectionQ28.x,Q28_SHIFT) + g_ModelRaycastLocalOrigin.x + negVertex0X;
   negVertex0Y = -vertex0->y;
-  hitRelativeY = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionYQ28,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginY + negVertex0Y;
+  hitRelativeY = FIXED_MUL_SHR(g_ModelRaycastLocalDirectionQ28.y,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOrigin.y + negVertex0Y;
   negVertex0Z = -vertex0->z;
-  hitRelativeZ = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionZQ28,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginZ + negVertex0Z;
+  hitRelativeZ = FIXED_MUL_SHR(g_ModelRaycastLocalDirectionQ28.z,hitDistanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOrigin.z + negVertex0Z;
   edge1X = negVertex0X + vertex1->x;
   edge1Y = negVertex0Y + vertex1->y;
   edge1Z = negVertex0Z + vertex1->z;
@@ -570,7 +570,9 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
 
   terrainClass = definition->terrainTraversalClass;
   if (-1 < (int)definition->footprintRadiusClass) {
-    footprintRadius = (&g_GridInfluenceRadiusOffset0)[definition->footprintRadiusClass];
+    /* Original quirk: no upper bound on the class; the original would read past the 8 radius offsets into
+       g_GridInfluenceSquaredThreshold for a class >= 8. The shipped model definitions only use -1..7. */
+    footprintRadius =g_GridInfluenceRadiusOffset[definition->footprintRadiusClass];
     definition->footprintRadius = footprintRadius;
     definition->footprintRadiusCopy = footprintRadius;
   }

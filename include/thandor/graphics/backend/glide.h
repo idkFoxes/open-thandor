@@ -26,6 +26,15 @@
    scale) and +30 (multiply by 2^30). */
 #define GLIDE_FLOAT_BITS_DIVIDE_BY_4096 0xfa000000
 #define GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30 0xf000000
+/* Dword index of each field in a g_GlideVertices record (float bit patterns; the byte offsets are given to
+   grVertexLayout in GraphicsGlide3_ApplyDisplayModeAndInitializeResources). Dword 4 is not part of the layout. */
+#define GLIDE_VERTEX_SCREEN_X 0
+#define GLIDE_VERTEX_SCREEN_Y 1
+#define GLIDE_VERTEX_RECIPROCAL_DEPTH 2 /* GR_PARAM_Z */
+#define GLIDE_VERTEX_PERSPECTIVE_SCALE 3 /* GR_PARAM_Q */
+#define GLIDE_VERTEX_PROJECTED_TEXTURE_U 5 /* GR_PARAM_ST0 */
+#define GLIDE_VERTEX_PROJECTED_TEXTURE_V 6
+#define GLIDE_VERTEX_DIFFUSE_COLOR 7 /* GR_PARAM_PARGB */
 /* Framebuffer capture, RGB565 -> ARGB8888: opaque alpha placed above the 5-bit red field, so the SHLD chain
    that widens the channels carries it into bits 24..31 */
 #define GLIDE_CAPTURE_ALPHA_ABOVE_RED5 (ARGB8888_CHANNEL_MAX << 5)

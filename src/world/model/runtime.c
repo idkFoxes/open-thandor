@@ -74,7 +74,7 @@ bool ModelRuntimePool_RepairDeferredChild
 
 
 /* Part of ModelRuntime_CullAndRenderHierarchyRecursive: the node passed the four side planes with its own
-   radius; g_ModelCullViewRelativeX/Y/Z hold its view-relative position. Projects it and, when it lies fully in
+   radius; g_ModelCullViewRelative holds its view-relative position. Projects it and, when it lies fully in
    front of the near plane, collects the nearby shading records and draws the mesh group picked by depth.
    Returns false when the node's depth is not beyond the near plane (the walk then also skips its children). */
 static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
@@ -88,7 +88,7 @@ static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
   Q12 projectedRadiusScale;
 
   renderView = modelNodeRuntime->modelPayload.modelResource;
-  viewDistance = FixedMath_Length3(g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,g_ModelCullViewRelativeX);
+  viewDistance = FixedMath_Length3(g_ModelCullViewRelative.z,g_ModelCullViewRelative.y,g_ModelCullViewRelative.x);
   boundingRadius = renderView->boundingRadiusQ12;
   /* radius / distance in Q28, 1.0 when the view origin is inside the bounding sphere */
   if ((int)viewDistance < (int)boundingRadius) {
@@ -99,29 +99,29 @@ static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
     projectedRadiusScale = (Q12)(((uint64_t)boundingRadius << 28) / (uint64_t)viewDistance);
   }
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
+            (&g_ModelCullViewRelative,
              &modelNodeRuntime->worldTransform.translation,
              &g_ViewProjectionMatrixFixed);
   renderView = modelNodeRuntime->modelPayload.modelResource;
-  /* g_ModelCullViewRelativeZ is now the view depth; g_ProjectionScaleFixed is the near plane */
-  if ((int)g_ModelCullViewRelativeZ <= (int)g_ProjectionScaleFixed) {
+  /* g_ModelCullViewRelative.z is now the view depth; g_ProjectionScaleFixed is the near plane */
+  if (g_ModelCullViewRelative.z <= g_ProjectionScaleFixed) {
     return false;
   }
-  if (g_ModelCullViewRelativeZ - g_ProjectionScaleFixed != renderView->boundingRadiusQ12 &&
-      renderView->boundingRadiusQ12 <= (int)(g_ModelCullViewRelativeZ - g_ProjectionScaleFixed)) {
+  if (g_ModelCullViewRelative.z - g_ProjectionScaleFixed != renderView->boundingRadiusQ12 &&
+      renderView->boundingRadiusQ12 <= g_ModelCullViewRelative.z - g_ProjectionScaleFixed) {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_RENDERED;
     g_GraphicsShadingNearbyRecordCount = 0;
     GraphicsShadingRuntime_CollectNearbyRecords
-              (renderView->boundingRadiusQ12,g_ModelCullViewRelativeZ,
-               g_ModelCullViewRelativeY,g_ModelCullViewRelativeX);
+              (renderView->boundingRadiusQ12,g_ModelCullViewRelative.z,
+               g_ModelCullViewRelative.y,g_ModelCullViewRelative.x);
     renderView = modelNodeRuntime->modelPayload.modelResource;
     meshGroupCount = renderView->meshGroupCount;
     meshGroup = &renderView->firstMeshGroupRelativeOffset;
     /* level of detail: the next mesh group beyond g_ModelLodDepthThresholdQ8, the third beyond twice that depth
        (each group starts with the offset to the next) */
-    if ((uint32_t)g_ModelLodDepthThresholdQ8 < (int)g_ModelCullViewRelativeZ && 1 < meshGroupCount) {
+    if ((uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)g_ModelCullViewRelative.z && 1 < meshGroupCount) {
       meshGroup = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroup + *meshGroup);
-      if ((uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)((int)g_ModelCullViewRelativeZ >> 1) &&
+      if ((uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)(g_ModelCullViewRelative.z >> 1) &&
           2 < meshGroupCount) {
         meshGroup = (ModelMeshGroupRelativeOffset *)((uint8_t *)meshGroup + *meshGroup);
       }
@@ -134,7 +134,7 @@ static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
 
 
 /* Part of ModelRuntime_CullAndRenderHierarchyRecursive: culls the node (view-relative position in
-   g_ModelCullViewRelativeX/Y/Z) against the four side planes of the view frustum and draws it when it passes.
+   g_ModelCullViewRelative) against the four side planes of the view frustum and draws it when it passes.
    A plane distance above the subtree radius means the whole subtree is outside: returns false and the walk
    ends here. Above only the node radius, just the node is culled and the children are still visited. */
 static bool ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
@@ -150,7 +150,7 @@ static bool ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
                modelNodeRuntime->renderDepthBiasOrState;
   for (planeIndex = 0; planeIndex < 4; planeIndex++) {
     planeDistance = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + planeIndex,
-                                     (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
+                                     &g_ModelCullViewRelative);
     if (subtreeRadius < planeDistance) {
       return false;
     }
@@ -180,11 +180,11 @@ void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRun
     return;
   }
   modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
-  g_ModelCullViewRelativeX =
+  g_ModelCullViewRelative.x =
        modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x;
-  g_ModelCullViewRelativeY =
+  g_ModelCullViewRelative.y =
        modelNodeRuntime->worldTransform.translation.y - g_ViewOriginFixed.y;
-  g_ModelCullViewRelativeZ =
+  g_ModelCullViewRelative.z =
        modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z;
   if (!ModelRuntime_CullAndDrawNode(modelNodeRuntime)) {
     return;
@@ -202,7 +202,7 @@ void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRun
 /* Address: 0x004BE270.
    Alternate model renderer of the frontend/in-game world view (src/ui/frontend/runtime.c, chosen when the
    pointer context compares hits by metric only): draws a node and all its children without culling. The centre
-   of the node's local bounds is transformed into g_ModelCullViewRelativeX/Y/Z to collect the nearby shading
+   of the node's local bounds is transformed into g_ModelCullViewRelative to collect the nearby shading
    records; every drawn node gets MODEL_NODE_FLAG_RENDERED.
 */
 void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
@@ -221,15 +221,15 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
     g_GraphicsDirectionWorld.y = (modelResourceView->localBoundsY0Q12 + modelResourceView->localBoundsY1Q12) >> 1;
     g_GraphicsDirectionWorld.z = (modelResourceView->localBoundsZ0Q12 + modelResourceView->localBoundsZ1Q12) >> 1;
     FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,&g_GraphicsDirectionWorld,
+              (&g_ModelCullViewRelative,&g_GraphicsDirectionWorld,
                &g_ViewProjectionMatrixFixed);
     boundsDiagonalLength =
          FixedMath_Length3(modelResourceView->localBoundsZ1Q12 - modelResourceView->localBoundsZ0Q12,
                            modelResourceView->localBoundsY1Q12 - modelResourceView->localBoundsY0Q12,
                            modelResourceView->localBoundsX1Q12 - modelResourceView->localBoundsX0Q12);
     GraphicsShadingRuntime_CollectNearbyRecords
-              ((int)boundsDiagonalLength >> 1,g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
-               g_ModelCullViewRelativeX);
+              ((int)boundsDiagonalLength >> 1,g_ModelCullViewRelative.z,g_ModelCullViewRelative.y,
+               g_ModelCullViewRelative.x);
     ModelRender_DrawMeshGroupsAlternatePath(modelNode->runtimeStateA0,modelNode);
     childIndex = 0;
     for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
@@ -267,14 +267,14 @@ bool ModelRuntime_RaycastCandidateListNearest
   Q12 hierarchyDistanceQ12;
   ModelRuntimeNode *hierarchyNearestNode;
 
-  g_ModelRaycastOriginX = originXQ12;
-  g_ModelRaycastOriginY = originYQ12;
-  g_ModelRaycastOriginZ = originZQ12;
+  g_ModelRaycastOrigin.x = originXQ12;
+  g_ModelRaycastOrigin.y = originYQ12;
+  g_ModelRaycastOrigin.z = originZQ12;
   g_ModelRaycastMaximumDistance = maximumDistanceQ12;
   rayXBinMask = DepthInterval_BuildBinMask(maximumDistanceQ12,originXQ12);
   rayYBinMask = DepthInterval_BuildBinMask(maximumDistanceQ12,originYQ12);
   FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ModelRaycastWorldDirectionXQ28,elevationAngle,azimuthAngle);
+            (&g_ModelRaycastWorldDirectionQ28,elevationAngle,azimuthAngle);
   nearestModelNode = NULL;
   bestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
   for (modelNodeRuntime = (ModelRuntimeNode *)worldRuntime->ownerListHead;

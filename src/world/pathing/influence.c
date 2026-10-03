@@ -195,22 +195,22 @@ static void GridInfluence_WalkDistanceBandsAroundWorldPoint
   int belowRightWorldX;
 
   radiusWithMargin = radiusMetric + GRID_FOOTPRINT_RADIUS_MARGIN;
-  g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + radiusWithMargin) * (g_GridInfluenceRadiusOffset0 + radiusWithMargin);
-  g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + radiusWithMargin) * (g_GridInfluenceRadiusOffset1 + radiusWithMargin);
-  g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + radiusWithMargin) * (g_GridInfluenceRadiusOffset2 + radiusWithMargin);
-  g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + radiusWithMargin) * (g_GridInfluenceRadiusOffset3 + radiusWithMargin);
-  g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + radiusWithMargin) * (g_GridInfluenceRadiusOffset4 + radiusWithMargin);
-  g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + radiusWithMargin) * (g_GridInfluenceRadiusOffset5 + radiusWithMargin);
-  g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + radiusWithMargin) * (g_GridInfluenceRadiusOffset6 + radiusWithMargin);
-  g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + radiusWithMargin) * (g_GridInfluenceRadiusOffset7 + radiusWithMargin);
+  g_GridInfluenceSquaredThreshold[0] =
+       (g_GridInfluenceRadiusOffset[0] + radiusWithMargin) * (g_GridInfluenceRadiusOffset[0] + radiusWithMargin);
+  g_GridInfluenceSquaredThreshold[1] =
+       (g_GridInfluenceRadiusOffset[1] + radiusWithMargin) * (g_GridInfluenceRadiusOffset[1] + radiusWithMargin);
+  g_GridInfluenceSquaredThreshold[2] =
+       (g_GridInfluenceRadiusOffset[2] + radiusWithMargin) * (g_GridInfluenceRadiusOffset[2] + radiusWithMargin);
+  g_GridInfluenceSquaredThreshold[3] =
+       (g_GridInfluenceRadiusOffset[3] + radiusWithMargin) * (g_GridInfluenceRadiusOffset[3] + radiusWithMargin);
+  g_GridInfluenceSquaredThreshold[4] =
+       (g_GridInfluenceRadiusOffset[4] + radiusWithMargin) * (g_GridInfluenceRadiusOffset[4] + radiusWithMargin);
+  g_GridInfluenceSquaredThreshold[5] =
+       (g_GridInfluenceRadiusOffset[5] + radiusWithMargin) * (g_GridInfluenceRadiusOffset[5] + radiusWithMargin);
+  g_GridInfluenceSquaredThreshold[6] =
+       (g_GridInfluenceRadiusOffset[6] + radiusWithMargin) * (g_GridInfluenceRadiusOffset[6] + radiusWithMargin);
+  g_GridInfluenceSquaredThreshold[7] =
+       (g_GridInfluenceRadiusOffset[7] + radiusWithMargin) * (g_GridInfluenceRadiusOffset[7] + radiusWithMargin);
   /* scratch cell under the world point */
   rowTerm = (int)((uint64_t)((int64_t)worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
           (uint32_t)((int64_t)worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
@@ -284,7 +284,7 @@ static void GridInfluence_WalkDistanceBandsAroundWorldPoint
 
 /* Address: 0x00535330.
    Stamps a model's influence into the scratch grid: eight concentric rings (radiusMetric plus
-   g_GridInfluenceRadiusOffset0..7 plus the margin, squared into g_GridInfluenceSquaredThreshold0..7) around the
+   g_GridInfluenceRadiusOffset[0..7] plus the margin, squared into g_GridInfluenceSquaredThreshold[0..7]) around the
    world point set low distance band bit n (scratch bit 8 + n) in every cell whose centre lies within ring n.
    The disc is covered like GridFootprint_ClearTraversalFlagsAroundWorldPoint: vertical walks from the centre row
    leftwards and rightwards, then upwards from the row above and downwards from the row below. Nothing happens
@@ -342,17 +342,17 @@ void GridInfluence_ClearHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits r
 
 
 /* Ring mask of the band walkers: bit n (0..7) is set when squaredDistance lies within ring n, i.e. is at most
-   g_GridInfluenceSquaredThreshold<n> (unsigned compare). */
+   g_GridInfluenceSquaredThreshold[n] (unsigned compare). */
 static uint32_t GridInfluence_RingBandMask(uint32_t squaredDistance)
 {
-  return (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold0) |
-         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold1) << 1 |
-         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold2) << 2 |
-         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold3) << 3 |
-         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold4) << 4 |
-         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold5) << 5 |
-         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold6) << 6 |
-         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold7) << 7;
+  return (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold[0]) |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold[1]) << 1 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold[2]) << 2 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold[3]) << 3 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold[4]) << 4 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold[5]) << 5 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold[6]) << 6 |
+         (uint32_t)(squaredDistance <= g_GridInfluenceSquaredThreshold[7]) << 7;
 }
 
 
@@ -360,7 +360,7 @@ static uint32_t GridInfluence_RingBandMask(uint32_t squaredDistance)
    Band walker for GridInfluence_SetLowDistanceBandsAroundWorldPoint: from scratchCell (a cell whose centre is at
    cellWorldY/X) it walks downwards, two scratch rows and one column left per step (straight down in world space),
    and ORs low distance band bit n (scratch bit 8 + n) into each cell whose centre lies within
-   g_GridInfluenceSquaredThreshold<n> of the centre point. Stops at the first cell inside no ring or before a
+   g_GridInfluenceSquaredThreshold[n] of the centre point. Stops at the first cell inside no ring or before a
    blocked cell. Returns the number of cells written, one less when the walk ended at a blocked cell (DEC in the
    original).
 */

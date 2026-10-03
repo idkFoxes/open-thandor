@@ -221,7 +221,7 @@ static void InGameUiRoot_UpdateEffectSounds
       randomValue = Random_NextPrimary();
       if (g_SoundPlayOneShot
                     (effectsGain,effectsGain,
-                     (DirectSoundVoiceSet *)(&g_InGameLevelEffectVoiceSet0)[randomValue & 3],&playedVoice)) {
+                     g_InGameLevelEffectVoiceSets[randomValue & 3],&playedVoice)) {
         g_InGameActiveEffectVoice = playedVoice;
       }
     }
@@ -277,7 +277,7 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
     musicGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
     g_EndGameResultsCurrentMusicTrackId = selectedMusicTrackId;
     if (g_SoundPlayOneShot
-                  (musicGain,musicGain,(DirectSoundVoiceSet *)(&g_InGameLevelMusicVoiceSet0)[bestTrackIndex],
+                  (musicGain,musicGain,g_InGameLevelMusicVoiceSets[bestTrackIndex],
                    &playedVoice)) {
       g_InGameActiveMusicVoice = playedVoice;
     }

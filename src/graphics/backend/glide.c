@@ -262,7 +262,7 @@ static void Glide3_InstallFramebufferAndRenderState(FrontendDisplayAdapterIndex 
   g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = Glide3_TextureSource_BlitHalfRgbSaturatedAdd;
   g_GuGammaCorrectionRGB(GLIDE_FLOAT_BITS_ONE,GLIDE_FLOAT_BITS_ONE,GLIDE_FLOAT_BITS_ONE); /* 1.0f for red, green and blue */
   g_GrCoordinateSpace(GR_WINDOW_COORDS);
-  /* the layout of the g_GlideVertex* records handed to grDrawTriangle */
+  /* the layout of the g_GlideVertices records handed to grDrawTriangle (byte offsets of GLIDE_VERTEX_*) */
   g_GrVertexLayout(GR_PARAM_XY,0,GR_PARAM_ENABLE);
   g_GrVertexLayout(GR_PARAM_Z,8,GR_PARAM_ENABLE);
   g_GrVertexLayout(GR_PARAM_Q,12,GR_PARAM_ENABLE);
@@ -398,7 +398,7 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
 }
 
 
-/* The g_GlideVertex* records are floats stored in uint32_t globals: FSTP float ptr writes the bit pattern,
+/* The g_GlideVertices records are floats stored in uint32_t globals: FSTP float ptr writes the bit pattern,
    CMP/ADD/SUB dword ptr then work on that pattern, FMUL float ptr reads it back as a float. */
 /* Not an original function: the bit pattern of a float (the FSTP float ptr store). */
 static __inline uint32_t Glide_FloatBits(float value)
@@ -417,7 +417,7 @@ static __inline float Glide_BitsToFloat(uint32_t bits)
 }
 
 /* Address: 0x0057F7B0.
-   Glide backend of Graphics_DrawPrimitiveQueue: converts each queued triangle into the three g_GlideVertex*
+   Glide backend of Graphics_DrawPrimitiveQueue: converts each queued triangle into the three g_GlideVertices
    records (clamped screen position, 1/depth, perspective-corrected texture coordinates scaled to the texture's
    larger side, packed colour), switches colour combine, blend function and depth writes only when they change,
    and draws it with grDrawTriangle. Does nothing when the backend is already being accessed. The clip
@@ -494,33 +494,33 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
       else {
         currentPacket->vertices[2].screenY = GLIDE_SCREEN_COORDINATE_LIMIT;
       }
-      g_GlideVertex0ScreenX = Glide_FloatBits((float)(double)currentPacket->vertices[0].screenX);
-      g_GlideVertex0ScreenY = Glide_FloatBits((float)(double)currentPacket->vertices[0].screenY);
-      if (g_GlideVertex0ScreenX != 0) {
-        g_GlideVertex0ScreenX = g_GlideVertex0ScreenX + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      g_GlideVertices[0][GLIDE_VERTEX_SCREEN_X] = Glide_FloatBits((float)(double)currentPacket->vertices[0].screenX);
+      g_GlideVertices[0][GLIDE_VERTEX_SCREEN_Y] = Glide_FloatBits((float)(double)currentPacket->vertices[0].screenY);
+      if (g_GlideVertices[0][GLIDE_VERTEX_SCREEN_X] != 0) {
+        g_GlideVertices[0][GLIDE_VERTEX_SCREEN_X] = g_GlideVertices[0][GLIDE_VERTEX_SCREEN_X] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      if (g_GlideVertex0ScreenY != 0) {
-        g_GlideVertex0ScreenY = g_GlideVertex0ScreenY + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      if (g_GlideVertices[0][GLIDE_VERTEX_SCREEN_Y] != 0) {
+        g_GlideVertices[0][GLIDE_VERTEX_SCREEN_Y] = g_GlideVertices[0][GLIDE_VERTEX_SCREEN_Y] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      g_GlideVertex1ScreenX = Glide_FloatBits((float)(double)currentPacket->vertices[1].screenX);
-      g_GlideVertex1ScreenY = Glide_FloatBits((float)(double)currentPacket->vertices[1].screenY);
-      if (g_GlideVertex1ScreenX != 0) {
-        g_GlideVertex1ScreenX = g_GlideVertex1ScreenX + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      g_GlideVertices[1][GLIDE_VERTEX_SCREEN_X] = Glide_FloatBits((float)(double)currentPacket->vertices[1].screenX);
+      g_GlideVertices[1][GLIDE_VERTEX_SCREEN_Y] = Glide_FloatBits((float)(double)currentPacket->vertices[1].screenY);
+      if (g_GlideVertices[1][GLIDE_VERTEX_SCREEN_X] != 0) {
+        g_GlideVertices[1][GLIDE_VERTEX_SCREEN_X] = g_GlideVertices[1][GLIDE_VERTEX_SCREEN_X] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      if (g_GlideVertex1ScreenY != 0) {
-        g_GlideVertex1ScreenY = g_GlideVertex1ScreenY + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      if (g_GlideVertices[1][GLIDE_VERTEX_SCREEN_Y] != 0) {
+        g_GlideVertices[1][GLIDE_VERTEX_SCREEN_Y] = g_GlideVertices[1][GLIDE_VERTEX_SCREEN_Y] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      g_GlideVertex2ScreenX = Glide_FloatBits((float)(double)currentPacket->vertices[2].screenX);
-      g_GlideVertex2ScreenY = Glide_FloatBits((float)(double)currentPacket->vertices[2].screenY);
-      if (g_GlideVertex2ScreenX != 0) {
-        g_GlideVertex2ScreenX = g_GlideVertex2ScreenX + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      g_GlideVertices[2][GLIDE_VERTEX_SCREEN_X] = Glide_FloatBits((float)(double)currentPacket->vertices[2].screenX);
+      g_GlideVertices[2][GLIDE_VERTEX_SCREEN_Y] = Glide_FloatBits((float)(double)currentPacket->vertices[2].screenY);
+      if (g_GlideVertices[2][GLIDE_VERTEX_SCREEN_X] != 0) {
+        g_GlideVertices[2][GLIDE_VERTEX_SCREEN_X] = g_GlideVertices[2][GLIDE_VERTEX_SCREEN_X] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      if (g_GlideVertex2ScreenY != 0) {
-        g_GlideVertex2ScreenY = g_GlideVertex2ScreenY + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      if (g_GlideVertices[2][GLIDE_VERTEX_SCREEN_Y] != 0) {
+        g_GlideVertices[2][GLIDE_VERTEX_SCREEN_Y] = g_GlideVertices[2][GLIDE_VERTEX_SCREEN_Y] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      g_GlideVertex0DiffuseColor = currentPacket->vertices[0].diffuseColor;
-      g_GlideVertex1DiffuseColor = currentPacket->vertices[1].diffuseColor;
-      g_GlideVertex2DiffuseColor = currentPacket->vertices[2].diffuseColor;
+      g_GlideVertices[0][GLIDE_VERTEX_DIFFUSE_COLOR] = currentPacket->vertices[0].diffuseColor;
+      g_GlideVertices[1][GLIDE_VERTEX_DIFFUSE_COLOR] = currentPacket->vertices[1].diffuseColor;
+      g_GlideVertices[2][GLIDE_VERTEX_DIFFUSE_COLOR] = currentPacket->vertices[2].diffuseColor;
       packetTextureEntry = currentPacket->textureEntry;
       if (packetTextureEntry != NULL) {
         textureWidthLog2 = packetTextureEntry->widthLog2;
@@ -538,53 +538,71 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
         currentPacket->vertices[1].textureV = currentPacket->vertices[1].textureV >> (coordinateShift & SHIFT_COUNT_MASK);
         currentPacket->vertices[2].textureV = currentPacket->vertices[2].textureV >> (coordinateShift & SHIFT_COUNT_MASK);
       }
-      g_GlideVertex0ReciprocalDepth = Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[0].depth));
-      g_GlideVertex1ReciprocalDepth = Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[1].depth));
-      g_GlideVertex2ReciprocalDepth = Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[2].depth));
-      g_GlideVertex0PerspectiveScale =
+      g_GlideVertices[0][GLIDE_VERTEX_RECIPROCAL_DEPTH] =
+           Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[0].depth));
+      g_GlideVertices[1][GLIDE_VERTEX_RECIPROCAL_DEPTH] =
+           Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[1].depth));
+      g_GlideVertices[2][GLIDE_VERTEX_RECIPROCAL_DEPTH] =
+           Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[2].depth));
+      g_GlideVertices[0][GLIDE_VERTEX_PERSPECTIVE_SCALE] =
            Glide_FloatBits((float)(4096.0 / ((double)currentPacket->vertices[0].depth + 4096.0)));
-      g_GlideVertex1PerspectiveScale =
+      g_GlideVertices[1][GLIDE_VERTEX_PERSPECTIVE_SCALE] =
            Glide_FloatBits((float)(4096.0 / ((double)currentPacket->vertices[1].depth + 4096.0)));
-      g_GlideVertex2PerspectiveScale =
+      g_GlideVertices[2][GLIDE_VERTEX_PERSPECTIVE_SCALE] =
            Glide_FloatBits((float)(4096.0 / ((double)currentPacket->vertices[2].depth + 4096.0)));
-      if (g_GlideVertex0ReciprocalDepth != 0) {
-        g_GlideVertex0ReciprocalDepth = g_GlideVertex0ReciprocalDepth + GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30;
+      if (g_GlideVertices[0][GLIDE_VERTEX_RECIPROCAL_DEPTH] != 0) {
+        g_GlideVertices[0][GLIDE_VERTEX_RECIPROCAL_DEPTH] =
+             g_GlideVertices[0][GLIDE_VERTEX_RECIPROCAL_DEPTH] + GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30;
       }
-      if (g_GlideVertex1ReciprocalDepth != 0) {
-        g_GlideVertex1ReciprocalDepth = g_GlideVertex1ReciprocalDepth + GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30;
+      if (g_GlideVertices[1][GLIDE_VERTEX_RECIPROCAL_DEPTH] != 0) {
+        g_GlideVertices[1][GLIDE_VERTEX_RECIPROCAL_DEPTH] =
+             g_GlideVertices[1][GLIDE_VERTEX_RECIPROCAL_DEPTH] + GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30;
       }
-      if (g_GlideVertex2ReciprocalDepth != 0) {
-        g_GlideVertex2ReciprocalDepth = g_GlideVertex2ReciprocalDepth + GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30;
+      if (g_GlideVertices[2][GLIDE_VERTEX_RECIPROCAL_DEPTH] != 0) {
+        g_GlideVertices[2][GLIDE_VERTEX_RECIPROCAL_DEPTH] =
+             g_GlideVertices[2][GLIDE_VERTEX_RECIPROCAL_DEPTH] + GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30;
       }
-      g_GlideVertex0ProjectedTextureU = Glide_FloatBits((float)((double)currentPacket->vertices[0].textureU *
-                                                                (double)Glide_BitsToFloat(g_GlideVertex0PerspectiveScale)));
-      g_GlideVertex0ProjectedTextureV = Glide_FloatBits((float)((double)currentPacket->vertices[0].textureV *
-                                                                (double)Glide_BitsToFloat(g_GlideVertex0PerspectiveScale)));
-      if (g_GlideVertex0ProjectedTextureU != 0) {
-        g_GlideVertex0ProjectedTextureU = g_GlideVertex0ProjectedTextureU + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      g_GlideVertices[0][GLIDE_VERTEX_PROJECTED_TEXTURE_U] =
+           Glide_FloatBits((float)((double)currentPacket->vertices[0].textureU *
+                                   (double)Glide_BitsToFloat(g_GlideVertices[0][GLIDE_VERTEX_PERSPECTIVE_SCALE])));
+      g_GlideVertices[0][GLIDE_VERTEX_PROJECTED_TEXTURE_V] =
+           Glide_FloatBits((float)((double)currentPacket->vertices[0].textureV *
+                                   (double)Glide_BitsToFloat(g_GlideVertices[0][GLIDE_VERTEX_PERSPECTIVE_SCALE])));
+      if (g_GlideVertices[0][GLIDE_VERTEX_PROJECTED_TEXTURE_U] != 0) {
+        g_GlideVertices[0][GLIDE_VERTEX_PROJECTED_TEXTURE_U] =
+             g_GlideVertices[0][GLIDE_VERTEX_PROJECTED_TEXTURE_U] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      if (g_GlideVertex0ProjectedTextureV != 0) {
-        g_GlideVertex0ProjectedTextureV = g_GlideVertex0ProjectedTextureV + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      if (g_GlideVertices[0][GLIDE_VERTEX_PROJECTED_TEXTURE_V] != 0) {
+        g_GlideVertices[0][GLIDE_VERTEX_PROJECTED_TEXTURE_V] =
+             g_GlideVertices[0][GLIDE_VERTEX_PROJECTED_TEXTURE_V] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      g_GlideVertex1ProjectedTextureU = Glide_FloatBits((float)((double)currentPacket->vertices[1].textureU *
-                                                                (double)Glide_BitsToFloat(g_GlideVertex1PerspectiveScale)));
-      g_GlideVertex1ProjectedTextureV = Glide_FloatBits((float)((double)currentPacket->vertices[1].textureV *
-                                                                (double)Glide_BitsToFloat(g_GlideVertex1PerspectiveScale)));
-      if (g_GlideVertex1ProjectedTextureU != 0) {
-        g_GlideVertex1ProjectedTextureU = g_GlideVertex1ProjectedTextureU + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      g_GlideVertices[1][GLIDE_VERTEX_PROJECTED_TEXTURE_U] =
+           Glide_FloatBits((float)((double)currentPacket->vertices[1].textureU *
+                                   (double)Glide_BitsToFloat(g_GlideVertices[1][GLIDE_VERTEX_PERSPECTIVE_SCALE])));
+      g_GlideVertices[1][GLIDE_VERTEX_PROJECTED_TEXTURE_V] =
+           Glide_FloatBits((float)((double)currentPacket->vertices[1].textureV *
+                                   (double)Glide_BitsToFloat(g_GlideVertices[1][GLIDE_VERTEX_PERSPECTIVE_SCALE])));
+      if (g_GlideVertices[1][GLIDE_VERTEX_PROJECTED_TEXTURE_U] != 0) {
+        g_GlideVertices[1][GLIDE_VERTEX_PROJECTED_TEXTURE_U] =
+             g_GlideVertices[1][GLIDE_VERTEX_PROJECTED_TEXTURE_U] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      if (g_GlideVertex1ProjectedTextureV != 0) {
-        g_GlideVertex1ProjectedTextureV = g_GlideVertex1ProjectedTextureV + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      if (g_GlideVertices[1][GLIDE_VERTEX_PROJECTED_TEXTURE_V] != 0) {
+        g_GlideVertices[1][GLIDE_VERTEX_PROJECTED_TEXTURE_V] =
+             g_GlideVertices[1][GLIDE_VERTEX_PROJECTED_TEXTURE_V] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      g_GlideVertex2ProjectedTextureU = Glide_FloatBits((float)((double)currentPacket->vertices[2].textureU *
-                                                                (double)Glide_BitsToFloat(g_GlideVertex2PerspectiveScale)));
-      g_GlideVertex2ProjectedTextureV = Glide_FloatBits((float)((double)currentPacket->vertices[2].textureV *
-                                                                (double)Glide_BitsToFloat(g_GlideVertex2PerspectiveScale)));
-      if (g_GlideVertex2ProjectedTextureU != 0) {
-        g_GlideVertex2ProjectedTextureU = g_GlideVertex2ProjectedTextureU + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      g_GlideVertices[2][GLIDE_VERTEX_PROJECTED_TEXTURE_U] =
+           Glide_FloatBits((float)((double)currentPacket->vertices[2].textureU *
+                                   (double)Glide_BitsToFloat(g_GlideVertices[2][GLIDE_VERTEX_PERSPECTIVE_SCALE])));
+      g_GlideVertices[2][GLIDE_VERTEX_PROJECTED_TEXTURE_V] =
+           Glide_FloatBits((float)((double)currentPacket->vertices[2].textureV *
+                                   (double)Glide_BitsToFloat(g_GlideVertices[2][GLIDE_VERTEX_PERSPECTIVE_SCALE])));
+      if (g_GlideVertices[2][GLIDE_VERTEX_PROJECTED_TEXTURE_U] != 0) {
+        g_GlideVertices[2][GLIDE_VERTEX_PROJECTED_TEXTURE_U] =
+             g_GlideVertices[2][GLIDE_VERTEX_PROJECTED_TEXTURE_U] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
-      if (g_GlideVertex2ProjectedTextureV != 0) {
-        g_GlideVertex2ProjectedTextureV = g_GlideVertex2ProjectedTextureV + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
+      if (g_GlideVertices[2][GLIDE_VERTEX_PROJECTED_TEXTURE_V] != 0) {
+        g_GlideVertices[2][GLIDE_VERTEX_PROJECTED_TEXTURE_V] =
+             g_GlideVertices[2][GLIDE_VERTEX_PROJECTED_TEXTURE_V] + GLIDE_FLOAT_BITS_DIVIDE_BY_4096;
       }
       renderFlags = currentPacket->renderFlags;
       if (((renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) == 0) || (currentPacket->textureEntry == NULL)) {
@@ -655,7 +673,7 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
         g_GrDepthMask(FXTRUE);
         g_GlideDepthWriteEnabledState = 1;
       }
-      g_GrDrawTriangle(&g_GlideVertex2ScreenX,&g_GlideVertex1ScreenX,&g_GlideVertex0ScreenX);
+      g_GrDrawTriangle(g_GlideVertices[2],g_GlideVertices[1],g_GlideVertices[0]);
       g_PrimitiveDrawCallCount++;
       currentPacket = GraphicsPrimitiveQueue_Next(queue);
     }

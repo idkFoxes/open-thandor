@@ -1109,7 +1109,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
 
 
 /* Address: 0x00534F50.
-   Opens a disc of radiusWorldUnits (plus g_GridInfluenceRadiusOffset6 and the margin) around the world point in
+   Opens a disc of radiusWorldUnits (plus g_GridInfluenceRadiusOffset[6] and the margin) around the world point in
    the scratch grid: every cell whose centre lies inside loses its visited and blocked bits and has its pathCost
    counter incremented (GridReachability_RebuildConnectedRegionAroundWorldPoint uses the count as "inside").
    The disc is covered by vertical walks (constant world X) from the centre row leftwards and rightwards, then
@@ -1136,8 +1136,8 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   GridScratchCell *leftWalkCursor;
   GridScratchCell *rightWalkCursor;
 
-  clearanceRadius = radiusWorldUnits + g_GridInfluenceRadiusOffset6 + GRID_FOOTPRINT_RADIUS_MARGIN;
-  g_GridInfluenceSquaredThreshold6 = clearanceRadius * clearanceRadius;
+  clearanceRadius = radiusWorldUnits + g_GridInfluenceRadiusOffset[6] + GRID_FOOTPRINT_RADIUS_MARGIN;
+  g_GridInfluenceSquaredThreshold[6] = clearanceRadius * clearanceRadius;
   scaledRowTerm = (int)((uint64_t)((int64_t)worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
           (uint32_t)((int64_t)worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
   centerColumn = (int)((((int)((uint64_t)((int64_t)worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 32) << 12 |
@@ -2028,7 +2028,7 @@ GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
 /* Address: 0x00534E70.
    Footprint walker for GridFootprint_ClearTraversalFlagsAroundWorldPoint: from scratchRecord (a cell whose centre
    is at cellWorldY/X) it walks downwards, two scratch rows and one column left per step, i.e. straight down in
-   world space, while the cell centre lies within g_GridInfluenceSquaredThreshold6 of the centre point. Each cell
+   world space, while the cell centre lies within g_GridInfluenceSquaredThreshold[6] of the centre point. Each cell
    loses its blocked and visited bits and has its pathCost counter incremented. Stops before a blocked cell.
    Returns the number of cells cleared, one less when the walk ended at a blocked cell (DEC in the original).
 */
@@ -2045,7 +2045,7 @@ int GridFootprint_ClearTraversalFlagsDiagonalNegative
   nextCount = 0;
   do {
     visitedCount = nextCount;
-    if (g_GridInfluenceSquaredThreshold6 <
+    if (g_GridInfluenceSquaredThreshold[6] <
         (uint32_t)(squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12))) {
       return visitedCount;
     }
@@ -2078,7 +2078,7 @@ int GridFootprint_ClearTraversalFlagsDiagonalPositive
   nextCount = 0;
   do {
     visitedCount = nextCount;
-    if (g_GridInfluenceSquaredThreshold6 <
+    if (g_GridInfluenceSquaredThreshold[6] <
         (uint32_t)(squaredYDistance + (cellWorldXQ12 - centerWorldXQ12) * (cellWorldXQ12 - centerWorldXQ12))) {
       return visitedCount;
     }

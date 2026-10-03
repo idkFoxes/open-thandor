@@ -184,14 +184,14 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   const TechnologyRecord *technologyRecord;
   ArmyAssetRecordPrefix *armyAssetRecord;
 
-  g_TechnologyCategoryMaximum0 = 1;
-  g_TechnologyCategoryMaximum1 = 1;
-  g_TechnologyCategoryMaximum2 = 1;
-  g_TechnologyCategoryMaximum3 = 1;
-  g_TechnologyCategoryMaximum4 = 1;
-  g_TechnologyCategoryMaximum5 = 1;
-  g_TechnologyCategoryMaximum6 = 1;
-  g_TechnologyCategoryMaximum7 = 1;
+  g_TechnologyCategoryMaximums[0] = 1;
+  g_TechnologyCategoryMaximums[1] = 1;
+  g_TechnologyCategoryMaximums[2] = 1;
+  g_TechnologyCategoryMaximums[3] = 1;
+  g_TechnologyCategoryMaximums[4] = 1;
+  g_TechnologyCategoryMaximums[5] = 1;
+  g_TechnologyCategoryMaximums[6] = 1;
+  g_TechnologyCategoryMaximums[7] = 1;
   g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
   /* every registered army asset with flag +0x14 bit 0: look at its root model definition */
   for (registrySlotIndex = 0; registrySlotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotIndex++) {
@@ -204,9 +204,9 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
                           (armyAssetRecord->rootNodeOffsetOrPointer + 32));
       if (definitionRecord != NULL) {
         /* per target class (+0x5C) the largest armour (+0x60); for mobile models (+0x18) the top speed (+0x0C) */
-        if ((int)(&g_TechnologyCategoryMaximum0)[definitionRecord->targetClassIndex] <
+        if ((int)g_TechnologyCategoryMaximums[definitionRecord->targetClassIndex] <
             (int)definitionRecord->maximumHealth) {
-          (&g_TechnologyCategoryMaximum0)[definitionRecord->targetClassIndex] = definitionRecord->maximumHealth;
+          g_TechnologyCategoryMaximums[definitionRecord->targetClassIndex] = definitionRecord->maximumHealth;
         }
         if ((definitionRecord->accelerationPerTick != 0) &&
            ((int)g_AiArmyCandidateFlaggedDefinitionValueMaximum < definitionRecord->movementSpeed)) {
@@ -218,7 +218,7 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   /* Q24 reciprocal of each category maximum (the maxima start at 1, so no division by zero) */
   for (categoryIndex = 0; categoryIndex < 8; categoryIndex++) {
     g_TechnologyCategoryMaximumReciprocalQ24Table8[categoryIndex] =
-         TECHNOLOGY_RECIPROCAL_Q24_ONE / (uint32_t)(&g_TechnologyCategoryMaximum0)[categoryIndex];
+         TECHNOLOGY_RECIPROCAL_Q24_ONE / (uint32_t)g_TechnologyCategoryMaximums[categoryIndex];
   }
   /* clear both category masks */
   for (maskWordIndex = 0; maskWordIndex < 8; maskWordIndex++) {

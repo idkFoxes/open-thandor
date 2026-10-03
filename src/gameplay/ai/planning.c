@@ -220,7 +220,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
 
 /* Address: 0x005379E0.
    Collects up to four distinct movement masks of the faction's own units (workspace 01) into
-   g_AiActiveGridMaskClass0..3 (0xFFFFFFFF = unused): GRID_SCRATCH_BLOCKED | distance-band bit (8 +
+   g_AiActiveGridMaskClasses[0..3] (0xFFFFFFFF = unused): GRID_SCRATCH_BLOCKED | distance-band bit (8 +
    footprintRadiusClass) | terrain bit (24 + terrainTraversalClass), both taken from the definition of the unit's
    model runtime; only mobile units (accelerationPerTick != 0) with non-negative classes count. The site scan accepts
    a general site when its scratch neighbourhood avoids every bit of one of these masks. Without any unit
@@ -236,10 +236,10 @@ void AiPlanning_CollectActiveGridMaskClasses(void)
   int remainingEntries;
   AiRuntimeWorkspaceEntry *runtimeWorkspaceEntry;
 
-  g_AiActiveGridMaskClass0 = AI_GRID_MASK_CLASS_FREE;
-  g_AiActiveGridMaskClass1 = AI_GRID_MASK_CLASS_FREE;
-  g_AiActiveGridMaskClass2 = AI_GRID_MASK_CLASS_FREE;
-  g_AiActiveGridMaskClass3 = AI_GRID_MASK_CLASS_FREE;
+  g_AiActiveGridMaskClasses[0] = AI_GRID_MASK_CLASS_FREE;
+  g_AiActiveGridMaskClasses[1] = AI_GRID_MASK_CLASS_FREE;
+  g_AiActiveGridMaskClasses[2] = AI_GRID_MASK_CLASS_FREE;
+  g_AiActiveGridMaskClasses[3] = AI_GRID_MASK_CLASS_FREE;
   runtimeWorkspaceEntry = g_AiWorkspace01Units;
   for (remainingEntries = g_AiWorkspace01Count; remainingEntries != 0; remainingEntries--, runtimeWorkspaceEntry++) {
     if (runtimeWorkspaceEntry->modelRuntime == NULL) {
@@ -256,26 +256,26 @@ void AiPlanning_CollectActiveGridMaskClasses(void)
     }
     combinedMask = GRID_SCRATCH_LOW_BAND0 << ((uint8_t)footprintRadiusClass & 31) | GRID_SCRATCH_BLOCKED |
                    GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)terrainTraversalClass & 31);
-    if ((combinedMask == g_AiActiveGridMaskClass0) || (combinedMask == g_AiActiveGridMaskClass1) ||
-        (combinedMask == g_AiActiveGridMaskClass2) || (combinedMask == g_AiActiveGridMaskClass3)) {
+    if ((combinedMask == g_AiActiveGridMaskClasses[0]) || (combinedMask == g_AiActiveGridMaskClasses[1]) ||
+        (combinedMask == g_AiActiveGridMaskClasses[2]) || (combinedMask == g_AiActiveGridMaskClasses[3])) {
       continue;
     }
     /* a new mask goes into the first free slot; with all four slots taken it is dropped */
-    if (g_AiActiveGridMaskClass0 == AI_GRID_MASK_CLASS_FREE) {
-      g_AiActiveGridMaskClass0 = combinedMask;
+    if (g_AiActiveGridMaskClasses[0] == AI_GRID_MASK_CLASS_FREE) {
+      g_AiActiveGridMaskClasses[0] = combinedMask;
     }
-    else if (g_AiActiveGridMaskClass1 == AI_GRID_MASK_CLASS_FREE) {
-      g_AiActiveGridMaskClass1 = combinedMask;
+    else if (g_AiActiveGridMaskClasses[1] == AI_GRID_MASK_CLASS_FREE) {
+      g_AiActiveGridMaskClasses[1] = combinedMask;
     }
-    else if (g_AiActiveGridMaskClass2 == AI_GRID_MASK_CLASS_FREE) {
-      g_AiActiveGridMaskClass2 = combinedMask;
+    else if (g_AiActiveGridMaskClasses[2] == AI_GRID_MASK_CLASS_FREE) {
+      g_AiActiveGridMaskClasses[2] = combinedMask;
     }
-    else if (g_AiActiveGridMaskClass3 == AI_GRID_MASK_CLASS_FREE) {
-      g_AiActiveGridMaskClass3 = combinedMask;
+    else if (g_AiActiveGridMaskClasses[3] == AI_GRID_MASK_CLASS_FREE) {
+      g_AiActiveGridMaskClasses[3] = combinedMask;
     }
   }
-  if (g_AiActiveGridMaskClass0 == AI_GRID_MASK_CLASS_FREE) {
-    g_AiActiveGridMaskClass0 = GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_LOW_BAND0;
+  if (g_AiActiveGridMaskClasses[0] == AI_GRID_MASK_CLASS_FREE) {
+    g_AiActiveGridMaskClasses[0] = GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_LOW_BAND0;
   }
   return;
 }
@@ -1605,7 +1605,7 @@ bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDema
 /* Pressure-weighted damage score of one weapon (a linked child definition) for
    AiArmyCandidate_ComputeFactionWeightedScore: for each of the 8 target classes the shot's impact damage times the
    profile weight / reloadTicks, scaled by the faction's AI pressure on that class / its maximum AI pressure, added
-   as << 10 / the class maximum (g_TechnologyCategoryMaximum0..7). reloadTicks and the maximum pressure must be
+   as << 10 / the class maximum (g_TechnologyCategoryMaximums[0..7]). reloadTicks and the maximum pressure must be
    nonzero. */
 static int AiArmyCandidate_ScoreWeaponPressureDamage
           (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,ShotDefinition *shotDefinition,
@@ -1626,7 +1626,7 @@ static int AiArmyCandidate_ScoreWeaponPressureDamage
                (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
     damageScore = damageScore +
          (int)((int64_t)((uint64_t)pressureWeightedDamage << 10) /
-              (int64_t)(int)(&g_TechnologyCategoryMaximum0)[targetClass]);
+              (int64_t)(int)g_TechnologyCategoryMaximums[targetClass]);
   }
   return damageScore;
 }
@@ -1669,7 +1669,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
        (int)(((int64_t)(int)selectedModelDefinition->maximumHealth *
              (int64_t)scoreWeights->definitionValue60Weight) /
             (int64_t)
-            (&g_TechnologyCategoryMaximum0)[selectedModelDefinition->targetClassIndex])) * 8;
+            g_TechnologyCategoryMaximums[selectedModelDefinition->targetClassIndex])) * 8;
   if (childCount != 0) {
     selectedChildModelDefinition0 = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                       (factionIndex,linkedDefinitionList->childList0Address);

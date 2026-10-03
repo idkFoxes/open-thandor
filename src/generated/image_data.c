@@ -809,14 +809,22 @@ __declspec(align(8)) ImageObject_004172E8 g_ImageObject_004172E8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004172E8 gap */
 };
 
-__declspec(align(16)) ImageObject_00417300 g_ImageObject_00417300 = {
-    0xFFFFull, /* 00417300 g_SoundDecodeMmxWordLaneMask0 */
-    0xFFFF0000ull, /* 00417308 g_SoundDecodeMmxWordLaneMask1 */
-    0xFFFF00000000ull, /* 00417310 g_SoundDecodeMmxWordLaneMask2 */
-    0xFFFF000000000000ull, /* 00417318 g_SoundDecodeMmxWordLaneMask3 */
-    {
-        0x00000000, 0x00000001, 0x00000003, 0x00000005},
-};
+/* 00417300 g_SoundDecodeMmxWordLaneMask0 */
+__declspec(align(16)) uint64_t g_SoundDecodeMmxWordLaneMask0 = 0xFFFFull;
+
+/* 00417308 g_SoundDecodeMmxWordLaneMask1 */
+__declspec(align(8)) uint64_t g_SoundDecodeMmxWordLaneMask1 = 0xFFFF0000ull;
+
+/* 00417310 g_SoundDecodeMmxWordLaneMask2 */
+__declspec(align(16)) uint64_t g_SoundDecodeMmxWordLaneMask2 = 0xFFFF00000000ull;
+
+/* 00417318 g_SoundDecodeMmxWordLaneMask3 */
+__declspec(align(8)) uint64_t g_SoundDecodeMmxWordLaneMask3 = 0xFFFF000000000000ull;
+
+/* 00417320 g_SoundDecodeMmxMasksTrailingWords: the words 0, 1, 3, 5 the original keeps after the lane masks;
+   no code reference */
+__declspec(align(16)) uint32_t g_SoundDecodeMmxMasksTrailingWords[4] = {
+    0x00000000, 0x00000001, 0x00000003, 0x00000005};
 
 /* 00417330 g_CosineDerivedLookupAllocation */
 __declspec(align(16)) short *g_CosineDerivedLookupAllocation = 0;
@@ -910,21 +918,26 @@ __declspec(align(16)) ImageObject_0041A740 g_ImageObject_0041A740 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041A740 gap */
 };
 
-__declspec(align(16)) ImageObject_0041A750 g_ImageObject_0041A750 = {
-    0xFFB0B0B0, /* 0041A750 g_RichTextColorPalette0Argb: PackedArgb32 rich-text colour palette entry 0 (0xFFB0B0B0 grey); the palette is indexed by the 3-bit palette field of the packed text style (richtext.c) and set by RICHTEXT_OP_COLOR_PALETTE_0; also the normal cost colour of the technology panel. */
-    0xFFE0E0E0, /* 0041A754 g_RichTextColorPalette1Argb: PackedArgb32 rich-text colour palette entry 1 (0xFFE0E0E0 light grey), RICHTEXT_OP_COLOR_PALETTE_1. */
-    0xFF707070, /* 0041A758 g_RichTextColorPalette2Argb: PackedArgb32 rich-text colour palette entry 2 (0xFF707070 dark grey), RICHTEXT_OP_COLOR_PALETTE_2. */
-    0xFFE0E0E0, /* 0041A75C g_RichTextColorPalette3Argb: PackedArgb32 rich-text colour palette entry 3 (0xFFE0E0E0 light grey), RICHTEXT_OP_COLOR_PALETTE_3. */
-    0xFF209020, /* 0041A760 g_RichTextColorPalette4Argb: PackedArgb32 rich-text colour palette entry 4 (0xFF209020 green); only reachable through the packed text style's palette index, no direct code reference. */
-    0xFFF02020, /* 0041A764 g_RichTextInsufficientResourceColorArgb: PackedArgb32 red (0xFFF02020) for technology costs the player cannot afford (ui/ingame/technology.c); also rich-text palette entry 5 by position. */
+/* 0041A750 g_RichTextColorPaletteArgb: rich-text colour palette, indexed by the 3-bit palette field of the
+   packed text style (richtext.c) and set by RICHTEXT_OP_COLOR_PALETTE_0..3. */
+__declspec(align(16)) PackedArgb32 g_RichTextColorPaletteArgb[6] = {
+    0xFFB0B0B0, /* 0041A750 [0] grey; also the normal cost colour of the technology panel */
+    0xFFE0E0E0, /* 0041A754 [1] light grey, RICHTEXT_OP_COLOR_PALETTE_1 */
+    0xFF707070, /* 0041A758 [2] dark grey, RICHTEXT_OP_COLOR_PALETTE_2 */
+    0xFFE0E0E0, /* 0041A75C [3] light grey, RICHTEXT_OP_COLOR_PALETTE_3 */
+    0xFF209020, /* 0041A760 [4] green; only reachable through the packed text style's palette index */
+    0xFFF02020, /* 0041A764 [5] red; also technology costs the player cannot afford (ui/ingame/technology.c) */
 };
 
-__declspec(align(8)) ImageObject_0041A768 g_ImageObject_0041A768 = {
-    2, /* 0041A768 g_RichTextShadowOffsetPalette0: uint32_t text shadow offset in pixels for colour palette entry 0 (2); indexed like the colour palette. */
-    2, /* 0041A76C g_RichTextShadowOffsetPalette1: uint32_t text shadow offset in pixels for colour palette entry 1 (2). */
-    1, /* 0041A770 g_RichTextShadowOffsetPalette2: uint32_t text shadow offset in pixels for colour palette entry 2 (1). */
-    2, /* 0041A774 g_RichTextShadowOffsetPalette3: uint32_t text shadow offset in pixels for colour palette entry 3 (2). */
-    {0},
+/* 0041A768 g_RichTextShadowOffsetPalette: text shadow offset in pixels per colour palette entry, indexed like
+   g_RichTextColorPaletteArgb. */
+__declspec(align(8)) uint32_t g_RichTextShadowOffsetPalette[6] = {
+    2, /* 0041A768 [0] */
+    2, /* 0041A76C [1] */
+    1, /* 0041A770 [2] */
+    2, /* 0041A774 [3] */
+    0, /* 0041A778 [4] */
+    0, /* 0041A77C [5] */
 };
 
 /* 0041A780 g_ActiveFontIndex */
@@ -3512,18 +3525,8 @@ __declspec(align(8)) UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSel
         /* 19 */ (void *)UiDisplayModeAction_UpdateAdapterSelection
     }};
 
-__declspec(align(8)) ImageObject_004235D8 g_ImageObject_004235D8 = {
-    0, /* 004235D8 g_UiDisplayModeDistinctValueScratch0 */
-    0, /* 004235DC g_UiDisplayModeDistinctValueScratch1 */
-    0, /* 004235E0 g_UiDisplayModeDistinctValueScratch2 */
-    0, /* 004235E4 g_UiDisplayModeDistinctValueScratch3 */
-    0, /* 004235E8 g_UiDisplayModeDistinctValueScratch4 */
-    0, /* 004235EC g_UiDisplayModeDistinctValueScratch5 */
-    0, /* 004235F0 g_UiDisplayModeDistinctValueScratch6 */
-    0, /* 004235F4 g_UiDisplayModeDistinctValueScratch7 */
-    {
-        0x90909090, 0x90909090},
-};
+/* 004235D8 g_UiDisplayModeDistinctValueScratch: sorted distinct-value slots of the display settings dialog */
+__declspec(align(8)) DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {0};
 
 /* 00424324 g_UiFourValueDialogRootCallbacks */
 __declspec(align(4)) UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
@@ -3643,10 +3646,11 @@ __declspec(align(4)) GraphicsFixedVec3 g_ViewOriginFixed = {0};
 /* 00485868 g_ProjectionScaleFixed */
 __declspec(align(8)) int32_t g_ProjectionScaleFixed = 0;
 
-__declspec(align(4)) ImageObject_0048586C g_ImageObject_0048586C = {
-    0, /* 0048586C g_ViewAngle0 */
-    0, /* 00485870 g_ViewAngle1 */
-};
+/* 0048586C g_ViewAngle0 */
+__declspec(align(4)) GraphicsViewAngle16 g_ViewAngle0 = 0;
+
+/* 00485870 g_ViewAngle1 */
+__declspec(align(16)) GraphicsViewAngle16 g_ViewAngle1 = 0;
 
 /* 00485874 g_ProjectionShift */
 __declspec(align(4)) uint32_t g_ProjectionShift = 0;
@@ -3699,39 +3703,31 @@ __declspec(align(4)) GraphicsSceneBounds8 g_SceneBoundsFixed = {0};
 /* 00485A04 g_ModelLodDepthThresholdQ8 */
 __declspec(align(4)) int32_t g_ModelLodDepthThresholdQ8 = 65536;
 
-__declspec(align(8)) ImageObject_00485A08 g_ImageObject_00485A08 = {
-    0, /* 00485A08 g_ArmyPreviewViewOriginXQ12 */
-    0, /* 00485A0C g_ArmyPreviewViewOriginYQ12 */
-    0, /* 00485A10 g_ArmyPreviewViewOriginZQ12 */
+/* 00485A08 g_ArmyPreviewViewParameters */
+__declspec(align(8)) GraphicsOffscreenViewParameters g_ArmyPreviewViewParameters = {
+    0, /* 00485A08 originX */
+    0, /* 00485A0C originY */
+    0, /* 00485A10 originZ */
+    0, /* 00485A14 projectionScale */
+    0, /* 00485A18 viewAngle0 */
+    0, /* 00485A1C viewAngle1 */
+    0, /* 00485A20 projectionShift */
 };
 
-/* 00485A14 g_ArmyPreviewProjectionScaleQ12 */
-__declspec(align(4)) uint32_t g_ArmyPreviewProjectionScaleQ12 = 0;
-
-__declspec(align(8)) ImageObject_00485A18 g_ImageObject_00485A18 = {
-    0, /* 00485A18 g_ArmyPreviewViewAngle0 */
-    0, /* 00485A1C g_ArmyPreviewViewAngle1 */
+/* 00485A24 g_ArmyPreviewAuxiliaryOrientation */
+__declspec(align(4)) AngleTurn32 g_ArmyPreviewAuxiliaryOrientation[2] = {
+    0, /* 00485A24 */
+    0, /* 00485A28 */
 };
 
-/* 00485A20 g_ArmyPreviewProjectionShift */
-__declspec(align(16)) uint32_t g_ArmyPreviewProjectionShift = 0;
-
-__declspec(align(4)) ImageObject_00485A24 g_ImageObject_00485A24 = {
-    0, /* 00485A24 g_ArmyPreviewAuxiliaryOrientation0 */
-    0, /* 00485A28 g_ArmyPreviewAuxiliaryOrientation1 */
+/* 00485A2C g_ArmyPreviewSceneExtents */
+__declspec(align(4)) GraphicsOffscreenSceneExtents g_ArmyPreviewSceneExtents = {
+    0, /* 00485A2C horizontalExtent (primary colour ARGB) */
+    0, /* 00485A30 verticalExtent (secondary colour ARGB) */
 };
 
-/* 00485A2C g_ArmyPreviewPrimaryColorArgb */
-__declspec(align(4)) uint32_t g_ArmyPreviewPrimaryColorArgb = 0;
-
-/* 00485A30 g_ArmyPreviewSecondaryColorArgb */
-__declspec(align(16)) uint32_t g_ArmyPreviewSecondaryColorArgb = 0;
-
-__declspec(align(4)) ImageObject_00485A34 g_ImageObject_00485A34 = {
-    0, /* 00485A34 g_ArmyPreviewModelNodePointer */
-    {
-        0x90909090, 0x90909090},
-};
+/* 00485A34 g_ArmyPreviewModelNode */
+__declspec(align(4)) ModelRuntimeNode *g_ArmyPreviewModelNode = 0;
 
 /* 00485A40 g_PrimitiveRadixBucketWords */
 __declspec(align(16)) uint32_t g_PrimitiveRadixBucketWords[256] = {0};
@@ -4916,13 +4912,8 @@ __declspec(align(16)) int32_t g_ModelBoundsMinimumZ = 0;
 /* 004BD2F4 g_ModelBoundsMaximumZ */
 __declspec(align(4)) int32_t g_ModelBoundsMaximumZ = 0;
 
-__declspec(align(8)) ImageObject_004BD2F8 g_ImageObject_004BD2F8 = {
-    0, /* 004BD2F8 g_ModelBoundsTransformedPointX */
-    0, /* 004BD2FC g_ModelBoundsTransformedPointY */
-    0, /* 004BD300 g_ModelBoundsTransformedPointZ */
-    {
-        0x90909090, 0x90909090, 0x90909090},
-};
+/* 004BD2F8 g_ModelBoundsTransformedPoint */
+__declspec(align(8)) GraphicsFixedVec3 g_ModelBoundsTransformedPoint = {0};
 
 __declspec(align(16)) ImageObject_004BD440 g_ImageObject_004BD440 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BD440 gap */
@@ -4971,12 +4962,8 @@ __declspec(align(16)) ImageObject_004BD890 g_ImageObject_004BD890 = {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-__declspec(align(16)) ImageObject_004BD8B0 g_ImageObject_004BD8B0 = {
-    0, /* 004BD8B0 g_ModelCullViewRelativeX */
-    0, /* 004BD8B4 g_ModelCullViewRelativeY */
-    0, /* 004BD8B8 g_ModelCullViewRelativeZ */
-    {0},
-};
+/* 004BD8B0 g_ModelCullViewRelative */
+__declspec(align(16)) GraphicsFixedVec3 g_ModelCullViewRelative = {0};
 
 __declspec(align(8)) ImageObject_004BD8C8 g_ImageObject_004BD8C8 = {
     0, /* 004BD8C8 g_SpriteAssetRegistryHead */
@@ -4997,19 +4984,11 @@ __declspec(align(16)) GraphicsFixedMatrix3x4 g_FixedTransformInputRotationScratc
 /* 004BEAD0 g_FixedTransformComposedRotationScratch */
 __declspec(align(16)) GraphicsFixedMatrix3x4 g_FixedTransformComposedRotationScratch = {0};
 
-__declspec(align(16)) ImageObject_004BEB00 g_ImageObject_004BEB00 = {
-    0, /* 004BEB00 g_ModelTransformInputX */
-    0, /* 004BEB04 g_ModelTransformInputY */
-    0, /* 004BEB08 g_ModelTransformInputZ */
-};
+/* 004BEB00 g_ModelTransformInput */
+__declspec(align(16)) GraphicsFixedVec3 g_ModelTransformInput = {0};
 
-__declspec(align(4)) ImageObject_004BEB0C g_ImageObject_004BEB0C = {
-    0, /* 004BEB0C g_ModelTransformOutputX */
-    0, /* 004BEB10 g_ModelTransformOutputY */
-    0, /* 004BEB14 g_ModelTransformOutputZ */
-    {
-        0x90909090, 0x90909090},
-};
+/* 004BEB0C g_ModelTransformOutput */
+__declspec(align(4)) GraphicsFixedVec3 g_ModelTransformOutput = {0};
 
 __declspec(align(4)) ImageObject_004BED4C g_ImageObject_004BED4C = {
     {0x90, 0x90, 0x90}, /* 004BED4C gap */
@@ -5886,10 +5865,11 @@ __declspec(align(4)) uint32_t g_GraphicsShadingGridHalfSize = 0;
 /* 004CCE08 g_GraphicsShadingGeneratedTexturePixelCursor */
 __declspec(align(8)) uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor = 0;
 
-__declspec(align(4)) ImageObject_004CCE0C g_ImageObject_004CCE0C = {
-    0, /* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
-    0, /* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
-};
+/* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
+__declspec(align(4)) uint32_t g_GraphicsShadingGeneratedTextureTileX = 0;
+
+/* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
+__declspec(align(16)) uint32_t g_GraphicsShadingGeneratedTextureTileY = 0;
 
 /* 004CCE14 g_GraphicsShadingGeneratedTextureSubresourceIndex */
 __declspec(align(4)) GraphicsSubresourceIndex g_GraphicsShadingGeneratedTextureSubresourceIndex = 0;
@@ -5897,10 +5877,11 @@ __declspec(align(4)) GraphicsSubresourceIndex g_GraphicsShadingGeneratedTextureS
 /* 004CCE18 g_GraphicsShadingSubresourceCount */
 __declspec(align(8)) uint32_t g_GraphicsShadingSubresourceCount = 0;
 
-__declspec(align(4)) ImageObject_004CCE1C g_ImageObject_004CCE1C = {
-    0, /* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
-    0, /* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
-};
+/* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
+__declspec(align(4)) uint32_t g_GraphicsShadingGeneratedTextureTileXQ20 = 0;
+
+/* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
+__declspec(align(16)) uint32_t g_GraphicsShadingGeneratedTextureTileYQ20 = 0;
 
 /* 004CCE24 g_GraphicsShadingGridStepQ20 */
 __declspec(align(4)) uint32_t g_GraphicsShadingGridStepQ20 = 0;
@@ -6473,11 +6454,8 @@ __declspec(align(16)) PackedArgb32 g_TerrainDirectionalLightColorLut[257] = {0};
 /* 00501994 g_TerrainDirectionalLightSecondaryColor */
 __declspec(align(4)) uint32_t g_TerrainDirectionalLightSecondaryColor = 0;
 
-__declspec(align(8)) ImageObject_00501998 g_ImageObject_00501998 = {
-    0, /* 00501998 g_TerrainLightDirectionX */
-    0, /* 0050199C g_TerrainLightDirectionY */
-    0, /* 005019A0 g_TerrainLightDirectionZ */
-};
+/* 00501998 g_TerrainLightDirection: Q28 unit vector */
+__declspec(align(8)) GraphicsFixedVec3 g_TerrainLightDirection = {0};
 
 /* 005019A4 g_TerrainByteClampLookup */
 __declspec(align(4)) uint8_t *g_TerrainByteClampLookup = 0;
@@ -6624,31 +6602,17 @@ __declspec(align(4)) ImageObject_0050AE54 g_ImageObject_0050AE54 = {
 /* 0050AE60 g_ModelRaycastMaximumDistance */
 __declspec(align(16)) int32_t g_ModelRaycastMaximumDistance = 0;
 
-__declspec(align(4)) ImageObject_0050AE64 g_ImageObject_0050AE64 = {
-    0, /* 0050AE64 g_ModelRaycastOriginX */
-    0, /* 0050AE68 g_ModelRaycastOriginY */
-    0, /* 0050AE6C g_ModelRaycastOriginZ */
-};
+/* 0050AE64 g_ModelRaycastOrigin: Q12 world-space ray origin */
+__declspec(align(4)) GraphicsFixedVec3 g_ModelRaycastOrigin = {0};
 
-__declspec(align(16)) ImageObject_0050AE70 g_ImageObject_0050AE70 = {
-    0, /* 0050AE70 g_ModelRaycastLocalOriginX */
-    0, /* 0050AE74 g_ModelRaycastLocalOriginY */
-    0, /* 0050AE78 g_ModelRaycastLocalOriginZ */
-};
+/* 0050AE70 g_ModelRaycastLocalOrigin: Q12 ray origin in the tested node's frame */
+__declspec(align(16)) GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {0};
 
-__declspec(align(4)) ImageObject_0050AE7C g_ImageObject_0050AE7C = {
-    0, /* 0050AE7C g_ModelRaycastWorldDirectionXQ28 */
-    0, /* 0050AE80 g_ModelRaycastWorldDirectionYQ28 */
-    0, /* 0050AE84 g_ModelRaycastWorldDirectionZQ28 */
-};
+/* 0050AE7C g_ModelRaycastWorldDirectionQ28: Q28 world-space ray direction */
+__declspec(align(4)) GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28 = {0};
 
-__declspec(align(8)) ImageObject_0050AE88 g_ImageObject_0050AE88 = {
-    0, /* 0050AE88 g_ModelRaycastLocalDirectionXQ28 */
-    0, /* 0050AE8C g_ModelRaycastLocalDirectionYQ28 */
-    0, /* 0050AE90 g_ModelRaycastLocalDirectionZQ28 */
-    {
-        0x90909090, 0x90909090, 0x90909090},
-};
+/* 0050AE88 g_ModelRaycastLocalDirectionQ28: Q28 ray direction in the tested node's frame */
+__declspec(align(8)) GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {0};
 
 __declspec(align(16)) ImageObject_0050B510 g_ImageObject_0050B510 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050B510 gap */
@@ -6666,11 +6630,8 @@ __declspec(align(16)) GraphicsFixedMatrix3x4 g_SpatialSoundListenerRotation = {0
 /* 0050B580 g_SpatialSoundListenerWorldToLocal */
 __declspec(align(16)) GraphicsFixedMatrix3x4 g_SpatialSoundListenerWorldToLocal = {0};
 
-__declspec(align(16)) ImageObject_0050B5B0 g_ImageObject_0050B5B0 = {
-    0, /* 0050B5B0 g_SpatialSoundRelativeX */
-    0, /* 0050B5B4 g_SpatialSoundRelativeY */
-    0, /* 0050B5B8 g_SpatialSoundRelativeZ */
-};
+/* 0050B5B0 g_SpatialSoundRelative: sound position in the listener's frame */
+__declspec(align(16)) GraphicsFixedVec3 g_SpatialSoundRelative = {0};
 
 /* 0050B5BC g_SoundEffectsGainQ15 */
 __declspec(align(4)) AudioMixerGainQ15 g_SoundEffectsGainQ15 = 32768;
@@ -6762,11 +6723,14 @@ __declspec(align(8)) ImageObject_0050D928 g_ImageObject_0050D928 = {
 /* 0050D930 g_TechnologyAsset */
 __declspec(align(16)) TechnologyAsset *g_TechnologyAsset = 0;
 
-__declspec(align(4)) ImageObject_0050D934 g_ImageObject_0050D934 = {
-    0, /* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
-    0, /* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
-    0, /* 0050D93C g_LevelCameraBookmark1PositionZQ12 */
-};
+/* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark1PositionXQ12 = 0;
+
+/* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
+__declspec(align(8)) uint32_t g_LevelCameraBookmark1PositionYQ12 = 0;
+
+/* 0050D93C g_LevelCameraBookmark1PositionZQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark1PositionZQ12 = 0;
 
 /* 0050D940 g_LevelCameraBookmark1PositionMagnitudeQ12 */
 __declspec(align(16)) uint32_t g_LevelCameraBookmark1PositionMagnitudeQ12 = 0;
@@ -6774,11 +6738,14 @@ __declspec(align(16)) uint32_t g_LevelCameraBookmark1PositionMagnitudeQ12 = 0;
 /* 0050D944 g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 */
 __declspec(align(4)) uint32_t g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 = 0;
 
-__declspec(align(8)) ImageObject_0050D948 g_ImageObject_0050D948 = {
-    0, /* 0050D948 g_LevelCameraBookmark2PositionXQ12 */
-    0, /* 0050D94C g_LevelCameraBookmark2PositionYQ12 */
-    0, /* 0050D950 g_LevelCameraBookmark2PositionZQ12 */
-};
+/* 0050D948 g_LevelCameraBookmark2PositionXQ12 */
+__declspec(align(8)) uint32_t g_LevelCameraBookmark2PositionXQ12 = 0;
+
+/* 0050D94C g_LevelCameraBookmark2PositionYQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark2PositionYQ12 = 0;
+
+/* 0050D950 g_LevelCameraBookmark2PositionZQ12 */
+__declspec(align(16)) uint32_t g_LevelCameraBookmark2PositionZQ12 = 0;
 
 /* 0050D954 g_LevelCameraBookmark2PositionMagnitudeQ12 */
 __declspec(align(4)) uint32_t g_LevelCameraBookmark2PositionMagnitudeQ12 = 0;
@@ -6786,11 +6753,14 @@ __declspec(align(4)) uint32_t g_LevelCameraBookmark2PositionMagnitudeQ12 = 0;
 /* 0050D958 g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 */
 __declspec(align(8)) uint32_t g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 = 0;
 
-__declspec(align(4)) ImageObject_0050D95C g_ImageObject_0050D95C = {
-    0, /* 0050D95C g_LevelCameraBookmark3PositionXQ12 */
-    0, /* 0050D960 g_LevelCameraBookmark3PositionYQ12 */
-    0, /* 0050D964 g_LevelCameraBookmark3PositionZQ12 */
-};
+/* 0050D95C g_LevelCameraBookmark3PositionXQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark3PositionXQ12 = 0;
+
+/* 0050D960 g_LevelCameraBookmark3PositionYQ12 */
+__declspec(align(16)) uint32_t g_LevelCameraBookmark3PositionYQ12 = 0;
+
+/* 0050D964 g_LevelCameraBookmark3PositionZQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark3PositionZQ12 = 0;
 
 /* 0050D968 g_LevelCameraBookmark3PositionMagnitudeQ12 */
 __declspec(align(8)) uint32_t g_LevelCameraBookmark3PositionMagnitudeQ12 = 0;
@@ -6798,11 +6768,14 @@ __declspec(align(8)) uint32_t g_LevelCameraBookmark3PositionMagnitudeQ12 = 0;
 /* 0050D96C g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 */
 __declspec(align(4)) uint32_t g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 = 0;
 
-__declspec(align(16)) ImageObject_0050D970 g_ImageObject_0050D970 = {
-    0, /* 0050D970 g_LevelCameraBookmark4PositionXQ12 */
-    0, /* 0050D974 g_LevelCameraBookmark4PositionYQ12 */
-    0, /* 0050D978 g_LevelCameraBookmark4PositionZQ12 */
-};
+/* 0050D970 g_LevelCameraBookmark4PositionXQ12 */
+__declspec(align(16)) uint32_t g_LevelCameraBookmark4PositionXQ12 = 0;
+
+/* 0050D974 g_LevelCameraBookmark4PositionYQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark4PositionYQ12 = 0;
+
+/* 0050D978 g_LevelCameraBookmark4PositionZQ12 */
+__declspec(align(8)) uint32_t g_LevelCameraBookmark4PositionZQ12 = 0;
 
 /* 0050D97C g_LevelCameraBookmark4PositionMagnitudeQ12 */
 __declspec(align(4)) uint32_t g_LevelCameraBookmark4PositionMagnitudeQ12 = 0;
@@ -6810,11 +6783,14 @@ __declspec(align(4)) uint32_t g_LevelCameraBookmark4PositionMagnitudeQ12 = 0;
 /* 0050D980 g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 */
 __declspec(align(16)) uint32_t g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 = 0;
 
-__declspec(align(4)) ImageObject_0050D984 g_ImageObject_0050D984 = {
-    0, /* 0050D984 g_LevelCameraBookmark5PositionXQ12 */
-    0, /* 0050D988 g_LevelCameraBookmark5PositionYQ12 */
-    0, /* 0050D98C g_LevelCameraBookmark5PositionZQ12 */
-};
+/* 0050D984 g_LevelCameraBookmark5PositionXQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark5PositionXQ12 = 0;
+
+/* 0050D988 g_LevelCameraBookmark5PositionYQ12 */
+__declspec(align(8)) uint32_t g_LevelCameraBookmark5PositionYQ12 = 0;
+
+/* 0050D98C g_LevelCameraBookmark5PositionZQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark5PositionZQ12 = 0;
 
 /* 0050D990 g_LevelCameraBookmark5PositionMagnitudeQ12 */
 __declspec(align(16)) uint32_t g_LevelCameraBookmark5PositionMagnitudeQ12 = 0;
@@ -6822,11 +6798,14 @@ __declspec(align(16)) uint32_t g_LevelCameraBookmark5PositionMagnitudeQ12 = 0;
 /* 0050D994 g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 */
 __declspec(align(4)) uint32_t g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 = 0;
 
-__declspec(align(8)) ImageObject_0050D998 g_ImageObject_0050D998 = {
-    0, /* 0050D998 g_LevelCameraBookmark6PositionXQ12 */
-    0, /* 0050D99C g_LevelCameraBookmark6PositionYQ12 */
-    0, /* 0050D9A0 g_LevelCameraBookmark6PositionZQ12 */
-};
+/* 0050D998 g_LevelCameraBookmark6PositionXQ12 */
+__declspec(align(8)) uint32_t g_LevelCameraBookmark6PositionXQ12 = 0;
+
+/* 0050D99C g_LevelCameraBookmark6PositionYQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark6PositionYQ12 = 0;
+
+/* 0050D9A0 g_LevelCameraBookmark6PositionZQ12 */
+__declspec(align(16)) uint32_t g_LevelCameraBookmark6PositionZQ12 = 0;
 
 /* 0050D9A4 g_LevelCameraBookmark6PositionMagnitudeQ12 */
 __declspec(align(4)) uint32_t g_LevelCameraBookmark6PositionMagnitudeQ12 = 0;
@@ -6834,11 +6813,14 @@ __declspec(align(4)) uint32_t g_LevelCameraBookmark6PositionMagnitudeQ12 = 0;
 /* 0050D9A8 g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 */
 __declspec(align(8)) uint32_t g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 = 0;
 
-__declspec(align(4)) ImageObject_0050D9AC g_ImageObject_0050D9AC = {
-    0, /* 0050D9AC g_LevelCameraBookmark7PositionXQ12 */
-    0, /* 0050D9B0 g_LevelCameraBookmark7PositionYQ12 */
-    0, /* 0050D9B4 g_LevelCameraBookmark7PositionZQ12 */
-};
+/* 0050D9AC g_LevelCameraBookmark7PositionXQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark7PositionXQ12 = 0;
+
+/* 0050D9B0 g_LevelCameraBookmark7PositionYQ12 */
+__declspec(align(16)) uint32_t g_LevelCameraBookmark7PositionYQ12 = 0;
+
+/* 0050D9B4 g_LevelCameraBookmark7PositionZQ12 */
+__declspec(align(4)) uint32_t g_LevelCameraBookmark7PositionZQ12 = 0;
 
 /* 0050D9B8 g_LevelCameraBookmark7PositionMagnitudeQ12 */
 __declspec(align(8)) uint32_t g_LevelCameraBookmark7PositionMagnitudeQ12 = 0;
@@ -8659,12 +8641,8 @@ __declspec(align(8)) uint32_t g_InGameLevelTitleTextResourceIndex = 0;
 /* 0053102C g_InGameLevelCampaignAssociationIndex */
 __declspec(align(4)) uint32_t g_InGameLevelCampaignAssociationIndex = 0;
 
-__declspec(align(16)) ImageObject_00531030 g_ImageObject_00531030 = {
-    0, /* 00531030 g_InGameLevelEffectVoiceSet0 */
-    0, /* 00531034 g_InGameLevelEffectVoiceSet1 */
-    0, /* 00531038 g_InGameLevelEffectVoiceSet2 */
-    0, /* 0053103C g_InGameLevelEffectVoiceSet3 */
-};
+/* 00531030 g_InGameLevelEffectVoiceSets */
+__declspec(align(16)) DirectSoundVoiceSet *g_InGameLevelEffectVoiceSets[4] = {0, 0, 0, 0};
 
 /* 00531040 g_InGameActiveEffectVoice */
 __declspec(align(16)) uint32_t g_InGameActiveEffectVoice = 0;
@@ -8672,12 +8650,8 @@ __declspec(align(16)) uint32_t g_InGameActiveEffectVoice = 0;
 /* 00531044 g_InGameEffectsEnabled */
 __declspec(align(4)) uint32_t g_InGameEffectsEnabled = 0;
 
-__declspec(align(8)) ImageObject_00531048 g_ImageObject_00531048 = {
-    0, /* 00531048 g_InGameLevelMusicVoiceSet0 */
-    0, /* 0053104C g_InGameLevelMusicVoiceSet1 */
-    0, /* 00531050 g_InGameLevelMusicVoiceSet2 */
-    0, /* 00531054 g_InGameLevelMusicVoiceSet3 */
-};
+/* 00531048 g_InGameLevelMusicVoiceSets */
+__declspec(align(8)) DirectSoundVoiceSet *g_InGameLevelMusicVoiceSets[4] = {0, 0, 0, 0};
 
 /* 00531058 g_InGameActiveMusicVoice */
 __declspec(align(8)) uint32_t g_InGameActiveMusicVoice = 0;
@@ -8821,26 +8795,28 @@ __declspec(align(8)) ImageObject_00536F48 g_ImageObject_00536F48 = {
         0x90909090, 0x90909090, 0x90909090},
 };
 
-__declspec(align(16)) ImageObject_00536F60 g_ImageObject_00536F60 = {
-    1000, /* 00536F60 g_GridInfluenceRadiusOffset0 */
-    1250, /* 00536F64 g_GridInfluenceRadiusOffset1 */
-    1500, /* 00536F68 g_GridInfluenceRadiusOffset2 */
-    1600, /* 00536F6C g_GridInfluenceRadiusOffset3 */
-    1920, /* 00536F70 g_GridInfluenceRadiusOffset4 */
-    2240, /* 00536F74 g_GridInfluenceRadiusOffset5 */
-    2600, /* 00536F78 g_GridInfluenceRadiusOffset6 */
-    4100, /* 00536F7C g_GridInfluenceRadiusOffset7 */
+/* 00536F60 g_GridInfluenceRadiusOffset: uint32_t[8] grid influence ring radius offsets */
+__declspec(align(16)) uint32_t g_GridInfluenceRadiusOffset[8] = {
+    1000, /* 00536F60 [0] */
+    1250, /* 00536F64 [1] */
+    1500, /* 00536F68 [2] */
+    1600, /* 00536F6C [3] */
+    1920, /* 00536F70 [4] */
+    2240, /* 00536F74 [5] */
+    2600, /* 00536F78 [6] */
+    4100, /* 00536F7C [7] */
 };
 
-__declspec(align(16)) ImageObject_00536F80 g_ImageObject_00536F80 = {
-    0, /* 00536F80 g_GridInfluenceSquaredThreshold0 */
-    0, /* 00536F84 g_GridInfluenceSquaredThreshold1 */
-    0, /* 00536F88 g_GridInfluenceSquaredThreshold2 */
-    0, /* 00536F8C g_GridInfluenceSquaredThreshold3 */
-    0, /* 00536F90 g_GridInfluenceSquaredThreshold4 */
-    0, /* 00536F94 g_GridInfluenceSquaredThreshold5 */
-    0, /* 00536F98 g_GridInfluenceSquaredThreshold6 */
-    0, /* 00536F9C g_GridInfluenceSquaredThreshold7 */
+/* 00536F80 g_GridInfluenceSquaredThreshold: uint32_t[8] squared ring radii (g_GridInfluenceRadiusOffset[n] + radius + margin)^2 */
+__declspec(align(16)) uint32_t g_GridInfluenceSquaredThreshold[8] = {
+    0, /* 00536F80 [0] */
+    0, /* 00536F84 [1] */
+    0, /* 00536F88 [2] */
+    0, /* 00536F8C [3] */
+    0, /* 00536F90 [4] */
+    0, /* 00536F94 [5] */
+    0, /* 00536F98 [6] */
+    0, /* 00536F9C [7] */
 };
 
 /* 00536FA0 g_AiCombatTargetRadialClearanceWeight: int32_t weight 0x600 multiplying the radial clearance term of the AI combat target score (gameplay/ai/combat.c) */
@@ -8961,12 +8937,8 @@ __declspec(align(16)) AiTechnologyPlanningCandidate *g_AiWorkspace12TechnologyCa
 /* 005379C4 g_AiWorkspace12Count */
 __declspec(align(4)) AiTechnologyPlanningCandidateCount g_AiWorkspace12Count = 0;
 
-__declspec(align(8)) ImageObject_005379C8 g_ImageObject_005379C8 = {
-    0, /* 005379C8 g_AiActiveGridMaskClass0 */
-    0, /* 005379CC g_AiActiveGridMaskClass1 */
-    0, /* 005379D0 g_AiActiveGridMaskClass2 */
-    0, /* 005379D4 g_AiActiveGridMaskClass3 */
-};
+/* 005379C8 g_AiActiveGridMaskClasses */
+__declspec(align(8)) uint32_t g_AiActiveGridMaskClasses[4] = {0, 0, 0, 0};
 
 __declspec(align(8)) ImageObject_005379D8 g_ImageObject_005379D8 = {
     0, /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
@@ -8991,16 +8963,8 @@ __declspec(align(4)) ImageObject_00539974 g_ImageObject_00539974 = {
 /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
 __declspec(align(16)) uint32_t g_TechnologyCategoryMaximumReciprocalQ24Table8[8] = {0};
 
-__declspec(align(16)) ImageObject_005399A0 g_ImageObject_005399A0 = {
-    0, /* 005399A0 g_TechnologyCategoryMaximum0 */
-    0, /* 005399A4 g_TechnologyCategoryMaximum1 */
-    0, /* 005399A8 g_TechnologyCategoryMaximum2 */
-    0, /* 005399AC g_TechnologyCategoryMaximum3 */
-    0, /* 005399B0 g_TechnologyCategoryMaximum4 */
-    0, /* 005399B4 g_TechnologyCategoryMaximum5 */
-    0, /* 005399B8 g_TechnologyCategoryMaximum6 */
-    0, /* 005399BC g_TechnologyCategoryMaximum7 */
-};
+/* 005399A0 g_TechnologyCategoryMaximums */
+__declspec(align(16)) int32_t g_TechnologyCategoryMaximums[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 /* 005399C0 g_AiArmyCandidateFlaggedDefinitionValueMaximum */
 __declspec(align(16)) int32_t g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
@@ -16139,10 +16103,11 @@ __declspec(align(16)) uint8_t *g_RuntimeObjectRebaseBaseMinusOne = 0;
 /* 00563704 g_InGamePlacementHeading16 */
 __declspec(align(4)) uint32_t g_InGamePlacementHeading16 = 0;
 
-__declspec(align(8)) ImageObject_00563708 g_ImageObject_00563708 = {
-    0, /* 00563708 g_InGamePlacementPointerCaptureX */
-    0, /* 0056370C g_InGamePlacementPointerCaptureY */
-};
+/* 00563708 g_InGamePlacementPointerCaptureX */
+__declspec(align(8)) uint32_t g_InGamePlacementPointerCaptureX = 0;
+
+/* 0056370C g_InGamePlacementPointerCaptureY */
+__declspec(align(4)) uint32_t g_InGamePlacementPointerCaptureY = 0;
 
 /* 00563710 g_InGamePendingPlacementArmyAsset */
 __declspec(align(16)) int32_t g_InGamePendingPlacementArmyAsset = 0;
@@ -16150,10 +16115,11 @@ __declspec(align(16)) int32_t g_InGamePendingPlacementArmyAsset = 0;
 /* 00563714 g_InGamePlacementPreviewArmyRuntime */
 __declspec(align(4)) GameEntityRuntime *g_InGamePlacementPreviewArmyRuntime = 0;
 
-__declspec(align(8)) ImageObject_00563718 g_ImageObject_00563718 = {
-    0, /* 00563718 g_InGamePlacementWorldYQ12 */
-    0, /* 0056371C g_InGamePlacementWorldXQ12 */
-};
+/* 00563718 g_InGamePlacementWorldYQ12 */
+__declspec(align(8)) uint32_t g_InGamePlacementWorldYQ12 = 0;
+
+/* 0056371C g_InGamePlacementWorldXQ12 */
+__declspec(align(4)) uint32_t g_InGamePlacementWorldXQ12 = 0;
 
 /* 00563720 g_InGamePlacementSurfaceHeightQ12OrSentinel */
 __declspec(align(16)) int32_t g_InGamePlacementSurfaceHeightQ12OrSentinel = 0;
@@ -16164,18 +16130,20 @@ __declspec(align(4)) GameEntityRuntime *g_InGameCommandPreviewArmyRuntime = 0;
 /* 00563728 g_InGameCommandPreviewHeading16 */
 __declspec(align(8)) uint32_t g_InGameCommandPreviewHeading16 = 0;
 
-__declspec(align(4)) ImageObject_0056372C g_ImageObject_0056372C = {
-    0, /* 0056372C g_InGameCommandPreviewWorldYQ12 */
-    0, /* 00563730 g_InGameCommandPreviewWorldXQ12 */
-};
+/* 0056372C g_InGameCommandPreviewWorldYQ12 */
+__declspec(align(4)) uint32_t g_InGameCommandPreviewWorldYQ12 = 0;
+
+/* 00563730 g_InGameCommandPreviewWorldXQ12 */
+__declspec(align(16)) uint32_t g_InGameCommandPreviewWorldXQ12 = 0;
 
 /* 00563734 g_InGameCommandPreviewSurfaceHeightQ12OrSentinel */
 __declspec(align(4)) uint32_t g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = 0;
 
-__declspec(align(8)) ImageObject_00563738 g_ImageObject_00563738 = {
-    0, /* 00563738 g_InGameCommandPointerCaptureX */
-    0, /* 0056373C g_InGameCommandPointerCaptureY */
-};
+/* 00563738 g_InGameCommandPointerCaptureX */
+__declspec(align(8)) uint32_t g_InGameCommandPointerCaptureX = 0;
+
+/* 0056373C g_InGameCommandPointerCaptureY */
+__declspec(align(4)) uint32_t g_InGameCommandPointerCaptureY = 0;
 
 /* 00563740 g_InGameCommandPreviewArmyAssetId */
 __declspec(align(16)) uint32_t g_InGameCommandPreviewArmyAssetId = 0;
@@ -16462,25 +16430,29 @@ __declspec(align(4)) void *g_UiCommandModeGHandlers[6] = {
 /* 0056D7DC g_UiMappedCommandControlOffsets */
 __declspec(align(4)) int32_t g_UiMappedCommandControlOffsets[12] = {42892, 43076, 43260, 43444, 43628, 43812, 43996, 44180, 44364, 44548, 44732, 44916};
 
-__declspec(align(4)) ImageObject_0056D80C g_ImageObject_0056D80C = {
-    0, /* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
-    0, /* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
-};
+/* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
+__declspec(align(4)) int32_t g_UiCommandSelectionAnchorWorldXQ12 = 0;
 
-__declspec(align(4)) ImageObject_0056D814 g_ImageObject_0056D814 = {
-    0, /* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
-    0, /* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
-};
+/* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
+__declspec(align(16)) int32_t g_UiCommandSelectionAnchorWorldYQ12 = 0;
 
-__declspec(align(4)) ImageObject_0056D81C g_ImageObject_0056D81C = {
-    0, /* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
-    0, /* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
-};
+/* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
+__declspec(align(4)) int32_t g_UiCommandSelectionCurrentWorldXQ12 = 0;
 
-__declspec(align(4)) ImageObject_0056D824 g_ImageObject_0056D824 = {
-    0, /* 0056D824 g_UiCommandDragStartScreenX */
-    0, /* 0056D828 g_UiCommandDragStartScreenY */
-};
+/* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
+__declspec(align(8)) int32_t g_UiCommandSelectionCurrentWorldYQ12 = 0;
+
+/* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
+__declspec(align(4)) uint32_t g_UiCommandDragAnchorWorldXQ12 = 0;
+
+/* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
+__declspec(align(16)) uint32_t g_UiCommandDragAnchorWorldYQ12 = 0;
+
+/* 0056D824 g_UiCommandDragStartScreenX */
+__declspec(align(4)) uint32_t g_UiCommandDragStartScreenX = 0;
+
+/* 0056D828 g_UiCommandDragStartScreenY */
+__declspec(align(8)) uint32_t g_UiCommandDragStartScreenY = 0;
 
 /* 0056D82C g_TerrainMaterialEditFieldGrid */
 __declspec(align(4)) uint32_t g_TerrainMaterialEditFieldGrid = 0;
@@ -16688,10 +16660,11 @@ __declspec(align(8)) DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {0};
 /* 00572AF4 g_PcxFunctionModule */
 __declspec(align(4)) FncModuleHeader *g_PcxFunctionModule = 0;
 
-__declspec(align(8)) ImageObject_00572AF8 g_ImageObject_00572AF8 = {
-    0, /* 00572AF8 g_PcxFunctionExport3 */
-    0, /* 00572AFC g_PcxFunctionExport2 */
-};
+/* 00572AF8 g_PcxFunctionExport3: export 3 (capture encoder) of the pcx.fnc module; the C code calls Pcx_EncodeCapture directly, nothing reads it */
+__declspec(align(8)) PcxEncodeProc *g_PcxFunctionExport3 = 0;
+
+/* 00572AFC g_PcxFunctionExport2: export 2 (indexed-8 decoder) of the pcx.fnc module; the C code calls Pcx_DecodeIndexed8 directly, nothing reads it */
+__declspec(align(4)) PcxDecodeProc *g_PcxFunctionExport2 = 0;
 
 /* 00572B00 g_IntroMoviePendingTicks */
 __declspec(align(16)) uint32_t g_IntroMoviePendingTicks = 0;
@@ -18798,74 +18771,11 @@ __declspec(align(16)) GlideLfbInfo g_GlidePrimaryLfbInfo = {.size = 20};
 /* 0057ED34 g_GlideSecondaryLfbInfo */
 __declspec(align(4)) GlideLfbInfo g_GlideSecondaryLfbInfo = {.size = 20};
 
-/* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertex0/1/2; no code reads it (name is historical) */
-__declspec(align(8)) void *g_GlideTextureRefreshHandlers[3] = {(void *)&g_GlideVertex0ScreenX, (void *)&g_GlideVertex1ScreenX, (void *)&g_GlideVertex2ScreenX};
+/* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertices[0..2]; no code reads it (name is historical) */
+__declspec(align(8)) void *g_GlideTextureRefreshHandlers[3] = {(void *)g_GlideVertices[0], (void *)g_GlideVertices[1], (void *)g_GlideVertices[2]};
 
-__declspec(align(4)) ImageObject_0057ED54 g_ImageObject_0057ED54 = {
-    0, /* 0057ED54 g_GlideVertex0ScreenX */
-    0, /* 0057ED58 g_GlideVertex0ScreenY */
-};
-
-/* 0057ED5C g_GlideVertex0ReciprocalDepth */
-__declspec(align(4)) uint32_t g_GlideVertex0ReciprocalDepth = 0;
-
-__declspec(align(16)) ImageObject_0057ED60 g_ImageObject_0057ED60 = {
-    0, /* 0057ED60 g_GlideVertex0PerspectiveScale */
-    {0},
-};
-
-/* 0057ED68 g_GlideVertex0ProjectedTextureU */
-__declspec(align(8)) uint32_t g_GlideVertex0ProjectedTextureU = 0;
-
-/* 0057ED6C g_GlideVertex0ProjectedTextureV */
-__declspec(align(4)) uint32_t g_GlideVertex0ProjectedTextureV = 0;
-
-/* 0057ED70 g_GlideVertex0DiffuseColor */
-__declspec(align(16)) uint32_t g_GlideVertex0DiffuseColor = 0;
-
-__declspec(align(4)) ImageObject_0057ED74 g_ImageObject_0057ED74 = {
-    0, /* 0057ED74 g_GlideVertex1ScreenX */
-    0, /* 0057ED78 g_GlideVertex1ScreenY */
-};
-
-/* 0057ED7C g_GlideVertex1ReciprocalDepth */
-__declspec(align(4)) uint32_t g_GlideVertex1ReciprocalDepth = 0;
-
-__declspec(align(16)) ImageObject_0057ED80 g_ImageObject_0057ED80 = {
-    0, /* 0057ED80 g_GlideVertex1PerspectiveScale */
-    {0},
-};
-
-/* 0057ED88 g_GlideVertex1ProjectedTextureU */
-__declspec(align(8)) uint32_t g_GlideVertex1ProjectedTextureU = 0;
-
-/* 0057ED8C g_GlideVertex1ProjectedTextureV */
-__declspec(align(4)) uint32_t g_GlideVertex1ProjectedTextureV = 0;
-
-/* 0057ED90 g_GlideVertex1DiffuseColor */
-__declspec(align(16)) uint32_t g_GlideVertex1DiffuseColor = 0;
-
-__declspec(align(4)) ImageObject_0057ED94 g_ImageObject_0057ED94 = {
-    0, /* 0057ED94 g_GlideVertex2ScreenX */
-    0, /* 0057ED98 g_GlideVertex2ScreenY */
-};
-
-/* 0057ED9C g_GlideVertex2ReciprocalDepth */
-__declspec(align(4)) uint32_t g_GlideVertex2ReciprocalDepth = 0;
-
-__declspec(align(16)) ImageObject_0057EDA0 g_ImageObject_0057EDA0 = {
-    0, /* 0057EDA0 g_GlideVertex2PerspectiveScale */
-    {0},
-};
-
-/* 0057EDA8 g_GlideVertex2ProjectedTextureU */
-__declspec(align(8)) uint32_t g_GlideVertex2ProjectedTextureU = 0;
-
-/* 0057EDAC g_GlideVertex2ProjectedTextureV */
-__declspec(align(4)) uint32_t g_GlideVertex2ProjectedTextureV = 0;
-
-/* 0057EDB0 g_GlideVertex2DiffuseColor */
-__declspec(align(16)) uint32_t g_GlideVertex2DiffuseColor = 0;
+/* 0057ED54 g_GlideVertices: uint32_t[3][8]: the three GrVertex records (float bit patterns) Glide3_DrawPrimitiveQueue fills and hands to grDrawTriangle; fields GLIDE_VERTEX_* (graphics/backend/glide.h), dword 4 of each record is unused */
+__declspec(align(4)) uint32_t g_GlideVertices[3][8] = {0};
 
 /* 0057EDB4 g_GlideTextureInfo256Argb4444: GlideTextureInfo (GrTexInfo): {LOD 8, LOD 8, aspect 1:1, GR_TEXFMT_ARGB_4444, NULL}; not referenced by address */
 __declspec(align(4)) GlideTextureInfo g_GlideTextureInfo256Argb4444 = {.smallLod = 8, .largeLod = 8, .format = 12};
@@ -19231,7 +19141,11 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00417214, 0x00417218, (const uint8_t *)&g_KeyboardReadEvent},
     {0x00417218, 0x00417230, (const uint8_t *)&g_ImageObject_00417218},
     {0x004172E8, 0x00417300, (const uint8_t *)&g_ImageObject_004172E8},
-    {0x00417300, 0x00417330, (const uint8_t *)&g_ImageObject_00417300},
+    {0x00417300, 0x00417308, (const uint8_t *)&g_SoundDecodeMmxWordLaneMask0},
+    {0x00417308, 0x00417310, (const uint8_t *)&g_SoundDecodeMmxWordLaneMask1},
+    {0x00417310, 0x00417318, (const uint8_t *)&g_SoundDecodeMmxWordLaneMask2},
+    {0x00417318, 0x00417320, (const uint8_t *)&g_SoundDecodeMmxWordLaneMask3},
+    {0x00417320, 0x00417330, (const uint8_t *)&g_SoundDecodeMmxMasksTrailingWords},
     {0x00417330, 0x00417334, (const uint8_t *)&g_CosineDerivedLookupAllocation},
     {0x00417334, 0x00417338, (const uint8_t *)&g_CosineDerivedLookupSecondTable},
     {0x00417338, 0x0041733C, (const uint8_t *)&g_SoundCreateSampleVoiceSet},
@@ -19260,8 +19174,8 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0041A568, 0x0041A56C, (const uint8_t *)&g_NetworkBackendSlot7},
     {0x0041A56C, 0x0041A580, (const uint8_t *)&g_ImageObject_0041A56C},
     {0x0041A740, 0x0041A750, (const uint8_t *)&g_ImageObject_0041A740},
-    {0x0041A750, 0x0041A768, (const uint8_t *)&g_ImageObject_0041A750},
-    {0x0041A768, 0x0041A780, (const uint8_t *)&g_ImageObject_0041A768},
+    {0x0041A750, 0x0041A768, (const uint8_t *)&g_RichTextColorPaletteArgb},
+    {0x0041A768, 0x0041A780, (const uint8_t *)&g_RichTextShadowOffsetPalette},
     {0x0041A780, 0x0041A784, (const uint8_t *)&g_ActiveFontIndex},
     {0x0041A784, 0x0041A788, (const uint8_t *)&g_RichTextCurrentColorArgb},
     {0x0041A788, 0x0041A78C, (const uint8_t *)&g_RichTextCurrentShadowOffset},
@@ -19369,7 +19283,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004229A0, 0x004229B4, (const uint8_t *)&g_UiDisplaySettingsRootCallbacks},
     {0x004229B4, 0x00423588, (const uint8_t *)&g_ImageObject_004229B4},
     {0x00423588, 0x004235D8, (const uint8_t *)&g_UiDisplayModeSelectionActionHandlers20},
-    {0x004235D8, 0x00423600, (const uint8_t *)&g_ImageObject_004235D8},
+    {0x004235D8, 0x004235F8, (const uint8_t *)&g_UiDisplayModeDistinctValueScratch},
     {0x00424324, 0x00424338, (const uint8_t *)&g_UiFourValueDialogRootCallbacks},
     {0x00424338, 0x004244E0, (const uint8_t *)&g_ImageObject_00424338},
     {0x00424684, 0x004246A0, (const uint8_t *)&g_ImageObject_00424684},
@@ -19395,7 +19309,8 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00485858, 0x0048585C, (const uint8_t *)&g_TextureDeviceReloadCount},
     {0x0048585C, 0x00485868, (const uint8_t *)&g_ViewOriginFixed},
     {0x00485868, 0x0048586C, (const uint8_t *)&g_ProjectionScaleFixed},
-    {0x0048586C, 0x00485874, (const uint8_t *)&g_ImageObject_0048586C},
+    {0x0048586C, 0x00485870, (const uint8_t *)&g_ViewAngle0},
+    {0x00485870, 0x00485874, (const uint8_t *)&g_ViewAngle1},
     {0x00485874, 0x00485878, (const uint8_t *)&g_ProjectionShift},
     {0x00485878, 0x0048587C, (const uint8_t *)&g_ProjectionScaleProduct},
     {0x0048587C, 0x00485884, (const uint8_t *)&g_ProjectionNumerator},
@@ -19413,14 +19328,10 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004859B4, 0x004859E4, (const uint8_t *)&g_FrustumCornerRayFixed_0},
     {0x004859E4, 0x00485A04, (const uint8_t *)&g_SceneBoundsFixed},
     {0x00485A04, 0x00485A08, (const uint8_t *)&g_ModelLodDepthThresholdQ8},
-    {0x00485A08, 0x00485A14, (const uint8_t *)&g_ImageObject_00485A08},
-    {0x00485A14, 0x00485A18, (const uint8_t *)&g_ArmyPreviewProjectionScaleQ12},
-    {0x00485A18, 0x00485A20, (const uint8_t *)&g_ImageObject_00485A18},
-    {0x00485A20, 0x00485A24, (const uint8_t *)&g_ArmyPreviewProjectionShift},
-    {0x00485A24, 0x00485A2C, (const uint8_t *)&g_ImageObject_00485A24},
-    {0x00485A2C, 0x00485A30, (const uint8_t *)&g_ArmyPreviewPrimaryColorArgb},
-    {0x00485A30, 0x00485A34, (const uint8_t *)&g_ArmyPreviewSecondaryColorArgb},
-    {0x00485A34, 0x00485A40, (const uint8_t *)&g_ImageObject_00485A34},
+    {0x00485A08, 0x00485A24, (const uint8_t *)&g_ArmyPreviewViewParameters},
+    {0x00485A24, 0x00485A2C, (const uint8_t *)&g_ArmyPreviewAuxiliaryOrientation},
+    {0x00485A2C, 0x00485A34, (const uint8_t *)&g_ArmyPreviewSceneExtents},
+    {0x00485A34, 0x00485A38, (const uint8_t *)&g_ArmyPreviewModelNode},
     {0x00485A40, 0x00485E40, (const uint8_t *)&g_PrimitiveRadixBucketWords},
     {0x00486D8C, 0x00486D90, (const uint8_t *)&g_ImageObject_00486D8C},
     {0x00486D90, 0x004A6D90, (const uint8_t *)&g_ImageObject_00486D90},
@@ -19612,7 +19523,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004BD2EC, 0x004BD2F0, (const uint8_t *)&g_ModelBoundsMaximumY},
     {0x004BD2F0, 0x004BD2F4, (const uint8_t *)&g_ModelBoundsMinimumZ},
     {0x004BD2F4, 0x004BD2F8, (const uint8_t *)&g_ModelBoundsMaximumZ},
-    {0x004BD2F8, 0x004BD310, (const uint8_t *)&g_ImageObject_004BD2F8},
+    {0x004BD2F8, 0x004BD304, (const uint8_t *)&g_ModelBoundsTransformedPoint},
     {0x004BD440, 0x004BD450, (const uint8_t *)&g_ImageObject_004BD440},
     {0x004BD450, 0x004BD480, (const uint8_t *)&g_ImageObject_004BD450},
     {0x004BD480, 0x004BD48C, (const uint8_t *)&g_ImageObject_004BD480},
@@ -19620,14 +19531,14 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004BD498, 0x004BD4B0, (const uint8_t *)&g_ImageObject_004BD498},
     {0x004BD880, 0x004BD890, (const uint8_t *)&g_ImageObject_004BD880},
     {0x004BD890, 0x004BD8B0, (const uint8_t *)&g_ImageObject_004BD890},
-    {0x004BD8B0, 0x004BD8C8, (const uint8_t *)&g_ImageObject_004BD8B0},
+    {0x004BD8B0, 0x004BD8BC, (const uint8_t *)&g_ModelCullViewRelative},
     {0x004BD8C8, 0x004BD8D0, (const uint8_t *)&g_ImageObject_004BD8C8},
     {0x004BEA6C, 0x004BEA70, (const uint8_t *)&g_ImageObject_004BEA6C},
     {0x004BEA70, 0x004BEAA0, (const uint8_t *)&g_ModelTransformScratchMatrix},
     {0x004BEAA0, 0x004BEAD0, (const uint8_t *)&g_FixedTransformInputRotationScratch},
     {0x004BEAD0, 0x004BEB00, (const uint8_t *)&g_FixedTransformComposedRotationScratch},
-    {0x004BEB00, 0x004BEB0C, (const uint8_t *)&g_ImageObject_004BEB00},
-    {0x004BEB0C, 0x004BEB20, (const uint8_t *)&g_ImageObject_004BEB0C},
+    {0x004BEB00, 0x004BEB0C, (const uint8_t *)&g_ModelTransformInput},
+    {0x004BEB0C, 0x004BEB18, (const uint8_t *)&g_ModelTransformOutput},
     {0x004BED4C, 0x004BED4F, (const uint8_t *)&g_ImageObject_004BED4C},
     {0x004BED4F, 0x004BED50, (const uint8_t *)&g_ImageObject_004BED4F},
     {0x004BED50, 0x004C2D50, (const uint8_t *)&g_GraphicsShadingRuntimeRecords},
@@ -19644,10 +19555,12 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004CCE00, 0x004CCE04, (const uint8_t *)&g_GraphicsShadingTextureDimension},
     {0x004CCE04, 0x004CCE08, (const uint8_t *)&g_GraphicsShadingGridHalfSize},
     {0x004CCE08, 0x004CCE0C, (const uint8_t *)&g_GraphicsShadingGeneratedTexturePixelCursor},
-    {0x004CCE0C, 0x004CCE14, (const uint8_t *)&g_ImageObject_004CCE0C},
+    {0x004CCE0C, 0x004CCE10, (const uint8_t *)&g_GraphicsShadingGeneratedTextureTileX},
+    {0x004CCE10, 0x004CCE14, (const uint8_t *)&g_GraphicsShadingGeneratedTextureTileY},
     {0x004CCE14, 0x004CCE18, (const uint8_t *)&g_GraphicsShadingGeneratedTextureSubresourceIndex},
     {0x004CCE18, 0x004CCE1C, (const uint8_t *)&g_GraphicsShadingSubresourceCount},
-    {0x004CCE1C, 0x004CCE24, (const uint8_t *)&g_ImageObject_004CCE1C},
+    {0x004CCE1C, 0x004CCE20, (const uint8_t *)&g_GraphicsShadingGeneratedTextureTileXQ20},
+    {0x004CCE20, 0x004CCE24, (const uint8_t *)&g_GraphicsShadingGeneratedTextureTileYQ20},
     {0x004CCE24, 0x004CCE28, (const uint8_t *)&g_GraphicsShadingGridStepQ20},
     {0x004CCE28, 0x004CCE2C, (const uint8_t *)&g_GraphicsShadingGridStepQ20Current},
     {0x004CCE2C, 0x004CCE30, (const uint8_t *)&g_GraphicsShadingGeneratedAsset},
@@ -19681,7 +19594,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00501190, 0x00501590, (const uint8_t *)&g_TerrainLightingColorRampArgb256},
     {0x00501590, 0x00501994, (const uint8_t *)&g_TerrainDirectionalLightColorLut},
     {0x00501994, 0x00501998, (const uint8_t *)&g_TerrainDirectionalLightSecondaryColor},
-    {0x00501998, 0x005019A4, (const uint8_t *)&g_ImageObject_00501998},
+    {0x00501998, 0x005019A4, (const uint8_t *)&g_TerrainLightDirection},
     {0x005019A4, 0x005019A8, (const uint8_t *)&g_TerrainByteClampLookup},
     {0x005019A8, 0x005039DC, (const uint8_t *)&g_ImageObject_005019A8},
     {0x005039DC, 0x00503A74, (const uint8_t *)&g_ImageObject_005039DC},
@@ -19711,15 +19624,15 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0050A3F0, 0x0050A430, (const uint8_t *)&g_ModelProjectedBoundsCornerScratch8},
     {0x0050AE54, 0x0050AE60, (const uint8_t *)&g_ImageObject_0050AE54},
     {0x0050AE60, 0x0050AE64, (const uint8_t *)&g_ModelRaycastMaximumDistance},
-    {0x0050AE64, 0x0050AE70, (const uint8_t *)&g_ImageObject_0050AE64},
-    {0x0050AE70, 0x0050AE7C, (const uint8_t *)&g_ImageObject_0050AE70},
-    {0x0050AE7C, 0x0050AE88, (const uint8_t *)&g_ImageObject_0050AE7C},
-    {0x0050AE88, 0x0050AEA0, (const uint8_t *)&g_ImageObject_0050AE88},
+    {0x0050AE64, 0x0050AE70, (const uint8_t *)&g_ModelRaycastOrigin},
+    {0x0050AE70, 0x0050AE7C, (const uint8_t *)&g_ModelRaycastLocalOrigin},
+    {0x0050AE7C, 0x0050AE88, (const uint8_t *)&g_ModelRaycastWorldDirectionQ28},
+    {0x0050AE88, 0x0050AE94, (const uint8_t *)&g_ModelRaycastLocalDirectionQ28},
     {0x0050B510, 0x0050B520, (const uint8_t *)&g_ImageObject_0050B510},
     {0x0050B520, 0x0050B550, (const uint8_t *)&g_ImageObject_0050B520},
     {0x0050B550, 0x0050B580, (const uint8_t *)&g_SpatialSoundListenerRotation},
     {0x0050B580, 0x0050B5B0, (const uint8_t *)&g_SpatialSoundListenerWorldToLocal},
-    {0x0050B5B0, 0x0050B5BC, (const uint8_t *)&g_ImageObject_0050B5B0},
+    {0x0050B5B0, 0x0050B5BC, (const uint8_t *)&g_SpatialSoundRelative},
     {0x0050B5BC, 0x0050B5C0, (const uint8_t *)&g_SoundEffectsGainQ15},
     {0x0050B5C0, 0x0050B5C4, (const uint8_t *)&g_ReverseStereoMask},
     {0x0050B5C4, 0x0050B5D0, (const uint8_t *)&g_ImageObject_0050B5C4},
@@ -19739,25 +19652,39 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0050BB37, 0x0050BB80, (const uint8_t *)&g_ImageObject_0050BB37},
     {0x0050D928, 0x0050D930, (const uint8_t *)&g_ImageObject_0050D928},
     {0x0050D930, 0x0050D934, (const uint8_t *)&g_TechnologyAsset},
-    {0x0050D934, 0x0050D940, (const uint8_t *)&g_ImageObject_0050D934},
+    {0x0050D934, 0x0050D938, (const uint8_t *)&g_LevelCameraBookmark1PositionXQ12},
+    {0x0050D938, 0x0050D93C, (const uint8_t *)&g_LevelCameraBookmark1PositionYQ12},
+    {0x0050D93C, 0x0050D940, (const uint8_t *)&g_LevelCameraBookmark1PositionZQ12},
     {0x0050D940, 0x0050D944, (const uint8_t *)&g_LevelCameraBookmark1PositionMagnitudeQ12},
     {0x0050D944, 0x0050D948, (const uint8_t *)&g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16},
-    {0x0050D948, 0x0050D954, (const uint8_t *)&g_ImageObject_0050D948},
+    {0x0050D948, 0x0050D94C, (const uint8_t *)&g_LevelCameraBookmark2PositionXQ12},
+    {0x0050D94C, 0x0050D950, (const uint8_t *)&g_LevelCameraBookmark2PositionYQ12},
+    {0x0050D950, 0x0050D954, (const uint8_t *)&g_LevelCameraBookmark2PositionZQ12},
     {0x0050D954, 0x0050D958, (const uint8_t *)&g_LevelCameraBookmark2PositionMagnitudeQ12},
     {0x0050D958, 0x0050D95C, (const uint8_t *)&g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16},
-    {0x0050D95C, 0x0050D968, (const uint8_t *)&g_ImageObject_0050D95C},
+    {0x0050D95C, 0x0050D960, (const uint8_t *)&g_LevelCameraBookmark3PositionXQ12},
+    {0x0050D960, 0x0050D964, (const uint8_t *)&g_LevelCameraBookmark3PositionYQ12},
+    {0x0050D964, 0x0050D968, (const uint8_t *)&g_LevelCameraBookmark3PositionZQ12},
     {0x0050D968, 0x0050D96C, (const uint8_t *)&g_LevelCameraBookmark3PositionMagnitudeQ12},
     {0x0050D96C, 0x0050D970, (const uint8_t *)&g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16},
-    {0x0050D970, 0x0050D97C, (const uint8_t *)&g_ImageObject_0050D970},
+    {0x0050D970, 0x0050D974, (const uint8_t *)&g_LevelCameraBookmark4PositionXQ12},
+    {0x0050D974, 0x0050D978, (const uint8_t *)&g_LevelCameraBookmark4PositionYQ12},
+    {0x0050D978, 0x0050D97C, (const uint8_t *)&g_LevelCameraBookmark4PositionZQ12},
     {0x0050D97C, 0x0050D980, (const uint8_t *)&g_LevelCameraBookmark4PositionMagnitudeQ12},
     {0x0050D980, 0x0050D984, (const uint8_t *)&g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16},
-    {0x0050D984, 0x0050D990, (const uint8_t *)&g_ImageObject_0050D984},
+    {0x0050D984, 0x0050D988, (const uint8_t *)&g_LevelCameraBookmark5PositionXQ12},
+    {0x0050D988, 0x0050D98C, (const uint8_t *)&g_LevelCameraBookmark5PositionYQ12},
+    {0x0050D98C, 0x0050D990, (const uint8_t *)&g_LevelCameraBookmark5PositionZQ12},
     {0x0050D990, 0x0050D994, (const uint8_t *)&g_LevelCameraBookmark5PositionMagnitudeQ12},
     {0x0050D994, 0x0050D998, (const uint8_t *)&g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16},
-    {0x0050D998, 0x0050D9A4, (const uint8_t *)&g_ImageObject_0050D998},
+    {0x0050D998, 0x0050D99C, (const uint8_t *)&g_LevelCameraBookmark6PositionXQ12},
+    {0x0050D99C, 0x0050D9A0, (const uint8_t *)&g_LevelCameraBookmark6PositionYQ12},
+    {0x0050D9A0, 0x0050D9A4, (const uint8_t *)&g_LevelCameraBookmark6PositionZQ12},
     {0x0050D9A4, 0x0050D9A8, (const uint8_t *)&g_LevelCameraBookmark6PositionMagnitudeQ12},
     {0x0050D9A8, 0x0050D9AC, (const uint8_t *)&g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16},
-    {0x0050D9AC, 0x0050D9B8, (const uint8_t *)&g_ImageObject_0050D9AC},
+    {0x0050D9AC, 0x0050D9B0, (const uint8_t *)&g_LevelCameraBookmark7PositionXQ12},
+    {0x0050D9B0, 0x0050D9B4, (const uint8_t *)&g_LevelCameraBookmark7PositionYQ12},
+    {0x0050D9B4, 0x0050D9B8, (const uint8_t *)&g_LevelCameraBookmark7PositionZQ12},
     {0x0050D9B8, 0x0050D9BC, (const uint8_t *)&g_LevelCameraBookmark7PositionMagnitudeQ12},
     {0x0050D9BC, 0x0050D9C0, (const uint8_t *)&g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16},
     {0x0050D9C0, 0x0050D9C4, (const uint8_t *)&g_ScenarioCatalog},
@@ -19987,10 +19914,10 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00530E28, 0x00531028, (const uint8_t *)&g_LevelEndingMovieSourcePath},
     {0x00531028, 0x0053102C, (const uint8_t *)&g_InGameLevelTitleTextResourceIndex},
     {0x0053102C, 0x00531030, (const uint8_t *)&g_InGameLevelCampaignAssociationIndex},
-    {0x00531030, 0x00531040, (const uint8_t *)&g_ImageObject_00531030},
+    {0x00531030, 0x00531040, (const uint8_t *)&g_InGameLevelEffectVoiceSets},
     {0x00531040, 0x00531044, (const uint8_t *)&g_InGameActiveEffectVoice},
     {0x00531044, 0x00531048, (const uint8_t *)&g_InGameEffectsEnabled},
-    {0x00531048, 0x00531058, (const uint8_t *)&g_ImageObject_00531048},
+    {0x00531048, 0x00531058, (const uint8_t *)&g_InGameLevelMusicVoiceSets},
     {0x00531058, 0x0053105C, (const uint8_t *)&g_InGameActiveMusicVoice},
     {0x0053105C, 0x00531060, (const uint8_t *)&g_InGameMusicNextTrackCountdown},
     {0x00531060, 0x00531080, (const uint8_t *)&g_InGameLevelRuntimeGlobalBlock},
@@ -20031,8 +19958,8 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00536F40, 0x00536F44, (const uint8_t *)&g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16},
     {0x00536F44, 0x00536F48, (const uint8_t *)&g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16},
     {0x00536F48, 0x00536F60, (const uint8_t *)&g_ImageObject_00536F48},
-    {0x00536F60, 0x00536F80, (const uint8_t *)&g_ImageObject_00536F60},
-    {0x00536F80, 0x00536FA0, (const uint8_t *)&g_ImageObject_00536F80},
+    {0x00536F60, 0x00536F80, (const uint8_t *)&g_GridInfluenceRadiusOffset},
+    {0x00536F80, 0x00536FA0, (const uint8_t *)&g_GridInfluenceSquaredThreshold},
     {0x00536FA0, 0x00536FA4, (const uint8_t *)&g_AiCombatTargetRadialClearanceWeight},
     {0x00536FA4, 0x00536FA8, (const uint8_t *)&g_AiCombatTargetCandidateCounterCountWeight},
     {0x00536FA8, 0x00536FAC, (const uint8_t *)&g_AiCombatTargetSourceCounterCountWeight},
@@ -20070,13 +19997,13 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x005379BC, 0x005379C0, (const uint8_t *)&g_AiWorkspace11Count},
     {0x005379C0, 0x005379C4, (const uint8_t *)&g_AiWorkspace12TechnologyCandidates},
     {0x005379C4, 0x005379C8, (const uint8_t *)&g_AiWorkspace12Count},
-    {0x005379C8, 0x005379D8, (const uint8_t *)&g_ImageObject_005379C8},
+    {0x005379C8, 0x005379D8, (const uint8_t *)&g_AiActiveGridMaskClasses},
     {0x005379D8, 0x005379E0, (const uint8_t *)&g_ImageObject_005379D8},
     {0x00539050, 0x00539060, (const uint8_t *)&g_ImageObject_00539050},
     {0x00539060, 0x00539070, (const uint8_t *)&g_ImageObject_00539060},
     {0x00539974, 0x00539980, (const uint8_t *)&g_ImageObject_00539974},
     {0x00539980, 0x005399A0, (const uint8_t *)&g_TechnologyCategoryMaximumReciprocalQ24Table8},
-    {0x005399A0, 0x005399C0, (const uint8_t *)&g_ImageObject_005399A0},
+    {0x005399A0, 0x005399C0, (const uint8_t *)&g_TechnologyCategoryMaximums},
     {0x005399C0, 0x005399C4, (const uint8_t *)&g_AiArmyCandidateFlaggedDefinitionValueMaximum},
     {0x005399C4, 0x00539A00, (const uint8_t *)&g_AiStrategicClassTerrainWeights},
     {0x00539A00, 0x00539A40, (const uint8_t *)&g_TechnologyCategoryMasks},
@@ -20354,16 +20281,20 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x005636FC, 0x00563700, (const uint8_t *)&g_InGameWorldObjectRecords},
     {0x00563700, 0x00563704, (const uint8_t *)&g_RuntimeObjectRebaseBaseMinusOne},
     {0x00563704, 0x00563708, (const uint8_t *)&g_InGamePlacementHeading16},
-    {0x00563708, 0x00563710, (const uint8_t *)&g_ImageObject_00563708},
+    {0x00563708, 0x0056370C, (const uint8_t *)&g_InGamePlacementPointerCaptureX},
+    {0x0056370C, 0x00563710, (const uint8_t *)&g_InGamePlacementPointerCaptureY},
     {0x00563710, 0x00563714, (const uint8_t *)&g_InGamePendingPlacementArmyAsset},
     {0x00563714, 0x00563718, (const uint8_t *)&g_InGamePlacementPreviewArmyRuntime},
-    {0x00563718, 0x00563720, (const uint8_t *)&g_ImageObject_00563718},
+    {0x00563718, 0x0056371C, (const uint8_t *)&g_InGamePlacementWorldYQ12},
+    {0x0056371C, 0x00563720, (const uint8_t *)&g_InGamePlacementWorldXQ12},
     {0x00563720, 0x00563724, (const uint8_t *)&g_InGamePlacementSurfaceHeightQ12OrSentinel},
     {0x00563724, 0x00563728, (const uint8_t *)&g_InGameCommandPreviewArmyRuntime},
     {0x00563728, 0x0056372C, (const uint8_t *)&g_InGameCommandPreviewHeading16},
-    {0x0056372C, 0x00563734, (const uint8_t *)&g_ImageObject_0056372C},
+    {0x0056372C, 0x00563730, (const uint8_t *)&g_InGameCommandPreviewWorldYQ12},
+    {0x00563730, 0x00563734, (const uint8_t *)&g_InGameCommandPreviewWorldXQ12},
     {0x00563734, 0x00563738, (const uint8_t *)&g_InGameCommandPreviewSurfaceHeightQ12OrSentinel},
-    {0x00563738, 0x00563740, (const uint8_t *)&g_ImageObject_00563738},
+    {0x00563738, 0x0056373C, (const uint8_t *)&g_InGameCommandPointerCaptureX},
+    {0x0056373C, 0x00563740, (const uint8_t *)&g_InGameCommandPointerCaptureY},
     {0x00563740, 0x00563744, (const uint8_t *)&g_InGameCommandPreviewArmyAssetId},
     {0x00563744, 0x00563748, (const uint8_t *)&g_InGamePointerInteractionStateFlags},
     {0x00563748, 0x00563768, (const uint8_t *)&g_InGamePointerModeHandlers},
@@ -20416,10 +20347,14 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0056D7AC, 0x0056D7C4, (const uint8_t *)&g_UiCommandModeGControlOffsets},
     {0x0056D7C4, 0x0056D7DC, (const uint8_t *)&g_UiCommandModeGHandlers},
     {0x0056D7DC, 0x0056D80C, (const uint8_t *)&g_UiMappedCommandControlOffsets},
-    {0x0056D80C, 0x0056D814, (const uint8_t *)&g_ImageObject_0056D80C},
-    {0x0056D814, 0x0056D81C, (const uint8_t *)&g_ImageObject_0056D814},
-    {0x0056D81C, 0x0056D824, (const uint8_t *)&g_ImageObject_0056D81C},
-    {0x0056D824, 0x0056D82C, (const uint8_t *)&g_ImageObject_0056D824},
+    {0x0056D80C, 0x0056D810, (const uint8_t *)&g_UiCommandSelectionAnchorWorldXQ12},
+    {0x0056D810, 0x0056D814, (const uint8_t *)&g_UiCommandSelectionAnchorWorldYQ12},
+    {0x0056D814, 0x0056D818, (const uint8_t *)&g_UiCommandSelectionCurrentWorldXQ12},
+    {0x0056D818, 0x0056D81C, (const uint8_t *)&g_UiCommandSelectionCurrentWorldYQ12},
+    {0x0056D81C, 0x0056D820, (const uint8_t *)&g_UiCommandDragAnchorWorldXQ12},
+    {0x0056D820, 0x0056D824, (const uint8_t *)&g_UiCommandDragAnchorWorldYQ12},
+    {0x0056D824, 0x0056D828, (const uint8_t *)&g_UiCommandDragStartScreenX},
+    {0x0056D828, 0x0056D82C, (const uint8_t *)&g_UiCommandDragStartScreenY},
     {0x0056D82C, 0x0056D830, (const uint8_t *)&g_TerrainMaterialEditFieldGrid},
     {0x0056D830, 0x0056D834, (const uint8_t *)&g_TerrainMaterialEditDeltaBuffer},
     {0x0056D834, 0x0056D838, (const uint8_t *)&g_TerrainMaterialEditReferenceMaterialByte},
@@ -20459,7 +20394,8 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00572AD4, 0x00572AD8, (const uint8_t *)&g_LevelPackageHandle},
     {0x00572AD8, 0x00572AF4, (const uint8_t *)&g_UiButtonSoundVoiceSets7},
     {0x00572AF4, 0x00572AF8, (const uint8_t *)&g_PcxFunctionModule},
-    {0x00572AF8, 0x00572B00, (const uint8_t *)&g_ImageObject_00572AF8},
+    {0x00572AF8, 0x00572AFC, (const uint8_t *)&g_PcxFunctionExport3},
+    {0x00572AFC, 0x00572B00, (const uint8_t *)&g_PcxFunctionExport2},
     {0x00572B00, 0x00572B04, (const uint8_t *)&g_IntroMoviePendingTicks},
     {0x00572B04, 0x00572B08, (const uint8_t *)&g_InstallRegistryKeyHandle},
     {0x00572B08, 0x00572B0C, (const uint8_t *)&g_InstallRegistryValueDataCapacityBytes},
@@ -20938,24 +20874,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0057ED20, 0x0057ED34, (const uint8_t *)&g_GlidePrimaryLfbInfo},
     {0x0057ED34, 0x0057ED48, (const uint8_t *)&g_GlideSecondaryLfbInfo},
     {0x0057ED48, 0x0057ED54, (const uint8_t *)&g_GlideTextureRefreshHandlers},
-    {0x0057ED54, 0x0057ED5C, (const uint8_t *)&g_ImageObject_0057ED54},
-    {0x0057ED5C, 0x0057ED60, (const uint8_t *)&g_GlideVertex0ReciprocalDepth},
-    {0x0057ED60, 0x0057ED68, (const uint8_t *)&g_ImageObject_0057ED60},
-    {0x0057ED68, 0x0057ED6C, (const uint8_t *)&g_GlideVertex0ProjectedTextureU},
-    {0x0057ED6C, 0x0057ED70, (const uint8_t *)&g_GlideVertex0ProjectedTextureV},
-    {0x0057ED70, 0x0057ED74, (const uint8_t *)&g_GlideVertex0DiffuseColor},
-    {0x0057ED74, 0x0057ED7C, (const uint8_t *)&g_ImageObject_0057ED74},
-    {0x0057ED7C, 0x0057ED80, (const uint8_t *)&g_GlideVertex1ReciprocalDepth},
-    {0x0057ED80, 0x0057ED88, (const uint8_t *)&g_ImageObject_0057ED80},
-    {0x0057ED88, 0x0057ED8C, (const uint8_t *)&g_GlideVertex1ProjectedTextureU},
-    {0x0057ED8C, 0x0057ED90, (const uint8_t *)&g_GlideVertex1ProjectedTextureV},
-    {0x0057ED90, 0x0057ED94, (const uint8_t *)&g_GlideVertex1DiffuseColor},
-    {0x0057ED94, 0x0057ED9C, (const uint8_t *)&g_ImageObject_0057ED94},
-    {0x0057ED9C, 0x0057EDA0, (const uint8_t *)&g_GlideVertex2ReciprocalDepth},
-    {0x0057EDA0, 0x0057EDA8, (const uint8_t *)&g_ImageObject_0057EDA0},
-    {0x0057EDA8, 0x0057EDAC, (const uint8_t *)&g_GlideVertex2ProjectedTextureU},
-    {0x0057EDAC, 0x0057EDB0, (const uint8_t *)&g_GlideVertex2ProjectedTextureV},
-    {0x0057EDB0, 0x0057EDB4, (const uint8_t *)&g_GlideVertex2DiffuseColor},
+    {0x0057ED54, 0x0057EDB4, (const uint8_t *)&g_GlideVertices},
     {0x0057EDB4, 0x0057EDC8, (const uint8_t *)&g_GlideTextureInfo256Argb4444},
     {0x0057EDC8, 0x0057EDCC, (const uint8_t *)&g_GlideTmuCount},
     {0x0057EDCC, 0x0057EDD8, (const uint8_t *)&g_GlideTextureColorUpload},

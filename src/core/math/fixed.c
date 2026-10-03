@@ -138,16 +138,16 @@ FixedTransform_RotateVectorByEulerAngles
   FixedVectorQ12 rotatedVector;
   
   FixedTransform_BuildRotationBasis(&g_ModelTransformScratchMatrix,rotationAngle0,rotationAngle1,rotationAngle2);
-  g_ModelTransformInputX = inputXQ12;
-  g_ModelTransformInputY = inputYQ12;
-  g_ModelTransformInputZ = inputZQ12;
+  g_ModelTransformInput.x = inputXQ12;
+  g_ModelTransformInput.y = inputYQ12;
+  g_ModelTransformInput.z = inputZQ12;
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,
-             (GraphicsFixedVec3 *)&g_ModelTransformInputX,
+            (&g_ModelTransformOutput,
+             &g_ModelTransformInput,
              &g_ModelTransformScratchMatrix);
-  rotatedVector.yQ12 = g_ModelTransformOutputY;
-  rotatedVector.xQ12 = g_ModelTransformOutputX;
-  rotatedVector.zQ12 = g_ModelTransformOutputZ;
+  rotatedVector.yQ12 = g_ModelTransformOutput.y;
+  rotatedVector.xQ12 = g_ModelTransformOutput.x;
+  rotatedVector.zQ12 = g_ModelTransformOutput.z;
   return rotatedVector;
 }
 
@@ -707,15 +707,15 @@ FixedVectorQ12 FixedTransform_RotateScaledDirectionCore
   
   FixedTransform_BuildRotationBasis(&g_ModelTransformScratchMatrix,rotationAngle0,rotationAngle1,rotationAngle2);
   FixedMath_WriteDirectionScaled
-            ((GraphicsFixedVec3 *)&g_ModelTransformInputX,elevationAngle,azimuthAngle,directionScale
+            (&g_ModelTransformInput,elevationAngle,azimuthAngle,directionScale
             );
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,
-             (GraphicsFixedVec3 *)&g_ModelTransformInputX,
+            (&g_ModelTransformOutput,
+             &g_ModelTransformInput,
              &g_ModelTransformScratchMatrix);
-  rotatedVector.yQ12 = g_ModelTransformOutputY;
-  rotatedVector.xQ12 = g_ModelTransformOutputX;
-  rotatedVector.zQ12 = g_ModelTransformOutputZ;
+  rotatedVector.yQ12 = g_ModelTransformOutput.y;
+  rotatedVector.xQ12 = g_ModelTransformOutput.x;
+  rotatedVector.zQ12 = g_ModelTransformOutput.z;
   return rotatedVector;
 }
 

@@ -2746,24 +2746,25 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
     maxBoundsSpan = boundsSpanY;
   }
   /* camera centred on the bounds in Y and Z, backed off by four times the larger span in X */
-  g_ArmyPreviewViewOriginYQ12 = (boundsSpanY + g_ModelBoundsMinimumY * 2) >> 1;
-  g_ArmyPreviewViewOriginZQ12 = (boundsSpanZ + g_ModelBoundsMinimumZ * 2) >> 1;
-  g_ArmyPreviewAuxiliaryOrientation0 = ARMY_PREVIEW_AUXILIARY_ORIENTATION0_ANGLE16;
-  g_ArmyPreviewAuxiliaryOrientation1 = ARMY_PREVIEW_AUXILIARY_ORIENTATION1_ANGLE16;
-  g_ArmyPreviewViewOriginXQ12 = g_ModelBoundsMaximumX + maxBoundsSpan * 4;
-  g_ArmyPreviewPrimaryColorArgb = ARMY_PREVIEW_PRIMARY_COLOR_ARGB;
-  g_ArmyPreviewSecondaryColorArgb = ARMY_PREVIEW_SECONDARY_COLOR_ARGB;
-  g_ArmyPreviewProjectionScaleQ12 = Q12_ONE / 2;
-  g_ArmyPreviewViewAngle0 = ARMY_PREVIEW_VIEW_ANGLE0;
-  g_ArmyPreviewViewAngle1 = 0;
-  g_ArmyPreviewProjectionShift = 4;
-  g_ArmyPreviewModelNodePointer = (uint32_t)rootNode;
+  g_ArmyPreviewViewParameters.originY = (boundsSpanY + g_ModelBoundsMinimumY * 2) >> 1;
+  g_ArmyPreviewViewParameters.originZ = (boundsSpanZ + g_ModelBoundsMinimumZ * 2) >> 1;
+  g_ArmyPreviewAuxiliaryOrientation[0] = ARMY_PREVIEW_AUXILIARY_ORIENTATION0_ANGLE16;
+  g_ArmyPreviewAuxiliaryOrientation[1] = ARMY_PREVIEW_AUXILIARY_ORIENTATION1_ANGLE16;
+  g_ArmyPreviewViewParameters.originX = g_ModelBoundsMaximumX + maxBoundsSpan * 4;
+  /* the scene "extents" are the two scene colours */
+  g_ArmyPreviewSceneExtents.horizontalExtent = (GraphicsSceneExtentFixed)ARMY_PREVIEW_PRIMARY_COLOR_ARGB;
+  g_ArmyPreviewSceneExtents.verticalExtent = (GraphicsSceneExtentFixed)ARMY_PREVIEW_SECONDARY_COLOR_ARGB;
+  g_ArmyPreviewViewParameters.projectionScale = Q12_ONE / 2;
+  g_ArmyPreviewViewParameters.viewAngle0 = ARMY_PREVIEW_VIEW_ANGLE0;
+  g_ArmyPreviewViewParameters.viewAngle1 = 0;
+  g_ArmyPreviewViewParameters.projectionShift = 4;
+  g_ArmyPreviewModelNode = rootNode;
   previewTexture = (GameEntityRuntime *)g_GraphicsOffscreenRenderModelListToTextureSource
-                     ((GraphicsOffscreenSceneExtents *)&g_ArmyPreviewPrimaryColorArgb,
-                      &g_ArmyPreviewAuxiliaryOrientation0,
-                      (GraphicsOffscreenViewParameters *)&g_ArmyPreviewViewOriginXQ12,
+                     (&g_ArmyPreviewSceneExtents,
+                      g_ArmyPreviewAuxiliaryOrientation,
+                      &g_ArmyPreviewViewParameters,
                       previewHeight * 2,previewWidth * 2,1,
-                      (ModelRuntimeNode **)&g_ArmyPreviewModelNodePointer);
+                      &g_ArmyPreviewModelNode);
   if (previewTexture == NULL) {
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmy);
     return NULL;

@@ -79,7 +79,7 @@ void SpatialSound_RebuildListenerTransformFromPose
 
 
 /* Shared gain computation of the positioned one-shot and looping sounds. Transforms worldPosition into
-   listener space (g_SpatialSoundRelative*), attenuates volumeQ15 with the distance and pans it by the
+   listener space (g_SpatialSoundRelative),attenuates volumeQ15 with the distance and pans it by the
    azimuth. Returns false when the position is not closer than maximumDistanceQ12 or the attenuated gain is
    not above SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15. Otherwise stores two channel gains, each clamped to
    SPATIAL_SOUND_GAIN_Q15_FULL: *firstGainQ15 is the reduced one for an azimuth in the first half turn and
@@ -99,10 +99,10 @@ static bool SpatialSound_ComputePositionedGains(SpatialSoundMaximumDistanceQ12 m
   FixedLengthAzimuthElevation lengthAngles;
 
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)&g_SpatialSoundRelativeX,worldPosition,
+            (&g_SpatialSoundRelative,worldPosition,
              (GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform);
   lengthAngles = FixedMath_VectorToAnglesAndLength
-                    (g_SpatialSoundRelativeY,g_SpatialSoundRelativeX,g_SpatialSoundRelativeZ);
+                    (g_SpatialSoundRelative.y,g_SpatialSoundRelative.x,g_SpatialSoundRelative.z);
   azimuth = lengthAngles.azimuthAngle;
   distanceQ12 = lengthAngles.lengthQ12;
   if (distanceQ12 >= maximumDistanceQ12) {

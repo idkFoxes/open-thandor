@@ -33,8 +33,8 @@ RichTextExtent RichTextCommandStream_MeasureWrappedBlock
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
   colorPaletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
-  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[colorPaletteIndex];
-  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[colorPaletteIndex];
+  g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[colorPaletteIndex];
+  g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[colorPaletteIndex];
   totalHeight = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
@@ -65,8 +65,8 @@ void RichTextCommandStream_DrawWrappedBlock
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
   colorPaletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
-  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[colorPaletteIndex];
-  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[colorPaletteIndex];
+  g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[colorPaletteIndex];
+  g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[colorPaletteIndex];
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while (RichTextCommandStream_DrawNextWrappedLine
@@ -111,8 +111,8 @@ bool RichTextCommandStream_DrawSingleLine
   }
   paletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
-  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[paletteIndex];
-  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[paletteIndex];
+  g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[paletteIndex];
+  g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[paletteIndex];
   nestedDepth = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
@@ -134,20 +134,20 @@ bool RichTextCommandStream_DrawSingleLine
     }
     switch(glyphSubresource & RICHTEXT_OPCODE_MASK) {
     case RICHTEXT_OP_COLOR_PALETTE_0:
-      g_RichTextCurrentColorArgb = g_RichTextColorPalette0Argb;
-      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette0;
+      g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[0];
+      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[0];
       break;
     case RICHTEXT_OP_COLOR_PALETTE_1:
-      g_RichTextCurrentColorArgb = g_RichTextColorPalette1Argb;
-      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette1;
+      g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[1];
+      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[1];
       break;
     case RICHTEXT_OP_COLOR_PALETTE_2:
-      g_RichTextCurrentColorArgb = g_RichTextColorPalette2Argb;
-      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette2;
+      g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[2];
+      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[2];
       break;
     case RICHTEXT_OP_COLOR_PALETTE_3:
-      g_RichTextCurrentColorArgb = g_RichTextColorPalette3Argb;
-      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette3;
+      g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[3];
+      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[3];
       break;
     case RICHTEXT_OP_SAVE_COLOR:
       g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
@@ -1434,20 +1434,20 @@ bool RichTextCommandStream_DrawNextWrappedLine
     }
     switch(glyphSubresource & RICHTEXT_OPCODE_MASK) {
     case RICHTEXT_OP_COLOR_PALETTE_0:
-      g_RichTextCurrentColorArgb = g_RichTextColorPalette0Argb;
-      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette0;
+      g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[0];
+      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[0];
       break;
     case RICHTEXT_OP_COLOR_PALETTE_1:
-      g_RichTextCurrentColorArgb = g_RichTextColorPalette1Argb;
-      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette1;
+      g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[1];
+      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[1];
       break;
     case RICHTEXT_OP_COLOR_PALETTE_2:
-      g_RichTextCurrentColorArgb = g_RichTextColorPalette2Argb;
-      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette2;
+      g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[2];
+      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[2];
       break;
     case RICHTEXT_OP_COLOR_PALETTE_3:
-      g_RichTextCurrentColorArgb = g_RichTextColorPalette3Argb;
-      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette3;
+      g_RichTextCurrentColorArgb = g_RichTextColorPaletteArgb[3];
+      g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette[3];
       break;
     case RICHTEXT_OP_SAVE_COLOR:
       g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;

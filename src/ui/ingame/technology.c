@@ -521,10 +521,10 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       descriptionTextId = nameTextId + 1;
       selectedTechnologyId = (nameTextId - (uint32_t)TECHNOLOGY_TEXT_ID_BASE) >> 1;
       xeniteCost = g_TechnologyAsset->records[selectedTechnologyId].xeniteCostQ4;
-      costColor = g_RichTextColorPalette0Argb;
+      costColor = g_RichTextColorPaletteArgb[0]; /* grey */
       if ((int)g_GameFactionRuntimeImage.records[(firstSelectedEntity->common).ownership.ownerIndex].
                xeniteCurrentQ4 < (int)xeniteCost) {
-        costColor = g_RichTextInsufficientResourceColorArgb;
+        costColor = g_RichTextColorPaletteArgb[5]; /* red: not affordable */
       }
       energyCost = (int)g_TechnologyAsset->records[selectedTechnologyId].energyCostQ4 >> 4;
       g_InGameSelectedTechnologyId = selectedTechnologyId;

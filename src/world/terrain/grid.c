@@ -478,7 +478,7 @@ void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
 
 
 /* Address: 0x00505700.
-   Sets the terrain light direction (g_TerrainLightDirectionX/Y/Z, Q28) from an elevation and azimuth
+   Sets the terrain light direction (g_TerrainLightDirection, Q28) from an elevation and azimuth
    and relights every interior cell with it (border ring skipped); marks the field grid dirty.
 */
 void FieldGrid_RecomputeInteriorDirectionalLighting
@@ -492,7 +492,7 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
   FieldGridCell *cellCursor;
 
   FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_TerrainLightDirectionX,lightElevationAngle,lightAzimuthAngle);
+            (&g_TerrainLightDirection,lightElevationAngle,lightAzimuthAngle);
   if (fieldGrid != NULL) {
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     rowLength = fieldGrid->gridWidth;
@@ -3128,9 +3128,9 @@ void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
      before this table and holds the shaded half */
   directionalLightColor =
        ((PackedArgb32 *)g_TerrainDirectionalLightColorLut)
-       [(int)((uint64_t)((int64_t)(int)normalDirection.x * (int64_t)(int)g_TerrainLightDirectionX) >> 32) +
-        (int)((uint64_t)((int64_t)(int)normalDirection.y * (int64_t)(int)g_TerrainLightDirectionY) >> 32) +
-        (int)((uint64_t)((int64_t)(int)normalDirection.z * (int64_t)(int)g_TerrainLightDirectionZ) >> 32) >>
+       [(int)((uint64_t)((int64_t)(int)normalDirection.x * (int64_t)g_TerrainLightDirection.x) >> 32) +
+        (int)((uint64_t)((int64_t)(int)normalDirection.y * (int64_t)g_TerrainLightDirection.y) >> 32) +
+        (int)((uint64_t)((int64_t)(int)normalDirection.z * (int64_t)g_TerrainLightDirection.z) >> 32) >>
         16];
   cell->secondarySurfaceDirectionalLightColor = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor = directionalLightColor;

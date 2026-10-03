@@ -522,7 +522,7 @@ static bool NewLevel_LoadSpatialSounds
 /* Loads one level sample (sound\level%02d.sam or sound\music%02d.sam: sampleNumber is written into the
    template path at character 11) into a voice set; 0 means none. A failed load or voice set leaves
    *outVoiceSet unchanged. */
-static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplate,uint32_t *outVoiceSet)
+static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplate,DirectSoundVoiceSet **outVoiceSet)
 
 {
   void *loadedSampleBuffer;
@@ -534,7 +534,7 @@ static void NewLevel_LoadLevelSample(uint32_t sampleNumber,uint16_t *pathTemplat
   g_WideNumberFormatUtf16(WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,sampleNumber,pathTemplate + 11);
   if (Resource_Load(pathTemplate,&loadedSampleBuffer,NULL,NULL)) {
     if (g_SoundCreateSampleVoiceSet((SoundSampleAsset *)loadedSampleBuffer,&createdVoiceSet) == 0) {
-      *outVoiceSet = (uint32_t)createdVoiceSet;
+      *outVoiceSet = createdVoiceSet;
     }
     Resource_Release((SoundSampleAsset *)loadedSampleBuffer);
   }
@@ -548,35 +548,35 @@ static void NewLevel_LoadLevelSamples(void)
 {
   struct LevelWorldSettings *worldSettings;
 
-  g_InGameLevelEffectVoiceSet0 = 0;
-  g_InGameLevelEffectVoiceSet1 = 0;
-  g_InGameLevelEffectVoiceSet2 = 0;
-  g_InGameLevelEffectVoiceSet3 = 0;
+  g_InGameLevelEffectVoiceSets[0] = NULL;
+  g_InGameLevelEffectVoiceSets[1] = NULL;
+  g_InGameLevelEffectVoiceSets[2] = NULL;
+  g_InGameLevelEffectVoiceSets[3] = NULL;
   g_InGameActiveEffectVoice = 0;
   g_InGameEffectsEnabled = 1;
   g_InGameActiveMusicVoice = 0;
   g_InGameMusicNextTrackCountdown = 1;
-  g_InGameLevelMusicVoiceSet0 = 0;
-  g_InGameLevelMusicVoiceSet1 = 0;
-  g_InGameLevelMusicVoiceSet2 = 0;
-  g_InGameLevelMusicVoiceSet3 = 0;
+  g_InGameLevelMusicVoiceSets[0] = NULL;
+  g_InGameLevelMusicVoiceSets[1] = NULL;
+  g_InGameLevelMusicVoiceSets[2] = NULL;
+  g_InGameLevelMusicVoiceSets[3] = NULL;
   worldSettings = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage).worldSettings;
   NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[0],u_sound_level00_sam_0050df6c,
-                           &g_InGameLevelEffectVoiceSet0);
+                           &g_InGameLevelEffectVoiceSets[0]);
   NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[1],u_sound_level00_sam_0050df6c,
-                           &g_InGameLevelEffectVoiceSet1);
+                           &g_InGameLevelEffectVoiceSets[1]);
   NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[2],u_sound_level00_sam_0050df6c,
-                           &g_InGameLevelEffectVoiceSet2);
+                           &g_InGameLevelEffectVoiceSets[2]);
   NewLevel_LoadLevelSample(worldSettings->effectSampleNumbers[3],u_sound_level00_sam_0050df6c,
-                           &g_InGameLevelEffectVoiceSet3);
+                           &g_InGameLevelEffectVoiceSets[3]);
   NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[0],u_sound_music00_sam_0050df90,
-                           &g_InGameLevelMusicVoiceSet0);
+                           &g_InGameLevelMusicVoiceSets[0]);
   NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[1],u_sound_music00_sam_0050df90,
-                           &g_InGameLevelMusicVoiceSet1);
+                           &g_InGameLevelMusicVoiceSets[1]);
   NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[2],u_sound_music00_sam_0050df90,
-                           &g_InGameLevelMusicVoiceSet2);
+                           &g_InGameLevelMusicVoiceSets[2]);
   NewLevel_LoadLevelSample(worldSettings->musicSampleNumbers[3],u_sound_music00_sam_0050df90,
-                           &g_InGameLevelMusicVoiceSet3);
+                           &g_InGameLevelMusicVoiceSets[3]);
 }
 
 
@@ -1171,14 +1171,14 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
       remainingSlotCount--;
     } while (remainingSlotCount != 0);
   }
-  g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSet0);
-  g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSet1);
-  g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSet2);
-  g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSet3);
-  g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSet0);
-  g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSet1);
-  g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSet2);
-  g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSet3);
+  g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSets[0]);
+  g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSets[1]);
+  g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSets[2]);
+  g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSets[3]);
+  g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSets[0]);
+  g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSets[1]);
+  g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSets[2]);
+  g_SoundReleaseSampleVoiceSet(g_InGameLevelMusicVoiceSets[3]);
   loadedResourceCursor = g_InGameLoadedResourcePointers;
   remainingResourceCount = g_InGameLoadedResourcePointerCount;
   if (g_InGameLoadedResourcePointers != NULL) {
