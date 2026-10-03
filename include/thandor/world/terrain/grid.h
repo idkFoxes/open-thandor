@@ -176,19 +176,6 @@ bool FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGrid
 bool FieldGrid_InterpolateTerrainHeightAndNormal
           (Q12 worldY,Q12 worldX,FieldGridAsset *field,Q12 *outHeightQ12,uint32_t *outPackedNormalAngles);
 
-/* 0x004FF3D0 */
-bool FieldGrid_InterpolateWaterDepthAndTriangle0Normal
-          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles);
-
-/* 0x004FF600 */
-bool FieldGrid_InterpolateWaterDepthAndTriangle1Normal
-          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles);
-
-/* 0x004FF830 */
-bool FieldGrid_InterpolateWaterDepthAndTopSurfaceNormal
-          (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
-          FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles);
-
 /* 0x004FFB80 */
 bool FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid

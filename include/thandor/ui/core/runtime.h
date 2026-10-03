@@ -66,9 +66,6 @@ bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
 /* 0x004AF020 */
 void UiRuntimeRecordRing_Clear(void);
 
-/* 0x004AF030 */
-bool UiRuntimeRecordRing_HasPending(void);
-
 /* 0x004AF050 */
 bool UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
 

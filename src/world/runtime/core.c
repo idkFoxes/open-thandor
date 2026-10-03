@@ -343,42 +343,6 @@ void WorldRuntime_TurnAuxiliaryAnglesClamped
 }
 
 
-/* Address: 0x004BE760.
-   Returns the field grid's terrain height at a world point, or WORLD_HEIGHT_NO_FIELD_GRID when the world
-   has no field grid. No caller found in src/ or the image tables.
-*/
-Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel
-              (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
-
-{
-  Q12 interpolatedHeightQ12;
-
-  interpolatedHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
-  if (worldRuntime->fieldGrid != NULL) {
-    FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&interpolatedHeightQ12);
-  }
-  return interpolatedHeightQ12;
-}
-
-
-/* Address: 0x004BE790.
-   Returns the field grid's water surface height at a world point, or WORLD_HEIGHT_NO_FIELD_GRID when the
-   world has no field grid. No caller found in src/ or the image tables.
-*/
-Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel
-              (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
-
-{
-  Q12 waterSurfaceHeightQ12;
-
-  waterSurfaceHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
-  if (worldRuntime->fieldGrid != NULL) {
-    FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&waterSurfaceHeightQ12);
-  }
-  return waterSurfaceHeightQ12;
-}
-
-
 /* Address: 0x004BE7C0.
    Returns the field grid's top surface height (terrain plus the water above it) at a world point, or
    WORLD_HEIGHT_NO_FIELD_GRID when the world has no field grid.
@@ -474,29 +438,6 @@ void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime
 }
 
 
-/* Address: 0x0050D330.
-   Compares the camera with the one saved by WorldRuntime_CaptureMotionStateToSnapshot (position, magnitude,
-   heading, pitch, and the target distance against the saved committed distance). The original returns CF
-   clear when all of them match and CF set otherwise; this version returns nothing (no caller found in src/
-   or the image tables).
-*/
-void WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
-
-{
-  if (((worldRuntime->motion.positionXQ12 == worldRuntime->snapshot.positionXQ12) &&
-      (worldRuntime->motion.positionYQ12 == worldRuntime->snapshot.positionYQ12)) &&
-     (worldRuntime->motion.positionZQ12 == worldRuntime->snapshot.positionZQ12)) {
-    if (((worldRuntime->motion.positionMagnitudeQ12 == worldRuntime->snapshot.magnitudeQ12) &&
-        (worldRuntime->motion.headingAngle == worldRuntime->snapshot.headingAngle)) &&
-       ((worldRuntime->motion.pitchAngle == worldRuntime->snapshot.pitchAngle &&
-        (worldRuntime->motion.targetDistanceQ12 == worldRuntime->snapshot.distanceQ12)))) {
-      return;
-    }
-  }
-  return;
-}
-
-
 /* Address: 0x0050D4F0.
    Commits the camera's target distance (+0x8C) as its committed distance (+0x7C), the base that later
    distance input is added to.
@@ -519,54 +460,6 @@ void WorldRuntime_AttachObjectArray
 {
   world->objectArray = objectArray;
   world->objectCount = count;
-  return;
-}
-
-
-/* Address: 0x0050D540.
-   Replaces the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found in src/ or the
-   image tables.
-*/
-void WorldRuntime_SetFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
-
-{
-  world->runtimeControlFlags = flags;
-  return;
-}
-
-
-/* Address: 0x0050D560.
-   Sets the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found in
-   src/ or the image tables.
-*/
-void WorldRuntime_AddFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
-
-{
-  world->runtimeControlFlags = world->runtimeControlFlags | flags;
-  return;
-}
-
-
-/* Address: 0x0050D580.
-   Clears the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found
-   in src/ or the image tables.
-*/
-void WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
-
-{
-  world->runtimeControlFlags = world->runtimeControlFlags & ~flags;
-  return;
-}
-
-
-/* Address: 0x0050D5A0.
-   Toggles the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found
-   in src/ or the image tables.
-*/
-void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
-
-{
-  world->runtimeControlFlags = world->runtimeControlFlags ^ flags;
   return;
 }
 
@@ -602,56 +495,8 @@ WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *wo
 }
 
 
-/* Address: 0x0050D650.
-   Returns the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found in src/ or the
-   image tables.
-*/
-uint32_t WorldRuntime_GetFlags(WorldRuntimeContext *world)
-
-{
-  return world->runtimeControlFlags;
-}
-
-
-/* Address: 0x0050D6A0.
-   Returns the field grid attached by WorldRuntime_AttachFieldGridAsset (+0x54). No caller found in src/ or
-   the image tables.
-*/
-FieldGridAsset * WorldRuntime_GetFieldGridAsset(WorldRuntimeContext *world)
-
-{
-  return world->fieldGrid;
-}
-
-/* Address: 0x0050D6D0.
-   Returns the world's pending token (+0x5C) without consuming it (see WorldRuntime_TakePendingToken). No
-   caller found in src/ or the image tables.
-*/
-uint32_t WorldRuntime_GetPendingToken(WorldRuntimeContext *world)
-
-{
-  return world->pendingToken;
-}
-
-/* Address: 0x0050D6F0.
-   Consumes the world's pending token (+0x5C): returns it and leaves 0 behind. The original swaps it out with
-   XCHG, i.e. atomically; here the swap is spelled out. No caller found in src/ or the image tables.
-*/
-uint32_t WorldRuntime_TakePendingToken(WorldRuntimeContext *world)
-
-{
-  uint32_t pendingToken;
-  
-  LOCK();
-  pendingToken = world->pendingToken;
-  world->pendingToken = 0;
-  UNLOCK();
-  return pendingToken;
-}
-
 /* Address: 0x0050D710.
-   Attaches a caller-owned workspace of count dwords to the world runtime (see WorldRuntime_GetDwordArray) and
-   zeroes it.
+   Attaches a caller-owned workspace of count dwords to the world runtime and zeroes it.
 */
 void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world)
 
@@ -665,16 +510,6 @@ void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint
   return;
 }
 
-
-/* Address: 0x0050D740.
-   Returns the dword workspace attached by WorldRuntime_AttachAndClearDwordArray (+0xC0). No caller found in
-   src/ or the image tables.
-*/
-uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
-
-{
-  return world->dwordArray;
-}
 
 /* Address: 0x0050D7D0.
    Takes the first free record of the world's object pool (WorldRuntime_AttachObjectArray): marks it allocated
@@ -975,17 +810,6 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
 {
   return;
 }
-
-/* Address: 0x00527BB0.
-   One-argument default handler that returns 0. It sits next to the other defaults of
-   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, but no table slot or caller in src/ uses it.
-*/
-uint32_t UnifiedRuntimeDefault_OneArgReturnZero(void *context)
-
-{
-  return 0;
-}
-
 
 /* Address: 0x00527BE0.
    Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes

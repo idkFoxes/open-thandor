@@ -10,7 +10,6 @@
 
 #include <thandor/assets/army.h>
 #include <thandor/assets/effect.h>
-#include <thandor/assets/fnc.h>
 #include <thandor/assets/model.h>
 #include <thandor/assets/package.h>
 #include <thandor/assets/resource.h>

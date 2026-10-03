@@ -285,8 +285,4 @@ void UiWindow_BlitTiledHorizontalEdge
 /* 0x004B14D0 */
 void UiRootStack_InvalidateAll(void);
 
-
-/* 0x004AF950 */
-void UiFrame_RunUntilRootClosedAndPresentFinalFrame(void);
-
 #endif /* THANDOR_UI_CONTROLS_LAYOUT_H */

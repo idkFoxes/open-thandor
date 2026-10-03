@@ -218,9 +218,6 @@ void UiScrollableControl_EndSecondaryScrollInteraction
 UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control);
 
-/* 0x004BA4E0 */
-void ** UiPointerList_GetTextListRowSlots(UiPointerListControl *control);
-
 /* 0x004BA560 */
 UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control);
 
@@ -238,9 +235,6 @@ void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control
 
 /* 0x004BB3B0 */
 void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
-
-/* 0x004BB460 */
-void ** UiPointerList_GetColumnListRowSlots(UiPointerListControl *control);
 
 /* 0x004BB9E0 */
 void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control);

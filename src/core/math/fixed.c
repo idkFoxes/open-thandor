@@ -246,23 +246,6 @@ uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent
 }
 
 
-/* Address: 0x00484E50.
-   Returns the direction angles of the transform's third basis column (row0[2], row1[2], row2[2]):
-   the elevation of row2[2] over the other two and the azimuth atan2(row1[2], row0[2]). Same as the first
-   step of FixedTransform_ExtractEulerAngles. No caller, function-pointer table or data reference to
-   0x00484E50 was found in the port or the image data.
-*/
-FixedVectorAngles FixedTransform_ExtractForwardAngles(GraphicsFixedMatrix3x4 *transform)
-
-{
-  FixedVectorAngles forwardAngles;
-  
-  forwardAngles = FixedMath_VectorToAngles
-                    (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
-  return forwardAngles;
-}
-
-
 /* Address: 0x004857A0.
    Writes input / |input| as a Q28 unit vector (output may alias input). Each component is multiplied by
    2^32 / length (unsigned 64/32 DIV) and shifted right by 4. Vectors shorter than 2 give {0, 0, 0}.

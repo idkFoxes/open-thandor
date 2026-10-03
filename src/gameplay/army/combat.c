@@ -317,60 +317,6 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
 }
 
 
-/* Address: 0x0052A3E0.
-   Same as ArmyRuntime_ApplyDamageAndPropagateToParent: subtracts damageAmount from a living army's health
-   (+0x3C, a repair capped at the definition's maximumHealth); at zero the army is flagged
-   destroyed and the excess damage goes to its parent army. The faction relation counters of the owner and of
-   sourceFactionIndex that the original would update for a root army are never reached (see below). No caller or
-   table slot referencing it was found in src/.
-*/
-void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFactionIndex,DamageAmount32 damageAmount,
-          ModelRuntimeSlot *modelRuntime)
-
-{
-  Q12 *healthField;
-  int maxHealth;
-  int previousHealth;
-  int remainingHealth;
-  int healthToMaximum;
-  ModelRuntimeNode *parentModelNode;
-
-  (modelRuntime->classState).healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
-  if (0 < (int)modelRuntime->health) {
-    maxHealth = modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth;
-    healthField = (Q12 *)&modelRuntime->health;
-    previousHealth = *healthField;
-    *healthField = *healthField - damageAmount;
-    /* SUB / JLE: the new health is <= 0 */
-    if (previousHealth <= damageAmount) {
-      remainingHealth = modelRuntime->health; /* <= 0; its negation is the excess damage */
-      (modelRuntime->classState).stateFlags =
-           (modelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
-      /* a destroyed model links to itself */
-      modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = modelRuntime;
-      parentModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode->parentNode;
-      modelRuntime->health = 0;
-      if (parentModelNode != NULL) {
-        ArmyRuntime_ApplyDamageAndPropagateToParent(-remainingHealth,(parentModelNode->runtimePayload).modelRuntime);
-      }
-      /* Without a parent the original (0x0052A470) would count the army in the relation counters of its owner
-         and of sourceFactionIndex, but behind JZ right after IMUL EBX,[EDI+0xC],0x740 (0x0052A47C). IMUL leaves
-         ZF unchanged (measured on an AMD Zen 3) and ZF is still set from TEST EDX,EDX with EDX = parent = 0, so
-         the jump is always taken and the update never runs: the C omits it, as in
-         ArmyRuntime_ApplyDamageAndPropagateToParent. */
-    }
-    else {
-      /* SUB / JG: a negative damage (repair) never raises the health above maxHealth */
-      healthToMaximum = maxHealth - modelRuntime->health;
-      if (healthToMaximum == 0 || maxHealth < (int)modelRuntime->health) {
-        modelRuntime->health = modelRuntime->health + healthToMaximum;
-      }
-    }
-  }
-  return;
-}
-
-
 /* Address: 0x0052A640.
    Splits a shot impact between the hit army and the army it is mounted on: half (rounded down) goes to the
    hit army, the rest to the parent model node's army, or to the hit army again when it has no parent. Called

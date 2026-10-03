@@ -73,10 +73,6 @@ bool GridReachability_RebuildConnectedRegionAroundWorldPoint
 /* 0x00533620 */
 void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime);
 
-/* 0x00533E70 */
-bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
-          (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair *targetRuntimePair);
-
 /* 0x005332C0 */
 bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
 
@@ -104,11 +100,6 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
           EntityPathingRouteEntityRuntimeView *routeEntityRuntime);
 
-/* 0x00533D60 */
-bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
-          GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
-          GraphicsWorldCoordinateQ12 targetWorldXQ12);
-
 /* 0x00534660 */
 bool GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
@@ -130,10 +121,6 @@ void GridScratch_SwapPrimarySecondary(void);
 /* 0x00533580 */
 void GridScratch_FloodFillConnectedCells
           (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell);
-
-/* 0x00533C50 */
-bool GridScratch_TestConnectedReachabilityRecursive
-          (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell);
 
 /* 0x00533EF0 */
 void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasses,GridScratchCell *originCell,

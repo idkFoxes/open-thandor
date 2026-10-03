@@ -81,57 +81,6 @@ void Locale_Init(void)
 }
 
 
-/* Address: 0x00402F70.
-   Maps a telephone country code (0 = generic) to the short region tag that locale-dependent resource
-   selection uses, packed as little-endian ASCII in a dword ("Gen", "D", "GB", "F", "DK", "I", "B", "CDN",
-   "NL", "E", "USA"); unknown codes give "-". Installed statically in the function-pointer slot at
-   0x004027B0 (between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16).
-*/
-LocaleRegionTagPacked Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode countryCode)
-
-{
-  LocaleRegionTagPacked packedRegionTag;
-  
-  if (countryCode == LOCALE_COUNTRY_GENERIC) {
-    packedRegionTag = LOCALE_REGION_TAG_GENERIC;
-  }
-  else if (countryCode == LOCALE_COUNTRY_GERMANY) {
-    packedRegionTag = LOCALE_REGION_TAG_GERMANY;
-  }
-  else if (countryCode == LOCALE_COUNTRY_GREAT_BRITAIN) {
-    packedRegionTag = LOCALE_REGION_TAG_GREAT_BRITAIN;
-  }
-  else if (countryCode == LOCALE_COUNTRY_FRANCE) {
-    packedRegionTag = LOCALE_REGION_TAG_FRANCE;
-  }
-  else if (countryCode == LOCALE_COUNTRY_DENMARK) {
-    packedRegionTag = LOCALE_REGION_TAG_DENMARK;
-  }
-  else if (countryCode == LOCALE_COUNTRY_ITALY) {
-    packedRegionTag = LOCALE_REGION_TAG_ITALY;
-  }
-  else if (countryCode == LOCALE_COUNTRY_BELGIUM) {
-    packedRegionTag = LOCALE_REGION_TAG_BELGIUM;
-  }
-  else if (countryCode == LOCALE_COUNTRY_CANADA) {
-    packedRegionTag = LOCALE_REGION_TAG_CANADA;
-  }
-  else if (countryCode == LOCALE_COUNTRY_NETHERLANDS) {
-    packedRegionTag = LOCALE_REGION_TAG_NETHERLANDS;
-  }
-  else if (countryCode == LOCALE_COUNTRY_SPAIN) {
-    packedRegionTag = LOCALE_REGION_TAG_SPAIN;
-  }
-  else if (countryCode == LOCALE_COUNTRY_USA) {
-    packedRegionTag = LOCALE_REGION_TAG_USA;
-  }
-  else {
-    packedRegionTag = LOCALE_REGION_TAG_FALLBACK_DASH;
-  }
-  return packedRegionTag;
-}
-
-
 /* Address: 0x00586790.
    Installs the WinMM periodic-timer services and the Win32 message pump in their function pointers.
    It cannot fail: the original returns with CF clear, which ProcessEntry relies on.

@@ -10,24 +10,6 @@
 
 /* Implementation ownership: assets/sprite/catalog. */
 
-/* Address: 0x00486D60.
-   Checks a sprite asset: false (CF clear) only when its magic is ASSET_MAGIC_SPR and registryHeader.groupCount
-   (+0xB0) is 1..0xFFF (CMP ECX,0x1000 / CMC / JB at 0x00486D7E), true (CF set) otherwise. The original leaves
-   the group count (or the asset) in ECX. Nothing in this code base calls it and no callback-table slot
-   references it.
-*/
-bool SpriteAsset_ValidateGroupCount(SpriteAssetHeader *spriteAsset)
-
-{
-  AssetRecordCount groupCount;
-
-  if (spriteAsset->registryHeader.common.magic != ASSET_MAGIC_SPR) {
-    return true;
-  }
-  groupCount = spriteAsset->registryHeader.groupCount;
-  return (groupCount == 0) || (4095 < (uint32_t)groupCount);
-}
-
 /* Address: 0x004BE480.
    Empties the registry of already relocated sprite assets (the list SpriteAssetRegistry_FindById walks),
    so the next load of any sprite registers and relocates it afresh.

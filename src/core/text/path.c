@@ -10,42 +10,9 @@
 
 /* Implementation ownership: core/text/path. */
 
-/* Address: 0x0040F240.
-   Inverse of WidePath_SetExtensionCode: packs the low bytes of the four code units after the last '.' of the
-   final path component into EAX, first character in the lowest byte (e.g. "gfx" gives 0x786667); 0 when the
-   last component has no '.'. Always returns with CF clear. The four units are read unconditionally, so a
-   shorter extension also picks up the terminator and what follows it.
-   No caller, function-pointer table or data reference to 0x0040F240 was found in the port or the image data.
-*/
-uint32_t WidePath_GetExtensionCode(uint16_t *path)
-
-{
-  uint16_t *extension;
-  uint16_t currentCodeUnit;
-
-  /* A backslash restarts the search, so only a '.' in the last component counts. */
-  extension = NULL;
-  while (*path != 0) {
-    currentCodeUnit = *path;
-    path++;
-    if (currentCodeUnit == '\\') {
-      extension = NULL;
-    }
-    else if (currentCodeUnit == '.') {
-      extension = path;
-    }
-  }
-  if (extension == NULL) {
-    return 0;
-  }
-  /* bytes: char4 << 24 | char3 << 16 | char2 << 8 | char1 (low byte of each code unit) */
-  return (uint32_t)(extension[3] & 0xff) << 24 | (uint32_t)(extension[2] & 0xff) << 16 |
-         (uint32_t)(extension[1] & 0xff) << 8 | (uint32_t)(extension[0] & 0xff);
-}
-
 /* Address: 0x0040F2B0.
-   Replaces the extension of the final path component with the packed code (one character per byte, as
-   WidePath_GetExtensionCode returns it, e.g. 0x786667 = "gfx"), appending '.' when there is none. Asset
+   Replaces the extension of the final path component with the packed code (one character per byte, first
+   character in the lowest byte, e.g. 0x786667 = "gfx"), appending '.' when there is none. Asset
    loaders use it to derive sibling files (.gfx/.pal/.dat, .lev/.fld, ...). Always returns with CF clear.
    Only three characters come out right: a fourth byte would be merged into the third code unit (all callers
    pass three-character codes).

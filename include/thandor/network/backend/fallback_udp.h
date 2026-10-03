@@ -61,27 +61,4 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
 /* 0x005851C0 */
 void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress);
 
-/* 0x00585450 */
-void NetworkFallbackUdp_CloseSocket(void);
-
-/* 0x00585480: the received byte count, or -1 */
-int NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *sourceAddress,int bufferLength,uint8_t *buffer);
-
-/* 0x005854E0: 0, or FATAL_ERROR_NETWORK_SOCKET */
-uint32_t NetworkFallbackUdp_SendDatagram
-          (WinSockAddress *destinationAddress,int byteCount,uint8_t *buffer,uint32_t *outSentByteCount);
-
-/* 0x00585640 */
-bool NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address);
-
-
-/* 0x00585290 */
-void NetworkBackend_NoOpCleanup(void);
-
-/* 0x005852A0: 0, or FATAL_ERROR_NETWORK_SOCKET */
-uint32_t NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder,uint32_t *outSocket);
-
-/* 0x00585550 */
-bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut,uint16_t *addressText);
-
 #endif /* THANDOR_NETWORK_BACKEND_FALLBACK_UDP_H */

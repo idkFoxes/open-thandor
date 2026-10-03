@@ -25,12 +25,4 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
 bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2);
 
-
-/* 0x00486940 */
-bool GraphicsProjectedTriangle_PointOutsideBounds
-          (GraphicsProjectedCoordinate vertexAY,GraphicsProjectedCoordinate vertexAX,
-          GraphicsProjectedCoordinate vertexBY,GraphicsProjectedCoordinate vertexBX,
-          GraphicsProjectedCoordinate vertexCY,GraphicsProjectedCoordinate vertexCX,
-          GraphicsProjectedCoordinate pointY,GraphicsProjectedCoordinate pointX);
-
 #endif /* THANDOR_GRAPHICS_RENDER_PROJECTION_H */

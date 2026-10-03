@@ -378,43 +378,6 @@ uint32_t DynDLL_Unload(char *moduleName)
   return FATAL_ERROR_LOADER_MODULE_MISSING;
 }
 
-/* Address: 0x00573D40.
-   Looks up the g_BootstrapApiBindings entry whose destination slot equals destination (a slot that still
-   holds its name string), passes that name to the bound LoadLibraryA and stores the result in the slot.
-   Returns true on success; false when no entry matches or the call fails (the name is left in
-   g_PackageLastErrorPath). The original's EAX was FATAL_ERROR_LOADER_MODULE_MISSING on both paths, so it
-   carried no information. No caller found in src/.
-*/
-bool BootstrapApi_ResolveBindingByDestination(void **destination)
-
-{
-  void *resolvedProcedure;
-  uint32_t remainingCount;
-  DynamicApiBinding *bindingCursor;
-
-  bindingCursor = g_BootstrapApiBindings;
-  /* the original bounds the walk with the loaded-module count, not with the size of the binding table */
-  remainingCount = g_DynamicModuleCount;
-  for (; remainingCount != 0; remainingCount--) {
-    if (destination == bindingCursor->destination) {
-      Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)destination);
-      /* The original pushes ESI (the binding cursor) only to preserve it across the call: binding slot 0
-         (LoadLibraryA) gets the destination argument as its single argument, and the result is stored
-         into the matching binding (MOV [ESI],EDX after POP ESI). */
-      resolvedProcedure =
-           (void *)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)((char *)destination);
-      if (resolvedProcedure != NULL) {
-        bindingCursor->destination = (void **)resolvedProcedure;
-        return true;
-      }
-      break;
-    }
-    bindingCursor++;
-  }
-  return false;
-}
-
-
 /* Address: 0x00573EB0.
    Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared
    before the call so a module is never freed twice. The count is left unchanged.

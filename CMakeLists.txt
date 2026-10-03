@@ -29,7 +29,6 @@ add_library(thandor_curated STATIC
     src/assets/army/data.c
     src/assets/effect/catalog.c
     src/assets/effect/data.c
-    src/assets/fnc/runtime.c
     src/assets/model/data.c
     src/assets/model/definitions.c
     src/assets/package/codec.c

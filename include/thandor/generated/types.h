@@ -637,7 +637,6 @@ typedef struct FrontendResultsColumnSequenceControl FrontendResultsColumnSequenc
 typedef struct FrontendResultsEightColumnTemplate FrontendResultsEightColumnTemplate, *PFrontendResultsEightColumnTemplate;
 typedef struct ScenarioCatalogDisplayRecord ScenarioCatalogDisplayRecord, *PScenarioCatalogDisplayRecord;
 typedef struct ScenarioCatalogSaveRecord ScenarioCatalogSaveRecord, *PScenarioCatalogSaveRecord;
-typedef struct GridReachabilityRuntimePair GridReachabilityRuntimePair, *PGridReachabilityRuntimePair;
 typedef struct WorldOwnerListNode WorldOwnerListNode, *PWorldOwnerListNode;
 typedef struct ModelRuntimePlacementValidationView ModelRuntimePlacementValidationView, *PModelRuntimePlacementValidationView;
 typedef struct ArmyWeaponDefinitionView ArmyWeaponDefinitionView, *PArmyWeaponDefinitionView;
@@ -742,9 +741,6 @@ typedef long __stdcall DirectDrawCreate();
 typedef long __stdcall DirectDrawEnumerateA();
 typedef long __stdcall DirectInputCreateA();
 typedef long __stdcall DirectSoundCreate();
-typedef long __stdcall DirectSoundEnumerateA();
-typedef long __stdcall DirectSoundCaptureCreate();
-typedef long __stdcall DirectSoundCaptureEnumerateA();
 
 #define FIELD_GRID_WORLD_Y_Q20_MULTIPLIER 0x1c6e9c
 #define FIELD_GRID_WORLD_X_Q21_MULTIPLIER_NEG 0xffdf3734
@@ -845,12 +841,10 @@ typedef void SoftwareFramebufferDestroyProc(SoftwareFramebufferAccess * framebuf
 typedef bool GraphicsTextureSourceDecomposeSubresourceProc(uint32_t entryIndex, GraphicsTextureSourceAsset * sourceAsset, GraphicsTextureSourceAsset * * outAsset, uint32_t * outError);
 /* Voice-set creation: 0 on success (*outVoiceSet written), else an error code (*outVoiceSet untouched). */
 typedef uint32_t SoundCreateSampleVoiceSetProc(SoundSampleAsset * sampleAsset, DirectSoundVoiceSet * * outVoiceSet);
-typedef uint32_t SoundCreatePcmVoiceSetProc(uint32_t bufferByteCount, uint32_t sampleRateHz, uint32_t bitsPerSample, uint32_t channelCount, void * pcmData, DirectSoundVoiceSet * * outVoiceSet);
 /* Play a voice of the set: true when it plays; the voice (NULL on failure and from the silent backend) goes to
    *outVoice unless outVoice is NULL. */
 typedef bool SoundPlayVoiceProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, DirectSoundVoiceSet * voiceSet, IDirectSoundBuffer * * outVoice);
 typedef void SoundReleaseSampleVoiceSetProc(DirectSoundVoiceSet * voiceSet);
-typedef void SoundReleasePcmVoiceSetProc(DirectSoundVoiceSet * voiceSet);
 typedef void SoundStopVoiceProc(IDirectSoundBuffer * voice);
 typedef bool SoundIsVoicePlayingProc(IDirectSoundBuffer * voice);
 typedef void SoundStopAllVoicesProc(void);
@@ -4545,8 +4539,6 @@ typedef int RichTextCommandOrdinal;
 
 typedef uint32_t GraphicsPackedPixelMask;
 
-typedef uint32_t AudioBitsPerSampleStack32;
-
 typedef int SoftwareColorTransformQ16;
 
 typedef int SelectionPanelCellIndex;
@@ -5545,8 +5537,6 @@ typedef int FrontendBooleanState32;
 typedef int AiSourceClassCount;
 
 typedef uint32_t UiActionQueueUsedBytes;
-
-typedef uint32_t AudioChannelCountStack32;
 
 typedef uint32_t MusicTrackClassId;
 
@@ -11413,11 +11403,6 @@ struct ScenarioCatalogSaveRecord {
 
 
 typedef uint32_t AiCommandGenerationRightShiftBits;
-struct GridReachabilityRuntimePair {
-    struct ArmyRuntimeSlot *armyRuntime;
-    struct ModelRuntimeNode *modelNodeRuntime;
-};
-
 /* ws2_32 WSAAddressToStringA callback type recovered by the V533 API boundary pass. */
 typedef int WSAAddressToStringA_Proc(WinSockAddress *address, uint32_t addressLength, void *protocolInfo, uint8_t *addressString, uint32_t *addressStringLength);
 

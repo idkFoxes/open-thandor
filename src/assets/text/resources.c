@@ -106,34 +106,6 @@ void FontRuntime_Init(void)
 }
 
 
-/* Address: 0x0041CCB0.
-   Unloads text page pageIndex (the counterpart of TextResourcePage_Load): releases its 'str' asset and clears
-   the page's binding (selected locale block and asset). No caller or table slot referencing it was found in src/.
-*/
-void TextResourcePage_Unload(TextResourcePageIndex pageIndex)
-
-{
-  Resource_Release(g_TextResourcePageBindings[pageIndex].asset);
-  g_TextResourcePageBindings[pageIndex].selectedLocaleBlock = NULL;
-  g_TextResourcePageBindings[pageIndex].asset = NULL;
-  return;
-}
-
-
-/* Address: 0x0041CDB0.
-   Returns the number of locale blocks (dword +0xB0) of a 'str' text asset with CF clear; CF set when the asset
-   lacks the 'str' signature. No caller or table slot referencing it was found in src/.
-*/
-AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
-
-{
-  if ((asset->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
-    return (asset->localeCountHeader).localeBlockCount;
-  }
-  return 0; /* CF-set error path: the original leaves the caller's EAX (the function has no callers) */
-}
-
-
 /* Address: 0x0041CEB0.
    Returns the width of one glyph (0 when the font has no such glyph) in the active font and stores the line
    height (the height of glyph 0) in *outLineHeight unless it is NULL; used to measure text before it is laid

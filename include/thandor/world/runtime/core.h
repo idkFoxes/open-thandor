@@ -51,7 +51,7 @@
 #define WORLD_AUXILIARY_ELEVATION_MAXIMUM (-0x1000)
 /* Smallest camera magnitude WorldRuntime_SetCameraAnglesAndMagnitudeClamped accepts (0.25 in Q12) */
 #define WORLD_MOTION_MINIMUM_MAGNITUDE_Q12 0x400
-/* Height returned by the WorldRuntime_Interpolate*HeightOrSentinel functions when no field grid is attached. */
+/* Height returned by WorldRuntime_InterpolateTopSurfaceHeightOrSentinel when no field grid is attached. */
 #define WORLD_HEIGHT_NO_FIELD_GRID 0x7ffff000
 /* WorldLightingRuntime_UpdateInterpolatedTerrainLighting: one wrap of a 16-bit half of a packed field-region
    pair, added to the lower endpoint so the blend runs forward through the wrap */
@@ -85,12 +85,6 @@ void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext
 void WorldRuntime_TurnAuxiliaryAnglesClamped
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle);
 
-/* 0x004BE760 */
-Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
-
-/* 0x004BE790 */
-Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
-
 /* 0x004BE7C0 */
 uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
@@ -101,9 +95,6 @@ bool WorldRuntimeNode_IsPositionInsideBounds
 /* 0x0050D260 */
 void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime);
 
-/* 0x0050D330 */
-void WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime);
-
 /* 0x0050D4F0 */
 void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world);
 
@@ -111,41 +102,14 @@ void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world);
 void WorldRuntime_AttachObjectArray
           (WorldObjectRecordCount count,WorldObjectRecord *objectArray,WorldRuntimeContext *world);
 
-/* 0x0050D540 */
-void WorldRuntime_SetFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world);
-
-/* 0x0050D560 */
-void WorldRuntime_AddFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world);
-
-/* 0x0050D580 */
-void WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world);
-
-/* 0x0050D5A0 */
-void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world);
-
 /* 0x0050D610 */
 WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world);
 
 /* 0x0050D630 */
 WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *world);
 
-/* 0x0050D650 */
-uint32_t WorldRuntime_GetFlags(WorldRuntimeContext *world);
-
-/* 0x0050D6A0 */
-FieldGridAsset * WorldRuntime_GetFieldGridAsset(WorldRuntimeContext *world);
-
-/* 0x0050D6D0 */
-uint32_t WorldRuntime_GetPendingToken(WorldRuntimeContext *world);
-
-/* 0x0050D6F0 */
-uint32_t WorldRuntime_TakePendingToken(WorldRuntimeContext *world);
-
 /* 0x0050D710 */
 void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world);
-
-/* 0x0050D740 */
-uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world);
 
 /* 0x0050D7D0 */
 WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime);
@@ -191,9 +155,6 @@ void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime);
 
 /* 0x00527BA0 */
 void UnifiedRuntimeDefault_TwoArgNoOpB (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
-
-/* 0x00527BB0 */
-uint32_t UnifiedRuntimeDefault_OneArgReturnZero(void *context);
 
 /* 0x00527BE0 */
 bool UnifiedRuntimeDefault_TwoArgSuccess

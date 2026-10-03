@@ -766,31 +766,6 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 }
 
 
-/* Address: 0x00538C90.
-   Returns true (CF set) when the secondary workspace (workspace 01) holds an unassigned entry (no runtime
-   object yet, i.e. a pending asset) of this army asset; the workspace-01 counterpart of
-   AiPrimaryWorkspace_HasUnassignedEntryById. No caller and no function-pointer table entry for it was found
-   in src/.
-*/
-bool AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
-
-{
-  int workspaceEntriesRemaining;
-  AiRuntimeWorkspaceEntry *workspaceEntryCursor;
-  
-  workspaceEntriesRemaining = g_AiWorkspace01Count;
-  workspaceEntryCursor = g_AiWorkspace01Units;
-  for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--) {
-    if ((entryId == workspaceEntryCursor->armyAssetId) &&
-       (workspaceEntryCursor->modelRuntime == NULL)) {
-      return true;
-    }
-    workspaceEntryCursor++;
-  }
-  return false;
-}
-
-
 /* Address: 0x00538CF0.
    Returns true (CF set) when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
    or not.
@@ -810,32 +785,6 @@ bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
     workspaceEntryCursor++;
   }
   return false;
-}
-
-
-/* Address: 0x00538D40.
-   Twin of AiPrimaryWorkspace_CountAssignedEntriesById (0x00538C40) with the same body: counts the
-   primary-workspace (workspace 00) entries of this army asset that have a runtime object. No caller and no
-   function-pointer table entry for this copy was found in src/.
-*/
-int AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entryId)
-
-{
-  int matchingAssignedEntryCount;
-  int workspaceEntriesRemaining;
-  AiRuntimeWorkspaceEntry *workspaceEntryCursor;
-  
-  matchingAssignedEntryCount = 0;
-  workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
-  for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining--) {
-    if ((workspaceEntryCursor->modelRuntime != NULL) &&
-       (entryId == workspaceEntryCursor->armyAssetId)) {
-      matchingAssignedEntryCount++;
-    }
-    workspaceEntryCursor++;
-  }
-  return matchingAssignedEntryCount;
 }
 
 

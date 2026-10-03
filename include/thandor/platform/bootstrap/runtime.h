@@ -81,9 +81,6 @@ HINSTANCE DynDLL_Load(char *moduleName);
 /* 0x00573CD0 */
 uint32_t DynDLL_Unload(char *moduleName);
 
-/* 0x00573D40: true when the binding was found and loaded */
-bool BootstrapApi_ResolveBindingByDestination(void **destination);
-
 /* 0x00573EB0 */
 void DynDLL_UnloadAll(void);
 

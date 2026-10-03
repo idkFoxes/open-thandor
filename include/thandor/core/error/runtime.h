@@ -54,7 +54,7 @@
    place when Network_Init could not start WinSock) return it; the frontend reports it when no backend opens */
 #define FATAL_ERROR_NETWORK_UNAVAILABLE 0x2B
 /* DirectSound_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000 (a failing
-   secondary-buffer step there and in DirectSound_CreatePcmVoiceSet returns FATAL_ERROR_DIRECTSOUND_SETUP) */
+   secondary-buffer step there returns FATAL_ERROR_DIRECTSOUND_SETUP) */
 #define FATAL_ERROR_SOUND_SAMPLE_INVALID 0x4A
 /* Arena heap (core/memory/allocator): no free block is large enough (ArenaHeap_Alloc,
    ArenaHeap_AllocLargestFreeBlock; the largest free payload size is left in g_PackageLastErrorPath).
@@ -127,11 +127,6 @@
 #define FATAL_ERROR_DIRECT3D_CREATE_DEVICE 0x1F /* IDirect3D2::CreateDevice */
 #define FATAL_ERROR_DIRECT3D_VIEWPORT 0x20 /* viewport creation, AddViewport or SetCurrentViewport */
 #define FATAL_ERROR_DIRECT3D_TEXTURE_FORMAT 0x21 /* EnumTextureFormats failed or found no opaque/alpha format */
-/* Loadable 'fnc' code modules (assets/fnc/runtime.c) */
-#define FATAL_ERROR_FNC_MODULE_INVALID 0x62 /* the image does not start with the 'fnc' signature */
-#define FATAL_ERROR_FNC_MODULE_BINDING 0x63 /* FncModule_LoadAndRelocate: bindingMode is not 0 (the linear
-                                               reservation's own error replaces it when that fails);
-                                               FncModule_GetExportByIndex: the export index is out of range */
 /* GraphicsTextureSet_AllocateMetadata: an image of a texture set is not a power of two wide and high */
 #define FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO 0x2F
 /* GraphicsCursor_SetFrameIndex: the frame index is not below g_CursorFrameCount (it returns false) */
@@ -165,9 +160,6 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
 
 /* 0x00408090 */
 void ErrorRuntime_InstallUiHandlerAndAllocateState(void);
-
-/* 0x0041BC50 */
-uint32_t FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x005758D0 */
 uint32_t FatalError_Exit(uint32_t valueOrError,bool failed);

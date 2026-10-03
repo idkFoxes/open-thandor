@@ -1304,32 +1304,6 @@ GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(Graphic
 }
 
 
-/* Address: 0x004AD7C0.
-   Stores the logical width and height of the first subresource of a 'gfx' texture source whose subresource
-   count is 1..4095 and returns true; returns false (outputs untouched) otherwise. No caller or table slot
-   referencing it is known.
-*/
-bool GraphicsTextureSource_GetFirstLogicalSize
-          (GraphicsTextureSourceAsset *sourceAsset,uint32_t *outWidthPixels,uint32_t *outHeightPixels)
-
-{
-  uint32_t entryCount;
-  uint8_t *firstSubresourceRecord;
-
-  if ((sourceAsset->common).magic == ASSET_MAGIC_GFX) {
-    entryCount = (sourceAsset->tableDescriptor).subresourceCount;
-    if ((entryCount != 0) && (entryCount <= 4095)) {
-      firstSubresourceRecord =
-           (uint8_t *)sourceAsset + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      *outWidthPixels = ((GraphicsTextureSourceEntry *)firstSubresourceRecord)->logicalWidth;
-      *outHeightPixels = ((GraphicsTextureSourceEntry *)firstSubresourceRecord)->logicalHeight;
-      return true;
-    }
-  }
-  return false;
-}
-
-
 /* Shared upload body, defined below with its helpers (also used by GraphicsTexture_UploadColor_2x/_4x). */
 static void GraphicsTextureUploadScaled_Upload(GraphicsTextureResource *texture,uint32_t blockSize);
 

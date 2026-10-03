@@ -55,9 +55,6 @@ uint32_t GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacit
 /* 0x004D0A40 */
 GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal(void);
 
-/* 0x004D0A70 */
-void GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue);
-
 /* 0x004D0A90 */
 uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
 

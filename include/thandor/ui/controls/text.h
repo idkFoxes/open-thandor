@@ -174,10 +174,6 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
 void UiPointerList_SortByExpandedTextFieldAscending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
-/* 0x004BB6B0 */
-void UiPointerList_SortByExpandedTextFieldDescending
-          (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
-
 /* 0x005156A0 */
 void UiNumericPairTextButton_DrawFormattedValues
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

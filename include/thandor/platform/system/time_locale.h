@@ -29,9 +29,6 @@ void TimerSystem_Shutdown(void);
 /* 0x00586BA0 */
 void Locale_Init(void);
 
-/* 0x00402F70 */
-LocaleRegionTagPacked Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode countryCode);
-
 /* 0x00586790 */
 void __cdecl TimerSystem_Init(void);
 

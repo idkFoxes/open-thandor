@@ -238,44 +238,6 @@ SpatialSoundSlot *SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampl
 }
 
 
-/* Address: 0x0050B940.
-   PCM counterpart of SpatialSoundSlot_CreateFromSampleAsset: creates a voice set for raw PCM data and gives
-   it the first free spatial-sound slot, silent and not playing. Returns the slot (never NULL); NULL when the
-   voice set cannot be created or all slots are taken (the voice set is released again). The original's
-   error value (voice-set error or FATAL_ERROR_GENERAL_FAILURE) is dropped like in the sample-asset variant.
-   Nothing in this code base calls it and no callback-table slot references it.
-*/
-SpatialSoundSlot *SpatialSoundSlot_CreateFromPcm
-          (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
-          AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          void *pcmData)
-
-{
-  DirectSoundVoiceSet *voiceSet;
-  int slotsRemaining;
-  SpatialSoundSlot *slotCursor;
-
-  if (g_SoundCreatePcmVoiceSet(bufferByteCount,sampleRateHz,bitsPerSample,channelCount,pcmData,&voiceSet) != 0) {
-    return NULL;
-  }
-  slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
-  slotCursor = g_SpatialSoundSlots;
-  do {
-    if (slotCursor->voiceSet == NULL) {
-      slotCursor->voiceSet = voiceSet;
-      slotCursor->desiredLeftGainQ15 = 0;
-      slotCursor->desiredRightGainQ15 = 0;
-      slotCursor->activeVoice = NULL;
-      return slotCursor;
-    }
-    slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
-  g_SoundReleasePcmVoiceSet(voiceSet);
-  return NULL;
-}
-
-
 /* Address: 0x0050B9D0.
    Releases the sample voice set of a slot from SpatialSoundSlot_CreateFromSampleAsset and clears the slot
    (all four dwords), which makes it free again. A NULL slot is ignored.
@@ -288,29 +250,6 @@ void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
   slotEntriesRemaining = sizeof(SpatialSoundSlot) / 4;
   if (slot != NULL) {
     g_SoundReleaseSampleVoiceSet(slot->voiceSet);
-    for (; slotEntriesRemaining != 0; slotEntriesRemaining--) {
-      slot->voiceSet = NULL;
-      slot = (SpatialSoundSlot *)&slot->activeVoice;
-    }
-  }
-  return;
-}
-
-
-/* Address: 0x0050BA00.
-   Releases the PCM voice set of a slot from SpatialSoundSlot_CreateFromPcm and clears the slot (all four
-   dwords), which makes it free again. A NULL slot is ignored. Nothing in this code base calls it and no
-   callback-table slot references it.
-*/
-void SpatialSoundSlot_ReleasePcm(SpatialSoundSlot *slot)
-
-{
-  int slotEntriesRemaining;
-  
-  slotEntriesRemaining = sizeof(SpatialSoundSlot) / 4;
-  if (slot != NULL) {
-    g_SoundReleasePcmVoiceSet(slot->voiceSet);
-    /* REP STOSD: the cursor advances one dword (to the next field) per step */
     for (; slotEntriesRemaining != 0; slotEntriesRemaining--) {
       slot->voiceSet = NULL;
       slot = (SpatialSoundSlot *)&slot->activeVoice;

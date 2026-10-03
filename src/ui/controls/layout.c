@@ -1218,31 +1218,6 @@ void UiFrame_FlushInputAndResetPendingTicks(void)
 }
 
 
-/* Address: 0x004AF950.
-   Modal UI loop: with the pointer capture released and stale input flushed, runs whole UI frames until the
-   root stack is empty (the last window closed), then presents one more frame with the tooltip cleared.
-   No caller in the recovered code.
-*/
-void UiFrame_RunUntilRootClosedAndPresentFinalFrame(void)
-
-{
-  g_UiPointerCaptureTarget = UI_NODE_NONE;
-  g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-  UiFrame_FlushInputAndResetPendingTicks();
-  do {
-    UiKeyboard_DispatchPendingEvents();
-    UiPointer_DispatchPendingEvents();
-    UiFrame_Update(0); /* 0: pump messages once, do not wait for a frame tick */
-    UiActionQueue_DispatchPending();
-    UiFrame_Draw();
-    g_GraphicsFramebufferPresent(g_FramebufferAccess);
-  } while (g_UiRootNode != UI_ROOT_STACK_END);
-  g_UiTooltipState.targetNode = NULL;
-  UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
-  g_GraphicsFramebufferPresent(g_FramebufferAccess);
-  return;
-}
-
 /* Address: 0x004AF9D0.
    Moves an open root (window) to the top of the root stack: unlinks it from its position, links it above
    the current front root, gives it the initial keyboard focus, moves the in-front flag from the old front

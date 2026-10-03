@@ -15,8 +15,6 @@
 /* Function-signature types Ghidra does not include in its C export, taken from
  * ghidra/export/function_definitions.jsonl (tools/ghidra/ExportBuildData.java). */
 typedef AiTechnologyCandidateScore AiTechnologyCandidateScoreCallback(FactionRuntimeIndex factionIndex, PckTechnologyIdCatalog technologyId, WorldRuntimeContext * worldRuntime); /* Ghidra FunctionDefinition /Thandor/AI/Callbacks */
-typedef uint32_t ArenaFreeProc(void * memory); /* Ghidra FunctionDefinition /Thandor/ABI */
-typedef uint32_t ArenaShrinkProc(uint32_t newSize, void * memory); /* Ghidra FunctionDefinition /Thandor/ABI */
 typedef uint8_t * CommandLineFindOptionProc(uint32_t length, char * option); /* Ghidra FunctionDefinition /Thandor/CommandLine/Methods */
 typedef uint32_t __cdecl CpuDetectFeaturesProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef uint32_t FatalErrorPassThroughProc(uint32_t valueOrError, bool failed); /* Ghidra FunctionDefinition /Thandor/ABI */
@@ -43,7 +41,6 @@ typedef uint32_t FileSystemSeekProc(FileSystemSeekOrigin moveMethod, FileSystemF
 typedef uint32_t FileSystemSetCurrentDirectoryProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef bool FileSystemValidateDos83Proc(FileSystemDos83ValidationFlags flags, uint8_t * pathAnsi); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemWriteExactOrFlushProc(FileIoByteCount byteCount, void * source, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t FrontendModelPointerResolvedActionCallbackProc(uint32_t surfaceHitDepth, uint32_t surfaceHitWorldY, uint32_t surfaceHitWorldX, int selectedHitMetric, ModelRuntimeNode * selectedModelNode, FrontendModelPointerHitContext * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void GlideTextureUploadProc(GraphicsTextureResource * texture); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void __stdcall GrAlphaBlendFunctionImportProc(uint32_t rgbSourceFactor, uint32_t rgbDestinationFactor, uint32_t alphaSourceFactor, uint32_t alphaDestinationFactor); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrAlphaCombineImportProc(uint32_t function, uint32_t factor, uint32_t local, uint32_t other, uint32_t invert); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
@@ -97,8 +94,6 @@ typedef void GraphicsTextureSetRefreshProc(uint32_t subresourceIndex, GraphicsTe
 typedef void GraphicsTextureSetReleasePackageProc(GraphicsTextureSet * set); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef uint32_t GraphicsTextureSourceConvertPaletteEntriesProc(GraphicsPaletteTextureSourceAsset * sourceAsset); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void __stdcall GuGammaCorrectionRGBImportProc(uint32_t redGamma, uint32_t greenGamma, uint32_t blueGamma); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void InGameWorldOverlayPhaseCallbackProc(GraphicsBooleanState releaseMode, WorldRuntimeContext * worldRuntime); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef void InGameWorldOverlayRebuildCallbackProc(uint32_t arg0, WorldRuntimeContext * arg1); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void InGameWorldTransientStateClearCallbackProc(WorldRuntimeContext * arg0); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void KeyboardFlushEventsProc(void); /* Ghidra FunctionDefinition /Thandor/Input/Methods */
 typedef bool KeyboardReadEventProc(uint32_t *outKeyCode, uint32_t *outStateMask); /* Ghidra FunctionDefinition /Thandor/Input/Methods */
@@ -120,8 +115,6 @@ typedef bool NetworkBackendReceiveCallback(WinSockAddress * sourceAddress, uint3
 typedef bool NetworkBackendSendCallback(WinSockAddress * destinationAddress, uint32_t byteCount, uint8_t * buffer); /* true on success; Ghidra FunctionDefinition /Thandor/Network/Backend */
 typedef uint32_t NetworkBackendSetSessionCallback(uint32_t backendIndex); /* 0 or a FATAL_ERROR_NETWORK_* code; Ghidra FunctionDefinition /Thandor/Network/Backend */
 typedef bool PckCodecProc(uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode); /* Ghidra FunctionDefinition /Thandor/Package/Methods */
-typedef PcxDecodeResult PcxDecodeProc(FncModuleHeader * module, uint32_t sourceByteCount, void * sourceBytes); /* Ghidra FunctionDefinition /Thandor/UI/Pcx */
-typedef PcxEncodeResult PcxEncodeProc(FncModuleHeader * module, void * framebufferCapture); /* Ghidra FunctionDefinition /Thandor/UI/Pcx */
 typedef void PointerFlushEventsProc(void); /* Ghidra FunctionDefinition /Thandor/Input */
 typedef void PointerSetPositionProc(int32_t positionY, int32_t positionX); /* Ghidra FunctionDefinition /Thandor/Input */
 typedef void ScenarioCatalogRefreshSelectedRecordCallback(uint32_t arg0, uint32_t arg1, uint32_t arg2, UiListRowIndex selectionIndex); /* Ghidra FunctionDefinition /Thandor/UI/ActionHandlers/Callbacks */
@@ -129,7 +122,6 @@ typedef void SoftwareBuildPixelPackTablesProc(int32_t colorScaleQ16, int32_t col
 typedef void SoftwareDrawQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef SoftwareFramebufferAccess * SoftwareFramebufferCreateProc(uint32_t bytesPerPixel, uint32_t height, uint32_t width, uint32_t * outError); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void SoftwareRasterHandler(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitivePacket * packet); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef uint32_t SoundQueryVoiceRegsProc(IDirectSoundBuffer * voice); /* Ghidra FunctionDefinition /Thandor/Sound/Methods */
 typedef void SpinLockAcquireProc(RuntimeSpinLockValue * lockValue); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void SpinLockReleaseCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void SpinLockReleaseAndInvokeProc(SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue); /* Ghidra FunctionDefinition /Thandor/System/Methods */
@@ -139,59 +131,22 @@ typedef bool TerrainClassOverlayCallback(uint32_t cellFlagMask, int cellValue, u
 typedef void __cdecl TimerCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void TimerRegisterPeriodicProc(uint32_t frequencyHz, TimerCallbackProc * callback); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void TimerUnregisterPeriodicProc(TimerCallbackProc * callback); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef bool UiRootCloseCallback(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
-typedef void UiRootFrameCallback(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
-typedef bool UiRootKeyboardFallback(UiKeyboardStateMask modifierFlags, UiActionId commandCode, UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
-typedef bool UiRootMethod08Callback(UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
 typedef int UiRootPointerMissPolicyCallback(UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
 typedef void UiRuntimePostUnlockCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/UI/Runtime */
-typedef int __stdcall WSAIoctl_Proc(uint32_t socket, uint32_t ioControlCode, void * inBuffer, uint32_t inBufferLength, void * outBuffer, uint32_t outBufferLength, uint32_t * bytesReturned, void * overlapped, void * completionRoutine); /* Ghidra FunctionDefinition /Thandor/Recovered/Network */
-typedef int __stdcall WSAStringToAddressA_Proc(char * addressString, int addressFamily, void * protocolInfo, NetworkBackendSocketAddress16 * address, int * addressLength); /* Ghidra FunctionDefinition /Thandor/Recovered/Network */
 typedef void __cdecl Win32PumpMessagesProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef uint32_t __stdcall WinSock_WSAAsyncGetHostByAddrProc(uint32_t window, uint32_t message, uint8_t * address, int addressLength, int addressType, uint8_t * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t __stdcall WinSock_WSAAsyncGetHostByNameProc(uint32_t window, uint32_t message, uint8_t * hostName, uint8_t * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t __stdcall WinSock_WSAAsyncGetProtoByNameProc(uint32_t window, uint32_t message, uint8_t * protocolName, uint8_t * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t __stdcall WinSock_WSAAsyncGetProtoByNumberProc(uint32_t window, uint32_t message, int protocolNumber, uint8_t * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t __stdcall WinSock_WSAAsyncGetServByNameProc(uint32_t window, uint32_t message, uint8_t * serviceName, uint8_t * protocolName, uint8_t * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t __stdcall WinSock_WSAAsyncGetServByPortProc(uint32_t window, uint32_t message, int portNetworkOrder, uint8_t * protocolName, uint8_t * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_WSAAsyncSelectProc(uint32_t socket, uint32_t window, uint32_t message, int eventMask); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_WSACancelAsyncRequestProc(uint32_t asyncTaskHandle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_WSACancelBlockingCallProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_WSACleanupProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_WSAGetLastErrorProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_WSAIsBlockingProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef pointer __stdcall WinSock_WSASetBlockingHookProc(pointer hookProcedure); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_WSAStartupProc(uint16_t requestedVersion, WinSockData11 * startupData); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_WSAUnhookBlockingHookProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t __stdcall WinSock_acceptProc(uint32_t socket, WinSockAddress * address, int * addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_bindProc(uint32_t socket, WinSockAddress * address, int addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_closesocketProc(uint32_t socket); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_connectProc(uint32_t socket, WinSockAddress * address, int addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef WinSockHostEnt32 * __stdcall WinSock_gethostbyaddrProc(uint8_t * address, int addressLength, int addressType); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef WinSockHostEnt32 * __stdcall WinSock_gethostbynameProc(uint8_t * hostName); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_gethostnameProc(uint8_t * outputName, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_getpeernameProc(uint32_t socket, WinSockAddress * address, int * addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef WinSockProtoEnt32 * __stdcall WinSock_getprotobynameProc(uint8_t * protocolName); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef WinSockProtoEnt32 * __stdcall WinSock_getprotobynumberProc(int protocolNumber); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef WinSockServEnt32 * __stdcall WinSock_getservbynameProc(uint8_t * serviceName, uint8_t * protocolName); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef WinSockServEnt32 * __stdcall WinSock_getservbyportProc(int portNetworkOrder, uint8_t * protocolName); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_getsocknameProc(uint32_t socket, WinSockAddress * address, int * addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_getsockoptProc(uint32_t socket, int level, int optionName, uint8_t * optionValue, int * optionLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t __stdcall WinSock_htonlProc(uint32_t hostLong); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef uint16_t __stdcall WinSock_htonsProc(uint16_t hostShort); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef uint32_t __stdcall WinSock_inet_addrProc(uint8_t * addressText); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef uint8_t * __stdcall WinSock_inet_ntoaProc(uint32_t ipv4AddressNetworkOrder); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_ioctlsocketProc(uint32_t socket, uint32_t command, uint32_t * argument); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_listenProc(uint32_t socket, int backlog); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t __stdcall WinSock_ntohlProc(uint32_t networkLong); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint16_t __stdcall WinSock_ntohsProc(uint16_t networkShort); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_recvProc(uint32_t socket, uint8_t * buffer, int length, int flags); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_recvfromProc(uint32_t socket, uint8_t * buffer, int length, int flags, WinSockAddress * sourceAddress, int * sourceAddressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_selectProc(int ignoredNfds, WinSockFdSet64 * readSet, WinSockFdSet64 * writeSet, WinSockFdSet64 * exceptSet, WinSockTimeVal32 * timeout); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_sendProc(uint32_t socket, uint8_t * buffer, int length, int flags); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_sendtoProc(uint32_t socket, uint8_t * buffer, int length, int flags, WinSockAddress * destinationAddress, int destinationAddressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef int __stdcall WinSock_setsockoptProc(uint32_t socket, int level, int optionName, uint8_t * optionValue, int optionLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef int __stdcall WinSock_shutdownProc(uint32_t socket, int how); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef uint32_t __stdcall WinSock_socketProc(int addressFamily, int socketType, int protocol); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwnerListNode * node); /* Ghidra FunctionDefinition /Thandor/World/Callbacks */
 

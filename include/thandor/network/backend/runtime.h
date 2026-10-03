@@ -16,7 +16,6 @@
 /* g_NetworkBackendMode: which WinSock DLL Network_Init started (Network_Shutdown calls its WSACleanup) */
 #define NETWORK_BACKEND_MODE_NONE 0
 #define NETWORK_BACKEND_MODE_WSOCK32 1 /* wsock32.dll, WinSock 1.1 */
-#define NETWORK_BACKEND_MODE_WS2_32 2 /* ws2_32.dll; no reachable code sets it */
 
 /* UDP port (host byte order) the frontend passes to g_NetworkBackendSlot2 (open and bind) for every session. */
 #define NETWORK_GAME_UDP_PORT 929
@@ -64,18 +63,5 @@ void Network_Shutdown(void);
 
 /* 0x00584E50 */
 uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex);
-
-/* 0x00585210 */
-bool NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex);
-
-
-/* 0x00583D10 */
-uint32_t Unreferenced_ReturnZero_00583D10(void);
-
-/* 0x00583D30 */
-void Unreferenced_NoOp_00583D30(void);
-
-/* 0x00583D40 */
-uint32_t Unreferenced_ReturnZero_00583D40(void);
 
 #endif /* THANDOR_NETWORK_BACKEND_RUNTIME_H */

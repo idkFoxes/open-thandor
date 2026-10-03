@@ -14,9 +14,6 @@
 /* Submodule: assets/sprite/catalog. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x00486D60 */
-bool SpriteAsset_ValidateGroupCount(SpriteAssetHeader *spriteAsset);
-
 /* 0x004BE480 */
 void SpriteAssetRegistry_Reset(void);
 

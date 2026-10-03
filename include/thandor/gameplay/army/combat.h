@@ -41,10 +41,6 @@ void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage (WorldRuntimeContext *wo
 void ArmyRuntime_ApplyImpactDamageAndFinalizeState
           (AngleTurn32 impactAngle,DamageAmount32 damageAmount,ModelRuntimeSlot *modelRuntime);
 
-/* 0x0052A3E0 */
-void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFactionIndex,DamageAmount32 damageAmount,
-          ModelRuntimeSlot *modelRuntime);
-
 /* 0x0052A640 */
 void ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
           ImpactDamageValue32 impactValue,ModelRuntimeSlot *targetModelRuntime);

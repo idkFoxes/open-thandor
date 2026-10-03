@@ -539,40 +539,13 @@ bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
 }
 
 
-/* Address: 0x00583D10.
-   Stub in the network backend code that returns 0; nothing references it (neither a call nor a table
-   entry).
-*/
-uint32_t Unreferenced_ReturnZero_00583D10(void)
-
-{
-  return 0;
-}
-
-/* Address: 0x00583D30.
-   Empty stub in the network backend code (a bare RET); nothing references it.
-*/
-void Unreferenced_NoOp_00583D30(void)
-
-{
-  return;
-}
-
-/* Address: 0x00583D40.
-   Stub in the network backend code that returns 0; nothing references it.
-*/
-uint32_t Unreferenced_ReturnZero_00583D40(void)
-
-{
-  return 0;
-}
-
 /* Address: 0x00584080.
-   Binds the 45 exports of wsock32.dll, starts WinSock 1.1 and installs the UDP fallback backend
+   Binds the 14 exports of wsock32.dll that the code calls (the original binds 45), starts WinSock 1.1 and
+   installs the UDP fallback backend
    (NetworkFallback_*) as the only network backend instance. Returns 0 on success, otherwise the
    DynDLL/DynAPI error code or the WSAStartup error; the original returns with CF clear in every case,
    so a missing WinSock is not fatal there. Its first instruction jumps over 0x0058408D..0x0058495F,
-   presumably the ws2_32 path that NETWORK_BACKEND_MODE_WS2_32 belongs to.
+   presumably a ws2_32 path (not ported: nothing installed it).
 */
 uint32_t __cdecl Network_Init(void)
 
@@ -583,21 +556,9 @@ uint32_t __cdecl Network_Init(void)
 
   module = DynDLL_Load(s_Wsock32ModuleName);
   if (module == NULL) return FATAL_ERROR_DLL_LOAD_FAILED;
-  resolveError = DynAPI_Resolve(&g_WinSock_accept,module,s_Wsock32Export_accept);
-  if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_bind,module,s_Wsock32Export_bind);
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_closesocket,module,s_Wsock32Export_closesocket);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_connect,module,s_Wsock32Export_connect);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_getpeername,module,s_Wsock32Export_getpeername);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_getsockname,module,s_Wsock32Export_getsockname);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_getsockopt,module,s_Wsock32Export_getsockopt);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_htonl,module,s_Wsock32Export_htonl);
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_htons,module,s_Wsock32Export_htons);
   if (resolveError != 0) return resolveError;
@@ -607,71 +568,21 @@ uint32_t __cdecl Network_Init(void)
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_ioctlsocket,module,s_Wsock32Export_ioctlsocket);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_listen,module,s_Wsock32Export_listen);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_ntohl,module,s_Wsock32Export_ntohl);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_ntohs,module,s_Wsock32Export_ntohs);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_recv,module,s_Wsock32Export_recv);
-  if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_recvfrom,module,s_Wsock32Export_recvfrom);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_select,module,s_Wsock32Export_select);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_send,module,s_Wsock32Export_send);
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_sendto,module,s_Wsock32Export_sendto);
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_setsockopt,module,s_Wsock32Export_setsockopt);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_shutdown,module,s_Wsock32Export_shutdown);
-  if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_socket,module,s_Wsock32Export_socket);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_gethostbyaddr,module,s_Wsock32Export_gethostbyaddr);
-  if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_gethostbyname,module,s_Wsock32Export_gethostbyname);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_gethostname,module,s_Wsock32Export_gethostname);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_getprotobyname,module,s_Wsock32Export_getprotobyname);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_getprotobynumber,module,s_Wsock32Export_getprotobynumber);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_getservbyname,module,s_Wsock32Export_getservbyname);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_getservbyport,module,s_Wsock32Export_getservbyport);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAAsyncGetHostByAddr,module,s_Wsock32Export_WSAAsyncGetHostByAddr);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAAsyncGetHostByName,module,s_Wsock32Export_WSAAsyncGetHostByName);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAAsyncGetProtoByName,module,s_Wsock32Export_WSAAsyncGetProtoByName);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAAsyncGetProtoByNumber,module,s_Wsock32Export_WSAAsyncGetProtoByNumber);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAAsyncGetServByName,module,s_Wsock32Export_WSAAsyncGetServByName);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAAsyncGetServByPort,module,s_Wsock32Export_WSAAsyncGetServByPort);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAAsyncSelect,module,s_Wsock32Export_WSAAsyncSelect);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSACancelAsyncRequest,module,s_Wsock32Export_WSACancelAsyncRequest);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSACancelBlockingCall,module,s_Wsock32Export_WSACancelBlockingCall);
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_WSACleanup,module,s_Wsock32Export_WSACleanup);
   if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_WSAGetLastError,module,s_Wsock32Export_WSAGetLastError);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAIsBlocking,module,s_Wsock32Export_WSAIsBlocking);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSASetBlockingHook,module,s_Wsock32Export_WSASetBlockingHook);
-  if (resolveError != 0) return resolveError;
   resolveError = DynAPI_Resolve(&g_WinSock_WSAStartup,module,s_Wsock32Export_WSAStartup);
-  if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAUnhookBlockingHook,module,s_Wsock32Export_WSAUnhookBlockingHook);
   if (resolveError != 0) return resolveError;
   startupError = (uint32_t)g_WinSock_WSAStartup(MAKEWORD(1,1),&g_WinSockStartupData);
   if (startupError != 0) return startupError;
@@ -691,8 +602,7 @@ uint32_t __cdecl Network_Init(void)
 
 
 /* Address: 0x00584DF0.
-   Stops WinSock at program end: WSACleanup of the DLL that Network_Init started. The ws2_32 mode also
-   frees its heap-allocated backend instance table (the wsock32 table is static image data).
+   Stops WinSock at program end: WSACleanup of the DLL that Network_Init started.
 */
 void Network_Shutdown(void)
 
@@ -702,13 +612,6 @@ void Network_Shutdown(void)
     g_NetworkBackendMode = NETWORK_BACKEND_MODE_NONE;
     return;
   }
-  if (g_NetworkBackendMode == NETWORK_BACKEND_MODE_WS2_32) {
-    g_Ws2_32_WSACleanup();
-    g_NetworkBackendMode = NETWORK_BACKEND_MODE_NONE;
-    g_MemoryApi.free(g_NetworkBackendInstanceTable);
-    g_NetworkBackendInstanceTable = NULL;
-    g_NetworkBackendInstanceCount = 0;
-  }
   return;
 }
 
@@ -716,8 +619,7 @@ void Network_Shutdown(void)
 /* Address: 0x00584E50.
    Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it
    accepts any backendIndex and always returns 0 (success). The original stores ECX, not the index, in
-   g_NetworkBackendSessionContext (the ws2_32 variant NetworkBackend_SelectInstanceByIndex stores the
-   index); the callers pass the index on the stack only. Like the previous C version (which received the
+   g_NetworkBackendSessionContext; the callers pass the index on the stack only. Like the previous C version (which received the
    index in its sessionContext parameter), this stores the index; nothing reads the global.
 */
 uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex)
@@ -725,34 +627,5 @@ uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex)
 {
   g_NetworkBackendSessionContext = (NetworkSessionContext *)(uintptr_t)backendIndex;
   return 0;
-}
-
-
-/* Address: 0x00585210.
-   Backend slot 0 ("select backend instance") of the ws2_32 backend, which can offer several instances
-   (protocols): remembers the index and copies the instance's address family, socket-address length,
-   socket type and protocol into the active-backend globals used by the other ws2_32 slots. CF is set for
-   an index beyond g_NetworkBackendInstanceCount (the original loads 0x2B into EAX there but restores EAX).
-   No recovered table points at it; like the other ws2_32 slots it belongs to the skipped part of
-   Network_Init.
-*/
-bool NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex)
-
-{
-  NetworkBackendInstanceDescriptorPrefix *selectedBackendDescriptor;
-
-  if (instanceIndex < g_NetworkBackendInstanceCount) {
-    g_NetworkBackendSessionContext = (NetworkSessionContext *)instanceIndex;
-    /* the instance descriptors are 0x100 bytes apart */
-    selectedBackendDescriptor =
-         (NetworkBackendInstanceDescriptorPrefix *)
-         ((uint8_t *)g_NetworkBackendInstanceTable + instanceIndex * 256);
-    g_NetworkBackendActiveAddressFamily = selectedBackendDescriptor->addressFamily;
-    g_NetworkBackendActiveSocketAddressLength = selectedBackendDescriptor->socketAddressLength;
-    g_NetworkBackendActiveSocketType = selectedBackendDescriptor->socketType;
-    g_NetworkBackendActiveProtocol = selectedBackendDescriptor->protocol;
-    return false;
-  }
-  return true;
 }
 

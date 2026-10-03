@@ -56,28 +56,10 @@ or to other layout-compatible structs, which C only allows through a union.
 #include <thandor/generated/ui_templates.h>
 #include <thandor/generated/image_data.h>
 
-/* Address of `offset` bytes into an object, as an integer (THANDOR_ADDR) or a byte pointer (THANDOR_BYTE_AT):
-   for code that steps through a table or record by byte offsets like the original. */
-#define THANDOR_BYTE_AT(object, offset) ((uint8_t *)&(object) + (int)(offset))
+/* Address of `offset` bytes into an object, as an integer: for code that steps through a table or record by
+   byte offsets like the original. */
 #define THANDOR_ADDR(object, offset) ((uintptr_t)&(object) + (int)(offset))
 #include <thandor/generated/imports.h>
-
-/* EAX + CF results: CF clear with a value, or CF set with an engine error code in EAX. */
-static __inline StatusResult StatusValue_Ok(uint32_t value)
-{
-    StatusResult result;
-    result.valueOrError = value;
-    result.failed = false;
-    return result;
-}
-
-static __inline StatusResult StatusValue_Fail(uint32_t errorCode)
-{
-    StatusResult result;
-    result.valueOrError = errorCode;
-    result.failed = true;
-    return result;
-}
 
 /* Variadic UiSelectableGroup_* helpers take the group's controls as extra stack arguments, which
    the decompiler dropped at every call site. The original addresses them as base + byte offset. */

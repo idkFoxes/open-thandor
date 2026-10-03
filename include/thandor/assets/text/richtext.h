@@ -100,29 +100,6 @@ void RichTextCommandStream_PatchPayloadBySelector
 /* 0x0041B200 */
 void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream);
 
-/* 0x0041B300 */
-bool RichTextCommandStream_SetNthInlineValuePayload
-          (RichTextCommandOrdinal commandOrdinal,RichTextCommandPayload32 payloadValue,
-          uint16_t *commandStream);
-
-/* 0x0041B420 */
-void RichTextCommandStream_PatchNestedStreamPointerPayloads
-          (RichTextNestedStreamPointerValue32 nestedStreamPointerValue,uint16_t *commandStream);
-
-/* 0x0041B520 */
-void RichTextCommandStream_PatchInlineImagePayloads(RichTextOpcode1APayloadValue32 imageSubresourceValue,
-          RichTextCommandPayload32 textureSourceValue,uint16_t *commandStream);
-
-/* 0x0041B620 */
-void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inlinePayloadValue,uint16_t *commandStream);
-
-/* 0x0041B720 */
-bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream);
-
-/* 0x0041B840 */
-bool RichTextCommandStream_QueryNthInlineValueVariant
-          (int commandOrdinal,uint16_t *commandStream,uint32_t *commandVariant);
-
 /* 0x0041B950 */
 bool RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);

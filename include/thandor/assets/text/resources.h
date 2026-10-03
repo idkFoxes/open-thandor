@@ -40,12 +40,6 @@ bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t
 /* 0x0041B080 */
 void FontRuntime_Init(void);
 
-/* 0x0041CCB0 */
-void TextResourcePage_Unload(TextResourcePageIndex pageIndex);
-
-/* 0x0041CDB0 */
-AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset);
-
 /* 0x0041CEB0 */
 uint32_t FontGlyph_GetLogicalSizeActiveFont(GraphicsSubresourceIndex glyphSubresource,uint32_t *outLineHeight);
 

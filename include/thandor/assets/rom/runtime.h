@@ -100,9 +100,6 @@ void FrontendRomTransition_RequestStop(void);
 /* 0x005487F0 */
 RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue);
 
-/* 0x00548840 */
-uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record);
-
 /* 0x00548890 */
 void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable);
 

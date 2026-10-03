@@ -80,10 +80,6 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void);
 /* 0x004CD360 */
 void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void);
 
-/* 0x004D1170 */
-void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
-               (GeneratedTextureRenderContextView *renderContext);
-
 /* 0x004CD880 */
 void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddress32 meshRecord);
 

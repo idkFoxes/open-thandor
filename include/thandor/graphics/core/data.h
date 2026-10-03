@@ -76,10 +76,6 @@ extern SoftwareFramebufferAccess *g_CursorCompositeBuffer; /* 004A8E78 g_CursorC
 
 extern GraphicsBackendRefreshActiveAdapterProc *g_GraphicsBackendRefreshActiveAdapter; /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapter */
 
-extern GraphicsFixedMatrix3x4 g_GraphicsDirectionInverseTransform; /* 004BCF20 g_GraphicsDirectionInverseTransform */
-
-extern GraphicsFixedVec3 g_GraphicsDirectionLocal; /* 004BCF5C g_GraphicsDirectionLocal */
-
 extern DirectDrawCreate *pDirectDrawCreate; /* 00573FBC pDirectDrawCreate */
 
 extern DirectDrawEnumerateA *pDirectDrawEnumerateA; /* 00573FC0 pDirectDrawEnumerateA */

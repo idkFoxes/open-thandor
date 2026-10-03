@@ -675,31 +675,6 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
 }
 
 
-/* Address: 0x00533E70.
-   Tests whether the army of targetRuntimePair could walk from sourceWorldPoint to its model node's position:
-   the cells blocked for it are the low distance band of its grid class and the terrain class bit of its
-   second grid classification. Returns true (CF set) when the target cannot be reached. No caller in the C
-   code or in the handler tables references it.
-*/
-bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
-          (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair *targetRuntimePair)
-
-{
-  bool unreachable;
-  ModelDefinition *targetModelDefinition;
-
-  targetModelDefinition = (ModelDefinition *)
-          (targetRuntimePair->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  unreachable = GridScratch_TestWorldPointReachability
-                    (GRID_SCRATCH_LOW_BAND0 << ((uint8_t)targetModelDefinition->footprintRadiusClass & 31) |
-                     GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)targetModelDefinition->terrainTraversalClass & 31),
-                     sourceWorldPoint->worldYQ12,sourceWorldPoint->worldXQ12,
-                     (targetRuntimePair->modelNodeRuntime->worldTransform).translation.y,
-                     (targetRuntimePair->modelNodeRuntime->worldTransform).translation.x);
-  return unreachable;
-}
-
-
 /* Address: 0x005332C0.
    Sizes the pathing scratch grids for a field grid (4x4 scratch cells per field cell, 8-byte GridScratchCell
    records): allocates the primary and secondary scratch grids and the 0x180000-byte path-cost pointer queue
@@ -1375,73 +1350,6 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
 }
 
 
-/* Address: 0x00533D60.
-   Tests whether a mover blocked by traversalMask can get from the source world point to the target world
-   point: converts both to primary scratch cells, clears every visited bit and flood-fills from the source
-   (GridScratch_TestConnectedReachabilityRecursive), treating map-edge and visited cells as walls. Returns
-   true when the fill never reaches the target cell.
-*/
-bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
-          GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
-          GraphicsWorldCoordinateQ12 targetWorldXQ12)
-
-{
-  GridScratchCell *sourceCell;
-  uint32_t scratchWidth;
-  int cellsRemaining;
-  uint32_t scaledRowTerm;
-  GridScratchCell *targetCell;
-  GridScratchCell *clearCursor;
-  bool unreachable;
-
-  scratchWidth = g_GridScratchWidth;
-  /* world -> scratch cell as described at GRID_SCRATCH_CELL_Q12 */
-  scaledRowTerm = (int)((uint64_t)((int64_t)sourceWorldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
-          (uint32_t)((int64_t)sourceWorldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
-  sourceCell = g_GridScratchPrimary +
-               ((int)(scaledRowTerm * 2 + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT) * g_GridScratchWidth +
-               ((int)((((int)((uint64_t)((int64_t)sourceWorldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 32) << 12 |
-                       (uint32_t)((int64_t)sourceWorldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 20) - scaledRowTerm) +
-                      GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT
-               );
-  scaledRowTerm = (int)((uint64_t)((int64_t)targetWorldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
-          (uint32_t)((int64_t)targetWorldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
-  targetCell = g_GridScratchPrimary +
-                ((int)(scaledRowTerm * 2 + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT) * g_GridScratchWidth +
-                ((int)((((int)((uint64_t)((int64_t)targetWorldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 32) << 12 |
-                        (uint32_t)((int64_t)targetWorldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 20) - scaledRowTerm) +
-                       GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT);
-  /* clear the visited bits, 16 cells per iteration as in the original */
-  cellsRemaining = g_GridScratchHeight * g_GridScratchWidth;
-  clearCursor = g_GridScratchPrimary;
-  do {
-    clearCursor->stateMask = clearCursor->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[1].stateMask = clearCursor[1].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[2].stateMask = clearCursor[2].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[3].stateMask = clearCursor[3].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[4].stateMask = clearCursor[4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[5].stateMask = clearCursor[5].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[6].stateMask = clearCursor[6].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[7].stateMask = clearCursor[7].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[8].stateMask = clearCursor[8].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[9].stateMask = clearCursor[9].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[10].stateMask = clearCursor[10].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[11].stateMask = clearCursor[11].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[12].stateMask = clearCursor[12].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[13].stateMask = clearCursor[13].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[14].stateMask = clearCursor[14].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[15].stateMask = clearCursor[15].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor = clearCursor + 16;
-    cellsRemaining = cellsRemaining - 16;
-  } while (cellsRemaining != 0);
-  /* the row stride is passed in bytes (8-byte GridScratchCell records) */
-  unreachable = GridScratch_TestConnectedReachabilityRecursive
-                    (traversalMask | (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED),scratchWidth << 3,
-                     &targetCell->stateMask,&sourceCell->stateMask);
-  return unreachable;
-}
-
-
 /* Returns the cheapest of the six hex neighbours of cell (two in the row above, left/right, two in the row
    below) whose path cost is below the cell's own, the first one on ties; NULL at a local minimum. */
 static GridScratchCell *GridPathCost_FindCheaperHexNeighbor(GridScratchCell *cell,uint32_t scratchWidth)
@@ -1638,86 +1546,6 @@ void GridScratch_FloodFillConnectedCells
       GridScratch_FloodFillConnectedCells(traversalMask,rowStrideBytes,rowBelowCell);
     }
   }
-}
-
-
-/* Row step of GridScratch_TestConnectedReachabilityRecursive: walks the cells rowCell..rowLastCell (inclusive,
-   8-byte scratch cells seen as dword pairs) and recurses into every open one. Returns false as soon as a
-   recursion reached the target, true when none did. */
-static bool GridScratch_TestRowRunUnreachable(uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *rowCell,
-          uint32_t *rowLastCell,uint32_t *targetCell)
-
-{
-  for (; rowCell <= rowLastCell; rowCell = rowCell + 2) {
-    if ((*rowCell & traversalMask) == 0 &&
-        !GridScratch_TestConnectedReachabilityRecursive(traversalMask,rowStrideBytes,rowCell,targetCell)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-
-/* Address: 0x00533C50.
-   Scanline flood fill that stops as soon as it reaches targetCell (the same walk as
-   GridScratch_FloodFillConnectedCells, on the stateMask words of 8-byte scratch cells): marks the run of
-   open cells around currentCell as visited, then recurses into the open cells of the neighbouring rows,
-   searching the row on the side of the target first. Cells with any traversalMask bit are walls. Returns false
-   when the target was reached, true when this region does not contain it.
-*/
-bool GridScratch_TestConnectedReachabilityRecursive
-          (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell)
-
-{
-  uint32_t *spanLeftBoundary;
-  uint32_t *spanLeftCell;
-  uint32_t *spanRightBoundary;
-  uint32_t *previousRowFirstCell;
-  uint32_t *previousRowLastCell;
-  uint32_t *nextRowFirstCell;
-  uint32_t *nextRowLastCell;
-
-  *currentCell = *currentCell | GRID_SCRATCH_TRAVERSAL_VISITED;
-  spanLeftCell = currentCell;
-  if (targetCell == currentCell) {
-    return false;
-  }
-  /* each cell is two dwords, so +-2 is the next/previous cell of the row */
-  spanLeftBoundary = spanLeftCell - 2;
-  while (targetCell != spanLeftBoundary && (*spanLeftBoundary & traversalMask) == 0) {
-    *spanLeftBoundary = *spanLeftBoundary | GRID_SCRATCH_TRAVERSAL_VISITED;
-    spanLeftCell = spanLeftBoundary;
-    spanLeftBoundary = spanLeftCell - 2;
-  }
-  if (targetCell == spanLeftBoundary) {
-    return false;
-  }
-  spanRightBoundary = currentCell + 2;
-  while (targetCell != spanRightBoundary && (*spanRightBoundary & traversalMask) == 0) {
-    *spanRightBoundary = *spanRightBoundary | GRID_SCRATCH_TRAVERSAL_VISITED;
-    spanRightBoundary = spanRightBoundary + 2;
-  }
-  if (targetCell == spanRightBoundary) {
-    return false;
-  }
-  /* previous row: from above the span's first cell up to above the right boundary; next row: from below the
-     left boundary up to the cell before below the right boundary */
-  previousRowFirstCell = (uint32_t *)((uint8_t *)spanLeftCell - rowStrideBytes);
-  previousRowLastCell = (uint32_t *)((uint8_t *)spanRightBoundary - rowStrideBytes);
-  nextRowFirstCell = (uint32_t *)((uint8_t *)spanLeftBoundary + rowStrideBytes);
-  nextRowLastCell = (uint32_t *)((uint8_t *)(spanRightBoundary - 2) + rowStrideBytes);
-  if (targetCell <= spanLeftBoundary) {
-    /* the target lies in an earlier row: search the previous row first, then the next one */
-    return GridScratch_TestRowRunUnreachable(traversalMask,rowStrideBytes,previousRowFirstCell,previousRowLastCell,
-                                             targetCell) &&
-           GridScratch_TestRowRunUnreachable(traversalMask,rowStrideBytes,nextRowFirstCell,nextRowLastCell,
-                                             targetCell);
-  }
-  /* the target lies in a later row: search the next row first, then the previous one */
-  return GridScratch_TestRowRunUnreachable(traversalMask,rowStrideBytes,nextRowFirstCell,nextRowLastCell,
-                                           targetCell) &&
-         GridScratch_TestRowRunUnreachable(traversalMask,rowStrideBytes,previousRowFirstCell,previousRowLastCell,
-                                           targetCell);
 }
 
 

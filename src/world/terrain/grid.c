@@ -860,8 +860,7 @@ int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
    Terrain height at a world position, interpolated linearly over the grid triangle that contains it, stored
    as Q12 in *outHeightQ12. Returns false (and stores height 0) outside the grid or when the cell or its
    diagonal neighbour is a border cell. Entries 0, 2 and 3 of g_FieldGridInterpolationCallbacks5 (0x004FEA30); also called directly by
-   ArmyPlacementContact_ApplyTerrainHeight, WorldRuntime_InterpolateTerrainHeightOrSentinel and the army
-   movement code.
+   ArmyPlacementContact_ApplyTerrainHeight and the army movement code.
 */
 bool FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
@@ -979,7 +978,7 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
    contains it, stored as Q12 in *outHeightQ12. Returns false (and stores height 0) outside the grid or on a
    border cell. Entry 1 of
    g_FieldGridInterpolationCallbacks5 (0x004FEA30); also called directly by
-   ArmyPlacementContact_ApplyWaterSurfaceHeight and WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel.
+   ArmyPlacementContact_ApplyWaterSurfaceHeight.
 */
 bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
@@ -1125,8 +1124,8 @@ typedef struct FieldGridTriangleLookup {
   FieldGridCell *cell; /* top-left cell of the grid square */
   FieldGridDimension rowLength;
   uint32_t columnFractionQ12;
-  /* Also set when the lookup fails (FieldGrid_InterpolateWaterDepthAndTopSurfaceNormal writes it out then):
-     the unmasked Q12 row coordinate outside the grid, the masked row fraction on a border cell. */
+  /* Also set when the lookup fails: the unmasked Q12 row coordinate outside the grid, the masked row fraction
+     on a border cell. */
   uint32_t rowFractionQ12;
   int diagonalWeightQ12; /* columnFraction + rowFraction - 1 */
 } FieldGridTriangleLookup;
@@ -1262,114 +1261,6 @@ bool FieldGrid_InterpolateTerrainHeightAndNormal
                 (&lookup,cell->triangle0NormalAngles,cell[1].triangle0NormalAngles,
                  cell[rowLength].triangle0NormalAngles,cell[rowLength + 1].triangle0NormalAngles);
   *outHeightQ12 = heightQ12;
-  return true;
-}
-
-
-/* Address: 0x004FF3D0.
-   Like FieldGrid_InterpolateTerrainHeightAndNormal, but the interpolated value is the water depth
-   (waterSurfaceDelta, +0x4C), not the terrain height; the blended normal is still the
-   terrain normal (triangle0NormalAngles, +0x08). Same contract: true with *outDepthQ12 and
-   *outPackedNormalAngles, false (outputs untouched) outside the grid or on a border cell. No caller found in
-   src/ or the image tables.
-*/
-bool FieldGrid_InterpolateWaterDepthAndTriangle0Normal
-          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles)
-
-{
-  FieldGridTriangleLookup lookup;
-  FieldGridCell *cell;
-  FieldGridDimension rowLength;
-  Q12 depthQ12;
-
-  if (!FieldGrid_LocateInterpolationTriangle(worldYQ12,worldXQ12,fieldGrid,&lookup)) {
-    return false;
-  }
-  cell = lookup.cell;
-  rowLength = lookup.rowLength;
-  depthQ12 = FieldGrid_InterpolateTriangleValue
-               (&lookup,cell->waterSurfaceDelta,cell[1].waterSurfaceDelta,cell[rowLength].waterSurfaceDelta,
-                cell[rowLength + 1].waterSurfaceDelta);
-  *outPackedNormalAngles = FieldGrid_BlendTriangleNormals
-               (&lookup,cell->triangle0NormalAngles,cell[1].triangle0NormalAngles,
-                cell[rowLength].triangle0NormalAngles,cell[rowLength + 1].triangle0NormalAngles);
-  *outDepthQ12 = depthQ12;
-  return true;
-}
-
-
-/* Address: 0x004FF600.
-   Like FieldGrid_InterpolateTerrainHeightAndNormal, but interpolates the water depth (waterSurfaceDelta, +0x4C)
-   and blends the water-surface normals (triangle1NormalAngles, +0x78). Same contract: true with *outDepthQ12 and
-   *outPackedNormalAngles, false (outputs untouched) outside the grid or on a border cell. No caller found in
-   src/ or the image tables.
-*/
-bool FieldGrid_InterpolateWaterDepthAndTriangle1Normal
-          (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles)
-
-{
-  FieldGridTriangleLookup lookup;
-  FieldGridCell *cell;
-  FieldGridDimension rowLength;
-  Q12 depthQ12;
-
-  if (!FieldGrid_LocateInterpolationTriangle(worldYQ12,worldXQ12,fieldGrid,&lookup)) {
-    return false;
-  }
-  cell = lookup.cell;
-  rowLength = lookup.rowLength;
-  depthQ12 = FieldGrid_InterpolateTriangleValue
-               (&lookup,cell->waterSurfaceDelta,cell[1].waterSurfaceDelta,cell[rowLength].waterSurfaceDelta,
-                cell[rowLength + 1].waterSurfaceDelta);
-  *outPackedNormalAngles = FieldGrid_BlendTriangleNormals
-               (&lookup,cell->triangle1NormalAngles,cell[1].triangle1NormalAngles,
-                cell[rowLength].triangle1NormalAngles,cell[rowLength + 1].triangle1NormalAngles);
-  *outDepthQ12 = depthQ12;
-  return true;
-}
-
-
-/* Address: 0x004FF830.
-   Water depth and the normal of the surface that is on top at a world position: interpolates waterSurfaceDelta
-   (+0x4C) over the grid triangle (*outDepthQ12) and blends the terrain normals (triangle0NormalAngles) where the
-   result is negative (dry) or the water-surface normals (triangle1NormalAngles) otherwise (packed angles
-   elevation << 16 | azimuth in *outPackedNormalAngles). Returns false outside the grid or on a border cell; both
-   outputs are written then too (depth 0, the normal output left over from the row fraction). No caller found
-   in src/ or the image tables.
-*/
-bool FieldGrid_InterpolateWaterDepthAndTopSurfaceNormal
-          (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
-          FieldGridAsset *fieldGrid,Q12 *outDepthQ12,uint32_t *outPackedNormalAngles)
-
-{
-  FieldGridTriangleLookup lookup;
-  FieldGridCell *cell;
-  FieldGridDimension rowLength;
-  Q12 depthQ12;
-
-  if (!FieldGrid_LocateInterpolationTriangle(worldYQ12,worldXQ12,fieldGrid,&lookup)) {
-    /* Original quirk: the normal output gets the leftover Q12 row coordinate/fraction. */
-    *outPackedNormalAngles = lookup.rowFractionQ12;
-    *outDepthQ12 = 0;
-    return false;
-  }
-  cell = lookup.cell;
-  rowLength = lookup.rowLength;
-  depthQ12 = FieldGrid_InterpolateTriangleValue
-               (&lookup,cell->waterSurfaceDelta,cell[1].waterSurfaceDelta,cell[rowLength].waterSurfaceDelta,
-                cell[rowLength + 1].waterSurfaceDelta);
-  if (depthQ12 < 0) {
-    /* dry: the terrain is on top */
-    *outPackedNormalAngles = FieldGrid_BlendTriangleNormals
-                 (&lookup,cell->triangle0NormalAngles,cell[1].triangle0NormalAngles,
-                  cell[rowLength].triangle0NormalAngles,cell[rowLength + 1].triangle0NormalAngles);
-  }
-  else {
-    *outPackedNormalAngles = FieldGrid_BlendTriangleNormals
-                 (&lookup,cell->triangle1NormalAngles,cell[1].triangle1NormalAngles,
-                  cell[rowLength].triangle1NormalAngles,cell[rowLength + 1].triangle1NormalAngles);
-  }
-  *outDepthQ12 = depthQ12;
   return true;
 }
 

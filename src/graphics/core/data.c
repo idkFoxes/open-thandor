@@ -110,12 +110,6 @@ __declspec(align(8)) SoftwareFramebufferAccess *g_CursorCompositeBuffer = 0;
 /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapter */
 __declspec(align(4)) GraphicsBackendRefreshActiveAdapterProc *g_GraphicsBackendRefreshActiveAdapter = (void *)GraphicsBackend_RefreshActiveAdapterNoOp;
 
-/* 004BCF20 g_GraphicsDirectionInverseTransform */
-__declspec(align(16)) GraphicsFixedMatrix3x4 g_GraphicsDirectionInverseTransform = {0};
-
-/* 004BCF5C g_GraphicsDirectionLocal */
-__declspec(align(4)) GraphicsFixedVec3 g_GraphicsDirectionLocal = {0};
-
 /* 00573FBC pDirectDrawCreate */
 __declspec(align(4)) DirectDrawCreate *pDirectDrawCreate = 0;
 

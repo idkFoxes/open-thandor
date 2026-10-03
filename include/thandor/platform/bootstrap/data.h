@@ -12,8 +12,6 @@
 
 extern CommandLineWideArguments g_CommandLineWideArguments; /* 00402028 g_CommandLineWideArguments */
 
-extern LocaleRegionTagPacked (*g_LocaleMapTelephoneCountryCodeToRegionTagPacked)(LocaleTelephoneCountryCode countryCode); /* 004027B0 g_LocaleMapTelephoneCountryCodeToRegionTagPacked: Function-pointer slot at 0x004027B0 statically holding Locale_MapTelephoneCountryCodeToRegionTagPacked (telephone country code -> packed ASCII region tag); sits between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16, no code reference to the slot found. */
-
 extern uint32_t g_CpuFeatureFlags; /* 004027C4 g_CpuFeatureFlags */
 
 extern uint16_t g_PackageLastErrorPath[256]; /* 00407514 g_PackageLastErrorPath */
@@ -22,15 +20,9 @@ extern uint16_t g_FatalErrorDetail1Utf16[256]; /* 00407714 g_FatalErrorDetail1Ut
 
 extern KeyboardReadEventProc *g_KeyboardReadEvent; /* 00417214 g_KeyboardReadEvent */
 
-extern uint32_t g_SoundDecodeMmxMasksTrailingWords[4]; /* 00417320 words 0, 1, 3, 5 after the lane masks; no code reference */
-
 extern WidePathBuffer256 g_LooseMoviePathPrefix; /* 004A6DA4 g_LooseMoviePathPrefix */
 
-extern uint16_t g_UnreferencedSoftwareTextUtf16[9]; /* 004A8F6C g_UnreferencedSoftwareTextUtf16: L"Software" after the graphics hook table, followed by two NOP padding bytes (dropped); no code or data reference found. */
-
 extern SoftwareRasterScanState g_SoftwareRasterScanState; /* 004D11C0 g_SoftwareRasterScanState */
-
-extern int32_t g_TerrainUnreferencedValue00503B04; /* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
 
 extern int32_t g_ReverseStereoMask; /* 0050B5C0 g_ReverseStereoMask */
 
@@ -44,10 +36,6 @@ extern uint16_t u_daten_hex_0050e054[10]; /* 0050E054 u_daten_hex_0050e054 */
 
 extern uint16_t u_stat_hex_0050e082[9]; /* 0050E082 u_stat_hex_0050e082 */
 
-extern uint32_t g_ResourceRegistrationDomainPairCallbacks3[3]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
-
-extern uint32_t g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[3]; /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
-
 extern uint16_t u_texte_neterror_str_0050f104[19]; /* 0050F104 u_texte_neterror_str_0050f104 */
 
 extern void *g_GameStatTableImage; /* 00512D6C g_GameStatTableImage */
@@ -57,10 +45,6 @@ extern GameDataAuxState g_GameDataAuxState; /* 00512D70 g_GameDataAuxState */
 extern uint16_t g_UnreferencedArmyTexturePathUtf16[13]; /* 0051B394 g_UnreferencedArmyTexturePathUtf16: UTF-16 L"army0000.gfx" after g_AiCommandGenerationRetainedTarget; no code reference found */
 
 extern char g_UnreferencedArmyTag[5]; /* 0051B3AE g_UnreferencedArmyTag: char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
-
-extern uint32_t g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[2]; /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
-
-extern uint32_t g_ArmyTerrainContactDispatchTable2[2]; /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
 
 extern uint32_t g_FrontendPlayerMessageBuffers; /* 0054591C g_FrontendPlayerMessageBuffers */
 
@@ -75,10 +59,6 @@ extern uint16_t u_texte_inhalt_str_00545be0[17]; /* 00545BE0 u_texte_inhalt_str_
 extern uint32_t g_FrontendPlayerListRows[8]; /* 0054DDB0 g_FrontendPlayerListRows: pointers (as uint32_t) to the eight 0x80-byte lobby player list rows */
 
 extern uint16_t *g_InGameFactionStatusTextScratchUtf16; /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
-
-extern uint32_t g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable[16]; /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the original code, not used by the C code */
-
-extern uint32_t g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable[16]; /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the original code, not used by the C code */
 
 extern uint16_t u_texte_help_str_00563170[15]; /* 00563170 u_texte_help_str_00563170 */
 
@@ -117,12 +97,6 @@ extern uint32_t g_GraphicsPackageHandle; /* 00572AC8 g_GraphicsPackageHandle */
 extern uint32_t g_MoviePackageHandle; /* 00572AD0 g_MoviePackageHandle */
 
 extern uint32_t g_LevelPackageHandle; /* 00572AD4 g_LevelPackageHandle */
-
-extern FncModuleHeader *g_PcxFunctionModule; /* 00572AF4 g_PcxFunctionModule */
-
-extern PcxEncodeProc *g_PcxFunctionExport3; /* 00572AF8 g_PcxFunctionExport3: export 3 (capture encoder) of the pcx.fnc module; the C code calls Pcx_EncodeCapture directly, nothing reads it */
-
-extern PcxDecodeProc *g_PcxFunctionExport2; /* 00572AFC g_PcxFunctionExport2: export 2 (indexed-8 decoder) of the pcx.fnc module; the C code calls Pcx_DecodeIndexed8 directly, nothing reads it */
 
 extern uint32_t g_IntroMoviePendingTicks; /* 00572B00 g_IntroMoviePendingTicks */
 
@@ -177,8 +151,6 @@ extern uint16_t u_sound_button6_sam_00572fde[18]; /* 00572FDE u_sound_button6_sa
 
 extern uint16_t u_gfx_panel_stat_gfx_00573002[19]; /* 00573002 u_gfx_panel_stat_gfx_00573002 */
 
-extern uint16_t u_engine_pcx_fnc_00573028[15]; /* 00573028 u_engine_pcx_fnc_00573028 */
-
 extern uint16_t u_flm_intro0_flm_00573046[15]; /* 00573046 u_flm_intro0_flm_00573046 */
 
 extern char g_CommandLineOptionNoIntro[8]; /* 00573064 g_CommandLineOptionNoIntro */
@@ -210,8 +182,6 @@ extern char g_BootstrapApiName_timeSetEvent[13]; /* 00574532 dynapi_14 */
 extern char g_BootstrapApiName_timeKillEvent[14]; /* 00574540 dynapi_15 */
 
 extern char g_BootstrapApiName_mciSendCommandA[16]; /* 0057454E dynapi_16 */
-
-extern char g_Win32DriveDevicePathA[7]; /* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by 9 bytes of NOP fill up to FileSystem_Init; no C code references it */
 
 extern void *g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertices[0..2]; no code reads it (name is historical) */
 

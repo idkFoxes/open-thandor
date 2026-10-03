@@ -70,14 +70,8 @@ void AiCandidateWorkspace_SortDescending(void);
 /* 0x005375D0 */
 int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry);
 
-/* 0x00538C90 */
-bool AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
-
 /* 0x00538CF0 */
 bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
-
-/* 0x00538D40 */
-int AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538D90 */
 int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);

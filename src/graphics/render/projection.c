@@ -15,28 +15,6 @@
 
 /* Implementation ownership: graphics/render/projection. */
 
-/* Address: 0x00486940.
-   Bounding-box rejection for a projected triangle: true (CF set) when the point lies strictly to one side of
-   all three vertices in X or in Y, i.e. outside the triangle's bounding box; false when it is inside or on it.
-   No caller in the original executable.
-*/
-bool GraphicsProjectedTriangle_PointOutsideBounds
-          (GraphicsProjectedCoordinate vertexAY,GraphicsProjectedCoordinate vertexAX,
-          GraphicsProjectedCoordinate vertexBY,GraphicsProjectedCoordinate vertexBX,
-          GraphicsProjectedCoordinate vertexCY,GraphicsProjectedCoordinate vertexCX,
-          GraphicsProjectedCoordinate pointY,GraphicsProjectedCoordinate pointX)
-
-{
-  if ((pointX <= vertexCX || pointX <= vertexBX || pointX <= vertexAX) &&
-      (vertexCX <= pointX || vertexBX <= pointX || vertexAX <= pointX)) {
-    if ((pointY <= vertexCY || pointY <= vertexBY || pointY <= vertexAY) &&
-        (vertexCY <= pointY || vertexBY <= pointY || vertexAY <= pointY)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 /* Address: 0x00486B00.
    Renders a list of model hierarchies off screen into a new texture-source asset (used for the army preview,
    g_GraphicsOffscreenRenderModelListToTextureSource). The asset holds one direct-colour subresource of

@@ -13,22 +13,6 @@
 
 /* Submodule: graphics/core/runtime. */
 
-/* A node of the graphics-object transform hierarchy (GraphicsObject_* in graphics/core/runtime.c, which take
-   it as a GraphicsObjectAddress32). Only the fields those functions touch are named; the size is not known. */
-typedef struct GraphicsObject {
-    uint8_t unknown00_0B[12];
-    int childCount;                                /* +0x0C */
-    GraphicsFixedMatrix3x4 worldTransform;         /* +0x10 */
-    FixedMathScale32 translationDistance;          /* +0x40 */
-    uint32_t translationAnglesPacked;              /* +0x44 azimuth (low word) | elevation << 16 */
-    AngleTurn32 rotationAzimuth;                   /* +0x48 */
-    uint32_t rotationAnglesPacked;                 /* +0x4C elevation (low word) | roll << 16 */
-    uint8_t unknown50_63[20];
-    GraphicsObjectAddress32 parentObject;          /* +0x64, 0 for a root object */
-    uint8_t unknown68_77[16];
-    GraphicsObjectAddress32 childObjects[1];       /* +0x78 */
-} GraphicsObject;
-
 /* GraphicsAdapterRecord.adapterGuid.Data1 of the 3dfx Glide adapter (Glide3_InitAndEnumerate); DirectDraw
    adapters carry their real GUID, the primary display driver an all-zero one (passed as NULL). */
 #define GRAPHICS_ADAPTER_GUID_GLIDE 1
@@ -140,27 +124,6 @@ void Graphics_RebuildFrustumPlanes(void);
 
 /* 0x004A9100 */
 void GraphicsBackend_RefreshActiveAdapterNoOp(void);
-
-/* 0x004BCFE0 */
-FixedRollAzimuthElevation
-GraphicsObject_ExtractTransformEulerAngles(GraphicsObjectAddress32 graphicsObject);
-
-/* 0x004BD000 */
-FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAngles
-          (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
-          GraphicsObjectAddress32 graphicsObject);
-
-/* 0x004BD050 */
-void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
-          (AngleTurn16Stored32 elevationAngle16,AngleTurn16Stored32 azimuthAngle16,
-          FixedMathScale32 distance,GraphicsObjectAddress32 graphicsObjectAddress);
-
-/* 0x004BD080 */
-void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleTurn16Stored32 rollAngle16,
-          AngleTurn16Stored32 elevationAngle16,GraphicsObjectAddress32 graphicsObjectAddress);
-
-/* 0x004BD0B0 */
-void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x00578560 */
 uint32_t __cdecl Graphics_Init(void);

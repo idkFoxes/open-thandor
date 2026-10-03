@@ -163,20 +163,6 @@ void UiRuntimeRecordRing_Clear(void)
 }
 
 
-/* Address: 0x004AF030.
-   Tells whether a received network packet is waiting in the record ring: CF set when the write and read
-   indices differ. No caller was found in the executable.
-*/
-bool UiRuntimeRecordRing_HasPending(void)
-
-{
-  if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
-    return true;
-  }
-  return false;
-}
-
-
 /* Address: 0x004AF050.
    Returns true (CF set) when a pending received packet carries sessionToken in its header, i.e. when the
    host of this session has sent something. The in-game client tick uses it to skip processing until the

@@ -116,9 +116,6 @@ FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAngles(Q12 sideLength0Q
 uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z);
 
-/* 0x00484E50 */
-FixedVectorAngles FixedTransform_ExtractForwardAngles(GraphicsFixedMatrix3x4 *transform);
-
 /* 0x004857A0 */
 void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input);
 

@@ -14,9 +14,6 @@
 /* 00402028 g_CommandLineWideArguments */
 __declspec(align(8)) CommandLineWideArguments g_CommandLineWideArguments = {0};
 
-/* 004027B0 g_LocaleMapTelephoneCountryCodeToRegionTagPacked: Function-pointer slot at 0x004027B0 statically holding Locale_MapTelephoneCountryCodeToRegionTagPacked (telephone country code -> packed ASCII region tag); sits between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16, no code reference to the slot found. */
-__declspec(align(16)) LocaleRegionTagPacked (*g_LocaleMapTelephoneCountryCodeToRegionTagPacked)(LocaleTelephoneCountryCode countryCode) = Locale_MapTelephoneCountryCodeToRegionTagPacked;
-
 /* 004027C4 g_CpuFeatureFlags */
 __declspec(align(4)) uint32_t g_CpuFeatureFlags = 0;
 
@@ -29,22 +26,11 @@ __declspec(align(4)) uint16_t g_FatalErrorDetail1Utf16[256] = {0};
 /* 00417214 g_KeyboardReadEvent */
 __declspec(align(4)) KeyboardReadEventProc *g_KeyboardReadEvent = (void *)Keyboard_ReadNextEvent;
 
-/* 00417320 g_SoundDecodeMmxMasksTrailingWords: the words 0, 1, 3, 5 the original keeps after the lane masks;
-   no code reference */
-__declspec(align(16)) uint32_t g_SoundDecodeMmxMasksTrailingWords[4] = {
-    0x00000000, 0x00000001, 0x00000003, 0x00000005};
-
 /* 004A6DA4 g_LooseMoviePathPrefix */
 __declspec(align(4)) WidePathBuffer256 g_LooseMoviePathPrefix = {0};
 
-/* 004A8F6C g_UnreferencedSoftwareTextUtf16: L"Software" after the graphics hook table, followed by two NOP padding bytes (dropped); no code or data reference found. */
-__declspec(align(4)) uint16_t g_UnreferencedSoftwareTextUtf16[9] = L"Software";
-
 /* 004D11C0 g_SoftwareRasterScanState */
 __declspec(align(16)) SoftwareRasterScanState g_SoftwareRasterScanState = {0};
-
-/* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
-__declspec(align(4)) int32_t g_TerrainUnreferencedValue00503B04 = 8192;
 
 /* 0050B5C0 g_ReverseStereoMask */
 __declspec(align(16)) int32_t g_ReverseStereoMask = 0;
@@ -64,12 +50,6 @@ __declspec(align(4)) uint16_t u_daten_hex_0050e054[10] = L"daten.hex";
 /* 0050E082 u_stat_hex_0050e082 */
 __declspec(align(4)) uint16_t u_stat_hex_0050e082[9] = L"stat.hex";
 
-/* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
-__declspec(align(16)) uint32_t g_ResourceRegistrationDomainPairCallbacks3[3] = {0x0050E970, 0x0050E9A0, 0x0050E9C0};
-
-/* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
-__declspec(align(16)) uint32_t g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[3] = {0x0050EB70, 0x0050EBA0, 0x0050EBC0};
-
 /* 0050F104 u_texte_neterror_str_0050f104 */
 __declspec(align(4)) uint16_t u_texte_neterror_str_0050f104[19] = L"texte\\neterror.str";
 
@@ -84,14 +64,6 @@ __declspec(align(4)) uint16_t g_UnreferencedArmyTexturePathUtf16[13] = L"army000
 
 /* 0051B3AE g_UnreferencedArmyTag: char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
 __declspec(align(4)) char g_UnreferencedArmyTag[5] = "ARMY";
-
-/* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
-__declspec(align(16)) uint32_t g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[2] = {
-    0x00524130, 0x00524280};
-
-/* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
-__declspec(align(16)) uint32_t g_ArmyTerrainContactDispatchTable2[2] = {
-    0x005266D0, 0x00526830};
 
 /* 0054591C g_FrontendPlayerMessageBuffers */
 __declspec(align(4)) uint32_t g_FrontendPlayerMessageBuffers = 0;
@@ -122,20 +94,6 @@ __declspec(align(16)) uint32_t g_FrontendPlayerListRows[8] = {
 
 /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
 __declspec(align(4)) uint16_t *g_InGameFactionStatusTextScratchUtf16 = 0;
-
-/* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the
-   original code, not used by the C code */
-__declspec(align(16)) uint32_t g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable[16] = {
-    0x0055F820, 0x0055F820, 0x0055F800, 0x0055F840, 0x0055F860, 0x0055F880, 0x0055F8A0, 0x0055F903,
-    0x0055F8C0, 0x0055F8D0, 0x0055F8F0, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903,
-};
-
-/* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable: 16-entry jump table (state 0..15) of the
-   original code, not used by the C code */
-__declspec(align(16)) uint32_t g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable[16] = {
-    0x0055FA13, 0x0055F9C0, 0x0055F9C0, 0x0055F9C0, 0x0055F980, 0x0055F9E0, 0x0055F980, 0x0055FA13,
-    0x0055F9A0, 0x0055FA00, 0x0055F9A0, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13,
-};
 
 /* 00563170 u_texte_help_str_00563170 */
 __declspec(align(16)) uint16_t u_texte_help_str_00563170[15] = L"texte\\help.str";
@@ -195,15 +153,6 @@ __declspec(align(16)) uint32_t g_MoviePackageHandle = 0;
 
 /* 00572AD4 g_LevelPackageHandle */
 __declspec(align(4)) uint32_t g_LevelPackageHandle = 0;
-
-/* 00572AF4 g_PcxFunctionModule */
-__declspec(align(4)) FncModuleHeader *g_PcxFunctionModule = 0;
-
-/* 00572AF8 g_PcxFunctionExport3: export 3 (capture encoder) of the pcx.fnc module; the C code calls Pcx_EncodeCapture directly, nothing reads it */
-__declspec(align(8)) PcxEncodeProc *g_PcxFunctionExport3 = 0;
-
-/* 00572AFC g_PcxFunctionExport2: export 2 (indexed-8 decoder) of the pcx.fnc module; the C code calls Pcx_DecodeIndexed8 directly, nothing reads it */
-__declspec(align(4)) PcxDecodeProc *g_PcxFunctionExport2 = 0;
 
 /* 00572B00 g_IntroMoviePendingTicks */
 __declspec(align(16)) uint32_t g_IntroMoviePendingTicks = 0;
@@ -289,9 +238,6 @@ __declspec(align(4)) uint16_t u_sound_button6_sam_00572fde[18] = L"sound\\button
 /* 00573002 u_gfx_panel_stat_gfx_00573002 */
 __declspec(align(4)) uint16_t u_gfx_panel_stat_gfx_00573002[19] = L"gfx\\panel\\stat.gfx";
 
-/* 00573028 u_engine_pcx_fnc_00573028 */
-__declspec(align(8)) uint16_t u_engine_pcx_fnc_00573028[15] = L"engine\\pcx.fnc";
-
 /* 00573046 u_flm_intro0_flm_00573046 */
 __declspec(align(4)) uint16_t u_flm_intro0_flm_00573046[15] = L"flm\\intro0.flm";
 
@@ -350,9 +296,6 @@ __declspec(align(16)) char g_BootstrapApiName_timeKillEvent[14] = "timeKillEvent
 
 /* 0057454E dynapi_16 */
 __declspec(align(4)) char g_BootstrapApiName_mciSendCommandA[16] = "mciSendCommandA";
-
-/* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by NOP fill up to FileSystem_Init */
-__declspec(align(16)) char g_Win32DriveDevicePathA[7] = "\\\\.\\x:";
 
 /* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertices[0..2]; no code reads it (name is historical) */
 __declspec(align(8)) void *g_GlideTextureRefreshHandlers[3] = {(void *)g_GlideVertices[0], (void *)g_GlideVertices[1], (void *)g_GlideVertices[2]};

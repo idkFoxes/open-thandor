@@ -37,9 +37,6 @@
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* 0x0040F240 */
-uint32_t WidePath_GetExtensionCode(uint16_t *path);
-
 /* 0x0040F2B0 */
 bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path);
 

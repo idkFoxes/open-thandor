@@ -9,10 +9,6 @@
 
 /*
 Ghidra decompiler pseudo-operations, expressed in C.
-
-Values are little-endian x86 register images. Every CONCATxy / SUBxy / ZEXTxy is computed
-in 64 bits; results wider than 8 bytes (CONCAT55, CONCAT62, ZEXT513, ...) are truncated to the
-low 8 bytes, which matches every use where the result lands in a register or qword.
 */
 
 #include <stddef.h>
@@ -20,52 +16,6 @@ low 8 bytes, which matches every use where the result lands in a register or qwo
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-
-#define THANDOR_MASK_BYTES(n) ((n) >= 8 ? ~0ull : ((1ull << ((n) * 8)) - 1ull))
-
-/* CONCATxy(hi, lo): hi is x bytes, lo is y bytes; result = hi:lo. */
-#define THANDOR_CONCAT(x, y, hi, lo) \
-    ((((unsigned long long)(hi) & THANDOR_MASK_BYTES(x)) << ((y) * 8 % 64)) | \
-     ((unsigned long long)(lo) & THANDOR_MASK_BYTES(y)))
-#define CONCAT11(h, l) THANDOR_CONCAT(1, 1, h, l)
-#define CONCAT12(h, l) THANDOR_CONCAT(1, 2, h, l)
-#define CONCAT13(h, l) THANDOR_CONCAT(1, 3, h, l)
-#define CONCAT14(h, l) THANDOR_CONCAT(1, 4, h, l)
-#define CONCAT15(h, l) THANDOR_CONCAT(1, 5, h, l)
-#define CONCAT16(h, l) THANDOR_CONCAT(1, 6, h, l)
-#define CONCAT17(h, l) THANDOR_CONCAT(1, 7, h, l)
-#define CONCAT21(h, l) THANDOR_CONCAT(2, 1, h, l)
-#define CONCAT22(h, l) THANDOR_CONCAT(2, 2, h, l)
-#define CONCAT24(h, l) THANDOR_CONCAT(2, 4, h, l)
-#define CONCAT26(h, l) THANDOR_CONCAT(2, 6, h, l)
-#define CONCAT31(h, l) THANDOR_CONCAT(3, 1, h, l)
-#define CONCAT35(h, l) THANDOR_CONCAT(3, 5, h, l)
-#define CONCAT41(h, l) THANDOR_CONCAT(4, 1, h, l)
-#define CONCAT44(h, l) THANDOR_CONCAT(4, 4, h, l)
-#define CONCAT51(h, l) THANDOR_CONCAT(5, 1, h, l)
-#define CONCAT55(h, l) THANDOR_CONCAT(5, 5, h, l) /* TODO: 10-byte result truncated */
-#define CONCAT62(h, l) THANDOR_CONCAT(6, 2, h, l)
-
-/* SUBxy(v, off): y bytes of the x-byte value v starting at byte off. */
-#define THANDOR_SUB(y, v, off) (((unsigned long long)(v) >> ((off) * 8)) & THANDOR_MASK_BYTES(y))
-#define SUB41(v, off) ((uint8_t)THANDOR_SUB(1, v, off))
-#define SUB42(v, off) ((uint16_t)THANDOR_SUB(2, v, off))
-#define SUB81(v, off) ((uint8_t)THANDOR_SUB(1, v, off))
-#define SUB82(v, off) ((uint16_t)THANDOR_SUB(2, v, off))
-#define SUB84(v, off) ((uint32_t)THANDOR_SUB(4, v, off))
-
-/* ZEXTxy / SEXTxy: zero/sign extension from x bytes. */
-#define ZEXT48(v) ((unsigned long long)(uint32_t)(v))
-#define ZEXT513(v) ((unsigned long long)(v) & THANDOR_MASK_BYTES(5)) /* TODO: 13-byte result truncated */
-#define SEXT48(v) ((long long)(int)(v))
-
-/* Flag helpers: carry / signed overflow of x-byte addition, signed overflow of subtraction. */
-#define CARRY1(a, b) ((unsigned char)((unsigned char)(a) + (unsigned char)(b)) < (unsigned char)(a))
-#define CARRY4(a, b) ((unsigned int)((unsigned int)(a) + (unsigned int)(b)) < (unsigned int)(a))
-#define SCARRY4(a, b) \
-    ((((int)(a) ^ (int)((unsigned int)(a) + (unsigned int)(b))) & ((int)(b) ^ (int)((unsigned int)(a) + (unsigned int)(b)))) < 0)
-#define SBORROW4(a, b) \
-    ((((int)(a) ^ (int)(b)) & ((int)(a) ^ (int)((unsigned int)(a) - (unsigned int)(b)))) < 0)
 
 /*
 Partial access "base._off_size_" (Ghidra field-piece syntax).
@@ -90,19 +40,6 @@ static __inline void thandor_write_part(void *base, unsigned off, unsigned size,
 
 /* ADJ(p) on a Ghidra shifted pointer: the structure that contains the member p points at. */
 #define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
-
-/*
-Bits 64..79 of an x87 register after an MMX write: the CPU sets them to all ones
-(Intel SDM, MMX/x87 aliasing). Ghidra shows this as `(unkuint10)x >> 0x40`.
-*/
-#define THANDOR_MMX_ST_EXPONENT 0xffff
-
-/*
-Address `offset` bytes past the start of function `fn`. The binary dispatches commands by
-jumping into a code region relative to a handler entry; a recompiled image does not keep that
-layout, so every use needs a real handler table before it can run. TODO
-*/
-#define THANDOR_CODE_AT(fn, offset) ((unsigned char *)(fn) + (offset))
 
 /* LOCK()/UNLOCK(): Ghidra's markers around implicitly locked XCHG; the swap itself is spelled out. */
 #define LOCK() ((void)0)

@@ -294,27 +294,6 @@ RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue sl
 }
 
 
-/* Address: 0x00548840.
-   Returns the runtime root node registered for a ROM record in the 256-slot ROM registry, or 0 when the record
-   is not registered (the reverse of RomRegistry_FindRecordBySlotValue). No caller or table slot referencing
-   it was found in src/.
-*/
-uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
-
-{
-  int slotsRemaining;
-  RomRegistrySlot *slotCursor;
-
-  slotCursor = g_RomRegistrySlots;
-  for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
-    if (record == slotCursor->record) {
-      return (uint32_t)slotCursor->runtimeRootNode;
-    }
-    slotCursor++;
-  }
-  return 0;
-}
-
 /* Address: 0x00548890.
    Returns the entry of a ROM record table (0x200-byte header with the entry count, then 0x200-byte entries)
    whose record id matches, or NULL. Used to find the target record of a frontend camera flight.

@@ -1418,7 +1418,7 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
 }
 
 
-/* Shared tail of the pointer list sorts: selects the row that now holds selectedRecord (the first row if it
+/* Tail of UiPointerList_SortByExpandedTextFieldAscending: selects the row that now holds selectedRecord (the first row if it
    is gone) and scrolls that row into view. */
 static void UiPointerList_ReselectRecordAfterSort(void *selectedRecord,UiPointerListControl *control)
 
@@ -1479,52 +1479,6 @@ void UiPointerList_SortByExpandedTextFieldAscending
                             ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
                              (uint16_t *)((uint8_t *)*passAnchorSlot + fieldOffset));
           if (textOrder >= 0) {
-            LOCK();
-            swappedRecord = *rowSlotCursor;
-            *rowSlotCursor = *passAnchorSlot;
-            UNLOCK();
-            *passAnchorSlot = swappedRecord;
-          }
-        }
-        passAnchorSlot++;
-      }
-      UiPointerList_ReselectRecordAfterSort(selectedRecord,control);
-    }
-  }
-}
-
-
-/* Address: 0x004BB6B0.
-   Descending counterpart of UiPointerList_SortByExpandedTextFieldAscending: each pass moves the largest
-   remaining row (by the expanded rich text at fieldOffset) to the front; the selected record stays selected
-   and is scrolled into view. No caller was found in the source or in the image's tables.
-*/
-void UiPointerList_SortByExpandedTextFieldDescending
-          (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
-
-{
-  void *swappedRecord;
-  int lastRowIndex;
-  int comparisonsLeft;
-  int remainingPasses;
-  void **passAnchorSlot;
-  void **rowSlotCursor;
-  int textOrder;
-  void *selectedRecord;
-
-  if (control->rowSlots != NULL) {
-    lastRowIndex = control->rowCount - 1;
-    if ((lastRowIndex != 0) && (-1 < lastRowIndex)) {
-      selectedRecord = *control->selectedRowSlot;
-      passAnchorSlot = control->rowSlots;
-      for (remainingPasses = lastRowIndex; remainingPasses != 0; remainingPasses--) {
-        rowSlotCursor = passAnchorSlot;
-        for (comparisonsLeft = remainingPasses; comparisonsLeft != 0; comparisonsLeft--) {
-          rowSlotCursor++;
-          textOrder = UiPointerList_CompareExpandedText
-                            ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
-                             (uint16_t *)((uint8_t *)*passAnchorSlot + fieldOffset));
-          if (textOrder <= 0) {
             LOCK();
             swappedRecord = *rowSlotCursor;
             *rowSlotCursor = *passAnchorSlot;
@@ -4234,8 +4188,8 @@ void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
    Compares two rich-text streams for the pointer-list sorts: both are expanded (nested streams inlined) into
    1 KiB scratch buffers and compared with Utf16String_CompareAsciiCaseInsensitiveFlags. Returns the
    comparator's order of leftText relative to rightText: -1 when less, 0 when equal, 1 when greater (a string
-   that ends first compares as equal-or-greater, see the comparator). Called by the
-   UiPointerList_SortByExpandedTextField* sorts.
+   that ends first compares as equal-or-greater, see the comparator). Called by
+   UiPointerList_SortByExpandedTextFieldAscending.
 */
 int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText)
 

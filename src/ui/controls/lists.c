@@ -2687,17 +2687,6 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
 }
 
 
-/* Address: 0x004BA4E0.
-   Returns the row pointer array of a pointer list (identical to UiPointerList_GetColumnListRowSlots). No
-   caller found in src/.
-*/
-void ** UiPointerList_GetTextListRowSlots(UiPointerListControl *control)
-
-{
-  return control->rowSlots;
-}
-
-
 /* Address: 0x004BA560.
    Returns the index of the selected row of a pointer list. The original also reports
    UI_LIST_SELECTION_CONFIRMED in CF (CLC 0x004BA57F / STC 0x004BA587), which this C signature does not carry
@@ -2922,16 +2911,6 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPoin
   return;
 }
 
-
-/* Address: 0x004BB460.
-   Returns the row pointer array of a pointer list (identical to UiPointerList_GetTextListRowSlots). No
-   caller found in src/.
-*/
-void ** UiPointerList_GetColumnListRowSlots(UiPointerListControl *control)
-
-{
-  return control->rowSlots;
-}
 
 
 /* Address: 0x004BB9E0.

@@ -11,12 +11,6 @@
 
 #pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */
 
-/* 00417340 g_SoundCreatePcmVoiceSet */
-__declspec(align(16)) SoundCreatePcmVoiceSetProc *g_SoundCreatePcmVoiceSet = (void *)SoundBackendDisabled_CreatePcmVoiceSet;
-
-/* 00417344 g_SoundReleasePcmVoiceSet */
-__declspec(align(4)) SoundReleasePcmVoiceSetProc *g_SoundReleasePcmVoiceSet = (void *)SoundBackendDisabled_ReleasePcmVoiceSet;
-
 /* 0041734C g_SoundPlayLooping */
 __declspec(align(4)) SoundPlayVoiceProc *g_SoundPlayLooping = (void *)SoundBackendDisabled_PlayLooping;
 
@@ -25,9 +19,6 @@ __declspec(align(16)) SoundStopVoiceProc *g_SoundStopVoice = (void *)SoundBacken
 
 /* 00417358 g_SoundIsVoicePlaying */
 __declspec(align(8)) SoundIsVoicePlayingProc *g_SoundIsVoicePlaying = (void *)SoundBackendDisabled_IsVoicePlaying;
-
-/* 0041735C g_SoundQueryVoice */
-__declspec(align(4)) SoundQueryVoiceRegsProc *g_SoundQueryVoice = (void *)SoundBackendDisabled_QueryVoice;
 
 /* 00417360 g_SoundSetVoiceGains */
 __declspec(align(16)) SoundSetVoiceGainsProc *g_SoundSetVoiceGains = (void *)SoundBackendDisabled_SetVoiceGains;
@@ -38,29 +29,11 @@ __declspec(align(4)) short g_SoundSampleCoefficientBlock[256] = {0};
 /* 00573FC8 pDirectSoundCreate */
 __declspec(align(8)) DirectSoundCreate *pDirectSoundCreate = 0;
 
-/* 00573FCC pDirectSoundEnumerateA */
-__declspec(align(4)) DirectSoundEnumerateA *pDirectSoundEnumerateA = 0;
-
-/* 00573FD0 pDirectSoundCaptureCreate */
-__declspec(align(16)) DirectSoundCaptureCreate *pDirectSoundCaptureCreate = 0;
-
-/* 00573FD4 pDirectSoundCaptureEnumerateA */
-__declspec(align(4)) DirectSoundCaptureEnumerateA *pDirectSoundCaptureEnumerateA = 0;
-
 /* 005744C2 dynapi_4 */
 __declspec(align(4)) char dynapi_4[7] = "DSOUND";
 
 /* 0057459A dynapi_20 */
 __declspec(align(4)) char dynapi_20[18] = "DirectSoundCreate";
-
-/* 005745AC dynapi_21 */
-__declspec(align(4)) char dynapi_21[22] = "DirectSoundEnumerateA";
-
-/* 005745C2 dynapi_22 */
-__declspec(align(4)) char dynapi_22[25] = "DirectSoundCaptureCreate";
-
-/* 005745DC dynapi_23 */
-__declspec(align(4)) char dynapi_23[29] = "DirectSoundCaptureEnumerateA";
 
 /* 00582EE0 g_DirectSound */
 __declspec(align(16)) IDirectSound *g_DirectSound = 0;

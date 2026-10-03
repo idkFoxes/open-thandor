@@ -61,32 +61,6 @@ void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 }
 
 
-/* Address: 0x00417590.
-   Silent-backend stub in slot g_SoundCreatePcmVoiceSet (image 0x00417340). Ignores the raw PCM
-   description, stores the dummy voice set 0xFFFFFFFF in *outVoiceSet and returns 0 (success).
-*/
-uint32_t SoundBackendDisabled_CreatePcmVoiceSet
-          (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
-          AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          void *pcmData,DirectSoundVoiceSet **outVoiceSet)
-
-{
-  *outVoiceSet = (DirectSoundVoiceSet *)0xffffffff;
-  return 0;
-}
-
-
-/* Address: 0x004175A0.
-   Silent-backend stub in slot g_SoundReleasePcmVoiceSet (image 0x00417344): nothing to release,
-   clears CF.
-*/
-void SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
-
-{
-  return;
-}
-
-
 /* Address: 0x004175B0.
    Silent-backend stub in slot g_SoundPlayOneShot (image 0x00417348): plays nothing and reports
    success (returns true) with a NULL voice in *outVoice; the original leaves EAX unchanged, so its callers
@@ -147,15 +121,6 @@ bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 }
 
 
-/* Address: 0x00417600.
-   Silent-backend stub in slot g_SoundQueryVoice (image 0x0041735C): returns 0, i.e. no voice state.
-*/
-uint32_t SoundBackendDisabled_QueryVoice(IDirectSoundBuffer *voice)
-
-{
-  return 0;
-}
-
 /* Address: 0x00417610.
    Silent-backend stub in slot g_SoundSetVoiceGains (image 0x00417360): ignores the new left/right
    gains.
@@ -168,27 +133,11 @@ void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,S
 }
 
 
-/* Resolves the four DSOUND.DLL exports DirectSound_Init uses, in order; returns 0 or the first
-   DynAPI_Resolve error (the remaining exports are then not resolved). */
+/* Resolves the DSOUND.DLL export DirectSound_Init uses; returns 0 or the DynAPI_Resolve error. */
 static uint32_t DirectSound_ResolveExports(HINSTANCE module)
 {
-  uint32_t resolveError;
-
-  /* dynapi_20..23: "DirectSoundCreate", "DirectSoundEnumerateA", "DirectSoundCaptureCreate",
-     "DirectSoundCaptureEnumerateA" */
-  resolveError = DynAPI_Resolve((void **)&pDirectSoundCreate,module,dynapi_20);
-  if (resolveError != 0) {
-    return resolveError;
-  }
-  resolveError = DynAPI_Resolve((void **)&pDirectSoundEnumerateA,module,dynapi_21);
-  if (resolveError != 0) {
-    return resolveError;
-  }
-  resolveError = DynAPI_Resolve((void **)&pDirectSoundCaptureCreate,module,dynapi_22);
-  if (resolveError != 0) {
-    return resolveError;
-  }
-  return DynAPI_Resolve((void **)&pDirectSoundCaptureEnumerateA,module,dynapi_23);
+  /* dynapi_20: "DirectSoundCreate" */
+  return DynAPI_Resolve((void **)&pDirectSoundCreate,module,dynapi_20);
 }
 
 /* DirectSound_Init's device setup after DirectSoundCreate: exclusive cooperative level, then the primary
@@ -310,21 +259,18 @@ uint32_t DirectSound_Init(void)
   }
   g_SoundCreateSampleVoiceSet = DirectSound_CreateSampleVoiceSet;
   g_SoundReleaseSampleVoiceSet = DirectSound_ReleaseSampleVoiceSet;
-  g_SoundCreatePcmVoiceSet = DirectSound_CreatePcmVoiceSet;
-  g_SoundReleasePcmVoiceSet = DirectSound_ReleasePcmVoiceSet;
   g_SoundPlayOneShot = DirectSound_PlayOneShot;
   g_SoundPlayLooping = DirectSound_PlayLooping;
   g_SoundStopVoice = DirectSound_StopVoice;
   g_SoundStopAllVoices = DirectSound_StopAllVoices;
   g_SoundIsVoicePlaying = DirectSound_IsVoicePlaying;
-  g_SoundQueryVoice = DirectSound_QueryVoiceStub;
   g_SoundSetVoiceGains = DirectSound_SetVoiceGains;
   CosineDerivedLookupTables_Init();
   return 0;
 }
 
 
-/* Shared failure exit of DirectSound_CreateSampleVoiceSet and DirectSound_CreatePcmVoiceSet: releases
+/* Failure exit of DirectSound_CreateSampleVoiceSet: releases
    the secondary buffer if one was created, writes the failing stage number to g_PackageLastErrorPath
    and returns errorCode. */
 static uint32_t DirectSound_FailVoiceSet(IDirectSoundBuffer *soundBuffer,int32_t failedStage,uint32_t errorCode)
@@ -336,7 +282,7 @@ static uint32_t DirectSound_FailVoiceSet(IDirectSoundBuffer *soundBuffer,int32_t
   return errorCode;
 }
 
-/* Shared success tail of DirectSound_CreateSampleVoiceSet and DirectSound_CreatePcmVoiceSet: clears the
+/* Success tail of DirectSound_CreateSampleVoiceSet: clears the
    eight voices of the freshly allocated set, puts soundBuffer into voices[0] and registers the set in the
    first free registry slot (a full or missing registry is not an error). */
 static void DirectSound_InitAndRegisterVoiceSet(DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer *soundBuffer)
@@ -457,125 +403,6 @@ void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
   IDirectSoundBuffer **voiceCursor;
   DirectSoundVoiceSet **registryCursor;
   IDirectSoundBuffer *voiceBuffer;
-
-  voicesRemaining = DIRECTSOUND_VOICES_PER_SET;
-  voiceCursor = voiceSet->voices;
-  if (voiceSet != NULL) {
-    do {
-      voiceBuffer = *voiceCursor;
-      if (voiceBuffer != NULL) {
-        voiceBuffer->lpVtbl->Release(voiceBuffer);
-      }
-      voiceCursor++;
-      voicesRemaining--;
-    } while (voicesRemaining != 0);
-    g_MemoryApi.free(voiceSet);
-    registryRemaining = (DirectSoundVoiceSet **)DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY;
-    registryCursor = g_DirectSoundVoiceSetRegistry;
-    registryGuard = g_DirectSoundVoiceSetRegistry;
-    /* first pass tests the registry pointer, later passes the remaining count */
-    while (registryGuard != NULL) {
-      if (voiceSet == *registryCursor) {
-        *registryCursor = NULL;
-        return;
-      }
-      registryCursor++;
-      registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining - 1);
-      registryGuard = registryRemaining;
-    }
-  }
-  return;
-}
-
-
-/* Address: 0x00583720.
-   Wraps raw PCM data in a voice set: creates a secondary buffer of bufferByteCount bytes in the given
-   rate/bits/channels format, copies the data into it dword by dword and registers a new eight-voice set
-   holding the buffer in voices[0]. Returns 0 and stores the set in *outVoiceSet; on failure returns the
-   error code (FATAL_ERROR_DIRECTSOUND_SETUP or the allocator's error), leaves *outVoiceSet untouched and
-   leaves the failing stage number in g_PackageLastErrorPath.
-*/
-uint32_t DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
-          AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          uint32_t *pcmData,DirectSoundVoiceSet **outVoiceSet)
-
-{
-  uint32_t bytesPerFrame;
-  uint32_t remainingDwords;
-  TH_LEGACY_HRESULT directSoundResult;
-  uint32_t *destCursor;
-  uint32_t voiceSetAllocError;
-  void *voiceSetPayload;
-  DirectSoundVoiceSet *voiceSet;
-  TH_LEGACY_DWORD wrapByteCount;
-  TH_LEGACY_LPVOID wrapRegion;
-  uint32_t lockedByteCount;
-  uint32_t *lockedData;
-  IDirectSoundBuffer *soundBuffer;
-
-  soundBuffer = NULL;
-  Memory_ZeroDwords(DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES,&WaveFormat_PCM_22050_Stereo16);
-  Memory_ZeroDwords(sizeof PrimarySoundBufferDesc,&PrimarySoundBufferDesc);
-  /* the shared WaveFormat_PCM_22050_Stereo16 buffer is reused with the caller's format */
-  WaveFormat_PCM_22050_Stereo16.nChannels = (AudioChannelCount)channelCount;
-  WaveFormat_PCM_22050_Stereo16.wBitsPerSample = (AudioBitsPerSample)bitsPerSample;
-  bytesPerFrame = bitsPerSample * channelCount >> 3;
-  PrimarySoundBufferDesc.dwBufferBytes = bufferByteCount;
-  WaveFormat_PCM_22050_Stereo16.nBlockAlign = (AudioBlockAlignBytes)bytesPerFrame;
-  WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = sampleRateHz;
-  WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = bytesPerFrame * sampleRateHz;
-  WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
-  PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
-  PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
-  PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
-  directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
-                    (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,NULL);
-  if (directSoundResult != 0) {
-    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER,
-                                    FATAL_ERROR_DIRECTSOUND_SETUP);
-  }
-  directSoundResult = soundBuffer->lpVtbl->Lock
-                    (soundBuffer,0,0,&lockedData,&lockedByteCount,&wrapRegion,&wrapByteCount,
-                     DSBLOCK_ENTIREBUFFER);
-  if (directSoundResult != 0) {
-    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_LOCK,FATAL_ERROR_DIRECTSOUND_SETUP);
-  }
-  destCursor = lockedData;
-  /* copies lockedByteCount / 4 dwords; a trailing 1..3 bytes stay uncopied */
-  for (remainingDwords = lockedByteCount >> 2; remainingDwords != 0; remainingDwords--) {
-    *destCursor = *pcmData;
-    pcmData++;
-    destCursor++;
-  }
-  directSoundResult =
-       soundBuffer->lpVtbl->Unlock(soundBuffer,lockedData,lockedByteCount,wrapRegion,wrapByteCount);
-  if (directSoundResult != 0) {
-    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_FILL,FATAL_ERROR_DIRECTSOUND_SETUP);
-  }
-  voiceSetAllocError = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet),&voiceSetPayload);
-  if (voiceSetAllocError != 0) {
-    return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_FILL,voiceSetAllocError);
-  }
-  voiceSet = (DirectSoundVoiceSet *)voiceSetPayload;
-  DirectSound_InitAndRegisterVoiceSet(voiceSet,soundBuffer);
-  *outVoiceSet = voiceSet;
-  return 0;
-}
-
-
-/* Address: 0x005838D0.
-   Frees a voice set made by DirectSound_CreatePcmVoiceSet; the same code as
-   DirectSound_ReleaseSampleVoiceSet (release the eight voices, free the set, clear its registry slot).
-*/
-void DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
-
-{
-  IDirectSoundBuffer *voiceBuffer;
-  DirectSoundVoiceSet **registryGuard;
-  int voicesRemaining;
-  DirectSoundVoiceSet **registryRemaining; /* a count; Ghidra shares the register with registryGuard */
-  IDirectSoundBuffer **voiceCursor;
-  DirectSoundVoiceSet **registryCursor;
 
   voicesRemaining = DIRECTSOUND_VOICES_PER_SET;
   voiceCursor = voiceSet->voices;
@@ -764,16 +591,6 @@ void DirectSound_StopAllVoices(void)
   return;
 }
 
-
-/* Address: 0x00583C60.
-   Backend slot g_SoundQueryVoice: takes a voice and returns 0 (the original also cleared EDX; no call
-   site uses the slot, so what it was meant to query is unknown).
-*/
-uint32_t DirectSound_QueryVoiceStub(IDirectSoundBuffer *voice)
-
-{
-  return 0;
-}
 
 /* Address: 0x00583C70.
    Updates the volume and pan of a playing voice from two new channel gains, with the same conversion as

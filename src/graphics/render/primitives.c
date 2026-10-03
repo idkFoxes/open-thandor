@@ -178,17 +178,6 @@ GraphicsPrimitiveQueue *GraphicsPrimitiveQueue_ResetGlobal(void)
 }
 
 
-/* Address: 0x004D0A70.
-   Frees a primitive queue allocation. No caller or table reference to this function is known.
-*/
-void GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue)
-
-{
-  g_MemoryApi.free(queue);
-  return;
-}
-
-
 /* Address: 0x004D0A90.
    Returns the number of packets queued in queue. Used by FrontendModelPointerContext_RenderWorldViewQueuesClipped
    (ui/frontend/runtime.c) after each drawn pass.

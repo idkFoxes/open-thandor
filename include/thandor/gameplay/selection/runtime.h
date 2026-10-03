@@ -278,28 +278,4 @@ void SelectionPointerArray_SetAircraftPadTargets
 /* 0x0052FB00 */
 void SelectionPointerArray_Clear32(SelectionPointerArray32 *array);
 
-
-/* 0x0052D150 */
-void SelectionPanel_DrawHorizontalNumberTextCappedBar
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
-          UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
-          uint16_t *commandStream,SelectionPanelCellIndex cellIndex);
-
-/* 0x0052D9A0 */
-void SelectionPanel_DrawVerticalProportionalCappedBar
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
-          UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
-          UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
-          SelectionPanelCellIndex cellIndex);
-
-/* 0x0052DC90 */
-void SelectionPanel_DrawHorizontalSegmentedCappedBar
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
-          UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
-          SelectionPanelSegmentCount totalSegmentCount,SelectionPanelSegmentCount filledSegmentCount
-          ,SelectionPanelCellIndex cellIndex);
-
 #endif /* THANDOR_GAMEPLAY_SELECTION_RUNTIME_H */

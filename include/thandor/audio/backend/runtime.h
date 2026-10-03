@@ -40,15 +40,6 @@ uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset
 /* 0x00417580 */
 void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 
-/* 0x00417590 */
-uint32_t SoundBackendDisabled_CreatePcmVoiceSet
-          (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
-          AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          void *pcmData,DirectSoundVoiceSet **outVoiceSet);
-
-/* 0x004175A0 */
-void SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet);
-
 /* 0x004175B0 */
 bool SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
@@ -65,9 +56,6 @@ void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice);
 /* 0x004175E0 */
 bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
 
-/* 0x00417600 */
-uint32_t SoundBackendDisabled_QueryVoice(IDirectSoundBuffer *voice);
-
 /* 0x00417610 */
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice);
@@ -80,14 +68,6 @@ uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSo
 
 /* 0x00583690 */
 void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
-
-/* 0x00583720 */
-uint32_t DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
-          AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          uint32_t *pcmData,DirectSoundVoiceSet **outVoiceSet);
-
-/* 0x005838D0 */
-void DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet);
 
 /* 0x00583940 */
 bool DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
@@ -105,9 +85,6 @@ bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice);
 
 /* 0x00583C00 */
 void DirectSound_StopAllVoices(void);
-
-/* 0x00583C60 */
-uint32_t DirectSound_QueryVoiceStub(IDirectSoundBuffer *voice);
 
 /* 0x00583C70 */
 void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,

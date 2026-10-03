@@ -999,32 +999,6 @@ void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
 }
 
 
-/* Address: 0x004D1170.
-   Single-block variant of GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks: takes the next
-   0x80-byte block of the render context's projected point pool and records its address in the pool's block
-   table. The original reports a full pool with CF set (CF clear on success); this C version returns nothing.
-   No caller in the C sources.
-*/
-void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
-               (GeneratedTextureRenderContextView *renderContext)
-
-{
-  uint32_t *blockPool;
-  uint32_t usedBlockCount;
-
-  /* pool: [0] capacity, [1] used blocks, [2] block data base, from +0x20 a table of 0x10-byte entries whose
-     second dword holds the block address */
-  blockPool = renderContext->projectedPointBlockPool;
-  usedBlockCount = blockPool[1];
-  if (usedBlockCount + 1 < *blockPool) {
-    blockPool[1] = usedBlockCount + 1;
-    blockPool[usedBlockCount * 4 + 9] = usedBlockCount * GRAPHICS_PROJECTED_BLOCK_BYTES + blockPool[2];
-    return;
-  }
-  return;
-}
-
-
 /* Address: 0x004CD880.
    Shadow silhouette pass for a mesh record without MODEL_MESH_SOFT_SHADOW (+0x10), called per mesh record by
    GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy after the blur: projects every vertex into the

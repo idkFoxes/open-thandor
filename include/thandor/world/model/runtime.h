@@ -72,9 +72,6 @@ bool ModelRuntime_RaycastCandidateListNearest
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,
           ModelRuntimeNode **outNearestModelNode);
 
-/* 0x0051C240 */
-Q12 ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix *runtimeEntry);
-
 /* 0x0051C260 */
 Q12 ModelRuntime_QueryHierarchyConditionRatioQ12(RuntimeModelFactionPrefix *runtimeEntry);
 
