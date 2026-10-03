@@ -71,8 +71,8 @@ Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle
   header[177] = 0;
   header[178] = 0;
   header[179] = 0;
-  FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,packagePath);
-  if (!Package_Mount(packagePath,&mountedHandle)) {
+  FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,(uint16_t *)packagePath);
+  if (!Package_Mount((uint16_t *)packagePath,&mountedHandle)) {
     return false;
   }
   *outHandle = mountedHandle;

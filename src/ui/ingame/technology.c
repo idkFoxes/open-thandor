@@ -88,7 +88,7 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
   INGAME_UI(inGameRoot,worldView)->nodeFlags |= UI_NODE_SUPPRESSED;
   UiKeyboardFocus_ReleaseNode((UiNodeBase *)INGAME_UI(inGameRoot,worldView));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  selectedModelRuntime = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
+  selectedModelRuntime = (ModelRuntimeSlot *)(firstSelectedEntity->common).ownership.definitionOrClassRecord;
   ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab1))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
   ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab2))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
   ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab3))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -450,7 +450,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   previousTechnologyId = g_InGameSelectedTechnologyId;
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != NULL) {
-    entityModelRuntime = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
+    entityModelRuntime = (ModelRuntimeSlot *)(firstSelectedEntity->common).ownership.definitionOrClassRecord;
     definition = (entityModelRuntime->definitionOrSavedId).runtimeDefinition;
     if (((entityModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
       UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);

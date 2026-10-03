@@ -252,7 +252,7 @@ static Bool8 GraphicsDirectDraw_CreateDirectDraw(FrontendDisplayAdapterIndex ada
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE,1,errorCode);
   }
-  comResult = g_DirectDraw->lpVtbl->QueryInterface(g_DirectDraw,&IID_IDirectDraw2_Local,&g_DirectDraw2);
+  comResult = g_DirectDraw->lpVtbl->QueryInterface(g_DirectDraw,&IID_IDirectDraw2_Local,(TH_LEGACY_LPVOID *)&g_DirectDraw2);
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE,2,errorCode);
   }
@@ -281,7 +281,7 @@ static Bool8 GraphicsDirectDraw_CreateSurfaces
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES,*completedStages + 1,errorCode);
   }
   comResult = g_PrimarySurfaceBase->lpVtbl->QueryInterface
-                    (g_PrimarySurfaceBase,&IID_IDirectDrawSurface3_Local,&g_PrimarySurface3);
+                    (g_PrimarySurfaceBase,&IID_IDirectDrawSurface3_Local,(TH_LEGACY_LPVOID *)&g_PrimarySurface3);
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES,*completedStages + 2,errorCode);
   }
@@ -298,7 +298,7 @@ static Bool8 GraphicsDirectDraw_CreateSurfaces
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES,*completedStages + 3,errorCode);
   }
   comResult = g_BackSurfaceBase->lpVtbl->QueryInterface
-                    (g_BackSurfaceBase,&IID_IDirectDrawSurface3_Local,&g_BackSurface3);
+                    (g_BackSurfaceBase,&IID_IDirectDrawSurface3_Local,(TH_LEGACY_LPVOID *)&g_BackSurface3);
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES,*completedStages + 4,errorCode);
   }

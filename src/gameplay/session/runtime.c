@@ -471,7 +471,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000084, 0x00001013, 0x0000217E},
-        {.tooltipText = (void *)0x00300000},
+        {.tooltipText = (uint16_t *)0x00300000},
         { /* +1544 technologyAreaTab1 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x15AC), .firstChild = UI_TEMPLATE_LINK(0x1814), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -481,7 +481,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
             0x00001491, 0x00001014, 0x0000217F},
-        {.tooltipText = (void *)0x00300000},
+        {.tooltipText = (uint16_t *)0x00300000},
         { /* +15AC technologyAreaTab2 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1614), .firstChild = UI_TEMPLATE_LINK(0x1870), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -491,7 +491,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
             0x00001491, 0x00001015, 0x0000217F},
-        {.tooltipText = (void *)0x00300000},
+        {.tooltipText = (uint16_t *)0x00300000},
         { /* +1614 technologyAreaTab3 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x167C), .firstChild = UI_TEMPLATE_LINK(0x18CC), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -501,7 +501,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
             0x00001491, 0x00001016, 0x0000217F},
-        {.tooltipText = (void *)0x00300000},
+        {.tooltipText = (uint16_t *)0x00300000},
         { /* +167C technologyAreaTab4 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x16E4), .firstChild = UI_TEMPLATE_LINK(0x1928), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -511,7 +511,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
             0x00001491, 0x00001017, 0x0000217F},
-        {.tooltipText = (void *)0x00300000},
+        {.tooltipText = (uint16_t *)0x00300000},
         { /* +16E4 technologyAreaTab5 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x174C), .firstChild = UI_TEMPLATE_LINK(0x1984), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -521,7 +521,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
             0x00001491, 0x00001018, 0x0000217F},
-        {.tooltipText = (void *)0x00300000},
+        {.tooltipText = (uint16_t *)0x00300000},
         { /* +174C technologyAreaTab6 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x17B4), .firstChild = UI_TEMPLATE_LINK(0x19E0), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -531,7 +531,7 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
             0x00001491, 0x00001019, 0x0000217F},
-        {.tooltipText = (void *)0x00300000},
+        {.tooltipText = (uint16_t *)0x00300000},
         { /* +17B4 technologyAreaTab7 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1A98), .firstChild = UI_TEMPLATE_LINK(0x1A3C), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = THANDOR_PTR(&g_UiFramedTextButtonControlVtable),
@@ -3845,9 +3845,11 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
 
 __declspec(align(4)) InGameRuntimeRoot *g_InGameRuntimeRoot = 0;
 
-uint16_t g_SessionEndMoviePathUtf16[17] = L"flm\\ende0000.flm";
+/* L"flm\\ende0000.flm" */
+uint16_t g_SessionEndMoviePathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e', '0', '0', '0', '0', '.', 'f', 'l', 'm', 0};
 
-uint16_t g_FlmEnde0001FlmPathUtf16[17] = L"flm\\ende0001.flm";
+/* L"flm\\ende0001.flm" */
+uint16_t g_FlmEnde0001FlmPathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e', '0', '0', '0', '1', '.', 'f', 'l', 'm', 0};
 
 uint32_t g_SessionNetworkTickCounter = 0;
 
@@ -3890,7 +3892,8 @@ static const uint32_t g_FactionEnergyAllocationPriorityByModelClass[24] = {
 
 /* the notification movie path; the three digits at [9] are overwritten with
    the movie number before it is opened (gameplay/session/runtime.c) */
-static uint16_t g_FlmMovie000FlmPathUtf16[17] = L"flm\\movie000.flm";
+/* L"flm\\movie000.flm" */
+static uint16_t g_FlmMovie000FlmPathUtf16[17] = {'f', 'l', 'm', '\\', 'm', 'o', 'v', 'i', 'e', '0', '0', '0', '.', 'f', 'l', 'm', 0};
 
 static int32_t g_InGamePendingSimulationTicks = 0;
 
@@ -3986,7 +3989,7 @@ Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
       /* FrontendSession_PeriodicTick keeps running under the in-game tick lock while the end movie plays */
-      UiRuntime_SetSynchronizationHooks(FrontendSession_PeriodicTick,&g_InGameStateTickSpinLock);
+      UiRuntime_SetSynchronizationHooks(FrontendSession_PeriodicTick,(RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
       Frontend_PlaySelectedEndMovie();
       OldUnitRuntime_RebuildScenarioReplayTables();
       UiRuntime_SetSynchronizationHooks(NULL,NULL);
@@ -4115,7 +4118,7 @@ static void InGameUiRoot_UpdateEffectSounds
     InGameSelectionDetailPanel_Rebuild();
   }
   if (g_InGameEffectsEnabled == 0) {
-    if (g_SoundIsVoicePlaying(g_InGameActiveEffectVoice)) {
+    if (g_SoundIsVoicePlaying((IDirectSoundBuffer *)g_InGameActiveEffectVoice)) {
       g_InGameActiveEffectVoice = NULL;
       randomValue = Random_NextPrimary();
       g_InGameEffectsEnabled = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
@@ -4129,7 +4132,7 @@ static void InGameUiRoot_UpdateEffectSounds
       if (g_SoundPlayOneShot
                     (effectsGain,effectsGain,
                      g_InGameLevelEffectVoiceSets[randomValue & 3],&playedVoice)) {
-        g_InGameActiveEffectVoice = playedVoice;
+        g_InGameActiveEffectVoice = (uint32_t)playedVoice;
       }
     }
   }
@@ -4158,7 +4161,7 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
     return;
   }
   if (g_InGameMusicNextTrackCountdown == 0) {
-    if (g_SoundIsVoicePlaying(g_InGameActiveMusicVoice)) {
+    if (g_SoundIsVoicePlaying((IDirectSoundBuffer *)g_InGameActiveMusicVoice)) {
       g_InGameActiveMusicVoice = NULL;
       randomValue = Random_NextPrimary();
       g_InGameMusicNextTrackCountdown = (randomValue & INGAME_AMBIENT_SOUND_DELAY_MASK) + 1;
@@ -4186,7 +4189,7 @@ static void InGameUiRoot_UpdateMusic(WorldRuntimeContext *worldRuntime)
     if (g_SoundPlayOneShot
                   (musicGain,musicGain,g_InGameLevelMusicVoiceSets[bestTrackIndex],
                    &playedVoice)) {
-      g_InGameActiveMusicVoice = playedVoice;
+      g_InGameActiveMusicVoice = (uint32_t)playedVoice;
     }
   }
 }
@@ -4430,8 +4433,8 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
   do {
     if ((registrationRecord->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
       primaryPointer = (uint8_t *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset;
-      secondaryPointer = (registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
-      nestedBasePointer = (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
+      secondaryPointer = (uint8_t *)(registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
+      nestedBasePointer = (uint8_t *)(registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
       /* 1-based offsets from the runtime-object base; 0 stays NULL */
       if (primaryPointer != NULL) {
         primaryPointer = primaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
@@ -4939,7 +4942,7 @@ static void InGameNewSession_ResetSessionState(void)
   g_InGameStateTickSpinLock = 0;
   g_TimerRegisterPeriodic(INGAME_PERIODIC_TIMER_HZ,InGameRuntime_PeriodicCountdownAndClockTick);
   UiRuntime_SetSynchronizationHooks
-            (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
+            (InGameRuntime_UpdateSimulationAndNetworkTick,(RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
 }
 
 
@@ -5054,8 +5057,9 @@ static Bool8 InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *o
     return false;
   }
   /* world input and command callbacks, camera limits, and the step hook for the world runtime */
+  /* signature differs: the overlay callback takes GraphicsBooleanState (int), the slot uint32_t */
   inGameRoot->worldOverlayCallback =
-       InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
+       (void (*)(uint32_t, WorldRuntimeContext *))InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
   (inGameRoot->worldRuntime).selection.dispatchCommandCallback =
        InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
   (inGameRoot->worldRuntime).selection.resolveContextActionPrimaryCallback =
@@ -5068,8 +5072,9 @@ static Bool8 InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *o
        InGameWorldInput_UpdateDragSelectionAndCamera;
   (inGameRoot->worldRuntime).selection.commitPointerActionCallback =
        InGameWorldInput_CommitPointerAction;
+  /* signature differs: the callback takes void *, the slot WorldRuntimeContext * */
   (inGameRoot->worldRuntime).fieldRegion.clearTransientStateCallback =
-       InGameUiRuntime_ResetNotificationButtonCursor;
+       (void (*)(WorldRuntimeContext *))InGameUiRuntime_ResetNotificationButtonCursor;
   (inGameRoot->worldRuntime).selection.dispatchWorldContextActionCallback =
        InGameUiRuntime_DispatchWorldContextActionCallback;
   (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = 8 * Q12_ONE;
@@ -5193,7 +5198,7 @@ static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGame
   uint32_t gridScratchError;
 
   world = &inGameRoot->worldRuntime;
-  g_SpinLockAcquire(&g_InGameStateTickSpinLock);
+  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   g_InGameSimulationStepTicks = 1;
   textureDimension =
        PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_TEXTURE_DIMENSION,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
@@ -5272,7 +5277,7 @@ static void InGameNewSession_ReportReadyAndWaitForPlayers(InGameRuntimeRoot *inG
   else {
     InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
   }
-  g_SpinLockRelease(&g_InGameStateTickSpinLock);
+  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   UiFrame_FlushInputAndResetPendingTicks();
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   g_CursorVisibilityToken++;
@@ -5452,7 +5457,7 @@ static void InGameLoadedSession_ResetSessionState(uint32_t savedFactionIndex)
   g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
   g_TimerRegisterPeriodic(INGAME_PERIODIC_TIMER_HZ,InGameRuntime_PeriodicCountdownAndClockTick);
   UiRuntime_SetSynchronizationHooks
-            (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
+            (InGameRuntime_UpdateSimulationAndNetworkTick,(RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
 }
 
 
@@ -5511,8 +5516,9 @@ static Bool8 InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage
     *outError = stepError;
     return false;
   }
+  /* signature differs: the overlay callback takes GraphicsBooleanState (int), the slot uint32_t */
   inGameRoot->worldOverlayCallback =
-       InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
+       (void (*)(uint32_t, WorldRuntimeContext *))InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
   (inGameRoot->worldRuntime).selection.dispatchCommandCallback =
        InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
   (inGameRoot->worldRuntime).selection.resolveContextActionPrimaryCallback =
@@ -5525,8 +5531,9 @@ static Bool8 InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage
        InGameWorldInput_UpdateDragSelectionAndCamera;
   (inGameRoot->worldRuntime).selection.commitPointerActionCallback =
        InGameWorldInput_CommitPointerAction;
+  /* signature differs: the callback takes void *, the slot WorldRuntimeContext * */
   (inGameRoot->worldRuntime).fieldRegion.clearTransientStateCallback =
-       InGameUiRuntime_ResetNotificationButtonCursor;
+       (void (*)(WorldRuntimeContext *))InGameUiRuntime_ResetNotificationButtonCursor;
   (inGameRoot->worldRuntime).selection.dispatchWorldContextActionCallback =
        InGameUiRuntime_DispatchWorldContextActionCallback;
   (inGameRoot->worldRuntime).minimumCameraDistanceQ12 = 8 * Q12_ONE;
@@ -5643,7 +5650,7 @@ static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inG
   uint32_t gridScratchError;
 
   world = &inGameRoot->worldRuntime;
-  g_SpinLockAcquire(&g_InGameStateTickSpinLock);
+  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
   InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
   InGameArmyStock_RebuildGrid((UiNodeBase *)inGameRoot);
@@ -5709,9 +5716,9 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
   InGameLoadedSession_ReadSessionName(saveHandle);
   campaignAsset = Package_LoadEntry((uint16_t *)g_CampagneHexPathUtf16,NULL);
   if (campaignAsset != NULL) {
-    g_FrontendLoadedCampaignAsset = campaignAsset;
+    g_FrontendLoadedCampaignAsset = (uint32_t)campaignAsset;
   }
-  levelImage = Package_LoadEntry((uint16_t *)g_LevelHexPathUtf16,&packageLoadErrorCode);
+  levelImage = (FrontendLoadedLevelAsset *)Package_LoadEntry((uint16_t *)g_LevelHexPathUtf16,&packageLoadErrorCode);
   if (levelImage == NULL) {
     return InGameLoadedSession_Fail(NULL,saveHandle,packageLoadErrorCode,outError);
   }
@@ -5734,7 +5741,7 @@ Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *
   else {
     InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
   }
-  g_SpinLockRelease(&g_InGameStateTickSpinLock);
+  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   UiFrame_FlushInputAndResetPendingTicks();
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   g_CursorVisibilityToken++;
@@ -5789,8 +5796,9 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
   if (inGameRoot != NULL) {
     InGameRuntime_SaveWorldViewInfoTextChoice(&inGameRoot->rootUi);
     world = &inGameRoot->worldRuntime;
+    /* signature differs: the callback's context is WorldRuntimeContext *, the slot's void * */
     WorldRuntime_ForEachOwnerListNode
-              (world,WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
+              (world,(WorldRuntimeNodeTraversalCallback *)WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
     InGameLevelRuntime_ShutdownLoadedAssetResources(world);
     if ((inGameRoot->rootUi).previousRoot != NULL) {
       UiRootStack_Pop(&inGameRoot->rootUi);
@@ -5803,10 +5811,10 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
   g_InGameWorldObjectRecords = NULL;
   Movie_Close();
   TerrainCompositeTexture_Destroy();
-  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameDiagramTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameDiagramTextureSource);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGamePanelTextureSource);
-  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameTechnologyTextureSource);
-  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameWindowTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameTechnologyTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage((GraphicsTextureSourceAsset *)g_InGameWindowTextureSource);
   g_InGameDiagramTextureSource = NULL;
   g_InGamePanelTextureSource = NULL;
   g_InGameTechnologyTextureSource = NULL;
@@ -6348,7 +6356,7 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
   for (worldNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
       worldNode != NULL; worldNode = worldNode->nextNode) {
     if (worldNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) continue;
-    modelRuntime = worldNode->runtimePayload;
+    modelRuntime = (int *)worldNode->runtimePayload;
     if ((modelRuntime[59] & ARMY_MODEL_STATE_DISMANTLING) != 0) continue;
     if (modelRuntime[61] != 0) {
       /* buffer full: the attached parts are skipped as well */
@@ -6876,7 +6884,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
   Bool8 stepDue;
   InGameRuntimeRoot *inGameRoot;
 
-  lockAlreadyHeld = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
+  lockAlreadyHeld = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (lockAlreadyHeld) {
     return;
@@ -6884,7 +6892,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* do not run ahead of the renderer by more than a few steps */
     if (2 < (int)g_InGamePendingSimulationTicks) {
-      g_SpinLockRelease(&g_InGameStateTickSpinLock);
+      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
       return;
     }
     g_InGamePendingSimulationTicks++;
@@ -6896,7 +6904,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
     stepDue = InGameTick_RunClientLockstep();
   }
   if (!stepDue) {
-    g_SpinLockRelease(&g_InGameStateTickSpinLock);
+    g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
     return;
   }
   g_SessionNetworkTickCounter++;
@@ -6907,7 +6915,7 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
            (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
     InGameTick_RunSimulationStep(inGameRoot);
   }
-  g_SpinLockRelease(&g_InGameStateTickSpinLock);
+  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   return;
 }
 

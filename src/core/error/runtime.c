@@ -21,7 +21,8 @@ static uint16_t g_FatalErrorDetail3Utf16[256] = {0};
 
 static FatalErrorPassThroughProc *g_FatalErrorFallbackHandler = 0;
 
-static uint16_t g_TexteErrorStrPathUtf16[16] = L"texte\\error.str";
+/* "texte\\error.str" */
+static uint16_t g_TexteErrorStrPathUtf16[16] = {'t', 'e', 'x', 't', 'e', '\\', 'e', 'r', 'r', 'o', 'r', '.', 's', 't', 'r'};
 
 static UiRootNode *g_FatalErrorUiRootTemplate = 0;
 
@@ -65,7 +66,9 @@ FatalErrorPassThroughProc *g_FatalErrorExitHandler = 0;
 
 FatalErrorPassThroughProc *g_FatalErrorReportHandler = 0;
 
-uint16_t g_ErrorTextIoInitializationFailed[34] = L"error: IO: initialization failed!";
+/* "error: IO: initialization failed!" */
+uint16_t g_ErrorTextIoInitializationFailed[34] = {'e', 'r', 'r', 'o', 'r', ':', ' ', 'I', 'O', ':', ' ', 'i', 'n', 'i', 't', 'i', 'a',
+                                                  'l', 'i', 'z', 'a', 't', 'i', 'o', 'n', ' ', 'f', 'a', 'i', 'l', 'e', 'd', '!'};
 
 /* Implementation ownership: core/error/runtime. */
 

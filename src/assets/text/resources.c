@@ -22,7 +22,7 @@ static uint16_t g_MissingTextResourceFallbackStream[2] = {0x002D, 0x0000};
 
 /* the two font texture paths L"engine\\font.gfx" and L"engine\\fontk.gfx", back to back:
    FontRuntime_Init scans past the first terminator to reach the second */
-static uint16_t g_FontTexturePathsUtf16[33] = L"engine\\font.gfx\0engine\\fontk.gfx";
+static uint16_t g_FontTexturePathsUtf16[33] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'f', 'o', 'n', 't', '.', 'g', 'f', 'x', 0, 'e', 'n', 'g', 'i', 'n', 'e', '\\', 'f', 'o', 'n', 't', 'k', '.', 'g', 'f', 'x', 0}; /* L"engine\\font.gfx\0engine\\fontk.gfx" */
 
 GraphicsTextureSourceAsset *g_FontTextureSources[2] = {0};
 
@@ -88,7 +88,7 @@ void FontRuntime_Init(void)
   uint32_t allocError;
   void *allocPayload;
 
-  pathUtf16 = g_FontTexturePathsUtf16;
+  pathUtf16 = (const wchar_t *)g_FontTexturePathsUtf16;
   /* one scan budget for both paths: the original keeps a single terminator-scan count across the loop */
   scanUnitsLeft = FONT_TEXTURE_PATHS_SCAN_UNITS;
   for (sourceIndex = 0; sourceIndex < 2; sourceIndex++) {
@@ -303,7 +303,7 @@ Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint3
   int stringIndex;
   uint32_t loadErrorCode;
 
-  allocation = Package_LoadEntry(path,&loadErrorCode);
+  allocation = (TextResourceAssetHeader *)Package_LoadEntry(path,&loadErrorCode);
   if (allocation == NULL) {
     Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
                 loadErrorCode);

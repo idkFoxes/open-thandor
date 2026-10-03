@@ -26,7 +26,7 @@ void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
           uint32_t unusedArgument3)
 
 {
-  Resource_Release(g_FrontendLoadedCampaignAsset);
+  Resource_Release((void *)g_FrontendLoadedCampaignAsset);
   g_FrontendLoadedCampaignAsset = NULL;
   g_FrontendScenarioInitializationCount = 0;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,2);
@@ -218,7 +218,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
-            (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+            (0,(void **)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   UiTransferMailbox_RandomizeSequenceToken();
   UiTransfer_SendDiscoveryProbe();
@@ -319,14 +319,14 @@ void FrontendSession_PeriodicTick(void)
   void *packet;
   void *packetEndpoint;
 
-  callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
+  callResult = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (callResult) {
     return;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease(&g_InGameStateTickSpinLock);
+      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
       return;
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
@@ -344,7 +344,7 @@ void FrontendSession_PeriodicTick(void)
         if (callResult) {
           /* not every peer has synced yet: retry on the next timer tick */
           g_InGameNetworkTickCountdown = 1;
-          g_SpinLockRelease(&g_InGameStateTickSpinLock);
+          g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
           return;
         }
       }
@@ -355,7 +355,7 @@ void FrontendSession_PeriodicTick(void)
       /* client at an interval boundary: wait until the host's command batch has arrived */
       callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
       if (!callResult) {
-        g_SpinLockRelease(&g_InGameStateTickSpinLock);
+        g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
         return;
       }
       do {
@@ -365,12 +365,12 @@ void FrontendSession_PeriodicTick(void)
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
       if (callResult) {
-        g_SpinLockRelease(&g_InGameStateTickSpinLock);
+        g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
         return;
       }
     }
     else if (g_InGameNetworkTickCountdown != 0) {
-      g_SpinLockRelease(&g_InGameStateTickSpinLock);
+      g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
       return;
     }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
@@ -380,7 +380,7 @@ void FrontendSession_PeriodicTick(void)
      (inGameRoot->activeEndMovieRuntime != NULL)) {
     g_EndMoviePendingTicks++;
   }
-  g_SpinLockRelease(&g_InGameStateTickSpinLock);
+  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   return;
 }
 

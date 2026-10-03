@@ -404,7 +404,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotRuntimeCursor->ownerAndTrajectory.directionComponent2Q12 = launchDirectionZQ12;
   shotRuntimeCursor->projectileAgeTicks = 0;
   shotPalette = g_ShotPalette;
-  nestedModelResource = shotDefinition->ownedNestedResource;
+  nestedModelResource = (ModelResource *)shotDefinition->ownedNestedResource;
   shotModelNode->modelPayload.textureSet = g_ShotTextureSet;
   modelBoundingRadiusQ12 = nestedModelResource->boundingRadiusQ12;
   shotModelNode->modelPayload.paletteAsset = shotPalette;
@@ -425,7 +425,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->modelRuntimeLinkOrSavedOffset = NULL;
   /* optional light point of the model: allocates a shading record there */
   if (!ModelLookupTable_FindPackedPoint
-         (0,MODEL_POINT_CLASS_LIGHT,shotDefinition->ownedNestedResource,&packedPoint)) {
+         (0,MODEL_POINT_CLASS_LIGHT,(ModelResource *)shotDefinition->ownedNestedResource,&packedPoint)) {
     shotModelNode->shadingRecord = NULL;
   }
   else {
@@ -446,7 +446,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
        TerrainOccupancyMask_ResolveRuntimeClassFlags(TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,neighborhoodMask,runtimeClassIndex);
   shotRuntimeCursor->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
   shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
-  nodeTintArgb = ModelRuntimeNode_GetStateTintArgb(shotModelNode);
+  nodeTintArgb = ModelRuntimeNode_GetStateTintArgb((ModelRuntimeNode *)shotModelNode);
   definitionTintArgb = shotDefinition->stateTintArgb;
   /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
   tintProduct = pmulhw(ShotTint_UnpackBytesShiftRight(nodeTintArgb,4),
@@ -455,11 +455,11 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
   if (ModelLookupTable_FindPackedPoint
-        (0,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource,&packedPoint)) {
+        (0,MODEL_POINT_CLASS_EFFECT,(ModelResource *)shotDefinition->ownedNestedResource,&packedPoint)) {
     localPoint = ModelNodeRuntime_TransformLocalPoint
                        (packedPoint,(ModelRuntimeNode *)shotModelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
                shotModelNode->modelPayload.worldRotationAngle2,
                shotModelNode->modelPayload.worldRotationAngle1,
                shotModelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,

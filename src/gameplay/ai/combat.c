@@ -249,8 +249,8 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
       if (ownerNodeCursor->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
         continue;
       }
-      candidateEntityRuntime = ownerNodeCursor->runtimePayload;
-      candidateArmyRuntime = (candidateEntityRuntime->common).ownership.runtimeLink;
+      candidateEntityRuntime = (GameEntityRuntime *)ownerNodeCursor->runtimePayload;
+      candidateArmyRuntime = (ArmyRuntimeSlot *)(candidateEntityRuntime->common).ownership.runtimeLink;
       /* a negative sum skips entities flagged 0x400 */
       if ((sourceClassCount < 0) &&
           (((candidateEntityRuntime->common).runtimeFlags & ARMY_MODEL_STATE_NO_REGENERATION) != 0)) {

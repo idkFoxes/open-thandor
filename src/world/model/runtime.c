@@ -681,7 +681,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   if (parentModelNode == NULL) {
     if (entityRuntime->common.ownership.definitionOrClassRecord != NULL) {
       LOCK(); /* read and cleared atomically in the original */
-      ownerRecord = entityRuntime->common.ownership.definitionOrClassRecord;
+      ownerRecord = (int *)entityRuntime->common.ownership.definitionOrClassRecord;
       entityRuntime->common.ownership.definitionOrClassRecord = NULL;
       UNLOCK();
       ownerDefinition = *ownerRecord;

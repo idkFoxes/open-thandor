@@ -597,11 +597,11 @@ uint32_t __cdecl Graphics_Init(void)
   if (ddrawModule == NULL) {
     return FATAL_ERROR_DLL_LOAD_FAILED;
   }
-  resolveError = DynAPI_Resolve(&pDirectDrawCreate,ddrawModule,sz_DirectDrawCreate);
+  resolveError = DynAPI_Resolve((void **)&pDirectDrawCreate,ddrawModule,sz_DirectDrawCreate);
   if (resolveError != 0) {
     return resolveError;
   }
-  resolveError = DynAPI_Resolve(&pDirectDrawEnumerateA,ddrawModule,sz_DirectDrawEnumerateA);
+  resolveError = DynAPI_Resolve((void **)&pDirectDrawEnumerateA,ddrawModule,sz_DirectDrawEnumerateA);
   if (resolveError != 0) {
     return resolveError;
   }
@@ -621,7 +621,9 @@ uint32_t __cdecl Graphics_Init(void)
     hresult = pDirectDrawCreate(driverGuid,&directDraw,NULL);
     if (hresult == 0) {
       directDraw->lpVtbl->EnumDisplayModes
-                (directDraw,0,NULL,displayAdapterIndex,DirectDraw_EnumDisplayModeCallback);
+                (directDraw,0,NULL,displayAdapterIndex,
+                 /* signature differs: the callback takes the context as FrontendDisplayAdapterIndex (int) */
+                 (int32_t (__stdcall *)(DDSURFACEDESC_DX6 *,uint32_t))DirectDraw_EnumDisplayModeCallback);
       directDraw->lpVtbl->Release(directDraw);
     }
     displayAdapterIndex++;
@@ -635,7 +637,8 @@ uint32_t __cdecl Graphics_Init(void)
   }
   /* g_GraphicsSetViewportAndClearDepth, g_GraphicsDrawPrimitiveQueue, g_GraphicsBeginScene/EndScene and the
      texture refresh/rebuild slots keep their software renderer defaults */
-  g_GraphicsSetDisplayMode = GraphicsDirectDraw_ApplyDisplayModeAndCreateResources;
+  /* signature differs: the adapter index is FrontendDisplayAdapterIndex (int), not uint32_t */
+  g_GraphicsSetDisplayMode = (SoftwareDisplayModeHookProc *)GraphicsDirectDraw_ApplyDisplayModeAndCreateResources;
   g_GraphicsFramebufferBeginAccess = GraphicsFramebuffer_BeginAccess;
   g_GraphicsFramebufferEndAccess = GraphicsFramebuffer_EndAccess;
   g_GraphicsCreateTextureSet = GraphicsTextureSet_Create;

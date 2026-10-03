@@ -11,7 +11,7 @@
 /* Module data. */
 
 /* UTF-16 L"army0000.gfx" after g_AiCommandGenerationRetainedTarget; no code reference found */
-__declspec(align(4)) uint16_t g_UnreferencedArmyTexturePathUtf16[13] = L"army0000.gfx";
+__declspec(align(4)) uint16_t g_UnreferencedArmyTexturePathUtf16[13] = {'a', 'r', 'm', 'y', '0', '0', '0', '0', '.', 'g', 'f', 'x', 0};
 
 /* char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
 __declspec(align(4)) char g_UnreferencedArmyTag[5] = "ARMY";

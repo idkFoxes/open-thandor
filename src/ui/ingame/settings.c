@@ -723,7 +723,7 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
   isEnabled = (Bool8)UiSelectableControl_IsSelected(control);
   if (!isEnabled) {
-    g_SoundStopVoice(g_InGameActiveEffectVoice);
+    g_SoundStopVoice((IDirectSoundBuffer *)g_InGameActiveEffectVoice);
     g_InGameActiveEffectVoice = NULL;
   }
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
@@ -791,7 +791,7 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
   }
   else {
-    g_SoundStopVoice(g_InGameActiveMusicVoice);
+    g_SoundStopVoice((IDirectSoundBuffer *)g_InGameActiveMusicVoice);
     g_InGameActiveMusicVoice = NULL;
     g_InGameMusicNextTrackCountdown = 1;
   }
@@ -865,7 +865,7 @@ void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
   PersistentSettings_Write(value,PERSISTENT_SETTING_EFFECTS_GAIN);
   g_UiSoundGainQ15 = value;
   g_SoundEffectsGainQ15 = value;
-  g_SoundSetVoiceGains(value,value,g_InGameActiveEffectVoice);
+  g_SoundSetVoiceGains(value,value,(IDirectSoundBuffer *)g_InGameActiveEffectVoice);
   return;
 }
 
@@ -895,7 +895,7 @@ void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 
   value = control->boundValue;
   PersistentSettings_Write(value,PERSISTENT_SETTING_MUSIC_GAIN);
-  g_SoundSetVoiceGains(value,value,g_InGameActiveMusicVoice);
+  g_SoundSetVoiceGains(value,value,(IDirectSoundBuffer *)g_InGameActiveMusicVoice);
   return;
 }
 

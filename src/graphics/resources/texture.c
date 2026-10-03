@@ -164,7 +164,7 @@ GraphicsTextureSet * GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16,uint32_t
   GraphicsTextureSet *createdSet;
   uint32_t errorCode;
 
-  loadedSource = Package_LoadEntry(pathUtf16,&errorCode);
+  loadedSource = (GraphicsTextureSourceAsset *)Package_LoadEntry(pathUtf16,&errorCode);
   if (loadedSource != NULL) {
     createdSet = g_GraphicsCreateTextureSet(loadedSource,&errorCode);
     if (createdSet != NULL) {
@@ -1141,7 +1141,7 @@ GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pat
   GraphicsPaletteTextureSourceAsset *loadedSource;
   uint32_t loadError;
 
-  loadedSource = Package_LoadEntry(pathUtf16,&loadError);
+  loadedSource = (GraphicsPaletteTextureSourceAsset *)Package_LoadEntry(pathUtf16,&loadError);
   if (loadedSource != NULL) {
     loadError = g_GraphicsTextureSourceConvertPaletteEntries(loadedSource);
     if (loadError == 0) {

@@ -129,7 +129,7 @@ Bool8 Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fa
   for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      researchingModel = ownerNode->runtimePayload;
+      researchingModel = (ModelRuntimeSlot *)ownerNode->runtimePayload;
       if ((researchingModel->classState.stateFlags & ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING) != 0 &&
           factionIndex == researchingModel->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex &&
           technologyIndex == researchingModel->researchTechnologyId) {

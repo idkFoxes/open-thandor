@@ -316,7 +316,7 @@ static FrontendPacket10032HostValue g_UiTransferPingEchoPacket = {0};
 static UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter = 0;
 
 /* version string shown to joining players ("1.5.45") */
-static uint16_t g_GameVersionUtf16[7] = L"1.5.45";
+static uint16_t g_GameVersionUtf16[7] = {'1', '.', '5', '.', '4', '5', 0}; /* L"1.5.45" */
 
 static FrontendPacket10000Handshake g_FrontendPacket10000Buffer = {0};
 
@@ -1038,7 +1038,7 @@ Bool8 UiTransfer_SendPlayerDescriptor(void)
   /* the last name unit becomes the flags word */
   ((uint16_t *)payloadCursor)[-1] = 0;
   callCarry = PcxPreview_Load64x64PaletteAndPixels
-                    (g_FrontendLocalPlayerPcxPreview,g_FrontendLocalPlayerNameUtf16);
+                    ((PcxPreview64 *)g_FrontendLocalPlayerPcxPreview,g_FrontendLocalPlayerNameUtf16);
   if (!callCarry) {
     ((uint16_t *)payloadCursor)[-1] |= FRONTEND_DESCRIPTOR_HAS_PICTURE;
   }

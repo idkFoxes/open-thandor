@@ -16,9 +16,9 @@ static PckMountSlot g_PackageMountSlots[1024] = {0};
 /* LevelPackage_ValidateAndMount's one-entry Package_FindEntry output buffer (PCK_ENTRY_HEADER_BYTES) */
 static PckEntryHeader g_LevelPackageFoundEntry = {0};
 
-static uint16_t g_LevelLevPatternUtf16[12] = L"level\\*.lev";
+static uint16_t g_LevelLevPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 'l', 'e', 'v', 0}; /* L"level\\*.lev" */
 
-static uint16_t g_LevelStrPatternUtf16[12] = L"level\\*.str";
+static uint16_t g_LevelStrPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 's', 't', 'r', 0}; /* L"level\\*.str" */
 
 uint8_t *g_PackageScratchBuffer = 0;
 
@@ -44,7 +44,7 @@ Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
   if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
                         (uint16_t *)g_LevelLevPatternUtf16,fileHandle,&matchCount) &&
       matchCount != 0) {
-    levelAsset = Package_LoadEntry(g_LevelPackageFoundEntry.path,NULL);
+    levelAsset = (int *)Package_LoadEntry(g_LevelPackageFoundEntry.path,NULL);
     if (levelAsset != NULL) {
       /* dword 0: asset magic, dword 3: converter version */
       if (*levelAsset == ASSET_MAGIC_LEV && levelAsset[3] == PCK_CONVERTER_LEV_00070001) {

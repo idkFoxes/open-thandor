@@ -47,9 +47,9 @@ static uint32_t g_CursorMaxWidth = 0;
 
 static uint32_t g_CursorMaxHeight = 0;
 
-static uint16_t g_EngineMouseGfxPathUtf16[17] = L"engine\\mouse.gfx";
+static uint16_t g_EngineMouseGfxPathUtf16[17] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'm', 'o', 'u', 's', 'e', '.', 'g', 'f', 'x', 0}; /* L"engine\\mouse.gfx" */
 
-static uint16_t g_EngineMouseDatPathUtf16[17] = L"engine\\mouse.dat";
+static uint16_t g_EngineMouseDatPathUtf16[17] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'm', 'o', 'u', 's', 'e', '.', 'd', 'a', 't', 0}; /* L"engine\\mouse.dat" */
 
 /* g_KeyboardEvents. Original quirk: the original reserves 256 events (0x800 bytes) for the ring, but
    the read and write indices wrap at KEYBOARD_EVENT_RING_SIZE (64), so entries 64-255 are never used. */
@@ -227,7 +227,7 @@ Bool8 DirectInputMouse_Init(uint32_t *outError)
   if (directInputModule == NULL) {
     FatalError_ExitIfFailed(FATAL_ERROR_DLL_LOAD_FAILED,true); /* does not return */
   }
-  resolveError = DynAPI_Resolve(&pDirectInputCreateA,directInputModule,dynapi_19);
+  resolveError = DynAPI_Resolve((void **)&pDirectInputCreateA,directInputModule,dynapi_19);
   FatalError_ExitIfFailed(resolveError,resolveError != 0);
   SetCursor(NULL);
   directInputResult = pDirectInputCreateA(g_hInstance,DIRECTINPUT_VERSION,&g_DirectInput,NULL);
@@ -265,7 +265,7 @@ Bool8 DirectInputMouse_Init(uint32_t *outError)
   g_PointerSetPosition = DirectInputMouse_SetPosition;
 
   /* cursor images: the largest image size sizes the cursor buffers */
-  cursorAsset = Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode);
+  cursorAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(g_EngineMouseGfxPathUtf16,&cursorLoadErrorCode);
   if (cursorAsset == NULL) {
     *outError = cursorLoadErrorCode;
     return false;

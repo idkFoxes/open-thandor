@@ -300,7 +300,7 @@ extern GraphicsTextureSourceAsset *g_FrontendMenuTextureSource;
 extern uint32_t g_FrontendNetworkTickCounter;
 extern uint32_t g_FrontendStateTickSpinLock;
 extern uint32_t g_FrontendScenarioInitializationCount;
-extern uint32_t g_FrontendMusicVoiceSet;
+extern DirectSoundVoiceSet *g_FrontendMusicVoiceSet;
 extern uint16_t g_FrontendMusic00SamPathUtf16[18];
 extern uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16]; /* decimal xenite amount, bound to a template text control */
 extern uint32_t g_DebugOverlayCounterRefreshCountdown; /* uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */

@@ -22,7 +22,7 @@ char g_SpielerSpielNetzwerkHostKeywordsAscii[31] = "SPIELER=\"SPIEL=\"NETZWERK=\
 
 /* Original quirk: the string's terminating NUL is the
    first byte of the Package_FindEntry output buffer g_LevelPackageFoundEntry; the code passes explicit lengths. */
-char g_NameClientKarteKeywordsAscii[21] = "NAME=\"CLIENT=\"KARTE=\"";
+char g_NameClientKarteKeywordsAscii[21] = {'N', 'A', 'M', 'E', '=', '"', 'C', 'L', 'I', 'E', 'N', 'T', '=', '"', 'K', 'A', 'R', 'T', 'E', '=', '"'}; /* "NAME=\"CLIENT=\"KARTE=\"" without its NUL */
 
 UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch = {0};
 
@@ -228,7 +228,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,FRONTEND_UI(frontendUi,frontendRoot));
     UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
     UiPointerList_InitializeColumnLayout
-              (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+              (0,(void **)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_CLIENT;
     g_FrontendPlayerRuntimeBlockCount = 1;
@@ -301,7 +301,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
-            (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+            (0,(void **)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   UiTransfer_SendDiscoveryProbe();
   /* -HOST opens the host setup at once; otherwise -CLIENT="host address" may join a host */
   hostOption = g_CommandLineFindOption(5,g_SpielerSpielNetzwerkHostKeywordsAscii + 26);
@@ -393,7 +393,7 @@ void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
-            (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
+            (0,(void **)g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   UiTransfer_SendDiscoveryProbe();
   return;
 }

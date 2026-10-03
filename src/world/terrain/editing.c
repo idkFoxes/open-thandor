@@ -110,8 +110,8 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
   if (referenceMaterial != replacementMaterialByte) {
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReplacementMaterialByte = replacementMaterialByte;
-    g_TerrainMaterialEditFieldGrid = fieldGridAsset;
-    g_TerrainMaterialEditDeltaBuffer = playerBlock->terrainMaterialEditPlane;
+    g_TerrainMaterialEditFieldGrid = (uint32_t)fieldGridAsset;
+    g_TerrainMaterialEditDeltaBuffer = (uint32_t)playerBlock->terrainMaterialEditPlane;
     g_TerrainMaterialEditReferenceMaterialByte = referenceMaterial;
     TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY,gridX);
   }
@@ -154,8 +154,8 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
       FIELD_CELL_MATERIAL_ID_MASK) != referenceMaterialByte) {
     fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     g_TerrainMaterialEditReferenceMaterialByte = referenceMaterialByte;
-    g_TerrainMaterialEditFieldGrid = fieldGridAsset;
-    g_TerrainMaterialEditDeltaBuffer = playerBlock->terrainMaterialEditPlane;
+    g_TerrainMaterialEditFieldGrid = (uint32_t)fieldGridAsset;
+    g_TerrainMaterialEditDeltaBuffer = (uint32_t)playerBlock->terrainMaterialEditPlane;
     TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY,gridX);
   }
 }

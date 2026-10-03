@@ -11,7 +11,7 @@
 /* Module data. */
 
 /* the four level digits at index 7 are overwritten with the level number (ui/frontend/scenario.c) */
-static uint16_t g_FrontendMissionBriefingMoviePathUtf16[16] = L"flm\\lev0000.flm";
+static uint16_t g_FrontendMissionBriefingMoviePathUtf16[16] = {'f', 'l', 'm', '\\', 'l', 'e', 'v', '0', '0', '0', '0', '.', 'f', 'l', 'm', 0}; /* L"flm\\lev0000.flm" */
 
 /* Implementation ownership: ui/frontend/scenario. */
 

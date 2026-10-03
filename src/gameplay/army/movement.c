@@ -215,7 +215,7 @@ static ArticulatedRouteStep ArticulatedWalker_TryStartRouteStep(WorldRuntimeCont
     deltaX = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
     deltaY = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
     if ((deltaX == 0) && (deltaY == 0)) {
-      targetAngleLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
+      targetAngleLength = THANDOR_COMPOUND(FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
     }
     else {
       targetAngleLength = FixedMath_Vector2AngleAndLength(deltaY,deltaX);
@@ -959,7 +959,7 @@ static ModelRuntimeNode *TrackedMovement_SteerAndDrive
   routeDeltaY = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
   routeDeltaX = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
   if ((routeDeltaX == 0) && (routeDeltaY == 0)) {
-    angleAndLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
+    angleAndLength = THANDOR_COMPOUND(FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
   }
   else {
     angleAndLength = FixedMath_Vector2AngleAndLength(routeDeltaY,routeDeltaX);
@@ -1440,7 +1440,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   deltaX = waypointWorldX - (rootNode->worldTransform).translation.x;
   deltaY = waypointWorldY - (rootNode->worldTransform).translation.y;
   if ((deltaX == 0) && (deltaY == 0)) {
-    *targetAngleLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
+    *targetAngleLength = THANDOR_COMPOUND(FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
   }
   else {
     *targetAngleLength = FixedMath_Vector2AngleAndLength(deltaY,deltaX);
@@ -2062,7 +2062,7 @@ static ModelRuntimeNode *ArmyGroundMovement_SteerAndDrive
   routeDeltaY = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
   routeDeltaX = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
   if ((routeDeltaX == 0) && (routeDeltaY == 0)) {
-    angleAndLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
+    angleAndLength = THANDOR_COMPOUND(FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
   }
   else {
     angleAndLength = FixedMath_Vector2AngleAndLength(routeDeltaY,routeDeltaX);
@@ -2644,7 +2644,7 @@ static ModelRuntimeNode *ArmyWaterSurfaceMovement_SteerAndDrive
   routeDeltaY = waypointWorldYQ12 - (rootNode->worldTransform).translation.y;
   routeDeltaX = waypointWorldXQ12 - (rootNode->worldTransform).translation.x;
   if ((routeDeltaX == 0) && (routeDeltaY == 0)) {
-    angleAndLength = (FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
+    angleAndLength = THANDOR_COMPOUND(FixedLengthAngle){ .length = 0, .angle = (rootNode->modelPayload).worldRotationAngle2 };
   }
   else {
     angleAndLength = FixedMath_Vector2AngleAndLength(routeDeltaY,routeDeltaX);
@@ -2961,7 +2961,7 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
   }
   if (effectDefinition != NULL) {
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
                (footNode->modelPayload).worldRotationAngle2,
                (footNode->modelPayload).worldRotationAngle1,
                (footNode->modelPayload).worldRotationAngle0,
@@ -3637,7 +3637,7 @@ Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targ
   ownerEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
   lineOfFireBlocked = ArmyWeaponRuntime_TestTargetLineOfFire
                     (targetWorldZQ12,targetWorldYQ12,targetWorldXQ12,worldRuntime,modelRuntime);
-  ownerRootModelRuntime = (ownerEntity->common).ownership.definitionOrClassRecord;
+  ownerRootModelRuntime = (ModelRuntimeSlot *)(ownerEntity->common).ownership.definitionOrClassRecord;
   if (lineOfFireBlocked) {
     if (((modelRuntime == ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset) ||
         (ownerRootModelRuntime->attachments[0].childModelRuntimeOrSavedOffset == NULL)

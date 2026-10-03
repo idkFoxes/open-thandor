@@ -269,7 +269,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
     chosenTextureSet = g_ArmyGraphicsBindings[0].textureSet;
     chosenPalette = g_ArmyGraphicsBindings[0].paletteAsset;
   }
-  nestedModelResource = effectDefinition->ownedNestedResource;
+  nestedModelResource = (ModelResource *)effectDefinition->ownedNestedResource;
   effectModelNode->modelPayload.textureSet = chosenTextureSet;
   resourceRadiusQ12 = nestedModelResource->boundingRadiusQ12;
   effectModelNode->modelPayload.paletteAsset = chosenPalette;
@@ -303,7 +303,7 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
   /* an immediate light at the model's light point, unless the shading starts later */
   if (shadingStartTicks == 0 &&
       ModelLookupTable_FindPackedPoint
-            (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource,&lightPoint)) {
+            (0,MODEL_POINT_CLASS_LIGHT,(ModelResource *)effectDefinition->ownedNestedResource,&lightPoint)) {
     localPoint = ModelNodeRuntime_TransformLocalPoint(lightPoint,(ModelRuntimeNode *)effectModelNode);
     /* the alpha byte of the shading colour is the radius in 1/16 world units */
     effectModelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord

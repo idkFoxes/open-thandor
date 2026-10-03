@@ -661,10 +661,10 @@ void FrontendPlayerRuntime_UpdateStartButtonByCdShare(void)
     remainingBlocks--;
   } while (remainingBlocks != 0);
   if ((uint32_t)(cdPlayerCount * 3) < g_FrontendPlayerRuntimeCount) {
-    UiNodeList_SuppressActionId(FRONTEND_ACTION_START_NETWORK_GAME,g_FrontendRootNode);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_START_NETWORK_GAME,(UiNodeBase *)g_FrontendRootNode);
   }
   else {
-    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_NETWORK_GAME,g_FrontendRootNode);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_NETWORK_GAME,(UiNodeBase *)g_FrontendRootNode);
   }
   return;
 }

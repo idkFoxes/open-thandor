@@ -405,7 +405,7 @@ uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSo
                                     FATAL_ERROR_DIRECTSOUND_SETUP);
   }
   directSoundResult = soundBuffer->lpVtbl->Lock
-                    (soundBuffer,0,0,&lockedPcm,&lockedByteCount,&wrapRegion,&wrapByteCount,
+                    (soundBuffer,0,0,(TH_LEGACY_LPVOID *)&lockedPcm,&lockedByteCount,&wrapRegion,&wrapByteCount,
                      DSBLOCK_ENTIREBUFFER);
   if (directSoundResult != 0) {
     return DirectSound_FailVoiceSet(soundBuffer,DIRECTSOUND_VOICE_STAGE_LOCK,FATAL_ERROR_DIRECTSOUND_SETUP);

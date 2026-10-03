@@ -147,7 +147,7 @@ static void EffectLifecycle_UpdateShadingOnFrameAdvance
   effectSlot->shadingStartCountdownTicksRemaining--;
   if ((effectSlot->shadingStartCountdownTicksRemaining == 0) && (modelNode->shadingRecord == NULL)) {
     if (ModelLookupTable_FindPackedPoint
-          (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource,&packedPoint)) {
+          (0,MODEL_POINT_CLASS_LIGHT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
       localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
       /* the alpha byte of the shading colour is the radius in 1/16 world units */
       modelNode->shadingRecord = GraphicsShadingRuntime_AllocateRecord
@@ -222,12 +222,12 @@ static void EffectLifecycle_CountDownPeriodicEffect
   }
   effectSlot->periodicEffectCountdownTicks = effectDefinition->periodicEffectIntervalTicks;
   if (ModelLookupTable_FindPackedPoint
-        (1,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource,&packedPoint)) {
+        (1,MODEL_POINT_CLASS_EFFECT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
     periodicDefinition = effectDefinition->periodicEffectDefinition;
     localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
     /* the periodic child effect always starts with rotation angle 1 at a quarter turn */
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                FIXED_ANGLE16_QUARTER_TURN,0,
                localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,periodicDefinition,worldRuntime);
   }
@@ -248,10 +248,10 @@ static void EffectLifecycle_CountDownLinkedEffect
     return;
   }
   if (ModelLookupTable_FindPackedPoint
-        (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource,&packedPoint)) {
+        (0,MODEL_POINT_CLASS_EFFECT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
     localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
                modelNode->modelPayload.worldRotationAngle2,
                modelNode->modelPayload.worldRotationAngle1,
                modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
@@ -279,7 +279,7 @@ static void EffectLifecycle_CountDownLinkedShot
   effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex =
        effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex + 1;
   if (ModelLookupTable_FindPackedPoint
-        (shotPointIndex,MODEL_POINT_CLASS_SHOT,effectDefinition->ownedNestedResource,&packedPoint)) {
+        (shotPointIndex,MODEL_POINT_CLASS_SHOT,(ModelResource *)effectDefinition->ownedNestedResource,&packedPoint)) {
     localPoint = ModelNodeRuntime_TransformLocalPoint(packedPoint,(ModelRuntimeNode *)modelNode);
     ShotRuntimePool_CreateProjectileFromDefinition
               (0,NULL,

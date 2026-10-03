@@ -134,7 +134,7 @@ Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32
     *outError = FATAL_ERROR_EFFECT_ID_NOT_FOUND;
     return false;
   }
-  loadedSpriteAsset = Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
+  loadedSpriteAsset = (SpriteAssetHeader *)Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
   if (loadedSpriteAsset == NULL) {
     *outError = loadErrorCode;
     return false;

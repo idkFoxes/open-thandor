@@ -10,7 +10,8 @@
 
 /* Module data. */
 
-uint16_t g_SaveDirectoryUtf16[5] = L"save";
+/* L"save" */
+uint16_t g_SaveDirectoryUtf16[5] = {'s', 'a', 'v', 'e', 0};
 
 uint16_t g_ScenarioCatalogPathScratchUtf16[256] = {0};
 

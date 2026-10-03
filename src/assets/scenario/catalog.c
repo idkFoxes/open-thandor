@@ -12,28 +12,28 @@
 /* Module data. */
 
 /* UTF-16 L"level\\*.lev" after the save pattern; no code reference found */
-__declspec(align(4)) uint16_t g_UnreferencedLevelPatternUtf16[12] = L"level\\*.lev";
+__declspec(align(4)) uint16_t g_UnreferencedLevelPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 'l', 'e', 'v', 0};
 
 /* UTF-16 L"level\\*.cgn"; no code reference found */
-__declspec(align(4)) uint16_t g_UnreferencedCampaignPatternUtf16[12] = L"level\\*.cgn";
+__declspec(align(4)) uint16_t g_UnreferencedCampaignPatternUtf16[12] = {'l', 'e', 'v', 'e', 'l', '\\', '*', '.', 'c', 'g', 'n', 0};
 
 __declspec(align(4)) uint32_t g_FrontendLoadedCampaignAsset = 0;
 
-static uint16_t g_LevelLevelDatPathUtf16[16] = L"level\\level.dat";
+static uint16_t g_LevelLevelDatPathUtf16[16] = {'l', 'e', 'v', 'e', 'l', '\\', 'l', 'e', 'v', 'e', 'l', '.', 'd', 'a', 't', 0}; /* L"level\\level.dat" */
 
 static ScenarioLevelDataPathTemplate24 g_ScenarioLevelDataPathTemplateUtf16 = {
     .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x6C, 0x65, 0x76, 0x65, 0x6C},
     .decimalDigits = {.codeUnits = {0x30, 0x30}},
-    .suffixCodeUnits = L".dat"};
+    .suffixCodeUnits = {'.', 'd', 'a', 't', 0}}; /* L".dat" */
 
-static uint16_t g_LevelCampagneDatPathUtf16[19] = L"level\\campagne.dat";
+static uint16_t g_LevelCampagneDatPathUtf16[19] = {'l', 'e', 'v', 'e', 'l', '\\', 'c', 'a', 'm', 'p', 'a', 'g', 'n', 'e', '.', 'd', 'a', 't', 0}; /* L"level\\campagne.dat" */
 
 static ScenarioCampaignDataPathTemplate2A g_ScenarioCampaignDataPathTemplateUtf16 = {
     .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x63, 0x61, 0x6D, 0x70, 0x61, 0x67, 0x6E, 0x65},
     .decimalDigits = {.codeUnits = {0x30, 0x30}},
-    .suffixCodeUnits = L".dat"};
+    .suffixCodeUnits = {'.', 'd', 'a', 't', 0}}; /* L".dat" */
 
-static uint16_t g_CampaignLevelDirectoryUtf16[6] = L"level";
+static uint16_t g_CampaignLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"level" */
 
 /* list refresh handler per scenario selection tab (SCENARIO_SELECTION_TAB_*) */
 static ScenarioCatalogRefreshSelectedRecordCallback *const g_FrontendScenarioMapOptionHandlerTable[3] = {
@@ -45,9 +45,9 @@ ScenarioCatalogHeader *g_ScenarioCatalog = 0;
 
 uint32_t g_ScenarioCatalogUsedBytes = 0;
 
-uint16_t g_SaveSvePatternUtf16[11] = L"save\\*.sve";
+uint16_t g_SaveSvePatternUtf16[11] = {'s', 'a', 'v', 'e', '\\', '*', '.', 's', 'v', 'e', 0}; /* L"save\\*.sve" */
 
-uint16_t g_ScenarioLevelDirectoryUtf16[6] = L"level";
+uint16_t g_ScenarioLevelDirectoryUtf16[6] = {'l', 'e', 'v', 'e', 'l', 0}; /* L"level" */
 
 uint16_t g_LevelResourcePathScratchUtf16[256] = {0};
 
@@ -1186,7 +1186,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
               (g_LevelResourcePathScratchUtf16,(uint16_t *)fieldGridPath,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     /* the original does not check this load for failure */
-    sourceGrid = Package_LoadEntry((uint16_t *)fieldGridPath,&loadErrorCode);
+    sourceGrid = (FieldGridAsset *)Package_LoadEntry((uint16_t *)fieldGridPath,&loadErrorCode);
     if (sourceGrid == NULL) {
       /* Original quirk: the error code is used as the grid */
       sourceGrid = (FieldGridAsset *)loadErrorCode;
@@ -1270,7 +1270,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
   void **rowPointers;
   void **rowPointerCursor;
   
-  firstNode = g_FrontendRootNode;
+  firstNode = (UiNodeBase *)g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
@@ -1325,7 +1325,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
   UiListRowCount rowCount;
   ScenarioCatalogDisplayRecord **rowPointers;
   
-  firstNode = g_FrontendRootNode;
+  firstNode = (UiNodeBase *)g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
@@ -1361,7 +1361,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
     }
     control = (int32_t *)FRONTEND_UI(firstNode,missionsList);
     if (rowCount != 0) {
-      UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
+      UiPointerList_InitializeColumnLayout(rowCount,(void **)rowPointers,(UiPointerListControl *)control);
       /* sorted by the jump record of the level title */
       UiPointerList_SortByExpandedTextFieldAscending
                 (offsetof(ScenarioCatalogDisplayRecord,scenarioDisplayTag),(UiPointerListControl *)control);
@@ -1407,7 +1407,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
   UiListRowCount rowCount;
   void **rowPointers;
   
-  firstNode = g_FrontendRootNode;
+  firstNode = (UiNodeBase *)g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
@@ -1609,7 +1609,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
           if (((&playerRecord->scenarioAvailabilityMask0)[maskWordIndex] &
               1 << ((uint8_t)(levelRecordOffset >> 8) & 31)) != 0) {
             /* on failure levelAsset is replaced below */
-            levelAsset = Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,NULL);
+            levelAsset = (FrontendLoadedLevelAsset *)Package_LoadEntry(g_FrontendScenarioPathScratchUtf16,NULL);
             levelLoadedLocally = levelAsset != NULL;
           }
           break;
@@ -1746,7 +1746,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
   }
   if (selectedTabIndex != 0) {
     if (selectedTabIndex < 2) {
-      Resource_Release(g_FrontendLoadedCampaignAsset);
+      Resource_Release((void *)g_FrontendLoadedCampaignAsset);
       g_FrontendLoadedCampaignAsset = NULL;
       selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                         ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,missionsList),
@@ -1761,7 +1761,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
       }
       return;
     }
-    Resource_Release(g_FrontendLoadedCampaignAsset);
+    Resource_Release((void *)g_FrontendLoadedCampaignAsset);
     g_FrontendLoadedCampaignAsset = NULL;
     selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                       ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,campaignsList),
@@ -1778,7 +1778,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
   }
   scenarioPathPointerTableAddress =
        (int)((UiListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList))->rowSlots;
-  Resource_Release(g_FrontendLoadedCampaignAsset);
+  Resource_Release((void *)g_FrontendLoadedCampaignAsset);
   g_FrontendLoadedCampaignAsset = NULL;
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed
                     ((UiPointerListControl *)THANDOR_UI_SIBLING(selectionControl,FrontendUiImage,gameSelectStartButton,savedGamesList),

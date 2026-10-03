@@ -28,7 +28,7 @@ void DebugAutoShot_Tick(void)
     const char *value = getenv("OPEN_THANDOR_AUTOSHOT");
     interval = (value != NULL) ? atoi(value) : 0;
     if (interval > 0) {
-      CreateDirectoryA("shots", NULL);
+      CreateDirectoryA((LPCSTR)"shots", NULL);
     }
     last = Thandor_TickCount();
   }
@@ -50,7 +50,7 @@ void DebugAutoShot_SaveNow(void)
     Thandor_Log("script shot: no framebuffer yet");
     return;
   }
-  CreateDirectoryA("shots", NULL);
+  CreateDirectoryA((LPCSTR)"shots", NULL);
   DebugAutoShot_Save("script", &number);
 }
 

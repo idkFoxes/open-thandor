@@ -110,9 +110,9 @@ static WidePathBuffer256 g_UiTimedListHierarchyPathScratch = {0};
 
 static WidePathBuffer256 g_UiTimedListHierarchyParentPathScratch = {0};
 
-static uint16_t g_WildcardAllFilesUtf16[4] = L"*.*";
+static uint16_t g_WildcardAllFilesUtf16[4] = {'*', '.', '*', 0}; /* L"*.*" */
 
-static uint16_t g_UiTimedListDriveWildcardUtf16[7] = L"?:\\*.*";
+static uint16_t g_UiTimedListDriveWildcardUtf16[7] = {'?', ':', '\\', '*', '.', '*', 0}; /* L"?:\\*.*" */
 
 /* int32_t, 14: pixels scrolled per mouse-wheel step in a scrollable control whose child is not a list (UiScrollableControl wheel handler, src/ui/controls/lists.c). */
 static const int32_t g_UiScrollWheelDefaultStep = 14;
@@ -1350,7 +1350,7 @@ Bool8 UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListT
             ((uint32_t *)recordBlock)[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
             labelWriteCursor = ((uint32_t *)recordBlock) + recordCount * 4;
             leaf = outputRecords;
-            recordCursor = recordBlock;
+            recordCursor = (UiTimedListTreeRecord *)recordBlock;
             for (; directoryEntryCount != 0; directoryEntryCount--) {
               recordCursor[1].countOrLabelText = (uint32_t)labelWriteCursor;
               recordCursor[1].parentBlockOrIcon = UI_TIMED_LIST_ICON_DIRECTORY;

@@ -188,7 +188,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   }
   targetColumn = columnLimit - 2;
   targetRow = rowLimit - 2;
-  modelDefinition = (routeEntityRuntime->common).ownership.definitionOrClassRecord;
+  modelDefinition = (ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord;
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
   runtimeClassId = modelDefinition->runtimeClassId;
@@ -197,7 +197,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId])
               (overlappedEntity);
   }
-  armyRuntime = (routeEntityRuntime->common).ownership.runtimeLink;
+  armyRuntime = (ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink;
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove[runtimeClassId]
             (routeEntityRuntime);
   g_GridPathEntityClassMask = 1 << ((uint8_t)armyRuntime->factionIndex & 31);
@@ -771,7 +771,7 @@ Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outEr
       previousCostQueueBuffer = g_GridPathCostQueueBegin;
       if (allocError == 0) {
         g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + GRID_PATH_COST_QUEUE_BYTES);
-        g_GridPathCostQueueBegin = newAuxiliaryBuffer;
+        g_GridPathCostQueueBegin = (GridScratchCell **)newAuxiliaryBuffer;
         g_MemoryApi.free(previousCostQueueBuffer);
         return true;
       }
@@ -820,7 +820,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
   rowsRemaining = fieldGrid->gridHeight;
   columnsRemaining = gridWidth;
   currentFieldCell = fieldGrid->cells;
-  scratchCellCursor = &g_GridScratchPrimary->stateMask;
+  scratchCellCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
   do {
     do {
       /* the original advances first and then tests the flags of the current cell */
@@ -1023,7 +1023,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
   pairCursor = g_EntityPathingPriorityPairs;
   do {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      candidateEntity = ownerNode->runtimePayload;
+      candidateEntity = (GameEntityRuntime *)ownerNode->runtimePayload;
       candidateRecord = (candidateEntity->common).ownership.definitionOrClassRecord;
       masksOverlap = DepthBinMasks_Overlap
                          (ownerNode->modelDepthBinMaskFar,ownerNode->modelDepthBinMaskNear,
@@ -1188,9 +1188,9 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   leftCellWorldX = centerCellWorldX;
   leftWalkCursor = centerCellCursor;
   while ((GridFootprint_ClearTraversalFlagsDiagonalPositive
-            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,&leftWalkCursor->stateMask) != 0) &&
+            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,(uint32_t *)&leftWalkCursor->stateMask) != 0) &&
          (GridFootprint_ClearTraversalFlagsDiagonalNegative
-            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,&leftWalkCursor->stateMask) != 0)) {
+            (worldYQ12,worldXQ12,centerCellWorldY,leftCellWorldX,(uint32_t *)&leftWalkCursor->stateMask) != 0)) {
     leftWalkCursor--;
     leftCellWorldX = leftCellWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }
@@ -1198,9 +1198,9 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   rightCellWorldX = centerCellWorldX;
   rightWalkCursor = centerCellCursor;
   while ((GridFootprint_ClearTraversalFlagsDiagonalPositive
-            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,&rightWalkCursor->stateMask) != 0) &&
+            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,(uint32_t *)&rightWalkCursor->stateMask) != 0) &&
          (GridFootprint_ClearTraversalFlagsDiagonalNegative
-            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,&rightWalkCursor->stateMask) != 0)) {
+            (worldYQ12,worldXQ12,centerCellWorldY,rightCellWorldX,(uint32_t *)&rightWalkCursor->stateMask) != 0)) {
     rightWalkCursor++;
     rightCellWorldX = rightCellWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
@@ -1211,13 +1211,13 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   rightWalkCursor = leftWalkCursor + 1;
   while (GridFootprint_ClearTraversalFlagsDiagonalPositive
            (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,sideRowLeftWorldX,
-            &leftWalkCursor->stateMask) != 0) {
+            (uint32_t *)&leftWalkCursor->stateMask) != 0) {
     leftWalkCursor--;
     sideRowLeftWorldX = sideRowLeftWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
   }
   while (GridFootprint_ClearTraversalFlagsDiagonalPositive
            (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,sideRowRightWorldX,
-            &rightWalkCursor->stateMask) != 0) {
+            (uint32_t *)&rightWalkCursor->stateMask) != 0) {
     sideRowRightWorldX = sideRowRightWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
     rightWalkCursor++;
   }
@@ -1228,13 +1228,13 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
   leftWalkCursor = rightWalkCursor - 1;
   while (GridFootprint_ClearTraversalFlagsDiagonalNegative
            (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,sideRowRightWorldX,
-            &rightWalkCursor->stateMask) != 0) {
+            (uint32_t *)&rightWalkCursor->stateMask) != 0) {
     rightWalkCursor++;
     sideRowRightWorldX = sideRowRightWorldX + GRID_SCRATCH_COLUMN_WORLD_X;
   }
   while (GridFootprint_ClearTraversalFlagsDiagonalNegative
            (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,sideRowLeftWorldX,
-            &leftWalkCursor->stateMask) != 0) {
+            (uint32_t *)&leftWalkCursor->stateMask) != 0) {
     sideRowLeftWorldX = sideRowLeftWorldX - GRID_SCRATCH_COLUMN_WORLD_X;
     leftWalkCursor--;
   }
@@ -1520,8 +1520,8 @@ void __cdecl GridScratch_CopyPrimaryToSecondary(void)
   uint32_t *secondaryWriteCursor;
 
   scratchDwordsRemaining = g_GridScratchWidth * g_GridScratchHeight * 2;
-  primaryReadCursor = &g_GridScratchPrimary->stateMask;
-  secondaryWriteCursor = &g_GridScratchSecondary->stateMask;
+  primaryReadCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
+  secondaryWriteCursor = (uint32_t *)&g_GridScratchSecondary->stateMask;
   for (; scratchDwordsRemaining != 0; scratchDwordsRemaining--) {
     *secondaryWriteCursor = *primaryReadCursor;
     primaryReadCursor++;
@@ -1720,7 +1720,7 @@ void GridScratch_ResetTraversalFlagsAndCosts(void)
   Bool8 fullRecordBlockRemaining;
 
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
-  scratchRecordCursor = &g_GridScratchPrimary->stateMask;
+  scratchRecordCursor = (uint32_t *)&g_GridScratchPrimary->stateMask;
   do {
     *scratchRecordCursor = *scratchRecordCursor & ~GRID_SCRATCH_TRAVERSAL_VISITED;
     scratchRecordCursor[1] = GRID_PATH_COST_UNREACHED;

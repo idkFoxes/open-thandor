@@ -3243,7 +3243,7 @@ void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **row
   control->selectedRowSlot = rowPointers;
   (control->base).bottomOffset = rowHeightPixels * rowCount + 1;
   for (; rowCount != 0; rowCount--) {
-    measuredTextExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,*rowPointers);
+    measuredTextExtent = RichTextCommandStream_MeasureLine(g_UiListTextStyle,(uint16_t *)*rowPointers);
     if (maximumTextWidthPixels < measuredTextExtent.widthPixels) {
       maximumTextWidthPixels = measuredTextExtent.widthPixels;
     }

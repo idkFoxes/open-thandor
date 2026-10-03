@@ -457,7 +457,7 @@ static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,ui
        branch is dead. On an error the original abandons the whole tree walk at once; returning up the
        recursion is equivalent. */
     WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
-    loadedSprite = Package_LoadEntry(spritePath,error);
+    loadedSprite = (SpriteAssetHeader *)Package_LoadEntry(spritePath,error);
     if (loadedSprite == NULL) {
       return true;
     }

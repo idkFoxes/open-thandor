@@ -543,7 +543,7 @@ static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)createdModelNode);
   ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)armyRuntime,worldRuntime); /* the created army */
   EffectRuntimePool_CreateInstanceFromDefinition
-            (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){NULL},
              ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle2,
              ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle1,
              ((ModelRuntimeNode *)createdModelNode)->modelPayload.worldRotationAngle0,
@@ -765,7 +765,7 @@ static void AiConstructionPlanner_CreatePlacedAsset
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
   ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlots,worldRuntime); /* the created army */
   EffectRuntimePool_CreateInstanceFromDefinition
-            (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){NULL},
              ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
              ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
              ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,

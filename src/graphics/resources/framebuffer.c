@@ -335,7 +335,7 @@ Bool8 GraphicsFramebuffer_BeginAccess(void)
       else {
         g_DisplayFramebufferAccess.width = (uint32_t)g_SurfaceDesc.lPitch >> 2;
       }
-      g_DisplayFramebufferAccess.pixels = g_SurfaceDesc.lpSurface;
+      g_DisplayFramebufferAccess.pixels = (uint8_t *)g_SurfaceDesc.lpSurface;
       return false;
     }
   }

@@ -168,7 +168,7 @@ Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
   g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
   if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                          (placementMode,0,placementHeading,worldYQ12,worldXQ12,armyAssetId,
-                          ownerFactionId,inGameRuntime,NULL)) {
+                          ownerFactionId,(UiRootNode *)inGameRuntime,NULL)) {
     return false;
   }
   for (corner = 0; corner < 4; corner++) {
@@ -176,7 +176,7 @@ Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
     Q12 y = (Q12)(((uint32_t)worldYQ12 & 0xffffff00) + cornerDy[corner]);
     if (ArmyPlacement_CanPlaceAssetAtFieldPoint
                            (placementMode,0,placementHeading,y,x,armyAssetId,ownerFactionId,
-                            inGameRuntime,NULL)) {
+                            (UiRootNode *)inGameRuntime,NULL)) {
       g_ArmyPlacementValidatedWorldXQ12 = x;
       g_ArmyPlacementValidatedWorldYQ12 = y;
       return false;
@@ -693,7 +693,7 @@ Bool8 ArmyCollision_TestPointAgainstRuntimeList
                            ownerNode->modelDepthBinMaskNear);
         if (hit) {
           hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
-                            (placementRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload);
+                            (placementRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
           if (hit) {
             return true;
           }
@@ -857,13 +857,13 @@ Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
       continue;
     }
     hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
-                      (queryRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload);
+                      (queryRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
     if (hit) {
       return true;
     }
     if (modelClassId == MODEL_RUNTIME_CLASS_13) {
       hit = ArmyPlacementCandidate_TestModelAnchorDistance
-                        (queryRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload);
+                        (queryRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
       if (hit) {
         return true;
       }
@@ -926,7 +926,7 @@ Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
         continue;
       }
     }
-    ownerModelRuntime = ownerNode->runtimePayload;
+    ownerModelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
     if ((candidateNode == ownerNode) || (ownerNode == excludedWorldObject)) {
       continue;
     }

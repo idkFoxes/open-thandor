@@ -68,7 +68,8 @@ static AiRuntimeWorkspaceEntry *g_AiWorkspace02VisibleHostiles = 0;
 
 static uint32_t g_AiWorkspace02Count = 0;
 
-static uint16_t g_EngineKiDatPathUtf16[14] = L"engine\\ki.dat";
+/* L"engine\\ki.dat" */
+static uint16_t g_EngineKiDatPathUtf16[14] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'k', 'i', '.', 'd', 'a', 't', 0};
 
 /* Implementation ownership: gameplay/ai/workspaces. */
 
@@ -166,7 +167,7 @@ static void AiPlanningRebuild_CollectWorldEntities(FactionRuntimeIndex factionIn
       continue;
     }
     /* the node's model runtime; entityRuntime is its owning army */
-    modelRuntime = worldNode->runtimePayload;
+    modelRuntime = (ModelRuntimeSlot *)worldNode->runtimePayload;
     entityRuntime = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if (factionIndex == entityRuntime->common.ownership.ownerIndex) {
       assetId = entityRuntime->common.runtimeIdentityOrArmyAssetId;
@@ -1072,7 +1073,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
     ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
     ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlotPair,worldRuntime); /* the created army */
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){NULL},
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){NULL},
                ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
                ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
                ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
@@ -1156,7 +1157,7 @@ Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode)
                               allocError = g_MemoryApi.alloc(AI_WORKSPACE14_CAPACITY * sizeof(ArmyRuntimeSlot *),
                                                              (void **)&g_AiWorkspace14CollectedArmies);
                               if (allocError == 0) {
-                                knowledgeDataImage = Package_LoadEntry((uint16_t *)g_EngineKiDatPathUtf16,&loadErrorCode);
+                                knowledgeDataImage = (AiKnowledgeDataImage *)Package_LoadEntry((uint16_t *)g_EngineKiDatPathUtf16,&loadErrorCode);
                                 if (knowledgeDataImage != NULL) {
                                   g_AiKnowledgeData = knowledgeDataImage;
                                   return true;

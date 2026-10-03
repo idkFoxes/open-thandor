@@ -104,17 +104,17 @@ static int32_t g_UiSevenSlotSelectionControlOffsets[7] = {8420, 8516, 8612, 8708
 /* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state; ui/ingame/runtime.c */
 static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB};
 
-static uint16_t g_GfxPanelPanel0GfxPathUtf16[21] = L"gfx\\panel\\panel0.gfx";
+static uint16_t g_GfxPanelPanel0GfxPathUtf16[21] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'p', 'a', 'n', 'e', 'l', '0', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\panel0.gfx" */
 
-static uint16_t g_GfxPanelTechGfxPathUtf16[19] = L"gfx\\panel\\tech.gfx";
+static uint16_t g_GfxPanelTechGfxPathUtf16[19] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 't', 'e', 'c', 'h', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\tech.gfx" */
 
-static uint16_t g_GfxPanelDiagram0GfxPathUtf16[23] = L"gfx\\panel\\diagram0.gfx";
+static uint16_t g_GfxPanelDiagram0GfxPathUtf16[23] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'd', 'i', 'a', 'g', 'r', 'a', 'm', '0', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\diagram0.gfx" */
 
-static uint16_t g_GfxPanelWindowGfxPathUtf16[21] = L"gfx\\panel\\window.gfx";
+static uint16_t g_GfxPanelWindowGfxPathUtf16[21] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'w', 'i', 'n', 'd', 'o', 'w', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\window.gfx" */
 
-static uint16_t g_DeveloperChatPhraseUtf16[32] = L"Oh grosser Thomas, erl\366se mich!";
+static uint16_t g_DeveloperChatPhraseUtf16[32] = {'O', 'h', ' ', 'g', 'r', 'o', 's', 's', 'e', 'r', ' ', 'T', 'h', 'o', 'm', 'a', 's', ',', ' ', 'e', 'r', 'l', 0xF6, 's', 'e', ' ', 'm', 'i', 'c', 'h', '!', 0}; /* L"Oh grosser Thomas, erl\366se mich!" */
 
-static uint16_t g_HmmNaGutChatPhraseUtf16[20] = L"Hmmm, na gut... ;-)";
+static uint16_t g_HmmNaGutChatPhraseUtf16[20] = {'H', 'm', 'm', 'm', ',', ' ', 'n', 'a', ' ', 'g', 'u', 't', '.', '.', '.', ' ', ';', '-', ')', 0}; /* L"Hmmm, na gut... ;-)" */
 
 static int32_t g_InGamePanelTextureSubresource00Width = 0;
 
@@ -249,9 +249,9 @@ static uint32_t g_UiCommandDragStartScreenY = 0;
 
 uint32_t g_RenderedFrameCountSinceDebugRefresh = 0;
 
-uint16_t g_CampagneHexPathUtf16[13] = L"campagne.hex";
+uint16_t g_CampagneHexPathUtf16[13] = {'c', 'a', 'm', 'p', 'a', 'g', 'n', 'e', '.', 'h', 'e', 'x', 0}; /* L"campagne.hex" */
 
-uint16_t g_OldunitHexPathUtf16[12] = L"oldunit.hex";
+uint16_t g_OldunitHexPathUtf16[12] = {'o', 'l', 'd', 'u', 'n', 'i', 't', '.', 'h', 'e', 'x', 0}; /* L"oldunit.hex" */
 
 uint8_t g_InGameResourceRegistrationBusyCount = 0;
 
@@ -935,7 +935,8 @@ static Bool8 InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *pack
   if (InGameSaveGame_CreatePackage(savePath,packageHandle)) {
     return true;
   }
-  WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,g_ResourceRegistrationDirectoryUtf16,savePath);
+  WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,g_ResourceRegistrationDirectoryUtf16,
+                              (uint16_t *)savePath);
   if (g_FileSystemCreateDirectoryRecursive
           (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,g_ResourceRegistrationDirectoryUtf16) != 0) {
     return false;
@@ -986,10 +987,10 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
   if (!upsertOk) {
     return false;
   }
-  domainImagePair = InGameSaveGame_PrepareRegistrationRecords(worldView);
+  domainImagePair = InGameSaveGame_PrepareRegistrationRecords((ResourceRegistrationRuntimeImageSavedView *)worldView);
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 32),(uint16_t *)g_WidgetHexPathUtf16,packageHandle);
-  ResourceRegistrationRuntime_RebaseLoadedRecords(worldView);
+  ResourceRegistrationRuntime_RebaseLoadedRecords((ResourceRegistrationRuntimeImage *)worldView);
   if (!upsertOk) {
     return false;
   }
@@ -1000,15 +1001,15 @@ static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle
   if (!upsertOk) {
     return false;
   }
-  segmentImage = RuntimeHexSegment_GetFieldImage(worldView);
+  segmentImage = RuntimeHexSegment_GetFieldImage((InGameFieldImageSaveContext58 *)worldView);
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)segmentImage.byteSize,
                               segmentImage.image,(uint16_t *)g_FieldHexPathUtf16,packageHandle);
-  RuntimeHexSegment_AfterFieldImageNoOp(worldView);
+  RuntimeHexSegment_AfterFieldImageNoOp((InGameFieldImageSaveContext58 *)worldView);
   levelStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   if (!upsertOk) {
     return false;
   }
-  InGameSaveGame_StoreCameraAsPlayerStart(worldView);
+  InGameSaveGame_StoreCameraAsPlayerStart((ResourceRegistrationRuntimeImage *)worldView);
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (levelStorage->levelImage).header.resourceTables.
                               runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)levelStorage,
@@ -1098,7 +1099,7 @@ static Bool8 InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle p
       g_FileSystemReadExact(sizeof(InGameSavePackageHeader),header,handle) != 0) {
     return false;
   }
-  WidePath_SplitParentAndLeaf(header->saveNameUtf16,(uint16_t *)(header + 1),savePath);
+  WidePath_SplitParentAndLeaf(header->saveNameUtf16,(uint16_t *)(header + 1),(uint16_t *)savePath);
   header->packedDate = g_LocaleGetPackedCurrentDate();
   header->packedTime = g_LocaleGetPackedCurrentTime();
   dateTextByteLength = g_LocaleFormatCurrentDateUtf16(header->dateTimeTextUtf16);
@@ -1132,7 +1133,7 @@ static Bool8 InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
   if (!InGameSaveGame_WriteRuntimeEntries(worldView,packageHandle)) {
     return false;
   }
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,g_GameStatTableImage,
+  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,GAME_STAT_TABLE_BYTES,(uint32_t *)g_GameStatTableImage,
                       (uint16_t *)g_StatHexPathUtf16,packageHandle);
   /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
   if (InGameSaveGame_OldUnitTablesAreEmpty()) {
@@ -2672,7 +2673,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
   GraphicsTextureLogicalSize windowTextureSize;
   UiConditionalActionControl *statusBox;
 
-  g_SpinLockAcquire(&g_InGameStateTickSpinLock);
+  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -2702,7 +2703,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
       remainingPlayers--;
     } while (remainingPlayers != 0);
   }
-  g_SpinLockRelease(&g_InGameStateTickSpinLock);
+  g_SpinLockRelease((RuntimeSpinLockValue *)&g_InGameStateTickSpinLock);
   return;
 }
 
@@ -4744,21 +4745,29 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       root->worldOverlayCallback = NULL;
       (root->worldRuntime).selection.dispatchCommandCallback =
            InGameCameraCommand_DispatchByCodeAndModifierFlags;
+      /* signature differs: the mode handlers take UiPointerRegionCode/Q12/screen coordinates, an int and
+         WorldRuntimeExtendedMapControlView * where the slots take uint32_t and WorldRuntimeContext *; the no-op
+         takes no argument; the keyboard fallback returns void and takes uint32_t codes */
       (root->worldRuntime).selection.resolveContextActionPrimaryCallback =
+           (uint32_t (*)(uint32_t,uint32_t,uint32_t,uint32_t,WorldOwnerListNode *,WorldRuntimeContext *))
            InGameUiCommand_ResolveCursorCodeByMode;
       (root->worldRuntime).selection.resolveContextActionSecondaryCallback =
+           (uint32_t (*)(uint32_t,uint32_t,uint32_t,uint32_t,WorldOwnerListNode *,WorldRuntimeContext *))
            InGameUiCommand_ResolveCursorCodeByMode;
       (root->worldRuntime).selection.beginPointerCaptureCallback =
+           (void (*)(uint32_t,uint32_t,uint32_t,uint32_t,WorldOwnerListNode *,WorldRuntimeContext *))
            InGameUiCommand_BeginInteractionByMode;
       (root->worldRuntime).selection.updateDragSelectionCallback =
+           (void (*)(uint32_t,uint32_t,uint32_t,uint32_t,WorldOwnerListNode *,WorldRuntimeContext *))
            InGameUiCommand_UpdateInteractionByMode;
       (root->worldRuntime).selection.commitPointerActionCallback =
            InGameUiCommand_EndInteractionByMode;
       (root->worldRuntime).fieldRegion.clearTransientStateCallback =
-           UiCommandRuntime_CallbackNoOp;
+           (void (*)(WorldRuntimeContext *))UiCommandRuntime_CallbackNoOp;
       (root->worldRuntime).selection.dispatchWorldContextActionCallback =
            InGameUiCommand_ResetInteractionByMode;
       g_InGameUiRootCallbacks.keyboardFallback =
+           (Bool8 (*)(UiKeyboardStateMask,UiActionId,UiRootNode *))
            InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags;
       /* InGameCommandModeG_Select0..5, applied to the mode's tab control. */
       (*(void (*)(UiSelectableControl *))g_UiCommandModeGHandlers[editorMode])
@@ -4796,7 +4805,8 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
                  (root->worldRuntime).fieldGrid);
       WorldRuntime_ForEachOwnerListNode
                 (&root->worldRuntime,
-                 ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+                 /* signature differs: the callback's context is WorldRuntimeContext *, the slot's void * */
+                 (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
                  &root->worldRuntime);
       FieldGrid_ClassifyCellFlagsToRuntimeByte
                 ((root->worldRuntime).activeFactionRuntimeIndex,
@@ -4833,7 +4843,9 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     }
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(root,sidePanelMenuButtonStack));
     UiCommandModeG_HideSurfacePointMarker(&root->worldRuntime);
-    root->worldOverlayCallback = InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
+    /* signature differs: the overlay callback takes GraphicsBooleanState (int), the slot uint32_t */
+    root->worldOverlayCallback =
+         (void (*)(uint32_t,WorldRuntimeContext *))InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
     (root->worldRuntime).selection.dispatchCommandCallback =
          InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
     (root->worldRuntime).selection.resolveContextActionPrimaryCallback =
@@ -4846,13 +4858,16 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
          InGameWorldInput_UpdateDragSelectionAndCamera;
     (root->worldRuntime).selection.commitPointerActionCallback =
          InGameWorldInput_CommitPointerAction;
+    /* signature differs: the callback takes void *, the slot WorldRuntimeContext * */
     (root->worldRuntime).fieldRegion.clearTransientStateCallback =
-         InGameUiRuntime_ResetNotificationButtonCursor;
+         (void (*)(WorldRuntimeContext *))InGameUiRuntime_ResetNotificationButtonCursor;
     (root->worldRuntime).selection.dispatchWorldContextActionCallback =
          InGameUiRuntime_DispatchWorldContextActionCallback;
     runtimeFlagsField = &(root->worldRuntime).runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS;
-    g_InGameUiRootCallbacks.keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
+    /* signature differs: the fallback takes InGameRuntimeRootFrameView *, the slot UiRootNode * */
+    g_InGameUiRootCallbacks.keyboardFallback =
+         (Bool8 (*)(UiKeyboardStateMask,UiActionId,UiRootNode *))InGameHotkeys_DispatchCommandByFlags;
     /* free the cached preview textures of all army asset records */
     for (index = 0; index < ARMY_ASSET_REGISTRY_SLOT_COUNT; index++) {
       armyAsset = g_ArmyAssetRecordRegistry[index];
@@ -4867,8 +4882,10 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
                  (root->worldRuntime).fieldGrid);
     }
     WorldRuntime_ForEachOwnerListNode
-              (&root->worldRuntime,ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
-               ,&root->worldRuntime);
+              (&root->worldRuntime,
+               /* signature differs: the callback's context is WorldRuntimeContext *, the slot's void * */
+               (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+               &root->worldRuntime);
     node = &root->worldRuntime;
     FieldGrid_ClassifyCellFlagsToRuntimeByte
               ((root->worldRuntime).activeFactionRuntimeIndex,(root->worldRuntime).fieldGrid
@@ -5067,7 +5084,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   ArmyModelTreeNodeAddressView *linkedDefinitionListView;
   ModelDefinitionRecordPrefix *unlockedDefinition;
 
-  classRecordWords = entity->common.ownership.definitionOrClassRecord;
+  classRecordWords = (int *)entity->common.ownership.definitionOrClassRecord;
   entityDefinition = (ModelDefinition *)*classRecordWords;
   if (!FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
          ((RuntimeToken)classRecordWords,g_InGameRuntimeRoot->worldRuntime.selection.activePlayerRuntimeId)) {
@@ -5114,7 +5131,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   g_InGameSelectionDetailTextSlot05Utf16[1] = 0;
   g_InGameSelectionDetailTextSlot09Utf16[0] = L'-';
   g_InGameSelectionDetailTextSlot09Utf16[1] = 0;
-  modelRuntime = entity->common.ownership.definitionOrClassRecord;
+  modelRuntime = (ModelRuntimeSlot *)entity->common.ownership.definitionOrClassRecord;
   if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
     /* Original quirk: the lookup status is not checked (an unknown id leaves the error code in
        foundArmyAsset) */
@@ -5137,7 +5154,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
                  TextResource_Resolve(attachedModelRuntime->definitionOrSavedId.definition->nameTextIndex +
                                       TEXT_ID_MODEL_NAME_BASE));
     }
-    modelRuntime = entity->common.ownership.definitionOrClassRecord;
+    modelRuntime = (ModelRuntimeSlot *)entity->common.ownership.definitionOrClassRecord;
     if (1 < modelRuntime->attachmentCount) {
       attachedModelRuntime = modelRuntime->attachments[1].childModelRuntimeOrSavedOffset;
       if (attachedModelRuntime != NULL) {
@@ -5146,7 +5163,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
                    TextResource_Resolve(attachedModelRuntime->definitionOrSavedId.definition->nameTextIndex +
                                         TEXT_ID_MODEL_NAME_BASE));
       }
-      modelRuntime = entity->common.ownership.definitionOrClassRecord;
+      modelRuntime = (ModelRuntimeSlot *)entity->common.ownership.definitionOrClassRecord;
       if (2 < modelRuntime->attachmentCount) {
         attachedModelRuntime = modelRuntime->attachments[2].childModelRuntimeOrSavedOffset;
         if (attachedModelRuntime != NULL) {
@@ -5160,7 +5177,7 @@ static void InGameSelectionDetailPanel_ShowSingleEntity
   }
   /* Linked army asset: class 0x16 checks word 43, classes 0x0B/0x0D check word 46 of the class record; class
      0x0E only prints word 24 as a number. */
-  classRecordWords = entity->common.ownership.definitionOrClassRecord;
+  classRecordWords = (int *)entity->common.ownership.definitionOrClassRecord;
   runtimeClassId = ((ModelDefinition *)*classRecordWords)->runtimeClassId;
   if (runtimeClassId == MODEL_RUNTIME_CLASS_22) {
     if (classRecordWords[43] != 1) {

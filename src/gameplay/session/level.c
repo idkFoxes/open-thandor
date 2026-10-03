@@ -10,21 +10,29 @@
 
 /* Module data. */
 
-__declspec(align(4)) uint16_t g_ArmyHexPathUtf16[9] = L"army.hex";
+/* L"army.hex" */
+__declspec(align(4)) uint16_t g_ArmyHexPathUtf16[9] = {'a', 'r', 'm', 'y', '.', 'h', 'e', 'x', 0};
 
-uint16_t g_EffectHexPathUtf16[11] = L"effect.hex";
+/* L"effect.hex" */
+uint16_t g_EffectHexPathUtf16[11] = {'e', 'f', 'f', 'e', 'c', 't', '.', 'h', 'e', 'x', 0};
 
-uint16_t g_ShotHexPathUtf16[9] = L"shot.hex";
+/* L"shot.hex" */
+uint16_t g_ShotHexPathUtf16[9] = {'s', 'h', 'o', 't', '.', 'h', 'e', 'x', 0};
 
-uint16_t g_ModulHexPathUtf16[10] = L"modul.hex";
+/* L"modul.hex" */
+uint16_t g_ModulHexPathUtf16[10] = {'m', 'o', 'd', 'u', 'l', '.', 'h', 'e', 'x', 0};
 
-uint16_t g_FieldHexPathUtf16[10] = L"field.hex";
+/* L"field.hex" */
+uint16_t g_FieldHexPathUtf16[10] = {'f', 'i', 'e', 'l', 'd', '.', 'h', 'e', 'x', 0};
 
-uint16_t g_LightHexPathUtf16[10] = L"light.hex";
+/* L"light.hex" */
+uint16_t g_LightHexPathUtf16[10] = {'l', 'i', 'g', 'h', 't', '.', 'h', 'e', 'x', 0};
 
-uint16_t g_WidgetHexPathUtf16[11] = L"widget.hex";
+/* L"widget.hex" */
+uint16_t g_WidgetHexPathUtf16[11] = {'w', 'i', 'd', 'g', 'e', 't', '.', 'h', 'e', 'x', 0};
 
-uint16_t g_LevelHexPathUtf16[10] = L"level.hex";
+/* L"level.hex" */
+uint16_t g_LevelHexPathUtf16[10] = {'l', 'e', 'v', 'e', 'l', '.', 'h', 'e', 'x', 0};
 
 uint16_t g_LevelEndingMovieSourcePath[256] = {0};
 
@@ -46,9 +54,13 @@ uint32_t g_MoviePlaybackScheduleSpan = 0;
 
 uint32_t g_SoundPackageHandle = 0;
 
-static uint16_t g_SoundLevel00SamPathUtf16[18] = L"sound\\level00.sam";
+/* L"sound\\level00.sam" */
+static uint16_t g_SoundLevel00SamPathUtf16[18] =
+    {'s', 'o', 'u', 'n', 'd', '\\', 'l', 'e', 'v', 'e', 'l', '0', '0', '.', 's', 'a', 'm', 0};
 
-static uint16_t g_SessionMusic00SamPathUtf16[18] = L"sound\\music00.sam";
+/* L"sound\\music00.sam" */
+static uint16_t g_SessionMusic00SamPathUtf16[18] =
+    {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'u', 's', 'i', 'c', '0', '0', '.', 's', 'a', 'm', 0};
 
 static void **g_InGameLoadedResourcePointers = 0;
 
@@ -171,8 +183,8 @@ static Bool8 NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint
     return NewLevel_Fail(outError,allocError);
   }
   copySourceCursor = (uint32_t *)levelImage;
-  copyTargetCursor = conditionStorage;
-  g_InGameLevelRuntimeGlobalBlock.conditionStorage = conditionStorage;
+  copyTargetCursor = (uint32_t *)conditionStorage;
+  g_InGameLevelRuntimeGlobalBlock.conditionStorage = (InGameLevelConditionStorage *)conditionStorage;
   for (remainingDwordCount = prefixByteSize >> 2; remainingDwordCount != 0; remainingDwordCount--) {
     *copyTargetCursor = *copySourceCursor;
     copySourceCursor++;
@@ -193,7 +205,7 @@ static Bool8 NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_
 
   technologyPath = (uint16_t *)((uint8_t *)levelImage + (levelImage->header).pathOffsets.technologyPathOffset);
   WidePath_SetExtensionCode(ASSET_MAGIC_TEC,technologyPath);
-  loadedTechnologyAsset = Package_LoadEntry(technologyPath,&loadErrorCode);
+  loadedTechnologyAsset = (TechnologyAsset *)Package_LoadEntry(technologyPath,&loadErrorCode);
   if (loadedTechnologyAsset == NULL) {
     return NewLevel_Fail(outError,loadErrorCode);
   }
@@ -277,26 +289,26 @@ typedef Bool8 (*NewLevelPrepareAssetFn)(void *asset,uint32_t *outError);
 static Bool8 NewLevel_PrepareEffectAsset(void *asset,uint32_t *outError)
 
 {
-  return EffectAsset_PrepareEntries(asset,outError);
+  return EffectAsset_PrepareEntries((EffectAssetHeader *)asset,outError);
 }
 
 static Bool8 NewLevel_PrepareShotAsset(void *asset,uint32_t *outError)
 
 {
-  *outError = ShotAsset_PrepareEntries(asset);
+  *outError = ShotAsset_PrepareEntries((ShotAssetHeader *)asset);
   return *outError == 0;
 }
 
 static Bool8 NewLevel_PrepareModelAsset(void *asset,uint32_t *outError)
 
 {
-  return ModelAsset_PrepareRecords(asset,outError);
+  return ModelAsset_PrepareRecords((ModelAssetHeader *)asset,outError);
 }
 
 static Bool8 NewLevel_PrepareArmyAsset(void *asset,uint32_t *outError)
 
 {
-  *outError = ArmyAsset_PrepareRecords(asset);
+  *outError = ArmyAsset_PrepareRecords((ArmyAssetHeader *)asset);
   return *outError == 0;
 }
 
@@ -515,12 +527,12 @@ static Bool8 NewLevel_LoadSpatialSounds
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }
-  soundsInPackage = Package_FindEntry(listingCapacityBytes,directoryListing,soundDirectoryPath,
+  soundsInPackage = Package_FindEntry(listingCapacityBytes,(PckEntryHeader *)directoryListing,soundDirectoryPath,
                                       g_SoundPackageHandle,&listedSoundCount);
   soundDirectoryRecordSizeBytes = PCK_ENTRY_HEADER_BYTES;
   if (!soundsInPackage) {
     listedSoundCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,directoryListing,
+                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,(uint8_t *)directoryListing,
                           (uint8_t *)soundDirectoryPath);
     soundDirectoryRecordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
   }
@@ -535,7 +547,7 @@ static Bool8 NewLevel_LoadSpatialSounds
   if (worldRuntime->dwordArrayCount < listedSoundCount) {
     listedSoundCount = worldRuntime->dwordArrayCount;
   }
-  listedSoundPath = directoryListing;
+  listedSoundPath = (uint16_t *)directoryListing;
   for (; listedSoundCount != 0; listedSoundCount--) {
     soundSlotCursor = worldRuntime->dwordArray;
     soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
@@ -554,7 +566,7 @@ static Bool8 NewLevel_LoadSpatialSounds
         g_MemoryApi.free(directoryListing);
         return NewLevel_Fail(outError,loadErrorCode);
       }
-      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(loadedSample);
+      soundSlot = SpatialSoundSlot_CreateFromSampleAsset((SoundSampleAsset *)loadedSample);
       if (soundSlot != NULL) {
         soundSlotCursor[soundIndex] = (uint32_t)soundSlot;
       }
@@ -843,10 +855,15 @@ Bool8 InGameLevelRuntime_LoadResourcesAfterDefaultReset
     return false;
   }
   MoviePlayback_AdvanceScheduledFrameAndTick();
+  /* signature differs: the callbacks' context is WorldRuntimeContext *, the slot's void * */
   WorldRuntime_ForEachOwnerListNode
-            (worldRuntime,ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,worldRuntime);
+            (worldRuntime,
+             (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
+             worldRuntime);
   WorldRuntime_ForEachOwnerListNode
-            (worldRuntime,ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,worldRuntime);
+            (worldRuntime,
+             (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+             worldRuntime);
   FieldGrid_ClassifyCellFlagsToRuntimeByte(worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
   MoviePlayback_AdvanceScheduledFrameAndTick();
   if (!NewLevel_LoadSpatialSounds(levelImage,worldRuntime,outError)) {
@@ -1051,12 +1068,12 @@ static Bool8 SavedLevel_LoadSpatialSounds
   if (allocError != 0) {
     return NewLevel_Fail(outError,allocError);
   }
-  soundsInPackage = Package_FindEntry(listingCapacityBytes,directoryListing,soundDirectoryPath,
+  soundsInPackage = Package_FindEntry(listingCapacityBytes,(PckEntryHeader *)directoryListing,soundDirectoryPath,
                                       g_SoundPackageHandle,&listedSoundCount);
   soundDirectoryRecordSizeBytes = PCK_ENTRY_HEADER_BYTES;
   if (!soundsInPackage) {
     listedSoundCount = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,directoryListing,
+                         (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,listingCapacityBytes,(uint8_t *)directoryListing,
                           (uint8_t *)soundDirectoryPath);
     soundDirectoryRecordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
   }
@@ -1071,7 +1088,7 @@ static Bool8 SavedLevel_LoadSpatialSounds
   if (worldRuntime->dwordArrayCount < listedSoundCount) {
     listedSoundCount = worldRuntime->dwordArrayCount;
   }
-  listedSoundPath = directoryListing;
+  listedSoundPath = (uint16_t *)directoryListing;
   for (; listedSoundCount != 0; listedSoundCount--) {
     soundSlotCursor = worldRuntime->dwordArray;
     soundIndex = WidePath_ParseTrailingNumberBeforeExtension(listedSoundPath);
@@ -1090,7 +1107,7 @@ static Bool8 SavedLevel_LoadSpatialSounds
         g_MemoryApi.free(directoryListing);
         return NewLevel_Fail(outError,loadErrorCode);
       }
-      soundSlot = SpatialSoundSlot_CreateFromSampleAsset(loadedSample);
+      soundSlot = SpatialSoundSlot_CreateFromSampleAsset((SoundSampleAsset *)loadedSample);
       if (soundSlot != NULL) {
         soundSlotCursor[soundIndex] = (uint32_t)soundSlot;
       }

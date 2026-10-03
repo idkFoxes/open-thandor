@@ -18,7 +18,7 @@ static RecentTextSerialCounter g_RecentTextSerialCounter = 1;
 
 static uint32_t g_RecentTextEntrySerials[8] = {0};
 
-static uint16_t g_CreditsTexturePathUtf16[22] = L"gfx\\panel\\credits.gfx";
+static uint16_t g_CreditsTexturePathUtf16[22] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'c', 'r', 'e', 'd', 'i', 't', 's', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\credits.gfx" */
 
 /* Implementation ownership: ui/support/runtime. */
 

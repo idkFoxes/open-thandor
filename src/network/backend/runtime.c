@@ -111,7 +111,7 @@ static uint32_t g_NetworkBackendMode = 0;
 
 static WinSockData11 g_WinSockStartupData = {0};
 
-static NetworkBackendInstanceDescriptorPrefix g_NetworkBackendInstanceDescriptorPrefix = {.displayNameUtf16 = L"WinSock32 1.1 - UDP"};
+static NetworkBackendInstanceDescriptorPrefix g_NetworkBackendInstanceDescriptorPrefix = {.displayNameUtf16 = {'W', 'i', 'n', 'S', 'o', 'c', 'k', '3', '2', ' ', '1', '.', '1', ' ', '-', ' ', 'U', 'D', 'P', 0}}; /* L"WinSock32 1.1 - UDP" */
 
 /* Implementation ownership: network/backend/runtime. */
 
@@ -662,33 +662,33 @@ uint32_t __cdecl Network_Init(void)
 
   module = DynDLL_Load(s_Wsock32ModuleName);
   if (module == NULL) return FATAL_ERROR_DLL_LOAD_FAILED;
-  resolveError = DynAPI_Resolve(&g_WinSock_bind,module,s_Wsock32Export_bind);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_bind,module,s_Wsock32Export_bind);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_closesocket,module,s_Wsock32Export_closesocket);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_closesocket,module,s_Wsock32Export_closesocket);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_htons,module,s_Wsock32Export_htons);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_htons,module,s_Wsock32Export_htons);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_inet_addr,module,s_Wsock32Export_inet_addr);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_inet_addr,module,s_Wsock32Export_inet_addr);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_inet_ntoa,module,s_Wsock32Export_inet_ntoa);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_inet_ntoa,module,s_Wsock32Export_inet_ntoa);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_ioctlsocket,module,s_Wsock32Export_ioctlsocket);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_ioctlsocket,module,s_Wsock32Export_ioctlsocket);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_recvfrom,module,s_Wsock32Export_recvfrom);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_recvfrom,module,s_Wsock32Export_recvfrom);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_sendto,module,s_Wsock32Export_sendto);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_sendto,module,s_Wsock32Export_sendto);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_setsockopt,module,s_Wsock32Export_setsockopt);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_setsockopt,module,s_Wsock32Export_setsockopt);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_socket,module,s_Wsock32Export_socket);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_socket,module,s_Wsock32Export_socket);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_gethostbyname,module,s_Wsock32Export_gethostbyname);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_gethostbyname,module,s_Wsock32Export_gethostbyname);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSACleanup,module,s_Wsock32Export_WSACleanup);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_WSACleanup,module,s_Wsock32Export_WSACleanup);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAGetLastError,module,s_Wsock32Export_WSAGetLastError);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_WSAGetLastError,module,s_Wsock32Export_WSAGetLastError);
   if (resolveError != 0) return resolveError;
-  resolveError = DynAPI_Resolve(&g_WinSock_WSAStartup,module,s_Wsock32Export_WSAStartup);
+  resolveError = DynAPI_Resolve((void **)&g_WinSock_WSAStartup,module,s_Wsock32Export_WSAStartup);
   if (resolveError != 0) return resolveError;
   startupError = (uint32_t)g_WinSock_WSAStartup(MAKEWORD(1,1),&g_WinSockStartupData);
   if (startupError != 0) return startupError;

@@ -1317,7 +1317,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       selected = (i == 3) ? (void *)(uintptr_t)modeWidth : (void *)(root + depthButtons[i]);
     }
   }
-  UiSelectableGroup_SelectExclusive(4,selected,
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)selected,
       DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption4),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption3),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption2),
@@ -1336,7 +1336,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       selected = root + sizeButtons[i];
     }
   }
-  UiSelectableGroup_SelectExclusive(8,selected,
+  UiSelectableGroup_SelectExclusive(8,(UiNodeBase *)selected,
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption8),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption7),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption6),
@@ -1358,7 +1358,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       selected = root + adapterButtons[i];
     }
   }
-  UiSelectableGroup_SelectExclusive(5,selected,
+  UiSelectableGroup_SelectExclusive(5,(UiNodeBase *)selected,
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption5),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption4),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption3),

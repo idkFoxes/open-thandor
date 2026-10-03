@@ -19,7 +19,7 @@ FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets
 
 FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
 
-uint32_t g_FrontendMusicActiveBuffer = 0;
+IDirectSoundBuffer *g_FrontendMusicActiveBuffer = 0;
 
 /* Implementation ownership: ui/frontend/settings. */
 
@@ -345,7 +345,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
          PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
     bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
-    FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
+    FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)control);
     return;
   }
   PersistentSettings_Write(selectedAdapterIndex,PERSISTENT_SETTING_ADAPTER_INDEX);
@@ -365,7 +365,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
     fontTextureSource++;
   }
   g_CursorVisibilityToken++;
-  FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
+  FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)control);
   /* walk up the parent links to the frontend template root */
   parentCursor = ((UiNodeBase *)control)->parent;
   while (parentCursor != UI_NODE_NONE) {

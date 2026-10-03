@@ -10,7 +10,7 @@
 
 /* Module data. */
 
-static PersistentSettingsRuntime g_PersistentSettings = {.path = L"thandor.dat"};
+static PersistentSettingsRuntime g_PersistentSettings = {.path = {'t', 'h', 'a', 'n', 'd', 'o', 'r', '.', 'd', 'a', 't'}};
 
 uint32_t g_LocaleCountryCodeOverride = 0;
 

@@ -70,9 +70,9 @@ static FileSystemCopyProc *g_FileSystemCopy = 0;
 
 static uint32_t g_EnginePackageLowPriorityMountHandle = 0;
 
-static uint16_t g_ThandorCfgPathUtf16[12] = L"THANDOR.cfg";
+static uint16_t g_ThandorCfgPathUtf16[12] = {'T', 'H', 'A', 'N', 'D', 'O', 'R', '.', 'c', 'f', 'g', 0}; /* L"THANDOR.cfg" */
 
-static uint16_t g_EnginePckPathUtf16[11] = L"engine.pck";
+static uint16_t g_EnginePckPathUtf16[11] = {'e', 'n', 'g', 'i', 'n', 'e', '.', 'p', 'c', 'k', 0}; /* L"engine.pck" */
 
 static uint32_t g_Win32FileBytesTransferred = 0;
 
@@ -100,7 +100,7 @@ FileSystemGetDriveTypeCodeProc *g_FileSystemGetDriveTypeCode = 0;
 
 FileSystemDriveReadyProc *g_FileSystemCheckDriveMediaReady = 0;
 
-uint16_t g_DefaultComputerLabelUtf16[32] = L"Computer";
+uint16_t g_DefaultComputerLabelUtf16[32] = {'C', 'o', 'm', 'p', 'u', 't', 'e', 'r', 0}; /* L"Computer" */
 
 FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries = 0;
 

@@ -113,7 +113,7 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
   int groupsRemaining;
 
   sourceCursor = relocatedSourceImage;
-  destinationCursor = serializedDestination;
+  destinationCursor = (AssetMagic *)serializedDestination;
   /* dword copy of the whole asset; each step advances sourceCursor by one dword */
   for (copyDwordsRemaining = relocatedSourceImage->registryHeader.common.allocationSizeBytes >> 2;
        copyDwordsRemaining != 0; copyDwordsRemaining--) {

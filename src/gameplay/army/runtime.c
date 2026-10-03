@@ -192,7 +192,7 @@ static void ArmyAircraft_UpdateParked(WorldRuntimeContext *worldRuntime,ModelRun
           ((homeModelRuntime->classState).classStateB0 == ARMY_PAD_HANGAR_CLOSED)) {
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-               (EffectRuntimeOwnerReference){ .modelRuntime = (ModelRuntimeSlot *)modelRuntime },
+               THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelRuntime = (ModelRuntimeSlot *)modelRuntime },
                (rootNode->modelPayload).worldRotationAngle2,
                (rootNode->modelPayload).worldRotationAngle1,
                (rootNode->modelPayload).worldRotationAngle0,
@@ -659,7 +659,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
     ownerNode = worldRuntime->ownerListHead;
     do {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        ownerPayload = ownerNode->runtimePayload;
+        ownerPayload = (ModelRuntimeSlot *)ownerNode->runtimePayload;
         if ((ownerPayload->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
              MODEL_RUNTIME_CLASS_21_AIRCRAFT) &&
            (modelRuntime == (ModelRuntimeLinkedChildSpawnAndBuildView *)
@@ -1406,7 +1406,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
                        &completionEffect) == 0) {
       EffectRuntimePool_CreateInstanceFromDefinition
                 (EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL,
-                 (EffectRuntimeOwnerReference){
+                 THANDOR_COMPOUND(EffectRuntimeOwnerReference){
                    .armyRuntime = completionModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime },
                  (completionNode->modelPayload).worldRotationAngle2,
                  (completionNode->modelPayload).worldRotationAngle1,
@@ -1462,7 +1462,7 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
   ArmyRuntimeSlot *armyRuntime;
   int ownerFactionIndex;
   
-  modelRuntime = ownerNode->runtimePayload;
+  modelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
   armyRuntime = (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
   ownerFactionIndex = armyRuntime->factionIndex;
   ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive(worldRuntime,modelRuntime);
@@ -1564,7 +1564,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
     if (loadFactionGraphics) {
       *(int *)pathEnd = factionSuffixChar; /* the suffix and a terminator in one dword */
       WidePath_SetExtensionCode(ASSET_MAGIC_GFX,graphicsBasePath);
-      textureSourceAsset = Package_LoadEntry(graphicsBasePath,outError);
+      textureSourceAsset = (GraphicsTextureSourceAsset *)Package_LoadEntry(graphicsBasePath,outError);
       if (textureSourceAsset == NULL) {
         return false;
       }
@@ -1602,7 +1602,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
                          (g_InGamePanelTextureSubresource34Height,
                           g_InGamePanelTextureSubresource34Width,
                           ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
-                          ownerContext);
+                          (WorldRuntimeContext *)ownerContext);
       if (previewTexture != NULL) {
         armyAsset[1].rootNodeOffsetOrPointer = (uint32_t)previewTexture;
         previewHeight =
@@ -1611,7 +1611,7 @@ Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphic
         previewTexture = ArmyRuntime_RenderPreviewTexture
                            (previewHeight,previewHeight,
                             ((WorldRuntimeContext *)ownerContext)->activeFactionRuntimeIndex,armyAsset->registryId,
-                            ownerContext);
+                            (WorldRuntimeContext *)ownerContext);
         if (previewTexture != NULL) {
           armyAsset[1].registryId = (PckArmyAssetIdCatalog)previewTexture;
         }
@@ -1817,7 +1817,7 @@ ArmyRuntime_ResolveShotAimPoint
           targetNode = targetNode->childNodes[0];
         }
         aimWorldX = (targetNode->worldTransform).translation.x;
-        targetDefinitionRecord = (targetEntity->common).ownership.definitionOrClassRecord;
+        targetDefinitionRecord = (int *)(targetEntity->common).ownership.definitionOrClassRecord;
         targetDefinition = (ModelDefinition *)*targetDefinitionRecord;
         aimWorldY = (targetNode->worldTransform).translation.y;
         aimWorldZ = (targetNode->worldTransform).translation.z + targetDefinition->aimHeightOffsetQ12;
@@ -2100,7 +2100,7 @@ void ArmyRuntimePool_RebaseAfterLoad(void)
     slot->modelNodeRuntime =
          (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)slot->modelNodeRuntime);
     savedAssignedTargetOffset = slot->assignedTargetArmyRuntime;
-    (slot->modelRuntimeOrSavedOffset).modelRuntime = rebasedModelRuntime;
+    (slot->modelRuntimeOrSavedOffset).modelRuntime = (ModelRuntimeSlot *)rebasedModelRuntime;
     if (savedAssignedTargetOffset != 0) {
       savedAssignedTargetOffset = savedAssignedTargetOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne;
     }
@@ -2252,8 +2252,8 @@ void ArmyRuntimeClass_SelectProjectileTargetNode(ModelRuntimeTimedTargetProjecti
   }
   else if ((candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&
           ((modelRuntime->modelDefinition->shotDefinitionReference).definition ==
-           (((ModelRuntimeSlot *)candidateNode->runtimePayload)->definitionOrSavedId).definition)) {
-    (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = candidateNode->runtimePayload;
+           (ShotDefinition *)(((ModelRuntimeSlot *)candidateNode->runtimePayload)->definitionOrSavedId).definition)) {
+    (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = (ShotRuntimeSlot *)candidateNode->runtimePayload;
   }
 }
 
@@ -2290,8 +2290,10 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
       (rootNode->modelPayload).meshGroupMask |= 1;
       (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = NULL;
       (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime = NULL;
+      /* signature differs: the callback's context is ModelRuntimeTimedTargetProjectileView *, the slot's void * */
       WorldRuntime_ForEachOwnerListNode
-                (modelRuntime,ArmyRuntimeClass_SelectProjectileTargetNode,worldRuntime);
+                (modelRuntime,(WorldRuntimeNodeTraversalCallback *)ArmyRuntimeClass_SelectProjectileTargetNode,
+                 worldRuntime);
       selectedTarget = (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime;
       if (((modelRuntime->timedTargetLinkState).matchingActiveShotRuntime ==
            NULL) && (selectedTarget != NULL)) {
@@ -2977,7 +2979,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
         rootNode = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-                   (EffectRuntimeOwnerReference){ .modelRuntime = modelRuntime },
+                   THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelRuntime = modelRuntime },
                    (rootNode->modelPayload).worldRotationAngle2,
                    (rootNode->modelPayload).worldRotationAngle1,
                    (rootNode->modelPayload).worldRotationAngle0,(rootNode->worldTransform).translation.z,
@@ -3185,7 +3187,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   SelectionPlayerRuntimeBlock *playerSelectionBlock;
 
-  modelRuntime = (entityRuntime->common).ownership.definitionOrClassRecord;
+  modelRuntime = (ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord;
   if (modelRuntime != NULL) {
     (entityRuntime->common).ownership.definitionOrClassRecord = NULL;
     ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,modelRuntime);
@@ -3520,7 +3522,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
       worldZQ12 = candidateWorldZ;
     }
   }
-  ModelNodeRuntime_RebuildTransformsFromRoot(sourceRuntime);
+  ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)sourceRuntime);
   spriteModelResource = ((MdlSerializedNodeHeader *)modelPointTable)->spriteAssetReference.modelResource;
   localPointRecord =
        (ModelPackedPointRecord *)
@@ -3528,7 +3530,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
   for (remainingEntries = spriteModelResource->packedLookupTableEntryCount;
       remainingEntries != 0; remainingEntries = remainingEntries - 1) {
     if (localPointRecord->packedLookupKey == (modelPointOrdinal << 4 | 2)) {
-      localPoint = ModelNodeRuntime_TransformLocalPoint(localPointRecord,sourceRuntime);
+      localPoint = ModelNodeRuntime_TransformLocalPoint(localPointRecord,(ModelRuntimeNode *)sourceRuntime);
       ShotRuntimePool_CreateProjectileFromDefinition
                 (effectFlags,
                  ((ModelRuntimeNode *)sourceRuntime)->runtimePayload.modelRuntime->ownerArmyRuntimeOrSavedOffset.
@@ -4184,7 +4186,7 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
       orientationAngle2 = orientationAngle0;
     }
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },orientationAngle0,
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },orientationAngle0,
                orientationAngle1,orientationAngle2,worldZQ12,worldY,worldX,effectDefinition,worldRuntime);
     (modelRuntime->classState).effectEmitterPointIndex = (modelRuntime->classState).effectEmitterPointIndex + 1;
   }

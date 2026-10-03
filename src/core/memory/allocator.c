@@ -13,7 +13,11 @@
 __declspec(align(16)) MemoryApiTable g_MemoryApi = {0};
 
 /* its address doubles as the error code */
-static uint16_t g_ErrorTextHeapAllocationFailed[71] = L"error: HEAP: cannot allocate heap memory! Please check your swap-file.";
+/* "error: HEAP: cannot allocate heap memory! Please check your swap-file." */
+static uint16_t g_ErrorTextHeapAllocationFailed[71] = {
+    'e', 'r', 'r', 'o', 'r', ':', ' ', 'H', 'E', 'A', 'P', ':', ' ', 'c', 'a', 'n', 'n', 'o', 't', ' ', 'a', 'l', 'l', 'o',
+    'c', 'a', 't', 'e', ' ', 'h', 'e', 'a', 'p', ' ', 'm', 'e', 'm', 'o', 'r', 'y', '!', ' ', 'P', 'l', 'e', 'a', 's', 'e',
+    ' ', 'c', 'h', 'e', 'c', 'k', ' ', 'y', 'o', 'u', 'r', ' ', 's', 'w', 'a', 'p', '-', 'f', 'i', 'l', 'e', '.'};
 
 /* linear (bump) region of g_Arena (g_Arena.linearCursor starts at [0], g_Arena.linearLimit is [0x4000]);
    the 0xC00 bytes past the limit run to the end of the original image and are never handed out. One array

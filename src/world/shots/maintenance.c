@@ -214,10 +214,10 @@ static void ShotModel_EmitSecondaryTrailEffect
   }
   shotRuntime->ownerAndTrajectory.secondaryEffectCountdownTicks = shotDefinition->secondaryEffectIntervalTicks;
   if (ModelLookupTable_FindPackedPoint
-        (1,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource,&emitterRecord)) {
+        (1,MODEL_POINT_CLASS_EFFECT,(ModelResource *)shotDefinition->ownedNestedResource,&emitterRecord)) {
     emitterWorldPoint = ModelNodeRuntime_TransformLocalPoint(emitterRecord,(ModelRuntimeNode *)modelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },0,
                FIXED_ANGLE16_QUARTER_TURN,0,
                emitterWorldPoint.zQ12,emitterWorldPoint.yQ12,emitterWorldPoint.xQ12,
                shotDefinition->secondaryEffectDefinition,worldRuntime);
@@ -251,7 +251,7 @@ static void ShotModel_EmitArmyImpactEffect
 
 {
   ShotModel_EmitEffectAlongHeading
-            (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
              -modelNode->modelPayload.worldRotationAngle1,
              modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,
              hitDistance,modelNode,effectDefinition,worldRuntime);
@@ -265,7 +265,7 @@ static void ShotModel_EmitTerrainImpactEffect
 {
   ShotModel_EmitEffectAlongHeading
             (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-             (EffectRuntimeOwnerReference){
+             THANDOR_COMPOUND(EffectRuntimeOwnerReference){
                .terrainImpactColumns = (ShotTerrainImpactDeformationColumns *)
                                        (shotDefinition->terrainImpactHeightDeltasQ12 + terrainMaterialIndex) },
              FIXED_ANGLE16_QUARTER_TURN,0,hitDistance,modelNode,
@@ -414,7 +414,7 @@ static void ShotBeam_UpdateTick
       if ((shotRuntime->impactEffectEmissionFlags & SHOT_IMPACT_EFFECT_EMITTED) == 0) {
         shotRuntime->impactEffectEmissionFlags |= SHOT_IMPACT_EFFECT_EMITTED;
         ShotModel_EmitEffectAlongHeading
-                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
                    FIXED_ANGLE16_QUARTER_TURN,0,hits->secondaryHitDistance,modelNode,
                    shotDefinition->primaryEffectDefinition,worldRuntime);
       }
@@ -495,7 +495,7 @@ static Bool8 ShotProjectile_ApplyNearestHit
     InterpolationState_SetNegatedTargetAndRescaleProgress
               (shotDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
     ShotModel_EmitEffectAlongHeading
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference){ .modelNode = NULL },
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_COMPOUND(EffectRuntimeOwnerReference){ .modelNode = NULL },
                FIXED_ANGLE16_QUARTER_TURN,0,hits->secondaryHitDistance,modelNode,
                shotDefinition->primaryEffectDefinition,worldRuntime);
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);

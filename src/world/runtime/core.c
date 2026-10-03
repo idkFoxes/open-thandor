@@ -660,7 +660,7 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
   ArmyRuntimeSlot *ownerArmy;
 
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-    modelRuntime = node->runtimePayload;
+    modelRuntime = (ModelRuntimeSlot *)node->runtimePayload;
     ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,(int *)modelRuntime);
     /* the army that owns the model */
     ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
@@ -827,7 +827,7 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     /* the linked model runtime and, for an aircraft, the linked base model runtime */
-    modelRuntime = node->runtimePayload;
+    modelRuntime = (ModelRuntimeSlot *)node->runtimePayload;
     if (detachedObject == modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime) {
       modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
     }

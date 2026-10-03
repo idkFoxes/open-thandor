@@ -331,7 +331,7 @@ void UiRuntime_Shutdown(void)
   if (g_UiRuntimeInitializationCount != 0) {
     g_TimerUnregisterPeriodic(UiTransferMailbox_ServiceAndRetransmitTimer);
     g_MemoryApi.free(g_UiRuntimeRecordRing);
-    g_MemoryApi.free(g_UiRuntimeRecordEndpointSlots);
+    g_MemoryApi.free((void *)g_UiRuntimeRecordEndpointSlots);
     g_MemoryApi.free(g_UiTransferDataBuffer);
     g_MemoryApi.free(g_UiTransferEndpointBuffer);
     g_UiRuntimeRecordRing = NULL;

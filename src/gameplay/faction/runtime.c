@@ -653,7 +653,7 @@ Bool8 FactionRuntime_IsArmyAssetNotPending
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelPayload = ownerNode->runtimePayload;
+    modelPayload = (int *)ownerNode->runtimePayload;
     if ((factionIndex == ((ModelRuntimeSlot *)modelPayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
         ((((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11) ||
          (((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)) &&
@@ -994,7 +994,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
       continue;
     }
-    modelPayload = ownerNode->runtimePayload;
+    modelPayload = (int *)ownerNode->runtimePayload;
     if ((factionIndex != ((ModelRuntimeSlot *)modelPayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) ||
         (producerClassId != ((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId)) {
       continue;
@@ -1253,11 +1253,14 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
       primaryRecordCursor = primaryRecordCursor + 8; /* 0x20-byte records */
       recordsRemaining--;
     } while (recordsRemaining != 0);
+    /* signature differs: the callbacks' context is WorldRuntimeContext *, the slot's void * */
     WorldRuntime_ForEachOwnerListNode
-              (worldRuntime,ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
+              (worldRuntime,
+               (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
                worldRuntime);
     WorldRuntime_ForEachOwnerListNode
-              (worldRuntime,ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+              (worldRuntime,
+               (WorldRuntimeNodeTraversalCallback *)ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
                worldRuntime);
     FieldGrid_ClassifyCellFlagsToRuntimeByte
               ((runtimeRoot->worldRuntime).activeFactionRuntimeIndex,

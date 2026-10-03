@@ -2077,9 +2077,9 @@ uint32_t g_FrontendStateTickSpinLock = 0;
 
 uint32_t g_FrontendScenarioInitializationCount = 0;
 
-uint32_t g_FrontendMusicVoiceSet = 0;
+DirectSoundVoiceSet *g_FrontendMusicVoiceSet = 0;
 
-uint16_t g_FrontendMusic00SamPathUtf16[18] = L"sound\\music00.sam";
+uint16_t g_FrontendMusic00SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'u', 's', 'i', 'c', '0', '0', '.', 's', 'a', 'm', 0}; /* L"sound\\music00.sam" */
 
 uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16] = {0};
 
@@ -2094,7 +2094,7 @@ static const UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12 = 512;
 
 static const int g_WorldMotionPointerWheelInputScale = -64;
 
-static uint16_t g_FrontendEndMoviePathUtf16[17] = L"flm\\ende0000.flm";
+static uint16_t g_FrontendEndMoviePathUtf16[17] = {'f', 'l', 'm', '\\', 'e', 'n', 'd', 'e', '0', '0', '0', '0', '.', 'f', 'l', 'm', 0}; /* L"flm\\ende0000.flm" */
 
 static uint16_t g_EndGameElapsedTimeScratchUtf16[64] = {0};
 
@@ -2141,13 +2141,13 @@ static WorldObjectRecord *g_FrontendWorldObjectRecords = 0;
 
 static uint32_t g_FrontendPendingPageActionDepth = 0;
 
-static uint16_t g_GfxTexturenZentraleGfxPathUtf16[26] = L"gfx\\texturen\\zentrale.gfx";
+static uint16_t g_GfxTexturenZentraleGfxPathUtf16[26] = {'g', 'f', 'x', '\\', 't', 'e', 'x', 't', 'u', 'r', 'e', 'n', '\\', 'z', 'e', 'n', 't', 'r', 'a', 'l', 'e', '.', 'g', 'f', 'x', 0}; /* L"gfx\\texturen\\zentrale.gfx" */
 
-static uint16_t g_GfxTexturenZentralePalPathUtf16[26] = L"gfx\\texturen\\zentrale.pal";
+static uint16_t g_GfxTexturenZentralePalPathUtf16[26] = {'g', 'f', 'x', '\\', 't', 'e', 'x', 't', 'u', 'r', 'e', 'n', '\\', 'z', 'e', 'n', 't', 'r', 'a', 'l', 'e', '.', 'p', 'a', 'l', 0}; /* L"gfx\\texturen\\zentrale.pal" */
 
-static uint16_t g_SoundMenue01SamPathUtf16[18] = L"sound\\menue01.sam";
+static uint16_t g_SoundMenue01SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'm', 'e', 'n', 'u', 'e', '0', '1', '.', 's', 'a', 'm', 0}; /* L"sound\\menue01.sam" */
 
-static uint16_t g_GfxPanelMenueGfxPathUtf16[20] = L"gfx\\panel\\menue.gfx";
+static uint16_t g_GfxPanelMenueGfxPathUtf16[20] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'm', 'e', 'n', 'u', 'e', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\menue.gfx" */
 
 /* 3 command records and the terminator record
    (commandCode 0) that ends the dispatcher's scan */
@@ -2498,7 +2498,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,fieldGridPath);
   WidePath_CombineDirectoryAndLeaf
             (g_LevelResourcePathScratchUtf16,fieldGridPath,(uint16_t *)&g_ExecutableDirectoryUtf16);
-  fieldGrid = Package_LoadEntry(fieldGridPath,&packageLoadErrorCode);
+  fieldGrid = (FieldGridAsset *)Package_LoadEntry(fieldGridPath,&packageLoadErrorCode);
   if (fieldGrid == NULL) {
     /* Original quirk: a failed field grid load is not checked; the error code is used as the grid */
     fieldGrid = (FieldGridAsset *)packageLoadErrorCode;
@@ -3776,7 +3776,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
     if (pointedRomRecord != NULL) {
       recordId = pointedRomRecord->recordId;
     }
-    transitionRecord = RomRecordTable_FindRecordById(recordId,g_FrontendActiveRomRecord);
+    transitionRecord = (int *)RomRecordTable_FindRecordById(recordId,(void *)g_FrontendActiveRomRecord);
     /* Skip records without a transition, network-only pages (3/4/9/negative) in a networked session and the
        network page (2) when no backend exists. */
     if ((transitionRecord != NULL) &&
@@ -3896,7 +3896,7 @@ void FrontendMenuRoom_ExecuteClickedRomAction
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     slotRecord = RomRegistry_FindRecordBySlotValue(pointedModelNode);
     if (slotRecord != NULL) {
-      recordIndex = RomRecordTable_FindIndexById(slotRecord->recordId,g_FrontendActiveRomRecord);
+      recordIndex = RomRecordTable_FindIndexById(slotRecord->recordId,(void *)g_FrontendActiveRomRecord);
       if (-1 < (int)recordIndex) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
@@ -4329,7 +4329,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
       UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->rootNode);
       UiPointerList_InitializeColumnLayout
-                (0,g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->sessionList);
+                (0,(void **)g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState, backendList)->sessionList);
       UiTransfer_SendDiscoveryProbe();
       return;
     }
@@ -4499,8 +4499,11 @@ void Frontend_PlaySelectedEndMovie(void)
   g_CursorVisibilityToken--;
   if ((runtimeRoot != NULL) && (g_EndMoviePath != NULL)) {
     rootCallbacks = runtimeRoot->rootUi.callbacks;
-    rootCallbacks->keyboardFallback = EndMovieUiRuntime_DispatchCommandByFlags;
-    rootCallbacks->frameUpdate = EndMovieUiRuntime_HandleModeTransition;
+    /* signature differs: the fallback returns void and takes void *, the slot returns Bool8 and takes
+       UiRootNode *; the frame update takes void *, the slot UiRootNode * */
+    rootCallbacks->keyboardFallback =
+         (Bool8 (*)(UiKeyboardStateMask,UiActionId,UiRootNode *))EndMovieUiRuntime_DispatchCommandByFlags;
+    rootCallbacks->frameUpdate = (void (*)(UiRootNode *))EndMovieUiRuntime_HandleModeTransition;
     if (g_FrontendLoadedCampaignAsset != 0) {
       FrontendEndMovie_SelectCampaignMoviePath((CampaignAsset *)g_FrontendLoadedCampaignAsset);
     }
@@ -4543,8 +4546,10 @@ void Frontend_PlaySelectedEndMovie(void)
     g_CursorVisibilityToken++;
   }
   rootCallbacks = g_InGameRuntimeRoot->rootUi.callbacks;
-  rootCallbacks->keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
-  rootCallbacks->frameUpdate = InGameUiRoot_UpdateFrame;
+  /* signature differs: both callbacks take InGameRuntimeRootFrameView *, the slots UiRootNode * */
+  rootCallbacks->keyboardFallback =
+       (Bool8 (*)(UiKeyboardStateMask,UiActionId,UiRootNode *))InGameHotkeys_DispatchCommandByFlags;
+  rootCallbacks->frameUpdate = (void (*)(UiRootNode *))InGameUiRoot_UpdateFrame;
   return;
 }
 
@@ -4596,24 +4601,24 @@ static void FrontendInit_StartMenuMusic(void)
   IDirectSoundBuffer *musicBuffer;
 
   soundOptions = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  musicBuffer = (IDirectSoundBuffer *)g_FrontendMusicActiveBuffer;
+  musicBuffer = g_FrontendMusicActiveBuffer;
   if (((soundOptions & PERSISTENT_SOUND_OPTION_MUSIC) != 0) &&
       Resource_Load((uint16_t *)g_FrontendMusic00SamPathUtf16,(void **)&loadedSample,NULL,NULL)) {
     if (g_SoundCreateSampleVoiceSet(loadedSample,&musicVoiceSet) != 0) {
       Resource_Release(loadedSample);
     }
     else {
-      g_FrontendMusicVoiceSet = (uint32_t)musicVoiceSet;
+      g_FrontendMusicVoiceSet = musicVoiceSet;
       Resource_Release(loadedSample);
       musicGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
       if (!g_SoundPlayLooping(musicGain,musicGain,musicVoiceSet,&musicBuffer)) {
         g_SoundReleaseSampleVoiceSet(musicVoiceSet);
         g_FrontendMusicVoiceSet = 0;
-        musicBuffer = (IDirectSoundBuffer *)g_FrontendMusicActiveBuffer;
+        musicBuffer = g_FrontendMusicActiveBuffer;
       }
     }
   }
-  g_FrontendMusicActiveBuffer = (uint32_t)musicBuffer;
+  g_FrontendMusicActiveBuffer = musicBuffer;
 }
 
 /* Fills the frontend's network-backend list with the backends' display names (0x100 bytes apart); the row
@@ -4735,7 +4740,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
   g_FrontendStateTickSpinLock = 0;
   g_TimerRegisterPeriodic(FRONTEND_PERIODIC_TIMER_HZ,FrontendRuntime_TimerCountdownTick);
-  UiRuntime_SetSynchronizationHooks(Frontend_StateTick,&g_FrontendStateTickSpinLock);
+  UiRuntime_SetSynchronizationHooks(Frontend_StateTick,(RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   centralTextureSet = g_GraphicsTextureSetLoadPackage((uint16_t *)g_GfxTexturenZentraleGfxPathUtf16,
                                                       &centralResourceErrorCode);
   if (centralTextureSet == NULL) {
@@ -4821,7 +4826,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   }
   /* Saved player name into the name field and g_FrontendLocalPlayerNameUtf16 (which is also the fallback),
      saved game name into the game-name field (10 dwords = 0x28 bytes each). */
-  savedPlayerName = PersistentSettings_GetRegionOrFallback
+  savedPlayerName = (uint32_t *)PersistentSettings_GetRegionOrFallback
                       (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_PLAYER_NAME);
   FrontendInit_CopyNameDwords
             ((uint32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(frontendUiState,playerNameEdit))->textBuffer,
@@ -4829,12 +4834,12 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   FrontendInit_CopyNameDwords((uint32_t *)THANDOR_PTR(g_FrontendLocalPlayerNameUtf16),savedPlayerName);
   FrontendInit_CopyNameDwords
             ((uint32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(frontendUiState,gameNameEdit))->textBuffer,
-             PersistentSettings_GetRegionOrFallback
+             (const uint32_t *)PersistentSettings_GetRegionOrFallback
                        (PERSISTENT_SETTINGS_NAME_BYTES,g_FrontendLocalPlayerNameUtf16,PERSISTENT_SETTING_GAME_NAME));
   settingValue = PersistentSettings_Read(4,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
   ((UiRangeSliderControl *)FRONTEND_UI(frontendUiState,maxPlayersSlider))->value = settingValue;
   UiFrame_FlushInputAndResetPendingTicks();
-  g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
+  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   WorldMotionSpline_ClearCachedDerivatives();
   g_TimerRegisterPeriodic(FRONTEND_ROM_TRANSITION_TIMER_HZ,FrontendRomTransition_AdvanceElapsedTicks);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -4844,7 +4849,7 @@ Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
     /* the same "ready" report, sent through the network command queue */
     FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
   }
-  g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+  g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   do {
     UiNode_InvalidateRoot((UiNodeBase *)frontendUiState);
     UiFrame_Update(0);
@@ -4872,7 +4877,7 @@ void Frontend_StateTick(void)
   void *packet;
   void *packetEndpoint;
 
-  callResult = g_SpinLockTryAcquire(&g_FrontendStateTickSpinLock);
+  callResult = g_SpinLockTryAcquire((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   previousTickCounter = g_FrontendNetworkTickCounter;
   frontendRoot = g_FrontendRootNode;
   if (callResult) {
@@ -4881,7 +4886,7 @@ void Frontend_StateTick(void)
   switch(g_FrontendNetworkState) {
   case FRONTEND_NETWORK_STATE_IDLE:
     if (g_FrontendTimerCountdownTicks != 0) {
-      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
       return;
     }
     g_FrontendNetworkTickCounter++;
@@ -4902,7 +4907,7 @@ void Frontend_StateTick(void)
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+    g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
     return;
   case FRONTEND_NETWORK_STATE_HOSTING:
     if (g_FrontendTimerCountdownTicks == 0) {
@@ -4916,7 +4921,7 @@ void Frontend_StateTick(void)
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+    g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
     return;
   case FRONTEND_NETWORK_STATE_JOINED:
     if (g_FrontendTimerCountdownTicks == 0) {
@@ -4932,11 +4937,11 @@ void Frontend_StateTick(void)
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+    g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
     return;
   case FRONTEND_NETWORK_STATE_HOST_STARTING:
     if (g_FrontendTimerCountdownTicks != 0) {
-      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
       return;
     }
     g_FrontendNetworkTickCounter++;
@@ -4950,7 +4955,7 @@ void Frontend_StateTick(void)
     if (callResult) {
       /* transfer still running: next tick at once */
       g_FrontendTimerCountdownTicks = 1;
-      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
       return;
     }
     break;
@@ -4958,7 +4963,7 @@ void Frontend_StateTick(void)
     /* no pacing: works whenever a packet of this session has arrived */
     callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
     if (!callResult) {
-      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
       return;
     }
     g_FrontendNetworkTickCounter++;
@@ -4970,14 +4975,14 @@ void Frontend_StateTick(void)
     } while (!callResult);
     callResult = FrontendTransfer_ConsumeProcessedFlagForMenuTick();
     if (callResult) {
-      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
       return;
     }
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
   }
-  g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+  g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   return;
 }
 
@@ -5192,7 +5197,7 @@ void FrontendFactionSetup_ToggleFactionActive
   } while (remainingPlayerBlocks != 0);
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates + rowIndex + 1;
   *lifecycleState = *lifecycleState ^ FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(g_FrontendRootNode);
+  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)g_FrontendRootNode);
   return;
 }
 
@@ -5254,7 +5259,7 @@ void FrontendFactionSetup_ChooseFaction
     matchedPlayerBlock->factionAssignment.factionAssignmentIndex = rowIndex + 1;
     matchedPlayerBlock->factionAssignment.readyOrWaitState = readyStateGeneration;
     g_FrontendFactionAssignmentReadyStateGeneration++;
-    FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(g_FrontendRootNode);
+    FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)g_FrontendRootNode);
   }
   return;
 }
@@ -5349,10 +5354,10 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
   UiRuntime_SetSynchronizationHooks(NULL,NULL);
   g_TimerUnregisterPeriodic(FrontendRuntime_TimerCountdownTick);
   g_TimerUnregisterPeriodic(FrontendRomTransition_AdvanceElapsedTicks);
-  root = g_FrontendRootNode;
+  root = (UiRootNode *)g_FrontendRootNode;
   g_CursorVisibilityToken--;
   if (g_FrontendRootNode != NULL) {
-    FrontendTeardown_SaveStatusTextAndHostAddress(g_FrontendRootNode);
+    FrontendTeardown_SaveStatusTextAndHostAddress((UiRootNode *)g_FrontendRootNode);
     UiRootStack_Pop(root);
     g_MemoryApi.free(root);
     g_FrontendRootNode = NULL;
@@ -5360,11 +5365,11 @@ void FrontendRuntime_ShutdownAndReleaseResources(void)
   FrontendRomRegistry_ClearAndReleaseNestedResources();
   g_MemoryApi.free(g_FrontendWorldObjectRecords);
   g_FrontendWorldObjectRecords = NULL;
-  Resource_Release(g_FrontendCentralRomAsset);
+  Resource_Release((void *)g_FrontendCentralRomAsset);
   g_FrontendCentralRomAsset = NULL;
   GraphicsShadingRuntime_ClearRecordTable();
-  g_GraphicsTextureSetReleasePackage(g_FrontendCentralTextureSet);
-  g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_FrontendCentralPaletteAsset);
+  g_GraphicsTextureSetReleasePackage((GraphicsTextureSet *)g_FrontendCentralTextureSet);
+  g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage((GraphicsPaletteAsset *)g_FrontendCentralPaletteAsset);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_FrontendMenuTextureSource);
   g_FrontendCentralTextureSet = NULL;
   g_FrontendCentralPaletteAsset = NULL;

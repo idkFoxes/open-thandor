@@ -21,21 +21,21 @@ static CommandLineWideArguments g_CommandLineWideArguments = {0};
 
 static uint32_t g_CpuFeatureFlags = 0;
 
-static uint16_t g_TexteTechnoStrPathUtf16[17] = L"texte\\techno.str";
+static uint16_t g_TexteTechnoStrPathUtf16[17] = {'t', 'e', 'x', 't', 'e', '\\', 't', 'e', 'c', 'h', 'n', 'o', '.', 's', 't', 'r', 0}; /* L"texte\\techno.str" */
 
-static uint16_t g_TexteNeterrorStrPathUtf16[19] = L"texte\\neterror.str";
+static uint16_t g_TexteNeterrorStrPathUtf16[19] = {'t', 'e', 'x', 't', 'e', '\\', 'n', 'e', 't', 'e', 'r', 'r', 'o', 'r', '.', 's', 't', 'r', 0}; /* L"texte\\neterror.str" */
 
-static uint16_t g_TexteHilfeStrPathUtf16[16] = L"texte\\hilfe.str";
+static uint16_t g_TexteHilfeStrPathUtf16[16] = {'t', 'e', 'x', 't', 'e', '\\', 'h', 'i', 'l', 'f', 'e', '.', 's', 't', 'r', 0}; /* L"texte\\hilfe.str" */
 
-static uint16_t g_TexteMenueStrPathUtf16[16] = L"texte\\menue.str";
+static uint16_t g_TexteMenueStrPathUtf16[16] = {'t', 'e', 'x', 't', 'e', '\\', 'm', 'e', 'n', 'u', 'e', '.', 's', 't', 'r', 0}; /* L"texte\\menue.str" */
 
-static uint16_t g_TexteLevelStrPathUtf16[16] = L"texte\\level.str";
+static uint16_t g_TexteLevelStrPathUtf16[16] = {'t', 'e', 'x', 't', 'e', '\\', 'l', 'e', 'v', 'e', 'l', '.', 's', 't', 'r', 0}; /* L"texte\\level.str" */
 
-static uint16_t g_TexteInhaltStrPathUtf16[17] = L"texte\\inhalt.str";
+static uint16_t g_TexteInhaltStrPathUtf16[17] = {'t', 'e', 'x', 't', 'e', '\\', 'i', 'n', 'h', 'a', 'l', 't', '.', 's', 't', 'r', 0}; /* L"texte\\inhalt.str" */
 
-static uint16_t g_TexteHelpStrPathUtf16[15] = L"texte\\help.str";
+static uint16_t g_TexteHelpStrPathUtf16[15] = {'t', 'e', 'x', 't', 'e', '\\', 'h', 'e', 'l', 'p', '.', 's', 't', 'r', 0}; /* L"texte\\help.str" */
 
-static uint16_t g_TexteTastaturStrPathUtf16[19] = L"texte\\tastatur.str";
+static uint16_t g_TexteTastaturStrPathUtf16[19] = {'t', 'e', 'x', 't', 'e', '\\', 't', 'a', 's', 't', 'a', 't', 'u', 'r', '.', 's', 't', 'r', 0}; /* L"texte\\tastatur.str" */
 
 static uint32_t g_DataPackageHandle = 0;
 
@@ -59,52 +59,52 @@ static uint8_t g_InstallRegistryValueDataA[256] = {0};
 
 static uint16_t g_InstallDirectoryScratchUtf16[256] = {0};
 
-static uint16_t g_ThandorWindowTitleUtf16[8] = L"Thandor";
+static uint16_t g_ThandorWindowTitleUtf16[8] = {'T', 'h', 'a', 'n', 'd', 'o', 'r', 0}; /* L"Thandor" */
 
 static char g_SoftwarePlanet4ThandorAscii[25] = "Software\\Planet4\\Thandor";
 
 /* registry value "CD" */
 static char g_InstallRegistryValueNameCD[3] = "CD";
 
-static uint16_t g_DatenPckPathUtf16[10] = L"daten.pck";
+static uint16_t g_DatenPckPathUtf16[10] = {'d', 'a', 't', 'e', 'n', '.', 'p', 'c', 'k', 0}; /* L"daten.pck" */
 
-static uint16_t g_ModellePckPathUtf16[12] = L"modelle.pck";
+static uint16_t g_ModellePckPathUtf16[12] = {'m', 'o', 'd', 'e', 'l', 'l', 'e', '.', 'p', 'c', 'k', 0}; /* L"modelle.pck" */
 
-static uint16_t g_GraphikPckPathUtf16[12] = L"graphik.pck";
+static uint16_t g_GraphikPckPathUtf16[12] = {'g', 'r', 'a', 'p', 'h', 'i', 'k', '.', 'p', 'c', 'k', 0}; /* L"graphik.pck" */
 
-static uint16_t g_SoundPckPathUtf16[10] = L"sound.pck";
+static uint16_t g_SoundPckPathUtf16[10] = {'s', 'o', 'u', 'n', 'd', '.', 'p', 'c', 'k', 0}; /* L"sound.pck" */
 
-static uint16_t g_FilmePckPathUtf16[10] = L"filme.pck";
+static uint16_t g_FilmePckPathUtf16[10] = {'f', 'i', 'l', 'm', 'e', '.', 'p', 'c', 'k', 0}; /* L"filme.pck" */
 
-static uint16_t g_LevelPckPathUtf16[10] = L"level.pck";
+static uint16_t g_LevelPckPathUtf16[10] = {'l', 'e', 'v', 'e', 'l', '.', 'p', 'c', 'k', 0}; /* L"level.pck" */
 
 static PatchArchivePathTemplate18 g_PatchArchivePathTemplateUtf16 = {
     .prefixCodeUnits = {0x70, 0x61, 0x74, 0x63, 0x68},
     .decimalDigits = {.codeUnits = {0x30, 0x30}},
-    .suffixCodeUnits = L".pck"};
+    .suffixCodeUnits = {'.', 'p', 'c', 'k', 0}}; /* L".pck" */
 
 static LevelArchivePathTemplate18 g_LevelArchivePathTemplateUtf16 = {
     .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C},
     .decimalDigits = {.codeUnits = {0x30, 0x30}},
-    .suffixCodeUnits = L".pck"};
+    .suffixCodeUnits = {'.', 'p', 'c', 'k', 0}}; /* L".pck" */
 
-static uint16_t g_SoundButton0SamPathUtf16[18] = L"sound\\button0.sam";
+static uint16_t g_SoundButton0SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'b', 'u', 't', 't', 'o', 'n', '0', '.', 's', 'a', 'm', 0}; /* L"sound\\button0.sam" */
 
-static uint16_t g_SoundButton1SamPathUtf16[18] = L"sound\\button1.sam";
+static uint16_t g_SoundButton1SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'b', 'u', 't', 't', 'o', 'n', '1', '.', 's', 'a', 'm', 0}; /* L"sound\\button1.sam" */
 
-static uint16_t g_SoundButton2SamPathUtf16[18] = L"sound\\button2.sam";
+static uint16_t g_SoundButton2SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'b', 'u', 't', 't', 'o', 'n', '2', '.', 's', 'a', 'm', 0}; /* L"sound\\button2.sam" */
 
-static uint16_t g_SoundButton3SamPathUtf16[18] = L"sound\\button3.sam";
+static uint16_t g_SoundButton3SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'b', 'u', 't', 't', 'o', 'n', '3', '.', 's', 'a', 'm', 0}; /* L"sound\\button3.sam" */
 
-static uint16_t g_SoundButton4SamPathUtf16[18] = L"sound\\button4.sam";
+static uint16_t g_SoundButton4SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'b', 'u', 't', 't', 'o', 'n', '4', '.', 's', 'a', 'm', 0}; /* L"sound\\button4.sam" */
 
-static uint16_t g_SoundButton5SamPathUtf16[18] = L"sound\\button5.sam";
+static uint16_t g_SoundButton5SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'b', 'u', 't', 't', 'o', 'n', '5', '.', 's', 'a', 'm', 0}; /* L"sound\\button5.sam" */
 
-static uint16_t g_SoundButton6SamPathUtf16[18] = L"sound\\button6.sam";
+static uint16_t g_SoundButton6SamPathUtf16[18] = {'s', 'o', 'u', 'n', 'd', '\\', 'b', 'u', 't', 't', 'o', 'n', '6', '.', 's', 'a', 'm', 0}; /* L"sound\\button6.sam" */
 
-static uint16_t g_GfxPanelStatGfxPathUtf16[19] = L"gfx\\panel\\stat.gfx";
+static uint16_t g_GfxPanelStatGfxPathUtf16[19] = {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 's', 't', 'a', 't', '.', 'g', 'f', 'x', 0}; /* L"gfx\\panel\\stat.gfx" */
 
-static uint16_t g_FlmIntro0FlmPathUtf16[15] = L"flm\\intro0.flm";
+static uint16_t g_FlmIntro0FlmPathUtf16[15] = {'f', 'l', 'm', '\\', 'i', 'n', 't', 'r', 'o', '0', '.', 'f', 'l', 'm', 0}; /* L"flm\\intro0.flm" */
 
 static char g_CommandLineOptionNoIntro[8] = "NOINTRO";
 
@@ -147,9 +147,9 @@ static char sz_MainWindowClass[17] = "thandorCLASS(TG)";
 
 WidePathBuffer256 g_LooseMoviePathPrefix = {0};
 
-uint16_t g_DatenHexPathUtf16[10] = L"daten.hex";
+uint16_t g_DatenHexPathUtf16[10] = {'d', 'a', 't', 'e', 'n', '.', 'h', 'e', 'x', 0}; /* L"daten.hex" */
 
-uint16_t g_StatHexPathUtf16[9] = L"stat.hex";
+uint16_t g_StatHexPathUtf16[9] = {'s', 't', 'a', 't', '.', 'h', 'e', 'x', 0}; /* L"stat.hex" */
 
 void *g_GameStatTableImage = 0;
 
@@ -169,7 +169,7 @@ uint32_t g_FrontendPlayerListRows[8] = {
 uint32_t g_IntroMoviePendingTicks = 0;
 
 /* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
-uint16_t g_ScreenshotFileNameUtf16[13] = L"screen00.pcx";
+uint16_t g_ScreenshotFileNameUtf16[13] = {'s', 'c', 'r', 'e', 'e', 'n', '0', '0', '.', 'p', 'c', 'x', 0}; /* L"screen00.pcx" */
 
 /* 8 bindings, then the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
 DynamicApiBinding g_BootstrapApiBindings[9] = {
@@ -409,7 +409,7 @@ Bool8 GameData_LoadExternalTables(void)
   UNLOCK();
   g_GameStatTableImage = statTable;
   g_MemoryApi.free(previousStatTable);
-  oldUnitBuffer = Package_LoadEntry((uint16_t *)g_OldunitHexPathUtf16,NULL);
+  oldUnitBuffer = (uint32_t *)Package_LoadEntry((uint16_t *)g_OldunitHexPathUtf16,NULL);
   if (oldUnitBuffer == NULL) {
     clearCursor = g_OldUnitPrimaryTable;
     for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {

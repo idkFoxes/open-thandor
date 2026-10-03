@@ -38,7 +38,7 @@ static uint32_t g_RichTextSavedShadowOffset = 0;
 
 static uint32_t g_RichTextRuntimeBufferUsedWords = 0;
 
-static uint16_t g_Txt2strUnknownCharacterErrorUtf16[62] = L"error: TXT2STR: unknown character at:                        ";
+static uint16_t g_Txt2strUnknownCharacterErrorUtf16[62] = {'e', 'r', 'r', 'o', 'r', ':', ' ', 'T', 'X', 'T', '2', 'S', 'T', 'R', ':', ' ', 'u', 'n', 'k', 'n', 'o', 'w', 'n', ' ', 'c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r', ' ', 'a', 't', ':', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 0}; /* L"error: TXT2STR: unknown character at:                        " */
 
 uint32_t g_ActiveFontIndex = 0;
 

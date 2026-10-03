@@ -28,7 +28,7 @@ RomRegistrySlot *g_RomRegistrySlots = 0;
    loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
 DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {0};
 
-uint16_t g_EngineZentraleRomPathUtf16[20] = L"engine\\zentrale.rom";
+uint16_t g_EngineZentraleRomPathUtf16[20] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'z', 'e', 'n', 't', 'r', 'a', 'l', 'e', '.', 'r', 'o', 'm', 0}; /* L"engine\\zentrale.rom" */
 
 /* Implementation ownership: assets/rom/runtime. */
 
@@ -201,7 +201,7 @@ void FrontendRomTransition_ProcessPendingRecord(void)
   Bool8 splineStillRunning;
   uint32_t activateError;
 
-  g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
+  g_SpinLockAcquire((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   /* g_FrontendRomTransitionTargetRecordId holds the target record id of the running flight (-1 = none to
      activate, 0 = no flight). */
   pendingRecordId = g_FrontendRomTransitionTargetRecordId;
@@ -209,7 +209,7 @@ void FrontendRomTransition_ProcessPendingRecord(void)
   if (g_FrontendRomTransitionTargetRecordId != 0) {
     splineStillRunning = WorldMotionSpline_EvaluateAndApplyAtTime
                       (g_FrontendRomTransitionSplineKeyframeCount,
-                       g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
+                       (WorldMotionSplineKeyframe *)g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
                        menuRoomView);
     if (!splineStillRunning) {
       g_FrontendRomTransitionTargetRecordId = 0;
@@ -219,7 +219,7 @@ void FrontendRomTransition_ProcessPendingRecord(void)
       }
     }
   }
-  g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+  g_SpinLockRelease((RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock);
   return;
 }
 
@@ -499,7 +499,7 @@ static Bool8 RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t
   /* the sprite file name (UTF-16) follows the node header */
   /* cannot fail */
   WidePath_SetExtensionCode(ASSET_MAGIC_SPR,(uint16_t *)(node + 1));
-  asset = Package_LoadEntry((uint16_t *)(node + 1),&loadErrorCode);
+  asset = (RomAssetHeader *)Package_LoadEntry((uint16_t *)(node + 1),&loadErrorCode);
   if (asset == NULL) {
     *outError = loadErrorCode;
     return true;
@@ -657,9 +657,9 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
   *((uint8_t *)&newNode->textureSubresourceBaseIndex + 2) = 0;
   *((uint8_t *)&newNode->textureSubresourceBaseIndex + 3) = 0;
   newNode->tintArgb = stateTintArgb;
-  centralTextureSet = g_FrontendCentralTextureSet;
+  centralTextureSet = (GraphicsTextureSet *)g_FrontendCentralTextureSet;
   spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
-  newNode->modelPayload.paletteAsset = g_FrontendCentralPaletteAsset;
+  newNode->modelPayload.paletteAsset = (GraphicsPaletteAsset *)g_FrontendCentralPaletteAsset;
   boundingRadius = spriteModelResource->boundingRadiusQ12;
   newNode->modelPayload.textureSet = centralTextureSet;
   newNode->subtreeBoundingRadiusQ12 = boundingRadius;

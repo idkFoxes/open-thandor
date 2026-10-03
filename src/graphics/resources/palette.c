@@ -287,7 +287,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint
   GraphicsPaletteAsset *validatedPaletteAsset;
   uint32_t errorCode;
 
-  loadedPaletteAsset = Package_LoadEntry(pathUtf16,&errorCode);
+  loadedPaletteAsset = (GraphicsPaletteAsset *)Package_LoadEntry(pathUtf16,&errorCode);
   if (loadedPaletteAsset != NULL) {
     validatedPaletteAsset = g_GraphicsPaletteAssetValidate(loadedPaletteAsset,&errorCode);
     if (validatedPaletteAsset != NULL) {

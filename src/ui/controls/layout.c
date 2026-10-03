@@ -16,7 +16,7 @@ uint32_t g_UiInvalidationSuppressed = 0;
 
 UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
 
-GraphicsTextureSourceAsset *g_UiWindowTextureSource = (void *)(intptr_t)-1; /* 0xFFFFFFFF in the original */
+GraphicsTextureSourceAsset *g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)(intptr_t)-1; /* 0xFFFFFFFF in the original */
 
 GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = 0;
 
@@ -38,11 +38,11 @@ static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
 
 static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
 
-static uint16_t g_UiWindowClassTexturePathUtf16[20] = L"engine\\winclass.gfx";
+static uint16_t g_UiWindowClassTexturePathUtf16[20] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'w', 'i', 'n', 'c', 'l', 'a', 's', 's', '.', 'g', 'f', 'x', 0}; /* L"engine\\winclass.gfx" */
 
-static uint16_t g_UiWindowClassTextPathUtf16[19] = L"texte\\winclass.str";
+static uint16_t g_UiWindowClassTextPathUtf16[19] = {'t', 'e', 'x', 't', 'e', '\\', 'w', 'i', 'n', 'c', 'l', 'a', 's', 's', '.', 's', 't', 'r', 0}; /* L"texte\\winclass.str" */
 
-static uint16_t g_UiWindowTexturePathUtf16[15] = L"engine\\win.gfx";
+static uint16_t g_UiWindowTexturePathUtf16[15] = {'e', 'n', 'g', 'i', 'n', 'e', '\\', 'w', 'i', 'n', '.', 'g', 'f', 'x', 0}; /* L"engine\\win.gfx" */
 
 static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
 

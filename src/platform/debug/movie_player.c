@@ -144,7 +144,7 @@ void DebugMovie_ExportOne(const char *name)
   }
   path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
   path[pathLength] = 0;
-  CreateDirectoryA("moviedump", NULL);
+  CreateDirectoryA((LPCSTR)"moviedump", NULL);
   if (!Movie_Open(1,path,&playbackRateHz,&openError)) {
     Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, openError);
     return;

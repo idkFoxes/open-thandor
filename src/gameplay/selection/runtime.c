@@ -13,13 +13,21 @@
 /* UiPackedTextStyle 0x01000000 (font 1, palette 0, left aligned) used to measure and draw the numbers in the selection panel (gameplay/selection/runtime.c) */
 static const UiPackedTextStyle g_SelectionPanelNumberTextStyle = 16777216;
 
-static uint16_t g_GfxPanelSelectGfxPathUtf16[21] = L"gfx\\panel\\select.gfx";
+/* L"gfx\\panel\\select.gfx" */
+static uint16_t g_GfxPanelSelectGfxPathUtf16[21] =
+    {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 's', 'e', 'l', 'e', 'c', 't', '.', 'g', 'f', 'x', 0};
 
-static uint16_t g_GfxPanelInfoGfxPathUtf16[19] = L"gfx\\panel\\info.gfx";
+/* L"gfx\\panel\\info.gfx" */
+static uint16_t g_GfxPanelInfoGfxPathUtf16[19] =
+    {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'i', 'n', 'f', 'o', '.', 'g', 'f', 'x', 0};
 
-static uint16_t g_GfxPanelSelectDatPathUtf16[21] = L"gfx\\panel\\select.dat";
+/* L"gfx\\panel\\select.dat" */
+static uint16_t g_GfxPanelSelectDatPathUtf16[21] =
+    {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 's', 'e', 'l', 'e', 'c', 't', '.', 'd', 'a', 't', 0};
 
-static uint16_t g_GfxPanelInfoDatPathUtf16[19] = L"gfx\\panel\\info.dat";
+/* L"gfx\\panel\\info.dat" */
+static uint16_t g_GfxPanelInfoDatPathUtf16[19] =
+    {'g', 'f', 'x', '\\', 'p', 'a', 'n', 'e', 'l', '\\', 'i', 'n', 'f', 'o', '.', 'd', 'a', 't', 0};
 
 static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {0};
 
@@ -822,13 +830,13 @@ Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uin
     return false;
   }
   g_InfoPanelTextureSource = infoTextureSource;
-  selectionPanelData = Package_LoadEntry((uint16_t *)g_GfxPanelSelectDatPathUtf16,&loadErrorCode);
+  selectionPanelData = (GraphicsTextureSourceAsset *)Package_LoadEntry((uint16_t *)g_GfxPanelSelectDatPathUtf16,&loadErrorCode);
   if (selectionPanelData == NULL) {
     *outError = loadErrorCode;
     return false;
   }
   g_SelectionPanelData = selectionPanelData;
-  infoPanelData = Package_LoadEntry((uint16_t *)g_GfxPanelInfoDatPathUtf16,&loadErrorCode);
+  infoPanelData = (GraphicsTextureSourceAsset *)Package_LoadEntry((uint16_t *)g_GfxPanelInfoDatPathUtf16,&loadErrorCode);
   if (infoPanelData == NULL) {
     *outError = loadErrorCode;
     return false;
@@ -1024,7 +1032,7 @@ Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex owner
     if (currentEntry == NULL) {
       continue;
     }
-    classRecord = (currentEntry->common).ownership.definitionOrClassRecord; /* the model runtime */
+    classRecord = (ModelRuntimeSlot *)(currentEntry->common).ownership.definitionOrClassRecord; /* the model runtime */
     if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
       return true;
     }
@@ -1275,7 +1283,8 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
     selectedEntry = g_SelectionInfoEntitySlots->entries[entryIndex];
     if (selectedEntry != NULL) {
       effectVariantMask |=
-           ArmyRuntime_GetAttachmentEffectVariantMask((selectedEntry->common).ownership.definitionOrClassRecord);
+           ArmyRuntime_GetAttachmentEffectVariantMask
+              ((ModelRuntimeLinkedChildSpawnAndBuildView *)(selectedEntry->common).ownership.definitionOrClassRecord);
     }
   }
   return effectVariantMask;

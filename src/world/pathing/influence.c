@@ -172,7 +172,7 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode *enti
       entityDefinition = (ModelDefinition *)(((GameEntityRuntime *)entityNode->runtimePayload)->common).ownership.
                          definitionOrClassRecord;
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[entityDefinition->runtimeClassId])
-        (entityNode->runtimePayload);
+        ((GameEntityRuntime *)entityNode->runtimePayload);
     }
   }
 }
