@@ -1406,98 +1406,12 @@ extern uint32_t g_TerrainMaterialEditReferenceMaterialByte; /* 0056D834 g_Terrai
 extern uint32_t g_TerrainMaterialEditReplacementMaterialByte; /* 0056D838 g_TerrainMaterialEditReplacementMaterialByte: followed by 4 bytes 0x90 fill (dropped) */
 
 /* original 0x0056E408-0x0056E5D0 */
-typedef struct ImageObject_0056E408 {
-    uint8_t at_gap_0056E408[8]; /* 0056E408 gap */
-} ImageObject_0056E408;
-extern ImageObject_0056E408 g_ImageObject_0056E408;
 extern UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37]; /* 0056E410 g_InGameKeyboardDispatchRecords: 36 records + the terminator record [36] (key code 0, which ends the dispatch scan; its other two dwords are 0x90 fill); followed by 4 bytes 0x90 fill (dropped) */
 
 /* original 0x0056F278-0x0056F350 */
-typedef struct ImageObject_0056F278 {
-    uint8_t at_gap_0056F278[8]; /* 0056F278 gap */
-} ImageObject_0056F278;
-extern ImageObject_0056F278 g_ImageObject_0056F278;
 extern InGameCameraCommandDispatchTable g_InGameCameraCommandDispatchRecords16; /* 0056F280 g_InGameCameraCommandDispatchRecords16 */
 
-/* original 0x0056F81C-0x0056F840 */
-typedef struct ImageObject_0056F81C {
-    uint8_t at_gap_0056F81C[4]; /* 0056F81C gap */
-} ImageObject_0056F81C;
-extern ImageObject_0056F81C g_ImageObject_0056F81C;
-typedef struct ImageObject_0056F820 {
-    uint32_t at_g_InGameUiCommandCursorCodeModeDispatchTable[8]; /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageObject_0056F820;
-extern ImageObject_0056F820 g_ImageObject_0056F820;
-
-/* original 0x0056FA98-0x0056FAC0 */
-typedef struct ImageObject_0056FA98 {
-    uint8_t at_gap_0056FA98[8]; /* 0056FA98 gap */
-} ImageObject_0056FA98;
-extern ImageObject_0056FA98 g_ImageObject_0056FA98;
-typedef struct ImageObject_0056FAA0 {
-    uint32_t at_g_InGameUiCommandBeginInteractionModeDispatchTable[8]; /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageObject_0056FAA0;
-extern ImageObject_0056FAA0 g_ImageObject_0056FAA0;
-
-/* original 0x00570408-0x00570430 */
-typedef struct ImageObject_00570408 {
-    uint8_t at_gap_00570408[8]; /* 00570408 gap */
-} ImageObject_00570408;
-extern ImageObject_00570408 g_ImageObject_00570408;
-typedef struct ImageObject_00570410 {
-    uint32_t at_g_InGameUiCommandUpdateInteractionModeDispatchTable[8]; /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageObject_00570410;
-extern ImageObject_00570410 g_ImageObject_00570410;
-
-/* original 0x00570D90-0x00570DC0 */
-typedef struct ImageObject_00570D90 {
-    uint8_t at_gap_00570D90[16]; /* 00570D90 gap */
-} ImageObject_00570D90;
-extern ImageObject_00570D90 g_ImageObject_00570D90;
-typedef struct ImageObject_00570DA0 {
-    uint32_t at_g_InGameUiCommandEndInteractionModeDispatchTable[8]; /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageObject_00570DA0;
-extern ImageObject_00570DA0 g_ImageObject_00570DA0;
-
-/* original 0x00570F48-0x00570F70 */
-typedef struct ImageObject_00570F48 {
-    uint8_t at_gap_00570F48[8]; /* 00570F48 gap */
-} ImageObject_00570F48;
-extern ImageObject_00570F48 g_ImageObject_00570F48;
-typedef struct ImageObject_00570F50 {
-    uint32_t at_g_InGameUiCommandResetInteractionModeDispatchTable[8]; /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-} ImageObject_00570F50;
-extern ImageObject_00570F50 g_ImageObject_00570F50;
-
-/* original 0x00571AE4-0x00571B00 */
-typedef struct ImageObject_00571AE4 {
-    uint8_t at_gap_00571AE4[28]; /* 00571AE4 gap */
-} ImageObject_00571AE4;
-extern ImageObject_00571AE4 g_ImageObject_00571AE4;
-
-/* original 0x00571B30-0x00571B50 */
-typedef struct ImageObject_00571B30 {
-    uint8_t at_gap_00571B30[32]; /* 00571B30 gap */
-} ImageObject_00571B30;
-extern ImageObject_00571B30 g_ImageObject_00571B30;
-
-/* original 0x00571D24-0x00571D40 */
-typedef struct ImageObject_00571D24 {
-    uint8_t at_gap_00571D24[28]; /* 00571D24 gap */
-} ImageObject_00571D24;
-extern ImageObject_00571D24 g_ImageObject_00571D24;
-
-/* original 0x00571D70-0x00571D90 */
-typedef struct ImageObject_00571D70 {
-    uint8_t at_gap_00571D70[32]; /* 00571D70 gap */
-} ImageObject_00571D70;
-extern ImageObject_00571D70 g_ImageObject_00571D70;
-
 /* original 0x00572030-0x005722C0 */
-typedef struct ImageObject_00572030 {
-    uint8_t at_gap_00572030[16]; /* 00572030 gap */
-} ImageObject_00572030;
-extern ImageObject_00572030 g_ImageObject_00572030;
 extern FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007; /* 00572040 g_FrontendClientPlayerRemovalPacket10007 */
 extern FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8]; /* 00572060 g_FrontendClientPlayerCommandRecords */
 extern FrontendCommandPacketRecord g_FrontendClientCommandBatchPacketBuffer[8]; /* 00572160 g_FrontendClientCommandBatchPacketBuffer */
@@ -1506,10 +1420,6 @@ extern FrontendPacket10022StatePending g_FrontendPacket10022Buffer; /* 00572280 
 extern FrontendPacket10023StateAck g_FrontendPacket10023Buffer; /* 005722A0 g_FrontendPacket10023Buffer */
 
 /* original 0x00572AB0-0x00573070 */
-typedef struct ImageObject_00572AB0 {
-    uint8_t at_gap_00572AB0[16]; /* 00572AB0 gap */
-} ImageObject_00572AB0;
-extern ImageObject_00572AB0 g_ImageObject_00572AB0;
 extern uint32_t g_DataPackageHandle; /* 00572AC0 g_DataPackageHandle */
 extern uint32_t g_ModelPackageHandle; /* 00572AC4 g_ModelPackageHandle */
 extern uint32_t g_GraphicsPackageHandle; /* 00572AC8 g_GraphicsPackageHandle */
@@ -1552,10 +1462,6 @@ extern uint16_t u_flm_intro0_flm_00573046[15]; /* 00573046 u_flm_intro0_flm_0057
 extern char g_CommandLineOptionNoIntro[8]; /* 00573064 g_CommandLineOptionNoIntro */
 
 /* original 0x00573EE8-0x00575890 */
-typedef struct ImageObject_00573EE8 {
-    uint8_t at_gap_00573EE8[8]; /* 00573EE8 gap */
-} ImageObject_00573EE8;
-extern ImageObject_00573EE8 g_ImageObject_00573EE8;
 extern DynamicModuleEntry g_DynamicModules[16]; /* 00573EF0 g_DynamicModules */
 extern uint32_t g_DynamicModuleCount; /* 00573F70 g_DynamicModuleCount */
 extern DynamicApiBinding g_BootstrapApiBindings[9]; /* 00573F74 g_BootstrapApiBindings: 8 bindings + the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
@@ -1610,220 +1516,37 @@ extern WinSock_WSACleanupProc *g_WinSock_WSACleanup; /* 0057433C g_WinSock_WSACl
 extern WinSock_WSAGetLastErrorProc *g_WinSock_WSAGetLastError; /* 00574340 g_WinSock_WSAGetLastError */
 extern WinSock_WSAIsBlockingProc *g_WinSock_WSAIsBlocking; /* 00574344 g_WinSock_WSAIsBlocking */
 extern WinSock_WSASetBlockingHookProc *g_WinSock_WSASetBlockingHook; /* 00574348 g_WinSock_WSASetBlockingHook */
-typedef struct ImageObject_0057434C {
-    uint32_t at_g_WinSock_UnboundApiSlot34C[1]; /* 0057434C g_WinSock_UnboundApiSlot34C */
-} ImageObject_0057434C;
-extern ImageObject_0057434C g_ImageObject_0057434C;
 extern WinSock_WSAStartupProc *g_WinSock_WSAStartup; /* 00574350 g_WinSock_WSAStartup */
 extern WinSock_WSAUnhookBlockingHookProc *g_WinSock_WSAUnhookBlockingHook; /* 00574354 g_WinSock_WSAUnhookBlockingHook */
-typedef struct ImageObject_00574358 {
-    uint32_t at_g_Ws2_32_accept[1]; /* 00574358 g_Ws2_32_accept */
-} ImageObject_00574358;
-extern ImageObject_00574358 g_ImageObject_00574358;
 extern WinSock_bindProc *g_Ws2_32_bind; /* 0057435C g_Ws2_32_bind */
 extern WinSock_closesocketProc *g_Ws2_32_closesocket; /* 00574360 g_Ws2_32_closesocket */
-typedef struct ImageObject_00574364 {
-    uint32_t at_g_Ws2_32_connect[1]; /* 00574364 g_Ws2_32_connect */
-} ImageObject_00574364;
-extern ImageObject_00574364 g_ImageObject_00574364;
-typedef struct ImageObject_00574368 {
-    uint32_t at_g_Ws2_32_getpeername[1]; /* 00574368 g_Ws2_32_getpeername */
-} ImageObject_00574368;
-extern ImageObject_00574368 g_ImageObject_00574368;
-typedef struct ImageObject_0057436C {
-    uint32_t at_g_Ws2_32_getsockname[1]; /* 0057436C g_Ws2_32_getsockname */
-} ImageObject_0057436C;
-extern ImageObject_0057436C g_ImageObject_0057436C;
-typedef struct ImageObject_00574370 {
-    uint32_t at_g_Ws2_32_getsockopt[1]; /* 00574370 g_Ws2_32_getsockopt */
-} ImageObject_00574370;
-extern ImageObject_00574370 g_ImageObject_00574370;
-typedef struct ImageObject_00574374 {
-    uint32_t at_g_Ws2_32_htonl[1]; /* 00574374 g_Ws2_32_htonl */
-} ImageObject_00574374;
-extern ImageObject_00574374 g_ImageObject_00574374;
 extern WinSock_htonsProc *g_Ws2_32_htons; /* 00574378 g_Ws2_32_htons */
-typedef struct ImageObject_0057437C {
-    uint32_t at_g_Ws2_32_ioctlsocket[1]; /* 0057437C g_Ws2_32_ioctlsocket */
-} ImageObject_0057437C;
-extern ImageObject_0057437C g_ImageObject_0057437C;
-typedef struct ImageObject_00574380 {
-    uint32_t at_g_Ws2_32_listen[1]; /* 00574380 g_Ws2_32_listen */
-} ImageObject_00574380;
-extern ImageObject_00574380 g_ImageObject_00574380;
-typedef struct ImageObject_00574384 {
-    uint32_t at_g_Ws2_32_ntohl[1]; /* 00574384 g_Ws2_32_ntohl */
-} ImageObject_00574384;
-extern ImageObject_00574384 g_ImageObject_00574384;
-typedef struct ImageObject_00574388 {
-    uint32_t at_g_Ws2_32_ntohs[1]; /* 00574388 g_Ws2_32_ntohs */
-} ImageObject_00574388;
-extern ImageObject_00574388 g_ImageObject_00574388;
-typedef struct ImageObject_0057438C {
-    uint32_t at_g_Ws2_32_recv[1]; /* 0057438C g_Ws2_32_recv */
-} ImageObject_0057438C;
-extern ImageObject_0057438C g_ImageObject_0057438C;
 extern WinSock_recvfromProc *g_Ws2_32_recvfrom; /* 00574390 g_Ws2_32_recvfrom */
-typedef struct ImageObject_00574394 {
-    uint32_t at_g_Ws2_32_select[1]; /* 00574394 g_Ws2_32_select */
-} ImageObject_00574394;
-extern ImageObject_00574394 g_ImageObject_00574394;
-typedef struct ImageObject_00574398 {
-    uint32_t at_g_Ws2_32_send[1]; /* 00574398 g_Ws2_32_send */
-} ImageObject_00574398;
-extern ImageObject_00574398 g_ImageObject_00574398;
 extern WinSock_sendtoProc *g_Ws2_32_sendto; /* 0057439C g_Ws2_32_sendto */
 extern WinSock_setsockoptProc *g_Ws2_32_setsockopt; /* 005743A0 g_Ws2_32_setsockopt */
-typedef struct ImageObject_005743A4 {
-    uint32_t at_g_Ws2_32_shutdown[1]; /* 005743A4 g_Ws2_32_shutdown */
-} ImageObject_005743A4;
-extern ImageObject_005743A4 g_ImageObject_005743A4;
 extern WinSock_socketProc *g_Ws2_32_socket; /* 005743A8 g_Ws2_32_socket */
-typedef struct ImageObject_005743B0 {
-    uint32_t at_g_Ws2_32_WSAAsyncSelect[1]; /* 005743B0 g_Ws2_32_WSAAsyncSelect */
-} ImageObject_005743B0;
-extern ImageObject_005743B0 g_ImageObject_005743B0;
-typedef struct ImageObject_005743B4 {
-    uint32_t at_g_Ws2_32_WSACancelBlockingCall[1]; /* 005743B4 g_Ws2_32_WSACancelBlockingCall */
-} ImageObject_005743B4;
-extern ImageObject_005743B4 g_ImageObject_005743B4;
 extern WinSock_WSACleanupProc *g_Ws2_32_WSACleanup; /* 005743B8 g_Ws2_32_WSACleanup */
 extern WinSock_WSAGetLastErrorProc *g_Ws2_32_WSAGetLastError; /* 005743D8 g_Ws2_32_WSAGetLastError */
 extern WSAIoctl_Proc *g_Ws2_32_WSAIoctl; /* 005743EC g_Ws2_32_WSAIoctl */
-typedef struct ImageObject_005743F0 {
-    uint32_t at_g_Ws2_32_WSAIsBlocking[11]; /* 005743F0 g_Ws2_32_WSAIsBlocking */
-} ImageObject_005743F0;
-extern ImageObject_005743F0 g_ImageObject_005743F0;
-typedef struct ImageObject_0057441C {
-    uint32_t at_g_Ws2_32_WSASetBlockingHook[4]; /* 0057441C g_Ws2_32_WSASetBlockingHook */
-} ImageObject_0057441C;
-extern ImageObject_0057441C g_ImageObject_0057441C;
-typedef struct ImageObject_0057442C {
-    uint32_t at_g_Ws2_32_WSAStartup[1]; /* 0057442C g_Ws2_32_WSAStartup */
-} ImageObject_0057442C;
-extern ImageObject_0057442C g_ImageObject_0057442C;
-typedef struct ImageObject_00574430 {
-    uint32_t at_g_Ws2_32_WSAUnhookBlockingHook[2]; /* 00574430 g_Ws2_32_WSAUnhookBlockingHook */
-} ImageObject_00574430;
-extern ImageObject_00574430 g_ImageObject_00574430;
-typedef struct ImageObject_00574438 {
-    uint32_t at_g_Ws2_32_inet_addr[1]; /* 00574438 g_Ws2_32_inet_addr */
-} ImageObject_00574438;
-extern ImageObject_00574438 g_ImageObject_00574438;
-typedef struct ImageObject_0057443C {
-    uint32_t at_g_Ws2_32_inet_ntoa[1]; /* 0057443C g_Ws2_32_inet_ntoa */
-} ImageObject_0057443C;
-extern ImageObject_0057443C g_ImageObject_0057443C;
-typedef struct ImageObject_00574440 {
-    uint32_t at_g_Ws2_32_gethostbyaddr[1]; /* 00574440 g_Ws2_32_gethostbyaddr */
-} ImageObject_00574440;
-extern ImageObject_00574440 g_ImageObject_00574440;
 extern WinSock_gethostbynameProc *g_Ws2_32_gethostbyname; /* 00574444 g_Ws2_32_gethostbyname */
-typedef struct ImageObject_00574448 {
-    uint32_t at_g_Ws2_32_gethostname[1]; /* 00574448 g_Ws2_32_gethostname */
-} ImageObject_00574448;
-extern ImageObject_00574448 g_ImageObject_00574448;
-typedef struct ImageObject_0057444C {
-    uint32_t at_g_Ws2_32_getprotobyname[1]; /* 0057444C g_Ws2_32_getprotobyname */
-} ImageObject_0057444C;
-extern ImageObject_0057444C g_ImageObject_0057444C;
-typedef struct ImageObject_00574450 {
-    uint32_t at_g_Ws2_32_getprotobynumber[1]; /* 00574450 g_Ws2_32_getprotobynumber */
-} ImageObject_00574450;
-extern ImageObject_00574450 g_ImageObject_00574450;
-typedef struct ImageObject_00574454 {
-    uint32_t at_g_Ws2_32_getservbyname[1]; /* 00574454 g_Ws2_32_getservbyname */
-} ImageObject_00574454;
-extern ImageObject_00574454 g_ImageObject_00574454;
-typedef struct ImageObject_00574458 {
-    uint32_t at_g_Ws2_32_getservbyport[1]; /* 00574458 g_Ws2_32_getservbyport */
-} ImageObject_00574458;
-extern ImageObject_00574458 g_ImageObject_00574458;
-typedef struct ImageObject_0057445C {
-    uint32_t at_g_Ws2_32_WSAAsyncGetHostByAddr[1]; /* 0057445C g_Ws2_32_WSAAsyncGetHostByAddr */
-} ImageObject_0057445C;
-extern ImageObject_0057445C g_ImageObject_0057445C;
-typedef struct ImageObject_00574460 {
-    uint32_t at_g_Ws2_32_WSAAsyncGetHostByName[1]; /* 00574460 g_Ws2_32_WSAAsyncGetHostByName */
-} ImageObject_00574460;
-extern ImageObject_00574460 g_ImageObject_00574460;
-typedef struct ImageObject_00574464 {
-    uint32_t at_g_Ws2_32_WSAAsyncGetProtoByName[1]; /* 00574464 g_Ws2_32_WSAAsyncGetProtoByName */
-} ImageObject_00574464;
-extern ImageObject_00574464 g_ImageObject_00574464;
-typedef struct ImageObject_00574468 {
-    uint32_t at_g_Ws2_32_WSAAsyncGetProtoByNumber[1]; /* 00574468 g_Ws2_32_WSAAsyncGetProtoByNumber */
-} ImageObject_00574468;
-extern ImageObject_00574468 g_ImageObject_00574468;
-typedef struct ImageObject_0057446C {
-    uint32_t at_g_Ws2_32_WSAAsyncGetServByName[1]; /* 0057446C g_Ws2_32_WSAAsyncGetServByName */
-} ImageObject_0057446C;
-extern ImageObject_0057446C g_ImageObject_0057446C;
-typedef struct ImageObject_00574470 {
-    uint32_t at_g_Ws2_32_WSAAsyncGetServByPort[1]; /* 00574470 g_Ws2_32_WSAAsyncGetServByPort */
-} ImageObject_00574470;
-extern ImageObject_00574470 g_ImageObject_00574470;
-typedef struct ImageObject_00574474 {
-    uint32_t at_g_Ws2_32_WSACancelAsyncRequest[1]; /* 00574474 g_Ws2_32_WSACancelAsyncRequest */
-} ImageObject_00574474;
-extern ImageObject_00574474 g_ImageObject_00574474;
 extern WSAAddressToStringA_Proc *g_Ws2_32_WSAAddressToStringA; /* 00574478 g_Ws2_32_WSAAddressToStringA */
 extern WSAStringToAddressA_Proc *g_Ws2_32_WSAStringToAddressA; /* 005744A0 g_Ws2_32_WSAStringToAddressA */
-typedef struct ImageObject_005744A4 {
-    char at_sz_KERNEL32[9]; /* 005744A4 sz_KERNEL32 */
-    uint8_t at_sz_KERNEL32_padding[1];
-} ImageObject_005744A4;
-extern ImageObject_005744A4 g_ImageObject_005744A4;
-typedef struct ImageObject_005744AE {
-    char at_sz_WINMM[6]; /* 005744AE sz_WINMM */
-} ImageObject_005744AE;
-extern ImageObject_005744AE g_ImageObject_005744AE;
+extern char g_Kernel32ModuleName[9]; /* 005744A4 sz_KERNEL32 */
+extern char g_WinmmModuleName[6]; /* 005744AE sz_WINMM */
 extern char sz_DDRAW[6]; /* 005744B4 sz_DDRAW */
 extern char dynapi_3[7]; /* 005744BA dynapi_3 */
 extern char dynapi_4[7]; /* 005744C2 dynapi_4 */
 extern char sz_GLIDE3X[8]; /* 005744CA sz_GLIDE3X */
-typedef struct ImageObject_005744D2 {
-    char at_sz_ADVAPI32[9]; /* 005744D2 sz_ADVAPI32 */
-    uint8_t at_sz_ADVAPI32_padding[1];
-} ImageObject_005744D2;
-extern ImageObject_005744D2 g_ImageObject_005744D2;
+extern char g_Advapi32ModuleName[9]; /* 005744D2 sz_ADVAPI32 */
 extern char s_Wsock32ModuleName[8]; /* 005744DC s_Wsock32ModuleName */
-typedef struct ImageObject_005744E4 {
-    char at_sz_WS2_32[7]; /* 005744E4 sz_WS2_32 */
-    uint8_t at_sz_WS2_32_padding[1];
-} ImageObject_005744E4;
-extern ImageObject_005744E4 g_ImageObject_005744E4;
 extern char dynapi_9[13]; /* 005744EC dynapi_9 */
-typedef struct ImageObject_005744FA {
-    char at_dynapi_10[12]; /* 005744FA dynapi_10 */
-} ImageObject_005744FA;
-extern ImageObject_005744FA g_ImageObject_005744FA;
-typedef struct ImageObject_00574506 {
-    char at_dynapi_11[14]; /* 00574506 dynapi_11 */
-} ImageObject_00574506;
-extern ImageObject_00574506 g_ImageObject_00574506;
-typedef struct ImageObject_00574514 {
-    char at_dynapi_12[17]; /* 00574514 dynapi_12 */
-    uint8_t at_dynapi_12_padding[1];
-} ImageObject_00574514;
-extern ImageObject_00574514 g_ImageObject_00574514;
-typedef struct ImageObject_00574526 {
-    char at_dynapi_13[12]; /* 00574526 dynapi_13 */
-} ImageObject_00574526;
-extern ImageObject_00574526 g_ImageObject_00574526;
-typedef struct ImageObject_00574532 {
-    char at_dynapi_14[13]; /* 00574532 dynapi_14 */
-    uint8_t at_dynapi_14_padding[1];
-} ImageObject_00574532;
-extern ImageObject_00574532 g_ImageObject_00574532;
-typedef struct ImageObject_00574540 {
-    char at_dynapi_15[14]; /* 00574540 dynapi_15 */
-} ImageObject_00574540;
-extern ImageObject_00574540 g_ImageObject_00574540;
-typedef struct ImageObject_0057454E {
-    char at_dynapi_16[16]; /* 0057454E dynapi_16 */
-} ImageObject_0057454E;
-extern ImageObject_0057454E g_ImageObject_0057454E;
+extern char g_BootstrapApiName_FreeLibrary[12]; /* 005744FA dynapi_10 */
+extern char g_BootstrapApiName_RegOpenKeyExA[14]; /* 00574506 dynapi_11 */
+extern char g_BootstrapApiName_RegQueryValueExA[17]; /* 00574514 dynapi_12 */
+extern char g_BootstrapApiName_RegCloseKey[12]; /* 00574526 dynapi_13 */
+extern char g_BootstrapApiName_timeSetEvent[13]; /* 00574532 dynapi_14 */
+extern char g_BootstrapApiName_timeKillEvent[14]; /* 00574540 dynapi_15 */
+extern char g_BootstrapApiName_mciSendCommandA[16]; /* 0057454E dynapi_16 */
 extern char sz_DirectDrawCreate[17]; /* 0057455E sz_DirectDrawCreate */
 extern char sz_DirectDrawEnumerateA[21]; /* 00574570 sz_DirectDrawEnumerateA */
 extern char dynapi_19[19]; /* 00574586 dynapi_19 */
@@ -1831,425 +1554,94 @@ extern char dynapi_20[18]; /* 0057459A dynapi_20 */
 extern char dynapi_21[22]; /* 005745AC dynapi_21 */
 extern char dynapi_22[25]; /* 005745C2 dynapi_22 */
 extern char dynapi_23[29]; /* 005745DC dynapi_23 */
-typedef struct ImageObject_005745FA {
-    char at_dynapi_24[21]; /* 005745FA dynapi_24 */
-    uint8_t at_dynapi_24_padding[1];
-} ImageObject_005745FA;
-extern ImageObject_005745FA g_ImageObject_005745FA;
-typedef struct ImageObject_00574610 {
-    char at_dynapi_25[25]; /* 00574610 dynapi_25 */
-    uint8_t at_dynapi_25_padding[1];
-} ImageObject_00574610;
-extern ImageObject_00574610 g_ImageObject_00574610;
-typedef struct ImageObject_0057462A {
-    char at_dynapi_26[19]; /* 0057462A dynapi_26 */
-    uint8_t at_dynapi_26_padding[1];
-} ImageObject_0057462A;
-extern ImageObject_0057462A g_ImageObject_0057462A;
-typedef struct ImageObject_0057463E {
-    char at_dynapi_27[32]; /* 0057463E dynapi_27 */
-} ImageObject_0057463E;
-extern ImageObject_0057463E g_ImageObject_0057463E;
-typedef struct ImageObject_0057465E {
-    char at_dynapi_28[23]; /* 0057465E dynapi_28 */
-    uint8_t at_dynapi_28_padding[1];
-} ImageObject_0057465E;
-extern ImageObject_0057465E g_ImageObject_0057465E;
-typedef struct ImageObject_00574676 {
-    char at_dynapi_29[29]; /* 00574676 dynapi_29 */
-    uint8_t at_dynapi_29_padding[1];
-} ImageObject_00574676;
-extern ImageObject_00574676 g_ImageObject_00574676;
-typedef struct ImageObject_00574694 {
-    char at_dynapi_30[18]; /* 00574694 dynapi_30 */
-} ImageObject_00574694;
-extern ImageObject_00574694 g_ImageObject_00574694;
-typedef struct ImageObject_005746A6 {
-    char at_dynapi_31[16]; /* 005746A6 dynapi_31 */
-} ImageObject_005746A6;
-extern ImageObject_005746A6 g_ImageObject_005746A6;
-typedef struct ImageObject_005746B6 {
-    char at_dynapi_32[19]; /* 005746B6 dynapi_32 */
-    uint8_t at_dynapi_32_padding[1];
-} ImageObject_005746B6;
-extern ImageObject_005746B6 g_ImageObject_005746B6;
-typedef struct ImageObject_005746CA {
-    char at_dynapi_33[20]; /* 005746CA dynapi_33 */
-} ImageObject_005746CA;
-extern ImageObject_005746CA g_ImageObject_005746CA;
-typedef struct ImageObject_005746DE {
-    char at_dynapi_34[17]; /* 005746DE dynapi_34 */
-    uint8_t at_dynapi_34_padding[1];
-} ImageObject_005746DE;
-extern ImageObject_005746DE g_ImageObject_005746DE;
-typedef struct ImageObject_005746F0 {
-    char at_dynapi_35[21]; /* 005746F0 dynapi_35 */
-    uint8_t at_dynapi_35_padding[1];
-} ImageObject_005746F0;
-extern ImageObject_005746F0 g_ImageObject_005746F0;
-typedef struct ImageObject_00574706 {
-    char at_dynapi_36[17]; /* 00574706 dynapi_36 */
-    uint8_t at_dynapi_36_padding[1];
-} ImageObject_00574706;
-extern ImageObject_00574706 g_ImageObject_00574706;
-typedef struct ImageObject_00574718 {
-    char at_dynapi_37[19]; /* 00574718 dynapi_37 */
-    uint8_t at_dynapi_37_padding[1];
-} ImageObject_00574718;
-extern ImageObject_00574718 g_ImageObject_00574718;
-typedef struct ImageObject_0057472C {
-    char at_dynapi_38[15]; /* 0057472C dynapi_38 */
-    uint8_t at_dynapi_38_padding[1];
-} ImageObject_0057472C;
-extern ImageObject_0057472C g_ImageObject_0057472C;
-typedef struct ImageObject_0057473C {
-    char at_dynapi_39[24]; /* 0057473C dynapi_39 */
-} ImageObject_0057473C;
-extern ImageObject_0057473C g_ImageObject_0057473C;
-typedef struct ImageObject_00574754 {
-    char at_dynapi_40[21]; /* 00574754 dynapi_40 */
-    uint8_t at_dynapi_40_padding[1];
-} ImageObject_00574754;
-extern ImageObject_00574754 g_ImageObject_00574754;
-typedef struct ImageObject_0057476A {
-    char at_dynapi_41[14]; /* 0057476A dynapi_41 */
-} ImageObject_0057476A;
-extern ImageObject_0057476A g_ImageObject_0057476A;
-typedef struct ImageObject_00574778 {
-    char at_dynapi_42[20]; /* 00574778 dynapi_42 */
-} ImageObject_00574778;
-extern ImageObject_00574778 g_ImageObject_00574778;
-typedef struct ImageObject_0057478C {
-    char at_dynapi_43[25]; /* 0057478C dynapi_43 */
-    uint8_t at_dynapi_43_padding[1];
-} ImageObject_0057478C;
-extern ImageObject_0057478C g_ImageObject_0057478C;
-typedef struct ImageObject_005747A6 {
-    char at_dynapi_44[21]; /* 005747A6 dynapi_44 */
-    uint8_t at_dynapi_44_padding[1];
-} ImageObject_005747A6;
-extern ImageObject_005747A6 g_ImageObject_005747A6;
-typedef struct ImageObject_005747BC {
-    char at_dynapi_45[15]; /* 005747BC dynapi_45 */
-    uint8_t at_dynapi_45_padding[1];
-} ImageObject_005747BC;
-extern ImageObject_005747BC g_ImageObject_005747BC;
-typedef struct ImageObject_005747CC {
-    char at_dynapi_46[16]; /* 005747CC dynapi_46 */
-} ImageObject_005747CC;
-extern ImageObject_005747CC g_ImageObject_005747CC;
-typedef struct ImageObject_005747DC {
-    char at_dynapi_47[13]; /* 005747DC dynapi_47 */
-    uint8_t at_dynapi_47_padding[1];
-} ImageObject_005747DC;
-extern ImageObject_005747DC g_ImageObject_005747DC;
-typedef struct ImageObject_005747EA {
-    char at_dynapi_48[23]; /* 005747EA dynapi_48 */
-    uint8_t at_dynapi_48_padding[1];
-} ImageObject_005747EA;
-extern ImageObject_005747EA g_ImageObject_005747EA;
-typedef struct ImageObject_00574802 {
-    char at_dynapi_49[16]; /* 00574802 dynapi_49 */
-} ImageObject_00574802;
-extern ImageObject_00574802 g_ImageObject_00574802;
-typedef struct ImageObject_00574812 {
-    char at_dynapi_50[14]; /* 00574812 dynapi_50 */
-} ImageObject_00574812;
-extern ImageObject_00574812 g_ImageObject_00574812;
-typedef struct ImageObject_00574820 {
-    char at_dynapi_51[15]; /* 00574820 dynapi_51 */
-    uint8_t at_dynapi_51_padding[1];
-} ImageObject_00574820;
-extern ImageObject_00574820 g_ImageObject_00574820;
-typedef struct ImageObject_00574830 {
-    char at_dynapi_52[19]; /* 00574830 dynapi_52 */
-    uint8_t at_dynapi_52_padding[1];
-} ImageObject_00574830;
-extern ImageObject_00574830 g_ImageObject_00574830;
-typedef struct ImageObject_00574844 {
-    char at_dynapi_53[22]; /* 00574844 dynapi_53 */
-} ImageObject_00574844;
-extern ImageObject_00574844 g_ImageObject_00574844;
-typedef struct ImageObject_0057485A {
-    char at_dynapi_54[32]; /* 0057485A dynapi_54 */
-} ImageObject_0057485A;
-extern ImageObject_0057485A g_ImageObject_0057485A;
-typedef struct ImageObject_0057487A {
-    char at_dynapi_55[12]; /* 0057487A dynapi_55 */
-} ImageObject_0057487A;
-extern ImageObject_0057487A g_ImageObject_0057487A;
-typedef struct ImageObject_00574886 {
-    char at_dynapi_56[22]; /* 00574886 dynapi_56 */
-} ImageObject_00574886;
-extern ImageObject_00574886 g_ImageObject_00574886;
-typedef struct ImageObject_0057489C {
-    char at_dynapi_57[12]; /* 0057489C dynapi_57 */
-} ImageObject_0057489C;
-extern ImageObject_0057489C g_ImageObject_0057489C;
-typedef struct ImageObject_005748A8 {
-    char at_dynapi_58[11]; /* 005748A8 dynapi_58 */
-    uint8_t at_dynapi_58_padding[1];
-} ImageObject_005748A8;
-extern ImageObject_005748A8 g_ImageObject_005748A8;
-typedef struct ImageObject_005748B4 {
-    char at_dynapi_59[19]; /* 005748B4 dynapi_59 */
-    uint8_t at_dynapi_59_padding[1];
-} ImageObject_005748B4;
-extern ImageObject_005748B4 g_ImageObject_005748B4;
-typedef struct ImageObject_005748C8 {
-    char at_dynapi_60[13]; /* 005748C8 dynapi_60 */
-    uint8_t at_dynapi_60_padding[1];
-} ImageObject_005748C8;
-extern ImageObject_005748C8 g_ImageObject_005748C8;
-typedef struct ImageObject_005748D6 {
-    char at_dynapi_61[14]; /* 005748D6 dynapi_61 */
-} ImageObject_005748D6;
-extern ImageObject_005748D6 g_ImageObject_005748D6;
-typedef struct ImageObject_005748E4 {
-    char at_dynapi_62[10]; /* 005748E4 dynapi_62 */
-} ImageObject_005748E4;
-extern ImageObject_005748E4 g_ImageObject_005748E4;
-typedef struct ImageObject_005748EE {
-    char at_dynapi_63[20]; /* 005748EE dynapi_63 */
-} ImageObject_005748EE;
-extern ImageObject_005748EE g_ImageObject_005748EE;
-typedef struct ImageObject_00574902 {
-    char at_dynapi_64[15]; /* 00574902 dynapi_64 */
-    uint8_t at_dynapi_64_padding[1];
-} ImageObject_00574902;
-extern ImageObject_00574902 g_ImageObject_00574902;
-typedef struct ImageObject_00574912 {
-    char at_dynapi_65[19]; /* 00574912 dynapi_65 */
-    uint8_t at_dynapi_65_padding[1];
-} ImageObject_00574912;
-extern ImageObject_00574912 g_ImageObject_00574912;
-typedef struct ImageObject_00574926 {
-    char at_dynapi_66[26]; /* 00574926 dynapi_66 */
-} ImageObject_00574926;
-extern ImageObject_00574926 g_ImageObject_00574926;
-typedef struct ImageObject_00574940 {
-    char at_dynapi_67[15]; /* 00574940 dynapi_67 */
-    uint8_t at_dynapi_67_padding[1];
-} ImageObject_00574940;
-extern ImageObject_00574940 g_ImageObject_00574940;
-typedef struct ImageObject_00574950 {
-    char at_dynapi_68[19]; /* 00574950 dynapi_68 */
-    uint8_t at_dynapi_68_padding[1];
-} ImageObject_00574950;
-extern ImageObject_00574950 g_ImageObject_00574950;
-typedef struct ImageObject_00574964 {
-    char at_dynapi_69[26]; /* 00574964 dynapi_69 */
-} ImageObject_00574964;
-extern ImageObject_00574964 g_ImageObject_00574964;
-typedef struct ImageObject_0057497E {
-    char at_dynapi_70[19]; /* 0057497E dynapi_70 */
-    uint8_t at_dynapi_70_padding[1];
-} ImageObject_0057497E;
-extern ImageObject_0057497E g_ImageObject_0057497E;
-typedef struct ImageObject_00574992 {
-    char at_dynapi_71[22]; /* 00574992 dynapi_71 */
-} ImageObject_00574992;
-extern ImageObject_00574992 g_ImageObject_00574992;
-typedef struct ImageObject_005749A8 {
-    char at_dynapi_72[22]; /* 005749A8 dynapi_72 */
-} ImageObject_005749A8;
-extern ImageObject_005749A8 g_ImageObject_005749A8;
-typedef struct ImageObject_005749BE {
-    char at_dynapi_73[14]; /* 005749BE dynapi_73 */
-} ImageObject_005749BE;
-extern ImageObject_005749BE g_ImageObject_005749BE;
-typedef struct ImageObject_005749CC {
-    char at_dynapi_74[20]; /* 005749CC dynapi_74 */
-} ImageObject_005749CC;
-extern ImageObject_005749CC g_ImageObject_005749CC;
-typedef struct ImageObject_005749E0 {
-    char at_dynapi_75[15]; /* 005749E0 dynapi_75 */
-    uint8_t at_dynapi_75_padding[1];
-} ImageObject_005749E0;
-extern ImageObject_005749E0 g_ImageObject_005749E0;
-typedef struct ImageObject_005749F0 {
-    char at_dynapi_76[21]; /* 005749F0 dynapi_76 */
-    uint8_t at_dynapi_76_padding[1];
-} ImageObject_005749F0;
-extern ImageObject_005749F0 g_ImageObject_005749F0;
-typedef struct ImageObject_00574A06 {
-    char at_dynapi_77[21]; /* 00574A06 dynapi_77 */
-    uint8_t at_dynapi_77_padding[1];
-} ImageObject_00574A06;
-extern ImageObject_00574A06 g_ImageObject_00574A06;
-typedef struct ImageObject_00574A1C {
-    char at_dynapi_78[22]; /* 00574A1C dynapi_78 */
-} ImageObject_00574A1C;
-extern ImageObject_00574A1C g_ImageObject_00574A1C;
-typedef struct ImageObject_00574A32 {
-    char at_dynapi_79[18]; /* 00574A32 dynapi_79 */
-} ImageObject_00574A32;
-extern ImageObject_00574A32 g_ImageObject_00574A32;
-typedef struct ImageObject_00574A44 {
-    char at_dynapi_80[11]; /* 00574A44 dynapi_80 */
-    uint8_t at_dynapi_80_padding[1];
-} ImageObject_00574A44;
-extern ImageObject_00574A44 g_ImageObject_00574A44;
-typedef struct ImageObject_00574A50 {
-    char at_dynapi_81[19]; /* 00574A50 dynapi_81 */
-    uint8_t at_dynapi_81_padding[1];
-} ImageObject_00574A50;
-extern ImageObject_00574A50 g_ImageObject_00574A50;
-typedef struct ImageObject_00574A64 {
-    char at_dynapi_82[15]; /* 00574A64 dynapi_82 */
-    uint8_t at_dynapi_82_padding[1];
-} ImageObject_00574A64;
-extern ImageObject_00574A64 g_ImageObject_00574A64;
-typedef struct ImageObject_00574A74 {
-    char at_dynapi_83[15]; /* 00574A74 dynapi_83 */
-    uint8_t at_dynapi_83_padding[1];
-} ImageObject_00574A74;
-extern ImageObject_00574A74 g_ImageObject_00574A74;
-typedef struct ImageObject_00574A84 {
-    char at_dynapi_84[17]; /* 00574A84 dynapi_84 */
-    uint8_t at_dynapi_84_padding[1];
-} ImageObject_00574A84;
-extern ImageObject_00574A84 g_ImageObject_00574A84;
-typedef struct ImageObject_00574A96 {
-    char at_dynapi_85[17]; /* 00574A96 dynapi_85 */
-    uint8_t at_dynapi_85_padding[1];
-} ImageObject_00574A96;
-extern ImageObject_00574A96 g_ImageObject_00574A96;
-typedef struct ImageObject_00574AA8 {
-    char at_dynapi_86[25]; /* 00574AA8 dynapi_86 */
-    uint8_t at_dynapi_86_padding[1];
-} ImageObject_00574AA8;
-extern ImageObject_00574AA8 g_ImageObject_00574AA8;
-typedef struct ImageObject_00574AC2 {
-    char at_dynapi_87[22]; /* 00574AC2 dynapi_87 */
-} ImageObject_00574AC2;
-extern ImageObject_00574AC2 g_ImageObject_00574AC2;
-typedef struct ImageObject_00574AD8 {
-    char at_dynapi_88[24]; /* 00574AD8 dynapi_88 */
-} ImageObject_00574AD8;
-extern ImageObject_00574AD8 g_ImageObject_00574AD8;
-typedef struct ImageObject_00574AF0 {
-    char at_dynapi_89[19]; /* 00574AF0 dynapi_89 */
-    uint8_t at_dynapi_89_padding[1];
-} ImageObject_00574AF0;
-extern ImageObject_00574AF0 g_ImageObject_00574AF0;
-typedef struct ImageObject_00574B04 {
-    char at_dynapi_90[17]; /* 00574B04 dynapi_90 */
-    uint8_t at_dynapi_90_padding[1];
-} ImageObject_00574B04;
-extern ImageObject_00574B04 g_ImageObject_00574B04;
-typedef struct ImageObject_00574B16 {
-    char at_dynapi_91[23]; /* 00574B16 dynapi_91 */
-    uint8_t at_dynapi_91_padding[1];
-} ImageObject_00574B16;
-extern ImageObject_00574B16 g_ImageObject_00574B16;
-typedef struct ImageObject_00574B2E {
-    char at_dynapi_92[24]; /* 00574B2E dynapi_92 */
-} ImageObject_00574B2E;
-extern ImageObject_00574B2E g_ImageObject_00574B2E;
-typedef struct ImageObject_00574B46 {
-    char at_dynapi_93[29]; /* 00574B46 dynapi_93 */
-    uint8_t at_dynapi_93_padding[1];
-} ImageObject_00574B46;
-extern ImageObject_00574B46 g_ImageObject_00574B46;
-typedef struct ImageObject_00574B64 {
-    char at_dynapi_94[36]; /* 00574B64 dynapi_94 */
-} ImageObject_00574B64;
-extern ImageObject_00574B64 g_ImageObject_00574B64;
-typedef struct ImageObject_00574B88 {
-    char at_dynapi_95[22]; /* 00574B88 dynapi_95 */
-} ImageObject_00574B88;
-extern ImageObject_00574B88 g_ImageObject_00574B88;
-typedef struct ImageObject_00574B9E {
-    char at_dynapi_96[30]; /* 00574B9E dynapi_96 */
-} ImageObject_00574B9E;
-extern ImageObject_00574B9E g_ImageObject_00574B9E;
-typedef struct ImageObject_00574BBC {
-    char at_dynapi_97[20]; /* 00574BBC dynapi_97 */
-} ImageObject_00574BBC;
-extern ImageObject_00574BBC g_ImageObject_00574BBC;
-typedef struct ImageObject_00574BD0 {
-    char at_dynapi_98[21]; /* 00574BD0 dynapi_98 */
-    uint8_t at_dynapi_98_padding[1];
-} ImageObject_00574BD0;
-extern ImageObject_00574BD0 g_ImageObject_00574BD0;
-typedef struct ImageObject_00574BE6 {
-    char at_dynapi_99[19]; /* 00574BE6 dynapi_99 */
-    uint8_t at_dynapi_99_padding[1];
-} ImageObject_00574BE6;
-extern ImageObject_00574BE6 g_ImageObject_00574BE6;
-typedef struct ImageObject_00574BFA {
-    char at_dynapi_100[19]; /* 00574BFA dynapi_100 */
-    uint8_t at_dynapi_100_padding[1];
-} ImageObject_00574BFA;
-extern ImageObject_00574BFA g_ImageObject_00574BFA;
-typedef struct ImageObject_00574C0E {
-    char at_dynapi_101[20]; /* 00574C0E dynapi_101 */
-} ImageObject_00574C0E;
-extern ImageObject_00574C0E g_ImageObject_00574C0E;
-typedef struct ImageObject_00574C22 {
-    char at_dynapi_102[18]; /* 00574C22 dynapi_102 */
-} ImageObject_00574C22;
-extern ImageObject_00574C22 g_ImageObject_00574C22;
-typedef struct ImageObject_00574C34 {
-    char at_dynapi_103[26]; /* 00574C34 dynapi_103 */
-} ImageObject_00574C34;
-extern ImageObject_00574C34 g_ImageObject_00574C34;
-typedef struct ImageObject_00574C4E {
-    char at_dynapi_104[17]; /* 00574C4E dynapi_104 */
-    uint8_t at_dynapi_104_padding[1];
-} ImageObject_00574C4E;
-extern ImageObject_00574C4E g_ImageObject_00574C4E;
-typedef struct ImageObject_00574C60 {
-    char at_dynapi_105[16]; /* 00574C60 dynapi_105 */
-} ImageObject_00574C60;
-extern ImageObject_00574C60 g_ImageObject_00574C60;
-typedef struct ImageObject_00574C70 {
-    char at_dynapi_106[27]; /* 00574C70 dynapi_106 */
-    uint8_t at_dynapi_106_padding[1];
-} ImageObject_00574C70;
-extern ImageObject_00574C70 g_ImageObject_00574C70;
-typedef struct ImageObject_00574C8C {
-    char at_dynapi_107[19]; /* 00574C8C dynapi_107 */
-    uint8_t at_dynapi_107_padding[1];
-} ImageObject_00574C8C;
-extern ImageObject_00574C8C g_ImageObject_00574C8C;
-typedef struct ImageObject_00574CA0 {
-    char at_dynapi_108[15]; /* 00574CA0 dynapi_108 */
-    uint8_t at_dynapi_108_padding[1];
-} ImageObject_00574CA0;
-extern ImageObject_00574CA0 g_ImageObject_00574CA0;
-typedef struct ImageObject_00574CB0 {
-    char at_dynapi_109[16]; /* 00574CB0 dynapi_109 */
-} ImageObject_00574CB0;
-extern ImageObject_00574CB0 g_ImageObject_00574CB0;
-typedef struct ImageObject_00574CC0 {
-    char at_dynapi_110[13]; /* 00574CC0 dynapi_110 */
-    uint8_t at_dynapi_110_padding[1];
-} ImageObject_00574CC0;
-extern ImageObject_00574CC0 g_ImageObject_00574CC0;
-typedef struct ImageObject_00574CCE {
-    char at_dynapi_111[20]; /* 00574CCE dynapi_111 */
-} ImageObject_00574CCE;
-extern ImageObject_00574CCE g_ImageObject_00574CCE;
-typedef struct ImageObject_00574CE2 {
-    char at_dynapi_112[21]; /* 00574CE2 dynapi_112 */
-    uint8_t at_dynapi_112_padding[1];
-} ImageObject_00574CE2;
-extern ImageObject_00574CE2 g_ImageObject_00574CE2;
-typedef struct ImageObject_00574CF8 {
-    char at_dynapi_113[24]; /* 00574CF8 dynapi_113 */
-} ImageObject_00574CF8;
-extern ImageObject_00574CF8 g_ImageObject_00574CF8;
-typedef struct ImageObject_00574D10 {
-    char at_dynapi_114[22]; /* 00574D10 dynapi_114 */
-} ImageObject_00574D10;
-extern ImageObject_00574D10 g_ImageObject_00574D10;
-typedef struct ImageObject_00574D26 {
-    char at_dynapi_115[25]; /* 00574D26 dynapi_115 */
-    uint8_t at_dynapi_115_padding[1];
-} ImageObject_00574D26;
-extern ImageObject_00574D26 g_ImageObject_00574D26;
+extern char g_GlideImportName_grAADrawTriangle[21]; /* 005745FA dynapi_24 */
+extern char g_GlideImportName_grAlphaBlendFunction[25]; /* 00574610 dynapi_25 */
+extern char g_GlideImportName_grAlphaCombine[19]; /* 0057462A dynapi_26 */
+extern char g_GlideImportName_grAlphaControlsITRGBLighting[32]; /* 0057463E dynapi_27 */
+extern char g_GlideImportName_grAlphaTestFunction[23]; /* 0057465E dynapi_28 */
+extern char g_GlideImportName_grAlphaTestReferenceValue[29]; /* 00574676 dynapi_29 */
+extern char g_GlideImportName_grBufferClear[18]; /* 00574694 dynapi_30 */
+extern char g_GlideImportName_grBufferSwap[16]; /* 005746A6 dynapi_31 */
+extern char g_GlideImportName_grChromakeyMode[19]; /* 005746B6 dynapi_32 */
+extern char g_GlideImportName_grChromakeyValue[20]; /* 005746CA dynapi_33 */
+extern char g_GlideImportName_grClipWindow[17]; /* 00574706 dynapi_36 */
+extern char g_GlideImportName_grColorCombine[19]; /* 00574718 dynapi_37 */
+extern char g_GlideImportName_grColorMask[15]; /* 0057472C dynapi_38 */
+extern char g_GlideImportName_grConstantColorValue[24]; /* 0057473C dynapi_39 */
+extern char g_GlideImportName_grCoordinateSpace[21]; /* 00574754 dynapi_40 */
+extern char g_GlideImportName_grCullMode[14]; /* 0057476A dynapi_41 */
+extern char g_GlideImportName_grDepthBiasLevel[20]; /* 00574778 dynapi_42 */
+extern char g_GlideImportName_grDepthBufferFunction[25]; /* 0057478C dynapi_43 */
+extern char g_GlideImportName_grDepthBufferMode[21]; /* 005747A6 dynapi_44 */
+extern char g_GlideImportName_grDepthMask[15]; /* 005747BC dynapi_45 */
+extern char g_GlideImportName_grDepthRange[16]; /* 005747CC dynapi_46 */
+extern char g_GlideImportName_grDisable[13]; /* 005747DC dynapi_47 */
+extern char g_GlideImportName_grDisableAllEffects[23]; /* 005747EA dynapi_48 */
+extern char g_GlideImportName_grDitherMode[16]; /* 00574802 dynapi_49 */
+extern char g_GlideImportName_grDrawLine[14]; /* 00574812 dynapi_50 */
+extern char g_GlideImportName_grDrawPoint[15]; /* 00574820 dynapi_51 */
+extern char g_GlideImportName_grDrawTriangle[19]; /* 00574830 dynapi_52 */
+extern char g_GlideImportName_grDrawVertexArray[22]; /* 00574844 dynapi_53 */
+extern char g_GlideImportName_grDrawVertexArrayContiguous[32]; /* 0057485A dynapi_54 */
+extern char g_GlideImportName_grEnable[12]; /* 0057487A dynapi_55 */
+extern char g_GlideImportName_grErrorSetCallback[22]; /* 00574886 dynapi_56 */
+extern char g_GlideImportName_grFinish[12]; /* 0057489C dynapi_57 */
+extern char g_GlideImportName_grFlush[11]; /* 005748A8 dynapi_58 */
+extern char g_GlideImportName_grFogColorValue[19]; /* 005748B4 dynapi_59 */
+extern char g_GlideImportName_grFogMode[13]; /* 005748C8 dynapi_60 */
+extern char g_GlideImportName_grFogTable[14]; /* 005748D6 dynapi_61 */
+extern char g_GlideImportName_grGet[10]; /* 005748E4 dynapi_62 */
+extern char g_GlideImportName_grGetProcAddress[20]; /* 005748EE dynapi_63 */
+extern char g_GlideImportName_grGetString[15]; /* 00574902 dynapi_64 */
+extern char g_GlideImportName_grGlideGetState[19]; /* 00574912 dynapi_65 */
+extern char g_GlideImportName_grGlideGetVertexLayout[26]; /* 00574926 dynapi_66 */
+extern char g_GlideImportName_grGlideInit[15]; /* 00574940 dynapi_67 */
+extern char g_GlideImportName_grGlideSetState[19]; /* 00574950 dynapi_68 */
+extern char g_GlideImportName_grGlideSetVertexLayout[26]; /* 00574964 dynapi_69 */
+extern char g_GlideImportName_grGlideShutdown[19]; /* 0057497E dynapi_70 */
+extern char g_GlideImportName_grLfbConstantAlpha[22]; /* 00574992 dynapi_71 */
+extern char g_GlideImportName_grLfbConstantDepth[22]; /* 005749A8 dynapi_72 */
+extern char g_GlideImportName_grLfbLock[14]; /* 005749BE dynapi_73 */
+extern char g_GlideImportName_grLfbReadRegion[20]; /* 005749CC dynapi_74 */
+extern char g_GlideImportName_grLfbUnlock[15]; /* 005749E0 dynapi_75 */
+extern char g_GlideImportName_grLfbWriteRegion[21]; /* 005749F0 dynapi_76 */
+extern char g_GlideImportName_grLoadGammaTable[21]; /* 00574A06 dynapi_77 */
+extern char g_GlideImportName_grQueryResolutions[22]; /* 00574A1C dynapi_78 */
+extern char g_GlideImportName_grRenderBuffer[18]; /* 00574A32 dynapi_79 */
+extern char g_GlideImportName_grReset[11]; /* 00574A44 dynapi_80 */
+extern char g_GlideImportName_grSelectContext[19]; /* 00574A50 dynapi_81 */
+extern char g_GlideImportName_grSstOrigin[15]; /* 00574A64 dynapi_82 */
+extern char g_GlideImportName_grSstSelect[15]; /* 00574A74 dynapi_83 */
+extern char g_GlideImportName_grSstWinClose[17]; /* 00574A84 dynapi_84 */
+extern char g_GlideImportName_grSstWinOpen[17]; /* 00574A96 dynapi_85 */
+extern char g_GlideImportName_grTexCalcMemRequired[25]; /* 00574AA8 dynapi_86 */
+extern char g_GlideImportName_grTexClampMode[19]; /* 00574AF0 dynapi_89 */
+extern char g_GlideImportName_grTexCombine[17]; /* 00574B04 dynapi_90 */
+extern char g_GlideImportName_grTexDetailControl[23]; /* 00574B16 dynapi_91 */
+extern char g_GlideImportName_grTexDownloadMipMap[24]; /* 00574B2E dynapi_92 */
+extern char g_GlideImportName_grTexDownloadMipMapLevel[29]; /* 00574B46 dynapi_93 */
+extern char g_GlideImportName_grTexDownloadMipMapLevelPartial[36]; /* 00574B64 dynapi_94 */
+extern char g_GlideImportName_grTexDownloadTable[22]; /* 00574B88 dynapi_95 */
+extern char g_GlideImportName_grTexDownloadTablePartial[30]; /* 00574B9E dynapi_96 */
+extern char g_GlideImportName_grTexFilterMode[20]; /* 00574BBC dynapi_97 */
+extern char g_GlideImportName_grTexLodBiasValue[21]; /* 00574BD0 dynapi_98 */
+extern char g_GlideImportName_grTexMaxAddress[19]; /* 00574BE6 dynapi_99 */
+extern char g_GlideImportName_grTexMinAddress[19]; /* 00574BFA dynapi_100 */
+extern char g_GlideImportName_grTexMipMapMode[20]; /* 00574C0E dynapi_101 */
+extern char g_GlideImportName_grTexMultibase[18]; /* 00574C22 dynapi_102 */
+extern char g_GlideImportName_grTexMultibaseAddress[26]; /* 00574C34 dynapi_103 */
+extern char g_GlideImportName_grTexNCCTable[17]; /* 00574C4E dynapi_104 */
+extern char g_GlideImportName_grTexSource[16]; /* 00574C60 dynapi_105 */
+extern char g_GlideImportName_grTexTextureMemRequired[27]; /* 00574C70 dynapi_106 */
+extern char g_GlideImportName_grVertexLayout[19]; /* 00574C8C dynapi_107 */
+extern char g_GlideImportName_grViewport[15]; /* 00574CA0 dynapi_108 */
+extern char g_GlideImportName_gu3dfGetInfo[16]; /* 00574CB0 dynapi_109 */
+extern char g_GlideImportName_gu3dfLoad[13]; /* 00574CC0 dynapi_110 */
+extern char g_GlideImportName_guFogGenerateExp[20]; /* 00574CCE dynapi_111 */
+extern char g_GlideImportName_guFogGenerateExp2[21]; /* 00574CE2 dynapi_112 */
+extern char g_GlideImportName_guFogGenerateLinear[24]; /* 00574CF8 dynapi_113 */
+extern char g_GlideImportName_guFogTableIndexToW[22]; /* 00574D10 dynapi_114 */
+extern char g_GlideImportName_guGammaCorrectionRGB[25]; /* 00574D26 dynapi_115 */
 extern char s_Wsock32Export_accept[7]; /* 00574D40 s_Wsock32Export_accept */
 extern char s_Wsock32Export_bind[5]; /* 00574D48 s_Wsock32Export_bind */
 extern char s_Wsock32Export_closesocket[12]; /* 00574D4E s_Wsock32Export_closesocket */
@@ -2293,388 +1685,11 @@ extern char s_Wsock32Export_WSACleanup[11]; /* 00574F36 s_Wsock32Export_WSAClean
 extern char s_Wsock32Export_WSAGetLastError[16]; /* 00574F42 s_Wsock32Export_WSAGetLastError */
 extern char s_Wsock32Export_WSAIsBlocking[14]; /* 00574F52 s_Wsock32Export_WSAIsBlocking */
 extern char s_Wsock32Export_WSASetBlockingHook[19]; /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
-typedef struct ImageObject_00574F74 {
-    char at_dynapi_159[16]; /* 00574F74 dynapi_159 */
-} ImageObject_00574F74;
-extern ImageObject_00574F74 g_ImageObject_00574F74;
 extern char s_Wsock32Export_WSAStartup[11]; /* 00574F84 s_Wsock32Export_WSAStartup */
 extern char s_Wsock32Export_WSAUnhookBlockingHook[22]; /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
-typedef struct ImageObject_00574FA6 {
-    char at_dynapi_162[7]; /* 00574FA6 dynapi_162 */
-    uint8_t at_dynapi_162_padding[1];
-} ImageObject_00574FA6;
-extern ImageObject_00574FA6 g_ImageObject_00574FA6;
-typedef struct ImageObject_00574FAE {
-    char at_dynapi_163[5]; /* 00574FAE dynapi_163 */
-    uint8_t at_dynapi_163_padding[1];
-} ImageObject_00574FAE;
-extern ImageObject_00574FAE g_ImageObject_00574FAE;
-typedef struct ImageObject_00574FB4 {
-    char at_dynapi_164[12]; /* 00574FB4 dynapi_164 */
-} ImageObject_00574FB4;
-extern ImageObject_00574FB4 g_ImageObject_00574FB4;
-typedef struct ImageObject_00574FC0 {
-    char at_dynapi_165[8]; /* 00574FC0 dynapi_165 */
-} ImageObject_00574FC0;
-extern ImageObject_00574FC0 g_ImageObject_00574FC0;
-typedef struct ImageObject_00574FC8 {
-    char at_dynapi_166[12]; /* 00574FC8 dynapi_166 */
-} ImageObject_00574FC8;
-extern ImageObject_00574FC8 g_ImageObject_00574FC8;
-typedef struct ImageObject_00574FD4 {
-    char at_dynapi_167[12]; /* 00574FD4 dynapi_167 */
-} ImageObject_00574FD4;
-extern ImageObject_00574FD4 g_ImageObject_00574FD4;
-typedef struct ImageObject_00574FE0 {
-    char at_dynapi_168[11]; /* 00574FE0 dynapi_168 */
-    uint8_t at_dynapi_168_padding[1];
-} ImageObject_00574FE0;
-extern ImageObject_00574FE0 g_ImageObject_00574FE0;
-typedef struct ImageObject_00574FEC {
-    char at_dynapi_169[6]; /* 00574FEC dynapi_169 */
-} ImageObject_00574FEC;
-extern ImageObject_00574FEC g_ImageObject_00574FEC;
-typedef struct ImageObject_00574FF2 {
-    char at_dynapi_170[6]; /* 00574FF2 dynapi_170 */
-} ImageObject_00574FF2;
-extern ImageObject_00574FF2 g_ImageObject_00574FF2;
-typedef struct ImageObject_00574FF8 {
-    char at_dynapi_171[12]; /* 00574FF8 dynapi_171 */
-} ImageObject_00574FF8;
-extern ImageObject_00574FF8 g_ImageObject_00574FF8;
-typedef struct ImageObject_00575004 {
-    char at_dynapi_172[7]; /* 00575004 dynapi_172 */
-    uint8_t at_dynapi_172_padding[1];
-} ImageObject_00575004;
-extern ImageObject_00575004 g_ImageObject_00575004;
-typedef struct ImageObject_0057500C {
-    char at_dynapi_173[6]; /* 0057500C dynapi_173 */
-} ImageObject_0057500C;
-extern ImageObject_0057500C g_ImageObject_0057500C;
-typedef struct ImageObject_00575012 {
-    char at_dynapi_174[6]; /* 00575012 dynapi_174 */
-} ImageObject_00575012;
-extern ImageObject_00575012 g_ImageObject_00575012;
-typedef struct ImageObject_00575018 {
-    char at_dynapi_175[5]; /* 00575018 dynapi_175 */
-    uint8_t at_dynapi_175_padding[1];
-} ImageObject_00575018;
-extern ImageObject_00575018 g_ImageObject_00575018;
-typedef struct ImageObject_0057501E {
-    char at_dynapi_176[9]; /* 0057501E dynapi_176 */
-    uint8_t at_dynapi_176_padding[1];
-} ImageObject_0057501E;
-extern ImageObject_0057501E g_ImageObject_0057501E;
-typedef struct ImageObject_00575028 {
-    char at_dynapi_177[7]; /* 00575028 dynapi_177 */
-    uint8_t at_dynapi_177_padding[1];
-} ImageObject_00575028;
-extern ImageObject_00575028 g_ImageObject_00575028;
-typedef struct ImageObject_00575030 {
-    char at_dynapi_178[5]; /* 00575030 dynapi_178 */
-    uint8_t at_dynapi_178_padding[1];
-} ImageObject_00575030;
-extern ImageObject_00575030 g_ImageObject_00575030;
-typedef struct ImageObject_00575036 {
-    char at_dynapi_179[7]; /* 00575036 dynapi_179 */
-    uint8_t at_dynapi_179_padding[1];
-} ImageObject_00575036;
-extern ImageObject_00575036 g_ImageObject_00575036;
-typedef struct ImageObject_0057503E {
-    char at_dynapi_180[11]; /* 0057503E dynapi_180 */
-    uint8_t at_dynapi_180_padding[1];
-} ImageObject_0057503E;
-extern ImageObject_0057503E g_ImageObject_0057503E;
-typedef struct ImageObject_0057504A {
-    char at_dynapi_181[9]; /* 0057504A dynapi_181 */
-    uint8_t at_dynapi_181_padding[1];
-} ImageObject_0057504A;
-extern ImageObject_0057504A g_ImageObject_0057504A;
-typedef struct ImageObject_00575054 {
-    char at_dynapi_182[7]; /* 00575054 dynapi_182 */
-    uint8_t at_dynapi_182_padding[1];
-} ImageObject_00575054;
-extern ImageObject_00575054 g_ImageObject_00575054;
-typedef struct ImageObject_0057505C {
-    char at_dynapi_183[10]; /* 0057505C dynapi_183 */
-} ImageObject_0057505C;
-extern ImageObject_0057505C g_ImageObject_0057505C;
-typedef struct ImageObject_00575066 {
-    char at_dynapi_184[15]; /* 00575066 dynapi_184 */
-    uint8_t at_dynapi_184_padding[1];
-} ImageObject_00575066;
-extern ImageObject_00575066 g_ImageObject_00575066;
-typedef struct ImageObject_00575076 {
-    char at_dynapi_185[22]; /* 00575076 dynapi_185 */
-} ImageObject_00575076;
-extern ImageObject_00575076 g_ImageObject_00575076;
-typedef struct ImageObject_0057508C {
-    char at_dynapi_186[11]; /* 0057508C dynapi_186 */
-    uint8_t at_dynapi_186_padding[1];
-} ImageObject_0057508C;
-extern ImageObject_0057508C g_ImageObject_0057508C;
-typedef struct ImageObject_00575098 {
-    char at_dynapi_187[14]; /* 00575098 dynapi_187 */
-} ImageObject_00575098;
-extern ImageObject_00575098 g_ImageObject_00575098;
-typedef struct ImageObject_005750A6 {
-    char at_dynapi_188[11]; /* 005750A6 dynapi_188 */
-    uint8_t at_dynapi_188_padding[1];
-} ImageObject_005750A6;
-extern ImageObject_005750A6 g_ImageObject_005750A6;
-typedef struct ImageObject_005750B2 {
-    char at_dynapi_189[15]; /* 005750B2 dynapi_189 */
-    uint8_t at_dynapi_189_padding[1];
-} ImageObject_005750B2;
-extern ImageObject_005750B2 g_ImageObject_005750B2;
-typedef struct ImageObject_005750C2 {
-    char at_dynapi_190[20]; /* 005750C2 dynapi_190 */
-} ImageObject_005750C2;
-extern ImageObject_005750C2 g_ImageObject_005750C2;
-typedef struct ImageObject_005750D6 {
-    char at_dynapi_191[21]; /* 005750D6 dynapi_191 */
-    uint8_t at_dynapi_191_padding[1];
-} ImageObject_005750D6;
-extern ImageObject_005750D6 g_ImageObject_005750D6;
-typedef struct ImageObject_005750EC {
-    char at_dynapi_192[18]; /* 005750EC dynapi_192 */
-} ImageObject_005750EC;
-extern ImageObject_005750EC g_ImageObject_005750EC;
-typedef struct ImageObject_005750FE {
-    char at_dynapi_193[15]; /* 005750FE dynapi_193 */
-    uint8_t at_dynapi_193_padding[1];
-} ImageObject_005750FE;
-extern ImageObject_005750FE g_ImageObject_005750FE;
-typedef struct ImageObject_0057510E {
-    char at_dynapi_194[16]; /* 0057510E dynapi_194 */
-} ImageObject_0057510E;
-extern ImageObject_0057510E g_ImageObject_0057510E;
-typedef struct ImageObject_0057511E {
-    char at_dynapi_195[23]; /* 0057511E dynapi_195 */
-    uint8_t at_dynapi_195_padding[1];
-} ImageObject_0057511E;
-extern ImageObject_0057511E g_ImageObject_0057511E;
-typedef struct ImageObject_00575136 {
-    char at_dynapi_196[16]; /* 00575136 dynapi_196 */
-} ImageObject_00575136;
-extern ImageObject_00575136 g_ImageObject_00575136;
-typedef struct ImageObject_00575146 {
-    char at_dynapi_197[9]; /* 00575146 dynapi_197 */
-    uint8_t at_dynapi_197_padding[1];
-} ImageObject_00575146;
-extern ImageObject_00575146 g_ImageObject_00575146;
-typedef struct ImageObject_00575150 {
-    char at_dynapi_198[9]; /* 00575150 dynapi_198 */
-    uint8_t at_dynapi_198_padding[1];
-} ImageObject_00575150;
-extern ImageObject_00575150 g_ImageObject_00575150;
-typedef struct ImageObject_0057515A {
-    char at_dynapi_199[9]; /* 0057515A dynapi_199 */
-    uint8_t at_dynapi_199_padding[1];
-} ImageObject_0057515A;
-extern ImageObject_0057515A g_ImageObject_0057515A;
-typedef struct ImageObject_00575164 {
-    char at_dynapi_200[14]; /* 00575164 dynapi_200 */
-} ImageObject_00575164;
-extern ImageObject_00575164 g_ImageObject_00575164;
-typedef struct ImageObject_00575172 {
-    char at_dynapi_201[12]; /* 00575172 dynapi_201 */
-} ImageObject_00575172;
-extern ImageObject_00575172 g_ImageObject_00575172;
-typedef struct ImageObject_0057517E {
-    char at_dynapi_202[9]; /* 0057517E dynapi_202 */
-    uint8_t at_dynapi_202_padding[1];
-} ImageObject_0057517E;
-extern ImageObject_0057517E g_ImageObject_0057517E;
-typedef struct ImageObject_00575188 {
-    char at_dynapi_203[9]; /* 00575188 dynapi_203 */
-    uint8_t at_dynapi_203_padding[1];
-} ImageObject_00575188;
-extern ImageObject_00575188 g_ImageObject_00575188;
-typedef struct ImageObject_00575192 {
-    char at_dynapi_204[8]; /* 00575192 dynapi_204 */
-} ImageObject_00575192;
-extern ImageObject_00575192 g_ImageObject_00575192;
-typedef struct ImageObject_0057519A {
-    char at_dynapi_205[18]; /* 0057519A dynapi_205 */
-} ImageObject_0057519A;
-extern ImageObject_0057519A g_ImageObject_0057519A;
-typedef struct ImageObject_005751AC {
-    char at_dynapi_206[12]; /* 005751AC dynapi_206 */
-} ImageObject_005751AC;
-extern ImageObject_005751AC g_ImageObject_005751AC;
-typedef struct ImageObject_005751B8 {
-    char at_dynapi_207[14]; /* 005751B8 dynapi_207 */
-} ImageObject_005751B8;
-extern ImageObject_005751B8 g_ImageObject_005751B8;
-typedef struct ImageObject_005751C6 {
-    char at_dynapi_208[8]; /* 005751C6 dynapi_208 */
-} ImageObject_005751C6;
-extern ImageObject_005751C6 g_ImageObject_005751C6;
-typedef struct ImageObject_005751CE {
-    char at_dynapi_209[18]; /* 005751CE dynapi_209 */
-} ImageObject_005751CE;
-extern ImageObject_005751CE g_ImageObject_005751CE;
-typedef struct ImageObject_005751E0 {
-    char at_dynapi_210[10]; /* 005751E0 dynapi_210 */
-} ImageObject_005751E0;
-extern ImageObject_005751E0 g_ImageObject_005751E0;
-typedef struct ImageObject_005751EA {
-    char at_dynapi_211[19]; /* 005751EA dynapi_211 */
-    uint8_t at_dynapi_211_padding[1];
-} ImageObject_005751EA;
-extern ImageObject_005751EA g_ImageObject_005751EA;
-typedef struct ImageObject_005751FE {
-    char at_dynapi_212[12]; /* 005751FE dynapi_212 */
-} ImageObject_005751FE;
-extern ImageObject_005751FE g_ImageObject_005751FE;
-typedef struct ImageObject_0057520A {
-    char at_dynapi_213[16]; /* 0057520A dynapi_213 */
-} ImageObject_0057520A;
-extern ImageObject_0057520A g_ImageObject_0057520A;
-typedef struct ImageObject_0057521A {
-    char at_dynapi_214[11]; /* 0057521A dynapi_214 */
-    uint8_t at_dynapi_214_padding[1];
-} ImageObject_0057521A;
-extern ImageObject_0057521A g_ImageObject_0057521A;
-typedef struct ImageObject_00575226 {
-    char at_dynapi_215[11]; /* 00575226 dynapi_215 */
-    uint8_t at_dynapi_215_padding[1];
-} ImageObject_00575226;
-extern ImageObject_00575226 g_ImageObject_00575226;
-typedef struct ImageObject_00575232 {
-    char at_dynapi_216[22]; /* 00575232 dynapi_216 */
-} ImageObject_00575232;
-extern ImageObject_00575232 g_ImageObject_00575232;
-typedef struct ImageObject_00575248 {
-    char at_dynapi_217[25]; /* 00575248 dynapi_217 */
-    uint8_t at_dynapi_217_padding[1];
-} ImageObject_00575248;
-extern ImageObject_00575248 g_ImageObject_00575248;
-typedef struct ImageObject_00575262 {
-    char at_dynapi_218[10]; /* 00575262 dynapi_218 */
-} ImageObject_00575262;
-extern ImageObject_00575262 g_ImageObject_00575262;
-typedef struct ImageObject_0057526C {
-    char at_dynapi_219[10]; /* 0057526C dynapi_219 */
-} ImageObject_0057526C;
-extern ImageObject_0057526C g_ImageObject_0057526C;
-typedef struct ImageObject_00575276 {
-    char at_dynapi_220[14]; /* 00575276 dynapi_220 */
-} ImageObject_00575276;
-extern ImageObject_00575276 g_ImageObject_00575276;
-typedef struct ImageObject_00575284 {
-    char at_dynapi_221[14]; /* 00575284 dynapi_221 */
-} ImageObject_00575284;
-extern ImageObject_00575284 g_ImageObject_00575284;
-typedef struct ImageObject_00575292 {
-    char at_dynapi_222[12]; /* 00575292 dynapi_222 */
-} ImageObject_00575292;
-extern ImageObject_00575292 g_ImageObject_00575292;
-typedef struct ImageObject_0057529E {
-    char at_dynapi_223[15]; /* 0057529E dynapi_223 */
-    uint8_t at_dynapi_223_padding[1];
-} ImageObject_0057529E;
-extern ImageObject_0057529E g_ImageObject_0057529E;
-typedef struct ImageObject_005752AE {
-    char at_dynapi_224[17]; /* 005752AE dynapi_224 */
-    uint8_t at_dynapi_224_padding[1];
-} ImageObject_005752AE;
-extern ImageObject_005752AE g_ImageObject_005752AE;
-typedef struct ImageObject_005752C0 {
-    char at_dynapi_225[14]; /* 005752C0 dynapi_225 */
-} ImageObject_005752C0;
-extern ImageObject_005752C0 g_ImageObject_005752C0;
-typedef struct ImageObject_005752CE {
-    char at_dynapi_226[14]; /* 005752CE dynapi_226 */
-} ImageObject_005752CE;
-extern ImageObject_005752CE g_ImageObject_005752CE;
-typedef struct ImageObject_005752DC {
-    char at_dynapi_227[22]; /* 005752DC dynapi_227 */
-} ImageObject_005752DC;
-extern ImageObject_005752DC g_ImageObject_005752DC;
-typedef struct ImageObject_005752F2 {
-    char at_dynapi_228[22]; /* 005752F2 dynapi_228 */
-} ImageObject_005752F2;
-extern ImageObject_005752F2 g_ImageObject_005752F2;
-typedef struct ImageObject_00575308 {
-    char at_dynapi_229[23]; /* 00575308 dynapi_229 */
-    uint8_t at_dynapi_229_padding[1];
-} ImageObject_00575308;
-extern ImageObject_00575308 g_ImageObject_00575308;
-typedef struct ImageObject_00575320 {
-    char at_dynapi_230[25]; /* 00575320 dynapi_230 */
-    uint8_t at_dynapi_230_padding[1];
-} ImageObject_00575320;
-extern ImageObject_00575320 g_ImageObject_00575320;
-typedef struct ImageObject_0057533A {
-    char at_dynapi_231[22]; /* 0057533A dynapi_231 */
-} ImageObject_0057533A;
-extern ImageObject_0057533A g_ImageObject_0057533A;
-typedef struct ImageObject_00575350 {
-    char at_dynapi_232[22]; /* 00575350 dynapi_232 */
-} ImageObject_00575350;
-extern ImageObject_00575350 g_ImageObject_00575350;
-typedef struct ImageObject_00575366 {
-    char at_dynapi_233[22]; /* 00575366 dynapi_233 */
-} ImageObject_00575366;
-extern ImageObject_00575366 g_ImageObject_00575366;
-typedef struct ImageObject_0057537C {
-    char at_dynapi_234[20]; /* 0057537C dynapi_234 */
-} ImageObject_0057537C;
-extern ImageObject_0057537C g_ImageObject_0057537C;
-typedef struct ImageObject_00575390 {
-    char at_dynapi_235[27]; /* 00575390 dynapi_235 */
-    uint8_t at_dynapi_235_padding[1];
-} ImageObject_00575390;
-extern ImageObject_00575390 g_ImageObject_00575390;
-typedef struct ImageObject_005753AC {
-    char at_dynapi_236[24]; /* 005753AC dynapi_236 */
-} ImageObject_005753AC;
-extern ImageObject_005753AC g_ImageObject_005753AC;
-typedef struct ImageObject_005753C4 {
-    char at_dynapi_237[33]; /* 005753C4 dynapi_237 */
-    uint8_t at_dynapi_237_padding[1];
-} ImageObject_005753C4;
-extern ImageObject_005753C4 g_ImageObject_005753C4;
-typedef struct ImageObject_005753E6 {
-    char at_dynapi_238[24]; /* 005753E6 dynapi_238 */
-} ImageObject_005753E6;
-extern ImageObject_005753E6 g_ImageObject_005753E6;
-typedef struct ImageObject_005753FE {
-    char at_dynapi_239[23]; /* 005753FE dynapi_239 */
-    uint8_t at_dynapi_239_padding[1];
-} ImageObject_005753FE;
-extern ImageObject_005753FE g_ImageObject_005753FE;
-typedef struct ImageObject_00575416 {
-    char at_dynapi_240[20]; /* 00575416 dynapi_240 */
-} ImageObject_00575416;
-extern ImageObject_00575416 g_ImageObject_00575416;
-typedef struct ImageObject_0057542A {
-    char at_dynapi_241[22]; /* 0057542A dynapi_241 */
-} ImageObject_0057542A;
-extern ImageObject_0057542A g_ImageObject_0057542A;
-typedef struct ImageObject_00575440 {
-    char at_dynapi_242[22]; /* 00575440 dynapi_242 */
-} ImageObject_00575440;
-extern ImageObject_00575440 g_ImageObject_00575440;
-typedef struct ImageObject_00575456 {
-    char at_dynapi_243[15]; /* 00575456 dynapi_243 */
-    uint8_t at_dynapi_243_padding[1];
-} ImageObject_00575456;
-extern ImageObject_00575456 g_ImageObject_00575456;
-typedef struct ImageObject_00575466 {
-    char at_dynapi_244[20]; /* 00575466 dynapi_244 */
-    uint8_t at_dynapi_244_padding[6];
-} ImageObject_00575466;
-extern ImageObject_00575466 g_ImageObject_00575466;
 extern uint8_t g_FatalErrorNarrowBuffer[1024]; /* 00575480 g_FatalErrorNarrowBuffer */
 
 /* original 0x0057594C-0x00575CB0 */
-typedef struct ImageObject_0057594C {
-    uint8_t at_gap_0057594C[4]; /* 0057594C gap */
-} ImageObject_0057594C;
-extern ImageObject_0057594C g_ImageObject_0057594C;
 extern uint32_t g_Win32FileBytesTransferred; /* 00575950 g_Win32FileBytesTransferred */
 extern _WIN32_FIND_DATAA g_Win32FindDataScratch; /* 00575954 g_Win32FindDataScratch: the WIN32_FIND_DATAA of FindFirstFileA/FindNextFileA (cFileName at 00575980), reused as scratch by platform/filesystem/win32.c: GetFileTime FILETIMEs at +0x00/+0x08/+0x10 (4 bytes off the find-data FILETIME fields), the FileTimeToDosDateTime dword at +0x00, the GetDiskFreeSpaceA dwords at +0x18..+0x24 */
 extern pointer g_FileSystemInitComputerNameCapacityOrConfigCursor; /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
@@ -2683,17 +1698,7 @@ extern uint8_t g_Win32PathScratch[2][256]; /* 00575A9C g_Win32PathScratch: two 0
 extern char g_Win32DriveRootPathScratchA[4]; /* 00575C9C g_Win32DriveRootPathScratchA: char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
 extern char g_Win32DriveDevicePathA[7]; /* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by 9 bytes of NOP fill up to FileSystem_Init; no C code references it */
 
-/* original 0x00576720-0x00576784 */
-typedef struct ImageObject_00576720 {
-    uint8_t at_gap_00576720[100]; /* 00576720 gap */
-} ImageObject_00576720;
-extern ImageObject_00576720 g_ImageObject_00576720;
-
 /* original 0x00576B04-0x00576C30 */
-typedef struct ImageObject_00576B04 {
-    uint8_t at_gap_00576B04[12]; /* 00576B04 gap */
-} ImageObject_00576B04;
-extern ImageObject_00576B04 g_ImageObject_00576B04;
 extern IDirectInputA *g_DirectInput; /* 00576B10 g_DirectInput */
 extern IDirectInputDeviceA *g_MouseDevice; /* 00576B14 g_MouseDevice */
 extern TH_LEGACY_GUID GUID_SysMouse_Local; /* 00576B18 GUID_SysMouse_Local */
@@ -2715,10 +1720,6 @@ extern SoftwareDisplayModeHookProc *g_DirectInputMouseChainedSetDisplayMode; /* 
 extern UiFrameRefreshCountdownFrames g_DirectInputMouseRefreshCountdown; /* 00576C24 g_DirectInputMouseRefreshCountdown */
 
 /* original 0x00577BFC-0x00578080 */
-typedef struct ImageObject_00577BFC {
-    uint8_t at_gap_00577BFC[4]; /* 00577BFC gap */
-} ImageObject_00577BFC;
-extern ImageObject_00577BFC g_ImageObject_00577BFC;
 extern TH_LEGACY_GUID IID_IDirectDraw2_Local; /* 00577C00 IID_IDirectDraw2_Local */
 extern TH_LEGACY_GUID IID_IDirectDrawSurface3_Local; /* 00577C10 IID_IDirectDrawSurface3_Local */
 extern TH_LEGACY_GUID IID_IDirect3D2_Local; /* 00577C20 IID_IDirect3D2_Local */
@@ -2769,10 +1770,6 @@ extern uint32_t g_GraphicsEnumerateAllDevicesFlag; /* 00578074 g_GraphicsEnumera
 extern char g_CommandLineOptionD3dAll[7]; /* 00578078 g_CommandLineOptionD3dAll */
 
 /* original 0x0057ECC8-0x0057EE90 */
-typedef struct ImageObject_0057ECC8 {
-    uint8_t at_gap_0057ECC8[8]; /* 0057ECC8 gap */
-} ImageObject_0057ECC8;
-extern ImageObject_0057ECC8 g_ImageObject_0057ECC8;
 extern GrResolution g_GlideEnumerationResolutionQuery; /* 0057ECD0 g_GlideEnumerationResolutionQuery: GrResolution: grQueryResolutions template {GR_QUERY_ANY, GR_QUERY_ANY, 2 colour buffers, 1 aux buffer} for enumerating modes; Glide3_InitAndEnumerate */
 extern GrResolution g_GlideSelectedResolutionQuery; /* 0057ECE0 g_GlideSelectedResolutionQuery: GrResolution: grQueryResolutions template {resolution set at run time, GR_QUERY_ANY refresh, 2, 1} to pick the best refresh rate; GraphicsGlide3_ApplyDisplayModeAndInitializeResources */
 extern uint32_t g_GlideRefreshRatesHz[9]; /* 0057ECF0 g_GlideRefreshRatesHz: uint32_t[9]: Hz per GR_REFRESH_* code (60,70,72,75,80,90,100,85,120); graphics/backend/glide.c */
@@ -2799,10 +1796,6 @@ extern uint8_t *g_GlideSecondBufferBase; /* 0057EE80 g_GlideSecondBufferBase */
 extern char g_CommandLineOptionGlide[6]; /* 0057EE84 g_CommandLineOptionGlide */
 
 /* original 0x00582ED8-0x00583140 */
-typedef struct ImageObject_00582ED8 {
-    uint8_t at_gap_00582ED8[8]; /* 00582ED8 gap */
-} ImageObject_00582ED8;
-extern ImageObject_00582ED8 g_ImageObject_00582ED8;
 extern IDirectSound *g_DirectSound; /* 00582EE0 g_DirectSound */
 extern IDirectSoundBuffer *g_PrimarySoundBuffer; /* 00582EE4 g_PrimarySoundBuffer */
 extern TH_LEGACY_LONG g_PrimaryVolume; /* 00582EE8 g_PrimaryVolume */
@@ -2814,10 +1807,6 @@ extern char g_CommandLineOptionSound[6]; /* 00582F28 g_CommandLineOptionSound */
 extern int32_t g_DirectSoundGainAttenuation[129]; /* 00582F2E g_DirectSoundGainAttenuation: DirectSound attenuation (1/100 dB) per channel gain Q15 >> 8 */
 
 /* original 0x00583D28-0x00584080 */
-typedef struct ImageObject_00583D28 {
-    uint8_t at_gap_00583D28[56]; /* 00583D28 gap */
-} ImageObject_00583D28;
-extern ImageObject_00583D28 g_ImageObject_00583D28;
 extern uint32_t g_NetworkBackendMode; /* 00583D60 g_NetworkBackendMode */
 extern WinSockData11 g_WinSockStartupData; /* 00583D64 g_WinSockStartupData */
 extern NetworkSocketHandle32 g_NetworkFallbackSocket; /* 00583EF2 g_NetworkFallbackSocket */
@@ -2834,17 +1823,7 @@ extern uint8_t g_NetworkEndpointTextScratchA[256]; /* 00583F40 g_NetworkEndpoint
 extern NetworkBackendInstanceDescriptorPrefix NetworkBackendInstanceDescriptorPrefix_00584040; /* 00584040 NetworkBackendInstanceDescriptorPrefix_00584040 */
 extern char s_CommandLineOptionIp[3]; /* 00584078 s_CommandLineOptionIp: "IP=" without terminator (the option search gets the length 3) */
 
-/* original 0x00584E44-0x00584E50 */
-typedef struct ImageObject_00584E44 {
-    uint8_t at_gap_00584E44[12]; /* 00584E44 gap */
-} ImageObject_00584E44;
-extern ImageObject_00584E44 g_ImageObject_00584E44;
-
 /* original 0x005856A0-0x00585D40 */
-typedef struct ImageObject_005856A0 {
-    uint8_t at_gap_005856A0[16]; /* 005856A0 gap */
-} ImageObject_005856A0;
-extern ImageObject_005856A0 g_ImageObject_005856A0;
 extern HINSTANCE g_hInstance; /* 005856B0 g_hInstance */
 extern HWND g_MainWindow; /* 005856B4 g_MainWindow */
 extern uint32_t g_WindowDestroyDepth; /* 005856B8 g_WindowDestroyDepth */
@@ -2861,65 +1840,11 @@ extern uint8_t g_LocaleInfoScratch[16]; /* 00586950 g_LocaleInfoScratch */
 extern LocaleSystemState g_LocaleSystemState; /* 00586A70 g_LocaleSystemState */
 
 /* original 0x005873BC-0x0058C000 */
-typedef struct ImageObject_005873BC {
-    uint8_t at_gap_005873BC[68]; /* 005873BC gap */
-} ImageObject_005873BC;
-extern ImageObject_005873BC g_ImageObject_005873BC;
-typedef struct ImageObject_00587400 {
-    uint32_t at_g_Arena_3[4096]; /* 00587400 g_Arena_3 */
-} ImageObject_00587400;
-extern ImageObject_00587400 g_ImageObject_00587400;
-typedef struct ImageObject_0058B400 {
-    uint32_t at_g_Arena_4[768]; /* 0058B400 g_Arena_4 */
-} ImageObject_0058B400;
-extern ImageObject_0058B400 g_ImageObject_0058B400;
+extern uint8_t g_ArenaLinearStorage[0x4C00]; /* 00587400 g_ArenaLinearStorage: uint8_t[0x4C00]: the linear (bump) region of g_Arena: linearCursor starts at [0] (00587400, Ghidra g_Arena_3), linearLimit is &[0x4000] (0058B400, Ghidra g_Arena_4); the 0xC00 bytes from the limit to the end of the original image (0058C000) are never handed out. One array so cursor and limit stay in the same object. */
 
 #pragma pack(pop)
 
 /* Objects the headers do not declare, by their Ghidra label. */
-#define g_InGameUiCommandCursorCodeModeDispatchTable (g_ImageObject_0056F820.at_g_InGameUiCommandCursorCodeModeDispatchTable)
-#define g_InGameUiCommandBeginInteractionModeDispatchTable (g_ImageObject_0056FAA0.at_g_InGameUiCommandBeginInteractionModeDispatchTable)
-#define g_InGameUiCommandUpdateInteractionModeDispatchTable (g_ImageObject_00570410.at_g_InGameUiCommandUpdateInteractionModeDispatchTable)
-#define g_InGameUiCommandEndInteractionModeDispatchTable (g_ImageObject_00570DA0.at_g_InGameUiCommandEndInteractionModeDispatchTable)
-#define g_InGameUiCommandResetInteractionModeDispatchTable (g_ImageObject_00570F50.at_g_InGameUiCommandResetInteractionModeDispatchTable)
-#define g_WinSock_UnboundApiSlot34C (g_ImageObject_0057434C.at_g_WinSock_UnboundApiSlot34C)
-#define g_Ws2_32_accept (g_ImageObject_00574358.at_g_Ws2_32_accept)
-#define g_Ws2_32_connect (g_ImageObject_00574364.at_g_Ws2_32_connect)
-#define g_Ws2_32_getpeername (g_ImageObject_00574368.at_g_Ws2_32_getpeername)
-#define g_Ws2_32_getsockname (g_ImageObject_0057436C.at_g_Ws2_32_getsockname)
-#define g_Ws2_32_getsockopt (g_ImageObject_00574370.at_g_Ws2_32_getsockopt)
-#define g_Ws2_32_htonl (g_ImageObject_00574374.at_g_Ws2_32_htonl)
-#define g_Ws2_32_ioctlsocket (g_ImageObject_0057437C.at_g_Ws2_32_ioctlsocket)
-#define g_Ws2_32_listen (g_ImageObject_00574380.at_g_Ws2_32_listen)
-#define g_Ws2_32_ntohl (g_ImageObject_00574384.at_g_Ws2_32_ntohl)
-#define g_Ws2_32_ntohs (g_ImageObject_00574388.at_g_Ws2_32_ntohs)
-#define g_Ws2_32_recv (g_ImageObject_0057438C.at_g_Ws2_32_recv)
-#define g_Ws2_32_select (g_ImageObject_00574394.at_g_Ws2_32_select)
-#define g_Ws2_32_send (g_ImageObject_00574398.at_g_Ws2_32_send)
-#define g_Ws2_32_shutdown (g_ImageObject_005743A4.at_g_Ws2_32_shutdown)
-#define g_Ws2_32_WSAAsyncSelect (g_ImageObject_005743B0.at_g_Ws2_32_WSAAsyncSelect)
-#define g_Ws2_32_WSACancelBlockingCall (g_ImageObject_005743B4.at_g_Ws2_32_WSACancelBlockingCall)
-#define g_Ws2_32_WSAIsBlocking (g_ImageObject_005743F0.at_g_Ws2_32_WSAIsBlocking)
-#define g_Ws2_32_WSASetBlockingHook (g_ImageObject_0057441C.at_g_Ws2_32_WSASetBlockingHook)
-#define g_Ws2_32_WSAStartup (g_ImageObject_0057442C.at_g_Ws2_32_WSAStartup)
-#define g_Ws2_32_WSAUnhookBlockingHook (g_ImageObject_00574430.at_g_Ws2_32_WSAUnhookBlockingHook)
-#define g_Ws2_32_inet_addr (g_ImageObject_00574438.at_g_Ws2_32_inet_addr)
-#define g_Ws2_32_inet_ntoa (g_ImageObject_0057443C.at_g_Ws2_32_inet_ntoa)
-#define g_Ws2_32_gethostbyaddr (g_ImageObject_00574440.at_g_Ws2_32_gethostbyaddr)
-#define g_Ws2_32_gethostname (g_ImageObject_00574448.at_g_Ws2_32_gethostname)
-#define g_Ws2_32_getprotobyname (g_ImageObject_0057444C.at_g_Ws2_32_getprotobyname)
-#define g_Ws2_32_getprotobynumber (g_ImageObject_00574450.at_g_Ws2_32_getprotobynumber)
-#define g_Ws2_32_getservbyname (g_ImageObject_00574454.at_g_Ws2_32_getservbyname)
-#define g_Ws2_32_getservbyport (g_ImageObject_00574458.at_g_Ws2_32_getservbyport)
-#define g_Ws2_32_WSAAsyncGetHostByAddr (g_ImageObject_0057445C.at_g_Ws2_32_WSAAsyncGetHostByAddr)
-#define g_Ws2_32_WSAAsyncGetHostByName (g_ImageObject_00574460.at_g_Ws2_32_WSAAsyncGetHostByName)
-#define g_Ws2_32_WSAAsyncGetProtoByName (g_ImageObject_00574464.at_g_Ws2_32_WSAAsyncGetProtoByName)
-#define g_Ws2_32_WSAAsyncGetProtoByNumber (g_ImageObject_00574468.at_g_Ws2_32_WSAAsyncGetProtoByNumber)
-#define g_Ws2_32_WSAAsyncGetServByName (g_ImageObject_0057446C.at_g_Ws2_32_WSAAsyncGetServByName)
-#define g_Ws2_32_WSAAsyncGetServByPort (g_ImageObject_00574470.at_g_Ws2_32_WSAAsyncGetServByPort)
-#define g_Ws2_32_WSACancelAsyncRequest (g_ImageObject_00574474.at_g_Ws2_32_WSACancelAsyncRequest)
-#define g_Arena_3 (g_ImageObject_00587400.at_g_Arena_3)
-#define g_Arena_4 (g_ImageObject_0058B400.at_g_Arena_4)
 
 
 /* For OPEN_THANDOR_SELFTEST=imagecmp: each block with its original range, and every converted

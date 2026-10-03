@@ -14759,10 +14759,6 @@ __declspec(align(4)) uint32_t g_TerrainMaterialEditReferenceMaterialByte = 0;
 /* 0056D838 g_TerrainMaterialEditReplacementMaterialByte */
 __declspec(align(8)) uint32_t g_TerrainMaterialEditReplacementMaterialByte = 0;
 
-__declspec(align(8)) ImageObject_0056E408 g_ImageObject_0056E408 = {
-    {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056E408 gap */
-};
-
 /* 0056E410 g_InGameKeyboardDispatchRecords */
 __declspec(align(16)) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37] = {
     /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56F1C0},
@@ -14804,10 +14800,6 @@ __declspec(align(16)) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37
     /* 36: terminator (key code 0 ends the scan; the other two dwords are 0x90 fill) */
     {.commandCode = 0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}};
 
-__declspec(align(8)) ImageObject_0056F278 g_ImageObject_0056F278 = {
-    {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056F278 gap */
-};
-
 /* 0056F280 g_InGameCameraCommandDispatchRecords16 */
 __declspec(align(16)) InGameCameraCommandDispatchTable g_InGameCameraCommandDispatchRecords16 = {
     .records = {
@@ -14830,76 +14822,6 @@ __declspec(align(16)) InGameCameraCommandDispatchTable g_InGameCameraCommandDisp
     },
     .alignmentPadding = {144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144, 144}};
 
-__declspec(align(4)) ImageObject_0056F81C g_ImageObject_0056F81C = {
-    {0x90, 0x90, 0x90, 0x90}, /* 0056F81C gap */
-};
-
-__declspec(align(16)) ImageObject_0056F820 g_ImageObject_0056F820 = {
-    /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable: jump table of the original code, not used by the C code */
-    {
-        0x0056F840, 0x0056F8A0, 0x0056F8F0, 0x0056F930, 0x0056FA20, 0x0056FA50, 0x90909090, 0x90909090},
-};
-
-__declspec(align(8)) ImageObject_0056FA98 g_ImageObject_0056FA98 = {
-    {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056FA98 gap */
-};
-
-__declspec(align(16)) ImageObject_0056FAA0 g_ImageObject_0056FAA0 = {
-    /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-    {
-        0x0056FAC0, 0x0056FD50, 0x0056FED0, 0x00570100, 0x005701B0, 0x00570310, 0x90909090, 0x90909090},
-};
-
-__declspec(align(8)) ImageObject_00570408 g_ImageObject_00570408 = {
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570408 gap */
-};
-
-__declspec(align(16)) ImageObject_00570410 g_ImageObject_00570410 = {
-    /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-    {
-        0x00570430, 0x00570770, 0x00570840, 0x00570A10, 0x00570B20, 0x00570CC0, 0x90909090, 0x90909090},
-};
-
-__declspec(align(16)) ImageObject_00570D90 g_ImageObject_00570D90 = {
-    {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570D90 gap */
-};
-
-__declspec(align(16)) ImageObject_00570DA0 g_ImageObject_00570DA0 = {
-    /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-    {
-        0x00570DC0, 0x00570E40, 0x00570F10, 0x00570EA0, 0x00570EF0, 0x00570F10, 0x90909090, 0x90909090},
-};
-
-__declspec(align(8)) ImageObject_00570F48 g_ImageObject_00570F48 = {
-    {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570F48 gap */
-};
-
-__declspec(align(16)) ImageObject_00570F50 g_ImageObject_00570F50 = {
-    /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable: jump table of the original code, not used by the C code */
-    {
-        0x00570F70, 0x00570FB0, 0x00571010, 0x00570FE0, 0x00570FE0, 0x00571010, 0x90909090, 0x90909090},
-};
-
-__declspec(align(4)) ImageObject_00571AE4 g_ImageObject_00571AE4 = {
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00571AE4 gap */
-};
-
-__declspec(align(16)) ImageObject_00571B30 g_ImageObject_00571B30 = {
-    {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00571B30 gap */
-};
-
-__declspec(align(4)) ImageObject_00571D24 g_ImageObject_00571D24 = {
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00571D24 gap */
-};
-
-__declspec(align(16)) ImageObject_00571D70 g_ImageObject_00571D70 = {
-    {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00571D70 gap */
-};
-
-__declspec(align(16)) ImageObject_00572030 g_ImageObject_00572030 = {
-    {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00572030 gap */
-};
-
 /* 00572040 g_FrontendClientPlayerRemovalPacket10007 */
 __declspec(align(16)) FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007 = {0};
 
@@ -14917,10 +14839,6 @@ __declspec(align(16)) FrontendPacket10022StatePending g_FrontendPacket10022Buffe
 
 /* 005722A0 g_FrontendPacket10023Buffer */
 __declspec(align(16)) FrontendPacket10023StateAck g_FrontendPacket10023Buffer = {0};
-
-__declspec(align(16)) ImageObject_00572AB0 g_ImageObject_00572AB0 = {
-    {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00572AB0 gap */
-};
 
 /* 00572AC0 g_DataPackageHandle */
 __declspec(align(16)) uint32_t g_DataPackageHandle = 0;
@@ -15045,10 +14963,6 @@ __declspec(align(4)) uint16_t u_flm_intro0_flm_00573046[15] = L"flm\\intro0.flm"
 /* 00573064 g_CommandLineOptionNoIntro */
 __declspec(align(4)) char g_CommandLineOptionNoIntro[8] = "NOINTRO";
 
-__declspec(align(8)) ImageObject_00573EE8 g_ImageObject_00573EE8 = {
-    {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00573EE8 gap */
-};
-
 /* 00573EF0 g_DynamicModules */
 __declspec(align(16)) DynamicModuleEntry g_DynamicModules[16] = {0};
 
@@ -15057,28 +14971,16 @@ __declspec(align(16)) uint32_t g_DynamicModuleCount = 0;
 
 /* 00573F74 g_BootstrapApiBindings: 8 bindings, then the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
 __declspec(align(4)) DynamicApiBinding g_BootstrapApiBindings[9] = {
-        /* 0 */ {.destination = (void *)&dynapi_9, .moduleName = (void *)&g_ImageObject_005744A4.at_sz_KERNEL32},
-        /* 1 */ {
-        .destination = (void *)&g_ImageObject_005744FA.at_dynapi_10,
-        .moduleName = (void *)&g_ImageObject_005744A4.at_sz_KERNEL32},
-        /* 2 */ {
-        .destination = (void *)&g_ImageObject_00574532.at_dynapi_14,
-        .moduleName = (void *)&g_ImageObject_005744AE.at_sz_WINMM},
-        /* 3 */ {
-        .destination = (void *)&g_ImageObject_00574540.at_dynapi_15,
-        .moduleName = (void *)&g_ImageObject_005744AE.at_sz_WINMM},
-        /* 4 */ {
-        .destination = (void *)&g_ImageObject_0057454E.at_dynapi_16,
-        .moduleName = (void *)&g_ImageObject_005744AE.at_sz_WINMM},
-        /* 5 */ {
-        .destination = (void *)&g_ImageObject_00574506.at_dynapi_11,
-        .moduleName = (void *)&g_ImageObject_005744D2.at_sz_ADVAPI32},
+        /* 0 */ {.destination = (void *)&dynapi_9, .moduleName = (void *)g_Kernel32ModuleName},
+        /* 1 */ {.destination = (void *)g_BootstrapApiName_FreeLibrary, .moduleName = (void *)g_Kernel32ModuleName},
+        /* 2 */ {.destination = (void *)g_BootstrapApiName_timeSetEvent, .moduleName = (void *)g_WinmmModuleName},
+        /* 3 */ {.destination = (void *)g_BootstrapApiName_timeKillEvent, .moduleName = (void *)g_WinmmModuleName},
+        /* 4 */ {.destination = (void *)g_BootstrapApiName_mciSendCommandA, .moduleName = (void *)g_WinmmModuleName},
+        /* 5 */ {.destination = (void *)g_BootstrapApiName_RegOpenKeyExA, .moduleName = (void *)g_Advapi32ModuleName},
         /* 6 */ {
-        .destination = (void *)&g_ImageObject_00574514.at_dynapi_12,
-        .moduleName = (void *)&g_ImageObject_005744D2.at_sz_ADVAPI32},
-        /* 7 */ {
-        .destination = (void *)&g_ImageObject_00574526.at_dynapi_13,
-        .moduleName = (void *)&g_ImageObject_005744D2.at_sz_ADVAPI32},
+        .destination = (void *)g_BootstrapApiName_RegQueryValueExA,
+        .moduleName = (void *)g_Advapi32ModuleName},
+        /* 7 */ {.destination = (void *)g_BootstrapApiName_RegCloseKey, .moduleName = (void *)g_Advapi32ModuleName},
         /* 8: terminator */ {0}};
 
 /* 00573FBC pDirectDrawCreate */
@@ -15104,94 +15006,94 @@ __declspec(align(4)) DirectSoundCaptureEnumerateA *pDirectSoundCaptureEnumerateA
 
 /* 00573FD8 g_GlideImportBindings */
 __declspec(align(8)) GlideImportBinding g_GlideImportBindings[89] = {
-    /*  0 */ {.importName = (void *)&g_ImageObject_005745FA.at_dynapi_24},
-    /*  1 */ {.importName = (void *)&g_ImageObject_00574610.at_dynapi_25},
-    /*  2 */ {.importName = (void *)&g_ImageObject_0057462A.at_dynapi_26},
-    /*  3 */ {.importName = (void *)&g_ImageObject_0057463E.at_dynapi_27},
-    /*  4 */ {.importName = (void *)&g_ImageObject_0057465E.at_dynapi_28},
-    /*  5 */ {.importName = (void *)&g_ImageObject_00574676.at_dynapi_29},
-    /*  6 */ {.importName = (void *)&g_ImageObject_00574694.at_dynapi_30},
-    /*  7 */ {.importName = (void *)&g_ImageObject_005746A6.at_dynapi_31},
-    /*  8 */ {.importName = (void *)&g_ImageObject_005746B6.at_dynapi_32},
-    /*  9 */ {.importName = (void *)&g_ImageObject_005746CA.at_dynapi_33},
-    /* 10 */ {.importName = (void *)&g_ImageObject_00574706.at_dynapi_36},
-    /* 11 */ {.importName = (void *)&g_ImageObject_00574718.at_dynapi_37},
-    /* 12 */ {.importName = (void *)&g_ImageObject_0057472C.at_dynapi_38},
-    /* 13 */ {.importName = (void *)&g_ImageObject_0057473C.at_dynapi_39},
-    /* 14 */ {.importName = (void *)&g_ImageObject_00574754.at_dynapi_40},
-    /* 15 */ {.importName = (void *)&g_ImageObject_0057476A.at_dynapi_41},
-    /* 16 */ {.importName = (void *)&g_ImageObject_00574778.at_dynapi_42},
-    /* 17 */ {.importName = (void *)&g_ImageObject_0057478C.at_dynapi_43},
-    /* 18 */ {.importName = (void *)&g_ImageObject_005747A6.at_dynapi_44},
-    /* 19 */ {.importName = (void *)&g_ImageObject_005747BC.at_dynapi_45},
-    /* 20 */ {.importName = (void *)&g_ImageObject_005747CC.at_dynapi_46},
-    /* 21 */ {.importName = (void *)&g_ImageObject_005747DC.at_dynapi_47},
-    /* 22 */ {.importName = (void *)&g_ImageObject_005747EA.at_dynapi_48},
-    /* 23 */ {.importName = (void *)&g_ImageObject_00574802.at_dynapi_49},
-    /* 24 */ {.importName = (void *)&g_ImageObject_00574812.at_dynapi_50},
-    /* 25 */ {.importName = (void *)&g_ImageObject_00574820.at_dynapi_51},
-    /* 26 */ {.importName = (void *)&g_ImageObject_00574830.at_dynapi_52},
-    /* 27 */ {.importName = (void *)&g_ImageObject_00574844.at_dynapi_53},
-    /* 28 */ {.importName = (void *)&g_ImageObject_0057485A.at_dynapi_54},
-    /* 29 */ {.importName = (void *)&g_ImageObject_0057487A.at_dynapi_55},
-    /* 30 */ {.importName = (void *)&g_ImageObject_00574886.at_dynapi_56},
-    /* 31 */ {.importName = (void *)&g_ImageObject_0057489C.at_dynapi_57},
-    /* 32 */ {.importName = (void *)&g_ImageObject_005748A8.at_dynapi_58},
-    /* 33 */ {.importName = (void *)&g_ImageObject_005748B4.at_dynapi_59},
-    /* 34 */ {.importName = (void *)&g_ImageObject_005748C8.at_dynapi_60},
-    /* 35 */ {.importName = (void *)&g_ImageObject_005748D6.at_dynapi_61},
-    /* 36 */ {.importName = (void *)&g_ImageObject_005748E4.at_dynapi_62},
-    /* 37 */ {.importName = (void *)&g_ImageObject_005748EE.at_dynapi_63},
-    /* 38 */ {.importName = (void *)&g_ImageObject_00574902.at_dynapi_64},
-    /* 39 */ {.importName = (void *)&g_ImageObject_00574912.at_dynapi_65},
-    /* 40 */ {.importName = (void *)&g_ImageObject_00574926.at_dynapi_66},
-    /* 41 */ {.importName = (void *)&g_ImageObject_00574940.at_dynapi_67},
-    /* 42 */ {.importName = (void *)&g_ImageObject_00574950.at_dynapi_68},
-    /* 43 */ {.importName = (void *)&g_ImageObject_00574964.at_dynapi_69},
-    /* 44 */ {.importName = (void *)&g_ImageObject_0057497E.at_dynapi_70},
-    /* 45 */ {.importName = (void *)&g_ImageObject_00574992.at_dynapi_71},
-    /* 46 */ {.importName = (void *)&g_ImageObject_005749A8.at_dynapi_72},
-    /* 47 */ {.importName = (void *)&g_ImageObject_005749BE.at_dynapi_73},
-    /* 48 */ {.importName = (void *)&g_ImageObject_005749CC.at_dynapi_74},
-    /* 49 */ {.importName = (void *)&g_ImageObject_005749E0.at_dynapi_75},
-    /* 50 */ {.importName = (void *)&g_ImageObject_005749F0.at_dynapi_76},
-    /* 51 */ {.importName = (void *)&g_ImageObject_00574A06.at_dynapi_77},
-    /* 52 */ {.importName = (void *)&g_ImageObject_00574A1C.at_dynapi_78},
-    /* 53 */ {.importName = (void *)&g_ImageObject_00574A32.at_dynapi_79},
-    /* 54 */ {.importName = (void *)&g_ImageObject_00574A44.at_dynapi_80},
-    /* 55 */ {.importName = (void *)&g_ImageObject_00574A50.at_dynapi_81},
-    /* 56 */ {.importName = (void *)&g_ImageObject_00574A64.at_dynapi_82},
-    /* 57 */ {.importName = (void *)&g_ImageObject_00574A74.at_dynapi_83},
-    /* 58 */ {.importName = (void *)&g_ImageObject_00574A84.at_dynapi_84},
-    /* 59 */ {.importName = (void *)&g_ImageObject_00574A96.at_dynapi_85},
-    /* 60 */ {.importName = (void *)&g_ImageObject_00574AA8.at_dynapi_86},
-    /* 61 */ {.importName = (void *)&g_ImageObject_00574AF0.at_dynapi_89},
-    /* 62 */ {.importName = (void *)&g_ImageObject_00574B04.at_dynapi_90},
-    /* 63 */ {.importName = (void *)&g_ImageObject_00574B16.at_dynapi_91},
-    /* 64 */ {.importName = (void *)&g_ImageObject_00574B2E.at_dynapi_92},
-    /* 65 */ {.importName = (void *)&g_ImageObject_00574B46.at_dynapi_93},
-    /* 66 */ {.importName = (void *)&g_ImageObject_00574B64.at_dynapi_94},
-    /* 67 */ {.importName = (void *)&g_ImageObject_00574B88.at_dynapi_95},
-    /* 68 */ {.importName = (void *)&g_ImageObject_00574B9E.at_dynapi_96},
-    /* 69 */ {.importName = (void *)&g_ImageObject_00574BBC.at_dynapi_97},
-    /* 70 */ {.importName = (void *)&g_ImageObject_00574BD0.at_dynapi_98},
-    /* 71 */ {.importName = (void *)&g_ImageObject_00574BE6.at_dynapi_99},
-    /* 72 */ {.importName = (void *)&g_ImageObject_00574BFA.at_dynapi_100},
-    /* 73 */ {.importName = (void *)&g_ImageObject_00574C0E.at_dynapi_101},
-    /* 74 */ {.importName = (void *)&g_ImageObject_00574C22.at_dynapi_102},
-    /* 75 */ {.importName = (void *)&g_ImageObject_00574C34.at_dynapi_103},
-    /* 76 */ {.importName = (void *)&g_ImageObject_00574C4E.at_dynapi_104},
-    /* 77 */ {.importName = (void *)&g_ImageObject_00574C60.at_dynapi_105},
-    /* 78 */ {.importName = (void *)&g_ImageObject_00574C70.at_dynapi_106},
-    /* 79 */ {.importName = (void *)&g_ImageObject_00574C8C.at_dynapi_107},
-    /* 80 */ {.importName = (void *)&g_ImageObject_00574CA0.at_dynapi_108},
-    /* 81 */ {.importName = (void *)&g_ImageObject_00574CB0.at_dynapi_109},
-    /* 82 */ {.importName = (void *)&g_ImageObject_00574CC0.at_dynapi_110},
-    /* 83 */ {.importName = (void *)&g_ImageObject_00574CCE.at_dynapi_111},
-    /* 84 */ {.importName = (void *)&g_ImageObject_00574CE2.at_dynapi_112},
-    /* 85 */ {.importName = (void *)&g_ImageObject_00574CF8.at_dynapi_113},
-    /* 86 */ {.importName = (void *)&g_ImageObject_00574D10.at_dynapi_114},
-    /* 87 */ {.importName = (void *)&g_ImageObject_00574D26.at_dynapi_115}};
+    /*  0 */ {.importName = (void *)g_GlideImportName_grAADrawTriangle},
+    /*  1 */ {.importName = (void *)g_GlideImportName_grAlphaBlendFunction},
+    /*  2 */ {.importName = (void *)g_GlideImportName_grAlphaCombine},
+    /*  3 */ {.importName = (void *)g_GlideImportName_grAlphaControlsITRGBLighting},
+    /*  4 */ {.importName = (void *)g_GlideImportName_grAlphaTestFunction},
+    /*  5 */ {.importName = (void *)g_GlideImportName_grAlphaTestReferenceValue},
+    /*  6 */ {.importName = (void *)g_GlideImportName_grBufferClear},
+    /*  7 */ {.importName = (void *)g_GlideImportName_grBufferSwap},
+    /*  8 */ {.importName = (void *)g_GlideImportName_grChromakeyMode},
+    /*  9 */ {.importName = (void *)g_GlideImportName_grChromakeyValue},
+    /* 10 */ {.importName = g_GlideImportName_grClipWindow},
+    /* 11 */ {.importName = g_GlideImportName_grColorCombine},
+    /* 12 */ {.importName = g_GlideImportName_grColorMask},
+    /* 13 */ {.importName = g_GlideImportName_grConstantColorValue},
+    /* 14 */ {.importName = g_GlideImportName_grCoordinateSpace},
+    /* 15 */ {.importName = g_GlideImportName_grCullMode},
+    /* 16 */ {.importName = g_GlideImportName_grDepthBiasLevel},
+    /* 17 */ {.importName = g_GlideImportName_grDepthBufferFunction},
+    /* 18 */ {.importName = g_GlideImportName_grDepthBufferMode},
+    /* 19 */ {.importName = g_GlideImportName_grDepthMask},
+    /* 20 */ {.importName = g_GlideImportName_grDepthRange},
+    /* 21 */ {.importName = g_GlideImportName_grDisable},
+    /* 22 */ {.importName = g_GlideImportName_grDisableAllEffects},
+    /* 23 */ {.importName = g_GlideImportName_grDitherMode},
+    /* 24 */ {.importName = g_GlideImportName_grDrawLine},
+    /* 25 */ {.importName = g_GlideImportName_grDrawPoint},
+    /* 26 */ {.importName = g_GlideImportName_grDrawTriangle},
+    /* 27 */ {.importName = g_GlideImportName_grDrawVertexArray},
+    /* 28 */ {.importName = g_GlideImportName_grDrawVertexArrayContiguous},
+    /* 29 */ {.importName = g_GlideImportName_grEnable},
+    /* 30 */ {.importName = g_GlideImportName_grErrorSetCallback},
+    /* 31 */ {.importName = g_GlideImportName_grFinish},
+    /* 32 */ {.importName = g_GlideImportName_grFlush},
+    /* 33 */ {.importName = g_GlideImportName_grFogColorValue},
+    /* 34 */ {.importName = g_GlideImportName_grFogMode},
+    /* 35 */ {.importName = g_GlideImportName_grFogTable},
+    /* 36 */ {.importName = (void *)g_GlideImportName_grGet},
+    /* 37 */ {.importName = (void *)g_GlideImportName_grGetProcAddress},
+    /* 38 */ {.importName = (void *)g_GlideImportName_grGetString},
+    /* 39 */ {.importName = (void *)g_GlideImportName_grGlideGetState},
+    /* 40 */ {.importName = (void *)g_GlideImportName_grGlideGetVertexLayout},
+    /* 41 */ {.importName = (void *)g_GlideImportName_grGlideInit},
+    /* 42 */ {.importName = (void *)g_GlideImportName_grGlideSetState},
+    /* 43 */ {.importName = (void *)g_GlideImportName_grGlideSetVertexLayout},
+    /* 44 */ {.importName = (void *)g_GlideImportName_grGlideShutdown},
+    /* 45 */ {.importName = (void *)g_GlideImportName_grLfbConstantAlpha},
+    /* 46 */ {.importName = (void *)g_GlideImportName_grLfbConstantDepth},
+    /* 47 */ {.importName = (void *)g_GlideImportName_grLfbLock},
+    /* 48 */ {.importName = (void *)g_GlideImportName_grLfbReadRegion},
+    /* 49 */ {.importName = (void *)g_GlideImportName_grLfbUnlock},
+    /* 50 */ {.importName = (void *)g_GlideImportName_grLfbWriteRegion},
+    /* 51 */ {.importName = (void *)g_GlideImportName_grLoadGammaTable},
+    /* 52 */ {.importName = (void *)g_GlideImportName_grQueryResolutions},
+    /* 53 */ {.importName = (void *)g_GlideImportName_grRenderBuffer},
+    /* 54 */ {.importName = (void *)g_GlideImportName_grReset},
+    /* 55 */ {.importName = (void *)g_GlideImportName_grSelectContext},
+    /* 56 */ {.importName = (void *)g_GlideImportName_grSstOrigin},
+    /* 57 */ {.importName = (void *)g_GlideImportName_grSstSelect},
+    /* 58 */ {.importName = (void *)g_GlideImportName_grSstWinClose},
+    /* 59 */ {.importName = (void *)g_GlideImportName_grSstWinOpen},
+    /* 60 */ {.importName = (void *)g_GlideImportName_grTexCalcMemRequired},
+    /* 61 */ {.importName = (void *)g_GlideImportName_grTexClampMode},
+    /* 62 */ {.importName = (void *)g_GlideImportName_grTexCombine},
+    /* 63 */ {.importName = (void *)g_GlideImportName_grTexDetailControl},
+    /* 64 */ {.importName = (void *)g_GlideImportName_grTexDownloadMipMap},
+    /* 65 */ {.importName = (void *)g_GlideImportName_grTexDownloadMipMapLevel},
+    /* 66 */ {.importName = (void *)g_GlideImportName_grTexDownloadMipMapLevelPartial},
+    /* 67 */ {.importName = (void *)g_GlideImportName_grTexDownloadTable},
+    /* 68 */ {.importName = (void *)g_GlideImportName_grTexDownloadTablePartial},
+    /* 69 */ {.importName = (void *)g_GlideImportName_grTexFilterMode},
+    /* 70 */ {.importName = (void *)g_GlideImportName_grTexLodBiasValue},
+    /* 71 */ {.importName = (void *)g_GlideImportName_grTexMaxAddress},
+    /* 72 */ {.importName = (void *)g_GlideImportName_grTexMinAddress},
+    /* 73 */ {.importName = (void *)g_GlideImportName_grTexMipMapMode},
+    /* 74 */ {.importName = (void *)g_GlideImportName_grTexMultibase},
+    /* 75 */ {.importName = (void *)g_GlideImportName_grTexMultibaseAddress},
+    /* 76 */ {.importName = (void *)g_GlideImportName_grTexNCCTable},
+    /* 77 */ {.importName = (void *)g_GlideImportName_grTexSource},
+    /* 78 */ {.importName = (void *)g_GlideImportName_grTexTextureMemRequired},
+    /* 79 */ {.importName = (void *)g_GlideImportName_grVertexLayout},
+    /* 80 */ {.importName = (void *)g_GlideImportName_grViewport},
+    /* 81 */ {.importName = (void *)g_GlideImportName_gu3dfGetInfo},
+    /* 82 */ {.importName = (void *)g_GlideImportName_gu3dfLoad},
+    /* 83 */ {.importName = (void *)g_GlideImportName_guFogGenerateExp},
+    /* 84 */ {.importName = (void *)g_GlideImportName_guFogGenerateExp2},
+    /* 85 */ {.importName = (void *)g_GlideImportName_guFogGenerateLinear},
+    /* 86 */ {.importName = (void *)&g_GlideImportName_guFogTableIndexToW},
+    /* 87 */ {.importName = (void *)&g_GlideImportName_guGammaCorrectionRGB}};
 
 /* 005742A0 g_WinSock_accept */
 __declspec(align(16)) WinSock_acceptProc *g_WinSock_accept = 0;
@@ -15322,19 +15224,11 @@ __declspec(align(4)) WinSock_WSAIsBlockingProc *g_WinSock_WSAIsBlocking = 0;
 /* 00574348 g_WinSock_WSASetBlockingHook */
 __declspec(align(8)) WinSock_WSASetBlockingHookProc *g_WinSock_WSASetBlockingHook = 0;
 
-__declspec(align(4)) ImageObject_0057434C g_ImageObject_0057434C = {
-    {0}, /* 0057434C g_WinSock_UnboundApiSlot34C */
-};
-
 /* 00574350 g_WinSock_WSAStartup */
 __declspec(align(16)) WinSock_WSAStartupProc *g_WinSock_WSAStartup = 0;
 
 /* 00574354 g_WinSock_WSAUnhookBlockingHook */
 __declspec(align(4)) WinSock_WSAUnhookBlockingHookProc *g_WinSock_WSAUnhookBlockingHook = 0;
-
-__declspec(align(8)) ImageObject_00574358 g_ImageObject_00574358 = {
-    {0}, /* 00574358 g_Ws2_32_accept */
-};
 
 /* 0057435C g_Ws2_32_bind */
 __declspec(align(4)) WinSock_bindProc *g_Ws2_32_bind = 0;
@@ -15342,59 +15236,11 @@ __declspec(align(4)) WinSock_bindProc *g_Ws2_32_bind = 0;
 /* 00574360 g_Ws2_32_closesocket */
 __declspec(align(16)) WinSock_closesocketProc *g_Ws2_32_closesocket = 0;
 
-__declspec(align(4)) ImageObject_00574364 g_ImageObject_00574364 = {
-    {0}, /* 00574364 g_Ws2_32_connect */
-};
-
-__declspec(align(8)) ImageObject_00574368 g_ImageObject_00574368 = {
-    {0}, /* 00574368 g_Ws2_32_getpeername */
-};
-
-__declspec(align(4)) ImageObject_0057436C g_ImageObject_0057436C = {
-    {0}, /* 0057436C g_Ws2_32_getsockname */
-};
-
-__declspec(align(16)) ImageObject_00574370 g_ImageObject_00574370 = {
-    {0}, /* 00574370 g_Ws2_32_getsockopt */
-};
-
-__declspec(align(4)) ImageObject_00574374 g_ImageObject_00574374 = {
-    {0}, /* 00574374 g_Ws2_32_htonl */
-};
-
 /* 00574378 g_Ws2_32_htons */
 __declspec(align(8)) WinSock_htonsProc *g_Ws2_32_htons = 0;
 
-__declspec(align(4)) ImageObject_0057437C g_ImageObject_0057437C = {
-    {0}, /* 0057437C g_Ws2_32_ioctlsocket */
-};
-
-__declspec(align(16)) ImageObject_00574380 g_ImageObject_00574380 = {
-    {0}, /* 00574380 g_Ws2_32_listen */
-};
-
-__declspec(align(4)) ImageObject_00574384 g_ImageObject_00574384 = {
-    {0}, /* 00574384 g_Ws2_32_ntohl */
-};
-
-__declspec(align(8)) ImageObject_00574388 g_ImageObject_00574388 = {
-    {0}, /* 00574388 g_Ws2_32_ntohs */
-};
-
-__declspec(align(4)) ImageObject_0057438C g_ImageObject_0057438C = {
-    {0}, /* 0057438C g_Ws2_32_recv */
-};
-
 /* 00574390 g_Ws2_32_recvfrom */
 __declspec(align(16)) WinSock_recvfromProc *g_Ws2_32_recvfrom = 0;
-
-__declspec(align(4)) ImageObject_00574394 g_ImageObject_00574394 = {
-    {0}, /* 00574394 g_Ws2_32_select */
-};
-
-__declspec(align(8)) ImageObject_00574398 g_ImageObject_00574398 = {
-    {0}, /* 00574398 g_Ws2_32_send */
-};
 
 /* 0057439C g_Ws2_32_sendto */
 __declspec(align(4)) WinSock_sendtoProc *g_Ws2_32_sendto = 0;
@@ -15402,20 +15248,8 @@ __declspec(align(4)) WinSock_sendtoProc *g_Ws2_32_sendto = 0;
 /* 005743A0 g_Ws2_32_setsockopt */
 __declspec(align(16)) WinSock_setsockoptProc *g_Ws2_32_setsockopt = 0;
 
-__declspec(align(4)) ImageObject_005743A4 g_ImageObject_005743A4 = {
-    {0}, /* 005743A4 g_Ws2_32_shutdown */
-};
-
 /* 005743A8 g_Ws2_32_socket */
 __declspec(align(8)) WinSock_socketProc *g_Ws2_32_socket = 0;
-
-__declspec(align(16)) ImageObject_005743B0 g_ImageObject_005743B0 = {
-    {0}, /* 005743B0 g_Ws2_32_WSAAsyncSelect */
-};
-
-__declspec(align(4)) ImageObject_005743B4 g_ImageObject_005743B4 = {
-    {0}, /* 005743B4 g_Ws2_32_WSACancelBlockingCall */
-};
 
 /* 005743B8 g_Ws2_32_WSACleanup */
 __declspec(align(8)) WinSock_WSACleanupProc *g_Ws2_32_WSACleanup = 0;
@@ -15426,84 +15260,8 @@ __declspec(align(8)) WinSock_WSAGetLastErrorProc *g_Ws2_32_WSAGetLastError = 0;
 /* 005743EC g_Ws2_32_WSAIoctl */
 __declspec(align(4)) WSAIoctl_Proc *g_Ws2_32_WSAIoctl = 0;
 
-__declspec(align(16)) ImageObject_005743F0 g_ImageObject_005743F0 = {
-    {0}, /* 005743F0 g_Ws2_32_WSAIsBlocking */
-};
-
-__declspec(align(4)) ImageObject_0057441C g_ImageObject_0057441C = {
-    {0}, /* 0057441C g_Ws2_32_WSASetBlockingHook */
-};
-
-__declspec(align(4)) ImageObject_0057442C g_ImageObject_0057442C = {
-    {0}, /* 0057442C g_Ws2_32_WSAStartup */
-};
-
-__declspec(align(16)) ImageObject_00574430 g_ImageObject_00574430 = {
-    {0}, /* 00574430 g_Ws2_32_WSAUnhookBlockingHook */
-};
-
-__declspec(align(8)) ImageObject_00574438 g_ImageObject_00574438 = {
-    {0}, /* 00574438 g_Ws2_32_inet_addr */
-};
-
-__declspec(align(4)) ImageObject_0057443C g_ImageObject_0057443C = {
-    {0}, /* 0057443C g_Ws2_32_inet_ntoa */
-};
-
-__declspec(align(16)) ImageObject_00574440 g_ImageObject_00574440 = {
-    {0}, /* 00574440 g_Ws2_32_gethostbyaddr */
-};
-
 /* 00574444 g_Ws2_32_gethostbyname */
 __declspec(align(4)) WinSock_gethostbynameProc *g_Ws2_32_gethostbyname = 0;
-
-__declspec(align(8)) ImageObject_00574448 g_ImageObject_00574448 = {
-    {0}, /* 00574448 g_Ws2_32_gethostname */
-};
-
-__declspec(align(4)) ImageObject_0057444C g_ImageObject_0057444C = {
-    {0}, /* 0057444C g_Ws2_32_getprotobyname */
-};
-
-__declspec(align(16)) ImageObject_00574450 g_ImageObject_00574450 = {
-    {0}, /* 00574450 g_Ws2_32_getprotobynumber */
-};
-
-__declspec(align(4)) ImageObject_00574454 g_ImageObject_00574454 = {
-    {0}, /* 00574454 g_Ws2_32_getservbyname */
-};
-
-__declspec(align(8)) ImageObject_00574458 g_ImageObject_00574458 = {
-    {0}, /* 00574458 g_Ws2_32_getservbyport */
-};
-
-__declspec(align(4)) ImageObject_0057445C g_ImageObject_0057445C = {
-    {0}, /* 0057445C g_Ws2_32_WSAAsyncGetHostByAddr */
-};
-
-__declspec(align(16)) ImageObject_00574460 g_ImageObject_00574460 = {
-    {0}, /* 00574460 g_Ws2_32_WSAAsyncGetHostByName */
-};
-
-__declspec(align(4)) ImageObject_00574464 g_ImageObject_00574464 = {
-    {0}, /* 00574464 g_Ws2_32_WSAAsyncGetProtoByName */
-};
-
-__declspec(align(8)) ImageObject_00574468 g_ImageObject_00574468 = {
-    {0}, /* 00574468 g_Ws2_32_WSAAsyncGetProtoByNumber */
-};
-
-__declspec(align(4)) ImageObject_0057446C g_ImageObject_0057446C = {
-    {0}, /* 0057446C g_Ws2_32_WSAAsyncGetServByName */
-};
-
-__declspec(align(16)) ImageObject_00574470 g_ImageObject_00574470 = {
-    {0}, /* 00574470 g_Ws2_32_WSAAsyncGetServByPort */
-};
-
-__declspec(align(4)) ImageObject_00574474 g_ImageObject_00574474 = {
-    {0}, /* 00574474 g_Ws2_32_WSACancelAsyncRequest */
-};
 
 /* 00574478 g_Ws2_32_WSAAddressToStringA */
 __declspec(align(8)) WSAAddressToStringA_Proc *g_Ws2_32_WSAAddressToStringA = 0;
@@ -15511,14 +15269,11 @@ __declspec(align(8)) WSAAddressToStringA_Proc *g_Ws2_32_WSAAddressToStringA = 0;
 /* 005744A0 g_Ws2_32_WSAStringToAddressA */
 __declspec(align(16)) WSAStringToAddressA_Proc *g_Ws2_32_WSAStringToAddressA = 0;
 
-__declspec(align(4)) ImageObject_005744A4 g_ImageObject_005744A4 = {
-    "KERNEL32", /* 005744A4 sz_KERNEL32 */
-    {0x90},
-};
+/* 005744A4 sz_KERNEL32 */
+__declspec(align(4)) char g_Kernel32ModuleName[9] = "KERNEL32";
 
-__declspec(align(4)) ImageObject_005744AE g_ImageObject_005744AE = {
-    "WINMM", /* 005744AE sz_WINMM */
-};
+/* 005744AE sz_WINMM */
+__declspec(align(4)) char g_WinmmModuleName[6] = "WINMM";
 
 /* 005744B4 sz_DDRAW */
 __declspec(align(4)) char sz_DDRAW[6] = "DDRAW";
@@ -15532,51 +15287,35 @@ __declspec(align(4)) char dynapi_4[7] = "DSOUND";
 /* 005744CA sz_GLIDE3X */
 __declspec(align(4)) char sz_GLIDE3X[8] = "GLIDE3X";
 
-__declspec(align(4)) ImageObject_005744D2 g_ImageObject_005744D2 = {
-    "ADVAPI32", /* 005744D2 sz_ADVAPI32 */
-    {0x90},
-};
+/* 005744D2 sz_ADVAPI32 */
+__declspec(align(4)) char g_Advapi32ModuleName[9] = "ADVAPI32";
 
 /* 005744DC s_Wsock32ModuleName */
 __declspec(align(4)) char s_Wsock32ModuleName[8] = "WSOCK32";
 
-__declspec(align(4)) ImageObject_005744E4 g_ImageObject_005744E4 = {
-    "WS2_32", /* 005744E4 sz_WS2_32 */
-    {0x90},
-};
-
 /* 005744EC dynapi_9 */
 __declspec(align(4)) char dynapi_9[13] = "LoadLibraryA";
 
-__declspec(align(4)) ImageObject_005744FA g_ImageObject_005744FA = {
-    "FreeLibrary", /* 005744FA dynapi_10 */
-};
+/* 005744FA dynapi_10 */
+__declspec(align(4)) char g_BootstrapApiName_FreeLibrary[12] = "FreeLibrary";
 
-__declspec(align(4)) ImageObject_00574506 g_ImageObject_00574506 = {
-    "RegOpenKeyExA", /* 00574506 dynapi_11 */
-};
+/* 00574506 dynapi_11 */
+__declspec(align(4)) char g_BootstrapApiName_RegOpenKeyExA[14] = "RegOpenKeyExA";
 
-__declspec(align(4)) ImageObject_00574514 g_ImageObject_00574514 = {
-    "RegQueryValueExA", /* 00574514 dynapi_12 */
-    {0x90},
-};
+/* 00574514 dynapi_12 */
+__declspec(align(4)) char g_BootstrapApiName_RegQueryValueExA[17] = "RegQueryValueExA";
 
-__declspec(align(4)) ImageObject_00574526 g_ImageObject_00574526 = {
-    "RegCloseKey", /* 00574526 dynapi_13 */
-};
+/* 00574526 dynapi_13 */
+__declspec(align(4)) char g_BootstrapApiName_RegCloseKey[12] = "RegCloseKey";
 
-__declspec(align(4)) ImageObject_00574532 g_ImageObject_00574532 = {
-    "timeSetEvent", /* 00574532 dynapi_14 */
-    {0x90},
-};
+/* 00574532 dynapi_14 */
+__declspec(align(4)) char g_BootstrapApiName_timeSetEvent[13] = "timeSetEvent";
 
-__declspec(align(16)) ImageObject_00574540 g_ImageObject_00574540 = {
-    "timeKillEvent", /* 00574540 dynapi_15 */
-};
+/* 00574540 dynapi_15 */
+__declspec(align(16)) char g_BootstrapApiName_timeKillEvent[14] = "timeKillEvent";
 
-__declspec(align(4)) ImageObject_0057454E g_ImageObject_0057454E = {
-    "mciSendCommandA", /* 0057454E dynapi_16 */
-};
+/* 0057454E dynapi_16 */
+__declspec(align(4)) char g_BootstrapApiName_mciSendCommandA[16] = "mciSendCommandA";
 
 /* 0057455E sz_DirectDrawCreate */
 __declspec(align(4)) char sz_DirectDrawCreate[17] = "DirectDrawCreate";
@@ -15599,424 +15338,269 @@ __declspec(align(4)) char dynapi_22[25] = "DirectSoundCaptureCreate";
 /* 005745DC dynapi_23 */
 __declspec(align(4)) char dynapi_23[29] = "DirectSoundCaptureEnumerateA";
 
-__declspec(align(4)) ImageObject_005745FA g_ImageObject_005745FA = {
-    "_grAADrawTriangle@24", /* 005745FA dynapi_24 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00574610 g_ImageObject_00574610 = {
-    "_grAlphaBlendFunction@16", /* 00574610 dynapi_25 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057462A g_ImageObject_0057462A = {
-    "_grAlphaCombine@20", /* 0057462A dynapi_26 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057463E g_ImageObject_0057463E = {
-    "_grAlphaControlsITRGBLighting@4", /* 0057463E dynapi_27 */
-};
-
-__declspec(align(4)) ImageObject_0057465E g_ImageObject_0057465E = {
-    "_grAlphaTestFunction@4", /* 0057465E dynapi_28 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574676 g_ImageObject_00574676 = {
-    "_grAlphaTestReferenceValue@4", /* 00574676 dynapi_29 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574694 g_ImageObject_00574694 = {
-    "_grBufferClear@12", /* 00574694 dynapi_30 */
-};
-
-__declspec(align(4)) ImageObject_005746A6 g_ImageObject_005746A6 = {
-    "_grBufferSwap@4", /* 005746A6 dynapi_31 */
-};
-
-__declspec(align(4)) ImageObject_005746B6 g_ImageObject_005746B6 = {
-    "_grChromakeyMode@4", /* 005746B6 dynapi_32 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005746CA g_ImageObject_005746CA = {
-    "_grChromakeyValue@4", /* 005746CA dynapi_33 */
-};
-
-__declspec(align(4)) ImageObject_005746DE g_ImageObject_005746DE = {
-    "grChromaRangeExt", /* 005746DE dynapi_34 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_005746F0 g_ImageObject_005746F0 = {
-    "grChromaRangeModeExt", /* 005746F0 dynapi_35 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574706 g_ImageObject_00574706 = {
-    "_grClipWindow@16", /* 00574706 dynapi_36 */
-    {0x90},
-};
-
-__declspec(align(8)) ImageObject_00574718 g_ImageObject_00574718 = {
-    "_grColorCombine@20", /* 00574718 dynapi_37 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057472C g_ImageObject_0057472C = {
-    "_grColorMask@8", /* 0057472C dynapi_38 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057473C g_ImageObject_0057473C = {
-    "_grConstantColorValue@4", /* 0057473C dynapi_39 */
-};
-
-__declspec(align(4)) ImageObject_00574754 g_ImageObject_00574754 = {
-    "_grCoordinateSpace@4", /* 00574754 dynapi_40 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057476A g_ImageObject_0057476A = {
-    "_grCullMode@4", /* 0057476A dynapi_41 */
-};
-
-__declspec(align(8)) ImageObject_00574778 g_ImageObject_00574778 = {
-    "_grDepthBiasLevel@4", /* 00574778 dynapi_42 */
-};
-
-__declspec(align(4)) ImageObject_0057478C g_ImageObject_0057478C = {
-    "_grDepthBufferFunction@4", /* 0057478C dynapi_43 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005747A6 g_ImageObject_005747A6 = {
-    "_grDepthBufferMode@4", /* 005747A6 dynapi_44 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005747BC g_ImageObject_005747BC = {
-    "_grDepthMask@4", /* 005747BC dynapi_45 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005747CC g_ImageObject_005747CC = {
-    "_grDepthRange@8", /* 005747CC dynapi_46 */
-};
-
-__declspec(align(4)) ImageObject_005747DC g_ImageObject_005747DC = {
-    "_grDisable@4", /* 005747DC dynapi_47 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005747EA g_ImageObject_005747EA = {
-    "_grDisableAllEffects@0", /* 005747EA dynapi_48 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574802 g_ImageObject_00574802 = {
-    "_grDitherMode@4", /* 00574802 dynapi_49 */
-};
-
-__declspec(align(4)) ImageObject_00574812 g_ImageObject_00574812 = {
-    "_grDrawLine@8", /* 00574812 dynapi_50 */
-};
-
-__declspec(align(16)) ImageObject_00574820 g_ImageObject_00574820 = {
-    "_grDrawPoint@4", /* 00574820 dynapi_51 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00574830 g_ImageObject_00574830 = {
-    "_grDrawTriangle@12", /* 00574830 dynapi_52 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574844 g_ImageObject_00574844 = {
-    "_grDrawVertexArray@12", /* 00574844 dynapi_53 */
-};
-
-__declspec(align(4)) ImageObject_0057485A g_ImageObject_0057485A = {
-    "_grDrawVertexArrayContiguous@16", /* 0057485A dynapi_54 */
-};
-
-__declspec(align(4)) ImageObject_0057487A g_ImageObject_0057487A = {
-    "_grEnable@4", /* 0057487A dynapi_55 */
-};
-
-__declspec(align(4)) ImageObject_00574886 g_ImageObject_00574886 = {
-    "_grErrorSetCallback@4", /* 00574886 dynapi_56 */
-};
-
-__declspec(align(4)) ImageObject_0057489C g_ImageObject_0057489C = {
-    "_grFinish@0", /* 0057489C dynapi_57 */
-};
-
-__declspec(align(8)) ImageObject_005748A8 g_ImageObject_005748A8 = {
-    "_grFlush@0", /* 005748A8 dynapi_58 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005748B4 g_ImageObject_005748B4 = {
-    "_grFogColorValue@4", /* 005748B4 dynapi_59 */
-    {0x90},
-};
-
-__declspec(align(8)) ImageObject_005748C8 g_ImageObject_005748C8 = {
-    "_grFogMode@4", /* 005748C8 dynapi_60 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005748D6 g_ImageObject_005748D6 = {
-    "_grFogTable@4", /* 005748D6 dynapi_61 */
-};
-
-__declspec(align(4)) ImageObject_005748E4 g_ImageObject_005748E4 = {
-    "_grGet@12", /* 005748E4 dynapi_62 */
-};
-
-__declspec(align(4)) ImageObject_005748EE g_ImageObject_005748EE = {
-    "_grGetProcAddress@4", /* 005748EE dynapi_63 */
-};
-
-__declspec(align(4)) ImageObject_00574902 g_ImageObject_00574902 = {
-    "_grGetString@4", /* 00574902 dynapi_64 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574912 g_ImageObject_00574912 = {
-    "_grGlideGetState@4", /* 00574912 dynapi_65 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574926 g_ImageObject_00574926 = {
-    "_grGlideGetVertexLayout@4", /* 00574926 dynapi_66 */
-};
-
-__declspec(align(16)) ImageObject_00574940 g_ImageObject_00574940 = {
-    "_grGlideInit@0", /* 00574940 dynapi_67 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00574950 g_ImageObject_00574950 = {
-    "_grGlideSetState@4", /* 00574950 dynapi_68 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574964 g_ImageObject_00574964 = {
-    "_grGlideSetVertexLayout@4", /* 00574964 dynapi_69 */
-};
-
-__declspec(align(4)) ImageObject_0057497E g_ImageObject_0057497E = {
-    "_grGlideShutdown@0", /* 0057497E dynapi_70 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574992 g_ImageObject_00574992 = {
-    "_grLfbConstantAlpha@4", /* 00574992 dynapi_71 */
-};
-
-__declspec(align(8)) ImageObject_005749A8 g_ImageObject_005749A8 = {
-    "_grLfbConstantDepth@4", /* 005749A8 dynapi_72 */
-};
-
-__declspec(align(4)) ImageObject_005749BE g_ImageObject_005749BE = {
-    "_grLfbLock@24", /* 005749BE dynapi_73 */
-};
-
-__declspec(align(4)) ImageObject_005749CC g_ImageObject_005749CC = {
-    "_grLfbReadRegion@28", /* 005749CC dynapi_74 */
-};
-
-__declspec(align(16)) ImageObject_005749E0 g_ImageObject_005749E0 = {
-    "_grLfbUnlock@8", /* 005749E0 dynapi_75 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_005749F0 g_ImageObject_005749F0 = {
-    "_grLfbWriteRegion@36", /* 005749F0 dynapi_76 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574A06 g_ImageObject_00574A06 = {
-    "_grLoadGammaTable@16", /* 00574A06 dynapi_77 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574A1C g_ImageObject_00574A1C = {
-    "_grQueryResolutions@8", /* 00574A1C dynapi_78 */
-};
-
-__declspec(align(4)) ImageObject_00574A32 g_ImageObject_00574A32 = {
-    "_grRenderBuffer@4", /* 00574A32 dynapi_79 */
-};
-
-__declspec(align(4)) ImageObject_00574A44 g_ImageObject_00574A44 = {
-    "_grReset@4", /* 00574A44 dynapi_80 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00574A50 g_ImageObject_00574A50 = {
-    "_grSelectContext@4", /* 00574A50 dynapi_81 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574A64 g_ImageObject_00574A64 = {
-    "_grSstOrigin@4", /* 00574A64 dynapi_82 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574A74 g_ImageObject_00574A74 = {
-    "_grSstSelect@4", /* 00574A74 dynapi_83 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574A84 g_ImageObject_00574A84 = {
-    "_grSstWinClose@4", /* 00574A84 dynapi_84 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574A96 g_ImageObject_00574A96 = {
-    "_grSstWinOpen@28", /* 00574A96 dynapi_85 */
-    {0x90},
-};
-
-__declspec(align(8)) ImageObject_00574AA8 g_ImageObject_00574AA8 = {
-    "_grTexCalcMemRequired@16", /* 00574AA8 dynapi_86 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574AC2 g_ImageObject_00574AC2 = {
-    "_grTexChromaModeExt@8", /* 00574AC2 dynapi_87 */
-};
-
-__declspec(align(8)) ImageObject_00574AD8 g_ImageObject_00574AD8 = {
-    "_grTexChromaRangeExt@16", /* 00574AD8 dynapi_88 */
-};
-
-__declspec(align(16)) ImageObject_00574AF0 g_ImageObject_00574AF0 = {
-    "_grTexClampMode@12", /* 00574AF0 dynapi_89 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574B04 g_ImageObject_00574B04 = {
-    "_grTexCombine@28", /* 00574B04 dynapi_90 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574B16 g_ImageObject_00574B16 = {
-    "_grTexDetailControl@16", /* 00574B16 dynapi_91 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574B2E g_ImageObject_00574B2E = {
-    "_grTexDownloadMipMap@16", /* 00574B2E dynapi_92 */
-};
-
-__declspec(align(4)) ImageObject_00574B46 g_ImageObject_00574B46 = {
-    "_grTexDownloadMipMapLevel@32", /* 00574B46 dynapi_93 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574B64 g_ImageObject_00574B64 = {
-    "_grTexDownloadMipMapLevelPartial@40", /* 00574B64 dynapi_94 */
-};
-
-__declspec(align(8)) ImageObject_00574B88 g_ImageObject_00574B88 = {
-    "_grTexDownloadTable@8", /* 00574B88 dynapi_95 */
-};
-
-__declspec(align(4)) ImageObject_00574B9E g_ImageObject_00574B9E = {
-    "_grTexDownloadTablePartial@16", /* 00574B9E dynapi_96 */
-};
-
-__declspec(align(4)) ImageObject_00574BBC g_ImageObject_00574BBC = {
-    "_grTexFilterMode@12", /* 00574BBC dynapi_97 */
-};
-
-__declspec(align(16)) ImageObject_00574BD0 g_ImageObject_00574BD0 = {
-    "_grTexLodBiasValue@8", /* 00574BD0 dynapi_98 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574BE6 g_ImageObject_00574BE6 = {
-    "_grTexMaxAddress@4", /* 00574BE6 dynapi_99 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574BFA g_ImageObject_00574BFA = {
-    "_grTexMinAddress@4", /* 00574BFA dynapi_100 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574C0E g_ImageObject_00574C0E = {
-    "_grTexMipMapMode@12", /* 00574C0E dynapi_101 */
-};
-
-__declspec(align(4)) ImageObject_00574C22 g_ImageObject_00574C22 = {
-    "_grTexMultibase@8", /* 00574C22 dynapi_102 */
-};
-
-__declspec(align(4)) ImageObject_00574C34 g_ImageObject_00574C34 = {
-    "_grTexMultibaseAddress@20", /* 00574C34 dynapi_103 */
-};
-
-__declspec(align(4)) ImageObject_00574C4E g_ImageObject_00574C4E = {
-    "_grTexNCCTable@4", /* 00574C4E dynapi_104 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00574C60 g_ImageObject_00574C60 = {
-    "_grTexSource@16", /* 00574C60 dynapi_105 */
-};
-
-__declspec(align(16)) ImageObject_00574C70 g_ImageObject_00574C70 = {
-    "_grTexTextureMemRequired@8", /* 00574C70 dynapi_106 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574C8C g_ImageObject_00574C8C = {
-    "_grVertexLayout@12", /* 00574C8C dynapi_107 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00574CA0 g_ImageObject_00574CA0 = {
-    "_grViewport@16", /* 00574CA0 dynapi_108 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00574CB0 g_ImageObject_00574CB0 = {
-    "_gu3dfGetInfo@8", /* 00574CB0 dynapi_109 */
-};
-
-__declspec(align(16)) ImageObject_00574CC0 g_ImageObject_00574CC0 = {
-    "_gu3dfLoad@8", /* 00574CC0 dynapi_110 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574CCE g_ImageObject_00574CCE = {
-    "_guFogGenerateExp@8", /* 00574CCE dynapi_111 */
-};
-
-__declspec(align(4)) ImageObject_00574CE2 g_ImageObject_00574CE2 = {
-    "_guFogGenerateExp2@8", /* 00574CE2 dynapi_112 */
-    {0x90},
-};
-
-__declspec(align(8)) ImageObject_00574CF8 g_ImageObject_00574CF8 = {
-    "_guFogGenerateLinear@12", /* 00574CF8 dynapi_113 */
-};
-
-__declspec(align(16)) ImageObject_00574D10 g_ImageObject_00574D10 = {
-    "_guFogTableIndexToW@4", /* 00574D10 dynapi_114 */
-};
-
-__declspec(align(4)) ImageObject_00574D26 g_ImageObject_00574D26 = {
-    "_guGammaCorrectionRGB@12", /* 00574D26 dynapi_115 */
-    {0x90},
-};
+/* 005745FA dynapi_24 */
+__declspec(align(4)) char g_GlideImportName_grAADrawTriangle[21] = "_grAADrawTriangle@24";
+
+/* 00574610 dynapi_25 */
+__declspec(align(16)) char g_GlideImportName_grAlphaBlendFunction[25] = "_grAlphaBlendFunction@16";
+
+/* 0057462A dynapi_26 */
+__declspec(align(4)) char g_GlideImportName_grAlphaCombine[19] = "_grAlphaCombine@20";
+
+/* 0057463E dynapi_27 */
+__declspec(align(4)) char g_GlideImportName_grAlphaControlsITRGBLighting[32] = "_grAlphaControlsITRGBLighting@4";
+
+/* 0057465E dynapi_28 */
+__declspec(align(4)) char g_GlideImportName_grAlphaTestFunction[23] = "_grAlphaTestFunction@4";
+
+/* 00574676 dynapi_29 */
+__declspec(align(4)) char g_GlideImportName_grAlphaTestReferenceValue[29] = "_grAlphaTestReferenceValue@4";
+
+/* 00574694 dynapi_30 */
+__declspec(align(4)) char g_GlideImportName_grBufferClear[18] = "_grBufferClear@12";
+
+/* 005746A6 dynapi_31 */
+__declspec(align(4)) char g_GlideImportName_grBufferSwap[16] = "_grBufferSwap@4";
+
+/* 005746B6 dynapi_32 */
+__declspec(align(4)) char g_GlideImportName_grChromakeyMode[19] = "_grChromakeyMode@4";
+
+/* 005746CA dynapi_33 */
+__declspec(align(4)) char g_GlideImportName_grChromakeyValue[20] = "_grChromakeyValue@4";
+
+/* 00574706 dynapi_36 */
+__declspec(align(4)) char g_GlideImportName_grClipWindow[17] = "_grClipWindow@16";
+
+/* 00574718 dynapi_37 */
+__declspec(align(8)) char g_GlideImportName_grColorCombine[19] = "_grColorCombine@20";
+
+/* 0057472C dynapi_38 */
+__declspec(align(4)) char g_GlideImportName_grColorMask[15] = "_grColorMask@8";
+
+/* 0057473C dynapi_39 */
+__declspec(align(4)) char g_GlideImportName_grConstantColorValue[24] = "_grConstantColorValue@4";
+
+/* 00574754 dynapi_40 */
+__declspec(align(4)) char g_GlideImportName_grCoordinateSpace[21] = "_grCoordinateSpace@4";
+
+/* 0057476A dynapi_41 */
+__declspec(align(4)) char g_GlideImportName_grCullMode[14] = "_grCullMode@4";
+
+/* 00574778 dynapi_42 */
+__declspec(align(8)) char g_GlideImportName_grDepthBiasLevel[20] = "_grDepthBiasLevel@4";
+
+/* 0057478C dynapi_43 */
+__declspec(align(4)) char g_GlideImportName_grDepthBufferFunction[25] = "_grDepthBufferFunction@4";
+
+/* 005747A6 dynapi_44 */
+__declspec(align(4)) char g_GlideImportName_grDepthBufferMode[21] = "_grDepthBufferMode@4";
+
+/* 005747BC dynapi_45 */
+__declspec(align(4)) char g_GlideImportName_grDepthMask[15] = "_grDepthMask@4";
+
+/* 005747CC dynapi_46 */
+__declspec(align(4)) char g_GlideImportName_grDepthRange[16] = "_grDepthRange@8";
+
+/* 005747DC dynapi_47 */
+__declspec(align(4)) char g_GlideImportName_grDisable[13] = "_grDisable@4";
+
+/* 005747EA dynapi_48 */
+__declspec(align(4)) char g_GlideImportName_grDisableAllEffects[23] = "_grDisableAllEffects@0";
+
+/* 00574802 dynapi_49 */
+__declspec(align(4)) char g_GlideImportName_grDitherMode[16] = "_grDitherMode@4";
+
+/* 00574812 dynapi_50 */
+__declspec(align(4)) char g_GlideImportName_grDrawLine[14] = "_grDrawLine@8";
+
+/* 00574820 dynapi_51 */
+__declspec(align(16)) char g_GlideImportName_grDrawPoint[15] = "_grDrawPoint@4";
+
+/* 00574830 dynapi_52 */
+__declspec(align(16)) char g_GlideImportName_grDrawTriangle[19] = "_grDrawTriangle@12";
+
+/* 00574844 dynapi_53 */
+__declspec(align(4)) char g_GlideImportName_grDrawVertexArray[22] = "_grDrawVertexArray@12";
+
+/* 0057485A dynapi_54 */
+__declspec(align(4)) char g_GlideImportName_grDrawVertexArrayContiguous[32] = "_grDrawVertexArrayContiguous@16";
+
+/* 0057487A dynapi_55 */
+__declspec(align(4)) char g_GlideImportName_grEnable[12] = "_grEnable@4";
+
+/* 00574886 dynapi_56 */
+__declspec(align(4)) char g_GlideImportName_grErrorSetCallback[22] = "_grErrorSetCallback@4";
+
+/* 0057489C dynapi_57 */
+__declspec(align(4)) char g_GlideImportName_grFinish[12] = "_grFinish@0";
+
+/* 005748A8 dynapi_58 */
+__declspec(align(8)) char g_GlideImportName_grFlush[11] = "_grFlush@0";
+
+/* 005748B4 dynapi_59 */
+__declspec(align(4)) char g_GlideImportName_grFogColorValue[19] = "_grFogColorValue@4";
+
+/* 005748C8 dynapi_60 */
+__declspec(align(8)) char g_GlideImportName_grFogMode[13] = "_grFogMode@4";
+
+/* 005748D6 dynapi_61 */
+__declspec(align(4)) char g_GlideImportName_grFogTable[14] = "_grFogTable@4";
+
+/* 005748E4 dynapi_62 */
+__declspec(align(4)) char g_GlideImportName_grGet[10] = "_grGet@12";
+
+/* 005748EE dynapi_63 */
+__declspec(align(4)) char g_GlideImportName_grGetProcAddress[20] = "_grGetProcAddress@4";
+
+/* 00574902 dynapi_64 */
+__declspec(align(4)) char g_GlideImportName_grGetString[15] = "_grGetString@4";
+
+/* 00574912 dynapi_65 */
+__declspec(align(4)) char g_GlideImportName_grGlideGetState[19] = "_grGlideGetState@4";
+
+/* 00574926 dynapi_66 */
+__declspec(align(4)) char g_GlideImportName_grGlideGetVertexLayout[26] = "_grGlideGetVertexLayout@4";
+
+/* 00574940 dynapi_67 */
+__declspec(align(16)) char g_GlideImportName_grGlideInit[15] = "_grGlideInit@0";
+
+/* 00574950 dynapi_68 */
+__declspec(align(16)) char g_GlideImportName_grGlideSetState[19] = "_grGlideSetState@4";
+
+/* 00574964 dynapi_69 */
+__declspec(align(4)) char g_GlideImportName_grGlideSetVertexLayout[26] = "_grGlideSetVertexLayout@4";
+
+/* 0057497E dynapi_70 */
+__declspec(align(4)) char g_GlideImportName_grGlideShutdown[19] = "_grGlideShutdown@0";
+
+/* 00574992 dynapi_71 */
+__declspec(align(4)) char g_GlideImportName_grLfbConstantAlpha[22] = "_grLfbConstantAlpha@4";
+
+/* 005749A8 dynapi_72 */
+__declspec(align(8)) char g_GlideImportName_grLfbConstantDepth[22] = "_grLfbConstantDepth@4";
+
+/* 005749BE dynapi_73 */
+__declspec(align(4)) char g_GlideImportName_grLfbLock[14] = "_grLfbLock@24";
+
+/* 005749CC dynapi_74 */
+__declspec(align(4)) char g_GlideImportName_grLfbReadRegion[20] = "_grLfbReadRegion@28";
+
+/* 005749E0 dynapi_75 */
+__declspec(align(16)) char g_GlideImportName_grLfbUnlock[15] = "_grLfbUnlock@8";
+
+/* 005749F0 dynapi_76 */
+__declspec(align(16)) char g_GlideImportName_grLfbWriteRegion[21] = "_grLfbWriteRegion@36";
+
+/* 00574A06 dynapi_77 */
+__declspec(align(4)) char g_GlideImportName_grLoadGammaTable[21] = "_grLoadGammaTable@16";
+
+/* 00574A1C dynapi_78 */
+__declspec(align(4)) char g_GlideImportName_grQueryResolutions[22] = "_grQueryResolutions@8";
+
+/* 00574A32 dynapi_79 */
+__declspec(align(4)) char g_GlideImportName_grRenderBuffer[18] = "_grRenderBuffer@4";
+
+/* 00574A44 dynapi_80 */
+__declspec(align(4)) char g_GlideImportName_grReset[11] = "_grReset@4";
+
+/* 00574A50 dynapi_81 */
+__declspec(align(16)) char g_GlideImportName_grSelectContext[19] = "_grSelectContext@4";
+
+/* 00574A64 dynapi_82 */
+__declspec(align(4)) char g_GlideImportName_grSstOrigin[15] = "_grSstOrigin@4";
+
+/* 00574A74 dynapi_83 */
+__declspec(align(4)) char g_GlideImportName_grSstSelect[15] = "_grSstSelect@4";
+
+/* 00574A84 dynapi_84 */
+__declspec(align(4)) char g_GlideImportName_grSstWinClose[17] = "_grSstWinClose@4";
+
+/* 00574A96 dynapi_85 */
+__declspec(align(4)) char g_GlideImportName_grSstWinOpen[17] = "_grSstWinOpen@28";
+
+/* 00574AA8 dynapi_86 */
+__declspec(align(8)) char g_GlideImportName_grTexCalcMemRequired[25] = "_grTexCalcMemRequired@16";
+
+/* 00574AF0 dynapi_89 */
+__declspec(align(16)) char g_GlideImportName_grTexClampMode[19] = "_grTexClampMode@12";
+
+/* 00574B04 dynapi_90 */
+__declspec(align(4)) char g_GlideImportName_grTexCombine[17] = "_grTexCombine@28";
+
+/* 00574B16 dynapi_91 */
+__declspec(align(4)) char g_GlideImportName_grTexDetailControl[23] = "_grTexDetailControl@16";
+
+/* 00574B2E dynapi_92 */
+__declspec(align(4)) char g_GlideImportName_grTexDownloadMipMap[24] = "_grTexDownloadMipMap@16";
+
+/* 00574B46 dynapi_93 */
+__declspec(align(4)) char g_GlideImportName_grTexDownloadMipMapLevel[29] = "_grTexDownloadMipMapLevel@32";
+
+/* 00574B64 dynapi_94 */
+__declspec(align(4)) char g_GlideImportName_grTexDownloadMipMapLevelPartial[36] = "_grTexDownloadMipMapLevelPartial@40";
+
+/* 00574B88 dynapi_95 */
+__declspec(align(8)) char g_GlideImportName_grTexDownloadTable[22] = "_grTexDownloadTable@8";
+
+/* 00574B9E dynapi_96 */
+__declspec(align(4)) char g_GlideImportName_grTexDownloadTablePartial[30] = "_grTexDownloadTablePartial@16";
+
+/* 00574BBC dynapi_97 */
+__declspec(align(4)) char g_GlideImportName_grTexFilterMode[20] = "_grTexFilterMode@12";
+
+/* 00574BD0 dynapi_98 */
+__declspec(align(16)) char g_GlideImportName_grTexLodBiasValue[21] = "_grTexLodBiasValue@8";
+
+/* 00574BE6 dynapi_99 */
+__declspec(align(4)) char g_GlideImportName_grTexMaxAddress[19] = "_grTexMaxAddress@4";
+
+/* 00574BFA dynapi_100 */
+__declspec(align(4)) char g_GlideImportName_grTexMinAddress[19] = "_grTexMinAddress@4";
+
+/* 00574C0E dynapi_101 */
+__declspec(align(4)) char g_GlideImportName_grTexMipMapMode[20] = "_grTexMipMapMode@12";
+
+/* 00574C22 dynapi_102 */
+__declspec(align(4)) char g_GlideImportName_grTexMultibase[18] = "_grTexMultibase@8";
+
+/* 00574C34 dynapi_103 */
+__declspec(align(4)) char g_GlideImportName_grTexMultibaseAddress[26] = "_grTexMultibaseAddress@20";
+
+/* 00574C4E dynapi_104 */
+__declspec(align(4)) char g_GlideImportName_grTexNCCTable[17] = "_grTexNCCTable@4";
+
+/* 00574C60 dynapi_105 */
+__declspec(align(16)) char g_GlideImportName_grTexSource[16] = "_grTexSource@16";
+
+/* 00574C70 dynapi_106 */
+__declspec(align(16)) char g_GlideImportName_grTexTextureMemRequired[27] = "_grTexTextureMemRequired@8";
+
+/* 00574C8C dynapi_107 */
+__declspec(align(4)) char g_GlideImportName_grVertexLayout[19] = "_grVertexLayout@12";
+
+/* 00574CA0 dynapi_108 */
+__declspec(align(16)) char g_GlideImportName_grViewport[15] = "_grViewport@16";
+
+/* 00574CB0 dynapi_109 */
+__declspec(align(16)) char g_GlideImportName_gu3dfGetInfo[16] = "_gu3dfGetInfo@8";
+
+/* 00574CC0 dynapi_110 */
+__declspec(align(16)) char g_GlideImportName_gu3dfLoad[13] = "_gu3dfLoad@8";
+
+/* 00574CCE dynapi_111 */
+__declspec(align(4)) char g_GlideImportName_guFogGenerateExp[20] = "_guFogGenerateExp@8";
+
+/* 00574CE2 dynapi_112 */
+__declspec(align(4)) char g_GlideImportName_guFogGenerateExp2[21] = "_guFogGenerateExp2@8";
+
+/* 00574CF8 dynapi_113 */
+__declspec(align(8)) char g_GlideImportName_guFogGenerateLinear[24] = "_guFogGenerateLinear@12";
+
+/* 00574D10 dynapi_114 */
+__declspec(align(16)) char g_GlideImportName_guFogTableIndexToW[22] = "_guFogTableIndexToW@4";
+
+/* 00574D26 dynapi_115 */
+__declspec(align(4)) char g_GlideImportName_guGammaCorrectionRGB[25] = "_guGammaCorrectionRGB@12";
 
 /* 00574D40 s_Wsock32Export_accept */
 __declspec(align(16)) char s_Wsock32Export_accept[7] = "accept";
@@ -16147,391 +15731,14 @@ __declspec(align(4)) char s_Wsock32Export_WSAIsBlocking[14] = "WSAIsBlocking";
 /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
 __declspec(align(16)) char s_Wsock32Export_WSASetBlockingHook[19] = "WSASetBlockingHook";
 
-__declspec(align(4)) ImageObject_00574F74 g_ImageObject_00574F74 = {
-    "WSASetLastError", /* 00574F74 dynapi_159 */
-};
-
 /* 00574F84 s_Wsock32Export_WSAStartup */
 __declspec(align(4)) char s_Wsock32Export_WSAStartup[11] = "WSAStartup";
 
 /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
 __declspec(align(16)) char s_Wsock32Export_WSAUnhookBlockingHook[22] = "WSAUnhookBlockingHook";
 
-__declspec(align(4)) ImageObject_00574FA6 g_ImageObject_00574FA6 = {
-    "accept", /* 00574FA6 dynapi_162 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574FAE g_ImageObject_00574FAE = {
-    "bind", /* 00574FAE dynapi_163 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574FB4 g_ImageObject_00574FB4 = {
-    "closesocket", /* 00574FB4 dynapi_164 */
-};
-
-__declspec(align(16)) ImageObject_00574FC0 g_ImageObject_00574FC0 = {
-    "connect", /* 00574FC0 dynapi_165 */
-};
-
-__declspec(align(8)) ImageObject_00574FC8 g_ImageObject_00574FC8 = {
-    "getpeername", /* 00574FC8 dynapi_166 */
-};
-
-__declspec(align(4)) ImageObject_00574FD4 g_ImageObject_00574FD4 = {
-    "getsockname", /* 00574FD4 dynapi_167 */
-};
-
-__declspec(align(16)) ImageObject_00574FE0 g_ImageObject_00574FE0 = {
-    "getsockopt", /* 00574FE0 dynapi_168 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00574FEC g_ImageObject_00574FEC = {
-    "htonl", /* 00574FEC dynapi_169 */
-};
-
-__declspec(align(4)) ImageObject_00574FF2 g_ImageObject_00574FF2 = {
-    "htons", /* 00574FF2 dynapi_170 */
-};
-
-__declspec(align(8)) ImageObject_00574FF8 g_ImageObject_00574FF8 = {
-    "ioctlsocket", /* 00574FF8 dynapi_171 */
-};
-
-__declspec(align(4)) ImageObject_00575004 g_ImageObject_00575004 = {
-    "listen", /* 00575004 dynapi_172 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057500C g_ImageObject_0057500C = {
-    "ntohl", /* 0057500C dynapi_173 */
-};
-
-__declspec(align(4)) ImageObject_00575012 g_ImageObject_00575012 = {
-    "ntohs", /* 00575012 dynapi_174 */
-};
-
-__declspec(align(8)) ImageObject_00575018 g_ImageObject_00575018 = {
-    "recv", /* 00575018 dynapi_175 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057501E g_ImageObject_0057501E = {
-    "recvfrom", /* 0057501E dynapi_176 */
-    {0x90},
-};
-
-__declspec(align(8)) ImageObject_00575028 g_ImageObject_00575028 = {
-    "select", /* 00575028 dynapi_177 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00575030 g_ImageObject_00575030 = {
-    "send", /* 00575030 dynapi_178 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575036 g_ImageObject_00575036 = {
-    "sendto", /* 00575036 dynapi_179 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057503E g_ImageObject_0057503E = {
-    "setsockopt", /* 0057503E dynapi_180 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057504A g_ImageObject_0057504A = {
-    "shutdown", /* 0057504A dynapi_181 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575054 g_ImageObject_00575054 = {
-    "socket", /* 00575054 dynapi_182 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057505C g_ImageObject_0057505C = {
-    "WSAAccept", /* 0057505C dynapi_183 */
-};
-
-__declspec(align(4)) ImageObject_00575066 g_ImageObject_00575066 = {
-    "WSAAsyncSelect", /* 00575066 dynapi_184 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575076 g_ImageObject_00575076 = {
-    "WSACancelBlockingCall", /* 00575076 dynapi_185 */
-};
-
-__declspec(align(4)) ImageObject_0057508C g_ImageObject_0057508C = {
-    "WSACleanup", /* 0057508C dynapi_186 */
-    {0x90},
-};
-
-__declspec(align(8)) ImageObject_00575098 g_ImageObject_00575098 = {
-    "WSACloseEvent", /* 00575098 dynapi_187 */
-};
-
-__declspec(align(4)) ImageObject_005750A6 g_ImageObject_005750A6 = {
-    "WSAConnect", /* 005750A6 dynapi_188 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005750B2 g_ImageObject_005750B2 = {
-    "WSACreateEvent", /* 005750B2 dynapi_189 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005750C2 g_ImageObject_005750C2 = {
-    "WSADuplicateSocketA", /* 005750C2 dynapi_190 */
-};
-
-__declspec(align(4)) ImageObject_005750D6 g_ImageObject_005750D6 = {
-    "WSAEnumNetworkEvents", /* 005750D6 dynapi_191 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005750EC g_ImageObject_005750EC = {
-    "WSAEnumProtocolsA", /* 005750EC dynapi_192 */
-};
-
-__declspec(align(4)) ImageObject_005750FE g_ImageObject_005750FE = {
-    "WSAEventSelect", /* 005750FE dynapi_193 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057510E g_ImageObject_0057510E = {
-    "WSAGetLastError", /* 0057510E dynapi_194 */
-};
-
-__declspec(align(4)) ImageObject_0057511E g_ImageObject_0057511E = {
-    "WSAGetOverlappedResult", /* 0057511E dynapi_195 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575136 g_ImageObject_00575136 = {
-    "WSAGetQOSByName", /* 00575136 dynapi_196 */
-};
-
-__declspec(align(4)) ImageObject_00575146 g_ImageObject_00575146 = {
-    "WSAHtonl", /* 00575146 dynapi_197 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00575150 g_ImageObject_00575150 = {
-    "WSAHtons", /* 00575150 dynapi_198 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057515A g_ImageObject_0057515A = {
-    "WSAIoctl", /* 0057515A dynapi_199 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575164 g_ImageObject_00575164 = {
-    "WSAIsBlocking", /* 00575164 dynapi_200 */
-};
-
-__declspec(align(4)) ImageObject_00575172 g_ImageObject_00575172 = {
-    "WSAJoinLeaf", /* 00575172 dynapi_201 */
-};
-
-__declspec(align(4)) ImageObject_0057517E g_ImageObject_0057517E = {
-    "WSANtohl", /* 0057517E dynapi_202 */
-    {0x90},
-};
-
-__declspec(align(8)) ImageObject_00575188 g_ImageObject_00575188 = {
-    "WSANtohs", /* 00575188 dynapi_203 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575192 g_ImageObject_00575192 = {
-    "WSARecv", /* 00575192 dynapi_204 */
-};
-
-__declspec(align(4)) ImageObject_0057519A g_ImageObject_0057519A = {
-    "WSARecvDisconnect", /* 0057519A dynapi_205 */
-};
-
-__declspec(align(4)) ImageObject_005751AC g_ImageObject_005751AC = {
-    "WSARecvFrom", /* 005751AC dynapi_206 */
-};
-
-__declspec(align(8)) ImageObject_005751B8 g_ImageObject_005751B8 = {
-    "WSAResetEvent", /* 005751B8 dynapi_207 */
-};
-
-__declspec(align(4)) ImageObject_005751C6 g_ImageObject_005751C6 = {
-    "WSASend", /* 005751C6 dynapi_208 */
-};
-
-__declspec(align(4)) ImageObject_005751CE g_ImageObject_005751CE = {
-    "WSASendDisconnect", /* 005751CE dynapi_209 */
-};
-
-__declspec(align(16)) ImageObject_005751E0 g_ImageObject_005751E0 = {
-    "WSASendTo", /* 005751E0 dynapi_210 */
-};
-
-__declspec(align(4)) ImageObject_005751EA g_ImageObject_005751EA = {
-    "WSASetBlockingHook", /* 005751EA dynapi_211 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005751FE g_ImageObject_005751FE = {
-    "WSASetEvent", /* 005751FE dynapi_212 */
-};
-
-__declspec(align(4)) ImageObject_0057520A g_ImageObject_0057520A = {
-    "WSASetLastError", /* 0057520A dynapi_213 */
-};
-
-__declspec(align(4)) ImageObject_0057521A g_ImageObject_0057521A = {
-    "WSASocketA", /* 0057521A dynapi_214 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575226 g_ImageObject_00575226 = {
-    "WSAStartup", /* 00575226 dynapi_215 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575232 g_ImageObject_00575232 = {
-    "WSAUnhookBlockingHook", /* 00575232 dynapi_216 */
-};
-
-__declspec(align(8)) ImageObject_00575248 g_ImageObject_00575248 = {
-    "WSAWaitForMultipleEvents", /* 00575248 dynapi_217 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575262 g_ImageObject_00575262 = {
-    "inet_addr", /* 00575262 dynapi_218 */
-};
-
-__declspec(align(4)) ImageObject_0057526C g_ImageObject_0057526C = {
-    "inet_ntoa", /* 0057526C dynapi_219 */
-};
-
-__declspec(align(4)) ImageObject_00575276 g_ImageObject_00575276 = {
-    "gethostbyaddr", /* 00575276 dynapi_220 */
-};
-
-__declspec(align(4)) ImageObject_00575284 g_ImageObject_00575284 = {
-    "gethostbyname", /* 00575284 dynapi_221 */
-};
-
-__declspec(align(4)) ImageObject_00575292 g_ImageObject_00575292 = {
-    "gethostname", /* 00575292 dynapi_222 */
-};
-
-__declspec(align(4)) ImageObject_0057529E g_ImageObject_0057529E = {
-    "getprotobyname", /* 0057529E dynapi_223 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005752AE g_ImageObject_005752AE = {
-    "getprotobynumber", /* 005752AE dynapi_224 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_005752C0 g_ImageObject_005752C0 = {
-    "getservbyname", /* 005752C0 dynapi_225 */
-};
-
-__declspec(align(4)) ImageObject_005752CE g_ImageObject_005752CE = {
-    "getservbyport", /* 005752CE dynapi_226 */
-};
-
-__declspec(align(4)) ImageObject_005752DC g_ImageObject_005752DC = {
-    "WSAAsyncGetHostByAddr", /* 005752DC dynapi_227 */
-};
-
-__declspec(align(4)) ImageObject_005752F2 g_ImageObject_005752F2 = {
-    "WSAAsyncGetHostByName", /* 005752F2 dynapi_228 */
-};
-
-__declspec(align(8)) ImageObject_00575308 g_ImageObject_00575308 = {
-    "WSAAsyncGetProtoByName", /* 00575308 dynapi_229 */
-    {0x90},
-};
-
-__declspec(align(16)) ImageObject_00575320 g_ImageObject_00575320 = {
-    "WSAAsyncGetProtoByNumber", /* 00575320 dynapi_230 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_0057533A g_ImageObject_0057533A = {
-    "WSAAsyncGetServByName", /* 0057533A dynapi_231 */
-};
-
-__declspec(align(16)) ImageObject_00575350 g_ImageObject_00575350 = {
-    "WSAAsyncGetServByPort", /* 00575350 dynapi_232 */
-};
-
-__declspec(align(4)) ImageObject_00575366 g_ImageObject_00575366 = {
-    "WSACancelAsyncRequest", /* 00575366 dynapi_233 */
-};
-
-__declspec(align(4)) ImageObject_0057537C g_ImageObject_0057537C = {
-    "WSAAddressToStringA", /* 0057537C dynapi_234 */
-};
-
-__declspec(align(16)) ImageObject_00575390 g_ImageObject_00575390 = {
-    "WSAEnumNameSpaceProvidersA", /* 00575390 dynapi_235 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005753AC g_ImageObject_005753AC = {
-    "WSAGetServiceClassInfoA", /* 005753AC dynapi_236 */
-};
-
-__declspec(align(4)) ImageObject_005753C4 g_ImageObject_005753C4 = {
-    "WSAGetServiceClassNameByClassIdA", /* 005753C4 dynapi_237 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_005753E6 g_ImageObject_005753E6 = {
-    "WSAInstallServiceClassA", /* 005753E6 dynapi_238 */
-};
-
-__declspec(align(4)) ImageObject_005753FE g_ImageObject_005753FE = {
-    "WSALookupServiceBeginA", /* 005753FE dynapi_239 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575416 g_ImageObject_00575416 = {
-    "WSALookupServiceEnd", /* 00575416 dynapi_240 */
-};
-
-__declspec(align(4)) ImageObject_0057542A g_ImageObject_0057542A = {
-    "WSALookupServiceNextA", /* 0057542A dynapi_241 */
-};
-
-__declspec(align(16)) ImageObject_00575440 g_ImageObject_00575440 = {
-    "WSARemoveServiceClass", /* 00575440 dynapi_242 */
-};
-
-__declspec(align(4)) ImageObject_00575456 g_ImageObject_00575456 = {
-    "WSASetServiceA", /* 00575456 dynapi_243 */
-    {0x90},
-};
-
-__declspec(align(4)) ImageObject_00575466 g_ImageObject_00575466 = {
-    "WSAStringToAddressA", /* 00575466 dynapi_244 */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
-
 /* 00575480 g_FatalErrorNarrowBuffer */
 __declspec(align(16)) uint8_t g_FatalErrorNarrowBuffer[1024] = {0};
-
-__declspec(align(4)) ImageObject_0057594C g_ImageObject_0057594C = {
-    {0x00, 0x00, 0x90, 0x90}, /* 0057594C gap */
-};
 
 /* 00575950 g_Win32FileBytesTransferred */
 __declspec(align(16)) uint32_t g_Win32FileBytesTransferred = 0;
@@ -16554,14 +15761,6 @@ __declspec(align(4)) char g_Win32DriveRootPathScratchA[4] = "x:\\";
 
 /* 00575CA0 g_Win32DriveDevicePathA: char[7]: "\\.\x:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY probe in Win32Drive_CheckMediaReady (letter at [4]); followed by NOP fill up to FileSystem_Init */
 __declspec(align(16)) char g_Win32DriveDevicePathA[7] = "\\\\.\\x:";
-
-__declspec(align(16)) ImageObject_00576720 g_ImageObject_00576720 = {
-    {0x8B, 0x45, 0x20, 0x6A, 0x00, 0x68, 0x80, 0x00, 0x00, 0x80, 0x6A, 0x03, 0x6A, 0x00, 0x6A, 0x03, 0x68, 0x00, 0x00, 0x00, 0xC0, 0x68, 0xA0, 0x5C, 0x57, 0x00, 0xA2, 0xA4, 0x5C, 0x57, 0x00, 0xFF, 0x15, 0xF0, 0xC1, 0x58, 0x00, 0x83, 0xF8, 0xFF, 0x74, 0x39, 0x50, 0x6A, 0x00, 0x68, 0x50, 0x59, 0x57, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x68, 0x00, 0x48, 0x2D, 0x00, 0x50, 0xFF, 0x15, 0x34, 0xC2, 0x58, 0x00, 0x85, 0xC0, 0x74, 0x13, 0xFF, 0x15, 0xF4, 0xC1, 0x58, 0x00, 0xF8, 0x89, 0xEC, 0x5D, 0x5E, 0x5F, 0x5A, 0x59, 0x5B, 0x58, 0xC2, 0x04, 0x00, 0xFF, 0x15, 0xF4, 0xC1, 0x58}, /* 00576720 gap */
-};
-
-__declspec(align(4)) ImageObject_00576B04 g_ImageObject_00576B04 = {
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00576B04 gap */
-};
 
 /* 00576B10 g_DirectInput */
 __declspec(align(16)) IDirectInputA *g_DirectInput = 0;
@@ -16632,10 +15831,6 @@ __declspec(align(16)) SoftwareDisplayModeHookProc *g_DirectInputMouseChainedSetD
 
 /* 00576C24 g_DirectInputMouseRefreshCountdown */
 __declspec(align(4)) UiFrameRefreshCountdownFrames g_DirectInputMouseRefreshCountdown = 16;
-
-__declspec(align(4)) ImageObject_00577BFC g_ImageObject_00577BFC = {
-    {0x90, 0x90, 0x90, 0x90}, /* 00577BFC gap */
-};
 
 /* 00577C00 IID_IDirectDraw2_Local */
 __declspec(align(16)) TH_LEGACY_GUID IID_IDirectDraw2_Local = {.Data1 = 0xB3A6F3E0, .Data2 = 11075, .Data3 = 4559, .Data4 = {162, 222, 0, 170, 0, 185, 51, 86}};
@@ -16891,10 +16086,6 @@ __declspec(align(4)) uint32_t g_GraphicsEnumerateAllDevicesFlag = 0;
 /* 00578078 g_CommandLineOptionD3dAll */
 __declspec(align(8)) char g_CommandLineOptionD3dAll[7] = "D3DALL";
 
-__declspec(align(8)) ImageObject_0057ECC8 g_ImageObject_0057ECC8 = {
-    {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0057ECC8 gap */
-};
-
 /* 0057ECD0 g_GlideEnumerationResolutionQuery: GrResolution: grQueryResolutions template {GR_QUERY_ANY, GR_QUERY_ANY, 2 colour buffers, 1 aux buffer} for enumerating modes; Glide3_InitAndEnumerate */
 __declspec(align(16)) GrResolution g_GlideEnumerationResolutionQuery = {.resolution = -1, .refresh = 0xFFFFFFFF, .numColorBuffers = 2, .numAuxBuffers = 1};
 
@@ -16967,10 +16158,6 @@ __declspec(align(16)) uint8_t *g_GlideSecondBufferBase = 0;
 /* 0057EE84 g_CommandLineOptionGlide */
 __declspec(align(4)) char g_CommandLineOptionGlide[6] = "GLIDE";
 
-__declspec(align(8)) ImageObject_00582ED8 g_ImageObject_00582ED8 = {
-    {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00582ED8 gap */
-};
-
 /* 00582EE0 g_DirectSound */
 __declspec(align(16)) IDirectSound *g_DirectSound = 0;
 
@@ -17015,10 +16202,6 @@ __declspec(align(4)) int32_t g_DirectSoundGainAttenuation[129] = {
         /* 112 */ -193, -180, -167, -154, -142, -130, -117, -105,
         /* 120 */ -93, -81, -69, -57, -46, -34, -23, -11,
         /* 128 */ 0,
-};
-
-__declspec(align(8)) ImageObject_00583D28 g_ImageObject_00583D28 = {
-    {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00583D28 gap */
 };
 
 /* 00583D60 g_NetworkBackendMode */
@@ -17067,14 +16250,6 @@ __declspec(align(16)) NetworkBackendInstanceDescriptorPrefix NetworkBackendInsta
    g_CommandLineFindOption gets the length 3 and never reads past it */
 __declspec(align(8)) char s_CommandLineOptionIp[3] = {'I', 'P', '='};
 
-__declspec(align(4)) ImageObject_00584E44 g_ImageObject_00584E44 = {
-    {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00584E44 gap */
-};
-
-__declspec(align(16)) ImageObject_005856A0 g_ImageObject_005856A0 = {
-    {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005856A0 gap */
-};
-
 /* 005856B0 g_hInstance */
 __declspec(align(16)) HINSTANCE g_hInstance = 0;
 
@@ -17092,7 +16267,7 @@ __declspec(align(16)) Win32MainMessageStorage g_MainMessageStorage = {
     .overlay = {.windowClass = {.style = 3, .windowProc = (void *)MainWindowProc, .className = (void *)&sz_MainWindowClass}}};
 
 /* 00585708 g_Arena */
-__declspec(align(8)) ArenaState g_Arena = {.linearCursor = (void *)&g_Arena_3, .linearLimit = (void *)&g_Arena_4};
+__declspec(align(8)) ArenaState g_Arena = {.linearCursor = &g_ArenaLinearStorage[0], .linearLimit = &g_ArenaLinearStorage[0x4000]};
 
 /* 0058571C g_TimerSystemState */
 __declspec(align(4)) TimerSystemState g_TimerSystemState = {0};
@@ -17112,17 +16287,9 @@ __declspec(align(16)) uint8_t g_LocaleInfoScratch[16] = {0};
 /* 00586A70 g_LocaleSystemState */
 __declspec(align(16)) LocaleSystemState g_LocaleSystemState = {0};
 
-__declspec(align(4)) ImageObject_005873BC g_ImageObject_005873BC = {
-    {0}, /* 005873BC gap */
-};
-
-__declspec(align(16)) ImageObject_00587400 g_ImageObject_00587400 = {
-    {0}, /* 00587400 g_Arena_3 */
-};
-
-__declspec(align(16)) ImageObject_0058B400 g_ImageObject_0058B400 = {
-    {0}, /* 0058B400 g_Arena_4 */
-};
+/* 00587400 g_ArenaLinearStorage: linear region of g_Arena (cursor at [0] = Ghidra g_Arena_3, limit at
+   [0x4000] = Ghidra g_Arena_4 0058B400); the 0xC00 bytes past the limit run to the end of the image */
+__declspec(align(16)) uint8_t g_ArenaLinearStorage[0x4C00] = {0};
 
 const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00402000, 0x00402018, (const uint8_t *)&g_MemoryApi},
@@ -18224,32 +17391,14 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0056D830, 0x0056D834, (const uint8_t *)&g_TerrainMaterialEditDeltaBuffer},
     {0x0056D834, 0x0056D838, (const uint8_t *)&g_TerrainMaterialEditReferenceMaterialByte},
     {0x0056D838, 0x0056D83C, (const uint8_t *)&g_TerrainMaterialEditReplacementMaterialByte},
-    {0x0056E408, 0x0056E410, (const uint8_t *)&g_ImageObject_0056E408},
     {0x0056E410, 0x0056E5CC, (const uint8_t *)&g_InGameKeyboardDispatchRecords},
-    {0x0056F278, 0x0056F280, (const uint8_t *)&g_ImageObject_0056F278},
     {0x0056F280, 0x0056F350, (const uint8_t *)&g_InGameCameraCommandDispatchRecords16},
-    {0x0056F81C, 0x0056F820, (const uint8_t *)&g_ImageObject_0056F81C},
-    {0x0056F820, 0x0056F840, (const uint8_t *)&g_ImageObject_0056F820},
-    {0x0056FA98, 0x0056FAA0, (const uint8_t *)&g_ImageObject_0056FA98},
-    {0x0056FAA0, 0x0056FAC0, (const uint8_t *)&g_ImageObject_0056FAA0},
-    {0x00570408, 0x00570410, (const uint8_t *)&g_ImageObject_00570408},
-    {0x00570410, 0x00570430, (const uint8_t *)&g_ImageObject_00570410},
-    {0x00570D90, 0x00570DA0, (const uint8_t *)&g_ImageObject_00570D90},
-    {0x00570DA0, 0x00570DC0, (const uint8_t *)&g_ImageObject_00570DA0},
-    {0x00570F48, 0x00570F50, (const uint8_t *)&g_ImageObject_00570F48},
-    {0x00570F50, 0x00570F70, (const uint8_t *)&g_ImageObject_00570F50},
-    {0x00571AE4, 0x00571B00, (const uint8_t *)&g_ImageObject_00571AE4},
-    {0x00571B30, 0x00571B50, (const uint8_t *)&g_ImageObject_00571B30},
-    {0x00571D24, 0x00571D40, (const uint8_t *)&g_ImageObject_00571D24},
-    {0x00571D70, 0x00571D90, (const uint8_t *)&g_ImageObject_00571D70},
-    {0x00572030, 0x00572040, (const uint8_t *)&g_ImageObject_00572030},
     {0x00572040, 0x00572060, (const uint8_t *)&g_FrontendClientPlayerRemovalPacket10007},
     {0x00572060, 0x00572160, (const uint8_t *)&g_FrontendClientPlayerCommandRecords},
     {0x00572160, 0x00572260, (const uint8_t *)&g_FrontendClientCommandBatchPacketBuffer},
     {0x00572260, 0x00572280, (const uint8_t *)&g_FrontendPacket10021Buffer},
     {0x00572280, 0x005722A0, (const uint8_t *)&g_FrontendPacket10022Buffer},
     {0x005722A0, 0x005722C0, (const uint8_t *)&g_FrontendPacket10023Buffer},
-    {0x00572AB0, 0x00572AC0, (const uint8_t *)&g_ImageObject_00572AB0},
     {0x00572AC0, 0x00572AC4, (const uint8_t *)&g_DataPackageHandle},
     {0x00572AC4, 0x00572AC8, (const uint8_t *)&g_ModelPackageHandle},
     {0x00572AC8, 0x00572ACC, (const uint8_t *)&g_GraphicsPackageHandle},
@@ -18289,7 +17438,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00573028, 0x00573046, (const uint8_t *)&u_engine_pcx_fnc_00573028},
     {0x00573046, 0x00573064, (const uint8_t *)&u_flm_intro0_flm_00573046},
     {0x00573064, 0x0057306C, (const uint8_t *)&g_CommandLineOptionNoIntro},
-    {0x00573EE8, 0x00573EF0, (const uint8_t *)&g_ImageObject_00573EE8},
     {0x00573EF0, 0x00573F70, (const uint8_t *)&g_DynamicModules},
     {0x00573F70, 0x00573F74, (const uint8_t *)&g_DynamicModuleCount},
     {0x00573F74, 0x00573FBC, (const uint8_t *)&g_BootstrapApiBindings},
@@ -18344,74 +17492,37 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00574340, 0x00574344, (const uint8_t *)&g_WinSock_WSAGetLastError},
     {0x00574344, 0x00574348, (const uint8_t *)&g_WinSock_WSAIsBlocking},
     {0x00574348, 0x0057434C, (const uint8_t *)&g_WinSock_WSASetBlockingHook},
-    {0x0057434C, 0x00574350, (const uint8_t *)&g_ImageObject_0057434C},
     {0x00574350, 0x00574354, (const uint8_t *)&g_WinSock_WSAStartup},
     {0x00574354, 0x00574358, (const uint8_t *)&g_WinSock_WSAUnhookBlockingHook},
-    {0x00574358, 0x0057435C, (const uint8_t *)&g_ImageObject_00574358},
     {0x0057435C, 0x00574360, (const uint8_t *)&g_Ws2_32_bind},
     {0x00574360, 0x00574364, (const uint8_t *)&g_Ws2_32_closesocket},
-    {0x00574364, 0x00574368, (const uint8_t *)&g_ImageObject_00574364},
-    {0x00574368, 0x0057436C, (const uint8_t *)&g_ImageObject_00574368},
-    {0x0057436C, 0x00574370, (const uint8_t *)&g_ImageObject_0057436C},
-    {0x00574370, 0x00574374, (const uint8_t *)&g_ImageObject_00574370},
-    {0x00574374, 0x00574378, (const uint8_t *)&g_ImageObject_00574374},
     {0x00574378, 0x0057437C, (const uint8_t *)&g_Ws2_32_htons},
-    {0x0057437C, 0x00574380, (const uint8_t *)&g_ImageObject_0057437C},
-    {0x00574380, 0x00574384, (const uint8_t *)&g_ImageObject_00574380},
-    {0x00574384, 0x00574388, (const uint8_t *)&g_ImageObject_00574384},
-    {0x00574388, 0x0057438C, (const uint8_t *)&g_ImageObject_00574388},
-    {0x0057438C, 0x00574390, (const uint8_t *)&g_ImageObject_0057438C},
     {0x00574390, 0x00574394, (const uint8_t *)&g_Ws2_32_recvfrom},
-    {0x00574394, 0x00574398, (const uint8_t *)&g_ImageObject_00574394},
-    {0x00574398, 0x0057439C, (const uint8_t *)&g_ImageObject_00574398},
     {0x0057439C, 0x005743A0, (const uint8_t *)&g_Ws2_32_sendto},
     {0x005743A0, 0x005743A4, (const uint8_t *)&g_Ws2_32_setsockopt},
-    {0x005743A4, 0x005743A8, (const uint8_t *)&g_ImageObject_005743A4},
     {0x005743A8, 0x005743AC, (const uint8_t *)&g_Ws2_32_socket},
-    {0x005743B0, 0x005743B4, (const uint8_t *)&g_ImageObject_005743B0},
-    {0x005743B4, 0x005743B8, (const uint8_t *)&g_ImageObject_005743B4},
     {0x005743B8, 0x005743BC, (const uint8_t *)&g_Ws2_32_WSACleanup},
     {0x005743D8, 0x005743DC, (const uint8_t *)&g_Ws2_32_WSAGetLastError},
     {0x005743EC, 0x005743F0, (const uint8_t *)&g_Ws2_32_WSAIoctl},
-    {0x005743F0, 0x0057441C, (const uint8_t *)&g_ImageObject_005743F0},
-    {0x0057441C, 0x0057442C, (const uint8_t *)&g_ImageObject_0057441C},
-    {0x0057442C, 0x00574430, (const uint8_t *)&g_ImageObject_0057442C},
-    {0x00574430, 0x00574438, (const uint8_t *)&g_ImageObject_00574430},
-    {0x00574438, 0x0057443C, (const uint8_t *)&g_ImageObject_00574438},
-    {0x0057443C, 0x00574440, (const uint8_t *)&g_ImageObject_0057443C},
-    {0x00574440, 0x00574444, (const uint8_t *)&g_ImageObject_00574440},
     {0x00574444, 0x00574448, (const uint8_t *)&g_Ws2_32_gethostbyname},
-    {0x00574448, 0x0057444C, (const uint8_t *)&g_ImageObject_00574448},
-    {0x0057444C, 0x00574450, (const uint8_t *)&g_ImageObject_0057444C},
-    {0x00574450, 0x00574454, (const uint8_t *)&g_ImageObject_00574450},
-    {0x00574454, 0x00574458, (const uint8_t *)&g_ImageObject_00574454},
-    {0x00574458, 0x0057445C, (const uint8_t *)&g_ImageObject_00574458},
-    {0x0057445C, 0x00574460, (const uint8_t *)&g_ImageObject_0057445C},
-    {0x00574460, 0x00574464, (const uint8_t *)&g_ImageObject_00574460},
-    {0x00574464, 0x00574468, (const uint8_t *)&g_ImageObject_00574464},
-    {0x00574468, 0x0057446C, (const uint8_t *)&g_ImageObject_00574468},
-    {0x0057446C, 0x00574470, (const uint8_t *)&g_ImageObject_0057446C},
-    {0x00574470, 0x00574474, (const uint8_t *)&g_ImageObject_00574470},
-    {0x00574474, 0x00574478, (const uint8_t *)&g_ImageObject_00574474},
     {0x00574478, 0x0057447C, (const uint8_t *)&g_Ws2_32_WSAAddressToStringA},
     {0x005744A0, 0x005744A4, (const uint8_t *)&g_Ws2_32_WSAStringToAddressA},
-    {0x005744A4, 0x005744AE, (const uint8_t *)&g_ImageObject_005744A4},
-    {0x005744AE, 0x005744B4, (const uint8_t *)&g_ImageObject_005744AE},
+    {0x005744A4, 0x005744AD, (const uint8_t *)&g_Kernel32ModuleName},
+    {0x005744AE, 0x005744B4, (const uint8_t *)&g_WinmmModuleName},
     {0x005744B4, 0x005744BA, (const uint8_t *)&sz_DDRAW},
     {0x005744BA, 0x005744C1, (const uint8_t *)&dynapi_3},
     {0x005744C2, 0x005744C9, (const uint8_t *)&dynapi_4},
     {0x005744CA, 0x005744D2, (const uint8_t *)&sz_GLIDE3X},
-    {0x005744D2, 0x005744DC, (const uint8_t *)&g_ImageObject_005744D2},
+    {0x005744D2, 0x005744DB, (const uint8_t *)&g_Advapi32ModuleName},
     {0x005744DC, 0x005744E4, (const uint8_t *)&s_Wsock32ModuleName},
-    {0x005744E4, 0x005744EC, (const uint8_t *)&g_ImageObject_005744E4},
     {0x005744EC, 0x005744F9, (const uint8_t *)&dynapi_9},
-    {0x005744FA, 0x00574506, (const uint8_t *)&g_ImageObject_005744FA},
-    {0x00574506, 0x00574514, (const uint8_t *)&g_ImageObject_00574506},
-    {0x00574514, 0x00574526, (const uint8_t *)&g_ImageObject_00574514},
-    {0x00574526, 0x00574532, (const uint8_t *)&g_ImageObject_00574526},
-    {0x00574532, 0x00574540, (const uint8_t *)&g_ImageObject_00574532},
-    {0x00574540, 0x0057454E, (const uint8_t *)&g_ImageObject_00574540},
-    {0x0057454E, 0x0057455E, (const uint8_t *)&g_ImageObject_0057454E},
+    {0x005744FA, 0x00574506, (const uint8_t *)&g_BootstrapApiName_FreeLibrary},
+    {0x00574506, 0x00574514, (const uint8_t *)&g_BootstrapApiName_RegOpenKeyExA},
+    {0x00574514, 0x00574525, (const uint8_t *)&g_BootstrapApiName_RegQueryValueExA},
+    {0x00574526, 0x00574532, (const uint8_t *)&g_BootstrapApiName_RegCloseKey},
+    {0x00574532, 0x0057453F, (const uint8_t *)&g_BootstrapApiName_timeSetEvent},
+    {0x00574540, 0x0057454E, (const uint8_t *)&g_BootstrapApiName_timeKillEvent},
+    {0x0057454E, 0x0057455E, (const uint8_t *)&g_BootstrapApiName_mciSendCommandA},
     {0x0057455E, 0x0057456F, (const uint8_t *)&sz_DirectDrawCreate},
     {0x00574570, 0x00574585, (const uint8_t *)&sz_DirectDrawEnumerateA},
     {0x00574586, 0x00574599, (const uint8_t *)&dynapi_19},
@@ -18419,98 +17530,94 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x005745AC, 0x005745C2, (const uint8_t *)&dynapi_21},
     {0x005745C2, 0x005745DB, (const uint8_t *)&dynapi_22},
     {0x005745DC, 0x005745F9, (const uint8_t *)&dynapi_23},
-    {0x005745FA, 0x00574610, (const uint8_t *)&g_ImageObject_005745FA},
-    {0x00574610, 0x0057462A, (const uint8_t *)&g_ImageObject_00574610},
-    {0x0057462A, 0x0057463E, (const uint8_t *)&g_ImageObject_0057462A},
-    {0x0057463E, 0x0057465E, (const uint8_t *)&g_ImageObject_0057463E},
-    {0x0057465E, 0x00574676, (const uint8_t *)&g_ImageObject_0057465E},
-    {0x00574676, 0x00574694, (const uint8_t *)&g_ImageObject_00574676},
-    {0x00574694, 0x005746A6, (const uint8_t *)&g_ImageObject_00574694},
-    {0x005746A6, 0x005746B6, (const uint8_t *)&g_ImageObject_005746A6},
-    {0x005746B6, 0x005746CA, (const uint8_t *)&g_ImageObject_005746B6},
-    {0x005746CA, 0x005746DE, (const uint8_t *)&g_ImageObject_005746CA},
-    {0x005746DE, 0x005746F0, (const uint8_t *)&g_ImageObject_005746DE},
-    {0x005746F0, 0x00574706, (const uint8_t *)&g_ImageObject_005746F0},
-    {0x00574706, 0x00574718, (const uint8_t *)&g_ImageObject_00574706},
-    {0x00574718, 0x0057472C, (const uint8_t *)&g_ImageObject_00574718},
-    {0x0057472C, 0x0057473C, (const uint8_t *)&g_ImageObject_0057472C},
-    {0x0057473C, 0x00574754, (const uint8_t *)&g_ImageObject_0057473C},
-    {0x00574754, 0x0057476A, (const uint8_t *)&g_ImageObject_00574754},
-    {0x0057476A, 0x00574778, (const uint8_t *)&g_ImageObject_0057476A},
-    {0x00574778, 0x0057478C, (const uint8_t *)&g_ImageObject_00574778},
-    {0x0057478C, 0x005747A6, (const uint8_t *)&g_ImageObject_0057478C},
-    {0x005747A6, 0x005747BC, (const uint8_t *)&g_ImageObject_005747A6},
-    {0x005747BC, 0x005747CC, (const uint8_t *)&g_ImageObject_005747BC},
-    {0x005747CC, 0x005747DC, (const uint8_t *)&g_ImageObject_005747CC},
-    {0x005747DC, 0x005747EA, (const uint8_t *)&g_ImageObject_005747DC},
-    {0x005747EA, 0x00574802, (const uint8_t *)&g_ImageObject_005747EA},
-    {0x00574802, 0x00574812, (const uint8_t *)&g_ImageObject_00574802},
-    {0x00574812, 0x00574820, (const uint8_t *)&g_ImageObject_00574812},
-    {0x00574820, 0x00574830, (const uint8_t *)&g_ImageObject_00574820},
-    {0x00574830, 0x00574844, (const uint8_t *)&g_ImageObject_00574830},
-    {0x00574844, 0x0057485A, (const uint8_t *)&g_ImageObject_00574844},
-    {0x0057485A, 0x0057487A, (const uint8_t *)&g_ImageObject_0057485A},
-    {0x0057487A, 0x00574886, (const uint8_t *)&g_ImageObject_0057487A},
-    {0x00574886, 0x0057489C, (const uint8_t *)&g_ImageObject_00574886},
-    {0x0057489C, 0x005748A8, (const uint8_t *)&g_ImageObject_0057489C},
-    {0x005748A8, 0x005748B4, (const uint8_t *)&g_ImageObject_005748A8},
-    {0x005748B4, 0x005748C8, (const uint8_t *)&g_ImageObject_005748B4},
-    {0x005748C8, 0x005748D6, (const uint8_t *)&g_ImageObject_005748C8},
-    {0x005748D6, 0x005748E4, (const uint8_t *)&g_ImageObject_005748D6},
-    {0x005748E4, 0x005748EE, (const uint8_t *)&g_ImageObject_005748E4},
-    {0x005748EE, 0x00574902, (const uint8_t *)&g_ImageObject_005748EE},
-    {0x00574902, 0x00574912, (const uint8_t *)&g_ImageObject_00574902},
-    {0x00574912, 0x00574926, (const uint8_t *)&g_ImageObject_00574912},
-    {0x00574926, 0x00574940, (const uint8_t *)&g_ImageObject_00574926},
-    {0x00574940, 0x00574950, (const uint8_t *)&g_ImageObject_00574940},
-    {0x00574950, 0x00574964, (const uint8_t *)&g_ImageObject_00574950},
-    {0x00574964, 0x0057497E, (const uint8_t *)&g_ImageObject_00574964},
-    {0x0057497E, 0x00574992, (const uint8_t *)&g_ImageObject_0057497E},
-    {0x00574992, 0x005749A8, (const uint8_t *)&g_ImageObject_00574992},
-    {0x005749A8, 0x005749BE, (const uint8_t *)&g_ImageObject_005749A8},
-    {0x005749BE, 0x005749CC, (const uint8_t *)&g_ImageObject_005749BE},
-    {0x005749CC, 0x005749E0, (const uint8_t *)&g_ImageObject_005749CC},
-    {0x005749E0, 0x005749F0, (const uint8_t *)&g_ImageObject_005749E0},
-    {0x005749F0, 0x00574A06, (const uint8_t *)&g_ImageObject_005749F0},
-    {0x00574A06, 0x00574A1C, (const uint8_t *)&g_ImageObject_00574A06},
-    {0x00574A1C, 0x00574A32, (const uint8_t *)&g_ImageObject_00574A1C},
-    {0x00574A32, 0x00574A44, (const uint8_t *)&g_ImageObject_00574A32},
-    {0x00574A44, 0x00574A50, (const uint8_t *)&g_ImageObject_00574A44},
-    {0x00574A50, 0x00574A64, (const uint8_t *)&g_ImageObject_00574A50},
-    {0x00574A64, 0x00574A74, (const uint8_t *)&g_ImageObject_00574A64},
-    {0x00574A74, 0x00574A84, (const uint8_t *)&g_ImageObject_00574A74},
-    {0x00574A84, 0x00574A96, (const uint8_t *)&g_ImageObject_00574A84},
-    {0x00574A96, 0x00574AA8, (const uint8_t *)&g_ImageObject_00574A96},
-    {0x00574AA8, 0x00574AC2, (const uint8_t *)&g_ImageObject_00574AA8},
-    {0x00574AC2, 0x00574AD8, (const uint8_t *)&g_ImageObject_00574AC2},
-    {0x00574AD8, 0x00574AF0, (const uint8_t *)&g_ImageObject_00574AD8},
-    {0x00574AF0, 0x00574B04, (const uint8_t *)&g_ImageObject_00574AF0},
-    {0x00574B04, 0x00574B16, (const uint8_t *)&g_ImageObject_00574B04},
-    {0x00574B16, 0x00574B2E, (const uint8_t *)&g_ImageObject_00574B16},
-    {0x00574B2E, 0x00574B46, (const uint8_t *)&g_ImageObject_00574B2E},
-    {0x00574B46, 0x00574B64, (const uint8_t *)&g_ImageObject_00574B46},
-    {0x00574B64, 0x00574B88, (const uint8_t *)&g_ImageObject_00574B64},
-    {0x00574B88, 0x00574B9E, (const uint8_t *)&g_ImageObject_00574B88},
-    {0x00574B9E, 0x00574BBC, (const uint8_t *)&g_ImageObject_00574B9E},
-    {0x00574BBC, 0x00574BD0, (const uint8_t *)&g_ImageObject_00574BBC},
-    {0x00574BD0, 0x00574BE6, (const uint8_t *)&g_ImageObject_00574BD0},
-    {0x00574BE6, 0x00574BFA, (const uint8_t *)&g_ImageObject_00574BE6},
-    {0x00574BFA, 0x00574C0E, (const uint8_t *)&g_ImageObject_00574BFA},
-    {0x00574C0E, 0x00574C22, (const uint8_t *)&g_ImageObject_00574C0E},
-    {0x00574C22, 0x00574C34, (const uint8_t *)&g_ImageObject_00574C22},
-    {0x00574C34, 0x00574C4E, (const uint8_t *)&g_ImageObject_00574C34},
-    {0x00574C4E, 0x00574C60, (const uint8_t *)&g_ImageObject_00574C4E},
-    {0x00574C60, 0x00574C70, (const uint8_t *)&g_ImageObject_00574C60},
-    {0x00574C70, 0x00574C8C, (const uint8_t *)&g_ImageObject_00574C70},
-    {0x00574C8C, 0x00574CA0, (const uint8_t *)&g_ImageObject_00574C8C},
-    {0x00574CA0, 0x00574CB0, (const uint8_t *)&g_ImageObject_00574CA0},
-    {0x00574CB0, 0x00574CC0, (const uint8_t *)&g_ImageObject_00574CB0},
-    {0x00574CC0, 0x00574CCE, (const uint8_t *)&g_ImageObject_00574CC0},
-    {0x00574CCE, 0x00574CE2, (const uint8_t *)&g_ImageObject_00574CCE},
-    {0x00574CE2, 0x00574CF8, (const uint8_t *)&g_ImageObject_00574CE2},
-    {0x00574CF8, 0x00574D10, (const uint8_t *)&g_ImageObject_00574CF8},
-    {0x00574D10, 0x00574D26, (const uint8_t *)&g_ImageObject_00574D10},
-    {0x00574D26, 0x00574D40, (const uint8_t *)&g_ImageObject_00574D26},
+    {0x005745FA, 0x0057460F, (const uint8_t *)&g_GlideImportName_grAADrawTriangle},
+    {0x00574610, 0x00574629, (const uint8_t *)&g_GlideImportName_grAlphaBlendFunction},
+    {0x0057462A, 0x0057463D, (const uint8_t *)&g_GlideImportName_grAlphaCombine},
+    {0x0057463E, 0x0057465E, (const uint8_t *)&g_GlideImportName_grAlphaControlsITRGBLighting},
+    {0x0057465E, 0x00574675, (const uint8_t *)&g_GlideImportName_grAlphaTestFunction},
+    {0x00574676, 0x00574693, (const uint8_t *)&g_GlideImportName_grAlphaTestReferenceValue},
+    {0x00574694, 0x005746A6, (const uint8_t *)&g_GlideImportName_grBufferClear},
+    {0x005746A6, 0x005746B6, (const uint8_t *)&g_GlideImportName_grBufferSwap},
+    {0x005746B6, 0x005746C9, (const uint8_t *)&g_GlideImportName_grChromakeyMode},
+    {0x005746CA, 0x005746DE, (const uint8_t *)&g_GlideImportName_grChromakeyValue},
+    {0x00574706, 0x00574717, (const uint8_t *)&g_GlideImportName_grClipWindow},
+    {0x00574718, 0x0057472B, (const uint8_t *)&g_GlideImportName_grColorCombine},
+    {0x0057472C, 0x0057473B, (const uint8_t *)&g_GlideImportName_grColorMask},
+    {0x0057473C, 0x00574754, (const uint8_t *)&g_GlideImportName_grConstantColorValue},
+    {0x00574754, 0x00574769, (const uint8_t *)&g_GlideImportName_grCoordinateSpace},
+    {0x0057476A, 0x00574778, (const uint8_t *)&g_GlideImportName_grCullMode},
+    {0x00574778, 0x0057478C, (const uint8_t *)&g_GlideImportName_grDepthBiasLevel},
+    {0x0057478C, 0x005747A5, (const uint8_t *)&g_GlideImportName_grDepthBufferFunction},
+    {0x005747A6, 0x005747BB, (const uint8_t *)&g_GlideImportName_grDepthBufferMode},
+    {0x005747BC, 0x005747CB, (const uint8_t *)&g_GlideImportName_grDepthMask},
+    {0x005747CC, 0x005747DC, (const uint8_t *)&g_GlideImportName_grDepthRange},
+    {0x005747DC, 0x005747E9, (const uint8_t *)&g_GlideImportName_grDisable},
+    {0x005747EA, 0x00574801, (const uint8_t *)&g_GlideImportName_grDisableAllEffects},
+    {0x00574802, 0x00574812, (const uint8_t *)&g_GlideImportName_grDitherMode},
+    {0x00574812, 0x00574820, (const uint8_t *)&g_GlideImportName_grDrawLine},
+    {0x00574820, 0x0057482F, (const uint8_t *)&g_GlideImportName_grDrawPoint},
+    {0x00574830, 0x00574843, (const uint8_t *)&g_GlideImportName_grDrawTriangle},
+    {0x00574844, 0x0057485A, (const uint8_t *)&g_GlideImportName_grDrawVertexArray},
+    {0x0057485A, 0x0057487A, (const uint8_t *)&g_GlideImportName_grDrawVertexArrayContiguous},
+    {0x0057487A, 0x00574886, (const uint8_t *)&g_GlideImportName_grEnable},
+    {0x00574886, 0x0057489C, (const uint8_t *)&g_GlideImportName_grErrorSetCallback},
+    {0x0057489C, 0x005748A8, (const uint8_t *)&g_GlideImportName_grFinish},
+    {0x005748A8, 0x005748B3, (const uint8_t *)&g_GlideImportName_grFlush},
+    {0x005748B4, 0x005748C7, (const uint8_t *)&g_GlideImportName_grFogColorValue},
+    {0x005748C8, 0x005748D5, (const uint8_t *)&g_GlideImportName_grFogMode},
+    {0x005748D6, 0x005748E4, (const uint8_t *)&g_GlideImportName_grFogTable},
+    {0x005748E4, 0x005748EE, (const uint8_t *)&g_GlideImportName_grGet},
+    {0x005748EE, 0x00574902, (const uint8_t *)&g_GlideImportName_grGetProcAddress},
+    {0x00574902, 0x00574911, (const uint8_t *)&g_GlideImportName_grGetString},
+    {0x00574912, 0x00574925, (const uint8_t *)&g_GlideImportName_grGlideGetState},
+    {0x00574926, 0x00574940, (const uint8_t *)&g_GlideImportName_grGlideGetVertexLayout},
+    {0x00574940, 0x0057494F, (const uint8_t *)&g_GlideImportName_grGlideInit},
+    {0x00574950, 0x00574963, (const uint8_t *)&g_GlideImportName_grGlideSetState},
+    {0x00574964, 0x0057497E, (const uint8_t *)&g_GlideImportName_grGlideSetVertexLayout},
+    {0x0057497E, 0x00574991, (const uint8_t *)&g_GlideImportName_grGlideShutdown},
+    {0x00574992, 0x005749A8, (const uint8_t *)&g_GlideImportName_grLfbConstantAlpha},
+    {0x005749A8, 0x005749BE, (const uint8_t *)&g_GlideImportName_grLfbConstantDepth},
+    {0x005749BE, 0x005749CC, (const uint8_t *)&g_GlideImportName_grLfbLock},
+    {0x005749CC, 0x005749E0, (const uint8_t *)&g_GlideImportName_grLfbReadRegion},
+    {0x005749E0, 0x005749EF, (const uint8_t *)&g_GlideImportName_grLfbUnlock},
+    {0x005749F0, 0x00574A05, (const uint8_t *)&g_GlideImportName_grLfbWriteRegion},
+    {0x00574A06, 0x00574A1B, (const uint8_t *)&g_GlideImportName_grLoadGammaTable},
+    {0x00574A1C, 0x00574A32, (const uint8_t *)&g_GlideImportName_grQueryResolutions},
+    {0x00574A32, 0x00574A44, (const uint8_t *)&g_GlideImportName_grRenderBuffer},
+    {0x00574A44, 0x00574A4F, (const uint8_t *)&g_GlideImportName_grReset},
+    {0x00574A50, 0x00574A63, (const uint8_t *)&g_GlideImportName_grSelectContext},
+    {0x00574A64, 0x00574A73, (const uint8_t *)&g_GlideImportName_grSstOrigin},
+    {0x00574A74, 0x00574A83, (const uint8_t *)&g_GlideImportName_grSstSelect},
+    {0x00574A84, 0x00574A95, (const uint8_t *)&g_GlideImportName_grSstWinClose},
+    {0x00574A96, 0x00574AA7, (const uint8_t *)&g_GlideImportName_grSstWinOpen},
+    {0x00574AA8, 0x00574AC1, (const uint8_t *)&g_GlideImportName_grTexCalcMemRequired},
+    {0x00574AF0, 0x00574B03, (const uint8_t *)&g_GlideImportName_grTexClampMode},
+    {0x00574B04, 0x00574B15, (const uint8_t *)&g_GlideImportName_grTexCombine},
+    {0x00574B16, 0x00574B2D, (const uint8_t *)&g_GlideImportName_grTexDetailControl},
+    {0x00574B2E, 0x00574B46, (const uint8_t *)&g_GlideImportName_grTexDownloadMipMap},
+    {0x00574B46, 0x00574B63, (const uint8_t *)&g_GlideImportName_grTexDownloadMipMapLevel},
+    {0x00574B64, 0x00574B88, (const uint8_t *)&g_GlideImportName_grTexDownloadMipMapLevelPartial},
+    {0x00574B88, 0x00574B9E, (const uint8_t *)&g_GlideImportName_grTexDownloadTable},
+    {0x00574B9E, 0x00574BBC, (const uint8_t *)&g_GlideImportName_grTexDownloadTablePartial},
+    {0x00574BBC, 0x00574BD0, (const uint8_t *)&g_GlideImportName_grTexFilterMode},
+    {0x00574BD0, 0x00574BE5, (const uint8_t *)&g_GlideImportName_grTexLodBiasValue},
+    {0x00574BE6, 0x00574BF9, (const uint8_t *)&g_GlideImportName_grTexMaxAddress},
+    {0x00574BFA, 0x00574C0D, (const uint8_t *)&g_GlideImportName_grTexMinAddress},
+    {0x00574C0E, 0x00574C22, (const uint8_t *)&g_GlideImportName_grTexMipMapMode},
+    {0x00574C22, 0x00574C34, (const uint8_t *)&g_GlideImportName_grTexMultibase},
+    {0x00574C34, 0x00574C4E, (const uint8_t *)&g_GlideImportName_grTexMultibaseAddress},
+    {0x00574C4E, 0x00574C5F, (const uint8_t *)&g_GlideImportName_grTexNCCTable},
+    {0x00574C60, 0x00574C70, (const uint8_t *)&g_GlideImportName_grTexSource},
+    {0x00574C70, 0x00574C8B, (const uint8_t *)&g_GlideImportName_grTexTextureMemRequired},
+    {0x00574C8C, 0x00574C9F, (const uint8_t *)&g_GlideImportName_grVertexLayout},
+    {0x00574CA0, 0x00574CAF, (const uint8_t *)&g_GlideImportName_grViewport},
+    {0x00574CB0, 0x00574CC0, (const uint8_t *)&g_GlideImportName_gu3dfGetInfo},
+    {0x00574CC0, 0x00574CCD, (const uint8_t *)&g_GlideImportName_gu3dfLoad},
+    {0x00574CCE, 0x00574CE2, (const uint8_t *)&g_GlideImportName_guFogGenerateExp},
+    {0x00574CE2, 0x00574CF7, (const uint8_t *)&g_GlideImportName_guFogGenerateExp2},
+    {0x00574CF8, 0x00574D10, (const uint8_t *)&g_GlideImportName_guFogGenerateLinear},
+    {0x00574D10, 0x00574D26, (const uint8_t *)&g_GlideImportName_guFogTableIndexToW},
+    {0x00574D26, 0x00574D3F, (const uint8_t *)&g_GlideImportName_guGammaCorrectionRGB},
     {0x00574D40, 0x00574D47, (const uint8_t *)&s_Wsock32Export_accept},
     {0x00574D48, 0x00574D4D, (const uint8_t *)&s_Wsock32Export_bind},
     {0x00574D4E, 0x00574D5A, (const uint8_t *)&s_Wsock32Export_closesocket},
@@ -18554,94 +17661,9 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00574F42, 0x00574F52, (const uint8_t *)&s_Wsock32Export_WSAGetLastError},
     {0x00574F52, 0x00574F60, (const uint8_t *)&s_Wsock32Export_WSAIsBlocking},
     {0x00574F60, 0x00574F73, (const uint8_t *)&s_Wsock32Export_WSASetBlockingHook},
-    {0x00574F74, 0x00574F84, (const uint8_t *)&g_ImageObject_00574F74},
     {0x00574F84, 0x00574F8F, (const uint8_t *)&s_Wsock32Export_WSAStartup},
     {0x00574F90, 0x00574FA6, (const uint8_t *)&s_Wsock32Export_WSAUnhookBlockingHook},
-    {0x00574FA6, 0x00574FAE, (const uint8_t *)&g_ImageObject_00574FA6},
-    {0x00574FAE, 0x00574FB4, (const uint8_t *)&g_ImageObject_00574FAE},
-    {0x00574FB4, 0x00574FC0, (const uint8_t *)&g_ImageObject_00574FB4},
-    {0x00574FC0, 0x00574FC8, (const uint8_t *)&g_ImageObject_00574FC0},
-    {0x00574FC8, 0x00574FD4, (const uint8_t *)&g_ImageObject_00574FC8},
-    {0x00574FD4, 0x00574FE0, (const uint8_t *)&g_ImageObject_00574FD4},
-    {0x00574FE0, 0x00574FEC, (const uint8_t *)&g_ImageObject_00574FE0},
-    {0x00574FEC, 0x00574FF2, (const uint8_t *)&g_ImageObject_00574FEC},
-    {0x00574FF2, 0x00574FF8, (const uint8_t *)&g_ImageObject_00574FF2},
-    {0x00574FF8, 0x00575004, (const uint8_t *)&g_ImageObject_00574FF8},
-    {0x00575004, 0x0057500C, (const uint8_t *)&g_ImageObject_00575004},
-    {0x0057500C, 0x00575012, (const uint8_t *)&g_ImageObject_0057500C},
-    {0x00575012, 0x00575018, (const uint8_t *)&g_ImageObject_00575012},
-    {0x00575018, 0x0057501E, (const uint8_t *)&g_ImageObject_00575018},
-    {0x0057501E, 0x00575028, (const uint8_t *)&g_ImageObject_0057501E},
-    {0x00575028, 0x00575030, (const uint8_t *)&g_ImageObject_00575028},
-    {0x00575030, 0x00575036, (const uint8_t *)&g_ImageObject_00575030},
-    {0x00575036, 0x0057503E, (const uint8_t *)&g_ImageObject_00575036},
-    {0x0057503E, 0x0057504A, (const uint8_t *)&g_ImageObject_0057503E},
-    {0x0057504A, 0x00575054, (const uint8_t *)&g_ImageObject_0057504A},
-    {0x00575054, 0x0057505C, (const uint8_t *)&g_ImageObject_00575054},
-    {0x0057505C, 0x00575066, (const uint8_t *)&g_ImageObject_0057505C},
-    {0x00575066, 0x00575076, (const uint8_t *)&g_ImageObject_00575066},
-    {0x00575076, 0x0057508C, (const uint8_t *)&g_ImageObject_00575076},
-    {0x0057508C, 0x00575098, (const uint8_t *)&g_ImageObject_0057508C},
-    {0x00575098, 0x005750A6, (const uint8_t *)&g_ImageObject_00575098},
-    {0x005750A6, 0x005750B2, (const uint8_t *)&g_ImageObject_005750A6},
-    {0x005750B2, 0x005750C2, (const uint8_t *)&g_ImageObject_005750B2},
-    {0x005750C2, 0x005750D6, (const uint8_t *)&g_ImageObject_005750C2},
-    {0x005750D6, 0x005750EC, (const uint8_t *)&g_ImageObject_005750D6},
-    {0x005750EC, 0x005750FE, (const uint8_t *)&g_ImageObject_005750EC},
-    {0x005750FE, 0x0057510E, (const uint8_t *)&g_ImageObject_005750FE},
-    {0x0057510E, 0x0057511E, (const uint8_t *)&g_ImageObject_0057510E},
-    {0x0057511E, 0x00575136, (const uint8_t *)&g_ImageObject_0057511E},
-    {0x00575136, 0x00575146, (const uint8_t *)&g_ImageObject_00575136},
-    {0x00575146, 0x00575150, (const uint8_t *)&g_ImageObject_00575146},
-    {0x00575150, 0x0057515A, (const uint8_t *)&g_ImageObject_00575150},
-    {0x0057515A, 0x00575164, (const uint8_t *)&g_ImageObject_0057515A},
-    {0x00575164, 0x00575172, (const uint8_t *)&g_ImageObject_00575164},
-    {0x00575172, 0x0057517E, (const uint8_t *)&g_ImageObject_00575172},
-    {0x0057517E, 0x00575188, (const uint8_t *)&g_ImageObject_0057517E},
-    {0x00575188, 0x00575192, (const uint8_t *)&g_ImageObject_00575188},
-    {0x00575192, 0x0057519A, (const uint8_t *)&g_ImageObject_00575192},
-    {0x0057519A, 0x005751AC, (const uint8_t *)&g_ImageObject_0057519A},
-    {0x005751AC, 0x005751B8, (const uint8_t *)&g_ImageObject_005751AC},
-    {0x005751B8, 0x005751C6, (const uint8_t *)&g_ImageObject_005751B8},
-    {0x005751C6, 0x005751CE, (const uint8_t *)&g_ImageObject_005751C6},
-    {0x005751CE, 0x005751E0, (const uint8_t *)&g_ImageObject_005751CE},
-    {0x005751E0, 0x005751EA, (const uint8_t *)&g_ImageObject_005751E0},
-    {0x005751EA, 0x005751FE, (const uint8_t *)&g_ImageObject_005751EA},
-    {0x005751FE, 0x0057520A, (const uint8_t *)&g_ImageObject_005751FE},
-    {0x0057520A, 0x0057521A, (const uint8_t *)&g_ImageObject_0057520A},
-    {0x0057521A, 0x00575226, (const uint8_t *)&g_ImageObject_0057521A},
-    {0x00575226, 0x00575232, (const uint8_t *)&g_ImageObject_00575226},
-    {0x00575232, 0x00575248, (const uint8_t *)&g_ImageObject_00575232},
-    {0x00575248, 0x00575262, (const uint8_t *)&g_ImageObject_00575248},
-    {0x00575262, 0x0057526C, (const uint8_t *)&g_ImageObject_00575262},
-    {0x0057526C, 0x00575276, (const uint8_t *)&g_ImageObject_0057526C},
-    {0x00575276, 0x00575284, (const uint8_t *)&g_ImageObject_00575276},
-    {0x00575284, 0x00575292, (const uint8_t *)&g_ImageObject_00575284},
-    {0x00575292, 0x0057529E, (const uint8_t *)&g_ImageObject_00575292},
-    {0x0057529E, 0x005752AE, (const uint8_t *)&g_ImageObject_0057529E},
-    {0x005752AE, 0x005752C0, (const uint8_t *)&g_ImageObject_005752AE},
-    {0x005752C0, 0x005752CE, (const uint8_t *)&g_ImageObject_005752C0},
-    {0x005752CE, 0x005752DC, (const uint8_t *)&g_ImageObject_005752CE},
-    {0x005752DC, 0x005752F2, (const uint8_t *)&g_ImageObject_005752DC},
-    {0x005752F2, 0x00575308, (const uint8_t *)&g_ImageObject_005752F2},
-    {0x00575308, 0x00575320, (const uint8_t *)&g_ImageObject_00575308},
-    {0x00575320, 0x0057533A, (const uint8_t *)&g_ImageObject_00575320},
-    {0x0057533A, 0x00575350, (const uint8_t *)&g_ImageObject_0057533A},
-    {0x00575350, 0x00575366, (const uint8_t *)&g_ImageObject_00575350},
-    {0x00575366, 0x0057537C, (const uint8_t *)&g_ImageObject_00575366},
-    {0x0057537C, 0x00575390, (const uint8_t *)&g_ImageObject_0057537C},
-    {0x00575390, 0x005753AC, (const uint8_t *)&g_ImageObject_00575390},
-    {0x005753AC, 0x005753C4, (const uint8_t *)&g_ImageObject_005753AC},
-    {0x005753C4, 0x005753E6, (const uint8_t *)&g_ImageObject_005753C4},
-    {0x005753E6, 0x005753FE, (const uint8_t *)&g_ImageObject_005753E6},
-    {0x005753FE, 0x00575416, (const uint8_t *)&g_ImageObject_005753FE},
-    {0x00575416, 0x0057542A, (const uint8_t *)&g_ImageObject_00575416},
-    {0x0057542A, 0x00575440, (const uint8_t *)&g_ImageObject_0057542A},
-    {0x00575440, 0x00575456, (const uint8_t *)&g_ImageObject_00575440},
-    {0x00575456, 0x00575466, (const uint8_t *)&g_ImageObject_00575456},
-    {0x00575466, 0x00575480, (const uint8_t *)&g_ImageObject_00575466},
     {0x00575480, 0x00575880, (const uint8_t *)&g_FatalErrorNarrowBuffer},
-    {0x0057594C, 0x00575950, (const uint8_t *)&g_ImageObject_0057594C},
     {0x00575950, 0x00575954, (const uint8_t *)&g_Win32FileBytesTransferred},
     {0x00575954, 0x00575A94, (const uint8_t *)&g_Win32FindDataScratch},
     {0x00575A94, 0x00575A98, (const uint8_t *)&g_FileSystemInitComputerNameCapacityOrConfigCursor},
@@ -18649,8 +17671,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00575A9C, 0x00575C9C, (const uint8_t *)&g_Win32PathScratch},
     {0x00575C9C, 0x00575CA0, (const uint8_t *)&g_Win32DriveRootPathScratchA},
     {0x00575CA0, 0x00575CA7, (const uint8_t *)g_Win32DriveDevicePathA},
-    {0x00576720, 0x00576784, (const uint8_t *)&g_ImageObject_00576720},
-    {0x00576B04, 0x00576B10, (const uint8_t *)&g_ImageObject_00576B04},
     {0x00576B10, 0x00576B14, (const uint8_t *)&g_DirectInput},
     {0x00576B14, 0x00576B18, (const uint8_t *)&g_MouseDevice},
     {0x00576B18, 0x00576B28, (const uint8_t *)&GUID_SysMouse_Local},
@@ -18670,7 +17690,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00576C1C, 0x00576C20, (const uint8_t *)&g_MouseEventsProcessed},
     {0x00576C20, 0x00576C24, (const uint8_t *)&g_DirectInputMouseChainedSetDisplayMode},
     {0x00576C24, 0x00576C28, (const uint8_t *)&g_DirectInputMouseRefreshCountdown},
-    {0x00577BFC, 0x00577C00, (const uint8_t *)&g_ImageObject_00577BFC},
     {0x00577C00, 0x00577C10, (const uint8_t *)&IID_IDirectDraw2_Local},
     {0x00577C10, 0x00577C20, (const uint8_t *)&IID_IDirectDrawSurface3_Local},
     {0x00577C20, 0x00577C30, (const uint8_t *)&IID_IDirect3D2_Local},
@@ -18719,7 +17738,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00578070, 0x00578074, (const uint8_t *)&g_ActiveTextureUploads},
     {0x00578074, 0x00578078, (const uint8_t *)&g_GraphicsEnumerateAllDevicesFlag},
     {0x00578078, 0x0057807F, (const uint8_t *)&g_CommandLineOptionD3dAll},
-    {0x0057ECC8, 0x0057ECD0, (const uint8_t *)&g_ImageObject_0057ECC8},
     {0x0057ECD0, 0x0057ECE0, (const uint8_t *)&g_GlideEnumerationResolutionQuery},
     {0x0057ECE0, 0x0057ECF0, (const uint8_t *)&g_GlideSelectedResolutionQuery},
     {0x0057ECF0, 0x0057ED14, (const uint8_t *)&g_GlideRefreshRatesHz},
@@ -18744,7 +17762,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0057EE7C, 0x0057EE80, (const uint8_t *)&g_GlideSecondBufferOffset},
     {0x0057EE80, 0x0057EE84, (const uint8_t *)&g_GlideSecondBufferBase},
     {0x0057EE84, 0x0057EE8A, (const uint8_t *)&g_CommandLineOptionGlide},
-    {0x00582ED8, 0x00582EE0, (const uint8_t *)&g_ImageObject_00582ED8},
     {0x00582EE0, 0x00582EE4, (const uint8_t *)&g_DirectSound},
     {0x00582EE4, 0x00582EE8, (const uint8_t *)&g_PrimarySoundBuffer},
     {0x00582EE8, 0x00582EEC, (const uint8_t *)&g_PrimaryVolume},
@@ -18754,7 +17771,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00582F24, 0x00582F28, (const uint8_t *)&g_DirectSoundVoiceSetRegistry},
     {0x00582F28, 0x00582F2E, (const uint8_t *)&g_CommandLineOptionSound},
     {0x00582F2E, 0x00583132, (const uint8_t *)g_DirectSoundGainAttenuation},
-    {0x00583D28, 0x00583D60, (const uint8_t *)&g_ImageObject_00583D28},
     {0x00583D60, 0x00583D64, (const uint8_t *)&g_NetworkBackendMode},
     {0x00583D64, 0x00583EF2, (const uint8_t *)&g_WinSockStartupData},
     {0x00583EF2, 0x00583EF6, (const uint8_t *)&g_NetworkFallbackSocket},
@@ -18770,8 +17786,6 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00583F40, 0x00584040, (const uint8_t *)g_NetworkEndpointTextScratchA},
     {0x00584040, 0x00584078, (const uint8_t *)&NetworkBackendInstanceDescriptorPrefix_00584040},
     {0x00584078, 0x0058407B, (const uint8_t *)&s_CommandLineOptionIp},
-    {0x00584E44, 0x00584E50, (const uint8_t *)&g_ImageObject_00584E44},
-    {0x005856A0, 0x005856B0, (const uint8_t *)&g_ImageObject_005856A0},
     {0x005856B0, 0x005856B4, (const uint8_t *)&g_hInstance},
     {0x005856B4, 0x005856B8, (const uint8_t *)&g_MainWindow},
     {0x005856B8, 0x005856BC, (const uint8_t *)&g_WindowDestroyDepth},
@@ -18784,9 +17798,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00585D2B, 0x00585D3C, (const uint8_t *)&sz_MainWindowClass},
     {0x00586950, 0x00586960, (const uint8_t *)&g_LocaleInfoScratch},
     {0x00586A70, 0x00586B70, (const uint8_t *)&g_LocaleSystemState},
-    {0x005873BC, 0x00587400, (const uint8_t *)&g_ImageObject_005873BC},
-    {0x00587400, 0x0058B400, (const uint8_t *)&g_ImageObject_00587400},
-    {0x0058B400, 0x0058C000, (const uint8_t *)&g_ImageObject_0058B400},
+    {0x00587400, 0x0058C000, (const uint8_t *)&g_ArenaLinearStorage},
 };
 
 const ThandorImagePointer g_ThandorImagePointers[] = {
