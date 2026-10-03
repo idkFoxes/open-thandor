@@ -14,9 +14,9 @@ extern uint64_t g_SoftwareBilinearPackedByteClampMask; /* 0041F688 g_SoftwareBil
 
 extern SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants; /* 0041F6E0 g_SoftwarePixelMmxConstants */
 
-extern SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[256]; /* 0041FF20 g_SoftwareBilinearForwardFactors */
+extern SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257]; /* 0041FF20 g_SoftwareBilinearForwardFactors */
 
-extern SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[256]; /* 00420F20 g_SoftwareBilinearInverseFactors */
+extern SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257]; /* 00420F20 g_SoftwareBilinearInverseFactors */
 
 extern SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256]; /* 00421720 g_SoftwareBlendAlphaFactors */
 

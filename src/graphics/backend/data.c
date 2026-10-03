@@ -18,7 +18,7 @@ __declspec(align(8)) uint64_t g_SoftwareBilinearPackedByteClampMask = 0xFFFFFFFF
 __declspec(align(16)) SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants = {0};
 
 /* 0041FF20 g_SoftwareBilinearForwardFactors */
-__declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[256] = {
+__declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257] = {
     /*   0 */ {0},
     /*   1 */ {.blue = 64, .green = 64, .red = 64, .alpha = 64},
     /*   2 */ {.blue = 128, .green = 128, .red = 128, .alpha = 128},
@@ -274,10 +274,14 @@ __declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[256
     /* 252 */ {.blue = 16191, .green = 16191, .red = 16191, .alpha = 16191},
     /* 253 */ {.blue = 16255, .green = 16255, .red = 16255, .alpha = 16255},
     /* 254 */ {.blue = 16319, .green = 16319, .red = 16319, .alpha = 16319},
-    /* 255 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16383}};
+    /* 255 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16383},
+    /* 256: Original quirk: WorldLightingRuntime_UpdateInterpolatedTerrainLighting reads index 256 when
+       the lighting cycle phase is 0 (cosine exactly 1.0); in the original that read the first entry
+       of g_UiScalerFirstPixelWeights, which followed the table, so its value is kept here. */
+    {.blue = 16384, .green = 16384, .red = 16384, .alpha = 16384}};
 
 /* 00420F20 g_SoftwareBilinearInverseFactors */
-__declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[256] = {
+__declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257] = {
     /*   0 */ {.blue = 16448, .green = 16448, .red = 16448, .alpha = 16448},
     /*   1 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16383},
     /*   2 */ {.blue = 16319, .green = 16319, .red = 16319, .alpha = 16319},
@@ -533,7 +537,11 @@ __declspec(align(16)) SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[256
     /* 252 */ {.blue = 257, .green = 257, .red = 257, .alpha = 257},
     /* 253 */ {.blue = 192, .green = 192, .red = 192, .alpha = 192},
     /* 254 */ {.blue = 128, .green = 128, .red = 128, .alpha = 128},
-    /* 255 */ {.blue = 64, .green = 64, .red = 64, .alpha = 64}};
+    /* 255 */ {.blue = 64, .green = 64, .red = 64, .alpha = 64},
+    /* 256: Original quirk: WorldLightingRuntime_UpdateInterpolatedTerrainLighting reads index 256 when
+       the lighting cycle phase is 0 (cosine exactly 1.0); in the original that read the first entry
+       of g_SoftwareBlendAlphaFactors, which followed the table, so its value is kept here. */
+    {0}};
 
 /* 00421720 g_SoftwareBlendAlphaFactors */
 __declspec(align(16)) SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256] = {
