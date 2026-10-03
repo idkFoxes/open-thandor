@@ -67,9 +67,9 @@
 
 void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
 
-bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
+Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
-bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
+Bool8 GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent);
 
 GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint);
 

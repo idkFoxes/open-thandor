@@ -176,7 +176,7 @@ void UiSpriteButtonControl_NonRightPress
   UiSelectableStateFlags *pressStateFlagsField;
   UiSelectableStateFlags *selectionStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
-  bool queueAction;
+  Bool8 queueAction;
 
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
@@ -294,7 +294,7 @@ void UiSpriteButtonControl_NonRightDrag
           UiSpriteButtonControl *control)
 
 {
-  bool pointerInside;
+  Bool8 pointerInside;
 
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
     return;
@@ -356,7 +356,7 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSpriteButtonControl *control)
 
 {
-  bool spritePixelHit;
+  Bool8 spritePixelHit;
 
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
     return UI_NODE_NONE;
@@ -404,7 +404,7 @@ void UiImageActionControl_DrawImageAndChildren
   uint32_t horizontalMargin;
   int imageLeft;
   int imageTop;
-  bool accessFailed;
+  Bool8 accessFailed;
 
   if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 && control->textureSource != NULL) {
     accessFailed = g_GraphicsFramebufferBeginAccess();
@@ -499,7 +499,7 @@ void UiImageActionControl_EnqueueSecondaryAction
    UI_IMAGE_ACTION_KEY_ACTIVATES any other key queues primaryActionId, like a left click.
    Returns false when the key was consumed, true to pass it on.
 */
-bool UiImageActionControl_HandleKeyboardActivation
+Bool8 UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control)
 
 {

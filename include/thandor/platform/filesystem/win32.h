@@ -35,7 +35,7 @@ uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path);
 
 void __cdecl Win32FileSystem_RestoreInitialDirectory(void);
 
-bool Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter);
+Bool8 Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter);
 
 uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uint16_t *path);
 
@@ -43,7 +43,7 @@ uint32_t FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source,uin
 uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle);
 
 /* false (*outPosition 0) when the position cannot be read */
-bool Win32File_GetPosition(void *handle,uint32_t *outPosition);
+Bool8 Win32File_GetPosition(void *handle,uint32_t *outPosition);
 
 /* 0 or FATAL_ERROR_FILE_SEEK_FAILED */
 uint32_t Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle);
@@ -67,7 +67,7 @@ Win32DriveCapacity Win32Drive_GetFreeAndTotalBytes(DosDriveLetterCode32 driveLet
 
 uint32_t Win32Drive_EnumerateLetters(uint8_t *lettersOut);
 
-bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi);
+Bool8 Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi);
 
 /* the number of FILESYSTEM_ENUMERATION_RECORD_BYTES records written */
 uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
@@ -79,10 +79,10 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
 uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *handle);
 
 /* false (*outSize 0) when the size cannot be read */
-bool Win32File_GetSize(void *handle,uint32_t *outSize);
+Bool8 Win32File_GetSize(void *handle,uint32_t *outSize);
 
 /* false (destination emptied) when the directory cannot be read */
-bool Win32File_GetCurrentDirectory(uint16_t *destination);
+Bool8 Win32File_GetCurrentDirectory(uint16_t *destination);
 
 /* 0 or FATAL_ERROR_SET_DIRECTORY_FAILED */
 uint32_t Win32File_SetCurrentDirectory(uint16_t *path);
@@ -95,12 +95,12 @@ uint32_t Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path,void **outH
 void Win32File_Close(void *handle);
 
 
-bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
+Bool8 FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
 
-bool FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
+Bool8 FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError);
 
 /* true with the string table (NULL when empty) and its entry count */
-bool FileSystem_BuildEnumerationStringTable
+Bool8 FileSystem_BuildEnumerationStringTable
           (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText,
           uint16_t ***outTable,uint32_t *outEntryCount);
 

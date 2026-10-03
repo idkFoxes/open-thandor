@@ -34,7 +34,7 @@
 #endif
 /* Functions are grouped by semantic ownership. */
 
-bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
+Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 
 void FontRuntime_Init(void);
 
@@ -47,11 +47,11 @@ uint32_t FontGlyph_DrawBottomAligned (UiPixelCoordinate clipBottom,UiPixelCoordi
 
 uint32_t FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineHeight,UiPixelCoordinate lineBottom,int32_t drawX);
 
-bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32_t *outLocaleBlockOrError);
+Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32_t *outLocaleBlockOrError);
 
 void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
 
-bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
+Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
 
 /* TextResource_TryResolve without the found flag (a missing text gives TEXT_RESOURCE_MISSING_SENTINEL_0x33) */
 uint16_t *TextResource_Resolve(TextResourceId resourceId);

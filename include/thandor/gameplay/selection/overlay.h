@@ -106,6 +106,11 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
 extern int32_t g_InGamePendingPlacementArmyAsset;
 extern uint32_t g_InGameCommandPreviewArmyAssetId;
 
-extern code *g_InGamePointerModeHandlers[8];
+/* Entries of g_InGamePointerModeHandlers (InGameSelection_SetAircraftPadTargetLane1/2,
+   SelectionMarkerCoordinates_ApplyType3..7): four arguments. */
+typedef void InGamePointerModeHandler
+          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
+          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
+extern InGamePointerModeHandler *g_InGamePointerModeHandlers[8];
 
 #endif /* THANDOR_GAMEPLAY_SELECTION_OVERLAY_H */

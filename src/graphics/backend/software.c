@@ -223,7 +223,7 @@ void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsSc
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX)
 
 {
-  bool accessFailed;
+  Bool8 accessFailed;
   
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
@@ -324,7 +324,7 @@ void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY
           GraphicsPrimitiveQueue *queue)
 
 {
-  bool accessFailed;
+  Bool8 accessFailed;
   
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
@@ -359,7 +359,7 @@ void SoftwareGraphicsDispatch_NoOp(void)
    and blits from g_SoftwarePixelFormatConfig. The mode arguments are not used. Returns true on success;
    false with the arena error in *errorCode when the allocation fails.
 */
-bool SoftwarePixelFormat_BaseDisplayModeHook
+Bool8 SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,uint32_t *errorCode)
 
@@ -524,7 +524,7 @@ void SoftwarePixelFormat_BuildChannelPackTables
    paletted texel tests the alpha of the entry's converted pixel (+4) and writes its low word, but blends the
    entry's ARGB colour (+0) with the alpha of that colour. Always returns false.
 */
-bool SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -570,7 +570,7 @@ bool SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,G
    paletted texel uses the entry's second dword (+4) for everything: the alpha test, the blend colour, and the
    opaque write, which converts it through the pack tables again. Always returns false.
 */
-bool SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -606,7 +606,7 @@ bool SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,G
    paletted texel uses the entry's ARGB colour (+0) for both the alpha test and the blend. Always returns
    false.
 */
-bool SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -643,7 +643,7 @@ bool SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY
    the direct-colour path uses >> 2, i.e. it is an ordinary source-alpha blend whose alpha 0xFF still goes
    through the blend tables. Always returns false.
 */
-bool SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -1116,7 +1116,7 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
    is not a blend factor. A paletted texel uses the entry's ARGB colour (+0), unlike the 32-bit version. Always
    returns false.
 */
-bool SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -1151,7 +1151,7 @@ bool SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMa
    second dword (+4, the converted pixel), not its ARGB colour, both for the RGB-zero test and for the add.
    Always returns false.
 */
-bool SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -1184,7 +1184,7 @@ bool SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMa
    c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour. A paletted texel uses the
    entry's ARGB colour (+0). Always returns false.
 */
-bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
+Bool8 SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1218,7 +1218,7 @@ bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
    c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour, and a paletted texel again
    uses the entry's second dword (+4). Always returns false.
 */
-bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
+Bool8 SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1255,7 +1255,7 @@ bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
    everything. Quirk: the modulated alpha is at most 0xFE, so the opaque branch is never taken. Always
    returns false.
 */
-bool SoftwareTextureSource_BlitModulatedSourceAlpha16
+Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1292,7 +1292,7 @@ bool SoftwareTextureSource_BlitModulatedSourceAlpha16
    BlitSourceAlpha32, a paletted texel uses the entry's ARGB colour (+0). Quirk: the modulated alpha is at most
    0xFE, so the opaque branch is never taken. Always returns false.
 */
-bool SoftwareTextureSource_BlitModulatedSourceAlpha32
+Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -2841,7 +2841,7 @@ void SoftwareRasterAux_Mode12
    with one of the new size and rebuilds the MMX colour constants from the new pixel format. Returns true on
    success; false with the error in *errorCode when the chained hook or the depth-buffer allocation fails.
 */
-bool SoftwareRenderer_SetDisplayMode
+Bool8 SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width,uint32_t *errorCode)
 
@@ -3116,7 +3116,7 @@ void SoftwareRenderer_AdvanceDepthEpoch(void)
 {
   int pixelsRemaining;
   int32_t *depthValueCursor;
-  bool depthEpochWrapped;
+  Bool8 depthEpochWrapped;
 
   depthEpochWrapped = (uint32_t)g_SoftwareDepthEpoch < SOFTWARE_DEPTH_EPOCH_STEP;
   g_SoftwareDepthEpoch = g_SoftwareDepthEpoch - SOFTWARE_DEPTH_EPOCH_STEP;
@@ -3217,7 +3217,7 @@ void SoftwareMaskBuffer_ApplyCircularRegionBit(UiBooleanState32 invertSelection,
   uint8_t *maskCursor;
   GraphicsTextureLogicalSize logicalSize;
   int rowY;
-  bool selected;
+  Bool8 selected;
 
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   rowsRemaining = logicalSize.logicalHeightPixels;

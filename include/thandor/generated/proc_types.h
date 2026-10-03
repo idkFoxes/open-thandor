@@ -16,21 +16,21 @@
 typedef AiTechnologyCandidateScore AiTechnologyCandidateScoreCallback(FactionRuntimeIndex factionIndex, PckTechnologyIdCatalog technologyId, WorldRuntimeContext * worldRuntime);
 typedef uint8_t * CommandLineFindOptionProc(uint32_t length, char * option);
 typedef uint32_t __cdecl CpuDetectFeaturesProc(void);
-typedef uint32_t FatalErrorPassThroughProc(uint32_t valueOrError, bool failed);
+typedef uint32_t FatalErrorPassThroughProc(uint32_t valueOrError, Bool8 failed);
 typedef void FileSystemCloseProc(void * handle);
 typedef uint32_t FileSystemCopyProc(uint16_t * destinationPath, uint16_t * sourcePath);
 typedef uint32_t FileSystemCreateDirectoryRecursiveProc(FileSystemCreateDirectoryFlags flags, uint16_t * path);
 typedef uint32_t FileSystemDeleteProc(uint32_t unusedFlags, uint16_t * path);
-typedef bool FileSystemDriveReadyProc(uint32_t driveLetter);
+typedef Bool8 FileSystemDriveReadyProc(uint32_t driveLetter);
 typedef uint32_t FileSystemEnumerateDirectoryOrVolumeEntriesProc(FileSystemEnumerationMode mode, uint32_t reserved, FileSystemOutputCapacityBytes outputCapacityBytes, uint8_t * outputRecords, uint8_t * pathOrVolumeText);
 typedef uint32_t FileSystemEnumerateDriveLettersProc(uint8_t * lettersOut);
-typedef bool FileSystemGetCurrentDirectoryProc(uint16_t * destination);
+typedef Bool8 FileSystemGetCurrentDirectoryProc(uint16_t * destination);
 typedef EngineDriveTypeCode FileSystemGetDriveTypeCodeProc(DosDriveLetterCode32 driveLetter);
 typedef Win32DriveCapacity FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter);
 typedef uint32_t FileSystemGetLastWriteDosDateProc(uint16_t * path, uint32_t * outDosDateTime);
 typedef uint32_t FileSystemGetLastWriteTimeHighProc(uint16_t * path, uint32_t * outLastWriteTimeHigh);
-typedef bool FileSystemGetPositionProc(void * handle, uint32_t * outPosition);
-typedef bool FileSystemGetSizeProc(void * handle, uint32_t * outSize);
+typedef Bool8 FileSystemGetPositionProc(void * handle, uint32_t * outPosition);
+typedef Bool8 FileSystemGetSizeProc(void * handle, uint32_t * outSize);
 typedef uint32_t FileSystemGetVolumeSerialNumberProc(uint8_t * outputLabel, char * path);
 typedef uint32_t FileSystemMoveProc(uint16_t * destinationPath, uint16_t * sourcePath);
 typedef uint32_t FileSystemOpenProc(FileSystemOpenFlags openFlags, uint16_t * path, void * * outHandle);
@@ -38,10 +38,10 @@ typedef uint32_t FileSystemReadExactProc(FileIoByteCount byteCount, void * desti
 typedef uint32_t FileSystemRemoveDirectoryProc(uint16_t * path);
 typedef uint32_t FileSystemSeekProc(FileSystemSeekOrigin moveMethod, FileSystemFilePosition distance, void * handle);
 typedef uint32_t FileSystemSetCurrentDirectoryProc(uint16_t * path);
-typedef bool FileSystemValidateDos83Proc(FileSystemDos83ValidationFlags flags, uint8_t * pathAnsi);
+typedef Bool8 FileSystemValidateDos83Proc(FileSystemDos83ValidationFlags flags, uint8_t * pathAnsi);
 typedef uint32_t FileSystemWriteExactOrFlushProc(FileIoByteCount byteCount, void * source, void * handle);
 typedef void GraphicsBeginSceneProc(void);
-typedef bool GraphicsCursorConsumeEventProc(CursorPointerEvent *outEvent);
+typedef Bool8 GraphicsCursorConsumeEventProc(CursorPointerEvent *outEvent);
 typedef void GraphicsDrawPrimitiveQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue);
 typedef void GraphicsEndSceneProc(void);
 typedef GraphicsTextureSourceAsset * GraphicsOffscreenRenderModelListToTextureSourceProc(GraphicsOffscreenSceneExtents * sceneExtents, AngleTurn32 * auxiliaryOrientationAngles, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputHeight, GraphicsPixelDimension outputWidth, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes);
@@ -58,7 +58,7 @@ typedef void GraphicsTextureSetReleasePackageProc(GraphicsTextureSet * set);
 typedef uint32_t GraphicsTextureSourceConvertPaletteEntriesProc(GraphicsPaletteTextureSourceAsset * sourceAsset);
 typedef void InGameWorldTransientStateClearCallbackProc(WorldRuntimeContext * arg0);
 typedef void KeyboardFlushEventsProc(void);
-typedef bool KeyboardReadEventProc(uint32_t *outKeyCode, uint32_t *outStateMask);
+typedef Bool8 KeyboardReadEventProc(uint32_t *outKeyCode, uint32_t *outStateMask);
 typedef void LocaleCopyDefaultComputerLabelUtf16Proc(uint16_t * destination);
 typedef uint32_t LocaleFormatCurrentDateUtf16Proc(uint16_t * destination);
 typedef uint32_t LocaleFormatCurrentTimeUtf16Proc(uint16_t * destination);
@@ -72,11 +72,11 @@ typedef void NetworkBackendCleanupCallback(void);
 typedef void NetworkBackendCloseCallback(void);
 typedef void NetworkBackendFormatAddressCallback(char * outputText, WinSockAddress * socketAddress);
 typedef uint32_t NetworkBackendOpenBindCallback(uint32_t localPort); /* 0 or a FATAL_ERROR_NETWORK_* code */
-typedef bool NetworkBackendParseEndpointCallback(UiTransferEndpointDescriptor * endpoint, char * endpointText);
-typedef bool NetworkBackendReceiveCallback(WinSockAddress * sourceAddress, uint32_t byteCount, uint8_t * buffer); /* true when a datagram was received */
-typedef bool NetworkBackendSendCallback(WinSockAddress * destinationAddress, uint32_t byteCount, uint8_t * buffer); /* true on success */
+typedef Bool8 NetworkBackendParseEndpointCallback(UiTransferEndpointDescriptor * endpoint, char * endpointText);
+typedef Bool8 NetworkBackendReceiveCallback(WinSockAddress * sourceAddress, uint32_t byteCount, uint8_t * buffer); /* true when a datagram was received */
+typedef Bool8 NetworkBackendSendCallback(WinSockAddress * destinationAddress, uint32_t byteCount, uint8_t * buffer); /* true on success */
 typedef uint32_t NetworkBackendSetSessionCallback(uint32_t backendIndex); /* 0 or a FATAL_ERROR_NETWORK_* code */
-typedef bool PckCodecProc(uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode);
+typedef Bool8 PckCodecProc(uint32_t destinationCapacityOrOutputSize, uint8_t * destination, uint32_t sourceSize, uint8_t * source, uint32_t * outByteCount, uint32_t * outErrorCode);
 typedef void PointerFlushEventsProc(void);
 typedef void PointerSetPositionProc(int32_t positionY, int32_t positionX);
 typedef void ScenarioCatalogRefreshSelectedRecordCallback(uint32_t arg0, uint32_t arg1, uint32_t arg2, UiListRowIndex selectionIndex);
@@ -88,8 +88,8 @@ typedef void SpinLockAcquireProc(RuntimeSpinLockValue * lockValue);
 typedef void SpinLockReleaseCallbackProc(void);
 typedef void SpinLockReleaseAndInvokeProc(SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue);
 typedef void SpinLockReleaseProc(RuntimeSpinLockValue * lockValue);
-typedef bool SpinLockTryAcquireFlagsProc(RuntimeSpinLockValue * lockValue);
-typedef bool TerrainClassOverlayCallback(uint32_t cellFlagMask, int cellValue, uint32_t radiusWorldUnits, Q12 worldXQ12, Q12 worldYQ12, FieldGridAsset * fieldGrid);
+typedef Bool8 SpinLockTryAcquireFlagsProc(RuntimeSpinLockValue * lockValue);
+typedef Bool8 TerrainClassOverlayCallback(uint32_t cellFlagMask, int cellValue, uint32_t radiusWorldUnits, Q12 worldXQ12, Q12 worldYQ12, FieldGridAsset * fieldGrid);
 typedef void __cdecl TimerCallbackProc(void);
 typedef void TimerRegisterPeriodicProc(uint32_t frequencyHz, TimerCallbackProc * callback);
 typedef void TimerUnregisterPeriodicProc(TimerCallbackProc * callback);

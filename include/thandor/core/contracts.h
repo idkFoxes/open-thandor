@@ -21,20 +21,10 @@ Faction runtime index, frontend player index, player-runtime ID, ARM ID, MDL ID 
 typedef int Q12;
 typedef unsigned int UQ12;
 
-/* `bool` is the one-byte boolean from generated/types.h, so <stdbool.h> cannot be used. */
-#ifndef true
+/* The original's one-byte booleans are Bool8 (generated/types.h); true/false are 1/0 for them in C. */
+#if !defined(__cplusplus) && !defined(true)
 #define true 1
 #define false 0
-#endif
-
-/*
-Reinterpret the bytes of a value as another type: multi-value results are structs (a value plus a
-failure flag, two values plus a flag, ...) that some code casts to integers such as uint5 or to other
-layout-compatible structs, which C only allows through a union.
-*/
-#define THANDOR_BITCAST(From, To, value) (((union { From from_; To to_; }){ .from_ = (value) }).to_)
-#ifdef _MSC_VER
-#pragma warning(disable: 4116) /* unnamed type definition in parentheses (THANDOR_BITCAST) */
 #endif
 
 /* THANDOR_ALLOWS_OVERREAD: on a function that reads past the end of its source on purpose, as the original
@@ -48,7 +38,7 @@ layout-compatible structs, which C only allows through a union.
 #endif
 
 #include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
-#include <thandor/core/ghidra.h>
+#include <thandor/core/x86_emulation.h>
 /* The function pointer types and the UI template layouts. The data of the original image are ordinary C
    variables of the modules, declared in the module headers. */
 #include <thandor/generated/proc_types.h>

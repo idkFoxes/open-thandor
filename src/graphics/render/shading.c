@@ -45,7 +45,7 @@ GraphicsTextureSourceAsset *g_GraphicsShadingGeneratedAsset = 0;
 
 void *g_GraphicsShadingGridScratch = 0;
 
-pointer g_GraphicsShadingGridScratchInterior = 0;
+void *g_GraphicsShadingGridScratchInterior = 0;
 
 GraphicsTextureSet *g_GraphicsShadingTextureSet = 0;
 
@@ -260,19 +260,19 @@ static void GraphicsShadingGeneratedTexture_PlaceSamplePoints
    and the point is cast again from twice the radius back along the light.
    Returns false when the point finds no terrain or its offset leaves the grid step (the caller abandons the
    model). */
-static bool GraphicsShadingGeneratedTexture_DropSampleOntoTerrain
+static Bool8 GraphicsShadingGeneratedTexture_DropSampleOntoTerrain
           (struct GeneratedTextureSampleWorkRecord *sample,ModelRuntimeNode *modelNode,
            GeneratedTextureRenderContextView *renderContext)
 {
   GraphicsWorldCoordinateQ12 sampleWorldZ;
   Q12 surfaceHeightQ12;
   int32_t startTextureOffset;
-  bool terrainHit;
+  Bool8 terrainHit;
   Q12 terrainHitDistanceQ12;
   int missRayLength;
   Q12 remainingRayLength;
   AngleTurn32 oppositeAzimuth;
-  bool terrainSurfaceHit;
+  Bool8 terrainSurfaceHit;
   Q12 surfaceDistanceQ12;
   uint32_t terrainHitMaterial;
   uint32_t heightDelta;
@@ -387,7 +387,7 @@ static const int s_ShadowSampleVertexPair[12] = {
 
 /* Not in the original as a separate function: transforms the twelve sample points into view space (pairs
    [1] and [2] of their vertices) and reports whether any of them lies in front of the near plane. */
-static bool GraphicsShadingGeneratedTexture_TransformSamplesToView(GraphicsProjectedPointPair *projectedBlocks)
+static Bool8 GraphicsShadingGeneratedTexture_TransformSamplesToView(GraphicsProjectedPointPair *projectedBlocks)
 {
   GraphicsProjectedPointPair *vertex;
   int sampleIndex;
@@ -892,7 +892,7 @@ uint32_t GraphicsShadingRuntime_InitializeGeneratedTexture
   gridDwordCount = gridByteCount >> 2;
   /* interior: gridDwordCount = gridHalfSize^2 bytes = gridHalfSize / 2 rows of 2 * gridHalfSize bytes, then
      gridHalfSize / 2 columns in */
-  g_GraphicsShadingGridScratchInterior = (pointer)((uint8_t *)gridScratch + gridDwordCount + (gridHalfSize >> 1));
+  g_GraphicsShadingGridScratchInterior = (void *)((uint8_t *)gridScratch + gridDwordCount + (gridHalfSize >> 1));
   g_GraphicsShadingGridScratch = gridScratch;
   dwordCursor = (uint32_t *)gridScratch;
   for (dwordsRemaining = gridDwordCount; dwordsRemaining != 0; dwordsRemaining--) {
@@ -1529,7 +1529,7 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
    group (ModelResource.shadowMeshGroupOffset), so GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy skips hierarchies
    that cannot cast a shadow. Children are probed from the last to the first; the first hit ends the search.
 */
-bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
+Bool8 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
 
 {
   int childIndex;

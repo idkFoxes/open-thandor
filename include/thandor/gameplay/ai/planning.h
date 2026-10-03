@@ -30,10 +30,10 @@ void AiPlanning_CollectActiveGridMaskClasses(void);
 
 void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InGameRuntimeRoot *inGameRoot);
 
-bool AiConstructionPlanner_ProcessPendingAssetRequests
+Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex);
+Bool8 AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex);
 
 void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
@@ -52,7 +52,7 @@ void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,Wo
 
 void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
-bool AiPurchaseCandidate_HasEligibleProducer
+Bool8 AiPurchaseCandidate_HasEligibleProducer
           (AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex);
 
 void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex);
@@ -78,7 +78,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
 void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex);
 
-bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex);
+Bool8 AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex);
 
 AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
           (const AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,

@@ -48,7 +48,7 @@ void FrontendRomActionTable_ExecuteRecord
   int lastKeyframeIndex;
   void *menuRoomView;
   WorldRuntimeContext *menuRoomCamera;
-  bool visibilityLookupFailed;
+  Bool8 visibilityLookupFailed;
   RomRecordId pageAction;
   RomRecordId targetRecordId;
 
@@ -160,7 +160,7 @@ uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
    its root in the registry slot, links it into its world's owner list and computes its transforms. Returns
    true when a node allocation fails.
 */
-bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
+Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
 
 {
   RomAssetRecordPrefix *slotRecord;
@@ -198,7 +198,7 @@ void FrontendRomTransition_ProcessPendingRecord(void)
 {
   RomRecordId pendingRecordId;
   WorldRuntimeContext *menuRoomView;
-  bool splineStillRunning;
+  Bool8 splineStillRunning;
   uint32_t activateError;
 
   g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
@@ -441,7 +441,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
    value and, when recordId is registered, shows only the target record, the active record and the records in
    either one's visibleRecordMask, creating their lights. Returns true when recordId is not registered.
 */
-bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
+Bool8 RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
 
 {
   RomAssetRecordPrefix *record;
@@ -489,7 +489,7 @@ bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue 
 /* Loads the ".spr" sprite named after a serialized node header (UTF-16 file name) into the node, or reuses an
    already registered sprite with the same registry id. Returns true with the error in *outError when loading
    or registering fails. */
-static bool RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t *outError)
+static Bool8 RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t *outError)
 {
   RomAssetHeader *asset;
   SpriteAssetHeader *existingSprite;
@@ -718,7 +718,7 @@ void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitio
    (NULL while the record's tree is not built) in *outRootNode, or returns false when no registry slot holds
    such a record (the original's error code FATAL_ERROR_ROM_RECORD_NOT_REGISTERED was read by no caller).
 */
-bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode)
+Bool8 RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode)
 
 {
   int slotsRemaining;

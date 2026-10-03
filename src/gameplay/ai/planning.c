@@ -170,7 +170,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
   AiCandidateScore32 candidateScore;
   int registryEntriesRemaining;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
-  bool technologyLocked;
+  Bool8 technologyLocked;
   int compatibleAssetCount;
   uint32_t compatibleAssetScoreSum;
   AiLinkedDefinitionListView *nestedLinkedDefinitions;
@@ -332,7 +332,7 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InG
 {
   uint32_t planningPhaseDispatchIndex;
   WorldRuntimeContext *worldRuntime;
-  bool phaseResult;
+  Bool8 phaseResult;
   AiKnowledgeDataImage *knowledgeData;
 
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -411,7 +411,7 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InG
    330/332 site, other ids below 340 at a reachable candidate, ids from 340 on near the faction anchor.
    Returns true as soon as a handler has placed an asset (g_AiConstructionPendingAssetConsumedCount).
 */
-bool AiConstructionPlanner_ProcessPendingAssetRequests
+Bool8 AiConstructionPlanner_ProcessPendingAssetRequests
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -469,15 +469,15 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
    affordable. The cost is deducted even when no producer is found. Returns true when candidates
    existed but none was applied, false otherwise.
 */
-bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
+Bool8 AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
 
 {
-  bool noCandidateApplied;
+  Bool8 noCandidateApplied;
   uint32_t candidateCost;
   int remainingCandidates;
   XeniteAmountQ4 remainingXenite;
   AiCandidateWorkspaceEntry *entry;
-  bool insufficientXenite;
+  Bool8 insufficientXenite;
 
   remainingCandidates = g_AiCandidateWorkspaceEntryCount;
   entry = g_AiWorkspace13Candidates;
@@ -510,7 +510,7 @@ bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIn
    class command dispatched, the effect named by the created model's attachment 2 started at the node and the asset
    removed from the faction's pending list. Returns true when the attempt is over (asset created, or its creation
    failed), false when the site is not usable. */
-static bool AiConstructionPlanner_TryPlaceStorageAtResourceSite
+static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSite
           (AiTerrainFeatureWorkspaceEntry *siteEntry,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 {
@@ -558,7 +558,7 @@ static bool AiConstructionPlanner_TryPlaceStorageAtResourceSite
 
 /* Runs AiConstructionPlanner_TryPlaceStorageAtResourceSite for every workspace-08 site of siteAssetId in order;
    returns true as soon as one attempt is over. */
-static bool AiConstructionPlanner_TryPlaceStorageAtResourceSitesOf
+static Bool8 AiConstructionPlanner_TryPlaceStorageAtResourceSitesOf
           (PckArmyAssetIdCatalog siteAssetId,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 {
@@ -799,7 +799,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
   FieldGridCell *bestCell;
   int bestScore;
   FieldGridCell *candidateCell;
-  bool siteDistanceInRange;
+  Bool8 siteDistanceInRange;
 
   if ((g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0) ||
      (g_AiWorkspace09Count == 0)) {
@@ -950,7 +950,7 @@ void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRu
 
 /* True when technologyIndex is one of the research slots researchTechnologyIds[1..28] of the structure
    definition (slot 0 is not a research slot). */
-static bool AiPurchaseCandidate_DefinitionListsResearch(ModelDefinition *definition,RuntimeToken technologyIndex)
+static Bool8 AiPurchaseCandidate_DefinitionListsResearch(ModelDefinition *definition,RuntimeToken technologyIndex)
 {
   int technologySlotIndex;
 
@@ -970,7 +970,7 @@ static bool AiPurchaseCandidate_DefinitionListsResearch(ModelDefinition *definit
    classState.classStateAC clear, the bits 0xEE a class-13 structure whose definition mask classParameterC4
    shares them and with classState.behaviorState clear (runtimeFlags without 0xC9 each).
 */
-bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
+Bool8 AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
 
 {
   uint32_t producerClassMask;
@@ -1180,7 +1180,7 @@ void AiStructureCandidate_AddResourceStorage
   int remainingEntries;
   int assignedSiteStructureCount;
   uint32_t derivedWeight;
-  bool hasPrerequisite;
+  Bool8 hasPrerequisite;
   AiKnowledgeDataImage *knowledgeData;
 
   if (AiPrimaryWorkspace_HasUnassignedEntryById(candidateArmyAssetId)) {
@@ -1240,7 +1240,7 @@ void AiResourceCandidate_AddPowerPlant(FactionRuntimeIndex factionIndex)
   int energySurplus;
   int energyDemand;
   int generationCapacity;
-  bool conditionMet;
+  Bool8 conditionMet;
   
   conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
   if (conditionMet) {
@@ -1504,7 +1504,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   int remainingCells;
   int distanceY;
   FieldGridCell **gridCellCursor;
-  bool regionUnreachable;
+  Bool8 regionUnreachable;
   ArmyAssetRecordPrefix *armyAsset;
   ModelDefinitionRecordPrefix *modelDefinition;
   FieldGridCell *bestCell;
@@ -1606,7 +1606,7 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
    (whole units): the usable supply is the smaller of the generation capacity and baseline supply + tritium
    extraction rate, the demand is supplied + unpowered demand (Q4 values shifted down by 4).
 */
-bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
+Bool8 AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
 
 {
   int supplyCapacity;

@@ -916,7 +916,7 @@ static PackedArgb32 ModelLighting_PackUnsigned(const short lanes[4])
   return packed;
 }
 
-/* The same lane operations on 64-bit MMX register images (ThandorMmx, core/ghidra.h). */
+/* The same lane operations on 64-bit MMX register images (ThandorMmx, core/x86_emulation.h). */
 
 /* movd + punpcklbw mm,mm + psrlw mm,shift: byte k of packed becomes word lane k = (b * 0x101) >> shift. */
 static __inline uint64_t ModelLighting_UnpackBytesMmx(uint32_t packed, int shift)
@@ -1174,7 +1174,7 @@ void ModelRender_PrepareProjectedVertex
 
 /* True unless all three projected vertices lie beyond the same edge of g_ProjectionClipRect (shared by
    ModelRender_SubmitTriangle and ModelRender_SubmitTriangleAlternatePath). */
-static bool ModelRender_TriangleOverlapsClipRect
+static Bool8 ModelRender_TriangleOverlapsClipRect
           (const GraphicsProjectedVertexSource *firstVertex,const GraphicsProjectedVertexSource *secondVertex,
            const GraphicsProjectedVertexSource *thirdVertex)
 {
@@ -1230,7 +1230,7 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
   int32_t facingDotQ12;
   uint32_t paletteBankIndex;
   PackedArgb32 materialColor;
-  bool appendFailed;
+  Bool8 appendFailed;
   GraphicsTextureSetEntry *textureEntry;
 
   facingDotQ12 = ModelRender_ComputeFacingDotQ12(triangle);
@@ -1333,7 +1333,7 @@ void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGr
    (ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath), or white with the tint's alpha when unlit,
    and cached like in ModelRender_PrepareProjectedVertex.
 */
-bool ModelRender_PrepareProjectedVertexAlternatePath
+Bool8 ModelRender_PrepareProjectedVertexAlternatePath
           (ModelRuntimeNode *modelNode,GraphicsTriangleInput *triangle,GraphicsFixedVec3 *vertex)
 
 {
@@ -1400,7 +1400,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
   GraphicsSubresourceIndex subresourceIndex;
   uint32_t paletteBankIndex;
   PackedArgb32 modulationColor;
-  bool appendFailed;
+  Bool8 appendFailed;
   GraphicsTextureSetEntry *textureEntry;
 
   firstVertex = triangle->vertex0;

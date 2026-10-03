@@ -30,7 +30,7 @@ void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgu
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  bool isRecentTimedState;
+  Bool8 isRecentTimedState;
   
   switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
          ((uint8_t)(sourceFactionIndex << 2) & 31) & 0xf) {
@@ -140,7 +140,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables(void)
   uint32_t *technologyMasks;
   uint32_t *secondaryTableCursor;
   uint32_t *primaryRecord;
-  bool scenarioFound;
+  Bool8 scenarioFound;
 
   scenarioFound = false;
   /* Campaign asset (CampaignAsset): the cursor starts at the asset base and advances by one 0x180-byte level
@@ -332,7 +332,7 @@ void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void 
    GameFactionRuntime_ApplyPairwiseRelationTransition sets or clears the others, so a clear bit marks a faction
    this one is not friendly with (the AI treats its entities as foreign/hostile).
 */
-bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex)
+Bool8 GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
   return (g_GameFactionRuntimeImage.records[factionIndex].capabilityFlags &
@@ -432,7 +432,7 @@ static void GameFactionRuntime_MoveImpactAlertAnchor(FactionAnchorCooldownTicks 
   GraphicsWorldCoordinateQ12 hitY;
   int distanceY;
   int distanceX;
-  bool notify;
+  Bool8 notify;
 
   hitModelNode = (ModelRuntimeNode *)ownershipRecord[1];
   previousCooldown = *cooldown;
@@ -602,7 +602,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
   uint32_t groupNumber;
   ArmyRuntimeSlot **slotCursor;
   ArmyRuntimeSlot **nextSlotCursor;
-  bool found;
+  Bool8 found;
 
   groupNumber = 0;
   nextSlotCursor = g_GameFactionRuntimeImage.records[runtimeEntry->factionIndex].runtimeGroupMembers8x32;
@@ -631,7 +631,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
    production in one of its class 0x0B/0x0D structures (state word 0x2E == 1). The result is
    false when found, true when not.
 */
-bool FactionRuntime_IsArmyAssetNotPending
+Bool8 FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
@@ -703,7 +703,7 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
    no longer see is dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or
    returns false when there is none.
 */
-bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
+Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
 
 {
   GameEntityRuntime *commandTargetEntity;
@@ -903,7 +903,7 @@ void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId
 /* Whether a producing structure of class producerClassId is building armyDefinition right now: payload [0x18]
    holds the army in production; a class 0x0D structure must also be able to build the army (its definition's
    classParameterC4 against the army's flags) and have production state [0x2E] == 1. */
-static bool GameFactionRuntime_StructureProducesArmy(const int *modelPayload,int producerClassId,
+static Bool8 GameFactionRuntime_StructureProducesArmy(const int *modelPayload,int producerClassId,
           const ArmyAssetRecordPrefix *armyDefinition)
 {
   if (producerClassId == MODEL_RUNTIME_CLASS_13) {
@@ -1016,7 +1016,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
    moving the later entries down one slot, and returns true; returns false when there is none.
    Original quirk: the last move reads the entry one past the count (with a full list of 64 that is the first
    runtime group member pointer that follows the list). */
-static bool GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRecord *factionRecord,
+static Bool8 GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRecord *factionRecord,
           const ArmyAssetRecordPrefix *armyDefinition)
 {
   uint32_t *primaryAssets;
@@ -1271,7 +1271,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
    2, 5 or 9 and the pair's last relation change is at most 600 ticks old, so the relation does not advance
    again too soon.
 */
-bool GameFactionRuntime_IsRecentTimedRelationState
+Bool8 GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
@@ -1488,7 +1488,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
   uint32_t secondFactionPlayerCount;
   uint32_t firstFactionPlayerCount;
   uint32_t randomValue;
-  bool swapMergeDirection;
+  Bool8 swapMergeDirection;
   uint8_t secondShift;
   uint8_t firstShift;
   FrontendPlayerRuntimeRecord *playerBlockCursor;

@@ -102,7 +102,7 @@ static void Pcx_BuildCanvas(uint8_t *canvas,const uint8_t *assetBase,const Graph
 
 /* Encodes every scan line of the canvas. Returns false when the encoded lines would exceed *budget bytes
    (the original's output-block check); *budget is reduced by the bytes written. */
-static bool Pcx_EncodeScanLines(uint8_t **cursor,int32_t *budget,const uint8_t *canvas,uint32_t lineCount,
+static Bool8 Pcx_EncodeScanLines(uint8_t **cursor,int32_t *budget,const uint8_t *canvas,uint32_t lineCount,
                                 uint32_t bytesPerLine)
 {
   uint8_t *out = *cursor;
@@ -167,12 +167,12 @@ static bool Pcx_EncodeScanLines(uint8_t **cursor,int32_t *budget,const uint8_t *
    file!" instead of an error code; FATAL_ERROR_GENERAL_FAILURE stands in for it (no caller reads the error).
    Original quirk: header dimensions are 16-bit (xmax/ymax computed as one dword (height << 16 | width) - 0x10001);
    zero width or height was not handled (the original's counted loops ran away) and is rejected here. */
-bool Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBytes,uint32_t *outByteCount,
+Bool8 Pcx_EncodeCapture(GraphicsCapturedTextureSourceAsset *capture,void **outBytes,uint32_t *outByteCount,
                        uint32_t *outError)
 {
   const uint8_t *assetBase = (const uint8_t *)capture;
   const GraphicsTextureSourceEntry *entry;
-  bool directColor;
+  Bool8 directColor;
   uint32_t planeCount;
   uint32_t bytesPerLine;
   uint32_t reserve;

@@ -203,13 +203,13 @@ void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *con
   UiPageStackControl *sidePanelStack;
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   /* control is rightButtonNoScrollCheckbox of the in-game UI template copy */
   sidePanelStack =
        (UiPageStackControl *)THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelStack);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN;
     UiPageStack_SetActiveIndex(1,sidePanelStack);
@@ -259,10 +259,10 @@ void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 {
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
     /* control is autoZoomOffCheckbox; reset the minimap zoom */
@@ -286,10 +286,10 @@ void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control
 {
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
     /* control is autoRotationOffCheckbox; reset the minimap rotation to its default angle */
@@ -314,10 +314,10 @@ void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
   WorldRuntimeFlags *runtimeFlagsField;
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_ZOOM;
     /* control is linkRotationZoomCheckbox; the world view's runtime flags */
@@ -349,10 +349,10 @@ void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
   WorldRuntimeFlags *runtimeFlagsField;
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_TILT;
     /* control is linkRotationTiltCheckbox; the world view's runtime flags */
@@ -384,10 +384,10 @@ void InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
   WorldRuntimeFlags *runtimeFlagsField;
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_LINK_OPTION_HIDE_PANEL;
     /* control is hidePanelCheckbox; the world view's runtime flags */
@@ -719,9 +719,9 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   AudioMixerGainQ15 effectsGainQ15;
   MovieAudioGainQ15 movieDefaultGainQ15;
   MovieAudioGainQ15 movieAlternateGainQ15;
-  bool isEnabled;
+  Bool8 isEnabled;
 
-  isEnabled = (bool)UiSelectableControl_IsSelected(control);
+  isEnabled = (Bool8)UiSelectableControl_IsSelected(control);
   if (!isEnabled) {
     g_SoundStopVoice(g_InGameActiveEffectVoice);
     g_InGameActiveEffectVoice = NULL;
@@ -783,10 +783,10 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 {
   uint32_t audioFlags;
   uint32_t musicEnabledBit;
-  bool isEnabled;
+  Bool8 isEnabled;
 
   musicEnabledBit = 0;
-  isEnabled = (bool)UiSelectableControl_IsSelected(control);
+  isEnabled = (Bool8)UiSelectableControl_IsSelected(control);
   if (isEnabled) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
   }
@@ -836,11 +836,11 @@ void InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
   uint32_t currentAudioFlags;
   uint32_t reverseStereoBit;
   int32_t reverseStereoMask;
-  bool isSelected;
+  Bool8 isSelected;
 
   reverseStereoBit = 0;
   reverseStereoMask = 0;
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     reverseStereoBit = PERSISTENT_SOUND_OPTION_REVERSE_STEREO;
     reverseStereoMask = -1;
@@ -925,13 +925,13 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
 {
   UiNodeBase *uiRoot;
   uint32_t settingValue;
-  bool isSelected;
+  Bool8 isSelected;
 
   uiRoot = &settingsToggle->base;
   while (uiRoot->parent != UI_NODE_NONE) {
     uiRoot = uiRoot->parent;
   }
-  isSelected = (bool)UiSelectableControl_IsSelected(settingsToggle);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(settingsToggle);
   if (!isSelected) {
     UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
     INGAME_UI(uiRoot,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;

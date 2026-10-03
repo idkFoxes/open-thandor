@@ -2162,7 +2162,7 @@ static UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_
 /* Frontend_MainLoop: presents UI frames until a page action is pending, then flushes the input and counts the
    action depth. Returns false instead when no action is pending and the UI root stack is empty (the player
    quit the game). */
-static bool FrontendMainLoop_PresentFramesUntilPageAction(void)
+static Bool8 FrontendMainLoop_PresentFramesUntilPageAction(void)
 {
   do {
     if (g_UiRootNode != UI_ROOT_STACK_END) {
@@ -2230,7 +2230,7 @@ static void FrontendMainLoop_ExchangeScenarioCatalog(void)
   uint32_t catalogUsedBytes;
   uint8_t *encodedCatalog;
   PckOutputCapacityBytes destinationCapacityBytes;
-  bool encodeOk;
+  Bool8 encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t checkedValue;
@@ -2312,7 +2312,7 @@ static void FrontendMainLoop_PollScenarioSelectionPage(void)
 }
 
 /* Frontend_MainLoop: true when every player block has one of the roleStateFlags bits in stateMask. */
-static bool FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags stateMask)
+static Bool8 FrontendMainLoop_AllPlayersHaveRoleState(FrontendRoleStateFlags stateMask)
 {
   FrontendPlayerRuntimeRecord *playerBlock;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
@@ -2370,7 +2370,7 @@ static void FrontendMainLoop_RunSession(FrontendBooleanState32 loadExistingSessi
    campaign asset is released); a negative successor id or a current level without a record leaves it loaded.
    The record cursors start at the asset base and advance by one CampaignLevelRecord, so level record i is
    ((CampaignAsset *)cursor)->levels[0]. */
-static bool FrontendMainLoop_SelectCampaignSuccessorLevel(void)
+static Bool8 FrontendMainLoop_SelectCampaignSuccessorLevel(void)
 {
   CampaignAsset *campaign;
   CampaignAsset *levelRecordView;
@@ -2423,7 +2423,7 @@ static void FrontendMainLoop_OfferLevelToClients(FrontendLoadedLevelAsset *loade
   ScenarioLevelBundleHeader *bundleHeader;
   AssetAllocationSizeBytes fieldGridAllocationSize;
   uint8_t *encodedImages;
-  bool encodeOk;
+  Bool8 encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t levelEncodedBytes;
@@ -2514,7 +2514,7 @@ static void FrontendMainLoop_LoadSelectedLevel(void)
 /* Frontend_MainLoop: rebuilds the menu in the briefing room and loads the level (host and local game) or waits
    for it from the host (client); FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE opens once every player has it.
    Returns false with Frontend_Init's error in *outError when building the menu fails. */
-static bool FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
+static Bool8 FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
 {
   FrontendRoleStateFlags *localRoleStateFlags;
 
@@ -2537,9 +2537,9 @@ static bool FrontendMainLoop_EnterMissionBriefing(uint32_t *outError)
 
 /* Frontend_MainLoop: rebuilds the menu at nextRomRecordId with nextPageAction pending (set even when the build
    fails). Returns false with Frontend_Init's error in *outError when building the menu fails. */
-static bool FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,uint32_t nextPageAction,uint32_t *outError)
+static Bool8 FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,uint32_t nextPageAction,uint32_t *outError)
 {
-  bool menuBuilt;
+  Bool8 menuBuilt;
 
   menuBuilt = Frontend_Init(nextRomRecordId,outError);
   g_FrontendPendingPageAction = nextPageAction;
@@ -2549,7 +2549,7 @@ static bool FrontendMainLoop_RebuildMenu(RomRecordId nextRomRecordId,uint32_t ne
 /* Frontend_MainLoop, after a session: a campaign continues with the successor level in the briefing room. Without
    one, a scenario path left from the session is loaded there again; with none the menu goes back to the scenario
    selection. Returns false with Frontend_Init's error in *outError when building the menu fails. */
-static bool FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
+static Bool8 FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
 {
   if (!FrontendMainLoop_SelectCampaignSuccessorLevel() && (g_FrontendScenarioPathScratchUtf16[0] == 0)) {
     return FrontendMainLoop_RebuildMenu
@@ -2562,7 +2562,7 @@ static bool FrontendMainLoop_ContinueAfterSession(uint32_t *outError)
    pages only once the peers are ready, otherwise they stay pending); every other action tears the frontend down,
    runs a session if requested and rebuilds the menu. Returns false with Frontend_Init's error in *outError when
    rebuilding the menu fails. */
-static bool FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordId,uint32_t *outError)
+static Bool8 FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordId,uint32_t *outError)
 {
   if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) {
     FrontendNetworkSetupPage_InitializeBackendMode((FrontendUiImage *)g_FrontendRootNode);
@@ -2631,7 +2631,7 @@ static bool FrontendMainLoop_PerformPageAction(RomRecordId frontendEntryRecordId
    the menu is rebuilt at the scenario selection or the entry record. Returns true when the UI root stack
    empties (quit); false with Frontend_Init's error in *outError when building the menu fails.
 */
-bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
+Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError)
 
 {
   uint32_t initError;
@@ -3465,7 +3465,7 @@ void FrontendModelPointerContext_PointerWheel
    the key to the view's keyboardFallback first; when there is none or it returns true, the default handling
    (UiNode_DefaultKeyboardEventMoveFocusNext) decides and its result is returned.
 */
-bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerHitContext *control)
 
 {
@@ -3608,7 +3608,7 @@ void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void)
    setup page toggles bit 0 of the local player's colourCycleFlags (an eighth entry in the faction cycle,
    FrontendFactionSetup_CycleFactionColour). Returns true when the key is not in the table.
 */
-bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
+Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime)
 
 {
@@ -4492,7 +4492,7 @@ void Frontend_PlaySelectedEndMovie(void)
   UiRootCallbacks *rootCallbacks;
   InGameRuntimeRoot *runtimeRoot;
   uint32_t playbackRateHz;
-  bool movieOpened;
+  Bool8 movieOpened;
 
   runtimeRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(0);
@@ -4646,7 +4646,7 @@ static void FrontendInit_InstallMenuRoomPointerCallbacks(FrontendModelPointerCon
           (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerHitContext *);
 
   pointerContext->keyboardFallback =
-       (bool (*)(UiKeyboardStateMask,UiActionId,struct UiRootNode *))
+       (Bool8 (*)(UiKeyboardStateMask,UiActionId,struct UiRootNode *))
        FrontendRuntime_DispatchCommandByCodeAndModifierFlags;
   pointerContext->hoverCursorCallback =
        (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
@@ -4686,7 +4686,7 @@ static void FrontendInit_CopyNameDwords(uint32_t *destination,const uint32_t *so
    Returns true on success (the root is g_FrontendRootNode); false with the failing call's error in *outError.
    FrontendRuntime_ShutdownAndReleaseResources undoes it.
 */
-bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
+Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
 
 {
   uint32_t settingValue;
@@ -4868,7 +4868,7 @@ void Frontend_StateTick(void)
 {
   uint32_t frontendRoot; /* passed to the packet handlers */
   uint32_t previousTickCounter;
-  bool callResult;
+  Bool8 callResult;
   void *packet;
   void *packetEndpoint;
 

@@ -71,12 +71,12 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
           (uint64_t occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
           Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
-bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
+Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
-bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
+Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);

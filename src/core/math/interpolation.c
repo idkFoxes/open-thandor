@@ -27,7 +27,7 @@ float *g_WorldMotionSplineCoefficientTables[6] = {0};
    to worldRuntime, caching the six derivatives. Returns true while the spline runs; past the last
    keyframe it applies that keyframe, clears the derivatives and returns false.
 */
-bool WorldMotionSpline_EvaluateAndApplyAtTime
+Bool8 WorldMotionSpline_EvaluateAndApplyAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime)
 

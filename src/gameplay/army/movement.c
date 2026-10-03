@@ -106,7 +106,7 @@ static void ArticulatedWalker_AdvanceRunningStep(WorldRuntimeContext *worldRunti
 /* After a step has ended: the route point counts as reached when there is no route and the walker faces the
    command target (within ARMY_ARTICULATED_TURN_ANGLE16) or has none, or when it stands within
    ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 of the route point. */
-static bool ArticulatedWalker_StepEndReachedRoutePoint(WorldRuntimeContext *worldRuntime,
+static Bool8 ArticulatedWalker_StepEndReachedRoutePoint(WorldRuntimeContext *worldRuntime,
           ModelRuntimeArticulatedMovementDefinitionView *modelRuntime)
 {
   ModelRuntimeNode *rootNode = modelRuntime->rootModelNode;
@@ -277,7 +277,7 @@ static ArticulatedRouteStep ArticulatedWalker_TryStartRouteStep(WorldRuntimeCont
 
 /* True when the line between the feet is not roughly square to the body heading (and no closing step has
    been made yet). */
-static bool ArticulatedWalker_FeetNeedClosing(ModelRuntimeArticulatedMovementDefinitionView *modelRuntime,
+static Bool8 ArticulatedWalker_FeetNeedClosing(ModelRuntimeArticulatedMovementDefinitionView *modelRuntime,
           ModelRuntimeNode *rootNode)
 {
   uint32_t feetLineAngle;
@@ -298,7 +298,7 @@ static bool ArticulatedWalker_FeetNeedClosing(ModelRuntimeArticulatedMovementDef
 
 /* No step running and no turn to finish: chooses the next step. Returns false when the walker stays as it
    is and the pose is not refreshed (field grid state flag 1 clear). */
-static bool ArticulatedWalker_ChooseNextStep(WorldRuntimeContext *worldRuntime,
+static Bool8 ArticulatedWalker_ChooseNextStep(WorldRuntimeContext *worldRuntime,
           ModelRuntimeArticulatedMovementDefinitionView *modelRuntime,ModelRuntimeNode *rootNode)
 {
   ArticulatedRouteStep routeStep = ARTICULATED_ROUTE_STEP_NONE;
@@ -512,11 +512,11 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
-  bool waypointArrived;
+  Bool8 waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
   GraphicsFixedVec3 aimPoint;
-  bool aimPointFound;
+  Bool8 aimPointFound;
   GameEntityRuntime *ownerEntity;
   ModelRuntimeNode *partNode;
 
@@ -667,11 +667,11 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
   ShotLaunchAngles launchAngles;
   ModelRelativeDirectionAngles relativeAngles;
   uint32_t pitchAimValue;
-  bool waypointArrived;
+  Bool8 waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
   GraphicsFixedVec3 aimPoint;
-  bool aimPointFound;
+  Bool8 aimPointFound;
   GameEntityRuntime *ownerEntity;
   ModelRuntimeNode *partNode;
 
@@ -1578,7 +1578,7 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
   int previousWorldX;
   int previousWorldY;
   ModelRuntimeNode *rootNode;
-  bool waypointArrived;
+  Bool8 waypointArrived;
   Q12 waypointWorldXQ12;
   Q12 waypointWorldYQ12;
   /* set only while the unit moves; read by the bank update only then */
@@ -1656,7 +1656,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   GraphicsWorldCoordinateQ12 currentWorldY;
   ArmyCommandGeneration standardGeneration;
   ModelRuntimeSlot *attachedModelRuntime;
-  bool hasNoWeaponDamage;
+  Bool8 hasNoWeaponDamage;
   ModelRuntimeNode *modelNode;
 
   standardGeneration = g_ArmyCommandGenerationStandard;
@@ -2928,7 +2928,7 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
   DirectSoundVoiceSet **voiceSetRef;
   int32_t waterDelta;
   EffectDefinition *effectDefinition;
-  bool cellMasked;
+  Bool8 cellMasked;
   ModelRuntimeNode *footNode;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
@@ -3325,7 +3325,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
    (definition classParameterC0) << 13 divided by footTravel plus 4 * lift height (definition
    classParameterC4), or 2.0 when that
    sum is 0. Returns false in that case. */
-static bool ArmyArticulatedRuntime_SetStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,uint32_t footTravel)
+static Bool8 ArmyArticulatedRuntime_SetStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,uint32_t footTravel)
 
 {
   ModelDefinition *movementDefinition;
@@ -3622,13 +3622,13 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
    must not fire. With a clear line of fire a running target-following move is stopped and false is returned. Called
    by the aim-and-fire class updates (runtime-update slots 7 and 8 here, and gameplay/army/combat.c).
 */
-bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   GameEntityRuntime *ownerEntity;
   ModelRuntimeSlot *ownerRootModelRuntime;
-  bool lineOfFireBlocked;
+  Bool8 lineOfFireBlocked;
 
   /* modelRuntime is the weapon's model runtime. ownerEntity is the owning army (GameEntityRuntime view: its
      common.commandFlags is ArmyRuntimeSlot.movementStateFlags and commandTarget.targetFlags is commandModeFlags);
@@ -3820,7 +3820,7 @@ void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *move
    step repeated); otherwise the route is rebuilt when the model moved or the retry countdown ran out. Near
    the final target the move ends (arrived, current position); farther away a direct move to it is started.
 */
-bool ArmyRuntime_UpdateMovementAndWaypoints
+Bool8 ArmyRuntime_UpdateMovementAndWaypoints
           (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime,Q12 *outWorldXQ12,
           Q12 *outWorldYQ12)
 
@@ -3837,7 +3837,7 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
   int waypointIndex;
   uint32_t distanceX;
   uint32_t distanceY;
-  bool belowThreshold;
+  Bool8 belowThreshold;
   PathingDestination resolvedDestination;
   Q12 queuedWorldYQ12;
   Q12 queuedWorldXQ12;

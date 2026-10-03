@@ -40,7 +40,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
 void ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
           ImpactDamageValue32 impactValue,ModelRuntimeSlot *targetModelRuntime);
 
-bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+Bool8 ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,ModelRuntimeSlot *modelRuntime);

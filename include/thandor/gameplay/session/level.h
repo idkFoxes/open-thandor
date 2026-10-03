@@ -27,18 +27,18 @@
 #define LEVEL_ENDING_MOVIE_NAME_LA UTF16_CHAR_PAIR('l','a')      /* end movie 4 */
 /* Functions are grouped by semantic ownership. */
 
-bool LevelAsset_PrepareEndingMoviePath
+Bool8 LevelAsset_PrepareEndingMoviePath
           (uint16_t *currentLevelPath,LevelAssetHeader *asset,uint16_t **outMoviePath,uint32_t *outError);
 
-bool InGameLevelRuntime_LoadResourcesAfterDefaultReset
+Bool8 InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
-bool InGameLevelRuntime_LoadResourcesAfterExternalTables
+Bool8 InGameLevelRuntime_LoadResourcesAfterExternalTables
           (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError);
 
 void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime);
 
-bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError);
+Bool8 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView,uint32_t *outError);
 
 extern uint16_t u_effect_hex_0050dfc6[11];
 extern uint16_t u_shot_hex_0050dfdc[9];

@@ -388,7 +388,7 @@ FrontendCommandPacketRecord g_FrontendPacket10021Buffer = {0};
 /* Descrambles the received datagram in place and checks its XOR checksum: the XOR of all dwords of the packet
    (unit count * 8 dwords, checksum field zeroed) must equal the transmitted checksum. See the checksum quirk
    at UiTransferMailbox_ServiceAndRetransmitTimer. */
-static bool UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecord)
+static Bool8 UiTransferMailbox_DecryptAndVerifyRecord(UiRuntimeRecord *ringRecord)
 {
   UiTransferXorChecksum *checksumField;
   UiTransferXorChecksum checksum;
@@ -610,7 +610,7 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
   uint32_t nextSlotIndex;
   UiRuntimeRecord *ringRecord;
   UiTransferSenderEndpointSlot *senderEndpointSlot;
-  bool lockBusy;
+  Bool8 lockBusy;
 
   g_UiTransferMailboxTickCounter++;
   lockBusy = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
@@ -813,7 +813,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
    player's PCX preview on 0x10009. Only packets of the selected host and session count; returns true only when
    a new command batch was executed.
 */
-bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
+Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg)
 
@@ -1000,10 +1000,10 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
    g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address. Hosts answer
    with a 0x50001 session advertisement. Returns the result of UiTransfer_StagePacketAndSend.
 */
-bool UiTransfer_SendDiscoveryProbe(void)
+Bool8 UiTransfer_SendDiscoveryProbe(void)
 
 {
-  bool sendCarry;
+  Bool8 sendCarry;
   
   g_FrontendPacket10000Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10000_HANDSHAKE;
   g_FrontendPacket10000Buffer.protocolMagic = FRONTEND_PROTOCOL_MAGIC;
@@ -1018,13 +1018,13 @@ bool UiTransfer_SendDiscoveryProbe(void)
    g_FrontendLocalPlayerPcxPreview), bit 8 = shown as "CD" in the lobby list (always set). Returns the
    result of UiTransfer_StagePacketAndSend.
 */
-bool UiTransfer_SendPlayerDescriptor(void)
+Bool8 UiTransfer_SendPlayerDescriptor(void)
 
 {
   int dwordCount;
   uint32_t *nameSourceCursor;
   uint32_t *payloadCursor;
-  bool callCarry;
+  Bool8 callCarry;
   
   g_FrontendPacket20002Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_20002_PLAYER_DESCRIPTOR;
   g_FrontendPacket20002Buffer.payloadByteCount = 64;
@@ -1445,7 +1445,7 @@ static void FrontendTransfer_ResendBatchOrWaitToClients(void)
    notifyWaitingPeers, resends the previous batch to clients that have not submitted yet and COMMAND_WAIT
    to those that have.
 */
-bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
+Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
 
 {
   FrontendPlayerRuntimeBlockCount peersRemaining;
@@ -1681,7 +1681,7 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
    g_FrontendTransferResponsePending (set by FrontendTransfer_HandleGameplayCommandAndRosterPackets after a new
    command batch). Returns true when no batch arrived, so Frontend_StateTick ends its tick early.
 */
-bool FrontendTransfer_ConsumeProcessedFlagForMenuTick(void)
+Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick(void)
 
 {
   int previousFlag;
@@ -1801,7 +1801,7 @@ void FrontendTransfer_DispatchStagedCommandRecords(void)
    FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch. Returns true
    when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
 */
-bool FrontendTransfer_ConsumeProcessedFlag(void)
+Bool8 FrontendTransfer_ConsumeProcessedFlag(void)
 
 {
   int previousFlag;
@@ -2009,11 +2009,11 @@ void FrontendTransfer_SendLobbyCommandAndSnapshotRequest(void)
    with a parallel ring of 16-byte endpoint copies) and hands that copy to the backend send slot. The unit
    count is the high word of packedTypeAndUnitCount. Returns true when the backend send failed.
 */
-bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet)
+Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet)
 
 {
   uint32_t nextUnitCursor;
-  bool moreBytes;
+  Bool8 moreBytes;
   uint8_t *endpointBufferBase;
   uint32_t currentSequenceToken;
   uint32_t currentSenderContext;

@@ -46,14 +46,14 @@ ModelNodeRuntime_TransformLocalPoint
 
 ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
-bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12);
 
 Q12 ModelNodeRuntime_RaycastHierarchyNearest
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeNode **outNearestModelNode);
 
-bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
+Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime);
@@ -68,10 +68,10 @@ void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextAr
 
 int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot);
 
-bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode);
 
-bool ModelNodeRuntime_CreateHierarchyRecursive
+Bool8 ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
           WorldRuntimeContext *worldRuntime,ModelRuntimeNode **outNode);
@@ -84,7 +84,7 @@ Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntim
 
 ModelHierarchyEnergyDemand ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime);
 
-bool ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetYawAngle16);
+Bool8 ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetYawAngle16);
 
 uint32_t ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetPitchAngle16);
 

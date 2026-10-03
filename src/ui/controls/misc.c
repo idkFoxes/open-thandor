@@ -610,7 +610,7 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
    minimumValue..maximumValue) scaled from the range onto freeTrackLength, rounded to the nearest pixel;
    measured from the other end when invert is set. */
 static uint32_t UiRangeSliderControl_ThumbOffset(const UiRangeSliderControl *control,uint32_t freeTrackLength,
-                                                 bool invert)
+                                                 Bool8 invert)
 {
   int32_t rangeMax;
   int32_t clampedValue;
@@ -819,7 +819,7 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate c
           UiPixelCoordinate clipLeft,UiImageControl *control)
 
 {
-  bool accessFailed;
+  Bool8 accessFailed;
   GraphicsSubresourceIndex subresource;
 
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
@@ -858,7 +858,7 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
 
 {
   UiSelectableStateFlags *pressStateFlagsField;
-  bool opaqueHit;
+  Bool8 opaqueHit;
   UiSelectableStateFlags *stateFlagsField;
 
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
@@ -917,7 +917,7 @@ void UiImageControl_NonRightRelease
   UiNodeBase *previousActiveChild;
   UiSelectableStateFlags *stateFlagsField;
   UiNodeVtable *activeChildVtable;
-  bool preserveHover;
+  Bool8 preserveHover;
 
   previousActiveChild = control->activeChild;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
@@ -1236,7 +1236,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
 
 {
   UiNodeBase *hitNode;
-  bool opaqueHit;
+  Bool8 opaqueHit;
 
   if ((control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
     return UI_NODE_NONE;
@@ -1300,7 +1300,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   UiDisplaySettingsApplyButton *applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
   uint32_t bitsPerPixel = (uint32_t)(uintptr_t)selectedModeValue;
   void *selected = NULL;
-  bool modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
+  Bool8 modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
   int i;
 
   for (i = 0; i < 4; i++) {

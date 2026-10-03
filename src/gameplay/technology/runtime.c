@@ -85,7 +85,7 @@ void Technology_UnlockForFaction
 /* Tests the technology's bit in the faction's 256-bit unlock mask (records[factionIndex].technologyMasks256Bits).
    Note the inverted result: false when the technology is unlocked, true when it is still locked.
 */
-bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
+Bool8 Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
   if ((*(uint32_t *)(factionIndex * (int)sizeof(GameFactionRuntimeRecord) +
@@ -102,7 +102,7 @@ bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,Fact
    its eight prerequisite mask words must be unlocked for the faction, and no army
    of that faction may already be researching it. True means available.
 */
-bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
+Bool8 Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
   WorldOwnerListNode *ownerNode;

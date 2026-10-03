@@ -16,7 +16,7 @@
 
 void SpinLock_Acquire(RuntimeSpinLockValue *lockValue);
 
-bool SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue);
+Bool8 SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue);
 
 void SpinLock_Release(RuntimeSpinLockValue *lockValue);
 

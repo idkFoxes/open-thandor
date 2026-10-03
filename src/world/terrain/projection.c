@@ -203,7 +203,7 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
    as TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint, without line of sight). Marks the field grid
    surface dirty. Returns true (nothing applied) without a grid, outside it or on a map-edge cell.
 */
-bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
+Bool8 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -263,7 +263,7 @@ bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, but only for cells with water above them; the centre
    cell also needs a bit of cellFlagMask, the sector walks ignore the mask.
 */
-bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
+Bool8 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -1621,7 +1621,7 @@ static void TerrainProjectedTriangle_PickCursor
 
 {
   TriangleBarycentricWeightsQ12 barycentricWeights;
-  bool outsideTriangle;
+  Bool8 outsideTriangle;
   uint32_t vertex0ViewDepth;
 
   barycentricWeights = Triangle2D_ComputeBarycentricWeightsQ12Packed

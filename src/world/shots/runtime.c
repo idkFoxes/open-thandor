@@ -65,7 +65,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
   InGameSimulationTick currentTick;
   InGameRuntimeRoot *inGameRoot;
   FactionRelationState relationState;
-  bool alreadyHostile;
+  Bool8 alreadyHostile;
   Q12 conditionRatio;
   FactionNotificationCodeBase activeFactionCodeForFirst;
   FactionNotificationCodeBase activeFactionCodeForSecond;
@@ -143,7 +143,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetMo
    with *outError = 0 on success, or false with the error code of the first failing load or allocation in
    *outError (always written).
 */
-bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
+Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError)
 
 {
   ShotRuntimeSlot *pool;

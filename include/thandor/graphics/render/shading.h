@@ -90,7 +90,7 @@ void GraphicsShadingGeneratedTexture_AdvanceTileCursor(void);
 
 void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void);
 
-bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
+Bool8 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
 
 GraphicsProjectedPointPair *GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext);
@@ -131,7 +131,7 @@ extern uint32_t g_GraphicsShadingGridStepQ20;
 extern int32_t g_GraphicsShadingGridStepQ20Current;
 extern GraphicsTextureSourceAsset *g_GraphicsShadingGeneratedAsset;
 extern void *g_GraphicsShadingGridScratch;
-extern pointer g_GraphicsShadingGridScratchInterior;
+extern void *g_GraphicsShadingGridScratchInterior;
 extern GraphicsTextureSet *g_GraphicsShadingTextureSet;
 extern uint32_t g_GraphicsShadingGeneratedTextureCompletedTraversalCount;
 extern int32_t g_GraphicsShadingPositiveGridOriginQ12;

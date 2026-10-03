@@ -83,7 +83,7 @@ void FrontendRomActionTable_ExecuteRecord
 
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset);
 
-bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
+Bool8 RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
 
 void FrontendRomTransition_ProcessPendingRecord(void);
 
@@ -99,7 +99,7 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
 
 uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
 
-bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
+Bool8 RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
 
 uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
 
@@ -109,7 +109,7 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
 
 void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitionEnabled,FrontendRomActionEntry *entry);
 
-bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
+Bool8 RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode **outRootNode);
 
 void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record);
 

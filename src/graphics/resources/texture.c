@@ -80,7 +80,7 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
 
 {
   GraphicsTextureResource *newTexture;
-  bool registerFailed;
+  Bool8 registerFailed;
   GraphicsTextureSet *allocatedSet;
   uint32_t textureAllocationError;
   GraphicsTextureSetEntry *entryCursor;
@@ -244,7 +244,7 @@ GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
    alpha, for direct ARGB and paletted subresources alike. Returns false for transparent pixels, points
    outside the stored pixels and invalid input.
 */
-bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
@@ -583,12 +583,12 @@ typedef struct GraphicsTextureDecomposeState {
   int freeBytes;                       /* bytes of the work area not yet taken by records or packed pixels */
   uint8_t *packedPixels;               /* lowest packed sprite pixel */
   uint32_t packedPixelBytes;
-  bool edgeTransparent;                /* the edge colour is transparent, so border rows/columns in it are trimmed */
+  Bool8 edgeTransparent;                /* the edge colour is transparent, so border rows/columns in it are trimmed */
 } GraphicsTextureDecomposeState;
 
 /* Takes `amount` bytes of the work area's free bytes. Returns false (taking nothing) unless at least one byte
    stays free. */
-static bool GraphicsTextureDecompose_ReserveBytes(int *freeBytes,int amount)
+static Bool8 GraphicsTextureDecompose_ReserveBytes(int *freeBytes,int amount)
 {
   int bytesLeft;
 
@@ -629,7 +629,7 @@ static GraphicsTextureSourceEntry *GraphicsTextureDecompose_AddRecord
 }
 
 /* True when the `count` (at least 1) ARGB pixels from `pixel` on, `step` pixels apart, all equal `color`. */
-static bool GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t count,int step,uint32_t color)
+static Bool8 GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t count,int step,uint32_t color)
 {
   for (; count != 0; count--) {
     if (*pixel != color) {
@@ -641,7 +641,7 @@ static bool GraphicsTextureDecompose_ArgbRunIs(const uint32_t *pixel,uint32_t co
 }
 
 /* True when the `count` (at least 1) palette indices from `pixel` on, `step` bytes apart, all equal `index`. */
-static bool GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t count,int step,uint8_t index)
+static Bool8 GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t count,int step,uint8_t index)
 {
   for (; count != 0; count--) {
     if (*pixel != index) {
@@ -658,7 +658,7 @@ static bool GraphicsTextureDecompose_IndexRunIs(const uint8_t *pixel,uint32_t co
    border rows and columns in the edge colour when that is transparent (the origin records how much was cut at
    the top/left; at least one row and column stay), copies the remaining pixels in front of the packed ones and
    clears the whole logical block to background. Returns false when the work area is full. */
-static bool GraphicsTextureDecompose_CutArgbRegion
+static Bool8 GraphicsTextureDecompose_CutArgbRegion
           (GraphicsTextureDecomposeState *state,uint32_t *blockStart,int columnsLeft,uint32_t background,
           uint32_t edgeColor)
 {
@@ -759,7 +759,7 @@ static bool GraphicsTextureDecompose_CutArgbRegion
 
 /* GraphicsTextureDecompose_CutArgbRegion on 8-bit palette indices: the record gets palette index 0 and the
    packed pixels are padded to whole dwords. */
-static bool GraphicsTextureDecompose_CutIndexedRegion
+static Bool8 GraphicsTextureDecompose_CutIndexedRegion
           (GraphicsTextureDecomposeState *state,uint8_t *blockStart,int columnsLeft,uint8_t backgroundIndex,
           uint8_t edgeIndex)
 {
@@ -1062,7 +1062,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
    FATAL_ERROR_GFX_ASSET_INVALID, 0x2D (nothing but background), FATAL_ERROR_GENERAL_FAILURE (work area too
    small) or the allocator's error in *outError. No caller in the game code (only the hook slot).
 */
-bool GraphicsTextureSource_DecomposeSubresourceRegions
+Bool8 GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
           GraphicsTextureSourceAsset **outAsset,uint32_t *outError)
 
@@ -1268,7 +1268,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(Graphic
    entry is always processed, as in the original. Each entry gets no texture yet, its image index, the source
    asset and entry, and log2 of the width and height (31 for a zero size). Returns false at the first image
    whose width or height is not a power of two (that entry is left partly written). */
-static bool GraphicsTextureSet_FillEntries
+static Bool8 GraphicsTextureSet_FillEntries
           (GraphicsTextureSet *set,GraphicsTextureSourceAsset *sourceAsset,uint8_t *firstSourceEntry,
            GraphicsAssetAllocationByteSize entryCount)
 {
@@ -1370,7 +1370,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet 
 /* Enters a texture into the first free slot of g_GraphicsTextureSlots (the registry the original used to evict
    and rebuild device textures). Returns true when all GRAPHICS_TEXTURE_SLOT_CAPACITY slots are taken.
 */
-bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
+Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
 
 {
   int slotsRemaining;

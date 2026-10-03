@@ -118,51 +118,25 @@ arrive; `... campaigns [--only tutorial,luke]` wins every level of each campaign
 end. The script command `clickuntilnextlevel x y <ms>` clicks until the next level has loaded, then the times
 restart at 0. Results go to `<game dir>/chain/`; worker k uses UDP port `--port-base` (940) + k.
 
-## Generated files and tools
+## Source files that are not ordinary module code
 
-| File | Produced by | Notes |
-|---|---|---|
-| `include/thandor/generated/types.h` | Ghidra export, ordered by `tools/sort_types.py` | Re-run the script after pasting a new export. |
-| `src/<area>/<module>/*.c` | hand-written | The data of the original image (globals, tables, UI templates, strings) are ordinary C variables in the file that owns them ("Module data" section after the includes, vtables in a "Class vtables" section at the end), declared in that file's header. The original addresses are listed in `docs/original_addresses.txt`. |
-| `include/thandor/generated/ui_templates.h`, `proc_types.h` | hand-written (once generated) | UI template layouts; function pointer types of the data and callbacks. |
-| `include/thandor/generated/imports.h` | `python tools/gen_imports.py` | KERNEL32/USER32 import prototypes from `ghidra/export/imports.jsonl`. |
-| `ghidra/export/*.jsonl` | `tools/ghidra/ExportBuildData.java` (headless, see below) | Function-signature types, string values, labels, imports and struct layouts that Ghidra's C export omits (read by `gen_imports.py`, `check_layouts.py` and `tools/data`). Committed, so the tools do not need Ghidra. |
-| `include/thandor/core/ghidra.h` | hand-written | `CONCATxy`, `SUBxy`, `CARRYx`, partial access, `THANDOR_BITCAST`, `THANDOR_CONTAINER_OF`. |
+| File | Notes |
+|---|---|
+| `include/thandor/generated/types.h` | The game structures shared by all modules (once exported from the decompilation, now maintained by hand; to be split into the module headers). |
+| `src/<area>/<module>/*.c` | The data of the original image (globals, tables, UI templates, strings) are ordinary C variables in the file that owns them ("Module data" section after the includes, vtables in a "Class vtables" section at the end), declared in that file's header. The original addresses are listed in `docs/original_addresses.txt`. |
+| `include/thandor/generated/ui_templates.h`, `proc_types.h` | UI template layouts; function pointer types of the data and callbacks. |
+| `include/thandor/generated/imports.h` | KERNEL32/USER32/... import prototypes (replaced by the SDK headers in the 64-bit step). |
+| `include/thandor/core/x86_emulation.h` | What the original's x86 code does, in portable C: `THANDOR_CONTAINER_OF`, atomic exchange, x87 rounding, CPUID, the MMX lane operations. |
 
-One-shot rewriters used on `src/` (safe to re-run on a fresh decompiler export):
+The decompilation this project started from (Ghidra project and exports, `ghidra/`) and the tools that read
+it were removed from the tree after the code no longer needed them; they are in the git history.
 
-- `tools/fix_partial_access.py` — `x._off_size_` → `THANDOR_PART` / `THANDOR_READ_PART` / `THANDOR_WRITE_PART`
-- `tools/fix_abi_casts.py <msvc.log>` — register-image struct casts flagged by C2440 → `THANDOR_BITCAST`
-- `tools/fix_stack_refs.py` — leftover `stack0x...` slots → per-function `thandor_stack_frame`
-
-## Check tools (`tools/data`)
-
-`param_ret_scan.py` and `scanaddr_analyze.py` take the original entry address of a C function from the
-`/* Address: 0x... */` comment directly above it (`common.function_map()`). `param_ret_scan.py` also
-needs `--original <thandor.exe>` and `--asm <dir>` (per-function disassembly, default `build-data\asm`).
-Produce the disassembly once with Ghidra:
-
-```bat
-"%GHIDRA_HOME%\support\analyzeHeadless.bat" %TEMP%\ghproj thandor -import ghidra\thandor.exeV537.gzf -noanalysis ^
-    -scriptPath tools\ghidra -postScript DumpDisassembly.java build-data\asm * -deleteProject
-```
+## Data tools (`tools/data`)
 
 | Script | Output |
 |---|---|
-| `scanaddr_analyze.py <scanaddr.txt>` | files (packages, saves) that store original function entries or labeled data addresses, from the `scanaddr` self-test |
-| `param_ret_scan.py` | check: functions reached through pointers that take more parameters than the original pops |
-| `unresolved_registers.py` | check: functions that still read register values the decompiler could not resolve (`in_EAX`, `unaff_EBX`, ...) |
+| `fld.py`, `lev.py`, `pck.py`, `mdl2obj.py` | readers/converters for the game's file formats |
 | `symbolize.py <crash_raw.log> <thandor.map>` | names for the raw crash dump |
-
-## Refreshing the Ghidra export
-
-Needs Ghidra 12 and JDK 21+ (`JAVA_HOME`):
-
-```bat
-"%GHIDRA_HOME%\support\analyzeHeadless.bat" %TEMP%\ghproj thandor -import ghidra\thandor.exeV537.gzf -noanalysis ^
-    -scriptPath tools\ghidra -postScript ExportBuildData.java ghidra\export -deleteProject
-python tools\gen_imports.py
-```
 
 ## Known TODOs
 

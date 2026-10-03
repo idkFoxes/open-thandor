@@ -18,7 +18,7 @@
 
 void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetModelRuntime,ShotRuntimeSlot *shotRuntime);
 
-bool ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
+Bool8 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 
 void ShotRuntime_ShutdownGraphicsResources(void);
 

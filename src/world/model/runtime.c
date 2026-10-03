@@ -31,7 +31,7 @@ int g_ModelRuntimeRebaseDelta = 0;
    rotation and the attachment translation. Returns true and stores the child's model runtime in
    *outChildModelRuntime, or false (leaving it unchanged) when the model could not be created.
 */
-bool ModelRuntimePool_RepairDeferredChild
+Bool8 ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
           ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,
@@ -89,7 +89,7 @@ bool ModelRuntimePool_RepairDeferredChild
    radius; g_ModelCullViewRelative holds its view-relative position. Projects it and, when it lies fully in
    front of the near plane, collects the nearby shading records and draws the mesh group picked by depth.
    Returns false when the node's depth is not beyond the near plane (the walk then also skips its children). */
-static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
+static Bool8 ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
 
 {
   ModelResource *renderView;
@@ -149,7 +149,7 @@ static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
    g_ModelCullViewRelative) against the four side planes of the view frustum and draws it when it passes.
    A plane distance above the subtree radius means the whole subtree is outside: returns false and the walk
    ends here. Above only the node radius, just the node is culled and the children are still visited. */
-static bool ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
+static Bool8 ModelRuntime_CullAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
 
 {
   int subtreeRadius;
@@ -261,7 +261,7 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
    hierarchy test; callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot
    updates (src/world/shots/maintenance.c).
 */
-bool ModelRuntime_RaycastCandidateListNearest
+Bool8 ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,

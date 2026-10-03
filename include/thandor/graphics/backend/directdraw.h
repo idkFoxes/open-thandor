@@ -14,17 +14,17 @@
 /* Submodule: graphics/backend/directdraw. */
 /* Functions are grouped by semantic ownership. */
 
-bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
+Bool8 GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
 
-bool DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
+Bool8 DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex);
 
 int __stdcall DirectDraw_EnumAdapterCallback (TH_LEGACY_GUID *adapterGuid,char *driverDescription,char *driverName, void *applicationContext);
 
 int32_t __stdcall DirectDraw_EnumDisplayModeCallback (DDSURFACEDESC_DX6 *surfaceDesc,FrontendDisplayAdapterIndex adapterIndex);
 
-bool GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
+Bool8 GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width,uint32_t *errorCode);
 

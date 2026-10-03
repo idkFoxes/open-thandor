@@ -70,7 +70,7 @@ void __cdecl NetworkBackendFallback_CloseActiveSocket(void)
 /* Default g_NetworkBackendSlot4 (receive a datagram) in the image data: returns false (nothing received), so
    UiTransfer receive loops stop at once.
 */
-bool NetworkBackendFallback_ReceiveDatagram
+Bool8 NetworkBackendFallback_ReceiveDatagram
                (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer)
 
 {
@@ -80,7 +80,7 @@ bool NetworkBackendFallback_ReceiveDatagram
 /* Default g_NetworkBackendSlot5 (send a datagram) in the image data, called by UiTransfer_StagePacketAndSend:
    drops the packet and returns true (success) so a session without network keeps running.
 */
-bool NetworkBackendFallback_SendDatagram
+Bool8 NetworkBackendFallback_SendDatagram
                (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -89,7 +89,7 @@ bool NetworkBackendFallback_SendDatagram
 
 /* Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (returns true).
 */
-bool NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText)
+Bool8 NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText)
 
 {
   return true;
@@ -270,7 +270,7 @@ void NetworkFallback_CloseActiveSocket(void)
    the packet header carries its size); false when no socket is open or recvfrom fails, including
    WSAEWOULDBLOCK when nothing is pending.
 */
-bool NetworkFallback_ReceiveDatagram
+Bool8 NetworkFallback_ReceiveDatagram
           (WinSockAddress *sourceAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -297,7 +297,7 @@ bool NetworkFallback_ReceiveDatagram
    g_PackageLastErrorPath and returns false (the original also reported failure and returned
    FATAL_ERROR_NETWORK_SOCKET, but no caller reads the code).
 */
-bool NetworkFallback_SendDatagram
+Bool8 NetworkFallback_SendDatagram
           (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -324,7 +324,7 @@ bool NetworkFallback_SendDatagram
    endpoint descriptor. Returns true when the text does not convert or the host is
    unknown, false on success.
 */
-bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)
+Bool8 NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)
 
 {
   NetworkEndpointAddressHeader4 bindAddressHeader;

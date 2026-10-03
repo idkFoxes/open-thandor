@@ -218,7 +218,7 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   FieldGridCell *cell;
   SelectionPlayerPairRecord *pairRecord;
   int *scratchHeightCursor;
-  bool containsAnchorPair;
+  Bool8 containsAnchorPair;
   int *accumulatorPlane;
 
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -304,7 +304,7 @@ void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   FieldGridCell *cell;
   SelectionPlayerPairRecord *pairRecord;
   int *scratchHeightCursor;
-  bool containsAnchorPair;
+  Bool8 containsAnchorPair;
   int *accumulatorPlane;
 
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -383,7 +383,7 @@ void FieldGrid_RebuildLocalInfluenceState
   FieldGridCell *scanCell;
   SelectionPlayerPairRecord *pairRecord;
   int *scratchHeightCursor;
-  bool containsAnchorPair;
+  Bool8 containsAnchorPair;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -632,7 +632,7 @@ void FieldGrid_ApplyLocalCellUpdate
   FieldGridAsset *fieldGrid;
   uint32_t remainingPairCount;
   SelectionPlayerPairRecord *pairRecord;
-  bool containsAnchorPair;
+  Bool8 containsAnchorPair;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
@@ -743,7 +743,7 @@ void FieldGrid_SetCellResourceSupportFlag
    terrain height and true is returned. Outside the grid false is returned and *outPoint is the input position
    with height 0 (always written).
 */
-bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
+Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
 
 {
   int gridColumnIndex;
@@ -751,7 +751,7 @@ bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *fiel
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
   Q12 terrainHeightQ12;
-  bool outOfBounds;
+  Bool8 outOfBounds;
 
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 =
@@ -783,7 +783,7 @@ bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *fiel
    Outside the grid false is returned and *outPoint is the input position with height 0 (always written).
    Used by SelectionOverlay_DrawWorldPointMarker.
 */
-bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
+Bool8 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint)
 
 {
   int gridColumnIndex;
@@ -791,7 +791,7 @@ bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *f
   int surfaceHeightQ12;
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
-  bool outOfBounds;
+  Bool8 outOfBounds;
 
   /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
   gridHalfRowCoordinateQ12 =
@@ -850,7 +850,7 @@ int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
    diagonal neighbour is a border cell. Entries 0, 2 and 3 of g_FieldGridInterpolationCallbacks5; also called directly by
    ArmyPlacementContact_ApplyTerrainHeight and the army movement code.
 */
-bool FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+Bool8 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   uint32_t gridHalfRowCoordinateQ12;
@@ -966,7 +966,7 @@ int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fi
    g_FieldGridInterpolationCallbacks5; also called directly by
    ArmyPlacementContact_ApplyWaterSurfaceHeight.
 */
-bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   int gridColumnIndex;
@@ -1028,7 +1028,7 @@ bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGr
    interpolation table (entry 4 of g_FieldGridInterpolationCallbacks5). Stores the Q12 height in
    *outHeightQ12; returns false (and stores height 0) outside the grid or on a border cell.
 */
-bool FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
+Bool8 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12)
 
 {
   uint32_t gridHalfRowCoordinateQ12;
@@ -1117,7 +1117,7 @@ typedef struct FieldGridTriangleLookup {
 
 /* Finds the grid square under (worldYQ12, worldXQ12) and the fractions inside it. Returns false outside the
    grid or when the square's top-left or lower-right corner is a border cell. */
-static bool FieldGrid_LocateInterpolationTriangle
+static Bool8 FieldGrid_LocateInterpolationTriangle
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,FieldGridTriangleLookup *lookup)
 {
   uint32_t rowQ12;
@@ -1223,7 +1223,7 @@ static uint32_t FieldGrid_BlendTriangleNormals
    Returns false (outputs untouched) outside the grid or on a border cell. Used by the articulated army contact
    code (ArmyArticulatedRuntime_UpdateLeftTerrainContact, ..RightTerrainContact and their siblings).
 */
-bool FieldGrid_InterpolateTerrainHeightAndNormal
+Bool8 FieldGrid_InterpolateTerrainHeightAndNormal
           (Q12 worldY,Q12 worldX,FieldGridAsset *field,Q12 *outHeightQ12,uint32_t *outPackedNormalAngles)
 
 {
@@ -1255,7 +1255,7 @@ bool FieldGrid_InterpolateTerrainHeightAndNormal
    ArmyPlacement_TestGridRuntimeAndFieldBlocking, ArmyPlacementCollision_TestCurrentRuntime
    and ..TestCandidateAndClearance with the owner army's faction index.
 */
-bool FieldGrid_TestWorldPointBlocked
+Bool8 FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           )
 
@@ -1490,7 +1490,7 @@ void TerrainDirectionTable_AdvanceAndRebuildVectors(void)
    returns false and stores FIELD_GRID_RAYCAST_MISS_DISTANCE as the distance (both outputs are always written;
    outMaterialIndex may be NULL). Used for line-of-fire tests and terrain picking.
 */
-bool FieldGrid_RaycastTerrainSurfaceDistance
+Bool8 FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12,
           uint32_t *outMaterialIndex)
@@ -1511,7 +1511,7 @@ bool FieldGrid_RaycastTerrainSurfaceDistance
   uint32_t currentColumnQ12;
   uint32_t currentRowQ12;
   int stepsRemaining;
-  bool traversalDone;
+  Bool8 traversalDone;
   FixedDirection rayDirection;
 
   gridWidth = fieldGrid->gridWidth;
@@ -1578,7 +1578,7 @@ bool FieldGrid_RaycastTerrainSurfaceDistance
    FIELD_GRID_RAYCAST_MISS_DISTANCE there on a miss (the original also returned the hit cell's material byte as a
    second result; no caller reads it).
 */
-bool FieldGrid_RaycastSecondarySurfaceDistance
+Bool8 FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12)
 
@@ -1598,7 +1598,7 @@ bool FieldGrid_RaycastSecondarySurfaceDistance
   uint32_t currentColumnQ12;
   uint32_t currentRowQ12;
   int stepsRemaining;
-  bool traversalDone;
+  Bool8 traversalDone;
   FixedDirection rayDirection;
 
   gridWidth = fieldGrid->gridWidth;
@@ -1662,7 +1662,7 @@ bool FieldGrid_RaycastSecondarySurfaceDistance
    along the render context's view angles from a model's sample points, to find terrain between
    them and the viewer.
 */
-bool FieldGrid_RaycastTerrainTrianglesAlongDirection
+Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
           Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,
           Q12 *outDistanceQ12)
@@ -1689,7 +1689,7 @@ bool FieldGrid_RaycastTerrainTrianglesAlongDirection
   FieldGridCell *currentCell;
   FieldGridCell *sampleCell;
   int rowStrideBytes;
-  bool traversalDone;
+  Bool8 traversalDone;
   FixedDirection rayDirection;
   FieldCellPersistedAux cornerHeight0Q12;
   FieldCellPersistedAux cornerHeight1Q12;
@@ -1925,7 +1925,7 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
    Returns false when one of them is set, true when the point is outside the grid or neither bit is
    set. Unit, shot and effect code play positioned sounds only when this returns false.
 */
-bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
+Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
   FieldGridAsset *activeFieldGrid;
@@ -1995,7 +1995,7 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
    status is ignored), or false with the allocation or write error in *outError. Called by
    InGameUiCommand_SaveFieldAndLevelAssetImages.
 */
-bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
+Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError)
 
 {
   FieldGridAsset *fieldGridImageCopy;

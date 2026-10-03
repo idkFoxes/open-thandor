@@ -30,7 +30,7 @@ void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorit
 
 void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase);
 
-bool DwordBlock64Array_ContainsExactRecord
+Bool8 DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord);
 
 void * __cdecl ArenaHeap_Init(void);

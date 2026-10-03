@@ -119,7 +119,7 @@ void RichTextCommandStream_DrawWrappedBlock
    to place the baseline below lineTopY, then interprets glyphs, colour, font, nested-stream and inline-image
    commands until the end of the stream or a line break.
 */
-bool RichTextCommandStream_DrawSingleLine
+Bool8 RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX)
@@ -341,7 +341,7 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
    than RICHTEXT_NESTING_LIMIT) the output is cut and terminated and false is returned. (The original also
    returned the byte count including the terminator, which no caller reads.)
 */
-bool RichTextCommandStream_CopyToNarrow
+Bool8 RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
 {
@@ -445,14 +445,14 @@ typedef struct RichTextMarkupParser {
   uint32_t remainingCapacityBytes;
   uint32_t codeUnitBias;
   int32_t key;
-  bool insideTag;
+  Bool8 insideTag;
   uint32_t tagCount;
   uint16_t **tagStarts;
   int32_t *tagKeys;
 } RichTextMarkupParser;
 
 /* Appends one code unit to the output; false when no more than 2 bytes are left. */
-static bool RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t codeUnit)
+static Bool8 RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t codeUnit)
 {
   if (parser->remainingCapacityBytes <= 2) {
     return false;
@@ -463,7 +463,7 @@ static bool RichTextMarkup_EmitCodeUnit(RichTextMarkupParser *parser,uint16_t co
 }
 
 /* A text byte: emitted with the current code page bias inside a tag, ignored outside. */
-static bool RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t markupByte)
+static Bool8 RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t markupByte)
 {
   if (!parser->insideTag) {
     return true;
@@ -472,7 +472,7 @@ static bool RichTextMarkup_EmitTextByte(RichTextMarkupParser *parser,uint32_t ma
 }
 
 /* '#>': ends the string with a NUL terminator, padded to a dword boundary. */
-static bool RichTextMarkup_TerminateString(RichTextMarkupParser *parser)
+static Bool8 RichTextMarkup_TerminateString(RichTextMarkupParser *parser)
 {
   if (((uint32_t)(uintptr_t)parser->outputCursor & 2) == 0) {
     if (parser->remainingCapacityBytes <= 4) {
@@ -628,7 +628,7 @@ static uint32_t RichTextMarkup_FirstUngroupedTag(const int32_t *tagKeys,uint32_t
    {size, string count, key, 0}, the string offsets (relative to the group header) and the strings. String k
    ends at tagStarts[k + 1]. Returns false when remainingCapacityBytes runs out; otherwise advances
    *assetCursorInOut behind the last group and stores the group count. */
-static bool RichTextMarkup_WriteStringGroups
+static Bool8 RichTextMarkup_WriteStringGroups
           (uint16_t **tagStarts,int32_t *tagKeys,uint32_t tagCount,uint32_t remainingCapacityBytes,
            uint32_t **assetCursorInOut,uint32_t *outGroupCount)
 {
@@ -689,7 +689,7 @@ static bool RichTextMarkup_WriteStringGroups
 }
 
 /* Frees the string buffer and fails with FATAL_ERROR_GENERAL_FAILURE (arena space exhausted). */
-static bool RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outError)
+static Bool8 RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outError)
 {
   g_MemoryApi.free(memory);
   *outError = FATAL_ERROR_GENERAL_FAILURE;
@@ -699,7 +699,7 @@ static bool RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outError
 /* Frees the string buffer and fails with the "TXT2STR: unknown character" message, which gets the byte offset
    after the offending character(s) (markupCursor - markupBytes) written in at code unit
    RICHTEXT_MARKUP_ERROR_OFFSET_UNIT. */
-static bool RichTextMarkup_ReportInvalidCharacter
+static Bool8 RichTextMarkup_ReportInvalidCharacter
           (uint16_t *memory,uint8_t *markupBytes,uint8_t *markupCursor,uint32_t *outError)
 {
   g_MemoryApi.free(memory);
@@ -725,7 +725,7 @@ static bool RichTextMarkup_ReportInvalidCharacter
    allocator's error, when the arena space runs out FATAL_ERROR_GENERAL_FAILURE. On success the original also
    returns the asset size and asset + 0x100; they are dropped (there is no caller).
 */
-bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError)
+Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError)
 
 {
   /* The original pushes a (string start, key) pair per '#<' on the machine stack (and an (end of output, -1)
@@ -823,7 +823,7 @@ bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsse
    the terminator in *outBytesWritten (may be NULL); on overflow (or nesting deeper than RICHTEXT_NESTING_LIMIT)
    the output is cut and terminated, *outBytesWritten is left untouched and false is returned.
 */
-bool RichTextCommandStream_CopyExpanded
+Bool8 RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
            uint32_t *outBytesWritten)
 
@@ -1109,7 +1109,7 @@ static uint16_t *RichTextCommandStream_FindWrapPoint
    image height of the line in *lineHeight (also for the last line) and returns true while more lines follow,
    false when this line ends the text.
 */
-bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight)
+Bool8 RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight)
 
 {
   uint32_t glyphLineHeight;
@@ -1130,8 +1130,8 @@ bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiP
 
 /* End of RichTextCommandStream_DrawNextWrappedLine: the next line starts at nextLine; stores the line height
    and passes moreLinesFollow through. */
-static bool RichTextCommandStream_EndWrappedLine
-          (uint16_t *nextLine,uint32_t lineHeight,UiPixelExtent *lineAdvance,bool moreLinesFollow)
+static Bool8 RichTextCommandStream_EndWrappedLine
+          (uint16_t *nextLine,uint32_t lineHeight,UiPixelExtent *lineAdvance,Bool8 moreLinesFollow)
 {
   g_RichTextRuntimeBufferUsedWords = (uint32_t)((uint8_t *)nextLine - g_FontRuntimeBuffer) >> 1;
   *lineAdvance = lineHeight;
@@ -1146,7 +1146,7 @@ static bool RichTextCommandStream_EndWrappedLine
    *lineAdvance (also for the last line) and returns true while more lines follow, false when this line ends
    the text. Called directly by RichTextCommandStream_DrawWrappedBlock.
 */
-bool RichTextCommandStream_DrawNextWrappedLine
+Bool8 RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX,UiPixelExtent *lineAdvance)

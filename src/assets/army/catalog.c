@@ -45,19 +45,19 @@ ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
-  bool broaderAbsent;
+  Bool8 broaderAbsent;
   ArmyAssetId candidateId;
 
   baseId = recordId;
   candidateId = baseId + 1;
   while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(candidateId)) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
+    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
     recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
         baseId--;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(baseId);
+        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -78,19 +78,19 @@ ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
-  bool broaderAbsent;
+  Bool8 broaderAbsent;
   ArmyAssetId candidateId;
 
   baseId = recordId;
   candidateId = baseId - 1;
   while (ArmyAssetRegistry_HasNoPlaceableUnitWithId(candidateId)) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
+    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(candidateId);
     recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
         baseId++;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(baseId);
+        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoUnitWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -153,19 +153,19 @@ ArmyAssetId ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
-  bool broaderAbsent;
+  Bool8 broaderAbsent;
   ArmyAssetId candidateId;
 
   baseId = recordId;
   candidateId = baseId + 1;
   while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(candidateId)) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
+    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
     recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
         baseId--;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(baseId);
+        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -186,19 +186,19 @@ ArmyAssetId ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
-  bool broaderAbsent;
+  Bool8 broaderAbsent;
   ArmyAssetId candidateId;
 
   baseId = recordId;
   candidateId = baseId - 1;
   while (ArmyAssetRegistry_HasNoPlaceableObjectWithId(candidateId)) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
+    broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(candidateId);
     recordId = candidateId;
     if (broaderAbsent) {
       /* Left the run: walk back to its other end. */
       do {
         baseId++;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(baseId);
+        broaderAbsent = (Bool8)ArmyAssetRegistry_HasNoObjectWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -268,7 +268,7 @@ uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 /* Checks whether an army asset id is registered and enabled: returns false only when the record exists
    and bit 0 (ARMY_ASSET_FLAG_ENABLED) of its flags is set, true when it is missing or disabled.
 */
-bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
+Bool8 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 
 {
   ArmyAssetRecordPrefix *registeredRecord;
@@ -285,14 +285,14 @@ bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
    model tree, rootNodeOffsetOrPointer), whose selectionDetailValue is non-zero and whose flags share a bit with
    requiredDefinitionFlags.
 */
-bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
+Bool8 ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
   ArmyAssetRecord *linkedAsset;
   int linksRemaining;
-  bool technologyLocked;
+  Bool8 technologyLocked;
   uint32_t lookupError;
   ArmyAssetRecordPrefix *linkedRecord;
 

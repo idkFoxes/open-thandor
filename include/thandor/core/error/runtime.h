@@ -140,17 +140,17 @@
 
 void __cdecl ErrorSystem_Init(void);
 
-bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
+Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
 
 int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
 
 void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 
-uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool failed);
+uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,Bool8 failed);
 
 void ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 
-uint32_t FatalError_Exit(uint32_t valueOrError,bool failed);
+uint32_t FatalError_Exit(uint32_t valueOrError,Bool8 failed);
 
 int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 

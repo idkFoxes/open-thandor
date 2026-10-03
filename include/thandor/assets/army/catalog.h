@@ -58,9 +58,9 @@ ArmyAssetId ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId rec
 
 uint32_t ArmyAsset_PrepareRecords(ArmyAssetHeader *asset);
 
-bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId);
+Bool8 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId);
 
-bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
+Bool8 ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord);
 

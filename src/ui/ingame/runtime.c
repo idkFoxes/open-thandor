@@ -325,7 +325,7 @@ DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {0};
 /* True when a g_InGameKeyboardDispatchRecords record {key code, required modifier mask, handler} matches the
    key: a zero mask matches only while neither Ctrl nor Alt is held, otherwise any modifier of the mask must be
    held. */
-static bool InGameEditorKeyboard_RecordMatches(const uint32_t *dispatchRecord,uint32_t keyboardEventCode,
+static Bool8 InGameEditorKeyboard_RecordMatches(const uint32_t *dispatchRecord,uint32_t keyboardEventCode,
           uint32_t keyboardStateMask)
 {
   if (dispatchRecord[0] != keyboardEventCode) {
@@ -783,7 +783,7 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
 
 /* True when the first 32 UTF-16 units of text equal the cheat phrase g_DeveloperChatPhraseUtf16 (compared as
    16 dwords, like the original REPE CMPSD). */
-static bool InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
+static Bool8 InGameChatInput_MatchesCheatPhrase(const uint16_t *text)
 
 {
   const int *phraseDwords;
@@ -809,13 +809,13 @@ static CommandPayload InGameChatInput_CollectTickedSlotBits(UiNodeBase *uiRoot,u
   uint32_t slotIndex;
   uint32_t slotBit;
   CommandPayload recipientMask;
-  bool isSelected;
+  Bool8 isSelected;
 
   recipientMask = 0;
   slotBit = baseBit;
   for (slotIndex = 0; slotIndex < 7; slotIndex++) {
     slotBit = slotBit * 2;
-    isSelected = (bool)UiSelectableControl_IsSelected
+    isSelected = (Bool8)UiSelectableControl_IsSelected
                             ((UiSelectableControl *)THANDOR_UI_AT(uiRoot,g_UiSevenSlotSelectionControlOffsets[slotIndex]));
     if (isSelected) {
       recipientMask = recipientMask | slotBit;
@@ -929,7 +929,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
 
 /* Creates the save package at savePath; when that fails, creates the package's directory and tries once more.
    Returns true when the package is open in *packageHandle. */
-static bool InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)
+static Bool8 InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packageHandle)
 
 {
   if (InGameSaveGame_CreatePackage(savePath,packageHandle)) {
@@ -947,13 +947,13 @@ static bool InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packa
 /* Writes the runtime segments army, modul, shot, effect, widget, light, field, level and daten and the campagne
    entry (deleted without a campaign). Pointer-holding images are converted to offsets for writing and rebased
    afterwards, also when the write failed. Returns true on success; stops at the first failed write. */
-static bool InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle packageHandle)
+static Bool8 InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle packageHandle)
 
 {
   InGameLevelConditionStorage *levelStorage;
   ResourceRegistrationImagePair domainImagePair;
   RuntimeHexSegmentImage segmentImage;
-  bool upsertOk;
+  Bool8 upsertOk;
 
   ArmyRuntimePool_ConvertPointersToOffsetsForSave();
   upsertOk = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
@@ -1035,7 +1035,7 @@ static bool InGameSaveGame_WriteRuntimeEntries(void *worldView,EngineFileHandle 
 
 /* True when there is nothing to store in the oldunit entry: no old-unit records and every secondary-table
    dword zero. */
-static bool InGameSaveGame_OldUnitTablesAreEmpty(void)
+static Bool8 InGameSaveGame_OldUnitTablesAreEmpty(void)
 
 {
   int index;
@@ -1054,7 +1054,7 @@ static bool InGameSaveGame_OldUnitTablesAreEmpty(void)
 
 /* Writes the oldunit entry: the record count followed by the primary and the secondary table, packed into a
    temporary allocation. Returns false only when that allocation fails. */
-static bool InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
+static Bool8 InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
 
 {
   uint32_t *oldUnitImage;
@@ -1085,7 +1085,7 @@ static bool InGameSaveGame_WriteOldUnitEntry(EngineFileHandle packageHandle)
 /* Reads the 0x200-byte package header into g_PackageScratchBuffer, fills in the save name (file name of savePath;
    the directory lands behind the header), the packed date and time, the "date, time" text, the level title text
    id and the campaign index, and writes it back. Returns true on success. */
-static bool InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
+static Bool8 InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle packageHandle)
 
 {
   void *handle = (void *)(uintptr_t)packageHandle;
@@ -1121,7 +1121,7 @@ static bool InGameSaveGame_WritePackageHeader(void *savePath,EngineFileHandle pa
 
 /* Creates the package and writes every entry and the header; on success the package is unmounted.
    Returns true on success; on failure the package stays as it is. */
-static bool InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
+static Bool8 InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
 
 {
   EngineFileHandle packageHandle;
@@ -1157,12 +1157,12 @@ static bool InGameSaveGame_WritePackageContents(void *worldView,void *savePath)
    and the level title and campaign index. Returns true on failure (an opened package is then not unmounted); the busy
    count is raised meanwhile.
 */
-bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
+Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath)
 
 {
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  bool written;
+  Bool8 written;
 
   g_InGameResourceRegistrationBusyCount++;
   /* first hand every player's pending army asset back to its faction */
@@ -2360,7 +2360,7 @@ static GraphicsTextureSourceAsset *InGameUiRuntime_ReplaceTexturePackage
    package cannot be loaded.
    The diagram, window and technology texture slots are typed uint32_t in the image data, hence the slot casts.
 */
-bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError)
+Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError)
 
 {
   uint32_t textureLoadError;
@@ -2733,7 +2733,7 @@ enum InGameKeyCommandContinuation {
 /* True when the held modifiers fit a key command record's modifier class: no class means no modifier may be
    held; otherwise Shift must be held exactly when the class has Shift, and Ctrl/Alt must be held exactly as
    the class asks (neither, Ctrl only, Alt only, or both). */
-static bool InGameKeyCommand_ModifiersMatch(uint32_t classFlags,UiKeyboardStateMask modifierFlags)
+static Bool8 InGameKeyCommand_ModifiersMatch(uint32_t classFlags,UiKeyboardStateMask modifierFlags)
 
 {
   if (classFlags == 0) {
@@ -2783,7 +2783,7 @@ static bool InGameKeyCommand_ModifiersMatch(uint32_t classFlags,UiKeyboardStateM
    pointer context (FrontendModelPointerContext_KeyboardEvent), which then passes the key on, so keys such as Esc
    reach the in-game root's hotkeys. A matched record returns false, also when the command is blocked.
 */
-bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world)
 
 {
@@ -2791,9 +2791,9 @@ bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
      label of the switch below. world is the world view (worldRuntime). */
   UiCommandDispatchRecord *record = g_InGameCommandDispatchRecords; /* ends at the terminator record [63] */
   uint32_t target;
-  bool localSession =
+  Bool8 localSession =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL;
-  bool commandsBlocked =
+  Bool8 commandsBlocked =
        (g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) != 0;
 
   while ((record->commandCode != 0) &&
@@ -3000,7 +3000,7 @@ void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView)
 void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *world)
 
 {
-  bool hasActiveOwnerType16;
+  Bool8 hasActiveOwnerType16;
 
   /* the original tests WORLD_INPUT_DISABLED twice */
   if ((((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) &&
@@ -3316,7 +3316,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
 
 {
   WorldInteractionFlags *interactionFlagsField;
-  bool isSelected;
+  Bool8 isSelected;
   RichTextExtent wrappedExtent;
   uint16_t *resolvedText;
   InGameMissionHelpRootView *uiRoot;
@@ -3325,7 +3325,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   while ((uiRoot->rootUi).base.parent != UI_NODE_NONE) {
     uiRoot = (InGameMissionHelpRootView *)(uiRoot->rootUi).base.parent;
   }
-  isSelected = (bool)UiSelectableControl_IsSelected((UiSelectableControl *)source);
+  isSelected = (Bool8)UiSelectableControl_IsSelected((UiSelectableControl *)source);
   if (!isSelected) {
     UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,&uiRoot->gameWindowPageStack);
     /* UI_NODE_SUPPRESSED on the world view: a window blocks the world input */
@@ -3699,7 +3699,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
   SelectionPlayerRuntimeBlock *localSelectionBlock;
   uint32_t placementSubMode;
   uint32_t cursorCode;
-  bool callbackAccepted;
+  Bool8 callbackAccepted;
   ArmyRuntimeSlot *previewArmyRuntime;
 
   /* the world owner-list node under the pointer; only model nodes count */
@@ -3826,7 +3826,7 @@ static void InGameEditorPointer_GetGridPoint(Q12 pointerX,Q12 pointerY,FieldGrid
 }
 
 /* Flags of the field cell at the (rounded) grid point; false when the point lies outside the field. */
-static bool InGameEditorPointer_GetCellFlags(FieldGridAsset *fieldGrid,uint32_t gridXQ12,uint32_t gridYQ12,
+static Bool8 InGameEditorPointer_GetCellFlags(FieldGridAsset *fieldGrid,uint32_t gridXQ12,uint32_t gridYQ12,
           uint32_t *cellFlags)
 
 {
@@ -4164,7 +4164,7 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   int ownerFactionIndex;
   GameEntityRuntime *entry;
   InGameCommandPayloadTripletValue32 payloadValue;
-  bool isEntryAbsent;
+  Bool8 isEntryAbsent;
   uint32_t tripletDwordCount;
   CommandPayload *tripletEntry;
 

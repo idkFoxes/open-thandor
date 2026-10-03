@@ -85,7 +85,7 @@ void RichTextCommandStream_DrawWrappedBlock
           UiPixelCoordinate clipLeft,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX);
 
-bool RichTextCommandStream_DrawSingleLine
+Bool8 RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX);
@@ -95,20 +95,20 @@ void RichTextCommandStream_PatchPayloadBySelector
 
 void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream);
 
-bool RichTextCommandStream_CopyToNarrow
+Bool8 RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
-bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError);
+Bool8 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError);
 
-bool RichTextCommandStream_CopyExpanded
+Bool8 RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source,
            uint32_t *outBytesWritten);
 
 RichTextExtent RichTextCommandStream_MeasureLine(UiPackedTextStyle packedStyle,uint16_t *commandStream);
 
-bool RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight);
+Bool8 RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth,UiPixelExtent *lineHeight);
 
-bool RichTextCommandStream_DrawNextWrappedLine
+Bool8 RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX,UiPixelExtent *lineAdvance);

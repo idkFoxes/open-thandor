@@ -81,8 +81,8 @@ static void InGameWorldOverlay_BuildPlacementPreviewArmy
   Q12 validatedWorldXQ12;
   Q12 validatedWorldYQ12;
   PackedArgb32 previewTint;
-  bool validated;
-  bool placeable;
+  Bool8 validated;
+  Bool8 placeable;
   PckArmyAssetIdCatalog armyAssetId;
 
   g_InGamePlacementPreviewArmyRuntime = NULL;
@@ -141,7 +141,7 @@ static void InGameWorldOverlay_BuildPlacementPreviewArmy
 
 /* Places an EGATH0 marker at the exit point of every own class-13 army with a rally point set (at most
    OVERLAY_OWNED_MARKER_CAPACITY). Returns false when the world owner list is empty. */
-static bool InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *worldRuntime)
+static Bool8 InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *worldRuntime)
 
 {
   ModelRuntimeNode *ownerNode;
@@ -194,7 +194,7 @@ static bool InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *worl
 }
 
 
-static bool InGameWorldOverlay_CommandTargetMarkersFull(void)
+static Bool8 InGameWorldOverlay_CommandTargetMarkersFull(void)
 
 {
   return OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount;
@@ -464,7 +464,7 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipBottom,UiPixelCoordi
   UiPixelCoordinate originalCornerBY;
   UiPixelCoordinate originalCornerBX;
   uint32_t cornerWidth;
-  bool accessFailed;
+  Bool8 accessFailed;
   GraphicsTextureLogicalSize cornerSize;
   
   /* order the corners: A becomes bottom-right (maximum), B top-left (minimum) */
@@ -538,7 +538,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
   int64_t worldYProduct;
   int screenX;
   int screenY;
-  bool accessFailed;
+  Bool8 accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsTextureLogicalSize markerSize;
   FixedVectorQ12 terrainPoint;
@@ -602,7 +602,7 @@ void SelectionOverlay_DrawWorldPointMarker
           FieldGridAsset *fieldGrid)
 
 {
-  bool accessFailed;
+  Bool8 accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsTextureLogicalSize markerSize;
   FixedVectorQ12 markerPoint;
@@ -658,7 +658,7 @@ void SelectionOverlay_DrawGridVertexMarkers
   int screenY;
   uint8_t *vertexCursor;
   int coordinateOffset;
-  bool accessFailed;
+  Bool8 accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
@@ -723,7 +723,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
   int screenY;
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
-  bool accessFailed;
+  Bool8 accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t receiverTextureId;
   GraphicsTextureSourceAsset *receiverTextureSource;
@@ -808,7 +808,7 @@ void SelectionOverlay_DrawResourceCellMarkers
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
   FieldCellPackedFlagsAndMaterial selectedResourceFlag;
-  bool accessFailed;
+  Bool8 accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t flaggedTextureId;
   GraphicsTextureSourceAsset *flaggedTextureSource;
@@ -892,7 +892,7 @@ void SelectionOverlay_DrawDebugMarkedCellMarkers
   int screenY;
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
-  bool accessFailed;
+  Bool8 accessFailed;
   GraphicsTextureLogicalSize markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
@@ -1075,7 +1075,7 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
 
 /* Class vtables. */
 
-code *g_InGamePointerModeHandlers[8] = {
+InGamePointerModeHandler *g_InGamePointerModeHandlers[8] = {
     /* 0 */ 0,
     /* 1 */ (void *)InGameSelection_SetAircraftPadTargetLane1,
     /* 2 */ (void *)InGameSelection_SetAircraftPadTargetLane2,

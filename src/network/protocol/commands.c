@@ -157,7 +157,7 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
    with payloadValue in any of its three payload dwords, so input handlers do not queue a selection change
    twice. Single player has no queue and always answers no.
 */
-bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
+Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress)
 
 {
@@ -312,7 +312,7 @@ static const CommandTableEntry g_InGameCommandTable[] = {
 
 /* False for the table entries that are no four-argument command handlers: the queue functions and the queue
    lookup helper, listed only because they start in the handler regions. */
-static bool CommandDispatch_IsCommandHandler(const void *handler)
+static Bool8 CommandDispatch_IsCommandHandler(const void *handler)
 
 {
   return handler != (const void *)&FrontendCommandQueue_EnqueueLocalPlayerCommand &&

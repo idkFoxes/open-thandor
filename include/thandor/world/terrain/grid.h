@@ -138,24 +138,24 @@ void FieldGrid_SetCellResourceSupportFlag
           (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,Q12 gridRowQ12,
           Q12 gridColumnQ12);
 
-bool FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);
+Bool8 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);
 
-bool FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);
+Bool8 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field,FixedVectorQ12 *outPoint);
 
 int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
-bool FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
+Bool8 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
 
 int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
-bool FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
+Bool8 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
 
-bool FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
+Bool8 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid,Q12 *outHeightQ12);
 
-bool FieldGrid_InterpolateTerrainHeightAndNormal
+Bool8 FieldGrid_InterpolateTerrainHeightAndNormal
           (Q12 worldY,Q12 worldX,FieldGridAsset *field,Q12 *outHeightQ12,uint32_t *outPackedNormalAngles);
 
-bool FieldGrid_TestWorldPointBlocked
+Bool8 FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           );
 
@@ -169,16 +169,16 @@ void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,Fi
 
 void TerrainDirectionTable_AdvanceAndRebuildVectors(void);
 
-bool FieldGrid_RaycastTerrainSurfaceDistance
+Bool8 FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12,
           uint32_t *outMaterialIndex);
 
-bool FieldGrid_RaycastSecondarySurfaceDistance
+Bool8 FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,Q12 *outDistanceQ12);
 
-bool FieldGrid_RaycastTerrainTrianglesAlongDirection
+Bool8 FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
           Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid,
           Q12 *outDistanceQ12);
@@ -191,13 +191,13 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
 void FieldGrid_ClearOccupancyMaskByteBit0AllCells
           (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid);
 
-bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
+Bool8 TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
 void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid);
 
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);
 
-bool FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError);
+Bool8 FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords,uint32_t *outError);
 
 void FieldGrid_ClearPlayerScratchPlane
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,

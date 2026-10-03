@@ -378,7 +378,7 @@ uint32_t GameData_ResetDefaults(void)
    old-unit tables; without oldunit.hex both tables and the count are cleared. Returns true (failure) when
    daten.hex or stat.hex cannot be loaded, false otherwise.
 */
-bool GameData_LoadExternalTables(void)
+Bool8 GameData_LoadExternalTables(void)
 
 {
   void *previousStatTable;
@@ -641,8 +641,8 @@ void __cdecl Game_Run(void)
   uint32_t displayHeight;
   uint32_t bitsPerPixel;
   uint32_t adapterIndex;
-  bool introMoviesFailed;
-  bool cursorFrameSet;
+  Bool8 introMoviesFailed;
+  Bool8 cursorFrameSet;
   uint32_t checkedValue;
   uint32_t displayModeError;
   uint32_t mainLoopError;
@@ -824,7 +824,7 @@ static void CoreAssets_MountPackages(void)
 /* Loads one UI button sample and creates its voice set in *voiceSetSlot; the sample is released again
    either way once loaded. Returns false with the error code in *error when the sample cannot be loaded or
    the voice set cannot be created. */
-static bool CoreAssets_LoadButtonSound(uint16_t *samplePath,DirectSoundVoiceSet **voiceSetSlot,uint32_t *error)
+static Bool8 CoreAssets_LoadButtonSound(uint16_t *samplePath,DirectSoundVoiceSet **voiceSetSlot,uint32_t *error)
 
 {
   SoundSampleAsset *sample;
@@ -909,7 +909,7 @@ static void CoreAssets_BindDebugOverlayTextsAndUiPages(void)
 
 
 /* Loads the eight text pages; returns false with the failing page's error code in *error. */
-static bool CoreAssets_LoadTextPages(uint32_t *error)
+static Bool8 CoreAssets_LoadTextPages(uint32_t *error)
 
 {
   return TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)u_texte_neterror_str_0050f104,error) &&
@@ -1200,7 +1200,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
 /* Pumps the window messages and checks for a skip request: a key press (Escape also moves the movie number
    to 8, so the caller's increment reaches intro9, normally absent, which ends the intros) or a mouse-button
    release. The mouse event is only read when no key event was pending. */
-static bool IntroMovie_PollSkipRequest(void)
+static Bool8 IntroMovie_PollSkipRequest(void)
 
 {
   uint32_t keyCode;
@@ -1223,7 +1223,7 @@ static bool IntroMovie_PollSkipRequest(void)
 /* Decodes up to three pending movie frames (one per pending timer tick) and blits the current frame
    centred into the framebuffer. Returns false when a frame cannot be decoded (the movie ended) or the
    framebuffer cannot be accessed, which stops playback. */
-static bool IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
+static Bool8 IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
 
 {
   uint32_t frameHeightSnapshot;
@@ -1264,11 +1264,11 @@ static bool IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
    a key or mouse-button release skips to the next one, Escape skips all of them (the number jumps to 9).
    Returns true only when the first frame of an opened movie cannot be decoded.
 */
-bool Game_PlayIntroMovies(void)
+Bool8 Game_PlayIntroMovies(void)
 
 {
   uint32_t playbackRateHz;
-  bool accessFailed;
+  Bool8 accessFailed;
   MovieRuntime *introMovie;
 
   DebugHook_BeforeIntroMovies();
@@ -1376,7 +1376,7 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
   char *scanCursor;
   char *storedOption;
   char *storedOptionCompareCursor;
-  bool comparedBytesEqual;
+  Bool8 comparedBytesEqual;
   char scannedByte;
 
   storedOption = g_CommandLine.optionBuffer;

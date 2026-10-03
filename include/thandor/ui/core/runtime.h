@@ -47,20 +47,20 @@
 #define UI_ACTION_PAGE_INGAME_MENU 0x12         /* g_InGameUiActionHandlersPage12: settings and save pages, 0x12xx */
 #define UI_ACTION_PAGE_FRONTEND 0x20            /* g_FrontendUiActionHandlersPage20: frontend menus, 0x20xx */
 
-bool UiRootCallbacks_Free(UiRootNode *root);
+Bool8 UiRootCallbacks_Free(UiRootNode *root);
 
-bool UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root);
+Bool8 UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root);
 
 void UiDisplaySettingsRoot_FormatColorReadouts(void *root);
 
 void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
           UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth);
 
-bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
+Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint);
 
 void UiRuntimeRecordRing_Clear(void);
 
-bool UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
+Bool8 UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
 
 void UiRuntime_SetSynchronizationHooks
           (UiRuntimePostUnlockCallbackProc *postUnlockCallback,RuntimeSpinLockValue *frameLock);

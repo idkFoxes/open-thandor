@@ -21,7 +21,7 @@
 
 EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId);
 
-bool EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
+Bool8 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath,uint32_t *outError);
 
 void EffectRuntime_ShutdownGraphicsResources(void);
 

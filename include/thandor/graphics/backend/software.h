@@ -47,7 +47,7 @@ void SoftwareGraphicsDispatch_SuccessNoOp(void);
 
 void SoftwareGraphicsDispatch_NoOp(void);
 
-bool SoftwarePixelFormat_BaseDisplayModeHook
+Bool8 SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,uint32_t *errorCode);
 
@@ -60,25 +60,25 @@ void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer);
 void SoftwarePixelFormat_BuildChannelPackTables
           (SoftwareColorTransformQ16 colorScaleQ16,SoftwareColorTransformQ16 colorBiasQ16);
 
-bool SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -124,40 +124,40 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
           PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+Bool8 SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
+Bool8 SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
+Bool8 SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitModulatedSourceAlpha16
+Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
 
-bool SoftwareTextureSource_BlitModulatedSourceAlpha32
+Bool8 SoftwareTextureSource_BlitModulatedSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -304,7 +304,7 @@ void SoftwareRasterAux_Mode10 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenC
 
 void SoftwareRasterAux_Mode12 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX, GraphicsPrimitivePacket *packet);
 
-bool SoftwareRenderer_SetDisplayMode
+Bool8 SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width,uint32_t *errorCode);
 

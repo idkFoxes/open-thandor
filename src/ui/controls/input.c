@@ -46,7 +46,7 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
    the node gets the release (rightRelease for the right button, nonRightRelease otherwise), loses the capture
    and the pointer position is dispatched again as motion. Returns false, doing nothing, when control does not
    hold a capture with that button. */
-static bool UiPointer_ReleaseCapture
+static Bool8 UiPointer_ReleaseCapture
           (UiNodeBase *control,UiPointerCaptureButton captureButton,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
@@ -160,7 +160,7 @@ void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
 /* The node after node in pre-order (first child, else the next sibling of node or of its nearest ancestor
    that has one), following only links UiKeyboard_CheckedLink accepts. At the end of the tree it returns the
    topmost ancestor (the walk wraps around) and sets *wrapped. */
-static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,bool *wrapped)
+static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,Bool8 *wrapped)
 {
   UiNodeBase *nextNode;
   UiNodeBase *parent;
@@ -186,12 +186,12 @@ static UiNodeBase *UiKeyboard_NextInPreOrder(UiNodeBase *node,bool *wrapped)
    pre-order, skipping suppressed ones and wrapping around at most once through the topmost ancestor. The
    first one whose keyboardEvent returns false (takes the key) gets the keyboard focus. Returns true when
    nobody took the key (the walk came back to the focus node or would wrap a second time). */
-static bool UiKeyboard_PassToFollowingFocusTargets
+static Bool8 UiKeyboard_PassToFollowingFocusTargets
           (UiNodeBase *control,UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
 {
-  bool wrappedOnce;
-  bool wrapped;
-  bool passToNext;
+  Bool8 wrappedOnce;
+  Bool8 wrapped;
+  Bool8 passToNext;
 
   wrappedOnce = false;
   passToNext = true;
@@ -224,7 +224,7 @@ static bool UiKeyboard_PassToFollowingFocusTargets
 void UiKeyboard_DispatchPendingEvents(void)
 
 {
-  bool dispatchToRoot;
+  Bool8 dispatchToRoot;
   UiKeyboardEventCode keyCode;
   UiKeyboardStateMask keyboardStateMask;
   UiNodeBase *control;
@@ -324,7 +324,7 @@ void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
    actionId and redraws. Other keys, and all keys while suppressed, go to the default handler, which passes
    them on. Returns false when the key was consumed.
 */
-bool UiRangeSliderControl_HandleKeyboard
+Bool8 UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control)
 
 {
@@ -383,12 +383,12 @@ bool UiRangeSliderControl_HandleKeyboard
    typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. Returns false
    when consumed.
 */
-bool UiSingleLineTextControl_ForwardKeyboardEventToChild
+Bool8 UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
-  bool eventResult;
+  Bool8 eventResult;
 
   childControl = control->focusChild;
   /* key codes without a high word are typed characters (Keyboard_OnChar) and KEYBOARD_KEY_CODE_SPACE */
@@ -849,7 +849,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
 {
   UiImageControl *hitControl;
   GraphicsCursorFrameIndex cursorFrame;
-  bool overOpaquePixel;
+  Bool8 overOpaquePixel;
 
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
@@ -1087,7 +1087,7 @@ void UiSelectionGeometryControl_DrawClipped
   uint8_t *destRowStart;
   int remainingColumns;
   int remainingRows;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   PackedArgb32 blendedPixel;
   uint64_t packedLanes;
   uint64_t quantizeMaskLanes; /* the four 16-bit quantize masks as one 64-bit lane vector */
@@ -1277,7 +1277,7 @@ void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
 
 
 /* Whether the pointer lies inside root and root takes part in the pointer hit test. */
-static bool UiPointer_RootContainsPointer(UiRootNode *root,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+static Bool8 UiPointer_RootContainsPointer(UiRootNode *root,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
   return ((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
          ((root->base).left <= pointerX) && ((root->base).top <= pointerY) &&
@@ -1340,7 +1340,7 @@ static UiNodeBase *UiPointer_FindNonRightPressTarget
    target and gets the press and then, unless the press handler released the capture already, the capture
    target gets the drag (rightPress/rightDrag for the right button, nonRightPress/nonRightDrag otherwise). */
 static void UiPointer_CaptureAndPress
-          (UiNodeBase *node,UiPointerCaptureButton captureButton,bool repeatClick,UiPointerWheelDelta wheelDelta,
+          (UiNodeBase *node,UiPointerCaptureButton captureButton,Bool8 repeatClick,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 {
   UiNodeVtable *nodeVtable;
@@ -1592,7 +1592,7 @@ void UiNode_ForwardPointerWheelToParent
    It always returns true (key not consumed): the original compares the key with KEYBOARD_KEY_CODE_TAB but
    then reports "not consumed" regardless of the result, so the focus move its name suggests never happens.
 */
-bool UiNode_DefaultKeyboardEventMoveFocusNext
+Bool8 UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {

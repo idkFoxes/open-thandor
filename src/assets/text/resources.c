@@ -34,12 +34,12 @@ GraphicsTextureSourceAsset *g_FontTextureSources[2] = {0};
    title index (+1..14).
    Returns true when the page cannot be loaded or one of the strings is missing, false on success.
 */
-bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
+Bool8 TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
 
 {
   uint16_t *resolvedText;
   int lineIndex;
-  bool failed;
+  Bool8 failed;
 
   failed = !TextResourcePage_Load(TEXT_RESOURCE_PAGE_LEVEL,path,NULL);
   if (!failed) {
@@ -288,7 +288,7 @@ static uint32_t RichTextRecord_ParseDecimalDigits(const uint16_t *recordStart)
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' asset (which is released). outLocaleBlockOrError may be
    NULL.
 */
-bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32_t *outLocaleBlockOrError)
+Bool8 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32_t *outLocaleBlockOrError)
 
 {
   uint16_t codeUnit;
@@ -392,7 +392,7 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
   int overrideSlotsRemaining;
   TextResourceOverrideParallelWord4 *overrideWordScanCursor;
   TextResourceOverrideParallelWord4 *overrideWordCursorAfterScan;
-  bool availableOverrideSlotFound;
+  Bool8 availableOverrideSlotFound;
 
   overrideSlotsRemaining = TEXT_RESOURCE_OVERRIDE_CAPACITY;
   availableOverrideSlotFound = g_TextResourceOverrides == NULL;
@@ -422,14 +422,14 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
    resources.h). Stores the text in *outText and returns true when found; a missing text stores
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 (the pointer value 0x33, not a real string) there and returns false.
 */
-bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
+Bool8 TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
 
 {
   TextResourceLocaleBlockPrefix *localeBlock;
   int remainingSlots;
   uint32_t *scanCursor;
   uint32_t *cursorAfterScan;
-  bool overrideFound;
+  Bool8 overrideFound;
 
   if (resourceId == TEXT_RESOURCE_ID_NONE) {
     *outText = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);

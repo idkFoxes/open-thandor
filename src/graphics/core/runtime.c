@@ -124,7 +124,7 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
   int32_t previousAccessState;
   GraphicsSubresourceIndex nextIdleSubresource;
   GraphicsSubresourceIndex nextActiveSubresource;
-  bool frameAdvanced;
+  Bool8 frameAdvanced;
 
   frameAdvanced = false;
   activeFrameIndex = g_CursorFrameIndex;
@@ -179,7 +179,7 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
    Returns true when the frame was selected, false (frame unchanged) for an index at or above g_CursorFrameCount;
    the error to report for that is FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE. Installed in g_GraphicsCursorSetFrame.
 */
-bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
+Bool8 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 {
   if (frameIndex < g_CursorFrameCount) {
@@ -198,7 +198,7 @@ bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
    g_CursorButtonState keeps the raw value), which UiPointer_DispatchPendingEvents passes on to the press
    dispatchers as UI_POINTER_BUTTON_REPEAT_CLICK.
 */
-bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
+Bool8 GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
 
 {
   GraphicsCursorEventType consumedEventType;

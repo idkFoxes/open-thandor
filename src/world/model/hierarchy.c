@@ -418,7 +418,7 @@ static const uint8_t g_ModelBoundsHitTriangleCorners[12][3] = {
 
 /* True when the pointer lies inside one of the projected box triangles that has no corner behind the near
    plane; stops at the first hit. */
-static bool ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_t clippedCornerMask)
+static Bool8 ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_t clippedCornerMask)
 
 {
   int triangleIndex;
@@ -445,7 +445,7 @@ static bool ModelBounds_PointerHitsProjectedBox(int pointerY,int pointerX,uint8_
    in order. Returns true on a hit and stores the distance in *outDistanceQ12; returns false (and leaves
    *outDistanceQ12 unchanged) when neither the node nor a child was hit.
 */
-bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+Bool8 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerHitContext *context,uint32_t *outDistanceQ12)
 
@@ -675,7 +675,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
    yields the variant the faction's technology selects, which is created in the matching child slot and then
    built the same way. Returns true when a child cannot be created.
 */
-bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
+Bool8 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime)
@@ -685,7 +685,7 @@ bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
   PckModelDefinitionIdCatalog childDefinitionId;
   int linksRemaining;
   ModelRuntimeAttachmentIndex childSlotIndex;
-  bool childFailed;
+  Bool8 childFailed;
   ModelRuntimeSlot *childModelRuntime;
 
   /* definition node: +8 link count, +0xC the linked definition lists */
@@ -835,7 +835,7 @@ int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
    walked (false from the recursion), the record goes into the next of the six attachments[] entries.
    Returns true when the node was walked.
 */
-bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+Bool8 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode)
 
 {
@@ -845,7 +845,7 @@ bool ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   MdlChildCount childCountRemaining;
   uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransformCursor;
-  bool childWalked;
+  Bool8 childWalked;
   ModelResource *definitionResource;
 
   if ((definitionNode->nodeFlags & 0xf) != 0) {
@@ -924,7 +924,7 @@ static ModelAttachmentTransformRecord *ModelResource_FindChildAttachmentTransfor
    non-instantiated definition node) in *outNode, or false when a world node could not be allocated (the
    original returned FATAL_ERROR_GENERAL_FAILURE as its failure value; *outNode is then left unchanged).
 */
-bool ModelNodeRuntime_CreateHierarchyRecursive
+Bool8 ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
           WorldRuntimeContext *worldRuntime,ModelRuntimeNode **outNode)
@@ -1230,7 +1230,7 @@ ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
    outside the aim tolerance), false once the yaw is within it or on the target.
 */
 
-bool ModelNodeRuntime_SmoothYawTowardTarget
+Bool8 ModelNodeRuntime_SmoothYawTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState,
           AngleTurn32 targetYawAngle16)
 
@@ -1242,7 +1242,7 @@ bool ModelNodeRuntime_SmoothYawTowardTarget
   uint32_t yawStep;
   int acceleratedVelocity;
   uint32_t yawDelta;
-  bool snapToTarget;
+  Bool8 snapToTarget;
   uint32_t remainingYawDelta;
 
   yawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
@@ -1326,7 +1326,7 @@ uint32_t ModelNodeRuntime_SmoothPitchTowardTarget
   int pitchStep;
   int rateLimit;
   int acceleratedVelocity;
-  bool snapToTarget;
+  Bool8 snapToTarget;
   uint32_t clampedTarget;
 
   pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;

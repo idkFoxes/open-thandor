@@ -134,7 +134,7 @@ void DebugMovie_ExportOne(const char *name)
   uint32_t height;
   uint32_t playbackRateHz;
   uint32_t openError;
-  bool frameDecoded;
+  Bool8 frameDecoded;
   FILE *video;
   FILE *info;
   /* L"flm\<name>.flm", the name cut so that the extension and terminator still fit */

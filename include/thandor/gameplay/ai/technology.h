@@ -22,7 +22,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
-bool AiTechnologyCandidate_IsCurrentlyAvailable
+Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset
           );
 
@@ -48,7 +48,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
    (AiTechnologyCandidate_AddBestResearch) computes before its loop. */
 extern AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMask;
 
-bool AiTechnologyCompatibility_AcceptRuntimeClassCandidate
+Bool8 AiTechnologyCompatibility_AcceptRuntimeClassCandidate
           (FactionRuntimeIndex factionIndex,ModelDefinitionRecordPrefix *candidateDefinition);
 
 UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8 (ModelDefinitionRecordPrefix *candidateDefinition);

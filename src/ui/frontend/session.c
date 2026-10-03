@@ -315,7 +315,7 @@ void FrontendSession_PeriodicTick(void)
 
 {
   InGameRuntimeRoot *inGameRoot;
-  bool callResult;
+  Bool8 callResult;
   void *packet;
   void *packetEndpoint;
 
@@ -399,7 +399,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
   FrontendPlayerRuntimeBlockCount recipientsRemaining;
   int playersRemaining;
   int removedCount;
-  bool expired;
+  Bool8 expired;
   FrontendPlayerRuntimeRecord *sourcePlayer;
   FrontendPlayerRuntimeRecord *destinationPlayer;
   FrontendCommandPacketRecord *sourceCommandRecord;

@@ -80,7 +80,7 @@ void WorldRuntime_TurnAuxiliaryAnglesClamped
 
 uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
-bool WorldRuntimeNode_IsPositionInsideBounds
+Bool8 WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl);
 
 void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime);
@@ -127,7 +127,7 @@ void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime);
 
 void UnifiedRuntimeDefault_TwoArgNoOpB (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
 
-bool UnifiedRuntimeDefault_TwoArgSuccess
+Bool8 UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);

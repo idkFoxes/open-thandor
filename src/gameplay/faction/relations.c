@@ -20,7 +20,7 @@ void GameFactionRelations_UpdateAllPairsForFaction
 
 {
   int opposingFactionIndex;
-  bool pairTestResult;
+  Bool8 pairTestResult;
 
   opposingFactionIndex = 7;
   do {
@@ -87,7 +87,7 @@ void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
    below 4 for which GameFactionRelations_EvaluateTransitionRules holds for either faction. False lets the pair
    advance.
 */
-bool GameFactionRelations_TestPairTransitionAllowed
+Bool8 GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -157,7 +157,7 @@ FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIn
 
 
 /* True when the faction named by a condition's operand 0 is in factionMask. */
-static bool GameFactionRelations_IsOperandFactionInMask(FactionActiveMask factionMask,uint32_t factionOperand)
+static Bool8 GameFactionRelations_IsOperandFactionInMask(FactionActiveMask factionMask,uint32_t factionOperand)
 {
   return (factionMask & 1 << ((uint8_t)factionOperand & 31)) != 0;
 }
@@ -194,7 +194,7 @@ static int GameFactionRelations_EvaluatePostfixExpression
 
 /* Whether a scheduled condition of the given kind would hold if only the factions in activeFactionMask were
    left (GameFactionRelations_EvaluateTransitionRules). Unknown kinds never hold. */
-static bool GameFactionRelations_PredictConditionHolds
+static Bool8 GameFactionRelations_PredictConditionHolds
           (InGameLevelConditionStorage *levelConditionStorage,InGameScheduledConditionRecord10 *condition,
            uint32_t kind,FactionActiveMask activeFactionMask)
 {
@@ -228,7 +228,7 @@ static bool GameFactionRelations_PredictConditionHolds
    neither focalFactionIndex nor in the mask. Returns true when that variant is 0 or nothing fires.
    Leaves the recomputed satisfied bits in the real condition records.
 */
-bool GameFactionRelations_EvaluateTransitionRules
+Bool8 GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
@@ -292,7 +292,7 @@ bool GameFactionRelations_EvaluateTransitionRules
    below the merge; only from those states does the random drift reset the relation
    (GameFactionRuntime_ResetPairwiseRelationState).
 */
-bool GameFactionRelations_IsNotResetEligibleState
+Bool8 GameFactionRelations_IsNotResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {

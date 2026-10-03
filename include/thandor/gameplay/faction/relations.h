@@ -56,15 +56,15 @@ void PlayerPairList_InsertRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
 void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
           SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12);
 
-bool GameFactionRelations_TestPairTransitionAllowed
+Bool8 GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex);
 
-bool GameFactionRelations_EvaluateTransitionRules
+Bool8 GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask);
 
-bool GameFactionRelations_IsNotResetEligibleState
+Bool8 GameFactionRelations_IsNotResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 void GameFactionRelations_MaybeAdvancePairStateRare

@@ -65,18 +65,18 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime);
 
-bool GridReachability_RebuildConnectedRegionAroundWorldPoint
+Bool8 GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12);
 
 void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime);
 
-bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
+Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError);
 
 void GridScratch_ReleaseBuffers(void);
 
 void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid);
 
-bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
+Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
 
 WorldPositionXY
 EntityPathing_RebuildOverlappingGroupRoutes
@@ -90,7 +90,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
           EntityPathingRouteEntityRuntimeView *routeEntityRuntime);
 
-bool GridPathCost_BacktrackBestHexRoute
+Bool8 GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn,FieldGridRegionMask *outRouteStateMask);
@@ -128,11 +128,11 @@ void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratc
 
 void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
-bool GridPathCost_RelocateFromBlockedCell
+Bool8 GridPathCost_RelocateFromBlockedCell
           (FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn);
 
-bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+Bool8 GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell);
 
 /* Indices into g_GridTerrainClassThresholds (one table in the original). Water surface

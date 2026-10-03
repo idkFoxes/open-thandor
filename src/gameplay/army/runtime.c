@@ -278,7 +278,7 @@ static void ArmyAircraft_UpdateApproach(WorldRuntimeContext *worldRuntime,ModelR
 {
   ArmyRuntimeClassUpdate21DefinitionView *definition;
   ModelRuntimeNode *rootNode;
-  bool pointAllowed;
+  Bool8 pointAllowed;
   AngleTurn32 attackHeading;
   FixedSinCos sinCosStep;
   uint32_t travelSteps;
@@ -412,7 +412,7 @@ static void ArmyAircraft_TryStartLanding(WorldRuntimeContext *worldRuntime,Model
   ArmyRuntimeClassUpdate21DefinitionView *definition;
   ModelRuntimeNode *padNode;
   ModelRuntimeNode *aircraftNode;
-  bool pointAllowed;
+  Bool8 pointAllowed;
   AngleTurn32 padHeading;
   FixedSinCos sinCosStep;
   uint32_t landingSteps;
@@ -600,12 +600,12 @@ static void ArmyPadHangar_PlaySound(WorldRuntimeContext *worldRuntime,ModelDefin
 
 /* Consumes one pending launch of a linked aircraft slot and tries to create the aircraft. On success the hangar
    starts opening (with its transition sound) and true is returned. */
-static bool ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRuntime,
+static Bool8 ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRuntime,
           ModelRuntimeLinkedChildSpawnAndBuildView *padRuntime,uint8_t *pendingSpawnCount,
           ModelRuntimeLinkedChildSpawnInheritedState *inheritedState,PckArmyAssetIdCatalog linkedArmyAssetId,
           ModelDefinitionLinkedChildStateView *padDefinition,ModelRuntimeNode *padNode)
 {
-  bool spawnFailed;
+  Bool8 spawnFailed;
 
   *pendingSpawnCount = *pendingSpawnCount - 1;
   spawnFailed = ArmyRuntimeSpawner_CreateLinkedChildInstance
@@ -1492,7 +1492,7 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    runs behind the level-loading movie. Returns true on success (*outError = 0); on an allocation or graphics
    load error returns false with that error in *outError. A failed preview render is skipped silently.
 */
-bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError)
+Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError)
 
 {
   uint16_t pathChar;
@@ -1506,7 +1506,7 @@ bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphics
   GraphicsPixelDimension previewHeight;
   int remainingCount;
   int factionSuffixChar;
-  bool loadFactionGraphics;
+  Bool8 loadFactionGraphics;
   int frontendPlayerRuntimeId;
   ArmyAssetRecordPrefix **registryCursor;
   uint16_t *pathCursor;
@@ -1764,7 +1764,7 @@ void ArmyRuntime_ApplyTargetPositionCommand
    the command. Returns true with the point in *outAimPoint, or false (and *outAimPoint zeroed) when there is
    nothing to aim at.
 */
-bool
+Bool8
 ArmyRuntime_ResolveShotAimPoint
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
           ShotDefinition *shotDefinition,GameEntityRuntime *targetState,GraphicsFixedVec3 *outAimPoint)
@@ -1938,7 +1938,7 @@ void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
    for zero, i.e. an unarmed army (returns true when it is zero); used by
    ArmyRuntime_ResetMovementStateFromModel to decide whether a targeted command is dropped.
 */
-bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
+Bool8 ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 
 {
   return armyRuntime->stateOrTechnologyId == 0;
@@ -1948,7 +1948,7 @@ bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 /* Tests the army's summed weapon damage against target class 0 (targetClassShotDamage[0], stateOrTechnologyId)
    for being non-negative (returns true when it is >= 0). No C code calls it directly.
 */
-bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
+Bool8 ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
 
 {
   return -1 < armyRuntime->stateOrTechnologyId;
@@ -1959,10 +1959,10 @@ bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, indexed by the definition's
    runtimeClassId) for the army in *armyRuntimeHolder and returns its acceptance.
 */
-bool ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
+Bool8 ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
 
 {
-  bool accepted;
+  Bool8 accepted;
 
   /* the view's first field (modelDefinition) is the army's model runtime pointer */
   accepted = (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation
@@ -2119,7 +2119,7 @@ static void ArmyRuntimeClass_UpdateGroundLoopSoundAtModel(WorldRuntimeContext *w
 {
   SpatialSoundSlot *soundSlot;
   GraphicsFixedVec3 *worldPosition;
-  bool cellMasked;
+  Bool8 cellMasked;
 
   if ((soundSlotIndex == 0) || (soundSlotIndex >= worldRuntime->dwordArrayCount) ||
       (worldRuntime->dwordArray == NULL)) {
@@ -2410,7 +2410,7 @@ void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,
   ModelDefinition *definition;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
-  bool cellMasked;
+  Bool8 cellMasked;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   soundSlotIndex = definition->loopingSoundSlotIndex;
@@ -2440,7 +2440,7 @@ static void ArmyRuntimeClass_PlayVerticalDeploymentSound(WorldRuntimeContext *wo
 {
   uint32_t soundAssetIndex;
   DirectSoundVoiceSet **soundVoiceSet;
-  bool cellMasked;
+  Bool8 cellMasked;
 
   soundAssetIndex = deploymentDefinition->deploymentSoundAssetIndex;
   if ((soundAssetIndex == 0) || (soundAssetIndex >= worldRuntime->dwordArrayCount) ||
@@ -2477,7 +2477,7 @@ void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
   ModelRuntimeSlot *linkedModelRuntime;
   int travelLimit;
   int travelStep;
-  bool linkedStillInRange;
+  Bool8 linkedStillInRange;
   ModelRuntimeNode *rootNode;
   ModelRuntimeNode *platformNode;
 
@@ -2546,7 +2546,7 @@ void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
    freshly rebuilt modelNode and creates the projectile from there towards the target point. Returns true
    when the model has no such launch point.
 */
-bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
+Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotTargetModelReference targetModelReference,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,
@@ -2605,7 +2605,7 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
   uint32_t acceleratedAdvance;
   uint32_t newAdvance;
   uint32_t startSoundSlotIndex;
-  bool cellMasked;
+  Bool8 cellMasked;
   ModelRuntimeNode *rootNode;
 
   rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
@@ -3060,7 +3060,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
    point and heading (classState70..78) and the pad's platform height; its health is scaled by the pad's health.
    Returns true when no slot matches or the creation fails.
 */
-bool ArmyRuntimeSpawner_CreateLinkedChildInstance
+Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
           (WorldMotionValue78 inheritedValue78,WorldMotionValue74 inheritedValue74,
           WorldMotionValue70 inheritedValue70,PckArmyAssetIdCatalog linkedArmyAssetId,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeLinkedChildMaskSlotView *armyRuntime)
@@ -3128,14 +3128,14 @@ bool ArmyRuntimeSpawner_CreateLinkedChildInstance
    source model and of every attached child model of the source (attachments, attachmentCount); false as soon as
    one of them is out of reach.
 */
-bool ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
+Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
 
 {
   ModelDefinition *candidateDefinition;
   ModelRuntimeSlot *childModelRuntime;
   int remainingAttachments;
-  bool baseWithinRadius;
-  bool childWithinRadius;
+  Bool8 baseWithinRadius;
+  Bool8 childWithinRadius;
 
   candidateDefinition = candidateModelRuntime->definitionOrSavedId.runtimeDefinition;
   remainingAttachments = sourceModelRuntime->attachmentCount;
@@ -3219,7 +3219,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
    within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry (1,5),
    transformed to world space), measured in x/y.
 */
-bool ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
+Bool8 ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
 
 {
   uint32_t candidateRadius;
@@ -3261,7 +3261,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
   int cellColumn;
   uint32_t projectedRow;
   int cellRow;
-  bool capabilityClear;
+  Bool8 capabilityClear;
   FieldGridAsset *fieldGrid;
 
   if ((soundAssetIndex == 0) || (worldContext->dwordArray == NULL) ||
@@ -3352,7 +3352,7 @@ void ModelRuntime_PlayDefinitionSecondaryOneShotSound(ModelRuntimeSlot *modelRun
   ModelRuntimeNode *rootNode;
   uint32_t soundAssetIndex;
   DirectSoundVoiceSet **voiceSetRef;
-  bool cellMasked;
+  Bool8 cellMasked;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
@@ -3388,7 +3388,7 @@ void ModelRuntime_PlayDefinitionPrimaryOneShotSound(ModelRuntimeSlot *modelRunti
   ModelRuntimeNode *rootNode;
   uint32_t soundAssetIndex;
   DirectSoundVoiceSet **voiceSetRef;
-  bool cellMasked;
+  Bool8 cellMasked;
 
   definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   rootNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
@@ -3415,7 +3415,7 @@ void ModelRuntime_PlayDefinitionPrimaryOneShotSound(ModelRuntimeSlot *modelRunti
    of two armies or attachments): returns false when dx^2 + dy^2 <= (candidateRadius + sourceRadius)^2, true
    otherwise, in 64-bit Q24 arithmetic.
 */
-bool ArmyRuntime_TestPositionDistanceWithinCombinedRadius
+Bool8 ArmyRuntime_TestPositionDistanceWithinCombinedRadius
           (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidateModelNode,
           void *sourceModelNode)
 
@@ -3703,7 +3703,7 @@ void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
 /* Stub of a world point test (called directly by the aircraft and pad updates, slots 21 and 22): always
    returns false, so the callers' `!result` branches are always taken.
 */
-bool ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12)
+Bool8 ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12)
 
 {
   return false;
@@ -3791,7 +3791,7 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
   uint32_t modelCreateError;
   ModelRuntimeSlot *createdModelRuntime;
   ModelRuntimeNode *modelNodeRuntime;
-  bool childCreateFailed;
+  Bool8 childCreateFailed;
   ModelDefinition *definition;
 
   armyRuntime = ArmyRuntimePool_FindFreeSlot();
@@ -4031,7 +4031,7 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
    with packed keys n << 4 | 6; one of them is chosen in turn (definition modelFlags bit 0) or at random and
    transformed to world space. Returns false when the model has no such point (the caller then uses the root
    position). */
-static bool ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,ModelDefinition *emitterDefinition,
+static Bool8 ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,ModelDefinition *emitterDefinition,
           ModelWorldPoint *outWorldPoint)
 {
   MdlSerializedNodeHeader *serializedNode;

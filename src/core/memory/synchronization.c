@@ -44,7 +44,7 @@ void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
    work instead of waiting.
    Reached through the function-pointer slot g_SpinLockTryAcquire.
 */
-bool SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
+Bool8 SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 
 {
   RuntimeSpinLockValue previousLockValue;

@@ -23,7 +23,7 @@ uint8_t *g_RuntimeObjectRebaseBaseMinusOne = 0;
    Called directly by the save-game writer InGameSaveGame_WritePackage, which creates the
    save directory and retries when it fails.
 */
-bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
+Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
 
 {
   uint8_t *header;
@@ -86,7 +86,7 @@ bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle)
    with the file-system, decoder or out-of-memory code in *outErrorCode and leaves *outBuffer and
    *outByteCount unchanged. outByteCount and outErrorCode may be NULL.
 */
-bool Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode)
+Bool8 Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
   PckEntryHeader *entry;
@@ -94,7 +94,7 @@ bool Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32
   uint32_t errorCode;
   void *fileHandle;
   void *buffer;
-  bool gotSize;
+  Bool8 gotSize;
   EngineFileHandle entryFileHandle;
 
   entry = Package_FindEntryAcrossMounts(path,&entryFileHandle);

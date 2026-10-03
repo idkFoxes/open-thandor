@@ -1,15 +1,15 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/core/ghidra.h
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/core/x86_emulation.h
  */
 
-#ifndef THANDOR_CORE_GHIDRA_H
-#define THANDOR_CORE_GHIDRA_H
+#ifndef THANDOR_CORE_X86_EMULATION_H
+#define THANDOR_CORE_X86_EMULATION_H
 
 /*
-Low-level helpers of the translated code, expressed in C: partial accesses, container-of, atomic exchange,
-rounding, CPUID and MMX lane emulation.
+Helpers that reproduce what the original's x86 code does, expressed in portable C: container-of, atomic exchange,
+x87 rounding, CPUID and the MMX lane operations (with the original's wrap-around and saturation).
 */
 
 #include <stddef.h>
@@ -17,27 +17,6 @@ rounding, CPUID and MMX lane emulation.
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-
-/*
-Partial access: the size-byte piece at byte offset off of base.
-Power-of-two sizes stay lvalues; odd sizes go through exact-width byte copies.
-*/
-#define THANDOR_PART(T, base, off) (*(T *)((unsigned char *)&(base) + (off)))
-
-static __inline unsigned long long thandor_read_part(const void *base, unsigned off, unsigned size)
-{
-    unsigned long long v = 0;
-    memcpy(&v, (const unsigned char *)base + off, size > 8 ? 8 : size);
-    return v;
-}
-
-static __inline void thandor_write_part(void *base, unsigned off, unsigned size, unsigned long long v)
-{
-    memcpy((unsigned char *)base + off, &v, size > 8 ? 8 : size);
-}
-
-#define THANDOR_READ_PART(base, off, size) thandor_read_part(&(base), (off), (size))
-#define THANDOR_WRITE_PART(base, off, size, v) thandor_write_part(&(base), (off), (size), (unsigned long long)(v))
 
 /* The structure that contains the member p points at. */
 #define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
@@ -173,4 +152,4 @@ static __inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { u
    -0x6000000 to the exponent bits divides by 2^12); this adds delta to the bit pattern of lvalue. */
 #define THANDOR_FLOAT_ADD_EXPONENT_BITS(lvalue, delta) (*(int32_t *)&(lvalue) += (int32_t)(delta))
 
-#endif /* THANDOR_CORE_GHIDRA_H */
+#endif /* THANDOR_CORE_X86_EMULATION_H */

@@ -23,7 +23,7 @@
 #define GRAPHICS_CAPTURE_FAILED_STAGE_32BIT 101
 /* Functions are grouped by semantic ownership. */
 
-bool GraphicsFramebuffer_BeginAccessStub(void);
+Bool8 GraphicsFramebuffer_BeginAccessStub(void);
 
 void GraphicsFramebuffer_EndAccessStub(void);
 
@@ -37,7 +37,7 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);
 
-bool GraphicsFramebuffer_BeginAccess(void);
+Bool8 GraphicsFramebuffer_BeginAccess(void);
 
 void GraphicsFramebuffer_EndAccess(void);
 

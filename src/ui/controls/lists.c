@@ -132,7 +132,7 @@ static uint16_t g_UiCatalogEntryRichTextScratchUtf16[16] = {0};
    g_UiTimedListActionDelayFrames frames (UiTimedListControl_TickActionDelay). Other keys go to the default
    focus handling; the keys handled here return false.
 */
-bool UiTimedListControl_HandleKeyboardNavigation
+Bool8 UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control)
 
 {
@@ -151,7 +151,7 @@ bool UiTimedListControl_HandleKeyboardNavigation
   int rowAccumulator;
   int rowIndex;
   int stepCounter;
-  bool handled;
+  Bool8 handled;
   UiScrollableViewportSize viewportSize;
 
   /* A record block is a header record (count, parent block, parent record, ANCESTOR_BOUNDARY flag)
@@ -324,7 +324,7 @@ bool UiTimedListControl_HandleKeyboardNavigation
    g_UiListActivationPulseFrames frames (UiListControl_TickActivationPulse). Other keys go to the default
    focus handling; the keys handled here return false.
 */
-bool UiListControl_HandleKeyboardNavigation
+Bool8 UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control)
 
 {
@@ -332,7 +332,7 @@ bool UiListControl_HandleKeyboardNavigation
   void **newSelectedSlot;
   int rowValue;
   uint32_t targetRowIndex;
-  bool handled;
+  Bool8 handled;
   UiScrollableViewportSize viewportSize;
   
   previousSelectedSlot = control->selectedRowSlot;
@@ -439,7 +439,7 @@ void UiScrollableControl_BeginPrimaryScrollInteraction
   int localY;
   int localX;
   int verticalTrackBottom;
-  bool horizontalBarHit;
+  Bool8 horizontalBarHit;
   GraphicsTextureLogicalSize textureSize;
 
   localX = pointerX - (control->base).left;
@@ -629,8 +629,8 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
   int trackLength;
   uint32_t arrowStart;
   int arrowEnd;
-  bool inArrowBar;
-  bool arrowHovered;
+  Bool8 inArrowBar;
+  Bool8 arrowHovered;
   GraphicsTextureLogicalSize textureSize;
 
   if ((control->scrollStateFlags &
@@ -1175,7 +1175,7 @@ UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,U
   uint32_t recordsRemaining;
   uint16_t *recordLabelCursor;
   uint16_t *queryLabelCursor;
-  bool charsEqual;
+  Bool8 charsEqual;
 
   /* Length of the query label including its terminator, at most 256 code units. */
   scanRemaining = 256;
@@ -1213,7 +1213,7 @@ UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,U
    subdirectories, i.e. can be expanded. Returns true with the block in *outRecordBlock, or false on failure
    (allocation or enumeration; *outRecordBlock is then left unchanged).
 */
-bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTreeRecord **outRecordBlock)
+Bool8 UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTreeRecord **outRecordBlock)
 
 {
   UiTimedListTreeRecord *recordCursor;
@@ -1435,7 +1435,7 @@ static void UiTimedListTree_LoadHierarchyPath(const uint16_t *sourcePathUtf16)
    level stack, clears *outSelectedRecord and returns false.
    Original quirk: one pop per level (not per (record, block) pair), so this frees the top blocks and
    interleaved found-record pointers, not every pushed block. */
-static bool UiTimedListTree_AbandonDirectoryHierarchy
+static Bool8 UiTimedListTree_AbandonDirectoryHierarchy
           (UiTimedListTreeRecord **levelStack,int levelStackTop,int levelCount,
           UiTimedListTreeRecord **outSelectedRecord)
 {
@@ -1454,7 +1454,7 @@ static bool UiTimedListTree_AbandonDirectoryHierarchy
    unchanged). No caller found
    in src/.
 */
-bool UiTimedListTree_BuildDirectoryHierarchy
+Bool8 UiTimedListTree_BuildDirectoryHierarchy
           (uint16_t *selectedPathUtf16,UiTimedListTreeRecord **outRootBlock,
           UiTimedListTreeRecord **outSelectedRecord)
 
@@ -1548,14 +1548,14 @@ bool UiTimedListTree_BuildDirectoryHierarchy
    true when targetRecord (the list's selected row) was one of the freed rows, so the caller can move the
    selection to the collapsed row.
 */
-bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
+Bool8 UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
           (UiTimedListTreeRecord *targetRecord,UiTimedListTreeRecord *recordBlock)
 
 {
   UiTimedListTreeRecord *recordCursor;
   uint32_t recordsRemaining;
   int containsCount;
-  bool childContains;
+  Bool8 childContains;
   
   containsCount = 0;
   if (recordBlock != NULL) {
@@ -1609,7 +1609,7 @@ static UiTimedListTreeRecord *UiTimedListTree_FindBlockHeader(UiTimedListTreeRec
    links the block below the row (the block header points back to the row and to the row's own block).
    The root "computer" row lists the drives. Returns true when the path or the block cannot be built.
 */
-bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
+Bool8 UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
 
 {
   UiTimedListTreeRecord *ancestorRecord;
@@ -1678,8 +1678,8 @@ void UiTimedListControl_ToggleDirectoryRecordExpansion
 
 {
   UiTimedListTreeRecord *targetRecord;
-  bool selectionWasInBranch;
-  bool attachFailed;
+  Bool8 selectionWasInBranch;
+  Bool8 attachFailed;
 
   targetRecord = UiTimedListControl_GetSelectedRecord(control);
   if ((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) {
@@ -1709,7 +1709,7 @@ void UiTimedListControl_ToggleDirectoryRecordExpansion
    labels of its ancestor rows; a drive row gives "X:", the root "computer" row its label unchanged. Returns
    true when the ancestor chain does not end in a drive row. No caller found in src/.
 */
-bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record)
+Bool8 UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record)
 
 {
   uint32_t *directory;
@@ -1785,12 +1785,12 @@ void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
    activates it: a push button queues its action, a toggle flips its selected state, a radio-style control
    gets selected; optionally with the activation sound. Other keys go to the default focus handling.
 */
-bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control)
 
 {
-  bool handled;
-  bool activates;
+  Bool8 handled;
+  Bool8 activates;
 
   /* Space activates the focused control (unless disabled); Enter/Escape activate it when the state flags
      bind them. Everything else goes to the default focus handling. */
@@ -1896,14 +1896,14 @@ void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableCo
    Original quirk: when none is selected, *outNode is the last control of the group and *outIndex is
    controlCount (where the original's search loop stops); some callers use them without testing the result.
 */
-bool UiSelectableGroup_FindVisibleSelected
+Bool8 UiSelectableGroup_FindVisibleSelected
           (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...)
 
 {
   UiSelectableControl **controlSlots;
   UiSelectableControl *control;
   uint32_t controlIndex;
-  bool found;
+  Bool8 found;
 
   /* The control pointers follow controlCount on the stack. */
   controlSlots = (UiSelectableControl **)(&controlCount + 1);
@@ -2060,7 +2060,7 @@ typedef struct UiScrollFrameContentRect {
 } UiScrollFrameContentRect;
 
 /* An arrow piece shows pressed while its active flag and the primary interaction flag are both set. */
-static bool UiScrollableControl_IsArrowPressed(const UiScrollableControl *control,uint32_t arrowActiveFlag)
+static Bool8 UiScrollableControl_IsArrowPressed(const UiScrollableControl *control,uint32_t arrowActiveFlag)
 {
   return ((control->scrollStateFlags & arrowActiveFlag) != 0) &&
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) != 0);
@@ -2800,7 +2800,7 @@ void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop
   UiListColumn *column;
   void **rowSlot;
   uint16_t *commandStream;
-  bool accessFailed;
+  Bool8 accessFailed;
   RichTextExtent textExtent;
   GraphicsTextureLogicalSize textureSize;
 
@@ -3560,7 +3560,7 @@ void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListContr
 /* Returns the index of the selected row of a pointer list. *outConfirmed (optional, may be NULL) tells
    whether the selection was confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
 */
-UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed)
+UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,Bool8 *outConfirmed)
 
 {
   if (outConfirmed != NULL) {

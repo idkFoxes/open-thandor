@@ -104,7 +104,7 @@ static void FrontendNetworkSetupPage_ApplyClientOption(void)
 {
   uint8_t *option;
   uint8_t *closingQuote;
-  bool endpointParseFailed;
+  Bool8 endpointParseFailed;
 
   option = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
   if (option == NULL) {
@@ -355,7 +355,7 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
 void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit)
 
 {
-  bool endpointParseFailed;
+  Bool8 endpointParseFailed;
 
   endpointParseFailed = g_NetworkBackendSlot6
                     (&g_FrontendNetworkEndpointScratch,(char *)hostAddressEdit->textBuffer);
@@ -515,7 +515,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   uint32_t *localPlayerNameCursor;
   uint32_t *localEndpointDwordCursor;
   uint32_t *localPlayerRecordDwordCursor;
-  bool previewLoadFailed;
+  Bool8 previewLoadFailed;
   
   frontendUi = (FrontendUiImage *)((uint8_t *)createButton - offsetof(FrontendUiImage,hostGameCreateButton));
   UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,FRONTEND_UI(frontendUi,frontendRoot));

@@ -10,7 +10,7 @@
 
 /* Implementation ownership: core/math/geometry. */
 
-bool g_Triangle2DBarycentricOutside;
+Bool8 g_Triangle2DBarycentricOutside;
 
 /* Computes the barycentric weights of a screen point for vertices A and B of a projected triangle
    (C's weight is the remainder to 1.0), used to interpolate texture/shade values when a clipped

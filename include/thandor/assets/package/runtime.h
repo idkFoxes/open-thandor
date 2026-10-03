@@ -36,31 +36,31 @@
 #define PACKAGE_LOAD_SKIP_PACKAGES 0x80000000 /* load only the loose file */
 #define PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST 0x40000000 /* try the loose file next to the executable first */
 
-bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
+Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
 
-bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
+Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle);
 
-bool Package_LoadEntryIntoBuffer
+Bool8 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
            uint32_t *outByteCountOrError);
 
-bool Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError);
+Bool8 Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError);
 
-bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode);
+Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode);
 
-bool Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError);
+Bool8 Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError);
 
-bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
+Bool8 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                        uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount);
 
 void Package_Unmount(EngineFileHandle fileHandle);
 
-bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate);
+Bool8 Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate);
 
-bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
+Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
                              uint32_t *outByteCount,uint32_t *outErrorCode);
 
 void Package_SetLastErrorPath(uint16_t *path);
@@ -69,7 +69,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
 
 PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *outFileHandle);
 
-bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
+Bool8 Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
 extern uint8_t *g_PackageScratchBuffer;
 

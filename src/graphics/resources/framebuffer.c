@@ -42,7 +42,7 @@ GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = 0;
 /* Default g_GraphicsFramebufferBeginAccess hook: an in-memory software framebuffer needs no lock, so it only
    reports success (returns false). Backends with a real surface install their own hook.
 */
-bool GraphicsFramebuffer_BeginAccessStub(void)
+Bool8 GraphicsFramebuffer_BeginAccessStub(void)
 
 {
   return false;
@@ -147,7 +147,7 @@ static void GraphicsFramebuffer_InitCaptureAsset
 
 /* Restores the back surface if it was lost and locks it read-only into g_SurfaceDesc. Returns false when the
    restore or the lock fails (no lock is attempted after a failed restore). */
-static bool GraphicsFramebuffer_LockBackSurfaceForCapture(void)
+static Bool8 GraphicsFramebuffer_LockBackSurfaceForCapture(void)
 
 {
   TH_LEGACY_HRESULT isLostResult;
@@ -310,7 +310,7 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
    and publishes its pixels and width in pixels in g_DisplayFramebufferAccess. Fails (returns true) when the restore or
    lock fails.
 */
-bool GraphicsFramebuffer_BeginAccess(void)
+Bool8 GraphicsFramebuffer_BeginAccess(void)
 
 {
   TH_LEGACY_HRESULT isLostResult;

@@ -41,27 +41,27 @@
    incidental leftover value, see each decoder), or return false and store the error code in *outErrorCode.
    Only the out pointer of the outcome is written; either may be NULL. */
 
-bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
+Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+Bool8 PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-bool PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+Bool8 PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
-bool PckCodec_DecodeHuffmanRle
+Bool8 PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
           uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);

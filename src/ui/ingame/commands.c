@@ -526,7 +526,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   InGameRuntimeRoot *runtimeRoot;
   ArmyRuntimeSlot **createdArmySlots;
   WorldRuntimeContext *worldRuntime;
-  bool placementRejected;
+  Bool8 placementRejected;
 
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];

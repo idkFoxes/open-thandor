@@ -131,17 +131,17 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source);
 
 void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEditPtr commandTextEdit);
 
-bool InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
+Bool8 InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
 
 void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl);
 
-bool InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError);
+Bool8 InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot,uint32_t *outError);
 
 void InGameHud_UpdateStatusCountersAndSessionPrompts(void);
 
 void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot);
 
-bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+Bool8 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world);
 
 void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView);

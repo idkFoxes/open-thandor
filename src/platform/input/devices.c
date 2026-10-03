@@ -123,7 +123,7 @@ UiPointerWheelDelta g_CursorWheelDelta = 0;
    g_KeyboardAsciiCaseTransformCallbacks3. Both 16-bit code units are upper-cased; returns true when
    upper(right) < upper(left).
 */
-bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
+Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
 
 {
   uint32_t leftLowWord;
@@ -152,7 +152,7 @@ void Keyboard_FlushEvents(void)
    Returns true with the key code in *outKeyCode and the modifier state in *outStateMask, or
    false (outputs untouched) when the ring is empty.
 */
-bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask)
+Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask)
 
 {
   uint32_t nextReadIndex;
@@ -189,7 +189,7 @@ uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 /* DirectInputMouse_Init failure exit for the DirectInput setup: records the failed stage (0 = DirectInput
    object, 1 = device, 2 = data format, 3 = cooperative level, 4 = buffer size) as text in
    g_PackageLastErrorPath and reports FATAL_ERROR_DIRECTINPUT_SETUP. */
-static bool DirectInputMouse_FailSetup(int32_t initStage,uint32_t *outError)
+static Bool8 DirectInputMouse_FailSetup(int32_t initStage,uint32_t *outError)
 {
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
   *outError = FATAL_ERROR_DIRECTINPUT_SETUP;
@@ -204,7 +204,7 @@ static bool DirectInputMouse_FailSetup(int32_t initStage,uint32_t *outError)
    Returns true on success; on failure false with *outError set to FATAL_ERROR_DIRECTINPUT_SETUP (failed
    stage in g_PackageLastErrorPath) or the cursor asset load error. *outError is only written on failure.
 */
-bool DirectInputMouse_Init(uint32_t *outError)
+Bool8 DirectInputMouse_Init(uint32_t *outError)
 
 {
   GraphicsSubresourceIndex activeFirstSubresource;
@@ -410,9 +410,9 @@ void DirectInputMouse_Shutdown(void)
    mouse position, wheel delta or button mask and returns its cursor event type in *outEventType. Axes
    carry a relative delta; buttons are down while bit 7 of dwData is set. Returns false (state untouched)
    for other axes and buttons, which are ignored. */
-static bool DirectInputMouse_ApplyDeviceEvent(GraphicsCursorEventType *outEventType)
+static Bool8 DirectInputMouse_ApplyDeviceEvent(GraphicsCursorEventType *outEventType)
 {
-  bool buttonDown;
+  Bool8 buttonDown;
 
   buttonDown = (g_MouseDeviceEvent.dwData & DIRECTINPUT_BUTTON_DOWN_BIT) != 0;
   if (g_MouseDeviceEvent.dwOfs == DIMOFS_X) {
@@ -589,7 +589,7 @@ void DirectInputMouse_PollBufferedEvents(void)
    g_SoftwareFramebufferCreate calls; the failing create stores its allocator error there). On failure g_GraphicsBackendAccessState stays -1
    and the buffers created so far stay installed, as in the original.
 */
-bool DirectInputMouse_SetDisplayMode
+Bool8 DirectInputMouse_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode)
 
@@ -738,7 +738,7 @@ static uint32_t Keyboard_NavigationKeyCode(KeyboardVirtualKeyCode virtualKey)
 /* Keyboard_OnKeyDown: the KEYBOARD_KEY_CODE_* event code of a non-modifier, non-lock key in *outKeyCode.
    Digits and letters give KEYBOARD_KEY_CODE_CHAR of their ASCII code (letters lowercase), the numpad
    operators their plain ASCII character. Returns false for keys that queue no event. */
-static bool Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *outKeyCode)
+static Bool8 Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *outKeyCode)
 {
   uint32_t navigationCode;
 

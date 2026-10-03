@@ -76,15 +76,15 @@
 
 /* Functions are grouped by semantic ownership. */
 
-bool TerrainCompositeTexture_Create(uint32_t *outError);
+Bool8 TerrainCompositeTexture_Create(uint32_t *outError);
 
-bool TerrainByteClampLookup_Initialize(uint32_t *outError);
+Bool8 TerrainByteClampLookup_Initialize(uint32_t *outError);
 
-bool TerrainVisualResources_LoadPrimary
+Bool8 TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError);
 
-bool TerrainVisualResources_LoadAndClearCellOverlayFlags
+Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError);
 

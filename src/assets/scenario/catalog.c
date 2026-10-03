@@ -67,7 +67,7 @@ void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *list
 
 {
   UiListRowIndex selectedRowIndex;
-  bool selectionConfirmed;
+  Bool8 selectionConfirmed;
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
@@ -96,7 +96,7 @@ void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listCont
 
 {
   UiListRowIndex selectedRowIndex;
-  bool selectionConfirmed;
+  Bool8 selectionConfirmed;
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
@@ -126,7 +126,7 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
 
 {
   UiListRowIndex selectedRowIndex;
-  bool selectionConfirmed;
+  Bool8 selectionConfirmed;
 
   selectedRowIndex = UiPointerList_GetSelectedIndexAndConfirmed(listControl,&selectionConfirmed);
   if (!selectionConfirmed) {
@@ -148,7 +148,7 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
 
 
 /* Compares unitCount UTF-16 code units, stopping at the first difference. */
-static bool FrontendScenarioSelectionPage_CodeUnitsEqual
+static Bool8 FrontendScenarioSelectionPage_CodeUnitsEqual
           (const uint16_t *firstText,const uint16_t *secondText,uint32_t unitCount)
 {
   while (unitCount != 0) {
@@ -168,7 +168,7 @@ static bool FrontendScenarioSelectionPage_CodeUnitsEqual
    a host), drops a loaded campaign, selects that mission and loads it, then returns true. Returns false when
    there is no option, it is malformed or no row matches.
    Original quirk: when the closing quote does not end the command line, it stays overwritten with 0. */
-static bool FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelectionPageView *scenarioSelectionPage)
+static Bool8 FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelectionPageView *scenarioSelectionPage)
 {
   UiNodeFlags *controlFlags;
   uint8_t *mapOption;
@@ -538,7 +538,7 @@ void ScenarioCatalog_Rebuild(void)
   void *allocationPayload;
   uint32_t checkedValue;
   uint32_t openError;
-  bool loaded;
+  Bool8 loaded;
   void *loadedBuffer;
   uint32_t loadedByteCount;
   void *handleToClose;
@@ -982,7 +982,7 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
   void *loadedEntry;
   uint32_t loadErrorCode;
   uint32_t checkedValue;
-  bool encodeOk;
+  Bool8 encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
@@ -1133,7 +1133,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
   void *loadedEntry;
   uint32_t loadErrorCode;
   uint32_t checkedValue;
-  bool encodeOk;
+  Bool8 encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
@@ -1460,7 +1460,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
 
 
 /* Compares the 0x40-byte identifiers of two catalog records dword by dword. */
-static bool ScenarioCatalog_RecordIdentifiersEqual
+static Bool8 ScenarioCatalog_RecordIdentifiersEqual
           (const ScenarioCatalogRecord *firstRecord,const ScenarioCatalogRecord *secondRecord)
 {
   const uint32_t *firstDwords = (const uint32_t *)firstRecord->identifier;
@@ -1540,12 +1540,12 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
   void *loadedEntry;
   uint32_t loadErrorCode;
   uint32_t checkedValue;
-  bool encodeOk;
+  Bool8 encodeOk;
   uint32_t encodedByteCount;
   uint32_t encodeErrorCode;
   uint32_t allocationError;
   void *allocationPayload;
-  bool levelLoadedLocally;
+  Bool8 levelLoadedLocally;
 
   frontendRoot = g_FrontendRootNode;
   pageStack = (UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack);

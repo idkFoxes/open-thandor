@@ -37,7 +37,7 @@ void GameFactionRuntime_RebaseLoadedArmyReferences(void);
 
 void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember);
 
-bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
+Bool8 GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
 
 FactionRelationState GameFactionRuntime_GetPackedStateNibble
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);
@@ -52,12 +52,12 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
 
 uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *runtimeEntry);
 
-bool FactionRuntime_IsArmyAssetNotPending
+Bool8 FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord);
 
 void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime);
 
-bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition);
+Bool8 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition);
 
 void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
           (AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
@@ -96,7 +96,7 @@ void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t u
 
 void OldUnitRuntime_MergeMasksAndReplayRecords(void);
 
-bool GameFactionRuntime_IsRecentTimedRelationState
+Bool8 GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);
 
 void OldUnitRuntime_ResetPendingTables(void);

@@ -244,7 +244,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *que
    true when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
    ModelRender_PrepareProjectedVertexAlternatePath (graphics/render/model.c).
 */
-bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
+Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue)
 
@@ -568,7 +568,7 @@ DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthI
 /* Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): true when
    axis 0 masks and axis 1 masks both share a bin, i.e. the objects may overlap.
 */
-bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+Bool8 DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1)
 
 {

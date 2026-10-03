@@ -86,15 +86,15 @@
 #define MOUSE_POLL_MAX_ERRORS 16
 /* Functions are grouped by semantic ownership. */
 
-bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
+Bool8 Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
 
 void Keyboard_FlushEvents(void);
 
-bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask);
+Bool8 Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask);
 
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
-bool DirectInputMouse_Init(uint32_t *outError);
+Bool8 DirectInputMouse_Init(uint32_t *outError);
 
 void DirectInputMouse_RefreshDeviceIfIdle(void);
 
@@ -102,7 +102,7 @@ void DirectInputMouse_Shutdown(void);
 
 void DirectInputMouse_PollBufferedEvents(void);
 
-bool DirectInputMouse_SetDisplayMode
+Bool8 DirectInputMouse_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth,uint32_t *errorCode);
 

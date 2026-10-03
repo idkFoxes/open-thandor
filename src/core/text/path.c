@@ -16,7 +16,7 @@
    Only three characters come out right: a fourth byte would be merged into the third code unit (all callers
    pass three-character codes).
 */
-bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path)
+Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path)
 
 {
   uint16_t *extension;
@@ -53,7 +53,7 @@ bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t 
    file name, parentOut the directory without the trailing backslash. Without a backslash the leaf is the
    whole path and the parent is empty. Always returns false (success).
 */
-bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
+Bool8 WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
 
 {
   /* Leaf gets everything after the last backslash (with the terminator); parent gets everything before
@@ -116,8 +116,8 @@ void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint1
   int leafCodeUnitsRemaining;
   uint16_t *directoryScanCursor;
   uint16_t *leafScanCursor;
-  bool terminatorFound;
-  bool leafTerminatorFound;
+  Bool8 terminatorFound;
+  Bool8 leafTerminatorFound;
 
   /* find the directory's terminator (at most WIDE_PATH_MAX_CODE_UNITS code units) */
   terminatorFound = true;

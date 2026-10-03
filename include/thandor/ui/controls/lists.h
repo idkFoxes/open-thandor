@@ -97,10 +97,10 @@
 #define UI_CATALOG_TEXT_STYLE_ALERT 0x1050000
 #define UI_CATALOG_TEXT_STYLE_MEASURE 0x1000000
 
-bool UiTimedListControl_HandleKeyboardNavigation
+Bool8 UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control);
 
-bool UiListControl_HandleKeyboardNavigation
+Bool8 UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control);
 
 void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control);
@@ -144,14 +144,14 @@ void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
 
 void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
 
-bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control);
 
 void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
 void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
-bool UiSelectableGroup_FindVisibleSelected
+Bool8 UiSelectableGroup_FindVisibleSelected
           (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...);
 
 uint32_t UiSelectableGroup_SelectedIndex(UiControlCount controlCount,...);
@@ -223,7 +223,7 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
 
 void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListControl *control);
 
-UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,bool *outConfirmed);
+UiListRowIndex UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control,Bool8 *outConfirmed);
 
 UiScrollableViewportSize UiScrollableControl_GetViewportSize(UiScrollableControl *control);
 
@@ -238,21 +238,21 @@ void UiScrollableControl_ClampOffsetsToViewport
 
 UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord *recordBlock);
 
-bool UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTreeRecord **outRecordBlock);
+Bool8 UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16,UiTimedListTreeRecord **outRecordBlock);
 
-bool UiTimedListTree_BuildDirectoryHierarchy
+Bool8 UiTimedListTree_BuildDirectoryHierarchy
           (uint16_t *selectedPathUtf16,UiTimedListTreeRecord **outRootBlock,
           UiTimedListTreeRecord **outSelectedRecord);
 
-bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
+Bool8 UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
           (UiTimedListTreeRecord *targetRecord,UiTimedListTreeRecord *recordBlock);
 
-bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record);
+Bool8 UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record);
 
 void UiTimedListControl_ToggleDirectoryRecordExpansion
           (UiTimedListTreeRecord *record,UiTimedListTreeControl *control);
 
-bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record);
+Bool8 UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record);
 
 void UiTimedListControl_SetRecordTreeAndRecomputeLayout
           (UiTimedListTreeRecord *recordTree,UiTimedListTreeControl *control);

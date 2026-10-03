@@ -63,7 +63,7 @@ void InGameWorldInput_CommitPointerAction
           InGamePointerCallbackValue2 pointerWorldYQ12,InGamePointerCallbackValue3 candidateHeightQ12,
           WorldOwnerListNode *candidateNode,WorldRuntimeContext *inGameRuntime);
 
-bool InGameCameraCommand_DispatchByCodeAndModifierFlags
+Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime);
 
 void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView *targetingContext);

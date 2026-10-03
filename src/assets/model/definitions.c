@@ -34,7 +34,7 @@ ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefiniti
   PckModelDefinitionIdCatalog linkedDefinitionId;
   int linkedSlotsRemaining;
   PckModelDefinitionIdCatalog selectedDefinitionId;
-  bool technologyLocked;
+  Bool8 technologyLocked;
   ModelDefinitionRecordPrefix *selectedDefinition;
 
   selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
@@ -93,7 +93,7 @@ void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 /* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true as soon as
    this node's definition id (linkedDefinitionIds[0]) or one in its subtree (childCount, children[]) names a
    technology the faction has not unlocked yet. */
-static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,ArmyModelTreeNode *node)
+static Bool8 ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,ArmyModelTreeNode *node)
 {
   uint32_t childIndex;
   /* true from this check means the technology is still locked */
@@ -113,7 +113,7 @@ static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks
    requirement against the faction's technology masks. Returns false when every definition in the tree is
    unlocked, true as soon as one is still locked (ModelDefinition_IsFactionTechnologyLocked returns true).
 */
-bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
@@ -130,7 +130,7 @@ bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
    (untouched on success) for an invalid header or at the first record that fails. (The original's success
    return value, the last registration's value, was read by no caller.)
 */
-bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
+Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
 
 {
   uint32_t registrationStatusCode;
@@ -162,7 +162,7 @@ bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
    ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters (a model class-init callback table slot) and by the
    army platform-lowering step in gameplay/army/runtime.c.
 */
-bool ModelLookupTable_GetPackedPointPosition
+Bool8 ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,GraphicsFixedVec3 *outLocalPosition)
 
@@ -196,7 +196,7 @@ bool ModelLookupTable_GetPackedPointPosition
    otherwise returns false and stores the address just past the table's last entry in *outEntry (one caller,
    ArmyPlacement_CanPlaceAnchoredModel, reads it anyway).
 */
-bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+Bool8 ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,ModelPackedPointRecord **outEntry)
 
 {
@@ -224,7 +224,7 @@ bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKe
    Returns true on a hit and stores the Q12 distance along the ray in *outDistanceQ12; returns false on a miss
    and leaves *outDistanceQ12 unchanged. Called for each triangle by ModelNodeRuntime_RaycastHierarchyNearest.
 */
-bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12)
+Bool8 ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12)
 
 {
   GraphicsFixedVec3 *vertex0;
@@ -239,7 +239,7 @@ bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tria
   int64_t directionProduct;
   int directionDot;
   int maximumDistanceHigh;
-  bool planeOutOfRange;
+  Bool8 planeOutOfRange;
   Q12 hitDistanceQ12;
   int negVertex0X;
   int negVertex0Y;
@@ -263,7 +263,7 @@ bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tria
   int64_t normalCrossHitZ;
   int64_t edge2DotNormalCrossHit;
   int64_t insideRemainder;
-  bool hitFound;
+  Bool8 hitFound;
 
   normalX = triangle->planeNormalX << (Q28_SHIFT - Q12_SHIFT);
   normalY = triangle->planeNormalY << (Q28_SHIFT - Q12_SHIFT);
@@ -421,7 +421,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
   PckModelDefinitionIdCatalog linkedDefinitionId;
   int linkedSlotsRemaining;
   PckModelDefinitionIdCatalog selectedDefinitionId;
-  bool technologyLocked;
+  Bool8 technologyLocked;
 
   selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
   for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
@@ -446,7 +446,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
    spriteAssetReference, ownedNestedResourcePresent (owned-copy count), childCount, childSerializedOffsets
    (relative to the asset, relocated in place). Loads or reuses each node's sprite; returns true with *error
    on failure. */
-static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uint8_t *asset,uint32_t *error)
+static Bool8 ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uint8_t *asset,uint32_t *error)
 {
   uint32_t childIndex;
   if ((node->nodeFlags & 0xf) == 0) {
@@ -613,7 +613,7 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
    duplicate id, a full registry or any failed load/lookup returns false with its error code in *outError
    (untouched on success; the original's success return value was read by no caller).
 */
-bool ModelDefinition_RegisterAndResolveReferences
+Bool8 ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError)
 
 {
@@ -667,7 +667,7 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
    must be set in the faction's 256-bit technology masks. True means locked (bit clear or unknown id); false
    means unlocked.
 */
-bool ModelDefinition_IsFactionTechnologyLocked
+Bool8 ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {

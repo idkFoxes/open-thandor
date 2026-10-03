@@ -23,7 +23,7 @@ static const int32_t g_TerrainAuxHeightMinimum = 12288;
    TERRAIN_SCAN_RADIUS_PER_STEP clamped to 1..TERRAIN_SCAN_STEP_LIMIT_MAX), g_TerrainScanReferenceHeight and
    g_TerrainScanRowStrideBytes, and maps the world point to the field cell containing it. Returns false when that
    cell lies off the grid, otherwise true with the cell's index in *outCenterCellIndex. */
-static bool TerrainScan_BeginAroundWorldPoint
+static Bool8 TerrainScan_BeginAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid,int *outCenterCellIndex)
 
@@ -88,7 +88,7 @@ static bool TerrainScan_BeginAroundWorldPoint
    [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; also when fieldGrid is NULL or the point is
    off the grid.
 */
-bool TerrainHeightBand_TestAroundWorldPoint
+Bool8 TerrainHeightBand_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
 
@@ -143,7 +143,7 @@ bool TerrainHeightBand_TestAroundWorldPoint
    cell, has a negative waterSurfaceDelta, or the high word of its packed normal angles is below
    g_TerrainAuxHeightMinimum; also when fieldGrid is NULL or the point is off the grid.
 */
-bool TerrainAuxHeightThreshold_TestAroundWorldPoint
+Bool8 TerrainAuxHeightThreshold_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
 
@@ -441,7 +441,7 @@ static uint32_t TerrainTriangle_MulCrossByHeightDelta(uint64_t rayCrossLocal,uin
    2^12), shifted back down by 12 bits. Returns false (outputs untouched) when the divisor's low word is zero.
    When the divisor does not fit a signed 32-bit word, divisor and both numerators are shifted down by another
    12 bits; then both numerators are divided by it (signed 64/32 division) into the coord1 and coord0 offsets. */
-static bool TerrainTriangle_DivideHitNumerators
+static Bool8 TerrainTriangle_DivideHitNumerators
           (uint32_t remainingLow,int remainingHigh,uint32_t coord1Low,int coord1High,uint32_t coord0Low,
           int coord0High,int *outCoord1Offset,int *outCoord0Offset)
 
@@ -477,7 +477,7 @@ static bool TerrainTriangle_DivideHitNumerators
 
 /* First triangle of TerrainTriangle_IntersectRayDistance, based on corner 3 (local coordinates as given). Returns
    true with the distance in *outDistanceQ12 on a hit, false on a miss. */
-static bool TerrainTriangle_IntersectRayCorner3Triangle
+static Bool8 TerrainTriangle_IntersectRayCorner3Triangle
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12)
@@ -588,7 +588,7 @@ static bool TerrainTriangle_IntersectRayCorner3Triangle
 
 /* Second triangle of TerrainTriangle_IntersectRayDistance, based on the far corner 0 (local coordinates shifted by
    one cell). Returns true with the distance in *outDistanceQ12 on a hit, false on a miss. */
-static bool TerrainTriangle_IntersectRayCorner0Triangle
+static Bool8 TerrainTriangle_IntersectRayCorner0Triangle
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12)
@@ -710,7 +710,7 @@ static bool TerrainTriangle_IntersectRayCorner0Triangle
    the world distance from the ray origin in *outDistanceQ12; a miss (also the quick reject when all four corners
    lie below the ray's lowest point) returns false and leaves *outDistanceQ12 untouched.
 */
-bool TerrainTriangle_IntersectRayDistance
+Bool8 TerrainTriangle_IntersectRayDistance
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12)
@@ -749,7 +749,7 @@ Q12 g_TerrainRayNextCoord1Q12;
    On a true return g_TerrainRayNext* hold the original's leftover results too: coord0 = end0 - cur0 for the
    destination-cell exit, cur0 with cell - 0x80 / cur1 - one cell for the no-column-movement exit.
 */
-bool TerrainRay_AdvanceGridTraversal
+Bool8 TerrainRay_AdvanceGridTraversal
           (Q12 rayEndCoord0Q12,Q12 rayEndCoord1Q12,Q12 rayStartCoord0Q12,Q12 rayStartCoord1Q12,
           FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *currentCell,Q12 currentGridCoord0Q12
           ,Q12 currentGridCoord1Q12)
@@ -825,7 +825,7 @@ bool TerrainRay_AdvanceGridTraversal
 /* Height-band test of one cell: true for a map-edge cell, a flooded cell (waterSurfaceDelta > 0) or a height
    outside [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta] relative to
    g_TerrainScanReferenceHeight. */
-static bool TerrainHeightBand_IsCellOutside(const FieldGridCell *cell)
+static Bool8 TerrainHeightBand_IsCellOutside(const FieldGridCell *cell)
 
 {
   int relativeHeightQ12;
@@ -847,7 +847,7 @@ static bool TerrainHeightBand_IsCellOutside(const FieldGridCell *cell)
    tests of directions 0 and 1 that cover the sector. Returns true at the first cell outside the height
    band, false when the step limit is reached.
 */
-bool TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
@@ -884,7 +884,7 @@ bool TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridC
 /* Height-band placement test, sector 1: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 1 and 2.
 */
-bool TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
@@ -922,7 +922,7 @@ bool TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridC
 /* Height-band placement test, sector 2: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 2 and 3.
 */
-bool TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
@@ -956,13 +956,13 @@ bool TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridC
 /* Height-band placement test, sector 3: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 3 and 4.
 */
-bool TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
+Bool8 TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
 
 {
   int rowStrideBytes;
   int relativeHeightQ12;
   FieldGridCell *directionStartCell;
-  bool directionFailed;
+  Bool8 directionFailed;
 
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1015,7 +1015,7 @@ bool TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *c
 /* Height-band placement test, sector 4: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 4 and 5.
 */
-bool TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
@@ -1055,7 +1055,7 @@ bool TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridC
 /* Height-band placement test, sector 5: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 5 and 0.
 */
-bool TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
@@ -1092,12 +1092,12 @@ bool TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridC
    straight tests of directions 0 and 1 that cover the sector. Returns true at the first failing cell,
    false when the step limit is reached.
 */
-bool TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
   FieldGridCell *directionStartCell;
-  bool directionFailed;
+  Bool8 directionFailed;
 
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1141,12 +1141,12 @@ bool TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,Fi
 /* Water-surface placement test, sector 1: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 1 and 2.
 */
-bool TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
   FieldGridCell *directionStartCell;
-  bool directionFailed;
+  Bool8 directionFailed;
 
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1191,11 +1191,11 @@ bool TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,Fi
 /* Water-surface placement test, sector 2: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 2 and 3.
 */
-bool TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
-  bool directionFailed;
+  Bool8 directionFailed;
 
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1236,12 +1236,12 @@ bool TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,Fi
 /* Water-surface placement test, sector 3: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 3 and 4.
 */
-bool TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
   FieldGridCell *directionStartCell;
-  bool directionFailed;
+  Bool8 directionFailed;
 
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1285,12 +1285,12 @@ bool TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,Fi
 /* Water-surface placement test, sector 4: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 4 and 5.
 */
-bool TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   uint8_t *cellBytes;
   int rowStrideBytes;
-  bool directionFailed;
+  Bool8 directionFailed;
 
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1337,11 +1337,11 @@ bool TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,Fi
 /* Water-surface placement test, sector 5: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 5 and 0.
 */
-bool TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
-  bool directionFailed;
+  Bool8 directionFailed;
 
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1386,7 +1386,7 @@ bool TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,Fi
    g_TerrainScanReferenceHeight leaves [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; false
    once the step limit is reached (4 scan steps per cell).
 */
-bool TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1412,7 +1412,7 @@ bool TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldG
 
 /* Height-band placement test, straight leg along direction 1 (C+1-W, up and right); see TerrainHeightBand_TestDirection0.
 */
-bool TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1435,7 +1435,7 @@ bool TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldG
 
 /* Height-band placement test, straight leg along direction 2 (C-W, up); see TerrainHeightBand_TestDirection0.
 */
-bool TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1458,7 +1458,7 @@ bool TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldG
 
 /* Height-band placement test, straight leg along direction 3 (C-1, left); see TerrainHeightBand_TestDirection0.
 */
-bool TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1481,7 +1481,7 @@ bool TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldG
 
 /* Height-band placement test, straight leg along direction 4 (C-1+W, down and left); see TerrainHeightBand_TestDirection0.
 */
-bool TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1504,7 +1504,7 @@ bool TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldG
 
 /* Height-band placement test, straight leg along direction 5 (C+W, down); see TerrainHeightBand_TestDirection0.
 */
-bool TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1529,7 +1529,7 @@ bool TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldG
    cell that is a map-edge cell, has a negative waterSurfaceDelta or whose triangle1NormalAngles high word is below
    g_TerrainAuxHeightMinimum; false once the step limit is reached (4 scan steps per cell).
 */
-bool TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while (g_TerrainScanStepLimit > scanStep) {
@@ -1547,7 +1547,7 @@ bool TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanSte
 /* Water-surface placement test, straight leg along direction 1 (C+1-W, up and right); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while (g_TerrainScanStepLimit > scanStep) {
@@ -1565,7 +1565,7 @@ bool TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanSte
 /* Water-surface placement test, straight leg along direction 2 (C-W, up); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while (g_TerrainScanStepLimit > scanStep) {
@@ -1583,7 +1583,7 @@ bool TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanSte
 /* Water-surface placement test, straight leg along direction 3 (C-1, left); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while (g_TerrainScanStepLimit > scanStep) {
@@ -1601,7 +1601,7 @@ bool TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanSte
 /* Water-surface placement test, straight leg along direction 4 (C-1+W, down and left); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while (g_TerrainScanStepLimit > scanStep) {
@@ -1619,7 +1619,7 @@ bool TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanSte
 /* Water-surface placement test, straight leg along direction 5 (C+W, down); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+Bool8 TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while (g_TerrainScanStepLimit > scanStep) {

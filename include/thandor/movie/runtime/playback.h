@@ -58,13 +58,13 @@
 #define MOVIE_LUMA_THIRD_Q16 0x5555
 /* Functions are grouped by semantic ownership. */
 
-bool Movie_EncodeFlmBufferFromFrameProvider
+Bool8 Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount);
 
 void MoviePlayback_AdvanceScheduledFrameAndTick(void);
 
-bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
+Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError);
 
 MovieFrameDimensions Movie_GetFrameDimensions(void);
 
@@ -89,7 +89,7 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
 uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *encodedOutput,uint32_t *previousFramePixels,uint32_t *currentFramePixels);
 
-bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode);
+Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode);
 
 void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);
 

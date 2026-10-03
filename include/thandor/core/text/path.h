@@ -37,9 +37,9 @@
 
 /* Functions are grouped by semantic ownership. */
 
-bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path);
+Bool8 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path);
 
-bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path);
+Bool8 WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path);
 
 void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory);
 

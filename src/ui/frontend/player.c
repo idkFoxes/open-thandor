@@ -286,7 +286,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
    (see FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch); the in-game HUD uses it to decide whether the
    technology window of a selected object is offered. Returns true when such a player exists.
 */
-bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
+Bool8 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
           (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId)
 
 {
@@ -334,7 +334,7 @@ void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentTo
 
 
 /* True when every client (player blocks 1..n-1; block 0 is the host) has a non-zero readyOrWaitState. */
-static bool FrontendPlayerRuntime_AreAllClientsReady(void)
+static Bool8 FrontendPlayerRuntime_AreAllClientsReady(void)
 
 {
   FrontendPlayerRuntimeBlockCount remainingClients;
@@ -730,7 +730,7 @@ void FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(PlayerRuntime
 
 /* True when every player block (0..n-1, the host included) has a non-zero readyOrWaitState. Assumes at least
    one block (do/while as in the original). */
-static bool FrontendPlayerRuntime_HaveAllPlayersReported(void)
+static Bool8 FrontendPlayerRuntime_HaveAllPlayersReported(void)
 
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
@@ -1131,7 +1131,7 @@ void FrontendPlayerSelection_ApplyEntryOrAll
   int remainingEntries;
   WorldRuntimeContext *worldRuntime;
   SelectionPlayerRuntimeBlock *selectionCursor;
-  bool notInSelection;
+  Bool8 notInSelection;
 
   selectionCursor = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   targetEntity = (GameEntityRuntime *)(armyRuntimeOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
@@ -1274,7 +1274,7 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
 /* Finds the player block with playerId and its lobby message record (the records run parallel to the blocks,
    FRONTEND_PLAYER_MESSAGE_RECORD_BYTES apart). In the lobby states (hosting, joined) the players are counted
    with g_FrontendPlayerRuntimeCount, otherwise with g_FrontendPlayerRuntimeBlockCount. False when not found. */
-static bool FrontendPlayerMessageBuffer_FindRecordById
+static Bool8 FrontendPlayerMessageBuffer_FindRecordById
           (PlayerRuntimeId playerId,FrontendPlayerRuntimeRecord **playerBlockOut,uint8_t **messageRecordOut)
 
 {

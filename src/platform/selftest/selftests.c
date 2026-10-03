@@ -42,8 +42,8 @@ static void Thandor_SelfTestCodec(void)
         uint8_t *unpacked = (uint8_t *)malloc(size + guard);
         unsigned i;
         unsigned seed = 12345;
-        bool encodeOk;
-        bool decodeOk;
+        Bool8 encodeOk;
+        Bool8 decodeOk;
         uint32_t encodeValue = 0; /* packed size, or the error code on failure */
         uint32_t decodeValue = 0; /* reported byte count, or the error code on failure */
         uint32_t packedHash;
@@ -638,7 +638,7 @@ static void Thandor_SelfTestScanAddresses(void)
         for (;;) {
             PckEntryHeader header;
             uint8_t *unpacked;
-            bool decoded;
+            Bool8 decoded;
             char name[PCK_ENTRY_PATH_UNITS + 1];
             int k;
             uint32_t i;

@@ -137,7 +137,7 @@ void ArmyRuntimeMaintenance_DispatchClassMethodDRecursive
 void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *ownerNode);
 
-bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
+Bool8 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath,uint32_t *outError);
 
 void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy (WorldRuntimeContext *worldRuntime,ModelRuntimeDestroyEffectsView *modelRuntime);
 
@@ -152,7 +152,7 @@ void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRun
 void ArmyRuntime_ApplyTargetPositionCommand
           (Q12 coordinate2Q12,Q12 coordinate1Q12,Q12 coordinate0Q12,ArmyRuntimeSlot *armyRuntime);
 
-bool
+Bool8
 ArmyRuntime_ResolveShotAimPoint
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
           ShotDefinition *shotDefinition,GameEntityRuntime *targetState,GraphicsFixedVec3 *outAimPoint);
@@ -160,11 +160,11 @@ ArmyRuntime_ResolveShotAimPoint
 void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *node);
 
-bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime);
+Bool8 ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime);
 
-bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime);
+Bool8 ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime);
 
-bool ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime);
+Bool8 ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime);
 
 void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime);
 
@@ -192,7 +192,7 @@ void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,
 
 void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState (WorldRuntimeContext *worldRuntime,ModelRuntimeVerticalDeploymentView *modelRuntime);
 
-bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
+Bool8 ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotTargetModelReference targetModelReference,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,
@@ -212,16 +212,16 @@ GraphicsTextureResource *ArmyRuntime_RenderPreviewTexture
 void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
-bool ArmyRuntimeSpawner_CreateLinkedChildInstance
+Bool8 ArmyRuntimeSpawner_CreateLinkedChildInstance
           (WorldMotionValue78 inheritedValue78,WorldMotionValue74 inheritedValue74,
           WorldMotionValue70 inheritedValue70,PckArmyAssetIdCatalog linkedArmyAssetId,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);
 
-bool ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime);
+Bool8 ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime);
 
 void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,GameEntityRuntime *entityRuntime);
 
-bool ArmyRuntime_TestArmyNearFactoryExit
+Bool8 ArmyRuntime_TestArmyNearFactoryExit
           (ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime);
 
 void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex factionIndex,Q12 worldYQ12,Q12 worldXQ12,
@@ -233,7 +233,7 @@ void ModelRuntime_PlayDefinitionSecondaryOneShotSound(ModelRuntimeSlot *modelRun
 
 void ModelRuntime_PlayDefinitionPrimaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldContext);
 
-bool ArmyRuntime_TestPositionDistanceWithinCombinedRadius
+Bool8 ArmyRuntime_TestPositionDistanceWithinCombinedRadius
           (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidateModelNode,
           void *sourceModelNode);
 
@@ -248,7 +248,7 @@ void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *wor
 
 void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime);
 
-bool ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12);
+Bool8 ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12);
 
 ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
           (WorldObjectAllocationFlags creationFlags,AngleTurn32 orientationAngle,Q12 worldXQ12,

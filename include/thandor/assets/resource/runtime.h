@@ -14,9 +14,9 @@
 /* Submodule: assets/resource/runtime. */
 /* Functions are grouped by semantic ownership. */
 
-bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
+Bool8 InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
 
-bool Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode);
+Bool8 Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32_t *outErrorCode);
 
 void Resource_Release(void *resourceBuffer);
 

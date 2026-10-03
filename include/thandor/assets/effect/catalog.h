@@ -17,11 +17,11 @@
 #define EFFECT_DEFINITION_REGISTRY_SLOT_COUNT 256
 /* Functions are grouped by semantic ownership. */
 
-bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
+Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
 
 uint32_t EffectDefinitions_ResolveCrossReferences(void);
 
-bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError);
+Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError);
 
 uint32_t EffectDefinitionRegistry_FindById(PckEffectDefinitionIdCatalog definitionId,EffectDefinition **outDefinition);
 

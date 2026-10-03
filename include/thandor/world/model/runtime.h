@@ -52,7 +52,7 @@
 
 /* Functions are grouped by semantic ownership. */
 
-bool ModelRuntimePool_RepairDeferredChild
+Bool8 ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
           ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime,
@@ -62,7 +62,7 @@ void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRun
 
 void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode);
 
-bool ModelRuntime_RaycastCandidateListNearest
+Bool8 ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime,Q12 *outNearestDistanceQ12,

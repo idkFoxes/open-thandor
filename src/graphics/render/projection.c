@@ -147,7 +147,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
    winding is normalized first (vertex1/vertex2 swapped when the triangle's own cross product is not
    negative) so that "inside" means all three pointer cross products are negative.
 */
-bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
+Bool8 GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2)
 
 {

@@ -125,7 +125,7 @@ void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
    leftover value of their own as the voice (e.g. a random effect index or a music gain). Those handles only ever go back to the silent stubs (the backend is chosen once at startup)
    or through a NULL test before one (Movie_Rewind), so NULL here behaves the same.
 */
-bool SoundBackendDisabled_PlayOneShot
+Bool8 SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
@@ -143,7 +143,7 @@ bool SoundBackendDisabled_PlayOneShot
    SoundBackendDisabled_PlayOneShot those values only reach the silent stubs again, so NULL behaves the same
    (the spatial pool merely calls this stub again instead of the gain stub on the next frame).
 */
-bool SoundBackendDisabled_PlayLooping
+Bool8 SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
@@ -167,7 +167,7 @@ void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
 /* Silent-backend stub in slot g_SoundIsVoicePlaying: always returns true, meaning the voice is not
    playing.
 */
-bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
+Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 
 {
   return true;
@@ -490,7 +490,7 @@ static void DirectSound_ApplyChannelGains
 
 /* Shared body of DirectSound_PlayOneShot/DirectSound_PlayLooping: the first idle voice of the set plays; an empty slot is filled with DuplicateSoundBuffer of
    voice 0 rewound to position 0; with all eight voices busy it fails (false, NULL voice). */
-static bool DirectSound_PlayVoiceSet
+static Bool8 DirectSound_PlayVoiceSet
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,TH_LEGACY_DWORD playFlags,IDirectSoundBuffer **outVoice)
 {
@@ -538,7 +538,7 @@ static bool DirectSound_PlayVoiceSet
    table. Returns true and the voice in *outVoice (outVoice may be NULL); false with a NULL voice when the
    set is NULL, all eight voices are busy or the duplication fails.
 */
-bool DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+Bool8 DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
 {
@@ -548,7 +548,7 @@ bool DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSound
 
 /* Like DirectSound_PlayOneShot, but the voice plays with DSBPLAY_LOOPING until it is stopped.
 */
-bool DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+Bool8 DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice)
 
 {
@@ -571,10 +571,10 @@ void DirectSound_StopVoice(IDirectSoundBuffer *voice)
 /* Tells whether a voice is still playing. The result is inverted like all failure flags here: false means
    playing, true means NULL or stopped.
 */
-bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
+Bool8 DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
 
 {
-  bool notPlaying;
+  Bool8 notPlaying;
   TH_LEGACY_DWORD voiceStatusFlags;
 
   notPlaying = true;

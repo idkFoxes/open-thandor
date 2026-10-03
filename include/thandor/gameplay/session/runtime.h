@@ -65,7 +65,7 @@
 #define RESOURCE_EXTRACTION_SHARE_SHIFT 24
 /* Functions are grouped by semantic ownership. */
 
-bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError);
 
 void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot);
@@ -74,15 +74,15 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
 
 void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void);
 
-bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           InGameRuntimeRootFrameView *inGameRoot);
 
 void InGameRuntime_ProcessQueuedSessionNotificationTimer(void);
 
-bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                         uint32_t *outError);
 
-bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError);
+Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError);
 
 void InGameRuntime_ShutdownAndReleaseResources(void);
 

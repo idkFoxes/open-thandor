@@ -124,13 +124,13 @@
 
 void UiTooltip_TickCountdown(void);
 
-bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiNumericTextControl *control);
 
-bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiPathTextEditControl *control);
 
-bool UiRequiredTextEditControl_HandleKeyboardAndValidate
+Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control);
 
@@ -173,7 +173,7 @@ void UiPayloadPairTextButton_DrawFormattedPayloads
 void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
               UiPixelCoordinate clipLeft);
 
-bool UiRootStack_PopUntilWindowTextureBoundary(void);
+Bool8 UiRootStack_PopUntilWindowTextureBoundary(void);
 
 void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiFramedTextButtonControl *control);
 
@@ -206,7 +206,7 @@ void UiTextButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextButtonControl *control);
 
-bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control);
 
 void UiImagePanelControl_DrawAlignedTextureAndChildren
@@ -241,7 +241,7 @@ void UiTextListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextListControl *control);
 
-bool UiTextListControl_HandleKeyboardNavigationAndSearch
+Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control);
 
@@ -282,7 +282,7 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSoftwareTexturePreviewControl *control);
 
-bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
+Bool8 UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control);
 
 void UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);

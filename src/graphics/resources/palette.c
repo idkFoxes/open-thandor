@@ -160,7 +160,7 @@ static void GraphicsPaletteTextureSource_FoldDuplicateColorsInBank(GraphicsTextu
 
 /* Merges the first bank behind destinationBank whose used colours fit together with destinationBank's into one
    bank (at most GRAPHICS_PALETTE_BANK_ENTRIES). Returns true when a bank was merged. */
-static bool GraphicsPaletteTextureSource_MergeFirstFittingBankInto(GraphicsTextureSourceHeaderView *textureSource,
+static Bool8 GraphicsPaletteTextureSource_MergeFirstFittingBankInto(GraphicsTextureSourceHeaderView *textureSource,
                                                                     uint32_t destinationBank)
 {
   uint32_t candidateBank;
@@ -217,7 +217,7 @@ static void GraphicsPaletteTextureSource_PackUsedEntriesOfBank(GraphicsTextureSo
    source has no palette bank or no subresource. No caller or table reference is known (converter/editor code left
    in the game).
 */
-bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase)
+Bool8 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase)
 
 {
   GraphicsTextureSourceHeaderView *textureSource;
@@ -265,7 +265,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
 /* Checks the 'pal' signature: returns true and stores paletteBankCount (+0xB0) in *outBankCount, or returns
    false (leaving *outBankCount untouched) for a wrong signature. No caller or table reference is known.
 */
-bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount)
+Bool8 GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount)
 
 {
   if (paletteAsset->magic != ASSET_MAGIC_PAL) {

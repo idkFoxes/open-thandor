@@ -136,7 +136,7 @@ void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandP
 
 void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
 
-bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
+Bool8 InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress);
 
 /* Rebuild helper: the handler for a received command code from the explicit command table of codeBase, or

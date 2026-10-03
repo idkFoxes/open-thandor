@@ -25,9 +25,9 @@
 #define GRAPHICS_PALETTE_BANK_SLOT_CAPACITY 0x200
 /* Functions are grouped by semantic ownership. */
 
-bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase);
+Bool8 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase);
 
-bool GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount);
+Bool8 GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset,uint32_t *outBankCount);
 
 GraphicsPaletteAsset * GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16,uint32_t *outErrorCode);
 

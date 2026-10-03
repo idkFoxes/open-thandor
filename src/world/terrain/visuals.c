@@ -92,7 +92,7 @@ static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,
    planes 1 and 2 and then derives plane 0 from them. Returns true on success; on failure returns false and
    stores the allocator error in *outError (untouched on success).
 */
-bool TerrainCompositeTexture_Create(uint32_t *outError)
+Bool8 TerrainCompositeTexture_Create(uint32_t *outError)
 
 {
   FieldGridAsset *terrainFieldGrid;
@@ -194,7 +194,7 @@ static uint8_t *TerrainByteClampLookup_FillRow(uint8_t *rowCursor,int targetLeve
    aligned so the original can index it with the two bytes as the low 16 address bits. Returns true on success; false when the allocation fails,
    with the allocator error in *outError.
 */
-bool TerrainByteClampLookup_Initialize(uint32_t *outError)
+Bool8 TerrainByteClampLookup_Initialize(uint32_t *outError)
 
 {
   void *lookupAllocationBase;
@@ -245,7 +245,7 @@ static TerrainMaterialSuffixEntry *TerrainVisualResources_FindPathSuffixEntry(ui
    set in fieldFlags are required (advancing the loading movie before and after each), the others optional
    (NULL when missing). Also sets the loading movie span from the number of required sets. Returns true on
    success; false with the load error in *outError when a required set fails. */
-static bool TerrainVisualResources_LoadMaterialTextureSets
+static Bool8 TerrainVisualResources_LoadMaterialTextureSets
           (uint16_t *secondaryResourcePath,TerrainMaterialSuffixEntry *pathSuffixEntry,FieldGridFlags fieldFlags,
           uint32_t *outError)
 
@@ -289,7 +289,7 @@ static bool TerrainVisualResources_LoadMaterialTextureSets
 /* Loads <primary>.dat, <primary>.gfx, <primary>.pal, <secondary>.pal and <secondary>.dat (the secondary path
    without its material letter) into the terrain globals, advancing the loading movie after each. Returns true
    on success; false with the load error in *outError at the first failure. */
-static bool TerrainVisualResources_LoadTablesAndPalettes
+static Bool8 TerrainVisualResources_LoadTablesAndPalettes
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,
           TerrainMaterialSuffixEntry *pathSuffixEntry,uint32_t *outError)
 
@@ -391,7 +391,7 @@ static void TerrainDirectionTable_RandomizeRecords(void)
    animated direction table. Advances the loading movie between steps. Returns true on success; on failure
    returns false and stores the error (field check or failed resource load) in *outError (untouched on success).
 */
-bool TerrainVisualResources_LoadPrimary
+Bool8 TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError)
 
@@ -426,7 +426,7 @@ bool TerrainVisualResources_LoadPrimary
    flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell. Returns true on success; on failure
    returns false and stores the error in *outError (untouched on success).
 */
-bool TerrainVisualResources_LoadAndClearCellOverlayFlags
+Bool8 TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field,
           uint32_t *outError)
 
@@ -834,14 +834,14 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   int gridColumn;
   int gridRow;
   int64_t roundedRowQ12;
-  bool rowRoundingOverflows;
+  Bool8 rowRoundingOverflows;
   uint32_t colorVariant;
   AssetRelativeOffset assetOffset;
   uint8_t *pixelCursor;
   FieldGridCell *fieldCell;
   uint8_t *plane0Pixels;
   uint8_t *plane0WriteCursor;
-  bool notSelected;
+  Bool8 notSelected;
   FieldGridCoordinates gridCoordinates;
 
   inGameRoot = g_InGameRuntimeRoot;

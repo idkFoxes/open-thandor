@@ -93,7 +93,7 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
 
 void FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot);
 
-bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings);
+Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings);
 
 void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot);
 

@@ -61,7 +61,7 @@ void Win32_PumpMessages(void)
    handles itself (Backspace, Tab, Enter, Pause, Escape, Space through Delete, numpad and F1-F12) get no
    WM_CHAR, so text fields do not see them twice.
 */
-bool Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
+Bool8 Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
 
 {
   uint32_t messageCode;

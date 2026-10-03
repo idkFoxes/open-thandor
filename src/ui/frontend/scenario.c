@@ -148,7 +148,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
 
 /* True when one of the players' records has factionSlot as its faction assignment (the player list is assumed
    to hold at least one record). */
-static bool FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
+static Bool8 FrontendMissionBriefing_IsFactionTakenByPlayer(int factionSlot)
 {
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendPlayerRuntimeBlockCount playersRemaining;

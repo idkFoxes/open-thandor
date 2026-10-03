@@ -64,7 +64,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   uint32_t cornerHeight;
   int bottomEdgeY;
   int rightEdgeX;
-  bool beginAccessFailed;
+  Bool8 beginAccessFailed;
   GraphicsTextureLogicalSize cornerSize;
 
   if ((control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME)) != 0) {
@@ -181,7 +181,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
   int bottomEdgeY;
   int rightEdgeX;
   int rightCapX;
-  bool beginAccessFailed;
+  Bool8 beginAccessFailed;
   uint16_t *titleText;
   GraphicsTextureLogicalSize textureSize;
   GraphicsTextureLogicalSize rightCapSize;
@@ -310,7 +310,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
   int rightEdgeX;
   int titleTextX;
   int rightCapX;
-  bool beginAccessFailed;
+  Bool8 beginAccessFailed;
   RichTextExtent titleExtent;
   uint16_t *titleText;
   GraphicsTextureLogicalSize textureSize;
@@ -399,7 +399,7 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
 void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
 
 {
-  bool lockWasHeld;
+  Bool8 lockWasHeld;
   
   /* the try-acquire takes a free lock, so both paths release it before the frame */
   lockWasHeld = g_SpinLockTryAcquire(g_UiRuntimeFrameLock);
@@ -534,11 +534,11 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
    focus-moving handler. The key events of Keyboard_OnKeyDown carry letters as KEYBOARD_KEY_CODE_CHAR
    (0x30000 + code), so the plain 'c' / 'z' compared here never arrive and the hotkeys do not fire.
 */
-bool UiResizableWindowControl_HandleWindowHotkeys
+Bool8 UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control)
 
 {
-  bool delegateResult;
+  Bool8 delegateResult;
 
   if ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
     if (((control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) != 0) && (keyCode == 'c')) {
@@ -621,10 +621,10 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
    initial focus, pointer capture and hover are reset and the whole screen is redrawn. The closed root is
    assumed to be the top one: only g_UiRootNode is replaced.
 */
-bool UiRootStack_Pop(UiRootNode *root)
+Bool8 UiRootStack_Pop(UiRootNode *root)
 
 {
-  bool closeCallbackVetoed;
+  Bool8 closeCallbackVetoed;
   UiRootNode *belowRoot;
   UiNodeBase *parentCursor;
   
@@ -766,7 +766,7 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
   int fillEndX;
   uint32_t divisionRemainder;
   uint16_t *commandStream;
-  bool beginAccessFailed;
+  Bool8 beginAccessFailed;
   GraphicsTextureLogicalSize textureSize;
 
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
@@ -1000,8 +1000,8 @@ void UiResizableWindowControl_RelocateAndRefreshInteractionState
 
 /* Sets or clears armedFlag (UI_ROOT_CLOSE_ARMED / UI_ROOT_MAXIMIZE_ARMED) of a pressed window button to match
    overButton. Returns true when the flag changed (the button needs a redraw). */
-static bool UiResizableWindowControl_UpdateArmedFlag
-          (bool overButton,enum UiRootFlags armedFlag,UiResizableWindowControl *control)
+static Bool8 UiResizableWindowControl_UpdateArmedFlag
+          (Bool8 overButton,enum UiRootFlags armedFlag,UiResizableWindowControl *control)
 
 {
   if (overButton) {
@@ -1123,7 +1123,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
   int localY;
   int moveX;
   int moveY;
-  bool overButton;
+  Bool8 overButton;
   GraphicsTextureLogicalSize buttonSize;
 
   localX = pointerX - control->root.base.left;
@@ -1239,7 +1239,7 @@ void UiFrame_FlushInputAndResetPendingTicks(void)
    the current front root, gives it the initial keyboard focus, moves the in-front flag from the old front
    root to it and invalidates both. Always returns false.
 */
-bool UiRootStack_BringToFront(UiRootNode *root)
+Bool8 UiRootStack_BringToFront(UiRootNode *root)
 
 {
   UiRootNode *belowRoot;
@@ -1281,7 +1281,7 @@ void UiWindowResources_Init(void)
   uint32_t textureLoadError;
   uint32_t checkedValue;
   uint32_t pageLoadError;
-  bool pageLoaded;
+  Bool8 pageLoaded;
 
   loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_UiWindowTexturePathUtf16,&textureLoadError);
   checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uint32_t)loadedTexture : textureLoadError,
@@ -1391,7 +1391,7 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
   uint32_t localY;
   uint32_t resizeFlags;
   int bottomBorderY;
-  bool hitOpaque;
+  Bool8 hitOpaque;
   GraphicsTextureLogicalSize textureSize;
 
   localX = pointerX - control->root.base.left;

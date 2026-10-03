@@ -75,7 +75,7 @@ static void SelectionPanelMetrics_DrawPlainCorners(SelectionPanelMetricFrame *fr
    no energy demand and alwaysDrawMeter is false), the group number top right (the plain corner when the entity is
    in no group) and the plain bottom corners. */
 static void SelectionPanelMetrics_DrawOwnCorners
-          (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,bool alwaysDrawMeter)
+          (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,Bool8 alwaysDrawMeter)
 {
   ModelHierarchyEnergyDemand energyDemand;
   uint32_t groupNumber;
@@ -178,7 +178,7 @@ static void SelectionPanelMetrics_DrawSegmentedSides(SelectionPanelMetricFrame *
 static void SelectionPanelMetrics_DrawResearchOrIdleBars
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *researchSource)
 {
-  bool researching;
+  Bool8 researching;
 
   researching = ((researchSource->classState).stateFlags &
                  (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) != 0;
@@ -195,7 +195,7 @@ static void SelectionPanelMetrics_DrawResearchOrIdleBars
 
 /* Kind 1: a factory (class 13) or production building (class 11) that is building shows its build progress.
    Returns false (nothing drawn) for every other kind-1 entity. */
-static bool SelectionPanelMetrics_DrawBuildProgressFrame
+static Bool8 SelectionPanelMetrics_DrawBuildProgressFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime)
 {
   if ((armyRuntime->classState).behaviorState != ARMY_FACTORY_STATE_BUILDING) {
@@ -216,7 +216,7 @@ static bool SelectionPanelMetrics_DrawBuildProgressFrame
 
 /* Kind 2: a weapon (first child of class 5-8) shows its reload countdown against the weapon definition's reload
    ticks. Returns false (nothing drawn) when there is no such child. */
-static bool SelectionPanelMetrics_DrawWeaponReloadFrame
+static Bool8 SelectionPanelMetrics_DrawWeaponReloadFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime)
 {
   ModelRuntimeSlot *childModelRuntime;
@@ -250,7 +250,7 @@ static bool SelectionPanelMetrics_DrawWeaponReloadFrame
    part of its smallest slot countdown (unsigned minimum of the eight, then at least classState80, signed).
    Returns false (nothing drawn) otherwise; *researchSource then names what the generic frame reads its research
    state from. */
-static bool SelectionPanelMetrics_DrawSlotReloadFrame
+static Bool8 SelectionPanelMetrics_DrawSlotReloadFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,ModelRuntimeSlot *armyRuntime,
           ModelRuntimeSlot **researchSource)
 {
@@ -317,7 +317,7 @@ static void SelectionPanelMetrics_DrawClass22Frame
 
 /* Kind-specific frame of an own entity (kinds 1-3, and class-22 entities of a higher kind). Returns false when
    nothing was drawn and the entity gets the generic frame, read from *researchSource. */
-static bool SelectionPanelMetrics_DrawKindFrame
+static Bool8 SelectionPanelMetrics_DrawKindFrame
           (SelectionPanelMetricFrame *frame,RuntimeModelFactionPrefix *runtimeEntry,uint32_t runtimeKind,
           ModelRuntimeSlot *armyRuntime,ModelRuntimeSlot **researchSource)
 {
@@ -357,7 +357,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
   uint32_t runtimeKind;
   ModelRuntimeSlot *armyRuntime;
   ModelRuntimeSlot *researchSource;
-  bool framebufferBusy;
+  Bool8 framebufferBusy;
   SelectionPanelMetricFrame frame;
 
   inGameRoot = g_InGameRuntimeRoot;
@@ -799,7 +799,7 @@ static void SelectionInfoPanel_PatchInfoTexture(GraphicsTextureSourceAsset *info
    info.gfx) - the exact meaning of these patches is not known. Returns true on success; on failure returns false
    with the failing loader's error in *outError.
 */
-bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError)
+Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError)
 
 {
   GraphicsTextureSourceAsset *selectionTextureSource;
@@ -900,7 +900,7 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
 /* Writes the average world position (model node translation) of the local selection's entities to
    *outPosition and returns true; returns false when the selection is empty (*outPosition is then all 0).
 */
-bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition)
+Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition)
 
 {
   ModelRuntimeNode *slotModelNode;
@@ -960,12 +960,12 @@ void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionP
 
 /* Returns true when the local selection holds at least one entity, false when it is empty.
 */
-bool SelectionInfo_HasAnyEntry(void)
+Bool8 SelectionInfo_HasAnyEntry(void)
 
 {
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
-  bool entryIsEmpty;
+  Bool8 entryIsEmpty;
   GameEntityRuntime *currentEntry;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -986,7 +986,7 @@ bool SelectionInfo_HasAnyEntry(void)
 /* Returns false when every entity of the local selection belongs to the faction ownerIndex (an empty
    selection passes), true as soon as one belongs to another faction.
 */
-bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
+Bool8 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 
 {
   int entriesRemaining;
@@ -1010,7 +1010,7 @@ bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
    and at least one of them has a non-zero classLinkState.classState70 in its model runtime; true otherwise
    (also for an empty selection).
 */
-bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex)
+Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex)
 
 {
   ModelRuntimeSlot *classRecord;
@@ -1043,13 +1043,13 @@ bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerI
    definition has a non-zero accelerationPerTick, or the selection is a single entity of definition class 0x0D (13).
    True otherwise; the world input then ignores the ground click.
 */
-bool SelectionInfo_TestAnyActiveOrSingleClass13(void)
+Bool8 SelectionInfo_TestAnyActiveOrSingleClass13(void)
 
 {
   int entryIndex;
   int selectedEntryCount;
   GameEntityRuntime *selectedEntry;
-  bool selectedEntryIsClass13;
+  Bool8 selectedEntryIsClass13;
   ModelDefinition *selectedDefinition;
 
   selectedEntryCount = 0;
@@ -1076,7 +1076,7 @@ bool SelectionInfo_TestAnyActiveOrSingleClass13(void)
 /* Fallback of SelectionInfo_TestPositionCommandAtWorldPoint: the first class-0x0D entity of the local selection
    tests the grid cell mask bands selected by its capability flags (0x80 -> band 3, 4 -> band 1, else 6);
    true when there is no such entity. */
-static bool SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12)
+static Bool8 SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12)
 
 {
   GameEntityRuntime *selectedEntity;
@@ -1115,14 +1115,14 @@ static bool SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 wor
    through its typed callback; without such an entity the first class-0x0D entity tests the grid cell mask bands
    selected by its capability flags (0x80 -> band 3, 4 -> band 1, else 6). Returns true when neither exists.
 */
-bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
+Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
 
 {
   GraphicsWorldCoordinateQ12 savedTranslationX;
   GraphicsWorldCoordinateQ12 savedTranslationY;
   ModelRuntimeNode *selectedModelNode;
   int entryIndex;
-  bool testResult;
+  Bool8 testResult;
   GameEntityRuntime *selectedEntity;
 
   selectedEntity = NULL;
@@ -1158,13 +1158,13 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
    ArmyRuntime_TestWeaponDamageNonnegative but fails ArmyRuntime_TestHasNoWeaponDamage (its state value
    stateOrTechnologyId is positive); true when none does.
 */
-bool SelectionInfo_TestNoEntryHasWeaponDamage(void)
+Bool8 SelectionInfo_TestNoEntryHasWeaponDamage(void)
 
 {
   GameEntityRuntime *armyRuntime;
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
-  bool stateTestResult;
+  Bool8 stateTestResult;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
@@ -1189,12 +1189,12 @@ bool SelectionInfo_TestNoEntryHasWeaponDamage(void)
 /* Returns true when ArmyRuntime_TestWeaponDamageNonnegative holds for any entity of the local
    selection, false otherwise.
 */
-bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
+Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
 
 {
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
-  bool stateTestResult;
+  Bool8 stateTestResult;
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
@@ -1222,7 +1222,7 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
   GameEntityRuntime **nextSelectionEntryCursor;
-  bool currentEntryIsEmpty;
+  Bool8 currentEntryIsEmpty;
 
   /* skip the empty entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -1245,7 +1245,7 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
 
 /* Tests whether entry is missing from the local selection: true when absent, false when it is selected.
 */
-bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
+Bool8 SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
 
 {
   /* search the 32 selection slots */
@@ -1335,7 +1335,7 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
    PlayerPairList_InsertUnique): false when listed, true when not. Used by the FieldGrid cell
    updates in world/terrain/grid.c.
 */
-bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
+Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId)
 
 {
@@ -1372,7 +1372,7 @@ void SelectionPointerArray_ApplyMoveCommand
   Q12 entryTargetX;
   GameEntityRuntime *selectedEntry;
   GameEntityRuntime *singleClass13Entry;
-  bool spreadTooLarge;
+  Bool8 spreadTooLarge;
   ModelDefinition *entityDefinition;
 
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
@@ -1528,7 +1528,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
 {
   ArmyMovementRuntime *movementRuntime;
   int entriesRemaining;
-  bool spreadTooLarge;
+  Bool8 spreadTooLarge;
 
   /* selection is advanced as a cursor over its entries; the targets are shifted per entry and restored */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -1981,7 +1981,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
 {
   ArmyRuntimeSlot *runtimeState;
   int entriesRemaining;
-  bool stateIsZero;
+  Bool8 stateIsZero;
 
   /* selection is advanced as a cursor over its entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -2014,7 +2014,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
 {
   ArmyRuntimeSlot *runtimeState;
   int entriesRemaining;
-  bool stateIsZero;
+  Bool8 stateIsZero;
 
   /* selection is advanced as a cursor over its entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
@@ -2180,7 +2180,7 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
    FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.c); the primary-selection move/rotate handlers call
    it and ignore the result.
 */
-bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
+Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
   int entryIndex;
@@ -2200,7 +2200,7 @@ bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerAr
    than 5.0 (Q12 0x5000) on either axis or the two extents add up to more than 7.0 (0x7000). An empty
    selection returns false.
 */
-bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
+Bool8 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
 
 {
   GameEntityRuntime *entry;

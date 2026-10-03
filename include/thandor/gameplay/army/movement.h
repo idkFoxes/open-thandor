@@ -158,7 +158,7 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
           (AngleTurn32 steeringAngle16,ArmyArticulatedRuntimeSlotView *armyRuntime,
           WorldRuntimeContext *worldRuntime);
 
-bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+Bool8 ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 void ArmyRuntime_AppendWaypointOrStartMove
@@ -171,7 +171,7 @@ void ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *mov
 
 void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementRuntime);
 
-bool ArmyRuntime_UpdateMovementAndWaypoints
+Bool8 ArmyRuntime_UpdateMovementAndWaypoints
           (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime,Q12 *outWorldXQ12,
           Q12 *outWorldYQ12);
 

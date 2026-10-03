@@ -122,15 +122,15 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   uint32_t rowLimit;
   GridPathUnreachableReferenceRow32 targetRow;
   GridScratchCell *routeScratchCell;
-  bool segmentBlocked;
+  Bool8 segmentBlocked;
   WorldPositionXY primaryWorldPosition;
-  bool startRelocated;
+  Bool8 startRelocated;
   FieldGridCellCoordinate nearestRow;
   FieldGridCellCoordinate nearestColumn;
   FieldGridCellCoordinate reachableRow;
   FieldGridCellCoordinate reachableColumn;
   PathingDestination resolvedDestination;
-  bool backtrackReachedTarget;
+  Bool8 backtrackReachedTarget;
   FieldGridCellCoordinate backtrackRow;
   FieldGridCellCoordinate backtrackColumn;
   FieldGridRegionMask backtrackRouteStateMask;
@@ -309,7 +309,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
 
 /* True when the cell below rowAboveCell (rowAboveCell[scratchWidth]) is open, counted (inside the outer
    footprint) and marked visited, and at least one of its six hex neighbours has count 0 (outside the footprint). */
-static bool GridReachability_IsMarkedRingEdgeCell(GridScratchCell *rowAboveCell,uint32_t scratchWidth)
+static Bool8 GridReachability_IsMarkedRingEdgeCell(GridScratchCell *rowAboveCell,uint32_t scratchWidth)
 {
   GridScratchCell *cell;
 
@@ -330,7 +330,7 @@ static bool GridReachability_IsMarkedRingEdgeCell(GridScratchCell *rowAboveCell,
    other marked edge cell left over means the ring fell apart and returns true. A point outside the grid
    also returns true.
 */
-bool GridReachability_RebuildConnectedRegionAroundWorldPoint
+Bool8 GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
@@ -342,7 +342,7 @@ bool GridReachability_RebuildConnectedRegionAroundWorldPoint
   int cellsToScan;
   GridScratchCell *scratchCursor;
   uint32_t rowStrideBytes;
-  bool moreBlocksRemain;
+  Bool8 moreBlocksRemain;
 
   cellsToClear = g_GridScratchWidth * g_GridScratchHeight;
   scratchCursor = g_GridScratchPrimary;
@@ -737,7 +737,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
    (g_GridPathCostQueueBegin..End), each replacing and freeing the previous buffer. Returns true on success;
    on failure returns false and writes the allocator error to *outError (untouched on success).
 */
-bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError)
+Bool8 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outError)
 
 {
   GridScratchCell *previousSecondaryScratchBuffer;
@@ -927,7 +927,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
    when it lies outside the scratch grid, the cell is GRID_SCRATCH_BLOCKED, or the cell has distance band bit
    8 + lowBandIndex or bit 24 + highBandIndex set.
 */
-bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
+Bool8 GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
 
 {
   GridScratchStateMask cellStateMask;
@@ -990,7 +990,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
   int deltaY;
   EntityPathingPriorityPair *influencePair;
   EntityPathingPriorityPair *pairCursor;
-  bool masksOverlap;
+  Bool8 masksOverlap;
   WorldPositionXY routeTarget;
   WorldPositionXY resolvedTarget;
   ModelRuntimeNode *entityModelNode;
@@ -1266,9 +1266,9 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   uint32_t rowLimit;
   uint32_t scaledRowTerm;
   uint32_t footprintRadius;
-  bool segmentBlocked;
+  Bool8 segmentBlocked;
   WorldPositionXY resolvedTarget;
-  bool startRelocated;
+  Bool8 startRelocated;
   ModelRuntimeNode *entityModelNode;
 
   entityModelNode = routeEntityRuntime->modelNode;
@@ -1444,7 +1444,7 @@ static GridScratchCell *GridPathCost_FindCheaperHexNeighbor(GridScratchCell *cel
    *outRouteStateMask always receives the final blocking mask (callerBlockingMask, or 0 once a high-cost cell
    was entered).
 */
-bool GridPathCost_BacktrackBestHexRoute
+Bool8 GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn,FieldGridRegionMask *outRouteStateMask)
@@ -1603,7 +1603,7 @@ typedef struct GridPathCostQueueState {
 } GridPathCostQueueState;
 
 /* True when originCell or one of its six hex neighbours already has a cost. */
-static bool GridPathCost_OriginOrNeighborReached(GridScratchCell *originCell,uint32_t scratchWidth)
+static Bool8 GridPathCost_OriginOrNeighborReached(GridScratchCell *originCell,uint32_t scratchWidth)
 {
   GridScratchCell *rowAboveCell;
 
@@ -1717,7 +1717,7 @@ void GridScratch_ResetTraversalFlagsAndCosts(void)
 {
   uint32_t cellsRemaining;
   uint32_t *scratchRecordCursor; /* dword view of the 8-byte cells: [2n] = stateMask, [2n + 1] = pathCost */
-  bool fullRecordBlockRemaining;
+  Bool8 fullRecordBlockRemaining;
 
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
   scratchRecordCursor = &g_GridScratchPrimary->stateMask;
@@ -1788,7 +1788,7 @@ static GridScratchCell *GridPathRegion_ScanUnreachedSpanEnd(GridScratchCell *cur
 
 /* True for a cell the region walk recurses into: unreached, neither blocked (bit 31) nor visited, and not
    a cell with the mover's faction presence bit and a blocking band. */
-static bool GridPathRegion_IsUnvisitedUnreachedOpenCell(GridScratchCell *cell)
+static Bool8 GridPathRegion_IsUnvisitedUnreachedOpenCell(GridScratchCell *cell)
 
 {
   GridScratchStateMask cellState;
@@ -2081,7 +2081,7 @@ static int GridPathCost_HexDistance(int columnDelta,int rowDelta)
    *outColumn untouched. Otherwise returns true and writes the nearest (hex distance) free cell within +-16
    rows/columns, or the cell itself when there is none.
 */
-bool GridPathCost_RelocateFromBlockedCell
+Bool8 GridPathCost_RelocateFromBlockedCell
           (FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn,FieldGridCellCoordinate *outRow,
           FieldGridCellCoordinate *outColumn)
 
@@ -2173,7 +2173,7 @@ bool GridPathCost_RelocateFromBlockedCell
 
 /* True when a cell blocks a line segment: blocked (bit 31), lacking the mover's faction presence bit, or having
    a g_GridPathBlockingMask or callerBlockingMask bit. */
-static bool GridPathLine_CellBlocksSegment(FieldGridRegionMask callerBlockingMask,GridScratchCell *cell)
+static Bool8 GridPathLine_CellBlocksSegment(FieldGridRegionMask callerBlockingMask,GridScratchCell *cell)
 
 {
   GridScratchStateMask cellState;
@@ -2186,7 +2186,7 @@ static bool GridPathLine_CellBlocksSegment(FieldGridRegionMask callerBlockingMas
 
 /* Downward segment: scans one column from columnStartCell up to columnEndCell (inclusive); true as soon as a
    cell other than startCell blocks the segment. */
-static bool GridPathLine_ColumnBlocksSegment(FieldGridRegionMask callerBlockingMask,GridScratchCell *startCell,
+static Bool8 GridPathLine_ColumnBlocksSegment(FieldGridRegionMask callerBlockingMask,GridScratchCell *startCell,
           GridScratchCell *columnStartCell,GridScratchCell *columnEndCell)
 
 {
@@ -2224,7 +2224,7 @@ static GridScratchCell *GridPathLine_AdvanceDownRows(GridScratchCell *lineCursor
    when the whole line is clear. The line is always walked left to right;
    upward lines step row by row, downward lines column by column.
 */
-bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+Bool8 GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell)
 
 {

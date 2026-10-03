@@ -25,7 +25,7 @@
 #define INTERPOLATION_SIGN_BIT 0x80000000
 /* Functions are grouped by semantic ownership. */
 
-bool WorldMotionSpline_EvaluateAndApplyAtTime
+Bool8 WorldMotionSpline_EvaluateAndApplyAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime);
 

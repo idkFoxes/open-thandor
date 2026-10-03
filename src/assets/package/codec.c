@@ -19,7 +19,7 @@ static PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {0};
 /* Implementation ownership: assets/package/codec. */
 
 /* Success exit of a codec (PckCodecProc): stores byteCount in *outByteCount when it is not NULL. */
-static bool PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
+static Bool8 PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 {
   if (outByteCount != NULL) {
     *outByteCount = byteCount;
@@ -28,7 +28,7 @@ static bool PckCodec_Succeed(uint32_t *outByteCount,uint32_t byteCount)
 }
 
 /* Failure exit of a codec (PckCodecProc): stores errorCode in *outErrorCode when it is not NULL. */
-static bool PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
+static Bool8 PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
 {
   if (outErrorCode != NULL) {
     *outErrorCode = errorCode;
@@ -42,7 +42,7 @@ static bool PckCodec_Fail(uint32_t *outErrorCode,uint32_t errorCode)
    prefix in *outByteCount (true), or false with the error code of the allocation or the method-0 encoder in
    *outErrorCode.
 */
-bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+Bool8 PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -184,7 +184,7 @@ static void PckCodec_GenerateFieldGridWorldCoordinates(FieldGridAsset *grid)
    Original quirk: when the method-0 decoder fails, the error code is not its code but what the following free
    returned (0 unless the heap is corrupt); on success the byte count is likewise the free's return value.
 */
-bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
+Bool8 PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -217,7 +217,7 @@ bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,Fi
    Copies the source dword by dword when it fits into the destination and returns true with its size rounded up
    to four bytes in *outByteCount; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when it does not fit.
 */
-bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+Bool8 PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -245,7 +245,7 @@ bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8
    sourceSizeBytes: the original sets no result of its own, and in Package_DecodeEntryInto the leftover value
    is the read size (packedSize).
 */
-bool PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+Bool8 PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -335,7 +335,7 @@ static void PckCodec_EncoderScaleFrequencies(void)
 /* Scans all leaf and internal nodes (one array in the original layout: leaves first, then internal nodes) for
    the two lightest nodes with nonzero weight. Returns false when fewer than two are left (the second-lowest
    weight is still UINT32_MAX, tested as negative like the original). */
-static bool PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,uint32_t *outLowestWeight,
+static Bool8 PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,uint32_t *outLowestWeight,
           PckHuffmanNode **outSecondLowestNode,uint32_t *outSecondLowestWeight)
 {
   PckHuffmanNode *scanNode;
@@ -378,7 +378,7 @@ static bool PckCodec_EncoderFindTwoLightestNodes(PckHuffmanNode **outLowestNode,
 /* Copies the scaled counts into the leaf weights, then joins the two lightest live nodes under a new internal
    node until only the root still has a weight; a joined node's weight is cleared, so the root is the only node
    left with nonzero weight. Returns false when all 256 internal nodes are used up. */
-static bool PckCodec_EncoderBuildTree(void)
+static Bool8 PckCodec_EncoderBuildTree(void)
 {
   int symbolIndex;
   PckHuffmanNodePtr nextInternalNode;
@@ -453,7 +453,7 @@ static void PckCodec_EncoderAssignCodes(void)
 
 /* ORs one token into the output: tokenHeader in its headerBitCount flag/count bits, then the code of symbol.
    Then moves the window on by the whole bytes written. Returns false when the output runs full. */
-static bool PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t tokenHeader,uint8_t headerBitCount,
+static Bool8 PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t tokenHeader,uint8_t headerBitCount,
           uint8_t symbol)
 {
   uint32_t symbolCode;
@@ -477,7 +477,7 @@ static bool PckCodec_EncoderEmitToken(PckHuffmanBitWriter *output,uint32_t token
 
 /* Encodes the source as run tokens (3..18 equal bytes: flag 1 + (count - 3) in 4 bits = count*2 - 5, then the
    byte's code) and literal tokens (flag bit 0, then the byte's code). Returns false when the output runs full. */
-static bool PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *source,
+static Bool8 PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *source,
           PckDecodedByteCount sourceBytesLeft)
 {
   uint8_t symbol;
@@ -514,7 +514,7 @@ static bool PckCodec_EncoderWriteTokens(PckHuffmanBitWriter *output,uint8_t *sou
    slack for the decoder's dword reads) in *outByteCount with true, or false with FATAL_ERROR_GENERAL_FAILURE in
    *outErrorCode when the tree overflows or the output does not fit.
 */
-bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+Bool8 PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)
 
@@ -654,7 +654,7 @@ static uint8_t *PckCodec_DecoderSkipWholeBytes(uint8_t *inputByte,PckHuffmanBitO
    Original quirk: the byte count reported on success is not a size but what is left of the last token: the
    unused code bits of a literal, or the run counter of a run.
 */
-bool PckCodec_DecodeHuffmanRle
+Bool8 PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
           uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode)

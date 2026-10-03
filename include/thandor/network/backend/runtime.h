@@ -44,11 +44,11 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg);
 
-bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg);
+Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg);
 
 void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void);
 
-bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
+Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet);
 
 uint32_t __cdecl Network_Init(void);

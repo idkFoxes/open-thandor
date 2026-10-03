@@ -30,19 +30,19 @@ ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefiniti
 void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
-bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+Bool8 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
-bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError);
+Bool8 ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError);
 
-bool ModelLookupTable_GetPackedPointPosition
+Bool8 ModelLookupTable_GetPackedPointPosition
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,GraphicsFixedVec3 *outLocalPosition);
 
-bool ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+Bool8 ModelLookupTable_FindPackedPoint(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResource *modelDefinition,ModelPackedPointRecord **outEntry);
 
-bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12);
+Bool8 ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle,Q12 *outDistanceQ12);
 
 uint32_t ModelDefinitionRegistry_FindBuildCostsById
           (PckModelDefinitionIdCatalog definitionId,uint32_t *outEnergyLoadQ4,uint32_t *outBuildTicks,
@@ -53,13 +53,13 @@ ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(Model
 PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
-bool ModelDefinition_RegisterAndResolveReferences
+Bool8 ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError);
 
 void ModelDefinition_UnlockLinkedTechnologyForFaction
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId);
 
-bool ModelDefinition_IsFactionTechnologyLocked
+Bool8 ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
 
 ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId);

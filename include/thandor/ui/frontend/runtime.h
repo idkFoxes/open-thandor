@@ -156,7 +156,7 @@
 #define FRONTEND_CAMERA_MOTION_PITCH 8
 #define FRONTEND_CAMERA_MOTION_MASK 15
 
-bool Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError);
+Bool8 Frontend_MainLoop(RomRecordId frontendEntryRecordId,uint32_t *outError);
 
 GraphicsCursorFrameIndex FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
 
@@ -204,7 +204,7 @@ void FrontendModelPointerContext_PointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           WorldRuntimeContext *callbackContext);
 
-bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerHitContext *control);
 
 void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext);
@@ -215,7 +215,7 @@ void __cdecl FrontendRuntime_TimerCountdownTick(void);
 
 void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void);
 
-bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
+Bool8 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
 
 void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
@@ -266,7 +266,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
 
 void Frontend_PlaySelectedEndMovie(void);
 
-bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
+Bool8 Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError);
 
 void Frontend_StateTick(void);
 

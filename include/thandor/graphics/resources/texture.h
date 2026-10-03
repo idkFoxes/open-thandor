@@ -69,7 +69,7 @@ void __cdecl GraphicsTexture_RebuildNoOp(void);
 GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
-bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+Bool8 GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
@@ -118,9 +118,9 @@ GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAs
 
 GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set);
 
-bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
+Bool8 GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
 
-bool GraphicsTextureSource_DecomposeSubresourceRegions
+Bool8 GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
           GraphicsTextureSourceAsset **outAsset,uint32_t *outError);
 

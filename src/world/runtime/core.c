@@ -361,7 +361,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
    lies inside the rectangle spanned by the pointer press position and the current pointer position of
    boundsControl (inclusive, in either corner order).
 */
-bool WorldRuntimeNode_IsPositionInsideBounds
+Bool8 WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl)
 
 {
@@ -789,7 +789,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
 /* Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
    0, 5-9, 12 and 21): accepts every placement.
 */
-bool UnifiedRuntimeDefault_TwoArgSuccess
+Bool8 UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
@@ -885,7 +885,7 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   int rayLengthQ12;
   int groundOffsetY;
   FixedSinCos groundOffsetXY;
-  bool surfaceHit;
+  Bool8 surfaceHit;
   Q12 rayDistanceQ12;
   Q12 secondaryDistanceQ12;
   FixedDirection endpointOffset;

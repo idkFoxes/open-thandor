@@ -85,7 +85,7 @@ UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback = 0;
    heap copy of the dialog root when UiRootStack_Pop closes it. The close is vetoed (returns true) only when
    the free fails.
 */
-bool UiRootCallbacks_Free(UiRootNode *root)
+Bool8 UiRootCallbacks_Free(UiRootNode *root)
 
 {
   return g_MemoryApi.free(root) != 0;
@@ -95,7 +95,7 @@ bool UiRootCallbacks_Free(UiRootNode *root)
 /* method08 of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: always returns true,
    so a pointer press that misses the dialog ends the root-stack hit test there (the dialogs are modal).
 */
-bool UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root)
+Bool8 UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root)
 
 {
   return true;
@@ -192,7 +192,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
    *outEndpoint (its sender-endpoint slot) set; returns false and leaves both untouched when nothing was
    pending.
 */
-bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
+Bool8 UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
 
 {
   uint32_t nextReadIndex;
@@ -230,12 +230,12 @@ void UiRuntimeRecordRing_Clear(void)
    host of this session has sent something. The in-game client tick uses it to skip processing until the
    host's packets are there. Returns false when nothing matches or the ring lock is busy (it only try-locks).
 */
-bool UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
+Bool8 UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
 
 {
   uint32_t ringIndex;
   UiRuntimeRecord *recordCursor;
-  bool lockUnavailable;
+  Bool8 lockUnavailable;
 
   lockUnavailable = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
   if (lockUnavailable) {

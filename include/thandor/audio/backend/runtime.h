@@ -37,17 +37,17 @@ uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset
 
 void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 
-bool SoundBackendDisabled_PlayOneShot
+Bool8 SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
-bool SoundBackendDisabled_PlayLooping
+Bool8 SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
 void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice);
 
-bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
+Bool8 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
 
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice);
@@ -58,15 +58,15 @@ uint32_t DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSo
 
 void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 
-bool DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+Bool8 DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
-bool DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+Bool8 DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,IDirectSoundBuffer **outVoice);
 
 void DirectSound_StopVoice(IDirectSoundBuffer *voice);
 
-bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice);
+Bool8 DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice);
 
 void DirectSound_StopAllVoices(void);
 

@@ -72,10 +72,10 @@ void UiKeyboardFocus_SelectInitial(UiNodeBase *root);
 
 void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node);
 
-bool UiRangeSliderControl_HandleKeyboard
+Bool8 UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control);
 
-bool UiSingleLineTextControl_ForwardKeyboardEventToChild
+Bool8 UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control);
 
 void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
@@ -158,7 +158,7 @@ void UiNode_ForwardPointerWheelToParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
-bool UiNode_DefaultKeyboardEventMoveFocusNext
+Bool8 UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control);
 
 void UiKeyboardFocus_Set(UiNodeBase *node);

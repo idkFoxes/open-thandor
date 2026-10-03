@@ -431,7 +431,7 @@ static void FrontendNetwork_TickSnapshotExchange(void)
    the snapshot exchange: re-requests a missing chunk, or once every snapshot is complete packs all of them,
    PCK-encodes the block into the outgoing transfer mailbox and queues FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE.
 */
-bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
+Bool8 FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
 
 {
   FrontendPlayerRuntimeRecord *clientRecord;
@@ -542,7 +542,7 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
    packet from the host refreshes the session timeout. Commands are resolved to their handlers by
    CommandDispatch_ResolveHandler.
 */
-bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
+Bool8 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet)
 
 {

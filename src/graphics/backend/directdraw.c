@@ -49,7 +49,7 @@ DDSURFACEDESC_DX6 g_SurfaceDesc = {0};
    when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/controls/misc.c) to offer only
    available modes. The table is assumed non-empty: the first entry is compared before the count is checked.
 */
-bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
+Bool8 GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
 {
@@ -74,7 +74,7 @@ bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,F
    the mode was enumerated. Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
    (ui/frontend/settings.c).
 */
-bool DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
+Bool8 DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex)
 
 {
@@ -173,7 +173,7 @@ int32_t __stdcall DirectDraw_EnumDisplayModeCallback
 
 /* Failure exit of GraphicsDirectDraw_ApplyDisplayModeAndCreateResources: leaves the number of completed setup steps
    as text in g_PackageLastErrorPath, stores the failing step's error code in *errorCode and returns false. */
-static bool GraphicsDirectDraw_FailSetupStep(uint32_t failureCode,int completedStages,uint32_t *errorCode)
+static Bool8 GraphicsDirectDraw_FailSetupStep(uint32_t failureCode,int completedStages,uint32_t *errorCode)
 {
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,completedStages,g_PackageLastErrorPath);
   *errorCode = failureCode;
@@ -181,7 +181,7 @@ static bool GraphicsDirectDraw_FailSetupStep(uint32_t failureCode,int completedS
 }
 
 /* Compares two adapter GUIDs dword by dword (the original uses REPE CMPSD). */
-static bool GraphicsDirectDraw_AdapterGuidsMatch
+static Bool8 GraphicsDirectDraw_AdapterGuidsMatch
           (const struct TH_LEGACY_GUID *activeGuid,const struct TH_LEGACY_GUID *requestedGuid)
 {
   const uint32_t *activeWords;
@@ -235,7 +235,7 @@ static void GraphicsDirectDraw_ReleaseModeObjects(FrontendDisplayAdapterIndex ad
 
 /* Creates DirectDraw for the adapter (the primary display driver when its GUID is zero), queries IDirectDraw2 and
    sets the cooperative levels (setup steps 0 to 3). Returns false after reporting a failing step. */
-static bool GraphicsDirectDraw_CreateDirectDraw(FrontendDisplayAdapterIndex adapterIndex,uint32_t *errorCode)
+static Bool8 GraphicsDirectDraw_CreateDirectDraw(FrontendDisplayAdapterIndex adapterIndex,uint32_t *errorCode)
 {
   GraphicsAdapterRecord *adapterRecord;
   TH_LEGACY_HRESULT comResult;
@@ -267,7 +267,7 @@ static bool GraphicsDirectDraw_CreateDirectDraw(FrontendDisplayAdapterIndex adap
 /* Creates the primary surface and the back buffer (a system-memory offscreen surface the software renderer draws
    into) with their IDirectDrawSurface3 interfaces, and adds the completed steps to *completedStages. Returns false
    after reporting a failing step. */
-static bool GraphicsDirectDraw_CreateSurfaces
+static Bool8 GraphicsDirectDraw_CreateSurfaces
           (GraphicsPixelDimension height,GraphicsPixelDimension width,int *completedStages,uint32_t *errorCode)
 {
   TH_LEGACY_HRESULT comResult;
@@ -308,7 +308,7 @@ static bool GraphicsDirectDraw_CreateSurfaces
 
 /* Reads the primary surface's pixel format into g_SurfaceDesc and checks that it has red, green and blue masks.
    Returns false after reporting a failing step. */
-static bool GraphicsDirectDraw_ReadPrimaryPixelFormat(int completedStages,uint32_t *errorCode)
+static Bool8 GraphicsDirectDraw_ReadPrimaryPixelFormat(int completedStages,uint32_t *errorCode)
 {
   TH_LEGACY_HRESULT comResult;
 
@@ -424,7 +424,7 @@ static void GraphicsDirectDraw_PublishFramebuffer
    failing step returns false with its FATAL_ERROR_DIRECTDRAW_... code in *errorCode and leaves the number of
    completed steps as text in g_PackageLastErrorPath; a failing finalize hook passes its own error through.
 */
-bool GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
+Bool8 GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width,uint32_t *errorCode)
 

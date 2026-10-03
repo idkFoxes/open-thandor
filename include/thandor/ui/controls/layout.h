@@ -133,12 +133,12 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control);
 
-bool UiResizableWindowControl_HandleWindowHotkeys
+Bool8 UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control);
 
 void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root);
 
-bool UiRootStack_Pop(UiRootNode *root);
+Bool8 UiRootStack_Pop(UiRootNode *root);
 
 void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocationDelta,UiWindowControl *control);
 
@@ -173,7 +173,7 @@ void UiImageControl_LayoutChildrenToParent(UiImageControl *control);
 
 void UiFrame_FlushInputAndResetPendingTicks(void);
 
-bool UiRootStack_BringToFront(UiRootNode *root);
+Bool8 UiRootStack_BringToFront(UiRootNode *root);
 
 void UiWindowResources_Init(void);
 

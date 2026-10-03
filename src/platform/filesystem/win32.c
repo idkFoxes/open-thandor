@@ -80,7 +80,7 @@ static uint32_t g_Win32FileBytesTransferred = 0;
    DOS-date and disk-space scratch */
 static _WIN32_FIND_DATAA g_Win32FindDataScratch = {0};
 
-static pointer g_FileSystemInitComputerNameCapacityOrConfigCursor = 0;
+static void *g_FileSystemInitComputerNameCapacityOrConfigCursor = 0;
 
 static uint32_t g_FileSystemConfigRemainingBytes = 0;
 
@@ -112,7 +112,7 @@ FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path = 0;
    string area behind the table's pointer array (stringBytesLeft bytes) and points table[i] at it.
    Returns false as soon as a copied code unit leaves 2 bytes or less of the area (so a full fit fails
    too; the unit is still written); otherwise true with the end of the strings in *outStringEnd. */
-static bool FileSystem_CopyRecordNamesIntoTable
+static Bool8 FileSystem_CopyRecordNamesIntoTable
           (uint16_t **table,uint32_t entryCount,const uint8_t *records,uint32_t stringBytesLeft,
           uint8_t **outStringEnd)
 
@@ -149,7 +149,7 @@ static bool FileSystem_CopyRecordNamesIntoTable
    the strings do not fit; the original returned no meaningful results then. Nothing in the game
    calls it.
 */
-bool FileSystem_BuildEnumerationStringTable
+Bool8 FileSystem_BuildEnumerationStringTable
           (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText,
           uint16_t ***outTable,uint32_t *outEntryCount)
 
@@ -246,7 +246,7 @@ uint32_t __cdecl FileSystem_Init(void)
        Win32FileSystem_EnumerateDirectoryOrVolumeEntries;
   g_FileSystemValidateDos83Path = Win32Path_ValidateDos83;
   /* GetComputerNameA size in/out; the same global later holds the THANDOR.cfg text */
-  g_FileSystemInitComputerNameCapacityOrConfigCursor = (pointer)sizeof g_Win32PathScratch[0];
+  g_FileSystemInitComputerNameCapacityOrConfigCursor = (void *)sizeof g_Win32PathScratch[0];
   gotComputerName = GetComputerNameA((LPSTR)g_Win32PathScratch[0],
                                      (LPDWORD)&g_FileSystemInitComputerNameCapacityOrConfigCursor);
   if (gotComputerName != 0) {
@@ -424,7 +424,7 @@ void __cdecl Win32FileSystem_RestoreInitialDirectory(void)
    \\.\X: + IOCTL_STORAGE_CHECK_VERIFY probe after the type check, so removable and CD-ROM drives are
    always reported as not ready.
 */
-bool Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
+Bool8 Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
 
 {
   uint32_t engineDriveType;
@@ -439,7 +439,7 @@ bool Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
 
 /* The whole-file load shared by FileSystem_LoadWholeFile and FileSystem_LoadWholeFileAlternatePath
    (see there). */
-static bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
+static Bool8 FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
   void *handle;
@@ -488,7 +488,7 @@ static bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **ou
    g_FatalErrorDetail1Utf16. *outBuffer is only written on success, *outError only on failure. Nothing in
    the game calls it.
 */
-bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
+Bool8 FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
   return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,outError);
@@ -498,7 +498,7 @@ bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *out
    the original is that it also returns the file size. Same C interface too: true
    with the buffer in *outBuffer, or false with the error in *outError. Nothing in the game calls it.
 */
-bool FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
+Bool8 FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
 {
   return FileSystem_LoadWholeFileNearExecutable(pathUtf16,outBuffer,outError);
@@ -559,7 +559,7 @@ uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void
 /* Stores the current position of a file in *outPosition and returns true; returns false with
    *outPosition 0 when SetFilePointer fails.
 */
-bool Win32File_GetPosition(void *handle,uint32_t *outPosition)
+Bool8 Win32File_GetPosition(void *handle,uint32_t *outPosition)
 
 {
   DWORD filePosition;
@@ -746,7 +746,7 @@ uint32_t Win32Drive_EnumerateLetters(uint8_t *lettersOut)
    FILESYSTEM_DOS83_COMPONENT_ONLY checks one name only, and FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION lets
    that name end at a '\'. Returns false when valid, true when rejected.
 */
-bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi)
+Bool8 Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi)
 
 {
   uint8_t pathChar;
@@ -897,7 +897,7 @@ bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathA
 /* Whether the entry FindFirstFileA/FindNextFileA just stored in the scratch WIN32_FIND_DATAA belongs in
    the listing: files are neither directory nor volume label; directories are directories other than
    "." and "..". Any other mode matches nothing. */
-static bool Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode)
+static Bool8 Win32FileSystem_FoundEntryMatchesMode(FileSystemEnumerationMode mode)
 
 {
   if (mode == FILESYSTEM_ENUMERATE_FILES) {
@@ -1025,7 +1025,7 @@ uint32_t Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *h
 /* Stores the size of a file (low 32 bits) in *outSize and returns true; returns false with *outSize 0
    when GetFileSize fails (some callers pass that 0 on as their error code).
 */
-bool Win32File_GetSize(void *handle,uint32_t *outSize)
+Bool8 Win32File_GetSize(void *handle,uint32_t *outSize)
 
 {
   DWORD fileSize;
@@ -1045,7 +1045,7 @@ bool Win32File_GetSize(void *handle,uint32_t *outSize)
    original also passed on the copy's byte count, or FATAL_ERROR_GENERAL_FAILURE for a cut-off path, as
    the success value; no caller read it.)
 */
-bool Win32File_GetCurrentDirectory(uint16_t *destination)
+Bool8 Win32File_GetCurrentDirectory(uint16_t *destination)
 
 {
   DWORD narrowPathLength;

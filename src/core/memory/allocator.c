@@ -108,13 +108,13 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
    candidateRecord. Inverted like all failure flags: false = found, true = not found.
    recordCount must be at least 1.
 */
-bool DwordBlock64Array_ContainsExactRecord
+Bool8 DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord)
 
 {
   int dwordsRemainingInRecord;
   uint32_t *candidateRecordCursor;
-  bool dwordsEqual;
+  Bool8 dwordsEqual;
 
   do {
     /* compare the 0x40 dwords until the first difference (the count is nonzero, so dwordsEqual holds the

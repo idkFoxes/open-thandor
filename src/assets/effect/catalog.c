@@ -21,7 +21,7 @@ EffectDefinition *g_EffectDefinitionRegistry[256] = {0};
    Returns true on success; on failure returns false with the error code in *outError (left untouched on
    success). (The original's success return value, the last loaded sprite asset, was read by no caller.)
 */
-bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
+Bool8 EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
 
 {
   uint32_t registrationStatusCode;
@@ -98,7 +98,7 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void)
    success) on a duplicate id, a full registry or a path/package/sprite failure. (The original's success return
    value, the sprite asset, was read by no caller.)
 */
-bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError)
+Bool8 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError)
 
 {
   SpriteAssetHeader *loadedSpriteAsset;

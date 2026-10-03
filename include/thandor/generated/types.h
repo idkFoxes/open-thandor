@@ -690,27 +690,6 @@ typedef enum LocaleRegionTagPacked {
     LOCALE_REGION_TAG_CANADA=5129283,
     LOCALE_REGION_TAG_GENERIC=7234887
 } LocaleRegionTagPacked;
-typedef uint32_t pointer32;
-typedef uint32_t undefined3;
-typedef unsigned int code(); /* function of unknown signature (unprototyped, callable) */
-
-/* Generic helper types kept from the original type export. */
-typedef void            *pointer;           /* generic pointer */
-/* Odd-width integers, used when a value combined a 32-bit result with a status flag (e.g. a value plus a
- * failure bit = uint5). Widened to the next native type; the casts that use them still need manual repair. */
-typedef unsigned long long uint5;
-typedef unsigned long long unkuint10; /* TODO: 10-byte x87/MMX value, truncated */
-typedef unsigned long long uint6;
-typedef unsigned long long uint7;
-typedef unsigned long long undefined5;
-typedef unsigned long long undefined6;
-typedef unsigned long long undefined7;
-typedef unsigned long long unkuint9;   /* TODO: 9-byte value, truncated */
-typedef struct { unsigned char bytes[10]; } unkbyte10; /* x87 80-bit extended precision */
-typedef char             string;            /* NUL-terminated char data; declare as string name[] */
-typedef char             TerminatedCString;
-typedef unsigned short   unicode;           /* UTF-16 data; declare as unicode name[] */
-typedef unsigned short   TerminatedUnicode;
 
 /* DirectX/DirectInput entry points resolved at runtime via GetProcAddress. Unprototyped on
  * purpose until the real SDK signatures are wired in (all return HRESULT, __stdcall). */
@@ -731,8 +710,9 @@ typedef long __stdcall DirectSoundCreate();
 #define WIN32_IDC_ARROW_RESOURCE_ID 0x7f00
 
 
-typedef unsigned char    bool;
-typedef pointer32 ImageBaseOffset32;
+/* One-byte boolean of the original: any byte value, only its low byte counts (assigning 0x100 gives
+   false). Kept distinct from C/C++ bool, which normalizes to 0/1. */
+typedef uint8_t Bool8;
 
 
 
@@ -790,13 +770,13 @@ struct FixedDirection {
 };
 
 /* Callback/function-definition ABIs. */
-typedef bool GraphicsCursorSetFrameProc(uint32_t frameIndex);
+typedef Bool8 GraphicsCursorSetFrameProc(uint32_t frameIndex);
 /* Display-mode switch slot (g_GraphicsSetDisplayMode and its chained hooks): true on success; on failure
    returns false and stores the error code (or message) in *errorCode, which is left untouched on success. */
-typedef bool SoftwareDisplayModeHookProc(uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
+typedef Bool8 SoftwareDisplayModeHookProc(uint32_t adapterIndex, uint32_t bitsPerPixel, uint32_t height, uint32_t width, uint32_t *errorCode);
 typedef void GraphicsFramebufferPresentProc(SoftwareFramebufferAccess * framebuffer);
 typedef GraphicsCapturedTextureSourceAsset *GraphicsFramebufferCaptureRegionProc(uint32_t captureHeight, uint32_t captureWidth, int32_t sourceY, int32_t sourceX);
-typedef bool GraphicsFramebufferBeginAccessProc(void);
+typedef Bool8 GraphicsFramebufferBeginAccessProc(void);
 typedef void GraphicsFramebufferEndAccessProc(void);
 typedef GraphicsTextureLogicalSize GraphicsTextureSourceGetLogicalSizeProc(uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
 typedef void GraphicsFramebufferFillRectArgbProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t rectMaxY, int32_t rectMaxX, int32_t rectMinY, int32_t rectMinX, uint32_t argb8888, SoftwareFramebufferAccess * framebuffer);
@@ -804,25 +784,25 @@ typedef void GraphicsFramebufferCopyRegionToOriginProc(int32_t copyHeight, int32
 typedef void GraphicsFramebufferCopyOriginToRegionProc(int32_t copyHeight, int32_t copyWidth, int32_t destinationY, int32_t destinationX, SoftwareFramebufferAccess * source, SoftwareFramebufferAccess * destination);
 typedef GraphicsTextureSourceAsset * GraphicsTextureSourceResolveAllocationBaseProc(GraphicsTextureSourceAsset * sourceAsset);
 typedef GraphicsPaletteAsset * GraphicsPaletteAssetResolveAllocationBaseProc(GraphicsPaletteAsset * paletteAsset);
-typedef bool GraphicsTextureSourceBlitProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-typedef bool GraphicsTextureSourceBlitModulatedSourceAlphaProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t modulationArgb8888, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-typedef bool GraphicsTextureSourceSaturatedAddRgbProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
-typedef bool GraphicsTextureSourceTestOpaquePixelProc(int32_t queryY, int32_t queryX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
+typedef Bool8 GraphicsTextureSourceBlitProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
+typedef Bool8 GraphicsTextureSourceBlitModulatedSourceAlphaProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t modulationArgb8888, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
+typedef Bool8 GraphicsTextureSourceSaturatedAddRgbProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
+typedef Bool8 GraphicsTextureSourceTestOpaquePixelProc(int32_t queryY, int32_t queryX, int32_t drawY, int32_t drawX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset);
 typedef void GraphicsTextureSourceTiledBlitProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t repeatEndY, int32_t repeatEndX, int32_t tileOriginY, int32_t tileOriginX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void GraphicsTextureSourceTiledSaturatedAddRgbProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t repeatEndY, int32_t repeatEndX, int32_t tileOriginY, int32_t tileOriginX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void GraphicsTextureSourceStretchDirectColorBilinearProc(uint32_t destinationHeight, uint32_t destinationWidth, int32_t destinationY, int32_t destinationX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t integerScale, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t paletteBankIndex, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void SoftwareFramebufferDestroyProc(SoftwareFramebufferAccess * framebuffer);
-typedef bool GraphicsTextureSourceDecomposeSubresourceProc(uint32_t entryIndex, GraphicsTextureSourceAsset * sourceAsset, GraphicsTextureSourceAsset * * outAsset, uint32_t * outError);
+typedef Bool8 GraphicsTextureSourceDecomposeSubresourceProc(uint32_t entryIndex, GraphicsTextureSourceAsset * sourceAsset, GraphicsTextureSourceAsset * * outAsset, uint32_t * outError);
 /* Voice-set creation: 0 on success (*outVoiceSet written), else an error code (*outVoiceSet untouched). */
 typedef uint32_t SoundCreateSampleVoiceSetProc(SoundSampleAsset * sampleAsset, DirectSoundVoiceSet * * outVoiceSet);
 /* Play a voice of the set: true when it plays; the voice (NULL on failure and from the silent backend) goes to
    *outVoice unless outVoice is NULL. */
-typedef bool SoundPlayVoiceProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, DirectSoundVoiceSet * voiceSet, IDirectSoundBuffer * * outVoice);
+typedef Bool8 SoundPlayVoiceProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, DirectSoundVoiceSet * voiceSet, IDirectSoundBuffer * * outVoice);
 typedef void SoundReleaseSampleVoiceSetProc(DirectSoundVoiceSet * voiceSet);
 typedef void SoundStopVoiceProc(IDirectSoundBuffer * voice);
-typedef bool SoundIsVoicePlayingProc(IDirectSoundBuffer * voice);
+typedef Bool8 SoundIsVoicePlayingProc(IDirectSoundBuffer * voice);
 typedef void SoundStopAllVoicesProc(void);
 typedef void SoundSetVoiceGainsProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, IDirectSoundBuffer * voice);
 
@@ -856,7 +836,6 @@ union IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion {
     struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct;
 };
 
-typedef unsigned short    wchar16;
 typedef uint32_t DWORD;
 
 typedef DWORD LCTYPE;
@@ -2598,7 +2577,7 @@ struct WorldRuntimeSelectionState {
     int32_t pointerSurfaceHitDepth; /* view depth of the terrain hit; 0x7FFFFFFF (WORLD_POINTER_NO_HIT): none */
     uint8_t reserved18_1F[8];
     struct GameEntityRuntime *selectedEntity; // Current selected entity cleared during destruction and replaced by context-action resolution.
-    bool (*dispatchCommandCallback)(uint32_t, int, struct WorldRuntimeContext *); /* (UiKeyboardStateMask, UiActionId, ...) */ // key commands of the world view: the keyboardFallback slot of FrontendModelPointerHitContext, so it returns true when the key is not taken and the pointer context passes it on
+    Bool8 (*dispatchCommandCallback)(uint32_t, int, struct WorldRuntimeContext *); /* (UiKeyboardStateMask, UiActionId, ...) */ // key commands of the world view: the keyboardFallback slot of FrontendModelPointerHitContext, so it returns true when the key is not taken and the pointer context passes it on
     uint32_t (*resolveContextActionPrimaryCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *);
     uint32_t (*resolveContextActionSecondaryCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *);
     void (*beginPointerCaptureCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode *, struct WorldRuntimeContext *);
@@ -4521,7 +4500,7 @@ struct UiNodeVtable {
     void (*rightDrag)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
     GraphicsCursorFrameIndex (*pointerMove)(UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
     UiNodeBase * (*hitTest)(UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    bool (*keyboardEvent)(UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *);
+    Bool8 (*keyboardEvent)(UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *);
     void (*applyFlags)(UiNodeFlagMask, UiNodeFlagMask, struct UiNodeBase *); 
     void (*suppressActionId)(UiActionId, struct UiNodeBase *); 
     void (*unsuppressActionId)(UiActionId, struct UiNodeBase *); 
@@ -5783,7 +5762,7 @@ struct FrontendModelPointerHitContext {
     uint32_t surfaceHitWorldY; // Terrain point under the cursor: world Y interpolated by the terrain triangle pick; passed to the pointer callbacks.
     uint32_t surfaceHitDepth; // View depth of the terrain hit (WORLD_POINTER_NO_HIT when none); passed to the pointer callbacks.
     uint8_t reservedF4_FF[12]; // reserved bytes before keyboard fallback callback
-    bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; the bool result is the status
+    Bool8 (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; the bool result is the status
     uint32_t (*hoverCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Pointer move with no button held: returns the cursor frame (surface hit depth/Y/X, hit metric, hit model, context).
     uint32_t (*heldButtonCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Pointer move while a non-right button is held (ROUTE_TO_SECONDARY_CALLBACK): returns the cursor frame.
     uint32_t (*buttonPressCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button press (FrontendModelPointerContext_NonRightPress).
@@ -6195,10 +6174,10 @@ struct MovieRuntime {
 };
 
 struct UiRootCallbacks {
-    bool (*vetoClose)(struct UiRootNode *); // Optional close/pop callback. Returning true vetoes removal of the root; false permits the pop.
+    Bool8 (*vetoClose)(struct UiRootNode *); // Optional close/pop callback. Returning true vetoes removal of the root; false permits the pop.
     void (*frameUpdate)(struct UiRootNode *); // Optional per-frame callback invoked by UiFrame_Update while this root is active.
-    bool (*method08)(struct UiRootNode *); // Caller-cleanup root method invoked with UiRootNode *; mixed convention is intentional.
-    bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // Optional root-level keyboard fallback used after focused controls decline an event. The bool result conveys handling/traversal state.
+    Bool8 (*method08)(struct UiRootNode *); // Caller-cleanup root method invoked with UiRootNode *; mixed convention is intentional.
+    Bool8 (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // Optional root-level keyboard fallback used after focused controls decline an event. The bool result conveys handling/traversal state.
     int (*pointerMissPolicy)(struct UiRootNode *); // Signed return policy; nonnegative stops pointer root traversal, negative continues to previousRoot.
 };
 
@@ -8726,7 +8705,7 @@ struct GameDataAuxState {
 };
 
 struct KeyboardAsciiCaseTransformCallbackTable3 {
-    bool (*compareCaseInsensitiveFlags)(uint32_t, uint32_t); /* returns true when upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
+    Bool8 (*compareCaseInsensitiveFlags)(uint32_t, uint32_t); /* returns true when upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
     uint32_t (*toUpper)(uint32_t); 
     uint32_t (*toLower)(uint32_t); 
 };
@@ -9795,7 +9774,7 @@ typedef WORD ATOM;
 typedef void *LPCVOID;
 
 struct IMAGE_DATA_DIRECTORY {
-    ImageBaseOffset32 VirtualAddress;
+    uint32_t VirtualAddress;
     uint32_t Size;
 };
 
@@ -9806,10 +9785,10 @@ struct IMAGE_OPTIONAL_HEADER32 {
     uint32_t SizeOfCode;
     uint32_t SizeOfInitializedData;
     uint32_t SizeOfUninitializedData;
-    ImageBaseOffset32 AddressOfEntryPoint;
-    ImageBaseOffset32 BaseOfCode;
-    ImageBaseOffset32 BaseOfData;
-    pointer32 ImageBase;
+    uint32_t AddressOfEntryPoint;
+    uint32_t BaseOfCode;
+    uint32_t BaseOfData;
+    uint32_t ImageBase;
     uint32_t SectionAlignment;
     uint32_t FileAlignment;
     uint16_t MajorOperatingSystemVersion;
@@ -9913,7 +9892,7 @@ union Misc {
 struct IMAGE_SECTION_HEADER {
     char Name[8];
     union Misc Misc;
-    ImageBaseOffset32 VirtualAddress;
+    uint32_t VirtualAddress;
     uint32_t SizeOfRawData;
     uint32_t PointerToRawData;
     uint32_t PointerToRelocations;
@@ -9940,7 +9919,7 @@ struct IMAGE_RESOURCE_DIRECTORY {
 };
 
 struct FieldGridInterpolationCallbackTable5 {
-    bool (*callbacks[5])(Q12, Q12, struct FieldGridAsset *, Q12 *); // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.
+    Bool8 (*callbacks[5])(Q12, Q12, struct FieldGridAsset *, Q12 *); // Exact immutable callback partition: height samplers (y, x, grid, out height Q12) returning false off the grid.
 };
 
 /* Q12 vector returned by the fixed-point rotation helpers. */
@@ -9967,7 +9946,7 @@ struct PathingDestination {
 
 struct StatusResult {
     uint32_t valueOrError; // value or error code
-    bool failed; // true on failure
+    Bool8 failed; // true on failure
 };
 
 struct WorldCameraOrientation {
@@ -9986,7 +9965,7 @@ struct WorldPositionResult {
     Q12 worldXQ12; // world X
     Q12 worldYQ12; // world Y
     Q12 worldZQ12; // world Z
-    bool noPosition; // true when there is no position (no/lost command target, empty selection)
+    Bool8 noPosition; // true when there is no position (no/lost command target, empty selection)
 };
 
 
@@ -9999,12 +9978,12 @@ struct FixedRollAzimuthElevation {
 
 struct SelectableNodeResult {
     struct UiNodeBase *node; // selected/last node
-    bool noneSelected; // true when no visible node is selected
+    Bool8 noneSelected; // true when no visible node is selected
 };
 
 struct InputEventResult {
     uint32_t eventType; // input event type
-    bool queueEmpty; // true when the queue is empty
+    Bool8 queueEmpty; // true when the queue is empty
 };
 
 struct WorldCameraPosition {
@@ -10033,8 +10012,8 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
     void (*modelRebaseOrLoadRepair[24])(struct ModelRuntimeSlot *);
     void (*modelClassInitialize[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     void (*modelReleaseOrCommit[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
-    bool (*placementValidation[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *); // 24 placement validators returning a bool. Split from generic world/army callbacks.
-    bool (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue); // true = accepted, *outPlacementValue set only then
+    Bool8 (*placementValidation[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *); // 24 placement validators returning a bool. Split from generic world/army callbacks.
+    Bool8 (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *, uint32_t *outPlacementValue); // true = accepted, *outPlacementValue set only then
     ModelRuntimeClassCallback *classCommand[24];
     void (*gridInfluenceAdd[24])(struct GameEntityRuntime *);
     void (*gridInfluenceRemove[24])(struct GameEntityRuntime *);
@@ -10136,18 +10115,18 @@ struct ModelProjectedBoundsPixels {
 
 struct FrameProviderResult {
     void *frameOrError; // frame pointer when noFrame is false; error-coded value when it is true
-    bool noFrame; // true when no frame is returned
+    Bool8 noFrame; // true when no frame is returned
 };
 
 struct PcxDecodeResult {
     void *decodedImageOrError; // decoded image or error
-    bool failed; // true on failure
+    Bool8 failed; // true on failure
 };
 
 struct PcxEncodeResult {
     void *encodedBytesOrError; // encoded allocation or error
     uint32_t encodedByteCount; // encoded byte count
-    bool failed; // true on failure
+    Bool8 failed; // true on failure
 };
 
 struct RuntimeModelFactionPrefix {
@@ -10371,7 +10350,7 @@ struct FrontendModelPointerContext {
     Q12 cursorWorldXQ12; // Cursor override X converted from pixels to Q12 for overlay hit state.
     Q12 cursorWorldYQ12; // Cursor override Y converted from pixels to Q12 for overlay hit state.
     struct GameEntityRuntime *selectedOverlayEntity; // Optional selected entity used by SelectionInfo/army overlay rendering; relocation clears it.
-    bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; the bool result is the status
+    Bool8 (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; the bool result is the status
     uint32_t (*hoverCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Pointer move with no button held: returns the cursor frame (surface hit depth/Y/X, hit metric, hit model, context).
     uint32_t (*heldButtonCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Pointer move while a non-right button is held (ROUTE_TO_SECONDARY_CALLBACK): returns the cursor frame.
     uint32_t (*buttonPressCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button press (FrontendModelPointerContext_NonRightPress).
@@ -10585,7 +10564,7 @@ struct FrontendPointerSceneRuntimeView {
     Q12 cursorWorldXQ12;
     Q12 cursorWorldYQ12;
     struct GameEntityRuntime *selectedOverlayEntity;
-    bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *);
+    Bool8 (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *);
     uint32_t (*hoverCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *);
     uint32_t (*heldButtonCursorCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *);
     uint32_t (*buttonPressCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *);
@@ -11469,12 +11448,12 @@ struct FixedLengthAngle {
 
 struct TerrainPlacementResult {
     int value; // Callback result value; callers use it only on paths proven against the original.
-    bool rejected; // Callback status: true when the placement is rejected.
+    Bool8 rejected; // Callback status: true when the placement is rejected.
 };
 
 struct TerrainClassPlacementAndOverlayCallbackTable10 {
-    bool (*placementTests[5])(uint32_t, Q12, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition; the bool result is true on reject.
-    bool (*overlayCallbacks[5])(uint32_t, int, uint32_t, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
+    Bool8 (*placementTests[5])(uint32_t, Q12, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition; the bool result is true on reject.
+    Bool8 (*overlayCallbacks[5])(uint32_t, int, uint32_t, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
 };
 
 

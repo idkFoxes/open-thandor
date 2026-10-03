@@ -3929,7 +3929,7 @@ InGameSimulationStepBatchTicks g_InGameSimulationStepTicks = 0;
 /* Implementation ownership: gameplay/session/runtime. */
 
 /* Failure exit of InGameRuntime_RunSessionUntilExit: releases what the session set up and reports the error. */
-static bool InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
+static Bool8 InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
 
 {
   InGameRuntime_ShutdownAndReleaseResources();
@@ -3943,12 +3943,12 @@ static bool InGameRuntime_FailSession(uint32_t sessionError,uint32_t *outError)
    player left, tears the session down along the matching path and returns true. A failed start or an emptied UI
    root stack returns false with the error code in *outError, which the caller hands to the fatal-error dispatcher.
 */
-bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
+Bool8 InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError)
 
 {
   uint32_t startupError;
-  bool started;
+  Bool8 started;
 
   if ((loadExistingSessionFlag & 1U) == 0) {
     started = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16,&startupError);
@@ -4529,7 +4529,7 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
    combination) and runs its action: chat, message window, menus, save, pause, game speed, side panel,
    screenshot, leaving the game and the three cheat keys (only while cheats are enabled).
 */
-bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+Bool8 InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           InGameRuntimeRootFrameView *inGameRoot)
 
 {
@@ -4538,7 +4538,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
   uint8_t *rt = (uint8_t *)inGameRoot;
   const UiCommandDispatchRecord *record = g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30;
   uint32_t target = 0;
-  bool localSession = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0;
+  Bool8 localSession = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0;
 
   /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
      combination (Ctrl, Alt, or both) must be held. */
@@ -4849,7 +4849,7 @@ void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
 
 /* Failure exit of InGameRuntime_InitializeNewSession: closes the level movie (also when it was not opened yet),
    stores the error in *outError and returns false. */
-static bool InGameNewSession_Fail(uint32_t error,uint32_t *outError)
+static Bool8 InGameNewSession_Fail(uint32_t error,uint32_t *outError)
 
 {
   Movie_Close();
@@ -4944,7 +4944,7 @@ static void InGameNewSession_ResetSessionState(void)
 
 
 /* Whether the session name keeps titleChar: the characters Windows forbids in file names and '.' are dropped. */
-static bool InGameNewSession_IsSessionNameCharacter(uint16_t titleChar)
+static Bool8 InGameNewSession_IsSessionNameCharacter(uint16_t titleChar)
 
 {
   switch (titleChar) {
@@ -5002,7 +5002,7 @@ static void InGameNewSession_BuildSessionName(UiTextResourceId titleTextIndex)
    pushes the root onto the UI root stack. Returns true with the root in *outRoot; on failure returns false with
    the error in *outError.
 */
-static bool InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *outError)
+static Bool8 InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *outError)
 
 {
   void *objectPool;
@@ -5093,7 +5093,7 @@ static bool InGameNewSession_CreateRoot(InGameRuntimeRoot **outRoot,uint32_t *ou
    queue and creates the terrain texture. Returns true on success; on failure returns false with the error in
    *outError.
 */
-static bool InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+static Bool8 InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                        InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
@@ -5161,7 +5161,7 @@ static bool InGameNewSession_LoadWorld(LevelAssetRuntimePrefix *levelAsset,uint1
 
 
 /* Sets or clears flag in the world runtime flags. */
-static void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFlags flag,bool enabled)
+static void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRuntimeFlags flag,Bool8 enabled)
 
 {
   if (enabled) {
@@ -5180,7 +5180,7 @@ static void InGameSession_SetWorldRuntimeFlag(WorldRuntimeContext *world,WorldRu
    held; on failure returns false with the error in *outError.
    Original quirk: the spin lock is not released on failure.
 */
-static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
+static Bool8 InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
   WorldRuntimeContext *world;
@@ -5321,7 +5321,7 @@ static void InGameNewSession_QueueIntroNotifications(void)
    screen while stepping until every player is ready, and finally queues the level's five intro notifications.
    Returns true on success; on failure returns false and stores the error of the failing step in *outError.
 */
-bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
+Bool8 InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath,
                                         uint32_t *outError)
 
 {
@@ -5349,7 +5349,7 @@ bool InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint
    unmounts the save package (levelAsset is NULL and saveHandle 0 when they were not loaded yet), stores the error
    in *outError and returns false.
 */
-static bool InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,uint32_t saveHandle,uint32_t error,
+static Bool8 InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,uint32_t saveHandle,uint32_t error,
                                      uint32_t *outError)
 
 {
@@ -5376,7 +5376,7 @@ static void InGameLoadedSession_ReadSessionName(uint32_t saveHandle)
   uint16_t *sourceCursor;
   uint32_t copyCount;
   int remainingCount;
-  bool terminatorFound;
+  Bool8 terminatorFound;
 
   headerBuffer = g_PackageScratchBuffer;
   sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
@@ -5461,7 +5461,7 @@ static void InGameLoadedSession_ResetSessionState(uint32_t savedFactionIndex)
    and builds the level's scenario path. Returns true with the root in *outRoot; on failure returns false with the
    error in *outError.
 */
-static bool InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage,InGameRuntimeRoot **outRoot,
+static Bool8 InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage,InGameRuntimeRoot **outRoot,
                                            uint32_t *outError)
 
 {
@@ -5553,7 +5553,7 @@ static bool InGameLoadedSession_CreateRoot(FrontendLoadedLevelAsset *levelImage,
    field grid with the level resources, clears the notification queue and creates the terrain texture. Returns
    true on success; on failure returns false with the error in *outError.
 */
-static bool InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoadedLevelAsset *levelImage,
+static Bool8 InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoadedLevelAsset *levelImage,
                                           InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
@@ -5632,7 +5632,7 @@ static bool InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoad
    true on success with the lock still held; on failure returns false with the error in *outError.
    Original quirk: the spin lock is not released on failure.
 */
-static bool InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
+static Bool8 InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameRoot,uint32_t *outError)
 
 {
   WorldRuntimeContext *world;
@@ -5690,7 +5690,7 @@ static bool InGameLoadedSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGa
    queued. The package and the level entry are released again at the end. Returns true on success; on failure
    returns false and stores the error of the failing step in *outError.
 */
-bool InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError)
+Bool8 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath,uint32_t *outError)
 
 {
   uint32_t mountResult; /* the save package's handle, or the mount error code */
@@ -5771,7 +5771,7 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
 {
   WorldRuntimeContext *world;
   InGameRuntimeRoot *inGameRoot;
-  bool beginAccessFailed;
+  Bool8 beginAccessFailed;
   
   g_TimerUnregisterPeriodic(InGameRuntime_PeriodicCountdownAndClockTick);
   inGameRoot = g_InGameRuntimeRoot;
@@ -5879,7 +5879,7 @@ static uint32_t InGameScheduledCondition_EvaluatePostfixExpression(InGameLevelCo
 /* Evaluates one scheduled condition of the level script (its satisfied bit is already cleared in the record).
    COUNTDOWN_ELAPSED also counts its operand 1 down by the step ticks and clamps it at 0 once elapsed.
    Unknown kinds (and unused records) never hold. */
-static bool InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelConditionStorage,
+static Bool8 InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelConditionStorage,
                                            InGameScheduledConditionRecord10 *condition,
                                            InGameScheduledConditionKind kind)
 {
@@ -6013,7 +6013,7 @@ static bool InGameScheduledCondition_Holds(InGameLevelConditionStorage *levelCon
 
 
 /* True while two active factions (1..7) are still not allied (relation state below 8): the game goes on. */
-static bool InGameConditionRuntime_HasUnalliedActiveFactionPair(void)
+static Bool8 InGameConditionRuntime_HasUnalliedActiveFactionPair(void)
 {
   uint32_t factionIndex;
   uint32_t otherFactionIndex;
@@ -6230,7 +6230,7 @@ static void InGameFactionEconomy_ResetAndDecayFactionState(void)
    model offset} gives its faction (descriptor bits 13..23) a rate of cells-per-entry * 2 * share (bits 24..31) *
    terrainContributionScaleQ8 >> 15, added to the rate, the stock and the extracted total (Xenite or Tritium
    fields); the extracting model shows its current yield. */
-static void InGameFactionEconomy_PayCollectedRegion(bool payTritium)
+static void InGameFactionEconomy_PayCollectedRegion(Bool8 payTritium)
 {
   int cellsPerEntry;
   const uint32_t *entry;
@@ -6274,7 +6274,7 @@ static void InGameFactionEconomy_PayCollectedRegion(bool payTritium)
 /* One mining pass: clears the connected-region marks of all cells, then collects every not yet visited region
    of cells with requiredCellFlags (Xenite or Tritium support) and pays it out. */
 static void InGameFactionEconomy_PayResourceRegions
-          (FieldGridAsset *fieldGrid,FieldGridRegionMask requiredCellFlags,bool payTritium)
+          (FieldGridAsset *fieldGrid,FieldGridRegionMask requiredCellFlags,Bool8 payTritium)
 {
   FieldGridDimension fieldGridWidth;
   int cellCount;
@@ -6623,7 +6623,7 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 /* Network lockstep of a simulation step on the host or in single player. Returns false when the step has to wait:
    the periodic timer has not counted down yet, or (host, interval boundary) the collected command batch could not
    be broadcast because a peer has not submitted yet. */
-static bool InGameTick_RunHostOrLocalLockstep(void)
+static Bool8 InGameTick_RunHostOrLocalLockstep(void)
 
 {
   void *packet;
@@ -6669,7 +6669,7 @@ static bool InGameTick_RunHostOrLocalLockstep(void)
 /* Network lockstep of a simulation step on a client. Returns false when the step has to wait: at an interval
    boundary until the host's command batch has arrived and was executed, otherwise until the periodic timer has
    counted down. */
-static bool InGameTick_RunClientLockstep(void)
+static Bool8 InGameTick_RunClientLockstep(void)
 
 {
   void *packet;
@@ -6872,8 +6872,8 @@ static void InGameTick_RunReducedUpdate(InGameRuntimeRoot *inGameRoot)
 void InGameRuntime_UpdateSimulationAndNetworkTick(void)
 
 {
-  bool lockAlreadyHeld;
-  bool stepDue;
+  Bool8 lockAlreadyHeld;
+  Bool8 stepDue;
   InGameRuntimeRoot *inGameRoot;
 
   lockAlreadyHeld = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);

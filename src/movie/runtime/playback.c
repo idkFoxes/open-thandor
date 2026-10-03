@@ -99,7 +99,7 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
    (*outByteCount untouched, the buffer already written) when the provider yields no frame at all or ends
    with any other error. A leftover of the movie tools: no caller found in src/.
 */
-bool Movie_EncodeFlmBufferFromFrameProvider
+Bool8 Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider,uint32_t *outByteCount)
 
@@ -269,7 +269,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
 
 /* Failure exit of Movie_Open once a file or package handle is open: closes the handle unless it is a shared
    package handle, stores error in *outError (when not NULL) and returns false. */
-static bool Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPackageHandle,uint32_t error,
+static Bool8 Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPackageHandle,uint32_t error,
                            uint32_t *outError)
 
 {
@@ -292,7 +292,7 @@ static bool Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPack
    *outPlaybackRateHz; returns false and stores the error code of the failing step in *outError. Either
    pointer may be NULL. (The original also returned frameCount on success; no caller uses it.)
 */
-bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError)
+Bool8 Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError)
 
 {
   MovieFileHeader *header;
@@ -311,7 +311,7 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
   uint32_t packedDate;
   uint32_t initialVideoBytes;
   uint32_t status;
-  bool looseFileOpened;
+  Bool8 looseFileOpened;
   uint32_t openError;
   uint32_t allocError;
   void *allocPayload;
@@ -1030,7 +1030,7 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
 
 /* Not in the original (split out of Movie_AdvanceFrame): stores endCode in *outEndCode when given and
    returns false, the "no frame" result of Movie_AdvanceFrame. */
-static bool Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
+static Bool8 Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
 {
   if (outEndCode != NULL) {
     *outEndCode = endCode;
@@ -1074,7 +1074,7 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
    Original quirk: after a worker read failure it closes an unrelated value left over by its caller instead
    of the stream handle; the C closes NULL, which has the same effect on the movie (see the body).
 */
-bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
+Bool8 Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
 
 {
   MovieFileHeader *flmHeader;

@@ -91,7 +91,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendRootRuntimeAddress32 frontendRuntime);
 
-bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
+Bool8 FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg);
 
@@ -100,9 +100,9 @@ void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,
 void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
           (int playerRuntimeId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
-bool UiTransfer_SendDiscoveryProbe(void);
+Bool8 UiTransfer_SendDiscoveryProbe(void);
 
-bool UiTransfer_SendPlayerDescriptor(void);
+Bool8 UiTransfer_SendPlayerDescriptor(void);
 
 void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
@@ -112,7 +112,7 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRu
 
 void FrontendTransfer_SendCapabilityHeartbeat(void);
 
-bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
+Bool8 FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
 
 void FrontendTransfer_SendCommandSubmit(void);
 
@@ -128,14 +128,14 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
 
 void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot);
 
-bool FrontendTransfer_ConsumeProcessedFlagForMenuTick(void);
+Bool8 FrontendTransfer_ConsumeProcessedFlagForMenuTick(void);
 
 void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
           (NetworkSessionContext *sourceContext,FrontendTransferPacketUnion *packet);
 
 void FrontendTransfer_DispatchStagedCommandRecords(void);
 
-bool FrontendTransfer_ConsumeProcessedFlag(void);
+Bool8 FrontendTransfer_ConsumeProcessedFlag(void);
 
 void UiTransfer_EncryptPacketBlocks(const uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
           uint32_t *inputBlocks);
@@ -149,7 +149,7 @@ void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,vo
 
 void FrontendTransfer_SendLobbyCommandAndSnapshotRequest(void);
 
-bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet);
+Bool8 UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet);
 
 extern uint32_t g_UiRuntimeRecordWriteIndex;
 extern uint32_t g_UiTransferUnitCursor;

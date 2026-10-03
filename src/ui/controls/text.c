@@ -23,7 +23,7 @@ const int32_t g_UiWindowFrameInset = 2;
 
 const uint32_t g_UiListTextStyle = 0;
 
-static const pointer g_Utf16StringCompareAsciiCaseInsensitiveFlags = (void *)Utf16String_CompareAsciiCaseInsensitiveFlags;
+static void *const g_Utf16StringCompareAsciiCaseInsensitiveFlags = (void *)Utf16String_CompareAsciiCaseInsensitiveFlags;
 
 uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {0};
 
@@ -119,21 +119,21 @@ static void UiNumericTextEdit_RemoveSelectedRange(UiNumericTextControl *control)
    and after every handled key parses and commits the value. Enter queues the action when the control acts on
    Enter only; everything else goes to UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
-bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiNumericTextControl *control)
 
 {
   UiTextCodeUnitIndex *selectionBoundary;
   uint16_t displacedCodeUnit;
-  bool characterAccepted;
-  bool recomputeLayout;
-  bool normalizeSelection;
+  Bool8 characterAccepted;
+  Bool8 recomputeLayout;
+  Bool8 normalizeSelection;
   UiTextCodeUnitIndex codeUnitIndex;
   int shiftCount;
   uint32_t insertIndex;
   uint16_t *sourceCursor;
   uint16_t *destinationCursor;
-  bool delegatedResult;
+  Bool8 delegatedResult;
 
   if ((((control->editStateFlags & UI_NUMERIC_TEXT_READ_ONLY) != 0) ||
       (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) || ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0)) {
@@ -393,7 +393,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
 /* True for the characters typed with AltGr (Ctrl+Alt) on a German keyboard: @ | ~ { [ ] } backslash and, in
    Windows-1252, 0xB2/0xB3 (superscript two/three), 0xB5 (micro sign) and 0x80 (euro sign). The keyboard
    handlers treat them as text without the modifier checks. */
-static bool UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
+static Bool8 UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
 
 {
   return (keyCode == '@') || (keyCode == '|') || (keyCode == '~') || (keyCode == CP1252_SUPERSCRIPT_TWO) ||
@@ -403,7 +403,7 @@ static bool UiTextEdit_IsAltGrCharacter(UiKeyboardEventCode keyCode)
 
 
 /* True when the key is a shortcut rather than text: any key with Alt, or a letter typed with Ctrl or Alt. */
-static bool UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
+static Bool8 UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode)
 
 {
   return ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) ||
@@ -414,7 +414,7 @@ static bool UiTextEdit_IsModifierShortcut(UiKeyboardStateMask keyboardStateMask,
 
 
 /* True for Home, End, Left and Right. */
-static bool UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
+static Bool8 UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
 
 {
   return (keyCode == KEYBOARD_KEY_CODE_HOME) || (keyCode == KEYBOARD_KEY_CODE_END) ||
@@ -423,7 +423,7 @@ static bool UiTextEdit_IsCursorMovementKey(UiKeyboardEventCode keyCode)
 
 
 /* True unless the selection is collapsed at the cursor. */
-static bool UiTextEdit_HasSelection(const UiTextEditControl *edit)
+static Bool8 UiTextEdit_HasSelection(const UiTextEditControl *edit)
 
 {
   return (edit->cursorIndex != edit->selectionStart) || (edit->cursorIndex != edit->selectionEnd);
@@ -481,7 +481,7 @@ static void UiTextEdit_RemoveSelectedRange(UiTextEditControl *edit,uint16_t *buf
    by one (the code unit at insertLimit - 1 falls off), in overwrite mode the code unit at the cursor is
    replaced. */
 static void UiTextEdit_InsertCodeUnit(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
-          uint32_t insertLimit,bool overwriteMode,uint16_t codeUnit)
+          uint32_t insertLimit,Bool8 overwriteMode,uint16_t codeUnit)
 
 {
   uint32_t insertIndex;
@@ -513,8 +513,8 @@ static void UiTextEdit_InsertCodeUnit(UiTextEditControl *edit,uint16_t *buffer,u
 /* Backspace (deleteBefore) or Delete: removes the selection, or else the code unit before / at the cursor
    (the text above it moves down). Returns false when there was nothing to delete: Backspace at the text
    start or Delete at the text end. */
-static bool UiTextEdit_DeleteAtCursor(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
-          bool deleteBefore)
+static Bool8 UiTextEdit_DeleteAtCursor(UiTextEditControl *edit,uint16_t *buffer,uint32_t bufferUnits,
+          Bool8 deleteBefore)
 
 {
   UiTextCodeUnitIndex cursorIndex;
@@ -572,7 +572,7 @@ static void UiTextEdit_MoveCursorAndCollapseSelection(UiTextEditControl *edit,co
 /* Shift+Home/End/Left/Right: moves the cursor together with the selection end at the cursor. Home and End
    may move that end across the anchor; the selection is then reordered. Returns false when the cursor
    could not move. */
-static bool UiTextEdit_ExtendSelectionByKey(UiTextEditControl *edit,const uint16_t *buffer,
+static Bool8 UiTextEdit_ExtendSelectionByKey(UiTextEditControl *edit,const uint16_t *buffer,
           UiKeyboardEventCode keyCode)
 
 {
@@ -643,7 +643,7 @@ static bool UiTextEdit_ExtendSelectionByKey(UiTextEditControl *edit,const uint16
 
 /* Path characters: letters, digits, '-' and '.'; '*' and '?' only with UI_PATH_TEXT_ALLOW_WILDCARDS,
    ':' and the backslash not with UI_PATH_TEXT_NAME_ONLY. */
-static bool UiPathTextEdit_IsPathCharacterAccepted(const UiPathTextEditControl *control,UiKeyboardEventCode keyCode)
+static Bool8 UiPathTextEdit_IsPathCharacterAccepted(const UiPathTextEditControl *control,UiKeyboardEventCode keyCode)
 
 {
   if ((keyCode == '*') || (keyCode == '?')) {
@@ -711,7 +711,7 @@ static UiTextCodeUnitIndex UiPathTextEdit_FindNextSegmentStart(const uint16_t *p
 /* Ctrl+Left/Right: moves the cursor to the previous/next path segment start. Without Shift the selection
    collapses there; with Shift the selection end at the cursor moves along and the selection is reordered.
    Ctrl+Left at the text start does nothing. */
-static void UiPathTextEdit_JumpToSegment(UiPathTextEditControl *control,bool towardsStart,bool extendSelection)
+static void UiPathTextEdit_JumpToSegment(UiPathTextEditControl *control,Bool8 towardsStart,Bool8 extendSelection)
 
 {
   UiTextCodeUnitIndex formerCursorIndex;
@@ -762,13 +762,13 @@ static void UiPathTextEdit_PlayInteractionSound(UiPathTextEditControl *control)
    Enter only, its action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext.
    Returns false: consumed.
 */
-bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiPathTextEditControl *control)
 
 {
   UiTextEditControl *edit;
-  bool isAltGrCharacter;
-  bool recomputeLayout;
+  Bool8 isAltGrCharacter;
+  Bool8 recomputeLayout;
 
   edit = (UiTextEditControl *)control;
   if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) != 0) ||
@@ -880,7 +880,7 @@ static UiTextCodeUnitIndex UiRequiredTextEdit_FindPreviousWordStop(const uint16_
 /* Ctrl+Right target. With skipSpaces: forward over the spaces at the cursor. Otherwise: just past the next
    space, or back onto that space when another space follows it; the end of the text when no space follows. */
 static UiTextCodeUnitIndex UiRequiredTextEdit_FindNextWordStop(const uint16_t *textBuffer,
-          UiTextCodeUnitIndex cursorIndex,bool skipSpaces)
+          UiTextCodeUnitIndex cursorIndex,Bool8 skipSpaces)
 
 {
   UiTextCodeUnitIndex wordStop;
@@ -908,14 +908,14 @@ static UiTextCodeUnitIndex UiRequiredTextEdit_FindNextWordStop(const uint16_t *t
 /* Ctrl+Left/Right: moves the cursor to the previous/next word stop. Without Shift the selection collapses
    there; with Shift the selection end at the cursor moves along and the selection is reordered. Ctrl+Left at
    the text start does nothing. */
-static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,bool towardsStart,
-          bool extendSelection)
+static void UiRequiredTextEdit_JumpToWord(UiRequiredTextEditControl *control,Bool8 towardsStart,
+          Bool8 extendSelection)
 
 {
   UiTextCodeUnitIndex formerCursorIndex;
   UiTextCodeUnitIndex wordStop;
   UiTextCodeUnitIndex *selectionBoundary;
-  bool skipSpaces;
+  Bool8 skipSpaces;
 
   formerCursorIndex = control->cursorIndex;
   if (towardsStart && (formerCursorIndex == 0)) {
@@ -967,15 +967,15 @@ static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *c
    After every handled key the non-empty validity is updated and, unless the control acts on Enter only, its
    action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
-bool UiRequiredTextEditControl_HandleKeyboardAndValidate
+Bool8 UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control)
 
 {
   UiTextEditControl *edit;
   UiTextCodeUnitIndex clearIndex;
-  bool isAltGrCharacter;
-  bool recomputeLayout;
+  Bool8 isAltGrCharacter;
+  Bool8 recomputeLayout;
 
   edit = (UiTextEditControl *)control;
   if (((control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) != 0) ||
@@ -1594,7 +1594,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
   int middleEnd;
   int tileX;
   int frameTop;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   RichTextExtent textExtent;
   uint16_t *resolvedText;
   GraphicsTextureLogicalSize tileSize;
@@ -1679,10 +1679,10 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
    g_UiRootNode (g_UiWindowTextureSource), which is never a root, so in practice this pops every
    root.
 */
-bool UiRootStack_PopUntilWindowTextureBoundary(void)
+Bool8 UiRootStack_PopUntilWindowTextureBoundary(void)
 
 {
-  bool popStopped;
+  Bool8 popStopped;
 
   while (((GraphicsTextureSourceAsset *)g_UiRootNode != g_UiWindowTextureSource &&
          (g_UiRootNode != UI_ROOT_STACK_END))) {
@@ -1744,8 +1744,8 @@ void UiFramedTextButtonControl_DrawClipped
   int focusTileX;
   int focusMarkRightX;
   uint32_t textStyle;
-  bool framebufferUnavailable;
-  bool drawFrame;
+  Bool8 framebufferUnavailable;
+  Bool8 drawFrame;
   RichTextExtent textExtent;
   GraphicsTextureLogicalSize cornerTileSize;
   GraphicsTextureLogicalSize rightCapSize;
@@ -2006,7 +2006,7 @@ void UiFramedTextButtonControl_NonRightRelease
 
 /* True when the point lies inside the framed button's box (with UI_BUTTON_FRAME_INSET: inside its frame,
    g_UiWindowFrameInset pixels in from every edge). */
-static bool UiFramedTextButtonControl_ContainsPoint
+static Bool8 UiFramedTextButtonControl_ContainsPoint
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control)
 
 {
@@ -2322,7 +2322,7 @@ void UiTextButtonControl_NonRightPress
 
 {
   UiSelectableStateFlags *clearedStateFlagsField;
-  bool pixelHit;
+  Bool8 pixelHit;
   UiSelectableStateFlags *toggleStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
   
@@ -2378,12 +2378,12 @@ void UiTextButtonControl_NonRightPress
    an already selected radio-style button, goes to UiNode_DefaultKeyboardEventMoveFocusNext. Returns
    false: consumed.
 */
-bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+Bool8 UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control)
 
 {
   UiSelectableStateFlags *selectedStateFlagsField;
-  bool delegatedResult;
+  Bool8 delegatedResult;
   UiSelectableStateFlags *stateFlagsField;
   UiSelectableStateFlags *selectionStateFlagsField;
   
@@ -2443,7 +2443,7 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
   int slackHeight;
   int clippedTop;
   int drawY;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   GraphicsTextureLogicalSize textureSize;
   
   if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
@@ -2518,14 +2518,14 @@ UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,i
                                                                   UiImagePanelControl *control)
 
 {
-  bool childrenAlreadyRetried;
-  bool skipTextureTest;
+  Bool8 childrenAlreadyRetried;
+  Bool8 skipTextureTest;
   UiNodeBase *hitNode;
   int slackWidth;
   int drawX;
   int slackHeight;
   int drawY;
-  bool opaqueHit;
+  Bool8 opaqueHit;
   GraphicsTextureLogicalSize textureSize;
   
   hitNode = UI_NODE_NONE;
@@ -2622,7 +2622,7 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
   int controlLeft;
   uint32_t tileHeight;
   int32_t tileTop;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   GraphicsTextureLogicalSize tileSize;
 
   controlRight = (control->base).right;
@@ -2760,7 +2760,7 @@ static uint16_t *UiSingleLineTextControl_GetCommandStream(UiSingleLineTextContro
    itself. */
 static void UiSingleLineTextControl_BlitFocusMarkPiece
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,int markTop,int x,uint32_t subresource,bool shadow)
+          UiPixelCoordinate clipLeft,int markTop,int x,uint32_t subresource,Bool8 shadow)
 
 {
   if (shadow) {
@@ -2781,7 +2781,7 @@ static void UiSingleLineTextControl_BlitFocusMarkPiece
    (or clipRight). */
 static void UiSingleLineTextControl_DrawFocusMark
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,int markTop,int markLeft,int lineWidth,int capWidth,bool shadow)
+          UiPixelCoordinate clipLeft,int markTop,int markLeft,int lineWidth,int capWidth,Bool8 shadow)
 
 {
   int rightCapX;
@@ -2825,7 +2825,7 @@ void UiSingleLineTextControl_DrawClipped
   int lineWidth;
   int alignOffsetY;
   int alignOffsetX;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   RichTextExtent textExtent;
   GraphicsTextureLogicalSize tileSize;
 
@@ -2947,7 +2947,7 @@ void UiTextListControl_DrawRowsAndSelection
   int highlightWidth;
   uint16_t **lastRowSlot;
   uint16_t **rowSlot;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   RichTextExtent rowExtent;
   GraphicsTextureLogicalSize capSize;
 
@@ -3066,7 +3066,7 @@ void UiTextListControl_SelectRowFromPointer
    UiTextListControl_TickActivationPulse queues after g_UiListActivationPulseFrames frames. Other keys go to
    UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
-bool UiTextListControl_HandleKeyboardNavigationAndSearch
+Bool8 UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control)
 
@@ -3080,7 +3080,7 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
   uint32_t pageDownRow;
   UiListRowCount remainingRows;
   uint16_t **candidateSlot;
-  bool rowBelowKey;
+  Bool8 rowBelowKey;
   UiScrollableViewportSize viewportSize;
 
   previousSelectedSlot = control->selectedRowSlot;
@@ -3271,7 +3271,7 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordi
   UiPackedTextStyle packedStyleOverride;
   uint16_t *commandStream;
   uint32_t textStyle;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   uint16_t *resolvedText;
   
   framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
@@ -3324,7 +3324,7 @@ void UiNineSlicePanelControl_DrawTextureFrameAndChildren
   int topEdgeY;
   int bottomEdgeY;
   int rightEdgeX;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   GraphicsTextureLogicalSize slice0Size;
   GraphicsTextureLogicalSize slice1Size;
   GraphicsTextureLogicalSize slice2Size;
@@ -3453,7 +3453,7 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
 
 /* Fill colour variant of a gauge (frame offset 3..18, three frames each) by the fill percentage: rising from
    80% on, or for the two-sided scale also rising the further it falls below 40%. */
-static int UiFormattedContainer_FillVariantOffset(uint32_t fillPercent,bool twoSidedScale)
+static int UiFormattedContainer_FillVariantOffset(uint32_t fillPercent,Bool8 twoSidedScale)
 
 {
   if (!twoSidedScale) {
@@ -3665,7 +3665,7 @@ void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
   int slackHeight;
   int clippedTop;
   int drawY;
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   GraphicsTextureLogicalSize textureSize;
   
   if (((control->base).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
@@ -3741,7 +3741,7 @@ void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
           UiPixelCoordinate clipLeft,UiSoftwareTexturePreviewControl *control)
 
 {
-  bool framebufferUnavailable;
+  Bool8 framebufferUnavailable;
   
   if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (control->textureSource != NULL)) {
@@ -3791,7 +3791,7 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
    g_UiSoftwareTexturePreviewControlVtable): Tab moves the focus on, any other key queues the control's action.
    Always consumed (returns false).
 */
-bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
+Bool8 UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control)
 
 {
@@ -3927,7 +3927,7 @@ void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
 
 
 /* Digit value of a hexadecimal digit '0'-'9', 'A'-'F' or 'a'-'f'; false for any other code unit. */
-static bool UiNumericTextControl_TryHexDigitValue(uint32_t codeUnit,uint32_t *digitValue)
+static Bool8 UiNumericTextControl_TryHexDigitValue(uint32_t codeUnit,uint32_t *digitValue)
 
 {
   uint32_t value;
@@ -4048,7 +4048,7 @@ void UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control)
 
 {
   uint32_t currentNumericValue;
-  bool outOfRange;
+  Bool8 outOfRange;
 
   currentNumericValue = control->currentValue;
   if ((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) == 0) {
@@ -4139,7 +4139,7 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
 void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
 
 {
-  bool validatorRejected;
+  Bool8 validatorRejected;
 
   validatorRejected = g_FileSystemValidateDos83Path
                           (control->editStateFlags >> 1 & 3,(uint8_t *)control->pathBuffer);

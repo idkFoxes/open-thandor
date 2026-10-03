@@ -20,7 +20,7 @@
 #define SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 0x100
 /* Functions are grouped by semantic ownership. */
 
-bool SpatialSoundPool_Init(uint32_t *outError);
+Bool8 SpatialSoundPool_Init(uint32_t *outError);
 
 void SpatialSound_RebuildListenerTransformFromPose
           (AngleTurn32 viewAngle1,AngleTurn32 viewAngle0,GraphicsWorldCoordinateQ12 originZ,

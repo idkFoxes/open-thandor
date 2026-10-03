@@ -18,7 +18,7 @@
 #define TRIANGLE_BARYCENTRIC_WEIGHT_ONE_Q16 0x10000
 
 /* Second result of Triangle2D_ComputeBarycentricWeightsQ12Packed: the point is outside the triangle. */
-extern bool g_Triangle2DBarycentricOutside;
+extern Bool8 g_Triangle2DBarycentricOutside;
 
 TriangleBarycentricWeightsQ12
 Triangle2D_ComputeBarycentricWeightsQ12Packed

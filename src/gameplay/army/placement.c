@@ -25,7 +25,7 @@ ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount = 0;
    called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
 
-bool ArmyPlacement_CanPlaceAnchoredModel
+Bool8 ArmyPlacement_CanPlaceAnchoredModel
               (ArmyPlacementDispatchArg0 placementMode,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12,
@@ -36,7 +36,7 @@ bool ArmyPlacement_CanPlaceAnchoredModel
 {
   int offsetWorldXQ12;
   int offsetWorldYQ12;
-  bool blocked;
+  Bool8 blocked;
   FixedLengthAngle offsetLengthAngle;
   FixedSinCos rotatedOffset;
   uint32_t clearanceValue;
@@ -90,7 +90,7 @@ bool ArmyPlacement_CanPlaceAnchoredModel
    called by ArmyRuntimeNode_DispatchTypedCallback.
 */
 
-bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
+Bool8 ArmyPlacement_TestModelTerrainAndRuntimeClearance
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
@@ -99,7 +99,7 @@ bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
   uint32_t worldYQ12;
   Q12 worldXQ12;
   int referenceHeightQ12;
-  bool blocked;
+  Bool8 blocked;
   ModelPackedPointRecord *anchorRecord;
   ModelWorldPoint anchorWorldPoint;
 
@@ -151,7 +151,7 @@ Q12 g_ArmyPlacementValidatedWorldYQ12;
    0x240 on each axis). Returns false when one fits and leaves the accepted point in
    g_ArmyPlacementValidatedWorldXQ12/YQ12; true when none fits.
 */
-bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
+Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
           (ArmyPlacementMode placementMode,uint32_t placementHeading,Q12 worldYQ12,
           Q12 worldXQ12,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionId,
           void *inGameRuntime)
@@ -197,7 +197,7 @@ bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[14],
    called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
-bool ArmyPlacement_CanPlaceResourceExtractor
+Bool8 ArmyPlacement_CanPlaceResourceExtractor
               (ArmyPlacementDispatchArg0 placementMode,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12,
@@ -245,13 +245,13 @@ bool ArmyPlacement_CanPlaceResourceExtractor
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[14],
    called by ArmyRuntimeNode_DispatchTypedCallback.
 */
-bool ArmyPlacement_TestGridOccupancyMask
+Bool8 ArmyPlacement_TestGridOccupancyMask
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementClass14View *modelRuntime)
 
 {
   int cellColumn;
   int cellRow;
-  bool blocked;
+  Bool8 blocked;
   FieldGridCoordinates gridCoordinates;
   FieldGridAsset *activeFieldGrid;
   ModelRuntimeNode *rootNode;
@@ -290,11 +290,11 @@ bool ArmyPlacement_TestGridOccupancyMask
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[1..3, 17..19],
    called by ArmyRuntimeNode_DispatchTypedCallback.
 */
-bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
+Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
-  bool blocked;
+  Bool8 blocked;
   ModelRuntimeNode *modelNode;
   
   modelNode = modelRuntime->rootModelNode;
@@ -330,7 +330,7 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[1..3, 17..19],
    called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
-bool ArmyPlacement_CanPlaceMobileUnit
+Bool8 ArmyPlacement_CanPlaceMobileUnit
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
                uint32_t terrainHeightQ12,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
@@ -338,7 +338,7 @@ bool ArmyPlacement_CanPlaceMobileUnit
                uint32_t *outPlacementValue)
 
 {
-  bool blocked;
+  Bool8 blocked;
   
   blocked = GridScratch_TestProjectedCellMaskBands
                     (worldXQ12,worldYQ12,(uint8_t)modelDefinition->footprintRadiusClass,
@@ -652,7 +652,7 @@ void ArmyPlacement_ReleaseClassStateReservation
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[0, 5..9,
    12, 21], called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
 */
-bool ArmyPlacement_CanPlaceAnywhere
+Bool8 ArmyPlacement_CanPlaceAnywhere
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
                uint32_t terrainHeightQ12,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition,
@@ -671,7 +671,7 @@ bool ArmyPlacement_CanPlaceAnywhere
    Called directly by ArmyPlacement_CanPlaceMobileUnit.
 */
 
-bool ArmyCollision_TestPointAgainstRuntimeList
+Bool8 ArmyCollision_TestPointAgainstRuntimeList
           (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime)
 
 {
@@ -679,7 +679,7 @@ bool ArmyCollision_TestPointAgainstRuntimeList
   DepthBinMask32 firstMaskHigh;
   DepthBinMask32 firstMaskLow;
   WorldOwnerListNode *ownerNode;
-  bool hit;
+  Bool8 hit;
 
   placementRadiusQ12 = ((ModelDefinition *)modelDefinition)->footprintRadius;
   ownerNode = worldRuntime->ownerListHead;
@@ -722,7 +722,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
   ModelRuntimeNode *currentModelNode;
   uint32_t clearanceRadiusQ12;
   ModelRuntimeSlot *candidateModelRuntime;
-  bool hit;
+  Bool8 hit;
   ModelRuntimeNode *candidateModelNode;
   
   currentModelNode = currentRuntime->modelNodeRuntime;
@@ -772,7 +772,7 @@ ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
    the point or the asset or its model definition is missing. No caller used the lookup error code the
    original returned on failure.
 */
-bool ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
+Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
           uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
@@ -821,7 +821,7 @@ bool ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
    ArmyPlacement_CanPlaceAnchoredModel.
 */
 
-bool ArmyPlacementCollision_TestPointAgainstRuntimeList
+Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
           (ArmyPlacementCollisionFilterFlags placementFilterFlags,Q12 queryRadiusQ12,Q12 worldXQ12,
           Q12 worldYQ12,WorldRuntimeContext *worldRuntime)
 
@@ -830,7 +830,7 @@ bool ArmyPlacementCollision_TestPointAgainstRuntimeList
   DepthBinMask32 firstMaskHigh;
   DepthBinMask32 firstMaskLow;
   WorldOwnerListNode *ownerNode;
-  bool hit;
+  Bool8 hit;
 
   ownerNode = worldRuntime->ownerListHead;
   if ((queryRadiusQ12 == 0) || (ownerNode == NULL)) {
@@ -883,7 +883,7 @@ bool ArmyPlacementCollision_TestPointAgainstRuntimeList
    ArmyPlacement_TestModelTerrainAndRuntimeClearance.
 */
 
-bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
+Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
           (WorldOwnerListNode *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
           IMAGE_DOS_HEADER *candidateRuntimeOrRadiusQ12,WorldRuntimeContext *worldRuntime)
 
@@ -893,8 +893,8 @@ bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   uint32_t modelClassId;
   WorldOwnerListNode *candidateNode;
   char *queryRadiusQ12;
-  bool candidateIsRuntime;
-  bool hit;
+  Bool8 candidateIsRuntime;
+  Bool8 hit;
   WorldOwnerListNode *ownerNode;
 
   /* the IMAGE_DOS_HEADER type only serves the compare against the original image base 0x400000: below it
@@ -967,7 +967,7 @@ bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
    ArmyPlacement_TestModelTerrainAndRuntimeClearance and ArmyPlacement_TestGridOccupancyMask.
 */
 
-bool ArmyPlacementCollision_TestCurrentRuntime
+Bool8 ArmyPlacementCollision_TestCurrentRuntime
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
@@ -983,8 +983,8 @@ bool ArmyPlacementCollision_TestCurrentRuntime
   int deltaYQ12;
   ModelRuntimeNode *ownerNode;
   ModelRuntimeSlot *neighbor;
-  bool blocked;
-  bool (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
+  Bool8 blocked;
+  Bool8 (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
   ModelRuntimeNode *rootNode;
 
   rootNode = modelRuntime->rootModelNode;
@@ -1069,7 +1069,7 @@ bool ArmyPlacementCollision_TestCurrentRuntime
    by ArmyPlacement_CanPlaceAnchoredModel and ArmyPlacement_CanPlaceResourceExtractor.
 */
 
-bool ArmyPlacement_CanPlaceBuilding
+Bool8 ArmyPlacement_CanPlaceBuilding
           (ArmyPlacementDispatchArg0 placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t placementHeading,
           ArmyPlacementDispatchArg3 terrainHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
@@ -1093,7 +1093,7 @@ bool ArmyPlacement_CanPlaceBuilding
   int freeDistanceQ12;
   int placementValue;
   WorldOwnerListNode *ownerNode;
-  bool blocked;
+  Bool8 blocked;
   TerrainPlacementResult terrainTest;
   int nearestClearanceQ12;
 
@@ -1199,7 +1199,7 @@ bool ArmyPlacement_CanPlaceBuilding
    Called directly by ArmyPlacementCollision_TestPointAgainstRuntimeList and
    ArmyPlacementCollision_TestCandidateAgainstRuntimeList.
 */
-bool ArmyPlacementCandidate_TestModelAnchorDistance
+Bool8 ArmyPlacementCandidate_TestModelAnchorDistance
           (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ModelRuntimeSlot *modelRuntime)
 
 {
@@ -1228,7 +1228,7 @@ bool ArmyPlacementCandidate_TestModelAnchorDistance
    Called directly by the runtime-list collision scans in this file and by the movement code
    (gameplay/army/movement.c).
 */
-bool ArmyCollision_TestPointWithinExpandedRuntimeRadius
+Bool8 ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeSlot *modelRuntime)
 
 {

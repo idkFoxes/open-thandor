@@ -32,7 +32,7 @@ void RecentTextHistory_RemoveOldest(void);
 
 void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView);
 
-bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
+Bool8 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
 
 void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex);
 

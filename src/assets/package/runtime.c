@@ -29,7 +29,7 @@ uint8_t *g_PackageScratchBuffer = 0;
    aliases (keyed by the level's title text id). Returns false when the package stays mounted; on any failure
    it is unmounted again and true is returned (a failed mount returns without unmounting).
 */
-bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
+Bool8 LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 
 {
   uint32_t levelTitleTextId;
@@ -99,7 +99,7 @@ static THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDes
    dropped: no caller uses it).
    Called directly by the save-game writer in ui/ingame/runtime.c (no callback table).
 */
-bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
+Bool8 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
 
 {
@@ -195,7 +195,7 @@ bool Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCo
    false with an error code there instead, FATAL_ERROR_OUT_OF_MEMORY when the entry does not fit (or is to be
    decoded into g_PackageScratchBuffer, which holds the packed data). outByteCountOrError may be NULL.
 */
-bool Package_LoadEntryIntoBuffer
+Bool8 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path,
            uint32_t *outByteCountOrError)
 
@@ -207,7 +207,7 @@ bool Package_LoadEntryIntoBuffer
   uint32_t byteCount;
   uint32_t decodedByteCount;
   uint32_t decodeErrorCode;
-  bool decoded;
+  Bool8 decoded;
   uint32_t statusCode;
   uint32_t errorCode;
 
@@ -281,7 +281,7 @@ bool Package_LoadEntryIntoBuffer
    executable first, then as given), allocates the entry-header array and reads the directory into
    mountSlot. Stores the file handle or the open/allocation error code in *outFileHandleOrError (may be
    NULL); returns true on success. */
-static bool Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uint32_t *outFileHandleOrError)
+static Bool8 Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uint32_t *outFileHandleOrError)
 
 {
   void *handle;
@@ -327,7 +327,7 @@ static bool Package_MountIntoSlot(PckMountSlot *mountSlot,uint16_t *path,uint32_
    archive loses against every other one. FileSystem_Init mounts engine.pck this way. Same result as
    Package_Mount.
 */
-bool Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError)
+Bool8 Package_MountLowPriority(uint16_t *path,uint32_t *outFileHandleOrError)
 
 {
   int slotsRemaining;
@@ -424,7 +424,7 @@ static uint32_t Package_MoveTailOverEntry(FileSystemFilePosition entryOffset,Fil
    NULL. Called directly by Package_UpsertEntry and the save-game writer in ui/ingame/runtime.c (no callback
    table).
 */
-bool Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode)
+Bool8 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle,uint32_t *outErrorCode)
 
 {
   PckStoredByteCount entryPackedSize;
@@ -568,7 +568,7 @@ void *Package_LoadEntry(uint16_t *path,uint32_t *outErrorCode)
    returns false with an error code there instead when no slot is free, the file cannot be opened or the
    allocation fails. outFileHandleOrError may be NULL.
 */
-bool Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError)
+Bool8 Package_Mount(uint16_t *path,uint32_t *outFileHandleOrError)
 
 {
   int slotsRemaining;
@@ -615,7 +615,7 @@ static PckMountSlot *Package_FindMountSlot(EngineFileHandle fileHandle)
 /* Package_FindEntry sort order: true when record later is smaller than record front, comparing the whole
    PCK_ENTRY_HEADER_BYTES record as unsigned UTF-16 code units (the path first, then whatever the output
    record held behind it). Equal records are not smaller. */
-static bool Package_FoundEntryIsSmaller(const PckEntryHeader *later,const PckEntryHeader *front)
+static Bool8 Package_FoundEntryIsSmaller(const PckEntryHeader *later,const PckEntryHeader *front)
 
 {
   const uint16_t *laterUnits;
@@ -676,7 +676,7 @@ static void Package_SortFoundEntries(PckEntryHeader *entries,int entryCount)
    PCK_ENTRY_HEADER_BYTES); returns false when the handle is not mounted, leaving *outMatchCount unchanged
    (the original returned FATAL_ERROR_GENERAL_FAILURE, which no caller reads).
 */
-bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
+Bool8 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                        uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount)
 
 {
@@ -742,7 +742,7 @@ void Package_Unmount(EngineFileHandle fileHandle)
    unit; '*' only skips the candidate to its next dot or terminator (no full globbing), which is enough for
    patterns like "level\*.lev". The comparison is case-sensitive. Returns false on a match.
 */
-bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
+Bool8 Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
 
 {
   uint16_t patternCodeUnit;
@@ -769,7 +769,7 @@ bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
    decoder's byte count in *outByteCount; on failure returns false with the seek, read or decoder error code in
    *outErrorCode and leaves the entry path in g_PackageLastErrorPath. Either out pointer may be NULL.
 */
-bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
+Bool8 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle,
                              uint32_t *outByteCount,uint32_t *outErrorCode)
 
 {
@@ -846,7 +846,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
   PckMountSlot *mountSlot;
   uint16_t *pathCursor;
   uint16_t *nameCursor;
-  bool matched;
+  Bool8 matched;
   PckEntryHeader *currentEntry;
 
   matched = true;
@@ -915,7 +915,7 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
   PckMountSlot *mountSlot;
   uint16_t *pathCursor;
   uint16_t *nameCursor;
-  bool matched;
+  Bool8 matched;
   PckEntryHeader *currentEntry;
 
   /* Lowercase the path in place and count its code units, terminator included. A path that reaches
@@ -1007,7 +1007,7 @@ static uint32_t Package_ReadDirectoryIntoSlot(PckMountSlot *mountSlot,EngineFile
    the file-system error, or FATAL_ERROR_GENERAL_FAILURE when fileHandle is not mounted, in *outErrorCode
    (which may be NULL). The original also returned the last seek position on success; no caller used it.
 */
-bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode)
+Bool8 Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode)
 
 {
   uint32_t statusCode;

@@ -62,7 +62,7 @@ void AiCandidateWorkspace_SortDescending(void);
 
 int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry);
 
-bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
+Bool8 AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
 int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
@@ -82,22 +82,22 @@ AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
-bool AiRuntime_InitWorkspace(uint32_t *outErrorCode);
+Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode);
 
 void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell);
 
 void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell);
 
-bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
+Bool8 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
 
-bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
+Bool8 AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
 int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId);
 
 void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
           (RuntimeToken entityId,uint32_t weightRange,AiCandidateEntryKind entryKind);
 
-bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
+Bool8 AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
 
 extern AiCandidateWorkspaceEntry *g_AiWorkspace13Candidates;
 extern uint32_t g_AiCandidateWorkspaceEntryCount;

@@ -137,12 +137,6 @@ int32_t g_InGamePlacementSurfaceHeightQ12OrSentinel = 0;
 
 /* Implementation ownership: gameplay/input/world. */
 
-/* Entries of g_InGamePointerModeHandlers (InGameSelection_SetAircraftPadTargetLane1/2,
-   SelectionMarkerCoordinates_ApplyType3..7): four arguments. */
-typedef void InGamePointerModeHandler
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
-
 /* "Go to" action of the active in-game notification. In state 27 it only cancels (restores the camera, see
    InGameTargetingContext_CancelAndRestoreState). In state 7 it saves the camera state (unless bit 0x10 of the
    world runtimeFlags is set) and then, by payload kind: TECHNOLOGY_UNLOCK_POSITION selects the own model standing at
@@ -288,7 +282,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   int ownerIndex;
   uint32_t modifierModeMask;
   GameEntityRuntime *entry;
-  bool testResult;
+  Bool8 testResult;
 
   g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = WORLD_POINTER_NO_HIT;
   (inGameRuntime->selection).selectedEntity = NULL;
@@ -819,7 +813,7 @@ static void InGameWorldInput_CommitCandidateConditionClick
           (WorldRuntimeContext *inGameRuntime,int ownerIndex,GameEntityRuntime *entry)
 
 {
-  bool capabilityClear;
+  Bool8 capabilityClear;
   Q12 conditionRatioQ12;
 
   capabilityClear = GameFactionRuntime_TestCapabilityBitClear((entry->common).ownership.ownerIndex,ownerIndex);
@@ -841,7 +835,7 @@ static void InGameWorldInput_CommitCandidateConditionClick
 static void InGameWorldInput_ToggleCandidateArmy(int ownerIndex,GameEntityRuntime *entry)
 
 {
-  bool entryAbsent;
+  Bool8 entryAbsent;
 
   if (ownerIndex == (entry->common).ownership.ownerIndex) {
     entryAbsent = SelectionInfo_IsEntryAbsent(entry);
@@ -887,7 +881,7 @@ static void InGameWorldInput_CommitSelectionModeRelease
   int ownerIndex;
   GameEntityRuntime *entry;
   uint32_t surfaceHeightQ12;
-  bool capabilityClear;
+  Bool8 capabilityClear;
 
   /* same candidate filter as InGameWorldInput_ResolveContextActionAndCursor; entry stays NULL without a
      candidate army */
@@ -1058,7 +1052,7 @@ void InGameWorldInput_CommitPointerAction
    Returns true when no record matches and false after a command; the world view's pointer
    context (FrontendModelPointerContext_KeyboardEvent) passes unmatched keys on.
 */
-bool InGameCameraCommand_DispatchByCodeAndModifierFlags
+Bool8 InGameCameraCommand_DispatchByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime)
 
 {

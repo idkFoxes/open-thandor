@@ -56,7 +56,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *qu
 
 GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
 
-bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
+Bool8 GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue);
 
@@ -88,7 +88,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
 
 DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);
 
-bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+Bool8 DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1);
 
 extern GraphicsPrimitiveQueueRadixSortProc *PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844;

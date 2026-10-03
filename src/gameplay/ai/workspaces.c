@@ -292,7 +292,7 @@ static uint32_t AiPlanningRebuild_ScratchFootprintMask(const GridScratchCell *to
 
 
 /* True when one of the active grid mask classes 0..3 is absent from the neighbourhood mask. */
-static bool AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
+static Bool8 AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
 
 {
   return (g_AiActiveGridMaskClasses[0] & neighborhoodMask) == 0 ||
@@ -304,7 +304,7 @@ static bool AiPlanningRebuild_LacksActiveMaskClass(uint32_t neighborhoodMask)
 
 /* True when one of the six field-grid neighbours of the cell below cellAbove (the two above, left, right, the two
    below) has none of the faction's presence bits. */
-static bool AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,uint32_t gridWidth,
+static Bool8 AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,uint32_t gridWidth,
           FactionRuntimeIndex factionIndex)
 
 {
@@ -322,7 +322,7 @@ static bool AiPlanningRebuild_HasUnoccupiedNeighbour(FieldGridCell *cellAbove,ui
 
 
 /* True when the cell below cellAbove or one of its six neighbours carries xenite/tritium support flags. */
-static bool AiPlanningRebuild_FootprintHasResourceSupport(const FieldGridCell *cellAbove,uint32_t gridWidth)
+static Bool8 AiPlanningRebuild_FootprintHasResourceSupport(const FieldGridCell *cellAbove,uint32_t gridWidth)
 
 {
   return (cellAbove[gridWidth].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0 ||
@@ -481,7 +481,7 @@ static void AiPlanningRebuild_CollectProducibleAssets(FactionRuntimeIndex factio
   ArmyAssetRecordPrefix **workspace11Cursor;
   ArmyAssetRecordPrefix *definitionNode;
   int slotsRemaining;
-  bool technologyLocked;
+  Bool8 technologyLocked;
 
   armyAssetRegistryCursor = g_ArmyAssetRecordRegistry;
   workspace11Cursor = g_AiWorkspace11ProducibleAssets;
@@ -548,7 +548,7 @@ static void AiPlanningRebuild_CollectResearchCandidates(FactionRuntimeIndex fact
   ModelRuntimeSlot *modelRuntime;
   ModelDefinition *slotDefinition;
   uint32_t technologySlot;
-  bool notAvailable;
+  Bool8 notAvailable;
 
   factionRecordOffset = factionIndex * (int)sizeof(GameFactionRuntimeRecord);
   structureEntry = g_AiWorkspace00Structures;
@@ -823,7 +823,7 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 /* Returns true when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
    or not.
 */
-bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
+Bool8 AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -1104,7 +1104,7 @@ AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
    parameters from engine\ki.dat into g_AiKnowledgeData. Returns true on success; stops at the first failure,
    returning false with that failure's error code in *outErrorCode (buffers allocated before it are not freed).
 */
-bool AiRuntime_InitWorkspace(uint32_t *outErrorCode)
+Bool8 AiRuntime_InitWorkspace(uint32_t *outErrorCode)
 
 {
   AiKnowledgeDataImage *knowledgeDataImage;
@@ -1192,7 +1192,7 @@ void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell)
 {
   FieldGridCell **cellBuffer;
   uint32_t entryIndex;
-  bool isOutsideExtents;
+  Bool8 isOutsideExtents;
 
   entryIndex = g_AiWorkspace09Count;
   cellBuffer = g_AiWorkspace09Cells;
@@ -1216,7 +1216,7 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 {
   FieldGridCell **cellBuffer;
   uint32_t entryIndex;
-  bool isOutsideExtents;
+  Bool8 isOutsideExtents;
 
   entryIndex = g_AiWorkspace10Count;
   cellBuffer = g_AiWorkspace10Cells;
@@ -1235,7 +1235,7 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 /* Returns true when the primary workspace (workspace 00) holds an entry of this army asset whose
    runtime pointer is NULL.
 */
-bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
+Bool8 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -1257,7 +1257,7 @@ bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 /* Returns true when the primary workspace (workspace 00) holds an entry of this army asset, with or
    without a runtime object.
 */
-bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
+Bool8 AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -1349,7 +1349,7 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
    supportRadius of its definition. True when it is outside all of them. Arguments are Y first, then X, as every
    caller passes them.
 */
-bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
+Bool8 AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
 
 {
   Q12 deltaXAbsQ12;

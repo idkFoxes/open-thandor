@@ -76,7 +76,7 @@ uint16_t g_ErrorTextIoInitializationFailed[34] = L"error: IO: initialization fai
 void __cdecl ErrorSystem_Init(void)
 
 {
-  bool errorTextsLoaded;
+  Bool8 errorTextsLoaded;
 
   g_FatalErrorExitHandler = FatalError_Exit;
   g_FatalErrorReportHandler = FatalError_Exit;
@@ -90,7 +90,7 @@ void __cdecl ErrorSystem_Init(void)
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
-bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
+Bool8 FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
 
 {
   return true;
@@ -126,7 +126,7 @@ void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
    builds the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames
    until the dialog is dismissed, so the caller can carry on (the caller knows the failure from its own flag).
 */
-uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool failed)
+uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,Bool8 failed)
 
 {
   UiRootNode *dialogRoot;
@@ -215,7 +215,7 @@ void ErrorRuntime_InstallUiHandlerAndAllocateState(void)
    in the last path and the three detail strings, shuts everything down, shows the text in a message box and
    exits the process (it does not return then).
 */
-uint32_t FatalError_Exit(uint32_t valueOrError,bool failed)
+uint32_t FatalError_Exit(uint32_t valueOrError,Bool8 failed)
 
 {
   uint32_t error;
@@ -270,7 +270,7 @@ int FatalError_CopyRichTextToNarrow
   uint16_t *operand;
   uint16_t codeUnit;
   uint32_t remainingCapacityBytes;
-  bool newlineCapacityUnderflow;
+  Bool8 newlineCapacityUnderflow;
   uint16_t *nestedReturnStack[FATAL_ERROR_RICHTEXT_NESTING_MAX]; /* return points of nested texts (the original keeps them on its call stack) */
   int nestedDepth;
 

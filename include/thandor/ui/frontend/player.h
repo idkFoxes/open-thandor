@@ -54,7 +54,7 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode);
 
 void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void);
 
-bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
+Bool8 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
           (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId);
 
 void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken);

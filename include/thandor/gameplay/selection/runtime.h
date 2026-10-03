@@ -105,33 +105,33 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
 void SelectionPlayerRuntime_RotatePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,AngleTurn32 angleDelta);
 
-bool SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError);
+Bool8 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots,uint32_t *outError);
 
 void SelectionInfoPanel_ShutdownResources(void);
 
 void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target);
 
-bool SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition);
+Bool8 SelectionInfoEntitySlots_ComputeAverageWorldPosition(FixedVectorQ12 *outPosition);
 
 void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array);
 
-bool SelectionInfo_HasAnyEntry(void);
+Bool8 SelectionInfo_HasAnyEntry(void);
 
-bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex);
+Bool8 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex);
 
-bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex);
+Bool8 SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex);
 
-bool SelectionInfo_TestAnyActiveOrSingleClass13(void);
+Bool8 SelectionInfo_TestAnyActiveOrSingleClass13(void);
 
-bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime);
+Bool8 SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime);
 
-bool SelectionInfo_TestNoEntryHasWeaponDamage(void);
+Bool8 SelectionInfo_TestNoEntryHasWeaponDamage(void);
 
-bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void);
+Bool8 SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void);
 
 GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void);
 
-bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry);
+Bool8 SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry);
 
 uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void);
 
@@ -141,7 +141,7 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2);
 
-bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
+Bool8 SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId);
 
 void SelectionPointerArray_ApplyMoveCommand
@@ -212,9 +212,9 @@ void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRunt
 
 void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection);
 
-bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array);
+Bool8 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array);
 
-bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
+Bool8 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
 
 void SelectionPointerArray_SetAircraftPadTargets
           (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 heading16,

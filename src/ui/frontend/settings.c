@@ -458,10 +458,10 @@ void FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *c
 {
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL;
   }
@@ -492,10 +492,10 @@ void FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 {
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
   }
@@ -515,10 +515,10 @@ void FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *contr
 {
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
   }
@@ -539,10 +539,10 @@ void FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 {
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_ZOOM;
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,control->base.parent);
@@ -565,10 +565,10 @@ void FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 {
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_TILT;
     UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,control->base.parent);
@@ -592,10 +592,10 @@ void FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 {
   uint32_t optionFlags;
   PersistentSettingsValue value;
-  bool isSelected;
+  Bool8 isSelected;
 
   optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_LINK_OPTION_HIDE_PANEL;
   }
@@ -946,9 +946,9 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   AudioMixerGainQ15 effectsGain;
   MovieAudioGainQ15 movieDefaultGain;
   MovieAudioGainQ15 movieAlternateGain;
-  bool isSelected;
+  Bool8 isSelected;
 
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   /* isSelected is the PERSISTENT_SOUND_OPTION_EFFECTS bit */
   PersistentSettings_Write((uint32_t)isSelected | audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS,
@@ -1017,11 +1017,11 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   uint32_t savedAudioFlags;
   uint32_t musicEnabledBit;
   uint32_t newAudioFlags;
-  bool isSelected;
-  bool musicLoaded;
+  Bool8 isSelected;
+  Bool8 musicLoaded;
 
   musicEnabledBit = 0;
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
     g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
@@ -1097,11 +1097,11 @@ void FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
   uint32_t currentAudioFlags;
   uint32_t reverseStereoBit;
   int32_t reverseStereoMask;
-  bool isSelected;
+  Bool8 isSelected;
 
   reverseStereoBit = 0;
   reverseStereoMask = 0;
-  isSelected = (bool)UiSelectableControl_IsSelected(control);
+  isSelected = (Bool8)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     reverseStereoBit = PERSISTENT_SOUND_OPTION_REVERSE_STEREO;
     reverseStereoMask = -1;
@@ -1581,13 +1581,13 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
    of the selected row (selectedRowSlot) of the sibling sessionList and sends the join request (player
    descriptor packet 0x20002) to it. Returns the result of UiTransfer_SendPlayerDescriptor.
 */
-bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings)
+Bool8 FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings)
 
 {
   int remainingDwords;
   uint32_t *selectedPlayerRecordDwordCursor;
   uint32_t *selectedEndpointDwordCursor;
-  bool sendCarry;
+  Bool8 sendCarry;
   
   /* networkSettings is the frontend template's networkGameJoinButton; the session list is a sibling. */
   g_FrontendSessionToken =
@@ -1640,7 +1640,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   uint32_t pendingHeight;
   uint32_t bitsPerPixel;
   uint32_t persistedValue;
-  bool modeCheckCarry;
+  Bool8 modeCheckCarry;
   /* the original's stack: modeStack[modeStackTop] is the top; the 5 NULL entries after the 19 controls stand
      for the values the original saved below them */
   UiNodeBase *modeStack[DISPLAY_MODE_STACK_END + 5];

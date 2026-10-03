@@ -20,7 +20,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
           GraphicsPixelDimension outputWidth,ModelRuntimeCount modelCount,
           ModelRuntimeNode **modelNodes);
 
-bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
+Bool8 GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2);
 
 extern GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderModelListToTextureSource;

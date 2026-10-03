@@ -281,8 +281,8 @@ static void ShotModel_CastHitRays
 {
   ArmyRuntimeSlot *shotOwnerArmy;
   ModelRuntimeNode *ownerModelNode;
-  bool armyHit;
-  bool surfaceHit;
+  Bool8 armyHit;
+  Bool8 surfaceHit;
   Q12 armyHitDistanceQ12;
   Q12 surfaceDistanceQ12;
 
@@ -478,7 +478,7 @@ static void ShotProjectile_ImpactArmy
 
 /* Moving shot: ends at the nearest hit within this tick's step (launchSpeedQ12), emitting the impact effect.
    Returns true when the shot was removed. */
-static bool ShotProjectile_ApplyNearestHit
+static Bool8 ShotProjectile_ApplyNearestHit
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNode *modelNode,ShotRuntimeSlot *shotRuntime,
            const ShotRayHits *hits)
 
@@ -665,7 +665,7 @@ static void ShotProjectile_ShiftOverTarget
 /* Fixed-range shot: climbs with a cubic speed ramp until fixedRangeTransitionAgeThresholdTicks, then jumps over
    its target and turns downwards; while descending it stays over the target. Returns true when the shot was
    removed because it reached the threshold without a target. */
-static bool ShotProjectile_UpdateFixedRangeTrajectory
+static Bool8 ShotProjectile_UpdateFixedRangeTrajectory
           (ShotDefinition *shotDefinition,ShotRuntimeSlot *shotRuntime,ModelRuntimeNode *shotNode)
 
 {

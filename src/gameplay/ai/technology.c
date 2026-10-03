@@ -27,7 +27,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
   ModelDefinitionRecordPrefix *candidateDefinition;
   UQ8 relationScaleQ8;
   uint32_t candidateScore;
-  bool rejected;
+  Bool8 rejected;
 
   candidateDefinition = ModelDefinitionRegistry_FindByRuntimeClassId(technologyId);
   technologyAsset = g_TechnologyAsset;
@@ -79,7 +79,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
    covered by its unlocked technologies.
    Note the inverted sense despite the name: true means NOT available (callers rely on it).
 */
-bool AiTechnologyCandidate_IsCurrentlyAvailable
+Bool8 AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset
           )
 
@@ -300,7 +300,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
 /* Veto hook of AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue (its only caller, called
    directly): would return true to reject the candidate definition, but always accepts (returns false).
 */
-bool AiTechnologyCompatibility_AcceptRuntimeClassCandidate
+Bool8 AiTechnologyCompatibility_AcceptRuntimeClassCandidate
           (FactionRuntimeIndex factionIndex,ModelDefinitionRecordPrefix *candidateDefinition)
 
 {

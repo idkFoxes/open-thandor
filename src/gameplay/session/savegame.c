@@ -61,8 +61,8 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
   UiListRowIndex selectedIndex;
   UiNodeBase *rootNode;
   UiListRowIndex lastRowIndex;
-  bool selectionConfirmed;
-  bool isNewSaveRow;
+  Bool8 selectionConfirmed;
+  Bool8 isNewSaveRow;
 
   saveNameEntryStack =
        (UiPageStackControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEntryStack);
@@ -265,7 +265,7 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
   UiPointerListControl *saveList;
   uint32_t rowOrdinal;
   uint16_t *leaf;
-  bool saveFailed;
+  Bool8 saveFailed;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
@@ -311,7 +311,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
   uint32_t nameLength;
   int32_t *scanEnd;
   int32_t *charCursor;
-  bool matched;
+  Bool8 matched;
 
   /* up to the root node (its parent is -1) */
   parentWalk = nameControl->parent;
