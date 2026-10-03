@@ -13,6 +13,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/test_aids.h>
 #include <thandor/platform/debug/script.h>
+#include <thandor/platform/debug/autoshot.h>
 
 /* Test aid: OPEN_THANDOR_SCRIPT=<file> replays timed input from a text file, one command per line:
      <ms> click <x> <y> [hold]  left press at framebuffer pixel x,y, release after hold ms (120)
@@ -25,7 +26,7 @@
                             delivers it: space as VK_SPACE key-down/up (it gets no WM_CHAR), letters and digits
                             as key-down (swallowed by text edits), Keyboard_OnChar (the WM_CHAR) and key-up,
                             other characters as Keyboard_OnChar only
-     <ms> shot              save the framebuffer now (shots\script_NNNN.bmp, needs AUTOSHOT's folder)
+     <ms> shot              save the framebuffer now (shots\script_NNNN.bmp)
      <ms> quit              end the process
      <ms> layout <w> <h>    the following coordinates are for a w x h screen; they are moved by half
                             the difference to the current resolution (dialogs and the view are centred)
@@ -291,6 +292,9 @@ void DebugScript_Tick(void)
       Thandor_Log("script: type \"%s\"", typeText);
       typePosition = 0;
       return;
+    }
+    else if (strcmp(command, "shot") == 0) {
+      DebugAutoShot_SaveNow();
     }
     else if (strcmp(command, "quit") == 0) {
       ExitProcess(0);

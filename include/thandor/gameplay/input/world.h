@@ -69,8 +69,8 @@ void InGameWorldInput_CommitPointerAction
           WorldOwnerListNode *candidateNode,WorldRuntimeContext *inGameRuntime);
 
 /* 0x0056F230 */
-void InGameCameraCommand_DispatchByCodeAndModifierFlags
-          (uint32_t modifierFlags,uint32_t commandCode,WorldRuntimeContext *worldRuntime);
+bool InGameCameraCommand_DispatchByCodeAndModifierFlags
+          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime);
 
 /* 0x0056D4B0 */
 void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView *targetingContext);

@@ -14,4 +14,7 @@
 /* Called from the message pump (Win32_PumpMessages); saves a shot when the interval has passed. */
 void DebugAutoShot_Tick(void);
 
+/* Saves the framebuffer now as shots\script_NNNN.bmp (the script command "shot"); creates the folder. */
+void DebugAutoShot_SaveNow(void);
+
 #endif /* THANDOR_PLATFORM_DEBUG_AUTOSHOT_H */

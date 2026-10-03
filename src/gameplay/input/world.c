@@ -932,10 +932,11 @@ void InGameWorldInput_CommitPointerAction
      Alt+1..7  store the current camera as bookmark n
      Alt+S     toggle WORLD_RUNTIME_FLAG_SHADING_ENABLED
      Ctrl+C    toggle WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA
-   The original returns CF set when no record matches and CF clear after a command.
+   Returns true (the original's CF) when no record matches and false after a command; the world view's pointer
+   context (FrontendModelPointerContext_KeyboardEvent) passes unmatched keys on.
 */
-void InGameCameraCommand_DispatchByCodeAndModifierFlags
-          (uint32_t modifierFlags,uint32_t commandCode,WorldRuntimeContext *worldRuntime)
+bool InGameCameraCommand_DispatchByCodeAndModifierFlags
+          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,WorldRuntimeContext *worldRuntime)
 
 {
   InGameCameraCommandKeyCode recordKeyCode;
@@ -1110,9 +1111,9 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
     case 0x56f7e0: /* Ctrl+C */
       worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA;
     }
-    return;
+    return false;
   }
-  return;
+  return true; /* no camera key: the pointer context passes it on */
 }
 
 

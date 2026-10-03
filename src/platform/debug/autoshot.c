@@ -16,13 +16,14 @@
 /* Test aid: OPEN_THANDOR_AUTOSHOT=<milliseconds> saves the game's own framebuffer to
    shots\shot_NNNN.bmp at that interval (checked from the message pump), so automated runs can be
    looked at without capturing the desktop. */
+static void DebugAutoShot_Save(const char *prefix, unsigned *number);
+
 void DebugAutoShot_Tick(void)
 {
   static int interval = -1;
   static unsigned last;
   static unsigned number;
   unsigned now;
-  GraphicsCapturedTextureSourceAsset *capture;
   if (interval < 0) {
     const char *value = getenv("OPEN_THANDOR_AUTOSHOT");
     interval = (value != NULL) ? atoi(value) : 0;
@@ -39,6 +40,24 @@ void DebugAutoShot_Tick(void)
     return;
   }
   last = now;
+  DebugAutoShot_Save("shot", &number);
+}
+
+void DebugAutoShot_SaveNow(void)
+{
+  static unsigned number;
+  if (g_GraphicsFramebufferCaptureRegion == NULL || g_FramebufferWidth == 0) {
+    Thandor_Log("script shot: no framebuffer yet");
+    return;
+  }
+  CreateDirectoryA("shots", NULL);
+  DebugAutoShot_Save("script", &number);
+}
+
+/* Captures the framebuffer and writes it to shots\<prefix>_NNNN.bmp, NNNN from *number (then incremented). */
+static void DebugAutoShot_Save(const char *prefix, unsigned *number)
+{
+  GraphicsCapturedTextureSourceAsset *capture;
   capture = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
 #ifdef THANDOR_TEST_AIDS
   if (capture == NULL) {
@@ -53,7 +72,7 @@ void DebugAutoShot_Tick(void)
     uint32_t height = entry->pixelHeight;
     char name[64];
     FILE *file;
-    sprintf(name, "shots\\shot_%04u.bmp", number++);
+    sprintf(name, "shots\\%s_%04u.bmp", prefix, (*number)++);
     file = fopen(name, "wb");
     if (file != NULL) {
       /* "BM" + the rest of BITMAPFILEHEADER (14 bytes) and a BITMAPINFOHEADER (40 bytes): 32-bit top-down */

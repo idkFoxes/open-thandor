@@ -95,7 +95,7 @@ def make_copy(name, exe):
 
 def run_tool(log, command, timeout):
     """Runs a python tool, its output into log; returns (exit code, output)."""
-    with open(log, 'w') as f:
+    with open(log, 'w', encoding='utf-8', errors='replace') as f:
         f.write('> %s\n' % ' '.join(command))
         f.flush()
         process = subprocess.Popen([sys.executable] + command, stdout=f, stderr=subprocess.STDOUT,
@@ -169,7 +169,7 @@ def check_pixels():
     pages = [('pause', 'skirmish_pause.txt', '-NOINTRO -KARTE="mittelpunkt"'),
              ('choose', 'choose_game.txt', '-NOINTRO -KARTE="-"')]
     report, failed = [], False
-    log = open(os.path.join(out_dir, 'pixels.txt'), 'w')
+    log = open(os.path.join(out_dir, 'pixels.txt'), 'w', encoding='utf-8', errors='replace')
     for page, script, arguments in pages:
         outcome = {}
 
@@ -216,7 +216,7 @@ def check_pixels():
 
 def check_saveload():
     folder = make_copy('saveload', args.new)
-    log = open(os.path.join(out_dir, 'saveload.txt'), 'w')
+    log = open(os.path.join(out_dir, 'saveload.txt'), 'w', encoding='utf-8', errors='replace')
     save = os.path.join(folder, 'save', 'Multi Ahaggar.sve')
     env = {'OPEN_THANDOR_SCRIPT': os.path.join(HERE, 'skirmish_save.txt'), 'OPEN_THANDOR_WINDOW_X': '1320',
            'OPEN_THANDOR_WINDOW_Y': '420'}
@@ -251,7 +251,7 @@ def check_textedit():
            'OPEN_THANDOR_WINDOW_Y': '0'}
     exited, crashed, text = run_game(folder, '-NOINTRO -KARTE="mittelpunkt"', env, 300, 907)
     saves = sorted(os.path.basename(p) for p in glob.glob(os.path.join(folder, 'save', '*.sve')))
-    with open(os.path.join(out_dir, 'textedit.txt'), 'w') as log:
+    with open(os.path.join(out_dir, 'textedit.txt'), 'w', encoding='utf-8', errors='replace') as log:
         log.write('==== exited %s, crash/hang %s, save files: %s\n%s\n' % (exited, crashed, saves, text))
     if crashed:
         return 'FAIL', 'crash/hang'
@@ -299,7 +299,7 @@ def check_imagecmp():
         return 'SKIP', 'GAME_DIR has no thandor_original.exe'
     folder = make_copy('imagecmp', args.release)
     exited, crashed, text = run_game(folder, '-NOINTRO', {'OPEN_THANDOR_SELFTEST': 'imagecmp'}, 180, 906)
-    open(os.path.join(out_dir, 'imagecmp.txt'), 'w').write(text)
+    open(os.path.join(out_dir, 'imagecmp.txt'), 'w', encoding='utf-8', errors='replace').write(text)
     last = text.strip().splitlines()[-1] if text.strip() else 'no log'
     ok = exited and not crashed and last.startswith('imagecmp:') and \
         ' 0 pointer mismatches, 0 byte mismatches' in last

@@ -46,6 +46,7 @@ static void Thandor_SelfTestCodec(void)
         bool decodeOk;
         uint32_t encodeValue = 0; /* packed size, or the error code on failure */
         uint32_t decodeValue = 0; /* reported byte count, or the error code on failure */
+        uint32_t packedHash;
         int packedGuardOk = 1;
         int unpackedGuardOk = 1;
         int same;
@@ -63,8 +64,13 @@ static void Thandor_SelfTestCodec(void)
         for (i = capacity; i < capacity + guard; i++) {
             if (packed[i] != SELFTEST_GUARD_FILL) { packedGuardOk = 0; break; }
         }
-        Thandor_Log("codec selftest %u: size=%x noisy=%d encode ok=%d packed=%x guard=%s", t, size,
-                    noisy, encodeOk, encodeValue, packedGuardOk ? "ok" : "OVERWRITTEN");
+        /* FNV-1a over the packed bytes, to compare the encoder output of two builds */
+        packedHash = 2166136261u;
+        for (i = 0; encodeOk && i < encodeValue && i < capacity; i++) {
+            packedHash = (packedHash ^ packed[i]) * 16777619u;
+        }
+        Thandor_Log("codec selftest %u: size=%x noisy=%d encode ok=%d packed=%x hash=%08X guard=%s", t, size,
+                    noisy, encodeOk, encodeValue, packedHash, packedGuardOk ? "ok" : "OVERWRITTEN");
         if (encodeOk) {
             decodeOk = g_PckDecoderTable[0](size, unpacked, encodeValue, packed, &decodeValue, &decodeValue);
             for (i = size; i < size + guard; i++) {
@@ -304,8 +310,9 @@ static void Thandor_SelfTestPcx(void)
 
 /* OPEN_THANDOR_SELFTEST=movieenc encodes synthetic 64x48 frames (gradients, noise, flat areas, black/white
    extremes) with Movie_EncodeFrame4x4Keyframe and then Movie_EncodeFrame4x4Delta for frames that change in
-   parts, and logs the byte counts and an FNV-1a hash over every encoded byte and the reference frame the delta
-   encoder keeps. Run it with two builds to check that a rewrite of the encoders kept their output. */
+   parts, decodes each with Movie_DecodeFrame4x4Delta, and logs the byte counts and an FNV-1a hash over every
+   encoded byte, the reference frame the delta encoder keeps and the decoded picture. Run it with two builds to
+   check that a rewrite of the encoders or the decoder kept their output. */
 #define MOVIEENC_WIDTH 64
 #define MOVIEENC_HEIGHT 48
 #define MOVIEENC_FRAMES 6
@@ -337,6 +344,8 @@ static void Thandor_SelfTestMovieEncode(void)
     static uint32_t reference[MOVIEENC_WIDTH * MOVIEENC_HEIGHT];
     static uint32_t current[MOVIEENC_WIDTH * MOVIEENC_HEIGHT];
     static uint32_t encoded[MOVIEENC_WIDTH * MOVIEENC_HEIGHT * 2];
+    static uint32_t decoded[MOVIEENC_WIDTH * MOVIEENC_HEIGHT];
+    uint32_t consumed;
     uint32_t hash = 2166136261u;
     uint32_t seed = 1;
     uint32_t frame;
@@ -360,7 +369,13 @@ static void Thandor_SelfTestMovieEncode(void)
         for (i = 0; i < sizeof reference; i++) {
             hash = (hash ^ ((const uint8_t *)reference)[i]) * 16777619u;
         }
-        Thandor_Log("movieenc: frame %u %u bytes, hash so far %08X", frame, byteCount, hash);
+        /* decode the frame on top of the previous decoded picture, as the player does */
+        consumed = Movie_DecodeFrame4x4Delta(MOVIEENC_HEIGHT, MOVIEENC_WIDTH, decoded, (uint8_t *)encoded);
+        hash = (hash ^ consumed) * 16777619u;
+        for (i = 0; i < sizeof decoded; i++) {
+            hash = (hash ^ ((const uint8_t *)decoded)[i]) * 16777619u;
+        }
+        Thandor_Log("movieenc: frame %u %u bytes (decoder %u), hash so far %08X", frame, byteCount, consumed, hash);
     }
     Thandor_Log("movieenc: hash %08X", hash);
 }

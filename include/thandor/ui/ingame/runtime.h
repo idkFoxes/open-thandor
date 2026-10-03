@@ -150,7 +150,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void);
 void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot);
 
 /* 0x005678C0 */
-void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world);
 
 /* 0x00569750 */

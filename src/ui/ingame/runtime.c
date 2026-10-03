@@ -2477,9 +2477,11 @@ static bool InGameKeyCommand_ModifiersMatch(uint32_t classFlags,UiKeyboardStateM
      O                      show/hide the wrapped world-view status text
      Alt+C                  toggle the free camera (no pitch and distance clamps)
      Ctrl+Alt+V             cheat, single player only: toggle occupancy bit 0 on every field cell
-   The original also returns CF set when no record matches; this void callback does not reproduce it.
+   Returns true (the original's CF) when no record matches: the field is the keyboardFallback of the world view's
+   pointer context (FrontendModelPointerContext_KeyboardEvent), which then passes the key on, so keys such as Esc
+   reach the in-game root's hotkeys. A matched record returns false, also when the command is blocked.
 */
-void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world)
 
 {
@@ -2498,7 +2500,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
     record++;
   }
   if (record->commandCode == 0) {
-    return;
+    return true; /* not a world view key: the pointer context passes it on (Esc reaches the root's hotkeys) */
   }
   target = (uint32_t)record->continuationEntryAddress;
   switch (target) {
@@ -2667,7 +2669,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
     Thandor_Log("InGameUi dispatch: unhandled continuation %08x",target);
     break;
   }
-  return;
+  return false;
 }
 
 
