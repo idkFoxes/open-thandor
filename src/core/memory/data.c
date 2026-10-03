@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/core/memory/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/core/memory/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -16,6 +16,6 @@ __declspec(align(4)) uint16_t g_ErrorTextHeapAllocationFailed[71] = L"error: HEA
 
 __declspec(align(8)) ArenaState g_Arena = {.linearCursor = &g_ArenaLinearStorage[0], .linearLimit = &g_ArenaLinearStorage[0x4000]};
 
-/* linear region of g_Arena (cursor at [0] = Ghidra g_Arena_3, limit at
-   [0x4000] = Ghidra g_Arena_4 0058B400); the 0xC00 bytes past the limit run to the end of the image */
+/* linear region of g_Arena (g_Arena.linearCursor starts at [0], g_Arena.linearLimit is [0x4000]); the
+   0xC00 bytes past the limit run to the end of the original image and are never handed out */
 __declspec(align(16)) uint8_t g_ArenaLinearStorage[0x4C00] = {0};

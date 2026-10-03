@@ -17,7 +17,7 @@
 #define SOFTWARE_DEPTH_EPOCH_STEP 0x1000000
 /* SoftwareMaskBuffer: a revealed mask byte brightens by this much per tick, saturating at 0xFF */
 #define SOFTWARE_MASK_BRIGHTEN_STEP 0x1f
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime);
 

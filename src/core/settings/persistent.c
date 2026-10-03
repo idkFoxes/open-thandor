@@ -60,9 +60,9 @@ void PersistentSettings_Load(void)
       g_MemoryApi.free(image);
       return;
     }
-    /* Original quirk: the original continues with EAX of the path copy below (the byte count, or
-       FATAL_ERROR_GENERAL_FAILURE on overflow) as the file handle (MOV EBX,EAX at 0x00402B90), not the
-       handle from this open. Kept as is. */
+    /* Original quirk: the original continues with the return value of the path copy below (the byte
+       count, or FATAL_ERROR_GENERAL_FAILURE on overflow) as the file handle, not the handle from this open.
+       Kept as is. */
     if (!RichTextCommandStream_CopyExpanded
            (sizeof g_PersistentSettings.path,g_PersistentSettings.path,
             g_FileSystemCombinedPathScratchUtf16,&pathByteCount)) {

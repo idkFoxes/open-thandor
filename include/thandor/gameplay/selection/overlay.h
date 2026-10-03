@@ -41,7 +41,7 @@
 /* Initial g_ModelProjectedBoundsPixels: an empty (inverted) rectangle for ModelProjectedBounds_AccumulateHierarchyRecursive. */
 #define SELECTION_OVERLAY_EMPTY_BOUNDS_MIN 0x10000
 #define SELECTION_OVERLAY_EMPTY_BOUNDS_MAX (-0x10000)
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime);

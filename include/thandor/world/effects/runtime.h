@@ -17,7 +17,7 @@
 #define EFFECT_RUNTIME_SLOT_COUNT 0x1000
 #define EFFECT_RUNTIME_POOL_BYTES 0x40000 /* EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot) */
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 EffectDefinition *EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId);
 

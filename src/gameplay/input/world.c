@@ -12,7 +12,7 @@
 /* Implementation ownership: gameplay/input/world. */
 
 /* Entries of g_InGamePointerModeHandlers (InGameSelection_SetAircraftPadTargetLane1/2,
-   SelectionMarkerCoordinates_ApplyType3..7): four stack arguments, RET 0x10. */
+   SelectionMarkerCoordinates_ApplyType3..7): four arguments. */
 typedef void InGamePointerModeHandler
           (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
           SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
@@ -22,7 +22,7 @@ typedef void InGamePointerModeHandler
    world runtimeFlags is set) and then, by payload kind: TECHNOLOGY_UNLOCK_POSITION selects the own model standing at
    the payload position (locally or as INGAME_COMMAND_SELECT_MODEL_AND_ARMY) and ends the interaction;
    FACTION_IMPACT_ANCHOR remembers the position and, like ARMY_CREATED, moves the camera onto the terrain point
-   there and switches the interaction to state 27. Jump table 0x0056D340: kinds 1, 2, 3 are handled, the rest
+   there and switches the interaction to state 27. Payload kinds 1, 2, 3 are handled, the rest
    do nothing.
 */
 void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView *targetingContext)
@@ -426,7 +426,7 @@ static void InGameWorldInput_CollectDragSelectionBatches(WorldRuntimeContext *in
   InGameCommandPayloadTripletValue32 payloadValue;
 
   /* clears both 12-dword batches and their two counters, in memory order (the original clears the 0x1A
-     dwords from 0x0055F0C4 to 0x0055F12C in one run) */
+     contiguous dwords in one run) */
   for (clearIndex = 0; clearIndex < 12; clearIndex++) {
     g_InGameSelectionInsertTripletDwords[clearIndex] = 0;
   }
@@ -922,14 +922,14 @@ void InGameWorldInput_CommitPointerAction
 
 /* Camera key commands of the world view while the interaction subsystem is active (game paused): installed as
    the world view's dispatchCommandCallback by the activating path of
-   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState (0x005609F0), in place of
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState, in place of
    InGameUiRuntime_DispatchCommandByCodeAndModifierFlags. The first g_InGameCameraCommandDispatchRecords16 record
    with this key and a matching modifier selects the command:
      1..7      move the camera to level camera bookmark n
      Alt+1..7  store the current camera as bookmark n
      Alt+S     toggle WORLD_RUNTIME_FLAG_SHADING_ENABLED
      Ctrl+C    toggle WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA
-   Returns true (the original's CF) when no record matches and false after a command; the world view's pointer
+   Returns true when no record matches and false after a command; the world view's pointer
    context (FrontendModelPointerContext_KeyboardEvent) passes unmatched keys on.
 */
 bool InGameCameraCommand_DispatchByCodeAndModifierFlags

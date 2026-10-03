@@ -417,8 +417,8 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     InGameCommandModeG_Select5((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabRegion));
     break;
   case 0x56f160: /* Ctrl+P: screenshot to screenNN.pcx, counting the two digits up */
-    /* The original calls this without pushing arguments (stale stack, RET 0x10); capture the whole
-       framebuffer like the end-game and end-movie screenshot commands. */
+    /* The original calls this without passing its four arguments (it reads stale stack values); capture
+       the whole framebuffer like the end-game and end-movie screenshot commands. */
     capturedFramebuffer = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
     if (capturedFramebuffer != NULL) {
       FileSystem_WriteBufferToPath
@@ -868,11 +868,11 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
 }
 
 
-/* UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView,
-   root+0x9A1C). Latches the clicked grid
+/* UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView).
+   Latches the clicked grid
    cell (selectedSourceX/YQ12 = grid column/row into sourceOriginX/YQ12), converts it to world coordinates and
    moves both camera points of the
-   world runtime (which lies 0x8FEC bytes before the map control) by the distance to the new centre, then clears
+   world runtime (the worldView node of the same in-game UI copy) by the distance to the new centre, then clears
    the field grid dirty flag.
 */
 void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl)
@@ -1012,8 +1012,8 @@ static void InGameUiRuntime_CachePanelSubresourceSizes(GraphicsTextureSourceAsse
 }
 
 
-/* Zeroes the edge offsets of the side panel frame parts and binds panel0.gfx to every panel control (the texture
-   field sits at +0x50, +0x54 or +0x74 depending on the control class). */
+/* Zeroes the edge offsets of the side panel frame parts and binds panel0.gfx to every panel control (its
+   textureSource or primaryTextureSource field, depending on the control class). */
 static void InGameUiRuntime_BindPanelTexture(UiRootNode *inGameRoot,GraphicsTextureSourceAsset *panelTexture)
 
 {
@@ -1763,8 +1763,8 @@ static void InGameUiRuntime_SizeTechnologyWindow(UiRootNode *inGameRoot,Graphics
 }
 
 
-/* Click sounds: voice sets 0..6 of g_UiButtonSoundVoiceSets7, stored at the control class's sound field (+0x5C,
-   +0x64, +0x68 or +0x70). */
+/* Click sounds: voice sets 0..6 of g_UiButtonSoundVoiceSets7, stored at the control class's sound field
+   (activationSound or pointerActivationSound). */
 static void InGameUiRuntime_AssignClickSounds(UiRootNode *inGameRoot)
 
 {
@@ -2468,7 +2468,7 @@ static bool InGameKeyCommand_ModifiersMatch(uint32_t classFlags,UiKeyboardStateM
      O                      show/hide the wrapped world-view status text
      Alt+C                  toggle the free camera (no pitch and distance clamps)
      Ctrl+Alt+V             cheat, single player only: toggle occupancy bit 0 on every field cell
-   Returns true (the original's CF) when no record matches: the field is the keyboardFallback of the world view's
+   Returns true when no record matches: the field is the keyboardFallback of the world view's
    pointer context (FrontendModelPointerContext_KeyboardEvent), which then passes the key on, so keys such as Esc
    reach the in-game root's hotkeys. A matched record returns false, also when the command is blocked.
 */
@@ -2476,8 +2476,8 @@ bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
           WorldRuntimeContext *world)
 
 {
-  /* Rewritten from the assembly (0x005678C0-0x00568204). The decompiled version jumped to the
-     continuation labels inside the original machine code. world is the world view (worldRuntime). */
+  /* Each dispatch record names its handler by continuationEntryAddress, which only serves as the case
+     label of the switch below. world is the world view (worldRuntime). */
   UiCommandDispatchRecord *record = g_InGameCommandDispatchRecords; /* ends at the terminator record [63] */
   uint32_t target;
   bool localSession =
@@ -2736,7 +2736,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
 
 /* Queues an in-game notification (movie id, priority and position/orientation payload) in the four-slot
    queue g_InGameRuntimeRoot->notificationQueue, which is kept sorted by descending priority: every slot
-   of lower priority is swapped (XCHG) with the carried record, so lower entries move down one slot and the
+   of lower priority is swapped (atomic exchange per dword) with the carried record, so lower entries move down one slot and the
    lowest falls out. A notification with movie id 0 is ignored.
 */
 void InGameNotificationQueue_InsertPriorityRecord(InGameNotificationPayloadKind payloadKind,uint32_t payloadReserved,
@@ -2755,7 +2755,7 @@ void InGameNotificationQueue_InsertPriorityRecord(InGameNotificationPayloadKind 
   queueSlot = g_InGameRuntimeRoot->notificationQueue;
   for (slotIndex = 0; slotIndex < INGAME_NOTIFICATION_QUEUE_SLOTS; slotIndex++, queueSlot++) {
     if (queueSlot->priority < priority) {
-      /* XCHG per dword: InGameRuntime_ProcessQueuedSessionNotificationTimer pops the queue on the timer thread */
+      /* atomic exchange per dword: InGameRuntime_ProcessQueuedSessionNotificationTimer pops the queue on the timer thread */
       notificationMovieId = THANDOR_ATOMIC_EXCHANGE(&queueSlot->movieId,notificationMovieId);
       priority = THANDOR_ATOMIC_EXCHANGE(&queueSlot->priority,priority);
       primaryWorldCoordinateQ12 =
@@ -2803,7 +2803,8 @@ static void InGameDiplomacyPanel_FillRow(UiNodeBase *node,uint32_t slotIndex,uin
                   [((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex]
                   .packedRelationStates >> ((uint8_t)(factionIndex << 2) & SHIFT_COUNT_MASK) &
                   FACTION_RELATION_STATE_MASK;
-  /* the SHL/SHR pair around the nibble shift, rendered as a mask: the index itself is unchanged */
+  /* the original shifts the index left and back right around the nibble shift, which only clears its top
+     two bits: the index itself is unchanged */
   factionIndex = factionIndex & 0x3fffffff;
   ((UiSingleLineTextControl *)((int)node + g_UiAction1012StateTextOffsets[slotIndex]))->text =
        (uint16_t *)(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE);
@@ -2924,8 +2925,8 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
 
 
 /* Scores how well one of the level's music tracks (by sample number) fits the situation of the active faction:
-   sums three army definition values over the faction's armies (+0x78 weighted 3 for armies with flag bit 0 at
-   +0x2C) plus 50 per army with definition flag 0x10, and weights them by the track's number band (below 20, 50,
+   sums three army definition values over the faction's armies (definitionClassValue78 weighted 3 for armies
+   with bit 0 of commandModeFlags) plus 50 per army with definition flag 0x10, and weights them by the track's number band (below 20, 50,
    70, or above). Track number 0 scores 0. The in-game music picks the best of the level's four tracks.
 */
 uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime)
@@ -3136,8 +3137,8 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       }
     }
     rowFactionIndex = g_UiAction1012TargetPlayerIndices[slotIndex];
-    /* rootControl[21].sprite.primaryTextureSource is root+0xA80, the activeFactionRuntimeIndex of the
-       world runtime at root+0xA30: the local faction */
+    /* rootControl[21].sprite.primaryTextureSource overlays the activeFactionRuntimeIndex of the in-game
+       root's world runtime: the local faction */
     if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0) {
       rootFactionValue = rootControl[21].sprite.primaryTextureSource;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -3856,8 +3857,8 @@ static void InGameEditorPointer_UpdateArmyDragSelection(WorldRuntimeExtendedMapC
   uint32_t tripletDwordCount;
   CommandPayload *tripletEntry;
 
-  /* clears both triplet buffers, then their counts, in memory order (the original clears the 26 dwords from
-     0x0055F0C4 in one run) */
+  /* clears both triplet buffers, then their counts, in memory order (the original clears the 26 dwords in
+     one run) */
   for (clearIndex = 0; clearIndex < 12; clearIndex++) {
     g_InGameSelectionInsertTripletDwords[clearIndex] = 0;
   }
@@ -3993,7 +3994,7 @@ static void InGameEditorPointer_ResizeCellRectangle(GraphicsScreenCoordinate poi
   halfWorldY = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
   newCornerWorldX = (FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - halfWorldY;
   newCornerWorldY = halfWorldY * 2;
-  /* The original exchanges the new corner (XCHG) with g_UiCommandSelectionCurrentWorld*. */
+  /* The original atomically exchanges the new corner with g_UiCommandSelectionCurrentWorld*. */
   LOCK();
   UNLOCK();
   LOCK();

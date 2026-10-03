@@ -19,8 +19,8 @@ void SpriteAssetRegistry_Reset(void)
   g_SpriteAssetRegistryHead = NULL;
 }
 
-/* Finds an already registered sprite asset by its id (+0xB8), walking the registry list from the most
-   recently registered one; NULL when no asset has that id. Lets model loading reuse a sprite that another
+/* Finds an already registered sprite asset by its id (registryHeader.registryId), walking the registry list
+   from the most recently registered one; NULL when no asset has that id. Lets model loading reuse a sprite that another
    model already loaded.
 */
 SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
@@ -39,7 +39,8 @@ SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
 /* Checks that the asset is an 'spr' of converter version 0x20007, prepends it to the sprite registry and
    turns the three serialized offsets of every 0x40-byte pointer record (in every block of every group) into
    absolute pointers. Must run exactly once per loaded image. Returns 0 on success or
-   FATAL_ERROR_SPRITE_ASSET_INVALID (the original's success EAX, the asset itself, was read by no caller).
+   FATAL_ERROR_SPRITE_ASSET_INVALID (the original's success return value, the asset itself, was read by no
+   caller).
 */
 uint32_t SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
 
@@ -109,7 +110,7 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
 
   sourceCursor = relocatedSourceImage;
   destinationCursor = serializedDestination;
-  /* REP MOVSD of the whole asset; each step advances sourceCursor by one dword */
+  /* dword copy of the whole asset; each step advances sourceCursor by one dword */
   for (copyDwordsRemaining = relocatedSourceImage->registryHeader.common.allocationSizeBytes >> 2;
        copyDwordsRemaining != 0; copyDwordsRemaining--) {
     *destinationCursor = sourceCursor->registryHeader.common.magic;

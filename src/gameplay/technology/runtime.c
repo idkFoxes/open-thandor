@@ -70,9 +70,8 @@ void Technology_UnlockForFaction
 }
 
 
-/* Tests the technology's bit in the faction's 256-bit unlock mask (records[factionIndex].technologyMasks256Bits
-   at +0x6E0). Note the inverted CF result: false (CF clear) when the technology is unlocked, true (CF set)
-   when it is still locked.
+/* Tests the technology's bit in the faction's 256-bit unlock mask (records[factionIndex].technologyMasks256Bits).
+   Note the inverted result: false when the technology is unlocked, true when it is still locked.
 */
 bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
@@ -89,7 +88,7 @@ bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,Fact
 
 /* Decides whether the faction may start researching a technology: it must still be locked, every bit of
    its eight prerequisite mask words must be unlocked for the faction, and no army
-   of that faction may already be researching it. True (CF set) means available.
+   of that faction may already be researching it. True means available.
 */
 bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
@@ -114,7 +113,7 @@ bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fac
     }
   }
   /* scan the world's model owner nodes for an army of the faction that is already researching (runtime flag
-     0x40) this technology (+0x100) */
+     0x40) this technology (researchTechnologyId) */
   for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
@@ -131,8 +130,8 @@ bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fac
 
 
 /* Starts researching a technology in a building: unless a research is already assigned or running, stores the
-   technology index and copies the tech.tec record's Xenite cost (+0x20), energy cost (+0x24) and duration
-   (+0x28) into the entity; the HUD shows these as the research costs and time. The fast-build cheat divides the
+   technology index and copies the tech.tec record's Xenite cost, energy cost and research duration into the
+   entity; the HUD shows these as the research costs and time. The fast-build cheat divides the
    duration by 16.
 */
 void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity)
@@ -164,8 +163,8 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
 
 
 /* Recomputes values derived from the loaded army and technology files: per model category (0..7) the largest
-   model value +0x60 and its Q24 reciprocal, the largest value +0x0C of models with a non-zero +0x18 (used by the
-   AI army candidates), and the 256-bit masks of the technologies in categories 2 and 3.
+   maximumHealth and its Q24 reciprocal, the largest movementSpeed of models with a non-zero accelerationPerTick
+   (used by the AI army candidates), and the 256-bit masks of the technologies in categories 2 and 3.
 */
 void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
 
@@ -188,17 +187,18 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   g_TechnologyCategoryMaximums[6] = 1;
   g_TechnologyCategoryMaximums[7] = 1;
   g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
-  /* every registered army asset with flag +0x14 bit 0: look at its root model definition */
+  /* every registered army asset with flags bit 0: look at its root model definition */
   for (registrySlotIndex = 0; registrySlotIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotIndex++) {
     armyAssetRecord = g_ArmyAssetRecordRegistry[registrySlotIndex];
     if ((armyAssetRecord != NULL) &&
        ((((ArmyAssetRecord *)armyAssetRecord)->flags & 1) != 0)) {
-      /* the root node's model definition id (+0x20) */
+      /* the root node's model definition id (ArmyModelTreeNode.linkedDefinitionIds[0]) */
       definitionRecord = (ModelDefinition *)ModelDefinitionRegistry_FindById
                         (*(PckModelDefinitionIdCatalog *)
                           (armyAssetRecord->rootNodeOffsetOrPointer + 32));
       if (definitionRecord != NULL) {
-        /* per target class (+0x5C) the largest armour (+0x60); for mobile models (+0x18) the top speed (+0x0C) */
+        /* per target class (targetClassIndex) the largest armour (maximumHealth); for mobile models
+           (accelerationPerTick) the top speed (movementSpeed) */
         if ((int)g_TechnologyCategoryMaximums[definitionRecord->targetClassIndex] <
             (int)definitionRecord->maximumHealth) {
           g_TechnologyCategoryMaximums[definitionRecord->targetClassIndex] = definitionRecord->maximumHealth;
@@ -222,7 +222,7 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   for (maskWordIndex = 0; maskWordIndex < 8; maskWordIndex++) {
     g_TechnologyCategoryMasks.category3[maskWordIndex] = 0;
   }
-  /* one bit per technology record, category field at record +0x34 */
+  /* one bit per technology record, by its category field */
   for (technologyIndex = 0; technologyIndex < TECHNOLOGY_RECORD_COUNT; technologyIndex++) {
     technologyRecord = &g_TechnologyAsset->records[technologyIndex];
     maskWordIndex = technologyIndex >> 5;

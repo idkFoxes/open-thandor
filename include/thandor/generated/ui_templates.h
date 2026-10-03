@@ -624,7 +624,7 @@ typedef struct FrontendUiImage {
     uint32_t bottomBarConditionalAction_fields[5];
     UiNodeBase bottomBarStatusText; /* +4750 g_UiFocusProxyControlVtable: Full-size caption (style 0xA, text 0x112) in the bottom bar; probably the status/help line (role inferred). */
     uint32_t bottomBarStatusText_fields[4];
-    UiNodeBase transferProgressGauge; /* +47AC g_UiTransferProgressGaugeVtable: Horizontal gauge (UiHorizontalGaugeControl subclass 00517DE0) in the bottom-right corner of the bottom bar; reloads its range from the transfer mailbox before drawing: the file-transfer progress. */
+    UiNodeBase transferProgressGauge; /* +47AC g_UiTransferProgressGaugeVtable: Horizontal gauge (UiHorizontalGaugeControl subclass) in the bottom-right corner of the bottom bar; reloads its range from the transfer mailbox before drawing: the file-transfer progress. */
     uint32_t transferProgressGauge_fields[4];
     UiNodeBase networkGamePage; /* +4808 g_UiImagePanelControlVtable: Page-stack page 1 (action 0x2003): network protocol, player name, host address and session list. */
     uint32_t networkGamePage_fields[4];
@@ -735,7 +735,7 @@ typedef struct InGameUiImage {
     uint32_t resultsScreenPanel_fields[4];
     UiNodeBase resultsChartPageStack; /* +03AC g_UiLayoutContainerControlVtable: Page stack switching between the three results charts; page chosen by the chart tab buttons (action 0x101C). */
     uint32_t resultsChartPageStack_fields[4];
-    UiNodeBase resultsChart1; /* +0408 g_UiNodeVtable_00516F60: First results statistics chart (graph control 0x00516F60); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
+    UiNodeBase resultsChart1; /* +0408 g_UiNodeVtable_00516F60: First results statistics chart (graph control); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     uint32_t resultsChart1_fields[12];
     UiNodeBase resultsChart2; /* +0484 g_UiNodeVtable_00516F60: Second results statistics chart; its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     uint32_t resultsChart2_fields[12];

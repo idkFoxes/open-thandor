@@ -14,6 +14,6 @@ extern uint16_t g_ErrorTextHeapAllocationFailed[71];
 
 extern ArenaState g_Arena;
 
-extern uint8_t g_ArenaLinearStorage[0x4C00]; /* uint8_t[0x4C00]: the linear (bump) region of g_Arena: linearCursor starts at [0] (00587400, Ghidra g_Arena_3), linearLimit is &[0x4000] (0058B400, Ghidra g_Arena_4); the 0xC00 bytes from the limit to the end of the original image (0058C000) are never handed out. One array so cursor and limit stay in the same object. */
+extern uint8_t g_ArenaLinearStorage[0x4C00]; /* uint8_t[0x4C00]: the linear (bump) region of g_Arena: linearCursor starts at [0], linearLimit is &[0x4000]; the 0xC00 bytes from the limit to the end of the original image are never handed out. One array so cursor and limit stay in the same object. */
 
 #endif

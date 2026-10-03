@@ -49,7 +49,7 @@
    technologyAreaTabN_prefix)) is generated with the template: thandor/generated/ui_templates.h. */
 /* The UiTechnologyAreaTabPrefix in front of a technology area tab the code has only as a node pointer. */
 #define TECHNOLOGY_AREA_TAB_PREFIX(tab) UI_TEMPLATE_NODE_PREFIX(UiTechnologyAreaTabPrefix,tab)
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl);
 

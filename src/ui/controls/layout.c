@@ -8,7 +8,7 @@
 #include <thandor/ui/controls/layout.h>
 #include <thandor/thandor.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 uint32_t g_UiPendingFrameTicks = 0;
 
@@ -530,7 +530,7 @@ void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
 
 
 /* keyboardEvent of g_UiResizableWindowControlVtable: Alt+C closes the window (with a close button), Alt+Z
-   toggles maximize (with a maximize button), both returning CF clear; every other key goes to the default
+   toggles maximize (with a maximize button), both returning false; every other key goes to the default
    focus-moving handler. The key events of Keyboard_OnKeyDown carry letters as KEYBOARD_KEY_CODE_CHAR
    (0x30000 + code), so the plain 'c' / 'z' compared here never arrive and the hotkeys do not fire.
 */
@@ -617,7 +617,7 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
 
 
 /* Closes the dialog or screen that contains root (any node of it may be passed): its close callback may
-   veto (CF set, returned). Otherwise the root below becomes the top again with UI_NODE_IN_FRONT_ROOT and its
+   veto (returns true). Otherwise the root below becomes the top again with UI_NODE_IN_FRONT_ROOT and its
    initial focus, pointer capture and hover are reset and the whole screen is redrawn. The closed root is
    assumed to be the top one: only g_UiRootNode is replaced.
 */
@@ -796,8 +796,8 @@ void UiHorizontalGaugeControl_DrawFrameFillAndLabel
       if (fillRange == 0) {
         fillRange = 1;
       }
-      /* Original quirk: meant as rounding (carry of remainder + remainder), but it rounds up only when the
-         remainder has bit 31 set */
+      /* Original quirk: meant as rounding (add 1 when doubling the remainder overflows 32 bits), but it rounds
+         up only when the remainder has bit 31 set */
       divisionRemainder = (uint32_t)(scaledFillProduct % (uint64_t)fillRange);
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_GAUGE_FILL_LEFT,
                                                           g_UiWindowTextureSource);
@@ -1082,7 +1082,7 @@ static void UiResizableWindowControl_ResizeToPointer
   }
   newRight = control->dragAnchorXOrPendingRight;
   newBottom = control->dragAnchorYOrPendingBottom;
-  /* exchange old and new edges (XCHG in the original); relayout only when one changed */
+  /* exchange old and new edges (atomically in the original); relayout only when one changed */
   LOCK();
   oldLeft = control->root.base.left;
   control->root.base.left = newLeft;
@@ -1237,7 +1237,7 @@ void UiFrame_FlushInputAndResetPendingTicks(void)
 
 /* Moves an open root (window) to the top of the root stack: unlinks it from its position, links it above
    the current front root, gives it the initial keyboard focus, moves the in-front flag from the old front
-   root to it and invalidates both. Always returns false (CF clear).
+   root to it and invalidates both. Always returns false.
 */
 bool UiRootStack_BringToFront(UiRootNode *root)
 
@@ -1538,7 +1538,7 @@ UiGridDimensions UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControl
   columnCount = itemCount;
   if (4 < itemCount) {
     if (maxRows << 2 < itemCount) {
-      /* the mask mirrors the SHL by 2 of the comparison */
+      /* the mask mirrors the 32-bit maxRows << 2 of the comparison */
       rowCount = maxRows & 0x3fffffff;
       columnCount = (itemCount - 1) / rowCount + 1;
       do {
@@ -1701,8 +1701,8 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
   UiRootCallbacks *rootCallbacks;
 
   g_SpinLockAcquire(g_UiRuntimeFrameLock);
-  /* The original zeroes EAX before the loop and Win32_PumpMessages preserves EAX, so the value
-     compared here is always 0: pump until a frame tick is pending, or once when stopMessageCode
+  /* In the original the value compared here is always 0 (it is cleared before the loop and the
+     message pump does not change it): pump until a frame tick is pending, or once when stopMessageCode
      is 0 (every caller passes 0). The pending tick count is then consumed (reset to 0). */
   do {
     g_Win32PumpMessages();
@@ -1745,9 +1745,8 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
 void UiFrame_Draw(void)
 
 {
-  /* Rewritten from the assembly (0x004AF7E0): the original pushes every root on the machine stack
-     while walking previousRoot down, then pops them to draw bottom to top. The decompiled loop drew
-     the bottom root once per root and never the roots stacked above it (e.g. the end movie). */
+  /* Collects every root while walking previousRoot down from the front root, then draws them
+     bottom to top, so the roots stacked above the bottom one (e.g. the end movie) are drawn too. */
   enum { ROOT_LIMIT = 64 };
   UiRootNode *roots[ROOT_LIMIT];
   UiRootNode *root;
@@ -1824,8 +1823,7 @@ static UiNodeBase *UiContainer_HitTestEligibleSiblings
 UiNodeBase * UiContainer_HitTestChildren(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
-  /* Rewritten from the assembly (0x004B0800): eligible children are pushed on the machine stack
-     in sibling order and hit-tested in reverse (topmost first); Ghidra lost the pushed nodes.
+  /* Eligible children are found in sibling order and hit-tested in reverse (topmost first).
      Like the original there is no limit on the number of eligible children (the helper recurses). */
   UiNodeBase *hit;
 
@@ -2017,7 +2015,7 @@ void UiRootStack_InvalidateAll(void)
 }
 
 
-/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Class vtables. */
 
 UiNodeVtable g_UiTitledWindowControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,

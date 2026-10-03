@@ -21,7 +21,7 @@
 /* Win32Path_ValidateDos83: characters of a DOS 8.3 base name and extension */
 #define DOS83_BASE_NAME_MAX_CHARS 8
 #define DOS83_EXTENSION_MAX_CHARS 3
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 uint32_t __cdecl FileSystem_Init(void);
 

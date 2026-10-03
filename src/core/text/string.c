@@ -140,8 +140,8 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
 
 /* Compares two NUL-terminated UTF-16 strings, ignoring the case of ASCII letters only, and returns the order
    of leftText relative to rightText: -1 when less, 0 when equal, 1 when greater. A string that ends first
-   compares as greater (1), equal (0) only when both end together. (The original returned the order in ZF/CF;
-   the name keeps "Flags" because the generated image data refers to it.)
+   compares as greater (1), equal (0) only when both end together. (The original returned the order in CPU
+   flags; the name keeps "Flags" because the generated image data refers to it.)
 */
 int Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText)
 
@@ -180,7 +180,7 @@ int Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *l
 /* Widens a NUL-terminated 8-bit string to UTF-16 (each byte zero-extended) into a buffer of capacityBytes
    bytes. Returns the bytes written including the terminator (always at least 2); if the string does not
    fit it is cut off and terminated, and 0 is returned (the original reported FATAL_ERROR_GENERAL_FAILURE
-   with CF set).
+   as a failure).
 */
 uint32_t Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
@@ -192,7 +192,7 @@ uint32_t Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *
   remainingCapacityBytes = capacityBytes;
   do {
     sourceByte = *source;
-    /* SUB ECX,2 / JBE: fails once the capacity would reach zero, so one unit always stays unused */
+    /* fails once the remaining capacity would reach zero or below, so one unit always stays unused */
     capacityExhausted = remainingCapacityBytes < 2;
     remainingCapacityBytes = remainingCapacityBytes - 2;
     if (capacityExhausted || remainingCapacityBytes == 0) {

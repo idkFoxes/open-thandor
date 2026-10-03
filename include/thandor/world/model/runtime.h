@@ -22,13 +22,13 @@
 #define MODEL_NODE_FLAG_TRANSFORM_DIRTY 0x1 /* local translation/rotation changed: world transform is rebuilt */
 #define MODEL_NODE_FLAG_RENDERED 0x2 /* drawn in the current frame (set by the model renderers) */
 #define MODEL_NODE_FLAG_RAY_TRANSPARENT 0x2000 /* skipped by ModelRuntime_RaycastCandidateListNearest; set at
-                                                 creation when the definition has flag 0x100 at +0x68 */
+                                                 creation when ModelDefinition.modelFlags has bit 0x100 */
 /* ModelRuntimeNode.runtimeFlags bit: skipped by every model pass of the world view
    (FrontendModelPointerContext_RenderWorldViewQueuesClipped); no writer with a constant mask found */
 #define MODEL_NODE_FLAG_HIDDEN 0x40
-/* ModelDefinition flags dword (+0x68, modelFlags) bit that makes the model's root node ray transparent */
+/* ModelDefinition.modelFlags bit that makes the model's root node ray transparent */
 #define MODEL_DEFINITION_FLAG_RAY_TRANSPARENT 0x100
-/* ModelDefinition flags (+0x68) bit: the energy demand of directly attached models counts
+/* ModelDefinition.modelFlags bit: the energy demand of directly attached models counts
    (ModelRuntimeHierarchy_ComputeEnergyDemand, ArmyAssetHierarchy_SumEnergyFrom) */
 #define MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY 0x80
 /* ModelRuntimeNode.runtimeFlags bit: ModelNodeRuntime_UpdateStateTintRecursive fades the alpha to 0 */
@@ -38,7 +38,7 @@
 #define MODEL_NODE_FLAG_FACTION_OWNED 0x20       /* the owning army's factionIndex is not 0; required for picking */
 #define MODEL_NODE_FLAG_SHADING_PASS 0x100       /* drawn into the generated-texture shading pass */
 #define MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN 0x200 /* drawn in the model pass before the terrain pass */
-/* ModelDefinition.modelFlags (+0x68) bits copied into the node flags at creation */
+/* ModelDefinition.modelFlags bits copied into the node flags at creation */
 #define MODEL_DEFINITION_FLAG_NOT_REMEMBERED 0x10    /* -> TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED */
 #define MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN 0x20 /* -> MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN; the army runtime
                                                          also skips the field grid height stamp for it */
@@ -50,7 +50,7 @@
 /* nearest distance of a ray that hit nothing (ModelRuntime_RaycastCandidateListNearest) */
 #define MODEL_RAYCAST_NO_HIT_DISTANCE 0x7fffffff
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,

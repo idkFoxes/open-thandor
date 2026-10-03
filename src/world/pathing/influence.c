@@ -52,7 +52,7 @@ void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
 
 /* gridInfluenceAdd handler of the runtime classes 0..3, 17..19 and 23
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd): stamps the high distance bands around the
-   model's position and remembers that position in the linked runtime (+0x68/+0x6C), so the removal clears the
+   model's position and remembers that position in the linked runtime (classLinkState.classState68 and armyLinkOrState.classState), so the removal clears the
    same disc even after the model has moved.
 */
 void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
@@ -98,8 +98,7 @@ void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
 
 
 /* gridInfluenceAdd handler of the runtime classes 5..9 and 21, which leave no influence in the scratch grid
-   (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd). Returns with RET 4 and keeps EAX and the
-   flags.
+   (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd). Does nothing.
 */
 void GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
 
@@ -109,7 +108,7 @@ void GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
 
 
 /* gridInfluenceRemove handler of the runtime classes 5..9 and 21 (the counterpart of GridInfluence_AddNoOp).
-   Returns with RET 4 and keeps EAX and the flags.
+   Does nothing.
 */
 void GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
 
@@ -349,7 +348,7 @@ static uint32_t GridInfluence_RingBandMask(uint32_t squaredDistance)
    cellWorldY/X) it walks downwards, two scratch rows and one column left per step (straight down in world space),
    and ORs low distance band bit n (scratch bit 8 + n) into each cell whose centre lies within
    g_GridInfluenceSquaredThreshold[n] of the centre point. Stops at the first cell inside no ring or before a
-   blocked cell. Returns the number of cells written, one less when the walk ended at a blocked cell (DEC in the
+   blocked cell. Returns the number of cells written, one less when the walk ended at a blocked cell (as in the
    original).
 */
 int GridInfluence_SetLowDistanceBandsDiagonalNegative

@@ -105,8 +105,8 @@ void FrontendRomActionTable_ExecuteRecord
 /* Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size
    records (from +0x200, each advanced by its leading byteSize) with RomAssetRecord_RegisterAndRelocate. An
    invalid header leaves "engine\zentrale.rom" in g_PackageLastErrorPath and fails with
-   FATAL_ERROR_ROM_REGISTRY_FULL. Returns 0 on success, otherwise the error code (the original's success EAX was
-   never used by its caller).
+   FATAL_ERROR_ROM_REGISTRY_FULL. Returns 0 on success, otherwise the error code (the original's success return
+   value was never used by its caller).
 */
 uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
 
@@ -136,7 +136,7 @@ uint32_t RomAsset_PrepareRecords(RomAssetHeader *asset)
 
 /* Builds the runtime node tree of every registered ROM record (tinted with the record's nodeTintArgb), stores
    its root in the registry slot, links it into its world's owner list and computes its transforms. Returns
-   true (CF) when a node allocation fails.
+   true when a node allocation fails.
 */
 bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
 
@@ -203,8 +203,8 @@ void FrontendRomTransition_ProcessPendingRecord(void)
 
 
 /* Depth-first walk over a relocated sprite-node tree (RomSerializedNodeHeader), releasing every node's sprite
-   asset, parents before children. Rewritten from the assembly (0x00547432-0x00547474): the original keeps
-   {remaining, nextChild, node} frames on the machine stack. The same tree is walked by
+   asset, parents before children, with an explicit stack of {remaining, nextChild, node} frames. The same
+   tree is walked by
    RomSerializedNodeTree_LoadSpritesAndRelocate. */
 static void RomSerializedNodeTree_ReleaseSprites(RomSerializedNodeHeader *node)
 {
@@ -230,7 +230,6 @@ static void RomSerializedNodeTree_ReleaseSprites(RomSerializedNodeHeader *node)
 }
 
 /* Releases the sprite asset of every node of every registered ROM record and empties all 256 registry slots.
-   All saved registers and EAX are preserved.
 */
 void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
 
@@ -418,7 +417,7 @@ uint32_t FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRunt
 
 /* Clears ROM_NODE_FLAG_ACTION_TARGET on every registry node, stores frontendValue as the pending transition
    value and, when recordId is registered, shows only the target record, the active record and the records in
-   either one's visibleRecordMask, creating their lights. Returns true (CF) when recordId is not registered.
+   either one's visibleRecordMask, creating their lights. Returns true when recordId is not registered.
 */
 bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
 
@@ -476,7 +475,7 @@ static bool RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t 
   uint32_t spriteRegisterError;
 
   /* the sprite file name (UTF-16) follows the node header */
-  /* never sets CF */
+  /* cannot fail */
   WidePath_SetExtensionCode(ASSET_MAGIC_SPR,(uint16_t *)(node + 1));
   asset = Package_LoadEntry((uint16_t *)(node + 1),&loadErrorCode);
   if (asset == NULL) {
@@ -502,8 +501,8 @@ static bool RomSerializedNode_LoadSprite(RomSerializedNodeHeader *node,uint32_t 
 
 /* Depth-first walk over a serialized sprite-node tree, parents before children: loads every node's sprite
    (RomSerializedNode_LoadSprite) and relocates the child offsets (relative to assetBase) to pointers in place
-   while walking. Returns 0, or the first loader error. Rewritten from the assembly (0x005463A1-0x00546436):
-   the original keeps {node, nextChild, remaining} frames on the machine stack. The same tree is walked by
+   while walking, with an explicit stack of {node, nextChild, remaining} frames. Returns 0, or the first loader
+   error. The same tree is walked by
    RomSerializedNodeTree_ReleaseSprites. */
 static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
           (RomSerializedNodeHeader *node,RomAssetHeader *assetBase)
@@ -539,7 +538,7 @@ static uint32_t RomSerializedNodeTree_LoadSpritesAndRelocate
 /* Registers a ROM record in the first free slot of g_RomRegistrySlots and relocates its serialized node tree:
    child offsets become pointers, and every node's ".spr" sprite is loaded, or an already registered sprite with
    the same registry id is reused. Returns 0 on success, otherwise FATAL_ERROR_ROM_REGISTRY_FULL or the
-   loader's error (the original's success EAX, assetBase, was never used by its caller).
+   loader's error (the original's success return value, assetBase, was never used by its caller).
 */
 uint32_t RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase)
 
@@ -677,7 +676,7 @@ ModelRuntimeNode * RomRuntime_BuildNodeTreeRecursive
 
 /* Starts a camera flight along the keyframes of a frontend ROM action entry: resets the elapsed ticks, stores
    the keyframe count and keyframes and transitionEnabled (the record to activate at the end, see
-   FrontendRomTransition_ProcessPendingRecord) and builds the spline curves. EAX is preserved.
+   FrontendRomTransition_ProcessPendingRecord) and builds the spline curves.
 */
 void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitionEnabled,FrontendRomActionEntry *entry)
 
@@ -719,8 +718,7 @@ bool RomRegistry_FindSlotValueByRecordId(RomRecordId recordId,WorldRuntimeNode *
 
 /* Creates light entryIndex of a ROM record: finds the point-light descriptor with that index in the sprite of
    the record's root node and allocates a shading light at its world position, using the colour and radius the
-   record stores for the entry (0x10-byte entries from +0x50). Indices beyond the record's count (+0x38) are
-   ignored.
+   record stores for the entry (RomRecord.lights). Indices beyond the record's lightCount are ignored.
 */
 void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record)
 

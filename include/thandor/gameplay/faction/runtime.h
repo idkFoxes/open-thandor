@@ -23,7 +23,7 @@
 #define OLD_UNIT_PRIMARY_RECORD_CAPACITY 0x200
 /* Faction merge (relation state 11) without a clear survivor: this random bit clear = the second faction survives */
 #define FACTION_MERGE_RANDOM_DIRECTION_BIT 0x2000
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);

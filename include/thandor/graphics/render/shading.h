@@ -37,7 +37,7 @@
 #define GRAPHICS_PROJECTED_PAIR(block, pair) ((block) * GRAPHICS_PROJECTED_BLOCK_PAIRS + (pair))
 /* Highest light level of g_ShadingIntensityScaleMmx (256 entries) */
 #define GRAPHICS_SHADING_INTENSITY_MAX 255
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);

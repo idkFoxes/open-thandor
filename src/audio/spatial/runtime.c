@@ -26,7 +26,7 @@ bool SpatialSoundPool_Init(uint32_t *outError)
     return false;
   }
   g_SpatialSoundSlots = clearCursor;
-  /* the whole pool is zeroed (REP STOSD in the original) */
+  /* the whole pool is zeroed */
   memset(clearCursor,0,SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot));
   return true;
 }

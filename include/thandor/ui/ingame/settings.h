@@ -30,7 +30,7 @@
 /* Minimap view values restored when automatic zoom / rotation is switched off */
 #define INGAME_MINIMAP_DEFAULT_SCALE_Q12 0x800 /* 0.5 */
 #define INGAME_MINIMAP_DEFAULT_ROTATION_ANGLE 0x2000
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source);
 

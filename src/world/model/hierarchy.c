@@ -56,7 +56,7 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   clampedAlphaByte = clampTable[(previousTint >> 24) << 8 | (uint32_t)alphaIntensity];
   tintArgb = (uint32_t)clampedAlphaByte << 24 | (uint32_t)clampedColorByte << 16 | (uint32_t)clampedColorByte << 8 |
              (uint32_t)clampedColorByte;
-  /* The original compares with the previous tint shifted right by 16 (CMP EDX,ECX at 0x004BD27F), so the new
+  /* The original compares with the previous tint shifted right by 16, so the new
      tint is applied on practically every call, not only when it changed. */
   if (tintArgb != previousTint >> 16) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNodeRuntime);
@@ -302,7 +302,7 @@ ModelNodeRuntime_TransformLocalPoint
 /* Converts a world direction (elevation, azimuth) into the frame of a model node for aiming turrets and weapons
    (ArmyRuntimeClass_UpdateSingleBarrelTurret/B, ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments):
    rotates a unit vector by the inverse of the node's world rotation and returns its angles, the yaw made
-   relative by adding the node's local rotation angle 2 (+0x2C).
+   relative by adding the node's local rotation angle 2 (modelPayload.localRotationAngle2).
 */
 
 ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
@@ -472,8 +472,8 @@ bool ModelRuntimeNode_HitTestProjectedBoundsAndChildren
 }
 
 
-/* A miss of ModelNodeRuntime_RaycastHierarchyNearest before the mesh test: stores the scratch value the
-   original left in EDX as the "nearest node" (see the original quirk there). */
+/* A miss of ModelNodeRuntime_RaycastHierarchyNearest before the mesh test: stores the leftover scratch value
+   of the original (scratchValue) as the "nearest node" (see the original quirk there). */
 static Q12 ModelNodeRuntime_RaycastMissWithScratchNode
           (ModelRuntimeNode **outNearestModelNode,int scratchValue)
 
@@ -513,7 +513,7 @@ static ModelMeshGroupRelativeOffset *ModelResource_FindRaycastMeshGroup(ModelRes
    node's mesh group, then the children are tested. Returns the nearest hit distance and stores the nearest
    node in *outNearestModelNode; returns MODEL_RAYCAST_NO_HIT_DISTANCE when nothing was hit (a hit never has
    that distance).
-   Original quirk: on a miss *outNearestModelNode still receives the EDX scratch value of the original (a
+   Original quirk: on a miss *outNearestModelNode still receives a leftover scratch value of the original (a
    product high word, NULL, or what the last child test left there); ModelRuntime_RaycastCandidateListNearest
    can pick it up.
 */
@@ -643,7 +643,7 @@ Q12 ModelNodeRuntime_RaycastHierarchyNearest
 
 /* Builds the child models of a new model hierarchy from its MDL definition node: every linked definition list
    yields the variant the faction's technology selects, which is created in the matching child slot and then
-   built the same way. CF set (true) when a child cannot be created.
+   built the same way. Returns true when a child cannot be created.
 */
 bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
@@ -713,9 +713,9 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
 }
 
 
-/* Walks a model runtime hierarchy and clears the target (+0x6C) of every model of class 13 (definition +0x4C)
-   that points at targetRuntimeId, so no model keeps aiming at a destroyed object. The dword view: [0] model
-   definition, [3] attachment count, [0x1B] target, [0x50 + 8*i] attached child model runtime.
+/* Walks a model runtime hierarchy and clears the target (classLinkState.armyLinkOrState.classState)
+   of every model of class 13 (ModelDefinition.runtimeClassId) that points at targetRuntimeId, so no model keeps
+   aiming at a destroyed object.
 */
 void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,int *modelRuntime)
 
@@ -743,21 +743,20 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
 }
 
 
-/* Marks every not yet destroyed node of the army's model hierarchy (root model runtime at +0x00) as destroyed, dismantling
+/* Marks every not yet destroyed node of the army's model hierarchy (root modelRuntimeOrSavedOffset.modelRuntime) as destroyed, dismantling
    and non-regenerating: sets runtime flags 0x418 (0x400 | 0x10 | 0x08) on each node that does not have flag
    0x08 yet. The world context is not used.
 */
 void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,ArmyRuntimeSlot *armyRuntime)
 
 {
-  /* Rewritten from the assembly (0x0051C100-0x0051C162). */
   (void)contextArg;
   ModelRuntimeHierarchy_MarkDestroyedFrom(armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
 }
 
 
-/* Model runtime nodes keep their child count at +0x0C and child pointers at +0x140 + 32*i (null
-   slots are skipped); the original walks this tree depth-first with frames on the machine stack. */
+/* Model runtime nodes keep their child count in attachmentCount and child pointers in
+   attachments[i].childModelRuntimeOrSavedOffset (null slots are skipped); the original walks this tree depth-first with frames on the machine stack. */
 static int ModelRuntimeHierarchy_SumArmourFrom(ModelRuntimeSlot *node)
 {
   int sum = node->health;
@@ -772,7 +771,7 @@ static int ModelRuntimeHierarchy_SumArmourFrom(ModelRuntimeSlot *node)
   return sum;
 }
 
-/* Body of ModelRuntimeHierarchy_MarkDestroyedRecursive: ORs 0x418 into the runtime flags (+0xEC) of
+/* Body of ModelRuntimeHierarchy_MarkDestroyedRecursive: ORs 0x418 into the runtime flags (classState.stateFlags) of
    node unless flag 0x08 is already set, then recurses into the non-NULL children (same layout as above). */
 static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
 {
@@ -791,12 +790,11 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
 }
 
 /* Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current
-   armour points (runtime +0x3C) of every node, walked depth-first.
+   armour points (ModelRuntimeSlot.health) of every node, walked depth-first.
 */
 int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
 
 {
-  /* Rewritten from the assembly (0x0051C1F0-0x0051C23F). */
   return ModelRuntimeHierarchy_SumArmourFrom((ModelRuntimeSlot *)(uintptr_t)*modelRuntimeRoot);
 }
 
@@ -950,7 +948,7 @@ bool ModelNodeRuntime_CreateHierarchyRecursive
   ((uint8_t *)&newNode->textureSubresourceBaseIndex)[3] = 0;
   modelDefinition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   newNode->tintArgb = 0xffffffff;
-  /* model definition flags (+0x68) 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
+  /* ModelDefinition.modelFlags 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
   if ((modelDefinition->modelFlags & MODEL_DEFINITION_FLAG_NOT_REMEMBERED) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   }
@@ -1053,10 +1051,9 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
 
 
 /* Folds one model runtime and its attached children into the owning army's selection figures (cleared by
-   ArmyRuntime_RebuildDerivedSelectionMetrics): maxima at army +0x90, +0x44 and +0x48, the largest shot selection
-   range at +0x4C and, for armed models, the shot's impact damage per target class summed into army +0x100[8].
-   The dword view: [0] model definition, [1] linked runtime, [2] army, [3] attachment count, [0x3B] class
-   state flags (+0xEC), [0x50 + 8*i] attached child model runtime.
+   ArmyRuntime_RebuildDerivedSelectionMetrics): maxima in the army's occupancyMarkRadius, visibilityRadius and
+   visibilityHeightOffset, the largest shot selection range in weaponRangeQ12 and, for armed models, the shot's
+   impact damage per target class summed into targetClassShotDamage[8].
 */
 void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
 
@@ -1077,7 +1074,7 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   modelDefinition = modelRuntimeSlot->definitionOrSavedId.runtimeDefinition;
   army = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
-  /* a switched-off model counts with the definition's alternative value at +0x1A4 */
+  /* a switched-off model counts with the definition's alternative value switchedOffVisibilityRadius */
   if ((modelRuntimeSlot->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
     visibilityRadius = modelDefinition->visibilityRadius;
   }
@@ -1119,9 +1116,9 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
 }
 
 
-/* Condition of a model hierarchy as a Q12 ratio: the node's armour points (+0x3C) relative to its
-   definition's maximum (+0x60), multiplied by the average of 1.0 and the ratios of all attached child
-   hierarchies; Q12_ONE is full condition. Unrelated to the draw scale at node +0xC0.
+/* Condition of a model hierarchy as a Q12 ratio: the node's armour points (health) relative to its
+   definition's maximumHealth, multiplied by the average of 1.0 and the ratios of all attached child
+   hierarchies; Q12_ONE is full condition. Unrelated to the draw scale ModelRuntimeNode.modelScaleQ12.
 */
 Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntime)
 
@@ -1154,9 +1151,9 @@ Q12 ModelRuntimeHierarchy_ComputeConditionRatioQ12(ModelRuntimeSlot *modelRuntim
 }
 
 
-/* Energy demand of a model and its directly attached models (value +0xF4): totalQ4 is the whole demand,
+/* Energy demand of a model and its directly attached models (classState.energyLoadQ4): totalQ4 is the whole demand,
    activeQ4 only the part of models not switched off (stateFlags bit 0). Attached models count only when the
-   definition has flag 0x80 at +0x68; the walk is one level deep, not recursive.
+   definition's modelFlags has bit 0x80; the walk is one level deep, not recursive.
 */
 ModelHierarchyEnergyDemand
 ModelRuntimeHierarchy_ComputeEnergyDemand(ModelRuntimeSlot *modelRuntime)
@@ -1441,8 +1438,8 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
 
 
 /* Switches every node of a model hierarchy to the first of the (up to six) variant definitions listed in its
-   definition (+0x238) that the faction's technology unlocks. The armour points (+0x3C) are rescaled to the new
-   definition's maximum (+0x60) so the condition stays the same, and the army's derived metrics are rebuilt.
+   definition (variantModelDefinitionIds) that the faction's technology unlocks. The armour points (health) are
+   rescaled to the new definition's maximumHealth so the condition stays the same, and the army's derived metrics are rebuilt.
 */
 void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,int *modelRuntime)
 
@@ -1463,7 +1460,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
     if (modelDefinitionId == 0) {
       continue;
     }
-    /* ModelDefinition_IsFactionTechnologyLocked returns true (CF set) when the variant is NOT unlocked */
+    /* ModelDefinition_IsFactionTechnologyLocked returns true when the variant is NOT unlocked */
     if (ModelDefinition_IsFactionTechnologyLocked
           (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,modelDefinitionId)) {
       continue;

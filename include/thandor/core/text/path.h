@@ -35,7 +35,7 @@
 /* Two UTF-16 code units read as one little-endian dword (first in the low half), e.g. for comparing a name */
 #define UTF16_CHAR_PAIR(first,second) ((second) << 16 | (first))
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path);
 

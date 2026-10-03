@@ -56,7 +56,7 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
   }
   copySourceCursor = (uint32_t *)g_FrontendCommandQueueRecords;
   outputRecordWriteCursor = (uint32_t *)&outputRecord->command;
-  /* dword-wise copies (REP MOVSD in the original) */
+  /* dword-wise copies: the first record, then the rest of the queue onto the start */
   for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0; firstRecordDwordsRemaining--) {
     *outputRecordWriteCursor = *copySourceCursor;
     copySourceCursor++;
@@ -122,7 +122,7 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
   }
   copySourceCursor = (uint32_t *)g_InGameCommandQueueRecords;
   outputRecordWriteCursor = (uint32_t *)&outputRecord->command;
-  /* REP MOVSD of the first record (4 dwords), then of the rest of the queue onto the start */
+  /* dword-wise copies: the first record (4 dwords), then the rest of the queue onto the start */
   for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0; firstRecordDwordsRemaining--) {
     *outputRecordWriteCursor = *copySourceCursor;
     copySourceCursor++;
@@ -168,7 +168,7 @@ bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 
 
 
 /* Explicit command tables (no original counterpart as tables). The original executes a received command by
-   calling codeBase + code (CALL EAX), so any function start in the handler region below the region end is
+   calling the address codeBase + code, so any function start in the handler region below the region end is
    reachable; these tables list exactly those functions with their codes, so the codes keep their protocol
    values without the original image layout. Not every entry is a four-argument command handler: the queue
    functions themselves and a few helpers start in the same regions and are listed because the original would
@@ -329,8 +329,8 @@ static const CommandTableEntry *CommandDispatch_TableForBase(uint32_t codeBase,u
 
 
 /* Rebuild helper (no original counterpart).
-   The original executes a received command with ADD EAX,codeBase; CMP EAX,originalRegionEnd; JNC skip;
-   CALL EAX: the code is the handler's distance from the queue function in the original image. Here the code is
+   The original executes a received command by calling codeBase + code when that address is below
+   originalRegionEnd: the code is the handler's distance from the queue function in the original image. Here the code is
    looked up in the explicit command table of that base. Codes at or past the region end are skipped like in the
    original (NULL). A code that does not hit a function start would make the original jump into the middle of
    code; valid codes never do, so it is logged once and skipped.

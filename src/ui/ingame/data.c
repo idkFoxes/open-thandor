@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/ui/ingame/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/ui/ingame/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -13,7 +13,7 @@
 
 __declspec(align(4)) uint32_t g_RenderedFrameCountSinceDebugRefresh = 0;
 
-/* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the original's object runs on to 0x00503A74 with 12 more NULL entries. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
+/* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the remaining 12 entries are NULL. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
 __declspec(align(4)) GraphicsTextureSet *g_TerrainMaterialTextureSets[38] = {0};
 
 /* uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
@@ -101,8 +101,7 @@ __declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailT
 
 /* one rich-text stream, patched in as payload 0 of the technology label
    (ui/ingame/technology.c): [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
-   (005504FE), [9..24] the xenite cost text (0055050E); the interpreter reads on from the colour command into the
-   text */
+   [9..24] the xenite cost text; the interpreter reads on from the colour command into the text */
 __declspec(align(4)) uint16_t g_InGameTechnologyCostRichText[25] = {32774};
 
 __declspec(align(4)) UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 = {0};
@@ -352,8 +351,7 @@ __declspec(align(16)) UiCommandRuntimeRecordPrefix *g_UiCommandSpriteVariantARec
 
 __declspec(align(16)) uint32_t g_UiAction1012TargetPlayerIndices[7] = {0};
 
-/* 63 key command records and the terminator record (commandCode 0) at
-   00567CA4 that ends the dispatcher's scan */
+/* 63 key command records and the terminator record (commandCode 0) that ends the dispatcher's scan */
 __declspec(align(16)) UiCommandDispatchRecord g_InGameCommandDispatchRecords[64] = {
     /*  0 */ {.commandCode = 0x30073, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567F60},
     /*  1 */ {.commandCode = 0x30073, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567FC0},

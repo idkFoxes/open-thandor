@@ -12,7 +12,7 @@
 
 /* Plays a six-channel keyframe spline at timeQ12: finds the first keyframe later than the time, evaluates
    the cubic segment before it and applies channels 0..2 as the position and 3..5 as magnitude/yaw/pitch
-   to worldRuntime, caching the six derivatives. Returns true (CF set) while the spline runs; past the last
+   to worldRuntime, caching the six derivatives. Returns true while the spline runs; past the last
    keyframe it applies that keyframe, clears the derivatives and returns false.
 */
 bool WorldMotionSpline_EvaluateAndApplyAtTime
@@ -30,8 +30,8 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
   WorldMotionSplineKeyframe *currentKeyframe;
   WorldRuntimeContext *runtimeCopy;
 
-  /* Every channel evaluates the same segment (keyframeIndex - 1); Ghidra showed the re-pushed register
-     as uninitialized segmentIndex_NN locals. A time before the first keyframe gives segment -1. */
+  /* Every channel evaluates the same segment (keyframeIndex - 1). A time before the first keyframe gives
+     segment -1. */
   keyframeIndex = 0;
   do {
     currentKeyframe = keyframes;
@@ -92,9 +92,9 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
 
 /* Orbit variant of WorldMotionSpline_EvaluateAndApplyAtTime: evaluates the six-channel keyframe spline at
    timeQ12 and applies channels 0..2 as the orbit origin (position80) and 3..5 as distance/yaw/pitch, from
-   which the world runtime rebuilds position60; the six derivatives are cached. Returns 1 (CF set) while the
+   which the world runtime rebuilds position60; the six derivatives are cached. Returns 1 while the
    spline runs; past the last keyframe it applies that keyframe, clears the derivatives and returns 0.
-   No caller, function-pointer table or data reference to 0x0053CBB0 was found in the port or the image data.
+   No caller, function-pointer table or data reference to it was found in the port or the image data.
 */
 uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
@@ -107,7 +107,7 @@ uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
   UQ12 distance;
   uint32_t yawAngle;
   AngleTurn32 pitchAngle;
-  int keyframeIndex; /* EDX: the segment index is passed (minus one) to every evaluation */
+  int keyframeIndex; /* the segment index is passed (minus one) to every evaluation */
   WorldMotionSplineKeyframe *currentKeyframe;
   
   keyframeIndex = 0;
@@ -267,7 +267,7 @@ void InterpolationState_SetNegatedTargetAndRescaleProgress
   }
   negatedDuration = -fadeOutTicks;
   /* Original quirk: the switch-off path stores -fadeOutTicks (not 0) when it is reached without the
-     fade-in rescale, i.e. when the light was already fading out or fadeOutTicks <= 0 (0x004CCC19). */
+     fade-in rescale, i.e. when the light was already fading out or fadeOutTicks <= 0. */
   switchOffValue = (PackedRgb24)negatedDuration;
   if ((negatedDuration < 0) && (-1 < shadingRecord->radiusTransitionDurationTicks)) {
     if (shadingRecord->radiusTransitionDurationTicks == 0) {
@@ -276,7 +276,7 @@ void InterpolationState_SetNegatedTargetAndRescaleProgress
       shadingRecord->radiusTransitionElapsedTicks = negatedDuration;
       return;
     }
-    /* fading in: exchange in the new duration (atomic XCHG), rescale elapsed to keep the reached radius
+    /* fading in: exchange in the new duration (atomic swap), rescale elapsed to keep the reached radius
        fraction */
     LOCK();
     fadeInDuration = shadingRecord->radiusTransitionDurationTicks;

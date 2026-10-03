@@ -8,7 +8,7 @@
 #include <thandor/graphics/resources/texture.h>
 #include <thandor/thandor.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize = (void *)GraphicsTextureSource_GetLogicalSize;
 
@@ -170,8 +170,8 @@ void __cdecl GraphicsTexture_RebuildNoOp(void)
 
 /* Returns the logical width and height of one subresource of a 'gfx' texture source, i.e. the extent the
    tiled blits repeat (installed as g_GraphicsTextureSourceGetLogicalSize), or 0 x 0 when the asset is not a
-   'gfx' asset or the index is out of range (the original signalled that with CF and left the size registers
-   untouched; the only callers that test it, the glyph size queries, use width 0 then).
+   'gfx' asset or the index is out of range (the original only signalled failure and returned no size; the
+   only callers that test it, the glyph size queries, use width 0 then).
 */
 GraphicsTextureLogicalSize GraphicsTextureSource_GetLogicalSize
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
@@ -250,8 +250,7 @@ bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Graph
 /* Fills a rectangle with copies of one subresource laid out on its logical-size grid anchored at the tile
    origin, drawing each copy with g_GraphicsTextureSourceBlitSourceAlpha (installed as
    g_GraphicsTextureSourceBlitTiledSourceAlpha; also called directly by the text controls). The area ends at
-   repeatEnd (GRAPHICS_TILED_BLIT_ONE_TILE: one tile past the origin), clipped to clipMax and the framebuffer;
-   CF is always clear on return.
+   repeatEnd (GRAPHICS_TILED_BLIT_ONE_TILE: one tile past the origin), clipped to clipMax and the framebuffer.
 */
 void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -277,8 +276,8 @@ void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMax
   if (repeatEndY == GRAPHICS_TILED_BLIT_ONE_TILE) {
     repeatEndY = tileOriginY + tileHeight;
   }
-  /* ADD / JLE: step the origin by whole tiles until it is positive and past the clip minimum; the tile
-     before it is the first one drawn */
+  /* Step the origin by whole tiles until it is positive (tested on the exact, non-wrapping sum) and past the
+     clip minimum; the tile before it is the first one drawn */
   do {
     do {
       steppedOrigin = (int64_t)tileOriginX + (int)tileWidth;
@@ -346,8 +345,8 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipM
   if (repeatEndY == GRAPHICS_TILED_BLIT_ONE_TILE) {
     repeatEndY = tileOriginY + tileHeight;
   }
-  /* ADD / JLE: step the origin by whole tiles until it is positive and past the clip minimum; the tile
-     before it is the first one drawn */
+  /* Step the origin by whole tiles until it is positive (tested on the exact, non-wrapping sum) and past the
+     clip minimum; the tile before it is the first one drawn */
   do {
     do {
       steppedOrigin = (int64_t)tileOriginX + (int)tileWidth;
@@ -415,8 +414,8 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate cli
   if (repeatEndY == GRAPHICS_TILED_BLIT_ONE_TILE) {
     repeatEndY = tileOriginY + tileHeight;
   }
-  /* ADD / JLE: step the origin by whole tiles until it is positive and past the clip minimum; the tile
-     before it is the first one drawn */
+  /* Step the origin by whole tiles until it is positive (tested on the exact, non-wrapping sum) and past the
+     clip minimum; the tile before it is the first one drawn */
   do {
     do {
       steppedOrigin = (int64_t)tileOriginX + (int)tileWidth;
@@ -485,8 +484,8 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
   if (repeatEndY == GRAPHICS_TILED_BLIT_ONE_TILE) {
     repeatEndY = tileOriginY + tileHeight;
   }
-  /* ADD / JLE: step the origin by whole tiles until it is positive and past the clip minimum; the tile
-     before it is the first one drawn */
+  /* Step the origin by whole tiles until it is positive (tested on the exact, non-wrapping sum) and past the
+     clip minimum; the tile before it is the first one drawn */
   do {
     do {
       steppedOrigin = (int64_t)tileOriginX + (int)tileWidth;
@@ -1015,7 +1014,7 @@ static uint32_t GraphicsTextureDecompose_IndexedRegions
    is transparent, and is then cleared from the work copy. The work area is the largest free arena block,
    shrunk to the result at the end. Returns true with the new asset in *outAsset; returns false with
    FATAL_ERROR_GFX_ASSET_INVALID, 0x2D (nothing but background), FATAL_ERROR_GENERAL_FAILURE (work area too
-   small) or the allocator's error in *outError. No caller in the recovered code (only the hook slot).
+   small) or the allocator's error in *outError. No caller in the game code (only the hook slot).
 */
 bool GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -1113,8 +1112,8 @@ GraphicsTextureSourceAsset *GraphicsTextureSource_LoadPackageAsset(uint16_t *pat
 
 /* Makes a private heap copy of a 'gfx' texture source with its palettes converted to the current framebuffer
    format, so it can be modified independently (g_GraphicsTextureSourceLifecycleCallbacks3.clone). Returns the
-   copy; the original sets CF on failure and returns the allocation error, or after a failed conversion the
-   result of freeing the copy again (this C signature has no CF).
+   copy; on failure it returns the allocation error cast to a pointer, or after a failed conversion the
+   result of freeing the copy again (as the original, which also flagged the failure separately).
 */
 GraphicsTextureSourceAsset *
 GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
@@ -1323,7 +1322,7 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet 
 
 
 /* Enters a texture into the first free slot of g_GraphicsTextureSlots (the registry the original used to evict
-   and rebuild device textures). CF set when all GRAPHICS_TEXTURE_SLOT_CAPACITY slots are taken.
+   and rebuild device textures). Returns true when all GRAPHICS_TEXTURE_SLOT_CAPACITY slots are taken.
 */
 bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
 

@@ -67,7 +67,7 @@ bool NetworkBackendFallback_SendDatagram
   return true;
 }
 
-/* Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (CF set).
+/* Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (returns true).
 */
 bool NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText)
 
@@ -228,7 +228,7 @@ uint32_t NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
 }
 
 
-/* Closes the UDP socket, if one is open. The handle is swapped out (XCHG in the original) before
+/* Closes the UDP socket, if one is open. The handle is swapped out atomically before
    closesocket so that nobody uses the socket while it is being closed.
 */
 void NetworkFallback_CloseActiveSocket(void)
@@ -237,7 +237,7 @@ void NetworkFallback_CloseActiveSocket(void)
   NetworkSocketHandle32 socket;
 
   if (g_NetworkFallbackSocket != INVALID_SOCKET) {
-    /* XCHG: the timer thread sends and receives on this socket */
+    /* atomic exchange: the timer thread sends and receives on this socket */
     socket = (NetworkSocketHandle32)THANDOR_ATOMIC_EXCHANGE(&g_NetworkFallbackSocket,INVALID_SOCKET);
     g_WinSock_closesocket(socket);
   }
@@ -274,8 +274,8 @@ bool NetworkFallback_ReceiveDatagram
 
 /* Sends one datagram to destinationAddress (16-byte sockaddr_in) and returns true. Without an open
    socket nothing is sent and the call still succeeds. A sendto error leaves the WinSock error code in
-   g_PackageLastErrorPath and returns false (the original returned FATAL_ERROR_NETWORK_SOCKET with CF set,
-   but no caller reads the code).
+   g_PackageLastErrorPath and returns false (the original also reported failure and returned
+   FATAL_ERROR_NETWORK_SOCKET, but no caller reads the code).
 */
 bool NetworkFallback_SendDatagram
           (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
@@ -301,7 +301,7 @@ bool NetworkFallback_SendDatagram
 
 /* Turns the UTF-16 peer address typed by the player (dotted address or host name) into a 16-byte
    sockaddr_in with the game's port. An empty text yields the broadcast address from the local
-   endpoint descriptor. Returns true (CF in the original) when the text does not convert or the host is
+   endpoint descriptor. Returns true when the text does not convert or the host is
    unknown, false on success.
 */
 bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)

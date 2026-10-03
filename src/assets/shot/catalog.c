@@ -14,7 +14,8 @@
    0x60006, then hands each 0x2E0-byte record after the 0x200-byte header to
    ShotDefinition_RegisterAndResolveReferences, stopping at the first failure. An invalid header leaves the
    asset path in g_PackageLastErrorPath and fails with FATAL_ERROR_SHOT_ASSET_INVALID.
-   Returns 0 on success, otherwise the error code (the original's success EAX was never used by its callers).
+   Returns 0 on success, otherwise the error code (the original's success return value was never used by its
+   callers).
 */
 uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset)
 
@@ -44,7 +45,7 @@ uint32_t ShotAsset_PrepareEntries(ShotAssetHeader *asset)
    of every registered shot definition is negative (no material) or names a loaded material. Otherwise the
    registry index of the offending shot is written to g_PackageLastErrorPath and the check fails with
    FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID. Returns 0 on success, otherwise that error code (the original's
-   success EAX, the last index checked, was read by no caller).
+   success return value, the last index checked, was read by no caller).
 */
 uint32_t ShotDefinitions_ValidateTerrainMaterialReferences(void)
 
@@ -176,7 +177,7 @@ ShotLaunchAngles ShotDefinition_ComputeLaunchAngles
 
 
 /* Returns how far a shot of this definition reaches, used when a model's weapons are summed up for target
-   selection: ballistic shots 9/8 of speed^2 / divisor, fixed-range shots their stored range (+0x27C), all
+   selection: ballistic shots 9/8 of speed^2 / divisor, fixed-range shots their stored range (mode2SelectionRangeQ12), all
    others speed times the flight time, where the ramp-up ticks count only one third.
 */
 uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
@@ -201,10 +202,9 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
   return selectionRangeQ12;
 }
 
-/* Returns the shot speed used to lead a moving target: the launch speed (+0x0C) for unguided shots that
-   do not fly a direct line, INT32_MAX (no lead) for direct-line or guided (+0x290 non-zero) shots. Called
-   directly by the target aim-point computation in gameplay/army/runtime.c (the original returns it in EBX
-   and preserves EAX, ECX and EDX).
+/* Returns the shot speed used to lead a moving target: the launch speed (launchSpeedQ12) for unguided shots
+   that do not fly a direct line, INT32_MAX (no lead) for direct-line or guided (guidanceTurnLimitAngle16
+   non-zero) shots. Called directly by the target aim-point computation in gameplay/army/runtime.c.
 */
 Q12 ShotDefinition_GetLeadSpeed(ShotDefinition *definition)
 
@@ -220,8 +220,8 @@ Q12 ShotDefinition_GetLeadSpeed(ShotDefinition *definition)
 }
 
 
-/* Returns the extra lead time for unguided lead-adjusted shots (trajectory mode 3, +0x290 zero): about two
-   thirds (0xAB / 256) of the ramp-up ticks (+0x270), during which the shot is still accelerating; 0 for all
+/* Returns the extra lead time for unguided lead-adjusted shots (trajectory mode 3, guidanceTurnLimitAngle16
+   zero): about two thirds (0xAB / 256) of the ramp-up ticks (trajectoryRampDurationTicks), during which the shot is still accelerating; 0 for all
    other shots. The aim-point computation in gameplay/army/runtime.c multiplies it by the target's speed.
 */
 uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition)
@@ -249,8 +249,8 @@ static uint32_t ShotDefinition_LoadSprite(ShotDefinition *definition)
   uint32_t spriteRegisterError;
 
   if (WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16)) {
-    /* Original quirk: the earlier duplicate-id lookup's error code is still in EAX, so a failing .spr
-       extension switch returns FATAL_ERROR_SHOT_ID_NOT_FOUND */
+    /* Original quirk: the original returns the leftover error code of the earlier duplicate-id lookup, so a
+       failing .spr extension switch returns FATAL_ERROR_SHOT_ID_NOT_FOUND */
     return FATAL_ERROR_SHOT_ID_NOT_FOUND;
   }
   loadedSprite = (SpriteAssetHeader *)Package_LoadEntry(definition->resourcePathUtf16,&loadErrorCode);
@@ -330,8 +330,8 @@ static uint32_t ShotDefinition_ResolveEffectReferences(ShotDefinition *definitio
    resource path to .spr; an already registered sprite with the same id is reused and the fresh load released)
    and replaces the effect ids of the launch, secondary and primary effects and of the 31 terrain-impact and 8
    target-class-impact effects by their registered definitions. Returns 0 on success, otherwise the error code
-   of a duplicate id, a full registry or the first failing load or lookup. (The original's success EAX, the
-   last resolved effect definition, is still in targetClassImpactEffectDefinitions8[7].)
+   of a duplicate id, a full registry or the first failing load or lookup. (The original's success return value,
+   the last resolved effect definition, is still in targetClassImpactEffectDefinitions8[7].)
    Original quirk: a failing sprite load or effect lookup leaves the definition registered in its slot.
 */
 uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)

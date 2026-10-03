@@ -18,7 +18,7 @@
 uint32_t Random_NextPrimary(void)
 
 {
-  uint32_t firstStepSeed; /* unsigned: the steps wrap modulo 2^32 like the original's IMUL/ADD */
+  uint32_t firstStepSeed; /* unsigned: the steps wrap modulo 2^32 like the original's 32-bit arithmetic */
 
   firstStepSeed = g_RandomGeneratorState.primarySeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
   g_RandomGeneratorState.primarySeed = firstStepSeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
@@ -33,7 +33,7 @@ uint32_t Random_NextPrimary(void)
 uint32_t Random_NextSecondary(void)
 
 {
-  uint32_t firstStepSeed; /* unsigned: the steps wrap modulo 2^32 like the original's IMUL/ADD */
+  uint32_t firstStepSeed; /* unsigned: the steps wrap modulo 2^32 like the original's 32-bit arithmetic */
 
   DebugHook_NoteOutsideStep("session random draw");
   firstStepSeed = g_RandomGeneratorState.secondarySeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;

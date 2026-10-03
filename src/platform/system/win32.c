@@ -50,7 +50,7 @@ void Win32_PumpMessages(void)
 }
 
 
-/* Decides whether the message pump calls TranslateMessage (CF set): only for key-down/up messages
+/* Decides whether the message pump calls TranslateMessage (returns true): only for key-down/up messages
    (WM_KEYDOWN..WM_SYSKEYUP, not WM_CHAR/WM_DEADCHAR) of keys that produce text. The keys the engine
    handles itself (Backspace, Tab, Enter, Pause, Escape, Space through Delete, numpad and F1-F12) get no
    WM_CHAR, so text fields do not see them twice.

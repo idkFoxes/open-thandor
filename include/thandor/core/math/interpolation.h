@@ -23,7 +23,7 @@
 /* Bit 31 as an unsigned int: (uint32_t)value < INTERPOLATION_SIGN_BIT tests a signed value for >= 0 (the
    original's unsigned compare) */
 #define INTERPOLATION_SIGN_BIT 0x80000000
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool WorldMotionSpline_EvaluateAndApplyAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,

@@ -21,8 +21,8 @@
 /* g_ArmyGraphicsBindings: texture set and palette per faction slot 0-7 */
 #define ARMY_GRAPHICS_BINDING_COUNT 8
 /* ArmyRuntime_CreateInstanceFromAsset creationFlags */
-#define ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION 0x2 /* owned by the active faction: +1 on the counter at +0x1B0 of
-                                                     the faction's selected model definition */
+#define ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION 0x2 /* owned by the active faction: +1 on builtCount of the
+                                                     faction's selected model definition */
 #define ARMY_CREATE_UNLOCK_TECHNOLOGY 0x4 /* ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology */
 /* ArmyRuntimeSlot.commandModeFlags: what the current command targets (ArmyRuntime_ResolveCommandTarget,
    ArmyRuntime_ApplyTargetPositionCommand, ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration) */
@@ -34,23 +34,24 @@
 #define ARMY_COMMAND_MODE_SELECTION_ORDER 0x10 /* target/position order given to the selection (set with INTERRUPTED);
                                                   cleared by move commands and SelectionRuntime_CancelTargets */
 #define ARMY_COMMAND_MODE_UNUSED_400 0x400    /* cleared by ArmyRuntime_AppendWaypointOrStartMove; never set or tested */
-/* Army model runtime stateFlags (+0xEC) bits set and tested by the class update callbacks
+/* Army model runtime classState.stateFlags bits set and tested by the class update callbacks
    (ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, the production slots 11/13/22) */
 #define ARMY_MODEL_STATE_SWITCHED_OFF 0x1         /* powered down: no Energy demand, health decays to 3/4 */
-#define ARMY_MODEL_STATE_DISMANTLING 0x10         /* being recycled: health drains, Xenite (+0x184 >> 5) is refunded */
+#define ARMY_MODEL_STATE_DISMANTLING 0x10         /* being recycled: health drains, Xenite (xeniteValueQ4 >> 5) is refunded */
 #define ARMY_MODEL_STATE_DESTRUCTION_STARTED 0x20 /* destruction effect spawned; skips the attachment channel ticks */
-#define ARMY_MODEL_STATE_RESEARCHING 0x40         /* technology research in progress (+0x100 record) */
+#define ARMY_MODEL_STATE_RESEARCHING 0x40         /* technology research in progress (researchTechnologyId) */
 #define ARMY_MODEL_STATE_RESEARCH_UNPAID 0x80     /* research queued, Xenite not yet paid */
 #define ARMY_MODEL_STATE_PRODUCING 0x100          /* a queued secondary army asset is being built */
 #define ARMY_MODEL_STATE_DISMANTLED 0x200         /* dismantling finished (toggled together with DISMANTLING) */
 #define ARMY_MODEL_STATE_NO_REGENERATION 0x400    /* health does not regenerate */
-#define ARMY_MODEL_STATE_RALLY_POINT_SET 0x800    /* class 13: the exit point (+0x78/+0x7C) was set by the player */
+#define ARMY_MODEL_STATE_RALLY_POINT_SET 0x800    /* class 13: the exit point (classLinkState.classState78/7C) was set
+                                                     by the player */
 /* SWITCHED_OFF | DESTROYED: the model does nothing this tick */
 #define ARMY_MODEL_STATE_INACTIVE_MASK (ARMY_MODEL_STATE_SWITCHED_OFF | ARMY_RUNTIME_FLAG_DESTROYED)
 /* INACTIVE_MASK | RESEARCHING | RESEARCH_UNPAID: a production class may start a new build */
 #define ARMY_MODEL_STATE_BUILD_BLOCKING_MASK \
           (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)
-/* Aircraft (class 21) state at model runtime +0xB8 (ArmyRuntimeClass_UpdateAircraft) */
+/* Aircraft (class 21) state in model runtime classState.behaviorState (ArmyRuntimeClass_UpdateAircraft) */
 #define ARMY_AIRCRAFT_STATE_NO_PAD 0       /* no home pad left: stays where it is */
 #define ARMY_AIRCRAFT_STATE_PARKED 1       /* parked on the home pad */
 #define ARMY_AIRCRAFT_STATE_LANDING 2      /* landing arc back onto the pad */
@@ -58,7 +59,7 @@
 #define ARMY_AIRCRAFT_STATE_APPROACH 4     /* off the map: lines up behind the attack point */
 #define ARMY_AIRCRAFT_STATE_ATTACK_RUN 5   /* flies over the attack point, dropping its effects */
 #define ARMY_AIRCRAFT_STATE_RETURNING 6    /* off the map again: lines up for the landing arc */
-/* Aircraft pad (class 22) hangar state at model runtime +0xB0
+/* Aircraft pad (class 22) hangar state in model runtime classState.classStateB0
    (ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode) */
 #define ARMY_PAD_HANGAR_IDLE 0
 #define ARMY_PAD_HANGAR_OPENING 1          /* hatch texture scrolls open */
@@ -67,7 +68,8 @@
 #define ARMY_PAD_HANGAR_LOWERING 4
 #define ARMY_PAD_HANGAR_CLOSING 5
 #define ARMY_PAD_HANGAR_CLOSED 6           /* back to idle on the next update */
-/* Production state at model runtime +0xB8 of the unit factory (class 13) and production class 11 (0/1 only) */
+/* Production state in model runtime classState.behaviorState of the unit factory (class 13) and production
+   class 11 (0/1 only) */
 #define ARMY_FACTORY_STATE_IDLE 0
 #define ARMY_FACTORY_STATE_BUILDING 1
 #define ARMY_FACTORY_STATE_OPENING 2       /* door opens, then the new army is sent to the exit point */
@@ -109,7 +111,7 @@
    marks in its faction's byte of the field cells. Structure classes (4, 11, 13-16, 20, 22, 23) use 0x90. */
 #define ARMY_DEPTH_BIN_STRUCTURE_BIT 0x10
 #define ARMY_DEPTH_BIN_CLASS_STRUCTURE 0x90   /* persistent bit 7 | ARMY_DEPTH_BIN_STRUCTURE_BIT */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeClass_UpdateAircraft (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime);
 

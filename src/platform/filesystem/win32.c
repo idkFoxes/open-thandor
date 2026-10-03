@@ -9,7 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries = 0;
 
@@ -55,8 +55,8 @@ static bool FileSystem_CopyRecordNamesIntoTable
    into a second largest block as an array of entryCount UTF-16 string pointers followed by the strings, which
    is shrunk to its used size. Returns true with the table in *outTable and the entry count in *outEntryCount;
    an empty listing stores NULL and 0. Returns false (outputs untouched) when an arena block cannot be had or
-   the strings do not fit; the original left only scratch values in EAX/ECX then. No caller
-   in the recovered code.
+   the strings do not fit; the original returned no meaningful results then. Nothing in the game
+   calls it.
 */
 bool FileSystem_BuildEnumerationStringTable
           (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText,
@@ -106,7 +106,7 @@ bool FileSystem_BuildEnumerationStringTable
    g_FileSystem* function table, replaces the default L"Computer" label with the machine name, allocates the
    8 MiB package scratch buffer, loads THANDOR.cfg (current directory first, then the executable
    directory) and normalizes it in place, remembers the working directory and mounts engine.pck.
-   The original always returns with CF clear; EAX is the result of the engine.pck mount.
+   The original never reports failure to its caller; the return value is the result of the engine.pck mount.
 */
 uint32_t __cdecl FileSystem_Init(void)
 
@@ -134,7 +134,7 @@ uint32_t __cdecl FileSystem_Init(void)
   g_FileSystemReadExact = Win32File_ReadExact;
   g_FileSystemWriteExactOrFlush = Win32File_WriteExactOrFlush;
   g_FileSystemGetSize = Win32File_GetSize;
-  /* the generated slot type of Delete returns only EAX; callers cast it back to read CF */
+  /* the Delete slot returns an error code (0 on success) */
   g_FileSystemGetPosition = Win32File_GetPosition;
   g_FileSystemSeek = Win32File_Seek;
   g_FileSystemDelete = Win32File_Delete;
@@ -284,9 +284,9 @@ uint32_t Win32File_GetLastWriteTimeHigh(uint16_t *path,uint32_t *outLastWriteTim
 
 /* Despite its slot name (g_FileSystemGetVolumeSerialNumber) this queries no volume: it reads all three
    FILETIMEs of the file at path, clears the first byte of outputLabel and returns the high dword of the
-   last-write time, like Win32File_GetLastWriteTimeHigh. The original reports failure in CF (with
-   FATAL_ERROR_FILE_ACCESS_FAILED in EAX, STC at 0x00576416); this C version returns only EAX. Nothing
-   calls through g_FileSystemGetVolumeSerialNumber (only FileSystem_Init stores it), so CF is unobservable.
+   last-write time, like Win32File_GetLastWriteTimeHigh. The original also returns a separate failure flag
+   (next to FATAL_ERROR_FILE_ACCESS_FAILED); this C version returns only the value. Nothing calls
+   through g_FileSystemGetVolumeSerialNumber (only FileSystem_Init stores it), so the flag is unobservable.
 */
 uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path)
 
@@ -328,8 +328,8 @@ void __cdecl Win32FileSystem_RestoreInitialDirectory(void)
   return;
 }
 
-/* Reports whether a drive has usable media: CF clear (false) for fixed, network and other drives,
-   CF set (true) for removable and CD-ROM drives. The original contains an unreachable
+/* Reports whether a drive has usable media: returns false (ready) for fixed, network and other drives,
+   true (not ready) for removable and CD-ROM drives. The original contains an unreachable
    \\.\X: + IOCTL_STORAGE_CHECK_VERIFY probe after the type check, so removable and CD-ROM drives are
    always reported as not ready.
 */
@@ -394,8 +394,8 @@ static bool FileSystem_LoadWholeFileNearExecutable(uint16_t *pathUtf16,void **ou
 /* Reads a whole file into a new arena buffer: the path is tried next to the executable first, then as
    given. Returns true with the buffer in *outBuffer, or false with the open/size/read error in *outError
    (0 when the size query failed), or FATAL_ERROR_OUT_OF_MEMORY with the file size left in
-   g_FatalErrorDetail1Utf16. *outBuffer is only written on success, *outError only on failure. No caller in
-   the recovered code.
+   g_FatalErrorDetail1Utf16. *outBuffer is only written on success, *outError only on failure. Nothing in
+   the game calls it.
 */
 bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
@@ -404,8 +404,8 @@ bool FileSystem_LoadWholeFile(uint16_t *pathUtf16,void **outBuffer,uint32_t *out
 }
 
 /* Same whole-file load as FileSystem_LoadWholeFile (same search order and errors); the only difference in
-   the original is that ECX is not preserved: it returns the file size there. Same C interface too: true
-   with the buffer in *outBuffer, or false with the error in *outError. No caller in the recovered code.
+   the original is that it also returns the file size. Same C interface too: true
+   with the buffer in *outBuffer, or false with the error in *outError. Nothing in the game calls it.
 */
 bool FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16,void **outBuffer,uint32_t *outError)
 
@@ -466,7 +466,7 @@ uint32_t Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void
 
 
 /* Stores the current position of a file in *outPosition and returns true; returns false with
-   *outPosition 0 when SetFilePointer fails (0x0057616D).
+   *outPosition 0 when SetFilePointer fails.
 */
 bool Win32File_GetPosition(void *handle,uint32_t *outPosition)
 
@@ -500,7 +500,7 @@ uint32_t Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition d
 
 
 /* Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface. Returns 0, or
-   FATAL_ERROR_FILE_ACCESS_FAILED when DeleteFileA fails (0x00576202).
+   FATAL_ERROR_FILE_ACCESS_FAILED when DeleteFileA fails.
 */
 uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
 
@@ -653,7 +653,7 @@ uint32_t Win32Drive_EnumerateLetters(uint8_t *lettersOut)
 /* Checks that an ANSI path is made of DOS 8.3 names (letters, digits and characters below ','), with an
    optional "X:" drive and leading '\'. FILESYSTEM_DOS83_ALLOW_WILDCARDS permits '*' and '?';
    FILESYSTEM_DOS83_COMPONENT_ONLY checks one name only, and FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION lets
-   that name end at a '\'. CF clear (false) means valid, CF set (true) rejected.
+   that name end at a '\'. Returns false when valid, true when rejected.
 */
 bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi)
 
@@ -842,8 +842,8 @@ static void Win32FileSystem_CopyEnumerationRecord(uint32_t *destination,const ui
    or the single volume label of a drive (FILESYSTEM_ENUMERATE_VOLUME_LABEL, pathOrVolumeText is then the
    ANSI "X:\"). Entries that no longer fit are skipped. Returns the number of records written (an
    unreadable path or drive yields 0 records); the record stride is always
-   FILESYSTEM_ENUMERATION_RECORD_BYTES. (The original returned the stride in EAX, the count in ECX and
-   always cleared CF.)
+   FILESYSTEM_ENUMERATION_RECORD_BYTES. (The original returned the stride as well as the count and
+   never reported failure.)
 */
 uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
           (FileSystemEnumerationMode mode,uint32_t reserved,
@@ -893,8 +893,8 @@ uint32_t Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   } while (FindNextFileA(findHandle,&g_Win32FindDataScratch) != 0);
   FindClose(findHandle);
   /* bubble sort; each swap goes through the whole path scratch block: the 0x200-byte record fills both
-     0x100-byte path buffers (original quirk: the original's REP MOVSD of 0x80 dwords starts at the first
-     buffer, 0x00575A9C, and runs on through the second, 0x00575B9C, up to 0x00575C9C; here it is the
+     0x100-byte path buffers (original quirk: the original's 0x80-dword copy starts at the first
+     buffer and runs on through the second up to its end; here it is the
      whole g_Win32PathScratch[2][256], exactly FILESYSTEM_ENUMERATION_RECORD_BYTES, nothing beyond it) */
   if (1 < recordCount) {
     for (passesRemaining = recordCount - 1; passesRemaining != 0; passesRemaining--) {

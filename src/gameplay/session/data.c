@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/gameplay/session/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/gameplay/session/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -3964,7 +3964,7 @@ __declspec(align(16)) uint32_t g_EndMovieVariantIndex = 0;
 __declspec(align(4)) uint16_t *g_EndMoviePath = 0;
 
 /* 15 command records and the terminator
-   record (commandCode 0) at 005671C4 that ends the dispatcher's scan */
+   record (commandCode 0) that ends the dispatcher's scan */
 __declspec(align(16)) UiCommandDispatchRecord g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[16] = {
     /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567870},
     /*  1 */ {.commandCode = 0x10001, .continuationEntryAddress = 0x567270},

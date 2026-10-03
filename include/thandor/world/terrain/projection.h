@@ -65,7 +65,7 @@
   (GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_1)
 #define TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS \
   (GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_2)
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
           (uint64_t occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,

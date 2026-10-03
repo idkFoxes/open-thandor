@@ -10,7 +10,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 SoftwareFramebufferAccess *g_FramebufferAccess = 0;
 
@@ -29,7 +29,7 @@ GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = 0;
 /* Implementation ownership: graphics/resources/framebuffer. */
 
 /* Default g_GraphicsFramebufferBeginAccess hook: an in-memory software framebuffer needs no lock, so it only
-   reports success (false, CF clear). Backends with a real surface install their own hook.
+   reports success (returns false). Backends with a real surface install their own hook.
 */
 bool GraphicsFramebuffer_BeginAccessStub(void)
 
@@ -60,7 +60,7 @@ void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   int restoreResult;
 
   g_ThandorFrameHeartbeat++;
-  /* XCHG in the original: take the backend lock and learn whether it was already held */
+  /* atomic exchange: take the backend lock and learn whether it was already held */
   previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (previousAccessState == 0) {
     if (framebuffer == &g_DisplayFramebufferAccess) {
@@ -89,7 +89,7 @@ void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 }
 
 
-/* Clears a freshly allocated capture asset (dword by dword, REP STOSD in the original) and fills its 'gfx'
+/* Clears a freshly allocated capture asset (dword by dword, as the original) and fills its 'gfx'
    header and its single source entry for a captureWidth x captureHeight ARGB8888 image. */
 static void GraphicsFramebuffer_InitCaptureAsset
           (GraphicsCapturedTextureSourceAsset *capturedAsset,uint32_t allocationSize,
@@ -210,8 +210,8 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
     sourcePixel = (uint16_t *)sourceRow;
     remainingColumns = captureWidth;
     do {
-      /* The original loads the pixel into AX and leaves a stale high word in EAX; the 16-bit channel masks
-         remove it, so the zero-extended pixel gives the same channels. */
+      /* The original reads the pixel as a 16-bit value with stale bits above it; the 16-bit channel masks
+         remove them, so the zero-extended pixel gives the same channels. */
       pixel = *sourcePixel;
       ((uint8_t *)destinationPixel)[3] = ARGB8888_CHANNEL_MAX;
       ((uint8_t *)destinationPixel)[2] =
@@ -282,7 +282,7 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
       destinationPixel += 2;
     } while (1 < remainingColumns);
     /* odd width: one pixel left. A width of 1 would not stop: the unsigned count wraps below 0 and the
-       pair loop runs on (as in the original, SUB EBX,2; CMP EBX,1; JA) */
+       pair loop runs on (as in the original, which subtracts 2 and loops while the unsigned count is above 1) */
     if (remainingColumns == 1) {
       *destinationPixel = *sourcePixel | ARGB8888_ALPHA_MASK;
       destinationPixel++;
@@ -296,7 +296,7 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
 
 
 /* Gives the CPU direct access to the frame being drawn: restores (if lost) and locks the DirectDraw back surface
-   and publishes its pixels and width in pixels in g_DisplayFramebufferAccess. Fails (CF set) when the restore or
+   and publishes its pixels and width in pixels in g_DisplayFramebufferAccess. Fails (returns true) when the restore or
    lock fails.
 */
 bool GraphicsFramebuffer_BeginAccess(void)

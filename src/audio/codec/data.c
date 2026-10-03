@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/audio/codec/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/audio/codec/data.h>. */
 
 #include <thandor/thandor.h>
 

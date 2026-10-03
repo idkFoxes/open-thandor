@@ -75,7 +75,7 @@
 #define TEXT_STYLE_FONT_SHIFT 24 /* bits 24-26: font index */
 #define TEXT_STYLE_INDEX_MASK 7
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 RichTextExtent RichTextCommandStream_MeasureWrappedBlock
           (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth);

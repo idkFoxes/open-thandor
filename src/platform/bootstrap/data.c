@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/platform/bootstrap/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/platform/bootstrap/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -62,14 +62,14 @@ __declspec(align(16)) uint16_t u_texte_level_str_00545bc0[16] = L"texte\\level.s
 __declspec(align(16)) uint16_t u_texte_inhalt_str_00545be0[17] = L"texte\\inhalt.str";
 
 __declspec(align(16)) uint32_t g_FrontendPlayerListRows[8] = {
-    0, /* 0054DDB0 row 0 */
-    0, /* 0054DDB4 row 1 */
-    0, /* 0054DDB8 row 2 */
-    0, /* 0054DDBC row 3 */
-    0, /* 0054DDC0 row 4 */
-    0, /* 0054DDC4 row 5 */
-    0, /* 0054DDC8 row 6 */
-    0, /* 0054DDCC row 7 */
+    0, /* row 0 */
+    0, /* row 1 */
+    0, /* row 2 */
+    0, /* row 3 */
+    0, /* row 4 */
+    0, /* row 5 */
+    0, /* row 6 */
+    0, /* row 7 */
 };
 
 __declspec(align(4)) uint16_t *g_InGameFactionStatusTextScratchUtf16 = 0;
@@ -100,8 +100,7 @@ __declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16] = {0};
 
 __declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16] = {0};
 
-/* 32 units, the last slot owns the unnamed 0x20 bytes up to
-   0x563514. It receives the locale-formatted elapsed time (hours, time separator, minutes, AM/PM designator),
+/* 32 units, the last slot owns the unnamed 0x20 bytes after its first 16 units in the original. It receives the locale-formatted elapsed time (hours, time separator, minutes, AM/PM designator),
    which can run past 16 units. */
 __declspec(align(4)) uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32] = {0};
 

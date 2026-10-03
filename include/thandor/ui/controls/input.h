@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/input. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Bit 31 of a press event's button mask: a repeated (double) click. UiPointer_DispatchLeftPress/RightPress
    copy it into the pressed node's UI_NODE_REPEAT_OR_DOUBLE_CLICK flag. */
@@ -168,7 +168,7 @@ void UiScaler_BuildPixelWeightTables(void);
 
 extern UiNodeVtable g_UiFocusProxyControlVtable;
 extern UiNodeVtable g_UiSelectionGeometryControlVtable;
-extern UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable; followed by 0x90 code alignment fill */
+extern UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable;
 
 extern UiNodeBase *g_UiPointerCaptureTarget;
 extern UiNodeBase *g_UiKeyboardFocusNode;

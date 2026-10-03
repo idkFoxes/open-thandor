@@ -134,9 +134,9 @@ extern uint32_t g_EndMovieVariantIndex;
 
 extern uint16_t *g_EndMoviePath;
 
-extern UiCommandDispatchRecord g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[16]; /* 15 records + the terminator record [15] at 005671C4 (command code 0 ends the dispatch scan; its other fields are the original's NOP fill) */
+extern UiCommandDispatchRecord g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[16]; /* 15 records + the terminator record [15] (command code 0 ends the dispatch scan; its other fields are the original's NOP fill) */
 
-extern uint8_t g_InGameSessionStartedNetworked; /* (followed by NOP fill up to 0056A610) */
+extern uint8_t g_InGameSessionStartedNetworked;
 
 extern FrontendPacket10022StatePending g_FrontendPacket10022Buffer;
 

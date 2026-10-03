@@ -217,7 +217,7 @@ void OldUnitRuntime_RebuildScenarioReplayTables(void)
     primaryRecord[3] = (ownerNode->worldYQ12 + scenarioLevel->exitZoneDestinationY[unitFactionIndex]) -
                        scenarioLevel->exitZoneCenterY[unitFactionIndex];
     primaryRecord[1] = unitFactionIndex;
-    /* only a model whose classState linkedArmyRuntimeOrSavedOffset (+0xF0) is zero is committed as a record */
+    /* only a model whose classState linkedArmyRuntimeOrSavedOffset is zero is committed as a record */
     if (modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime == NULL) {
       primaryRecord[4] = ownerNode->modelLocalRotationAngle2;
       primaryRecord[0] = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->armyAssetId;
@@ -317,7 +317,7 @@ void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void 
 }
 
 
-/* Returns true (CF set) when bit otherFactionIndex is clear in factionIndex's capabilityFlags (record +0x3C).
+/* Returns true when bit otherFactionIndex is clear in factionIndex's record capabilityFlags.
    The mask holds one bit per faction: GameData_ResetDefaults sets the faction's own bit and bit 0, and
    GameFactionRuntime_ApplyPairwiseRelationTransition sets or clears the others, so a clear bit marks a faction
    this one is not friendly with (the AI treats its entities as foreign/hostile).
@@ -454,17 +454,18 @@ static void GameFactionRuntime_MoveImpactAlertAnchor(FactionAnchorCooldownTicks 
 
 
 /* "Under attack" alert for the faction owning a hit army (called by ShotRuntime_ApplyArmyHitRelationAndNotifications
-   when a shot opens hostilities): moves the faction's primary or secondary alert anchor (chosen by definition
-   dword +0x18) to the hit model and restarts its 150-tick cooldown. The alert movie 300 / 301 is only queued when
-   the cooldown had fallen below 50 and the hit is more than 12 world units from the old anchor or the cooldown had
-   run out, and only when the shown faction owns the hit model, so a sustained attack does not repeat the alert.
+   when a shot opens hostilities): moves the faction's primary or secondary alert anchor (chosen by the definition's
+   accelerationPerTick: zero = primary) to the hit model and restarts its 150-tick cooldown. The alert movie
+   300 / 301 is only queued when the cooldown had fallen below 50 and the hit is more than 12 world units from
+   the old anchor or the cooldown had run out, and only when the shown faction owns the hit model, so a sustained
+   attack does not repeat the alert.
 */
 void GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
           (ModelRuntimeSlot *hitModelRuntime,WorldRuntimeContext *worldRuntime)
 
 {
   /* the root model runtime of the hit model's army: [0] definition, [1] root model node, [2] owning army
-     (+0xC faction) */
+     (with its factionIndex) */
   int *ownershipRecord;
   int ownerFactionIndex;
   GameFactionRuntimeRecord *ownerRecord;
@@ -514,7 +515,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
   terrainGrid = worldRuntime->fieldGrid;
   cellCount = terrainGrid->gridWidth * terrainGrid->gridHeight;
   exploredCellCount = 0;
-  /* one byte per faction at cell +0x70; bits 3-7 set = the faction has explored the cell (0x80-byte cells).
+  /* one byte per faction in the cell's occupancyMask; bits 3-7 set = the faction has explored the cell (0x80-byte cells).
      Original quirk: a grid with zero cells would count down from 0 (never happens). */
   cellVisibilityCursor = (uint8_t *)&terrainGrid->cells[0].occupancyMask + factionIndex;
   cellsRemaining = cellCount;
@@ -527,7 +528,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
   } while (cellsRemaining != 0);
   g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent =
        (uint32_t)(exploredCellCount * 100) / cellCount;
-  /* count the set bits of the 256-bit technology mask at faction record +0x6E0 (technologyMasks256Bits) */
+  /* count the set bits of the faction record's 256-bit technology mask (technologyMasks256Bits) */
   technologyCount = 0;
   for (maskWordIndex = 0; maskWordIndex < 8; maskWordIndex++) {
     for (technologyBit = 1; technologyBit != 0; technologyBit = technologyBit * 2) {
@@ -556,7 +557,8 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterC * (-10 * Q12_ONE) +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterE * (20 * Q12_ONE) +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterF * (40 * Q12_ONE)) >> Q12_SHIFT;
-  /* sum the army-asset dword +0x28 over every model of this faction on the map */
+  /* sum the army asset's xeniteCostQ4 (read as resolvedAsset[2].registryId) over every model of this faction
+     on the map */
   armyAssetValueSum = 0;
   for (ownerNode = worldRuntime->ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
@@ -597,7 +599,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
   do {
     slotsRemaining = 32;
     groupNumber++;
-    found = groupNumber == 0; /* the ZF of the original INC; never true */
+    found = groupNumber == 0; /* the original's zero test of the increment; never true */
     slotCursor = nextSlotCursor;
     do {
       nextSlotCursor = slotCursor;
@@ -617,7 +619,7 @@ uint32_t GameFactionRuntime_FindRuntimeGroupNumber(RuntimeModelFactionPrefix *ru
 
 /* Checks whether the faction already has armyAssetRecord pending: in its secondary army-asset list, or in
    production in one of its class 0x0B/0x0D structures (state word 0x2E == 1). The result is
-   false (CF clear) when found, true (CF set) when not.
+   false when found, true when not.
 */
 bool FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord)
@@ -686,10 +688,10 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
 
 
 /* Where an entity's current command should take it, for the movement code in gameplay/army/movement: target flag
-   1 aims at a target entity (its model position, raised by definition dword +0x50; class 0x15 aims at its first
-   child node), flag 2 at a fixed world position. A target entity that the owner's faction can no longer see is
-   dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or returns false
-   when there is none.
+   1 aims at a target entity (its model position, raised by the definition's aimHeightOffsetQ12; class 0x15
+   aims at its first child node), flag 2 at a fixed world position. A target entity that the owner's faction can
+   no longer see is dropped (entity and flags cleared). Writes the position to *outPosition and returns true, or
+   returns false when there is none.
 */
 bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState,FixedVectorQ12 *outPosition)
 
@@ -699,9 +701,9 @@ bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetSta
   ModelRuntimeSlot *targetModelRuntime;
   ModelRuntimeNode *targetModelNode;
 
-  /* Original quirk: on failure the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values
-     or the partial visibility mask / owner shift / definition pointer), and one caller still copies the Z
-     register into a local. The port writes zeros instead, so *outPosition is always written. */
+  /* Original quirk: on failure the original leaves the position undefined (left-over intermediate values), and
+     one caller still copies the Z value into a local. The port writes zeros instead, so *outPosition is always
+     written. */
   outPosition->xQ12 = 0;
   outPosition->yQ12 = 0;
   outPosition->zQ12 = 0;
@@ -743,10 +745,10 @@ bool GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetSta
 /* Applies impactValue to an entity's integrity (called twice per hit by ArmyRuntime_ApplyImpactDamageToRuntimeAndParent;
    a negative value repairs and goes to the entity its runtime link points at). A destroyed entity passes the
    overkill on to its parent model's army, or, without a parent, is turned to the impact angle (definition class 0
-   without +0x278) and counted in the score counters: a loss for its faction, a kill for sourceFactionIndex (the
-   heavier counters D/F instead of C/E for classes handled by ArmyRuntime_ClassCommandHandlerGroupA). Repair beyond
-   the definition maximum (+0x60) is clamped and the excess handed to the first linked army that is not at full
-   integrity.
+   with placementContactKindIndex 0) and counted in the score counters: a loss for its faction, a kill for
+   sourceFactionIndex (the heavier counters D/F instead of C/E for classes handled by
+   ArmyRuntime_ClassCommandHandlerGroupA). Repair beyond the definition maximum (maximumHealth) is clamped and the
+   excess handed to the first linked army that is not at full integrity.
 */
 void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
           (AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
@@ -799,10 +801,9 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
                impactAngle;
         }
         if (impactValue != 0) {
-          /* The original tests ZF after IMUL EBX,[EDI+0xC],0x740 (0x0052A5DB / JZ 0x0052A630 at 0x0052A5E2).
-             IMUL leaves ZF unchanged (measured on an AMD Zen 3) and ZF still holds CMP [EBP+0x28],0 at
-             0x0052A5D5, whose own JZ already left for impactValue == 0; so ZF is clear here, the jump is never
-             taken and the counters are always updated. The C follows that. */
+          /* The original's branch here tests a CPU flag that is left over from a multiplication (measured on
+             an AMD Zen 3: unchanged), so it still holds the impactValue == 0 test, whose own branch already left
+             for zero; the branch is never taken and the counters are always updated. The C follows that. */
           victimFactionIndex =
                ((ArmyRuntimeSlot *)(targetEntityRuntime->common).ownership.runtimeLink)->factionIndex;
           victimClassId =
@@ -838,13 +839,13 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
         /* repaired to or beyond the maximum: clamp, the (negative) excess repairs a linked army */
         integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
         *integrityField = *integrityField + repairExcess;
-        /* dword +0x0C is the model runtime's attachment count here, the attached child model runtimes are at
-           +0x140 with a stride of 0x20 (attachmentCursor advances by those 0x20 bytes) */
+        /* common.ownership.ownerIndex is the model runtime's attachmentCount here, the attached child model
+           runtimes are its attachments[] with a stride of 0x20 (attachmentCursor advances by those 0x20 bytes) */
         attachedModelRuntime = (targetEntityRuntime->classPayload).impactOwnerLinks.attachment0ChildModelRuntime;
         attachmentCursor = targetEntityRuntime;
         for (attachmentsRemaining = (targetEntityRuntime->common).ownership.ownerIndex; attachmentsRemaining != 0;
              attachmentsRemaining--) {
-          /* the child's health (+0x3C) against its definition's maximumHealth (+0x60): not at full health */
+          /* the child's health against its definition's maximumHealth: not at full health */
           if ((attachedModelRuntime != NULL) &&
              (attachedModelRuntime->health !=
               attachedModelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth)) {
@@ -946,7 +947,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
   if (ArmyAssetRegistry_FindById(armyAssetId,&armyDefinition) != 0) {
     return;
   }
-  /* compact the queue (secondaryArmyAssetPointersOrIds, record +0xE0), dropping the first matching entries */
+  /* compact the queue (secondaryArmyAssetPointersOrIds), dropping the first matching entries */
   queuedAssets = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
   readIndex = 0;
   writeIndex = 0;
@@ -1000,7 +1001,8 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
 }
 
 
-/* Takes the first entry equal to armyDefinition out of the faction's primary army-asset list (record +0x1E0),
+/* Takes the first entry equal to armyDefinition out of the faction's primary army-asset list
+   (primaryArmyAssetPointersOrIds),
    moving the later entries down one slot, and returns true; returns false when there is none.
    Original quirk: the last move reads the entry one past the count (with a full list of 64 that is the first
    runtime group member pointer that follows the list). */
@@ -1026,8 +1028,9 @@ static bool GameFactionRuntime_RemoveFirstPrimaryArmyAsset(GameFactionRuntimeRec
 
 
 /* In-game command INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT (clicking a finished army in the in-game catalog):
-   takes the first entry of the army record out of the faction's primary army-asset list (record +0x1E0) and
-   stages it in the player's pending slot (+0x8098) for placement on the map. When the faction is the one shown
+   takes the first entry of the army record out of the faction's primary army-asset list
+   (primaryArmyAssetPointersOrIds) and stages it in the player's pending slot (pendingPlacementArmyAsset) for
+   placement on the map. When the faction is the one shown
    the command sprite grid is rebuilt, and for the local player the placement cursor is armed. If the faction
    has no such entry the pending slot is cleared again.
 */
@@ -1063,7 +1066,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
 
 
 /* In-game command handler, the reverse of GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer: takes the
-   army asset staged for the player's placement (an XCHG with 0) back into the faction's primary army-asset list
+   army asset staged for the player's placement (exchanged with 0) back into the faction's primary army-asset list
    (at most 64 entries). When the faction is the one shown it rebuilds the command sprite grid, and for the local
    player it ends the pending placement.
 */
@@ -1086,7 +1089,7 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
   }
   assetCount = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
   if (assetCount < FACTION_ARMY_ASSET_LIST_CAPACITY) {
-    /* primaryArmyAssetPointersOrIds[assetCount] (record +0x1E0) */
+    /* primaryArmyAssetPointersOrIds[assetCount] */
     g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds[assetCount] = pendingAsset;
     g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount++;
   }
@@ -1101,8 +1104,9 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
 
 
 /* In-game command INGAME_COMMAND_SELL_ARMY (the sell click on a finished army in the in-game catalog): takes the
-   first entry of the army record out of the faction's primary army-asset list (record +0x1E0) and credits 7/8 of
-   its price to the faction's xenite. The command sprite grid is rebuilt when the faction is the one shown.
+   first entry of the army record out of the faction's primary army-asset list (primaryArmyAssetPointersOrIds)
+   and credits 7/8 of its price to the faction's xenite. The command sprite grid is rebuilt when the faction is
+   the one shown.
 */
 void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           (uint32_t unusedPlayerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
@@ -1130,7 +1134,7 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
 
 /* In-game command INGAME_COMMAND_PLACEMENT_CREATE_ARMY (map click while placing an army in command mode 3/4, from
    InGameUiCommand_BeginInteractionByMode): creates army armyAssetId at the clicked position for the faction set
-   by PlayerRuntime_SetPlacementFaction and keeps it as the player's placed army (+0x8094, as an offset from
+   by PlayerRuntime_SetPlacementFaction and keeps it as the player's placed army (placedArmyToken, as an offset from
    g_ArmyRuntimeRebaseBaseMinusOne), or 0 when it could not be created.
 */
 void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
@@ -1155,7 +1159,8 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
 
 
 /* In-game command INGAME_COMMAND_PLACEMENT_SET_FACTION (from InGameUiCommand_BeginInteractionByMode, before
-   INGAME_COMMAND_PLACEMENT_CREATE_ARMY): sets the faction (+0x8090) that the player's next placed army belongs to.
+   INGAME_COMMAND_PLACEMENT_CREATE_ARMY): sets the faction (placementFactionIndex) that the player's next placed
+   army belongs to.
 */
 void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlacementFactionIndex placementFactionIndex)
@@ -1166,8 +1171,8 @@ void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t 
 
 
 /* In-game command INGAME_COMMAND_PLACEMENT_SET_ARMY (clicking an existing army in placement sub-mode 2, from
-   InGameUiCommand_BeginInteractionByMode): makes it the player's placed army (+0x8094); armyToken is its offset from
-   g_ArmyRuntimeRebaseBaseMinusOne.
+   InGameUiCommand_BeginInteractionByMode): makes it the player's placed army (placedArmyToken); armyToken is its
+   offset from g_ArmyRuntimeRebaseBaseMinusOne.
 */
 void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlacedArmyToken armyToken)
@@ -1178,7 +1183,7 @@ void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unu
 
 
 /* In-game command INGAME_COMMAND_PLACEMENT_CLEAR_ARMY (end of a placement interaction, from
-   InGameUiCommand_EndInteractionByMode): forgets the player's placed army (+0x8094).
+   InGameUiCommand_EndInteractionByMode): forgets the player's placed army (placedArmyToken).
 */
 void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           uint32_t unusedZero2)
@@ -1215,7 +1220,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
     do {
       maskCursor = nextMaskCursor;
       *maskCursor = *maskCursor | *secondaryCursor;
-      runtimeRoot = g_InGameRuntimeRoot; /* Ghidra placement; the original reads it once after the loop */
+      runtimeRoot = g_InGameRuntimeRoot; /* the original reads it once after the loop */
       secondaryCursor++;
       wordsRemaining--;
       nextMaskCursor = maskCursor + 1;
@@ -1229,8 +1234,8 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
     recordsRemaining = g_OldUnitRecordCount;
     primaryRecordCursor = g_OldUnitPrimaryTable;
     do {
-      /* record [2] and [3] go to the parameters named worldYQ12 / worldXQ12 (pushed as in the original,
-         0x005655FC/0x005655FF), although the rebuild stores the X coordinate in [2] */
+      /* record [2] and [3] go to the parameters named worldYQ12 / worldXQ12 (passed as in the original),
+         although the rebuild stores the X coordinate in [2] */
       ArmyRuntime_CreateInstanceFromAsset
                 (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,primaryRecordCursor[4],
                  primaryRecordCursor[3],primaryRecordCursor[2],primaryRecordCursor[1],*primaryRecordCursor,
@@ -1252,7 +1257,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
 }
 
 
-/* Returns true (CF) when the relation of factionIndex towards otherFactionIndex is in one of the pending states
+/* Returns true when the relation of factionIndex towards otherFactionIndex is in one of the pending states
    2, 5 or 9 and the pair's last relation change is at most 600 ticks old, so the relation does not advance
    again too soon.
 */
@@ -1265,7 +1270,7 @@ bool GameFactionRuntime_IsRecentTimedRelationState
   relationStateNibble =
        g_GameFactionRuntimeImage.records[factionIndex].packedRelationStates >>
        ((char)otherFactionIndex * 4 & 31U) & 0xf;
-  /* record +0x700 + 4 * other faction: tick of the pair's last relation change */
+  /* relationStateTicks[other faction]: tick of the pair's last relation change */
   if ((((relationStateNibble == 2) || (relationStateNibble == 5)) || (relationStateNibble == 9)) &&
      ((int)(g_GameFactionRuntimeImage.tail.simulationTick -
            (int)g_GameFactionRuntimeImage.records[factionIndex].relationStateTicks[otherFactionIndex]) <
@@ -1361,7 +1366,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   survivingFactionTextureSet = g_ArmyGraphicsBindings[survivingFactionIndex].textureSet;
   survivingFactionPaletteAsset = g_ArmyGraphicsBindings[survivingFactionIndex].paletteAsset;
   for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
-    /* re-own the absorbed faction's models (entity +0x0C) and repaint them in the survivor's colours */
+    /* re-own the absorbed faction's models (their army's factionIndex) and repaint them in the survivor's colours */
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       armyRuntime = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
       if (armyRuntime->factionIndex == absorbedFactionIndex) {
@@ -1383,7 +1388,7 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
     playerBlockCursor++;
     playerBlocksRemaining--;
   } while (playerBlocksRemaining != 0);
-  /* the survivor also gets the absorbed faction's per-faction cell byte (cell +0x70 + faction) */
+  /* the survivor also gets the absorbed faction's per-faction cell byte (its byte of the cell's occupancyMask) */
   terrainGrid = runtimeRoot->worldRuntime.fieldGrid;
   cellsRemaining = terrainGrid->gridWidth * terrainGrid->gridHeight;
   gridCell = terrainGrid->cells;
@@ -1438,7 +1443,8 @@ static void GameFactionRuntime_MergeAbsorbedFaction(FactionRuntimeIndex survivin
   *relationCounter = *relationCounter + counterE;
   relationCounter = &survivor->relationCounterF;
   *relationCounter = *relationCounter + counterF;
-  /* append both army-asset lists (primary at record +0x1E0, secondary at +0xE0; 64 entries each) */
+  /* append both army-asset lists (primaryArmyAssetPointersOrIds, secondaryArmyAssetPointersOrIds; 64 entries
+     each) */
   GameFactionRuntime_AppendArmyAssetList(&survivor->primaryArmyAssetCount,survivor->primaryArmyAssetPointersOrIds,
                                          absorbed->primaryArmyAssetCount,absorbed->primaryArmyAssetPointersOrIds);
   GameFactionRuntime_AppendArmyAssetList(&survivor->secondaryArmyAssetCount,
@@ -1515,7 +1521,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     capabilityFlagsField = &g_GameFactionRuntimeImage.records[secondFactionIndex].capabilityFlags;
     *capabilityFlagsField = *capabilityFlagsField | firstFactionBit;
   }
-  /* tick of the last relation change per pair (record +0x700 + 4 * other faction) */
+  /* tick of the last relation change per pair (relationStateTicks[other faction]) */
   currentTick = g_GameFactionRuntimeImage.tail.simulationTick;
   g_GameFactionRuntimeImage.records[firstFactionIndex].relationStateTicks[secondFactionIndex] =
        g_GameFactionRuntimeImage.tail.simulationTick;

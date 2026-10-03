@@ -160,9 +160,9 @@ static uint8_t *TerrainByteClampLookup_FillRow(uint8_t *rowCursor,int targetLeve
 }
 
 /* Builds g_TerrainByteClampLookup, the 64-KiB table FieldGrid_ApplyByteClampLookupToCells uses every few ticks to
-   fade each cell's runtime byte (+0x68) one step (TERRAIN_RUNTIME_BYTE_FADE_STEP) towards the level its occupancy
-   byte asks for (row targets: see TERRAIN_BYTE_CLAMP_LOOKUP_BYTES). The table is 64-KiB aligned so the original
-   can index it by loading the two bytes into AH/AL. Returns true on success; false when the allocation fails,
+   fade each cell's runtime byte (visibilityLightingIndex) one step (TERRAIN_RUNTIME_BYTE_FADE_STEP) towards the
+   level its occupancy byte asks for (row targets: see TERRAIN_BYTE_CLAMP_LOOKUP_BYTES). The table is 64-KiB
+   aligned so the original can index it with the two bytes as the low 16 address bits. Returns true on success; false when the allocation fails,
    with the allocator error in *outError.
 */
 bool TerrainByteClampLookup_Initialize(uint32_t *outError)
@@ -859,8 +859,8 @@ void TerrainCompositeTexture_RebuildPlane0(void)
       /* round to the nearest cell */
       gridColumn = (gridCoordinates.columnQ12 + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
       gridRow = (gridCoordinates.rowQ12 + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
-      /* exact (non-wrapping) row + half a cell. As decompiled, the column test (JL after the column's SAR)
-         sees the overflow flag of the row's ADD, so it is "column >= 0" unless that ADD overflows. */
+      /* exact (non-wrapping) row + half a cell. In the original the column's sign test also depends on whether
+         the row rounding addition overflows, so it is "column >= 0" unless that addition overflows. */
       roundedRowQ12 = (int64_t)gridCoordinates.rowQ12 + FIELD_GRID_CELL_Q12 / 2;
       rowRoundingOverflows = INT32_MAX < roundedRowQ12;
       if (((gridColumn < 0) == rowRoundingOverflows) && (roundedRowQ12 >= 0) &&
@@ -870,13 +870,13 @@ void TerrainCompositeTexture_RebuildPlane0(void)
                  colorIndex;
         assetOffset = (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset;
         if (colorVariant != 0) {
-          /* SelectionInfo_IsEntryAbsent is true (CF set) when the entry is NOT in the selection */
+          /* SelectionInfo_IsEntryAbsent is true when the entry is NOT in the selection */
           notSelected = SelectionInfo_IsEntryAbsent(ownerEntity);
           if (!notSelected) {
             colorVariant = 0;
           }
-          /* Original quirk: the bank is scaled by 4 entries (SHL EAX,5 on the 8-byte entries), not by a whole
-             bank like in FillPlane1/FillPlane2 (SHL EBX,0xB), so only bank 0 gives the right colour. Harmless:
+          /* Original quirk: the bank is scaled by 4 entries (paletteIndex * 4), not by a whole
+             bank like in FillPlane1/FillPlane2, so only bank 0 gives the right colour. Harmless:
              subresource 36 of panel0/1/2.gfx uses bank 0. */
           pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST +((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant].argb8888;
           if (ownerNode->modelTintArgb < ARGB8888_ALPHA_MASK) {

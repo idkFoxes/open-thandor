@@ -10,10 +10,10 @@
 
 /* Implementation ownership: core/memory/synchronization. */
 
-/* Busy-waits until the lock is taken: swaps -1 into it (XCHG) until the previous value was zero. A null
-   lock succeeds at once; there is no pause, yield, timeout or recursion. Guards the per-tick state of the
-   frontend and in-game loops against the timer callbacks.
-   Reached through the function-pointer slot g_SpinLockAcquire (0x00402784).
+/* Busy-waits until the lock is taken: atomically swaps -1 into it until the previous value was zero. A
+   null lock succeeds at once; there is no pause, yield, timeout or recursion. Guards the per-tick state of
+   the frontend and in-game loops against the timer callbacks.
+   Reached through the function-pointer slot g_SpinLockAcquire.
 */
 void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
 
@@ -29,10 +29,10 @@ void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
 }
 
 
-/* Tries once to take the lock by swapping -1 into it (XCHG). Returns the original CF: false when the lock
-   was free and is now held (or the lock pointer is null), true when it was already busy, so the caller can
-   skip its work instead of waiting.
-   Reached through the function-pointer slot g_SpinLockTryAcquire (0x00402788).
+/* Tries once to take the lock by atomically swapping -1 into it. Returns false when the lock was free and
+   is now held (or the lock pointer is null), true when it was already busy, so the caller can skip its
+   work instead of waiting.
+   Reached through the function-pointer slot g_SpinLockTryAcquire.
 */
 bool SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 
@@ -50,7 +50,7 @@ bool SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 
 
 /* Releases the lock with a plain (non-atomic) store of zero; a null lock is ignored.
-   Reached through the function-pointer slot g_SpinLockRelease (0x0040278C).
+   Reached through the function-pointer slot g_SpinLockRelease.
 */
 void SpinLock_Release(RuntimeSpinLockValue *lockValue)
 
@@ -64,7 +64,7 @@ void SpinLock_Release(RuntimeSpinLockValue *lockValue)
 
 /* Releases the lock (plain store of zero) and then calls the argument-less callback, if any, so deferred
    work can run once the lock is free. With a null lock nothing happens, not even the callback.
-   Reached through the function-pointer slot g_SpinLockReleaseAndInvoke (0x00402790); the UI pointer and
+   Reached through the function-pointer slot g_SpinLockReleaseAndInvoke; the UI pointer and
    keyboard dispatchers use it to drop g_UiRuntimeFrameLock and run g_UiRuntimePostUnlockCallback.
 */
 void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue)

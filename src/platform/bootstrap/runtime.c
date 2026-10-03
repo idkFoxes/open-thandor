@@ -50,7 +50,7 @@ void __cdecl ProcessEntry(void)
     g_MainMessageStorage.overlay.windowClass.instance = g_hInstance;
     g_MainMessageStorage.overlay.windowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
     g_MainMessageStorage.overlay.windowClass.cursor = LoadCursorA(NULL,IDC_ARROW);
-    if (RegisterClassA((WNDCLASSA *)&g_MainMessageStorage.overlay.windowClass) != 0) { /* the original tests the 16-bit ATOM in AX */
+    if (RegisterClassA((WNDCLASSA *)&g_MainMessageStorage.overlay.windowClass) != 0) { /* the original tests only the 16-bit ATOM */
       windowInstance = g_hInstance; /* read before the GetSystemMetrics calls, as in the original */
       screenHeight = GetSystemMetrics(SM_CYSCREEN);
       screenWidth = GetSystemMetrics(SM_CXSCREEN);
@@ -72,7 +72,7 @@ void __cdecl ProcessEntry(void)
         }
         bootstrapError = DynAPI_Bootstrap();
         checkedValue = FatalError_ExitIfFailed(bootstrapError,bootstrapError != 0);
-        /* TimerSystem_Init only installs the timer procs and always clears CF */
+        /* TimerSystem_Init only installs the timer procs and always succeeds */
         TimerSystem_Init();
         checkedValue = FatalError_ExitIfFailed(checkedValue,false);
         graphicsError = Graphics_Init();
@@ -89,8 +89,8 @@ void __cdecl ProcessEntry(void)
           }
         }
         networkResult = Network_Init();
-        /* Network_Init leaves with CF clear on every path, failures included (CLC at 0x00584DD6 and
-           0x00584DE0), so a missing WinSock is never fatal: the check below always passes. */
+        /* the original Network_Init reports success on every path, failures included, so a missing
+           WinSock is never fatal: the check below always passes. */
         FatalError_ExitIfFailed(networkResult,false);
         PersistentSettings_Load();
         displayWidth = GAME_START_DISPLAY_WIDTH;
@@ -507,7 +507,7 @@ void __cdecl Game_Run(void)
 /* Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables,
    the software renderer's display-mode hook and the global primitive queue (0xA000 packets), in that order.
    Stops at the first step that fails and returns its (non-zero) error code; returns 0 when all succeed.
-   The original returned g_PrimitiveQueueStorage in EAX on success; its only caller (Game_Run) discards it.
+   The original returned g_PrimitiveQueueStorage on success; its only caller (Game_Run) discards it.
 */
 uint32_t __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 
@@ -775,8 +775,8 @@ static void CoreAssets_ApplySoundSettings(void)
     g_ReverseStereoMask = 0xffffffff;
   }
   g_MovieAlternateAudioGainQ15 = alternateMovieGain;
-  /* the original passes the reverse-stereo mask (0 or 0xFFFFFFFF) as the default here, still in
-     EAX from the store above (PUSH EAX at 0x00573674) */
+  /* the original passes the reverse-stereo mask (0 or 0xFFFFFFFF) as the default here, a leftover
+     value from the store above */
   g_ModelLodDepthThresholdQ8 =
        PersistentSettings_Read(g_ReverseStereoMask,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
 }
@@ -1083,7 +1083,7 @@ static bool IntroMovie_PresentPendingFrames(MovieRuntime *introMovie)
 /* Plays the intro movies flm\intro0.flm, intro1.flm, ... until one cannot be opened, unless -NOINTRO is given.
    Each movie runs at its own rate from IntroMovie_TimerTick, centred on the screen;
    a key or mouse-button release skips to the next one, Escape skips all of them (the number jumps to 9).
-   CF is set only when the first frame of an opened movie cannot be decoded.
+   Returns true only when the first frame of an opened movie cannot be decoded.
 */
 bool Game_PlayIntroMovies(void)
 
@@ -1110,7 +1110,7 @@ bool Game_PlayIntroMovies(void)
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
   }
   if (g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro) == NULL) {
-    /* playbackRateHz: the rate Movie_Open left in ECX, pushed for TimerRegisterPeriodic (AdvanceFrame preserves ECX) */
+    /* playbackRateHz: the rate from Movie_Open, passed on to TimerRegisterPeriodic */
     while (Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046,&playbackRateHz,NULL)) {
       if (!Movie_AdvanceFrame(&introMovie,NULL)) {
         Movie_Close();
@@ -1136,7 +1136,7 @@ bool Game_PlayIntroMovies(void)
    has the name replaced by the resolved procedure address. DLLs that are not mapped yet are loaded with
    the table's first entry (LoadLibraryA, resolved first) and recorded in g_DynamicModules. On failure the
    DLL/procedure name is stored for the fatal-error message and a FATAL_ERROR_* code is returned; 0 when
-   every entry is bound. (The original left the last resolved procedure in EAX on success; ProcessEntry only
+   every entry is bound. (The original returned the last resolved procedure on success; ProcessEntry only
    passes it through the fatal-error handler, which ignores it.)
 */
 uint32_t DynAPI_Bootstrap(void)

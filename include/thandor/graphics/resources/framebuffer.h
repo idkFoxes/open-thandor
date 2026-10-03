@@ -21,7 +21,7 @@
    cannot be restored or locked for a capture */
 #define GRAPHICS_CAPTURE_FAILED_STAGE_16BIT 100
 #define GRAPHICS_CAPTURE_FAILED_STAGE_32BIT 101
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool GraphicsFramebuffer_BeginAccessStub(void);
 

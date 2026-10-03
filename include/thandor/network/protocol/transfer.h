@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: network/protocol/transfer. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* g_UiTransferMailbox.receivedAllocation sentinel published by UiTransferMailbox_MarkUnavailable when a
    requested transfer cannot be served; UiTransferMailbox_GetReceivedBuffer reports it like an empty mailbox. */
@@ -58,7 +58,7 @@
 #define UI_TRANSFER_CHUNK_REQUEST_TYPE_BYTE ((uint8_t)FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST) /* 0x31 */
 #define UI_TRANSFER_CHUNK_TYPE_BYTE ((uint8_t)FRONTEND_PACKET_80030_MAILBOX_CHUNK)                /* 0x30 */
 /* Packet cipher (UiTransfer_EncryptPacketBlocks / UiTransfer_DecryptPacketBlocks): 16 rounds with one 32-bit
-   key each (g_UiTransferRoundKeys, 0x004AE9A8..0x004AE9E7). Each round looks up every nibble in its own
+   key each (g_UiTransferRoundKeys). Each round looks up every nibble in its own
    16x16 dword table (row = key nibble, column = data nibble); table n handles nibble n. */
 #define UI_TRANSFER_CIPHER_ROUND_COUNT 16
 #define UI_TRANSFER_CIPHER_ROW_BYTES 0x40    /* 16 dword entries */

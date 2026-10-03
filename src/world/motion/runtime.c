@@ -73,7 +73,7 @@ uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worl
 
 /* Camera drag sideways (right-button drag of the model pointer context in camera scheme 0x8000,
    ui/frontend/runtime.c): moves camera position and target together by screenDelta scaled with
-   k_CameraScreenDeltaDistanceScaleQ16 along the heading minus a quarter turn, at the elevation passed in EDX.
+   k_CameraScreenDeltaDistanceScaleQ16 along the heading minus a quarter turn, at elevationAngle.
 */
 void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
           (AngleTurn32 elevationAngle,int screenDelta,WorldRuntimeContext *worldRuntime)

@@ -32,21 +32,21 @@
 /* nearest-support search: a squared distance above this still has the INT64_MAX start value's high dword
    (no supporting model found) */
 #define ARMY_PLACEMENT_NO_SUPPORT_DISTANCE_SQUARED (INT64_MAX - ((int64_t)1 << 32))
-/* Placement contact kinds (model definition +0x278): index into g_ArmyPlacementContactKindDispatchTable and
-   g_TerrainClassPlacementAndOverlayCallbacks10.placementTests. 0 terrain height, 1 water surface, 2 terrain
-   height and normal, 3 articulated suspension, 4 top surface. */
+/* Placement contact kinds (ModelDefinition.placementContactKindIndex): index into
+   g_ArmyPlacementContactKindDispatchTable and g_TerrainClassPlacementAndOverlayCallbacks10.placementTests.
+   0 terrain height, 1 water surface, 2 terrain height and normal, 3 articulated suspension, 4 top surface. */
 #define ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE 1
 #define ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION 3
 /* Byte size of one GameFactionRuntimeRecord (8 of them in g_GameFactionRuntimeImage). */
 #define GAME_FACTION_RUNTIME_RECORD_BYTES 0x740
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool ArmyPlacement_CanPlaceAnchoredModel (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime, uint32_t *outPlacementValue);
 
 bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
-/* ECX/EDX results of ArmyPlacement_ValidateAssetAtPointAndCellCorners: the accepted point. */
+/* Extra results of ArmyPlacement_ValidateAssetAtPointAndCellCorners: the accepted point. */
 extern Q12 g_ArmyPlacementValidatedWorldXQ12;
 extern Q12 g_ArmyPlacementValidatedWorldYQ12;
 

@@ -77,7 +77,7 @@ static void ArmyWeaponRuntime_FireFromFirstLoadedAttachment
                 (launchHeadingAngle,weaponDefinitionView->postLaunchVector1Q12,
                  weaponDefinitionView->postLaunchVector0Q12,modelRuntime->ownerArmyRuntime);
       barrelMeshMask = &(modelRuntime->rootModelNode->childNodes[0]->childNodes[0]->modelPayload).meshGroupMask;
-      /* hides the fired projectile; SHL (not ROL) as in the original, so bits below it go too */
+      /* hides the fired projectile; a plain shift (not a rotate) as in the original, so bits below it go too */
       *barrelMeshMask = *barrelMeshMask & -2 << ((uint8_t)attachmentSelectorOrdinal & 31);
       return;
     }
@@ -87,8 +87,8 @@ static void ArmyWeaponRuntime_FireFromFirstLoadedAttachment
 }
 
 
-/* Runtime update of the turret-weapon class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[9],
-   0x0051FCBC). Counts down the reload timers of the eight launch attachments (showing a slot's projectile mesh
+/* Runtime update of the turret-weapon class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[9]).
+   Counts down the reload timers of the eight launch attachments (showing a slot's projectile mesh
    bit again when it is loaded) and the shared inter-shot timer, resolves the aim point of the current target and
    turns the turret (yaw on the root node, pitch on its first child) toward the launch angles; without a target it
    moves and returns the turret to rest. Once yaw and pitch are on target, the inter-shot timer has run out and
@@ -183,10 +183,10 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
 }
 
 
-/* Runtime update of the resource storage class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[15],
-   0x0051FCD4): moves the storage's fill-level child node between the heights at definition +0x24 and +0x28 in
-   proportion to the owner faction's current Xenite (or Tritium when definition +0xC0 is 1) over its storage
-   limit, then emits the damage-threshold effect.
+/* Runtime update of the resource storage class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[15]):
+   moves the storage's fill-level child node between the heights definition runtimeValue24 and runtimeValue28 in
+   proportion to the owner faction's current Xenite (or Tritium when definition classParameterC0 is 1) over its
+   storage limit, then emits the damage-threshold effect.
 */
 void ArmyRuntimeClass_UpdateTransformAndDamageEffect
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
@@ -198,8 +198,8 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
   ModelRuntimeNode *childNode;
 
   classDefinition = modelRuntime->modelDefinition;
-  /* byte offset of the faction record's xeniteCurrentQ4 / xeniteStorageLimitQ4 pair, or with +0x10 of
-     tritiumCurrentQ4 / tritiumStorageLimitQ4 */
+  /* byte offset of the faction record's xeniteCurrentQ4 / xeniteStorageLimitQ4 pair, or 16 bytes further that
+     of tritiumCurrentQ4 / tritiumStorageLimitQ4 */
   factionRecordByteOffset = modelRuntime->ownerArmyRuntime->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
   if (classDefinition->classParameterC0 == 1) {
     factionRecordByteOffset = factionRecordByteOffset + 16;
@@ -221,9 +221,9 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
 }
 
 
-/* Runtime update of army class 4 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[4], 0x0051FCA8):
+/* Runtime update of army class 4 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[4]):
    while the army is intact it runs its timed shot/effect emitters and animated sub-nodes (only during research
-   when the definition's gate at +0x1C8 is set), then emits the damage-threshold effect.
+   when the definition's gate timedEffectsRequireStateBit40 is set), then emits the damage-threshold effect.
 */
 
 void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
@@ -242,8 +242,9 @@ void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
 }
 
 
-/* Applies an impact's damage to a living army (health at +0x3C, capped at the definition's maximumHealth). When the health reaches zero the army is marked destroyed; a child passes the excess
-   damage on to its parent army; a root army of class 0 with a zero +0x278 state only turns to the impact
+/* Applies an impact's damage to a living army (health, capped at the definition's maximumHealth). When the
+   health reaches zero the army is marked destroyed; a child passes the excess damage on to its parent army; a
+   root army of class 0 with a zero placementContactKindIndex only turns to the impact
    angle, any other root army is counted in its owner faction's relation counter C (group-A command classes:
    counter D).
 */
@@ -270,7 +271,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
   healthField = (Q12 *)&modelRuntime->health;
   previousHealth = *healthField;
   *healthField = *healthField - damageAmount;
-  /* SUB / JG: the new health is still > 0; a negative damage (repair) never raises it above maxHealth */
+  /* the new health is still > 0; a negative damage (repair) never raises it above maxHealth */
   if (previousHealth > damageAmount) {
     healthToMaximum = maxHealth - modelRuntime->health;
     if (healthToMaximum == 0 || maxHealth < (int)modelRuntime->health) {
@@ -278,7 +279,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
     }
     return;
   }
-  /* SUB / JLE: the new health is <= 0 */
+  /* the new health is <= 0 */
   remainingHealth = modelRuntime->health; /* <= 0; its negation is the excess damage */
   (modelRuntime->classState).stateFlags = (modelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
   parentModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode->parentNode;
@@ -289,10 +290,10 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
     ArmyRuntime_ApplyDamageAndPropagateToParent(-remainingHealth,(parentModelNode->runtimePayload).modelRuntime);
     return;
   }
-  /* The original tests ZF after IMUL EBX,[EDI+0xC],0x740 (0x0052A395 / JZ 0x0052A39C). ZF is undefined
-     after IMUL on paper; measured on an AMD Zen 3 it is left unchanged, so it still holds the result of the
-     CMP [+0x4C] / CMP [+0x278] tests: the counters are updated unless the army was turned to the impact.
-     The C follows that. */
+  /* The original's branch here tests a CPU flag that is formally undefined at that point (it is left over
+     from a multiplication); measured on an AMD Zen 3 it still holds the result of the runtimeClassId /
+     placementContactKindIndex tests above, so the counters are updated unless the army was turned to the
+     impact. The C follows that. */
   rotateToImpact =
        (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_00) &&
        (modelRuntime->definitionOrSavedId.runtimeDefinition->placementContactKindIndex == 0);
@@ -408,16 +409,17 @@ static bool ArmyWeaponRuntime_TestBallisticLineOfFire
   if (!modelHit) {
     return false;
   }
-  /* As in the original (MOV EAX,[EDI+0x48] at 0x0052BC55, EDI = own model node): this tests the shooter's
-     own entity, not the model that was hit (the other path uses the hit node from EDX). */
+  /* As in the original: this tests the shooter's own entity (through originNode), not the model that was hit
+     (the other path uses hitModelNode). */
   ownEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
   hitEntity = ((originNode->runtimePayload).modelRuntime)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
   return ArmyWeaponRuntime_IsBlockedByHitEntity(ownEntity,hitEntity);
 }
 
 
-/* Checks whether the army's weapon can hit the target position; true (CF set) = blocked. Ballistic shots need a
-   solvable arc whose elevation lies within the weapon's limits (definition +0x24 / +0x28) and no model in the way
+/* Checks whether the army's weapon can hit the target position; true = blocked. Ballistic shots need a
+   solvable arc whose elevation lies within the weapon's limits (definition minimumPitchAngle /
+   maximumPitchAngle) and no model in the way
    along the horizontal distance; fixed-range shots always pass; other shots need an elevation within the limits
    (unless guided), no terrain in front of the target (a ground shot without an entity target may land within
    0x400 of the aim point) and no model in the way, and must reach the target (its distance minus half its radius)
@@ -522,7 +524,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
     return true;
   }
   if (modelHit) {
-    /* A model is hit first: blocked (CF set) when its owner fails the commandState owner test and it is not
+    /* A model is hit first: blocked when its owner fails the commandState owner test and it is not
        the command target; otherwise fall through to the range check. */
     ownEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     hitEntity = ((hitModelNode->runtimePayload).modelRuntime)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
@@ -530,7 +532,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
       return true;
     }
   }
-  /* range check: distance to the target minus half its radius (+0xDC of its class record) against
+  /* range check: distance to the target minus half its radius (footprintRadius of its definition) against
      speed * (lifetime - 2/3 of the ramp ticks - 1); ARMY_SHOT_RAMP_RANGE_FACTOR_Q12 is -2/3 in Q12 */
   targetEntity = (modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandTarget.targetEntity;
   if (targetEntity != NULL) {
@@ -568,7 +570,7 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
     healthField = (Q12 *)&modelRuntime->health;
     previousHealth = *healthField;
     *healthField = *healthField - damageAmount;
-    /* SUB / JLE: the new health is <= 0 */
+    /* the new health is <= 0 */
     if (previousHealth <= damageAmount) {
       remainingHealth = modelRuntime->health; /* <= 0; its negation is the excess damage */
       (modelRuntime->classState).stateFlags =
@@ -580,11 +582,10 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
       if (parentModelNode != NULL) {
         ArmyRuntime_ApplyDamageAndPropagateToParent(-remainingHealth,(parentModelNode->runtimePayload).modelRuntime);
       }
-      /* Without a parent the original goes on at 0x0052A290 to the owner faction's relationCounterC/D update of
-         ArmyRuntime_ApplyImpactDamageAndFinalizeState, but guarded by JZ right after IMUL EBX,[EDI+0xC],0x740
-         (0x0052A29C). IMUL leaves ZF unchanged (measured on an AMD Zen 3) and ZF is still set from
-         TEST EDX,EDX with EDX = parent = 0, so the jump is always taken and the update never runs: the C
-         omits it. */
+      /* Without a parent the original goes on to the owner faction's relationCounterC/D update of
+         ArmyRuntime_ApplyImpactDamageAndFinalizeState, but guarded by a branch on a CPU flag that is left over
+         from a multiplication (measured on an AMD Zen 3: unchanged) and still reflects the parent == NULL test,
+         so the branch is always taken and the update never runs: the C omits it. */
     }
     else if (maxHealth < (int)modelRuntime->health) {
       /* a negative damage (repair) never raises the health above maxHealth */
@@ -596,12 +597,13 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Mod
 }
 
 
-/* Damage smoke/fire of a damaged army: while its health (+0x3C) is below the definition's threshold
-   percentage (+0x250) of the class maximum (+0x60), it emits the definition's effect (+0x254) every
-   +0x258 + random(+0x25C) ticks from the model's damage points (packed point key class 3), cycling through
-   them, or from the model origin when it has none, with random orientation angles. Called directly
-   at the end of nearly every army class runtime update (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
-   .runtimeUpdate slots, e.g. [4], [9], [15] in this file).
+/* Damage smoke/fire of a damaged army: while its health is below the definition's threshold percentage
+   (damageEffectHealthPercent) of the class maximum (maximumHealth), it emits the definition's effect
+   (damageEffectDefinitionReference) every damageEffectIntervalTicks + random(damageEffectRandomTicks) ticks
+   from the model's damage points (packed point key class 3), cycling through them, or from the model origin
+   when it has none, with random orientation angles. Called directly at the end of nearly every army class
+   runtime update (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate slots, e.g. [4], [9], [15] in
+   this file).
 */
 void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 

@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/world/terrain/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/world/terrain/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -307,7 +307,7 @@ __declspec(align(16)) TerrainProjectedRowSpan g_TerrainProjectedRowSpans[260] = 
     /* 259 */ {.firstColumn = -1869574000, .endColumnExclusive = -1869574000}};
 
 /* entries 0..255 the shaded colour ramp (originally
-   g_TerrainLightingColorRampArgb256), entries 256..512 the lit half (00501590); indexed by the signed dot
+   g_TerrainLightingColorRampArgb256), entries 256..512 the lit half; indexed by the signed dot
    product -256..256 from entry 256 */
 __declspec(align(16)) PackedArgb32 g_TerrainDirectionalLightColorLut[513] = {0};
 

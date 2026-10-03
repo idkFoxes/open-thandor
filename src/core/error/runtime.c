@@ -28,7 +28,7 @@ void __cdecl ErrorSystem_Init(void)
 }
 
 
-/* method08 of g_UiRootCallbacks_00407E28, the callbacks of the fatal-error dialog root: always sets CF, so
+/* method08 of g_UiRootCallbacks_00407E28, the callbacks of the fatal-error dialog root: always returns true, so
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
@@ -101,7 +101,7 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
   }
   /* the message text goes into the template image itself, which is then copied */
   ((UiWrappedTextControl *)&g_FatalErrorUiRootTemplateImage.errorMessageText)->text = stream;
-  /* copy the dialog template image into the allocated root node, one dword per step (REP MOVSD) */
+  /* copy the dialog template image into the allocated root node, one dword per step */
   templateImageCursor = (const uint32_t *)&g_FatalErrorUiRootTemplateImage;
   templateCopyCursor = (uint32_t *)g_FatalErrorUiRootTemplate;
   for (remainingDwords = sizeof g_FatalErrorUiRootTemplateImage / sizeof(uint32_t); remainingDwords != 0;
@@ -213,7 +213,7 @@ int FatalError_CopyRichTextToNarrow
   uint16_t codeUnit;
   uint32_t remainingCapacityBytes;
   bool newlineCapacityUnderflow;
-  uint16_t *nestedReturnStack[FATAL_ERROR_RICHTEXT_NESTING_MAX]; /* the original's machine-stack chain */
+  uint16_t *nestedReturnStack[FATAL_ERROR_RICHTEXT_NESTING_MAX]; /* return points of nested texts (the original keeps them on its call stack) */
   int nestedDepth;
 
   nestedDepth = 0;

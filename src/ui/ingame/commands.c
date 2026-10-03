@@ -139,7 +139,7 @@ void InGameCommandModeG_Select4(UiSelectableControl *source)
 /* Editor mode tab G5, region tool (action 0x1104: g_InGameUiActionHandlersPage11[4],
    g_UiCommandModeGHandlers[5]; also called by ui/ingame/runtime.c). Shows the surface point, army metrics, grid
    vertex and region markers; the region markers draw the variant chosen by mode F, so g_UiCommandModeF is copied
-   into the world runtime (+0xB4) as well.
+   into the world runtime (fieldRegion.regionToolMode) as well.
 */
 void InGameCommandModeG_Select5(UiSelectableControl *source)
 
@@ -493,7 +493,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
-  /* XCHG in the original: take the pending entry and clear it atomically */
+  /* take the pending entry and clear it atomically, as in the original */
   LOCK();
   pendingEntry = playerBlock->pendingPlacementArmyAsset;
   playerBlock->pendingPlacementArmyAsset = 0;
@@ -1331,7 +1331,7 @@ void InGameCommandRange_DispatchState1(UiNodeBase *source)
 
 
 /* Region tool option 0 (action 0x111C, g_InGameUiActionHandlersPage11[28]): selects regionToolOption0 of the
-   two region tool buttons, sets g_UiCommandModeF = 0 and copies it into the world runtime (+0xB4), where the
+   two region tool buttons, sets g_UiCommandModeF = 0 and copies it into the world runtime (fieldRegion.regionToolMode), where the
    region markers of the world view read it.
 */
 void InGameCommandModeF_Select0(UiSpriteButtonControl *source)
@@ -1348,7 +1348,7 @@ void InGameCommandModeF_Select0(UiSpriteButtonControl *source)
 
 
 /* Region tool option 1 (action 0x111D, g_InGameUiActionHandlersPage11[29]): selects regionToolOption1 and
-   sets g_UiCommandModeF and its world runtime copy (+0xB4) to 1.
+   sets g_UiCommandModeF and its world runtime copy (fieldRegion.regionToolMode) to 1.
 */
 void InGameCommandModeF_Select1(UiSpriteButtonControl *source)
 

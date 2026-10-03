@@ -13,7 +13,7 @@
 
 /* Submodule: graphics/render/model. */
 
-/* Rows of g_ModelLightingMmxMultiplierRows (one table in the original, 0x004CAD60..0x004CC6F8). Both vertex
+/* Rows of g_ModelLightingMmxMultiplierRows (one table in the original). Both vertex
    lighting paths index it with a signed row relative to a base row, so negative indices read the rows before it. */
 #define MODEL_LIGHTING_MMX_ROW_COUNT 819
 /* row 0 = distance attenuation row -136 (former g_ModelDistanceAttenuationMmxNegativeRows) */
@@ -32,7 +32,7 @@
    of triangles using the node's primary / secondary animated subresource by its texture offsets */
 #define MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL 0x80
 #define MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL 0x400
-/* Model triangle renderFlags (triangle record +0x34), read by ModelRender_SubmitTriangle*,
+/* Model triangle renderFlags (GraphicsTriangleInput.renderFlags), read by ModelRender_SubmitTriangle*,
    ModelRender_PrepareProjectedVertex* */
 #define MODEL_TRIANGLE_PALETTE_BANK_MASK 0x1FF /* material colour: index into the node's palette asset */
 /* The palette bank mask ModelRender_SubmitTriangleAlternatePath uses: keeps bits 16..31 too */
@@ -42,7 +42,7 @@
 #define MODEL_TRIANGLE_LIGHTING_SCALED 0x800 /* lit by ModelRender_ComputeVertexIntensityScaledPath */
 #define MODEL_TRIANGLE_FLAT_SHADED 0x8000 /* lit with the triangle normal; never reuses a cached vertex colour */
 #define MODEL_TRIANGLE_VERTEX_CACHE_FLAGS 0x8E00 /* the bits a projected vertex's cached colour was computed for */
-/* Marker in a mesh vertex's projected X (+0x30): not transformed and projected yet for this draw */
+/* Marker in a mesh vertex's projected X (GraphicsProjectedVertexSource.screenX): not transformed and projected yet for this draw */
 #define MODEL_VERTEX_NOT_PROJECTED ((int)0x80000000)
 /* Marker the alternate renderer stores in the projected X of a vertex in front of the near plane */
 #define MODEL_VERTEX_NEAR_CLIPPED 0x7fffffff
@@ -75,7 +75,7 @@ typedef struct ModelMeshHeader {
     uint32_t flags;          /* +0x10 MODEL_MESH_SOFT_SHADOW */
     uint8_t unknown14_1F[12];
 } ModelMeshHeader;
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void ModelRender_DrawMeshGroupsWithTemporaryTransform
           (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode);

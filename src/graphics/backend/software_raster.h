@@ -117,13 +117,13 @@ typedef void (*RasterSpanProc)(RasterSpan *span);
 
 /* ---- arithmetic -------------------------------------------------------------------------- */
 
-/* (a * b) >> shift of the 64-bit product, truncated to 32 bits (IMUL + SHLD/SHRD). */
+/* (a * b) >> shift of the 64-bit product, truncated to 32 bits. */
 static __inline int Raster_MulShift(int a, int b, int shift)
 {
     return (int)(((long long)a * b) >> shift);
 }
 
-/* Difference of two 32-bit values with wrap-around (SUB), e.g. of depths. */
+/* Difference of two 32-bit values with wrap-around, e.g. of depths. */
 static __inline int Raster_Diff(int a, int b)
 {
     return (int)((uint32_t)a - (uint32_t)b);
@@ -711,7 +711,7 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
    depth is written when the source alpha lane (Q4, as handed to Raster_BlendAlpha) is >= 128, i.e.
    the blend index (word)alpha >> 4 is > 0x7f. The lane is read unsigned, so a negative lane also
    passes. The textured modes test exactly this in the original; the untextured ones test a stale
-   MM2 instead (see docs/software_raster.md), and the C keeps this rule for them. */
+   value instead (see docs/software_raster.md), and the C keeps this rule for them. */
 static __inline int Raster_AlphaWritesDepth(RasterColor sourceQ4)
 {
     return (uint16_t)sourceQ4.lane[RASTER_LANE_ALPHA] >= 0x800;
@@ -900,7 +900,7 @@ static __inline int Blit_ClipRect(const SoftwareFramebufferAccess *framebuffer, 
     if (*bottom > clipMaxY) {
         *bottom = clipMaxY;
     }
-    return *right > *left && *bottom > *top; /* SUB + JLE */
+    return *right > *left && *bottom > *top; /* signed compares */
 }
 
 /* Common setup of the clipped blits: validates the asset (magic, subresource index), the framebuffer
@@ -1050,7 +1050,7 @@ typedef struct BlitScaledImage {
 } BlitScaledImage;
 
 /* Validates and places an integer-scaled subresource. Differences to Blit_SetupSubresource: any
-   negative paletteIndex (TEST + JS), not only -1, means ARGB texels, and the origin is scaled. */
+   negative paletteIndex (a sign test), not only -1, means ARGB texels, and the origin is scaled. */
 static __inline int Blit_SetupScaled(const GraphicsTextureSourceAsset *sourceAsset,
                                      GraphicsSubresourceIndex subresourceIndex,
                                      const SoftwareFramebufferAccess *framebuffer, int pixelBytes, uint32_t scale,

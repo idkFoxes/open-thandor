@@ -10,11 +10,11 @@
 
 /* Implementation ownership: assets/model/definitions. */
 
-/* Picks the upgrade stage a faction can build: of the eight linked model-definition ids at +0x20 the last
+/* Picks the upgrade stage a faction can build: of the eight linked model-definition ids (linkedDefinitionIds) the last
    non-zero one whose technology the faction has unlocked wins (the first id is the fallback), and it is
    looked up in the registry. Returns that definition.
    Original quirk: an unregistered id is not reported; the result is then the error code
-   FATAL_ERROR_MODEL_DEFINITION_MISSING cast to a pointer (what the original left in EAX), and the registry
+   FATAL_ERROR_MODEL_DEFINITION_MISSING cast to a pointer (what the original left as its result), and the registry
    miss still writes g_PackageLastErrorPath.
 */
 ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
@@ -32,7 +32,7 @@ ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefiniti
     /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
     linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
-      /* true (CF set) while the technology is still locked */
+      /* true while the technology is still locked */
       technologyLocked = ModelDefinition_IsFactionTechnologyLocked
                         (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                          linkedDefinitionId);
@@ -52,8 +52,8 @@ ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefiniti
 
 
 /* Recursive part of ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology: unlocks the technology of the
-   linked definition the faction can select at this node (linked ids at +0x20), then does the same for every
-   child (child count +0x08, children +0x0C + 4*i). */
+   linked definition the faction can select at this node (linkedDefinitionIds), then does the same for every
+   child (childCount, children[]). */
 static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
 {
   uint32_t childIndex;
@@ -74,15 +74,14 @@ void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
-  /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
-     children at +0x0C + 4*i) depth-first with frames on the machine stack. */
+  /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   ModelDefinitionHierarchy_UnlockFrom(
        factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
-/* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true (CF set) as soon as
-   this node's definition id (+0x20) or one in its subtree (child count +0x08, children +0x0C + 4*i) names a
+/* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true as soon as
+   this node's definition id (linkedDefinitionIds[0]) or one in its subtree (childCount, children[]) names a
    technology the faction has not unlocked yet. */
 static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,ArmyModelTreeNode *node)
 {
@@ -101,16 +100,14 @@ static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks
 }
 
 /* Walks the model-definition hierarchy below definitionNode and tests each definition's technology
-   requirement against the faction's technology masks. Returns false (CF clear) when every definition in the
-   tree is unlocked, true (CF set) as soon as one is still locked: ModelDefinition_IsFactionTechnologyLocked
-   reports a locked technology with CF set.
+   requirement against the faction's technology masks. Returns false when every definition in the tree is
+   unlocked, true as soon as one is still locked (ModelDefinition_IsFactionTechnologyLocked returns true).
 */
 bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
-  /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
-     children at +0x0C + 4*i) depth-first with frames on the machine stack. */
+  /* Depth-first walk of the model tree (childCount, children[]), written as a recursion. */
   return ModelDefinitionHierarchy_AnyTechnologyFrom
                    (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                     (ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
@@ -121,7 +118,7 @@ bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
    model-definition records (starting at +0x200, each prefixed with its byte size) and resolves their
    references against the asset base. Returns true on success; returns false with the error code in *outError
    (untouched on success) for an invalid header or at the first record that fails. (The original's success
-   EAX, the last registration's value, was read by no caller.)
+   return value, the last registration's value, was read by no caller.)
 */
 bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
 
@@ -148,9 +145,9 @@ bool ModelAsset_PrepareRecords(ModelAssetHeader *asset,uint32_t *outError)
 }
 
 
-/* Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte ModelPackedPointRecord
-   entries) for the key (keyIndex << 4) | keyClass. Returns true when an entry matches and stores its local
-   position (the dwords at +4, +8, +0xC) in *outLocalPosition; returns false and stores (0, 0, 0) when no entry
+/* Looks up the model's packed point table (packedLookupTableEntryCount entries of ModelPackedPointRecord at
+   packedLookupTableRelativeOffset) for the key (keyIndex << 4) | keyClass. Returns true when an entry matches
+   and stores its localPosition in *outLocalPosition; returns false and stores (0, 0, 0) when no entry
    matches. outLocalPosition may be NULL when only presence matters. Called directly by
    ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters (a model class-init callback table slot) and by the
    army platform-lowering step in gameplay/army/runtime.c.
@@ -184,7 +181,7 @@ bool ModelLookupTable_GetPackedPointPosition
 }
 
 
-/* Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte entries) for the key
+/* Looks up the model's packed point table (packedLookupTableEntryCount, packedLookupTableRelativeOffset) for the key
    (keyIndex << 4) | keyClass. Returns true and stores the matching entry in *outEntry when one matches;
    otherwise returns false and stores the address just past the table's last entry in *outEntry (one caller,
    ArmyPlacement_CanPlaceAnchoredModel, reads it anyway).
@@ -328,7 +325,7 @@ bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tria
                            (int64_t)edge2Z * (int64_t)(int)FIXED_PRODUCT_SHR(normalCrossHitZ,Q28_SHIFT);
 
   /* Inside test: both barycentric dots and the remainder edge2DotNormalCrossEdge1 - (their sum) carry the sign
-     of edge2DotNormalCrossEdge1 (the 64-bit subtraction wraps like the original SUB/SBB pair). */
+     of edge2DotNormalCrossEdge1 (the 64-bit subtraction wraps like the original's). */
   insideRemainder = (int64_t)((uint64_t)edge2DotNormalCrossEdge1 -
                               (uint64_t)(edge2DotNormalCrossHit + hitDotNormalCrossEdge1));
   if (edge2DotNormalCrossEdge1 < 0) {
@@ -346,7 +343,7 @@ bool ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *tria
 
 
 /* Looks a model definition up by id in the 768-slot registry and returns 0 with its build costs, the three
-   dwords at record +0x188 (*outEnergyLoadQ4), +0x180 (*outBuildTicks) and +0x184 (*outXeniteCostQ4), which
+   fields buildEnergyLoadQ4 (*outEnergyLoadQ4), buildTicks (*outBuildTicks) and xeniteValueQ4 (*outXeniteCostQ4), which
    ArmyAssetRecord_RelocateModelTree adds to an army record. On a miss the id is formatted into
    g_PackageLastErrorPath, the out-parameters are left unchanged and FATAL_ERROR_MODEL_DEFINITION_MISSING is
    returned.
@@ -378,8 +375,8 @@ uint32_t ModelDefinitionRegistry_FindBuildCostsById
 }
 
 
-/* Returns the first registered model definition whose runtime class id (dword +0x1C0) equals runtimeClassId,
-   or NULL. Called directly by the AI planning and technology code (gameplay/ai/planning.c, technology.c).
+/* Returns the first registered model definition whose runtime class id (requiredTechnologyBit) equals
+   runtimeClassId, or NULL. Called directly by the AI planning and technology code (gameplay/ai/planning.c, technology.c).
 */
 ModelDefinitionRecordPrefix *
 ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
@@ -404,8 +401,8 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
 }
 
 /* Same selection as ModelDefinition_SelectFactionUnlockedLinkedDefinition, but returns the chosen id
-   itself: the last non-zero of the eight linked ids at +0x20 whose technology the faction has unlocked,
-   or the first id when none is. CF is always clear.
+   itself: the last non-zero of the eight linked ids (linkedDefinitionIds) whose technology the faction has
+   unlocked, or the first id when none is.
 */
 PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
@@ -421,7 +418,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
     /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
     linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
-      /* true (CF set) means the technology is still locked */
+      /* true means the technology is still locked */
       technologyLocked = ModelDefinition_IsFactionTechnologyLocked
                         (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                          linkedDefinitionId);
@@ -435,9 +432,10 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
 }
 
 
-/* Serialized model node tree: flags +0x04 (low nibble 0 = has a sprite), sprite path +0x38, sprite
-   asset +0x30, owned-copy count +0x34, child count +0x14, child offsets +0x18 + 4*i (relative to the
-   asset, relocated in place). Loads or reuses each node's sprite; true (CF) with *error on failure. */
+/* Serialized model node tree: nodeFlags (low nibble 0 = has a sprite), sprite path right after the header,
+   spriteAssetReference, ownedNestedResourcePresent (owned-copy count), childCount, childSerializedOffsets
+   (relative to the asset, relocated in place). Loads or reuses each node's sprite; returns true with *error
+   on failure. */
 static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uint8_t *asset,uint32_t *error)
 {
   uint32_t childIndex;
@@ -445,9 +443,9 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uin
     uint16_t *spritePath = (uint16_t *)(node + 1);
     SpriteAssetHeader *loadedSprite;
     SpriteAssetHeader *registered;
-    /* ".spr". The original tests its CF (JC at 0x005286C6), but WidePath_SetExtensionCode always
-       returns with CLC (0x0040F314), so that branch is dead. The error exit at 0x00528677 only drops the
-       walk's stack frames before MOV ESP,EBP; returning up the recursion is equivalent. */
+    /* ".spr". The original checks this call for failure, but WidePath_SetExtensionCode never fails, so that
+       branch is dead. On an error the original abandons the whole tree walk at once; returning up the
+       recursion is equivalent. */
     WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
     loadedSprite = Package_LoadEntry(spritePath,error);
     if (loadedSprite == NULL) {
@@ -534,7 +532,7 @@ static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveVi
                        ((PckEffectDefinitionIdCatalog)*destructionEffects[fieldIndex],destructionEffects[fieldIndex]);
     if (status != 0) return status;
   }
-  /* -1: the definition has no shot at +0x168 */
+  /* -1: the definition has no emitter shot */
   if (definition->emitterShotDefinitionReference != (ShotDefinition *)(intptr_t)-1) {
     status = ShotDefinitionRegistry_FindByIdWithError
                        ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference,&resolvedEmitterShot);
@@ -551,7 +549,7 @@ static uint32_t ModelDefinition_ResolveShotAndEffectIds(ModelDefinitionResolveVi
 }
 
 /* Copies the terrain-class dependent placement values from the grid tables. Negative classes keep the
-   serialized values; the contact kind at +0x278 selects which grid tables the class at +0x264 indexes
+   serialized values; placementContactKindIndex selects which grid tables terrainTraversalClass indexes
    (kind 4 from class 1, the fallback tables from class 4). */
 static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *definition)
 {
@@ -603,7 +601,7 @@ static void ModelDefinition_CopyTerrainClassValues(ModelDefinitionResolveView *d
    sprites are loaded or reused, the shot and effect ids are resolved through their registries, and the
    terrain-class dependent placement values are copied from the grid tables. Returns true on success; a
    duplicate id, a full registry or any failed load/lookup returns false with its error code in *outError
-   (untouched on success; the original's success EAX was read by no caller).
+   (untouched on success; the original's success return value was read by no caller).
 */
 bool ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolveView *definition,ModelAssetHeader *asset,uint32_t *outError)
@@ -621,8 +619,7 @@ bool ModelDefinition_RegisterAndResolveReferences
   if (rootNodeOffset != 0) {
     /* asset start + serialized offset */
     definition->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)asset + rootNodeOffset);
-    /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
-       {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
+    /* The node tree walk is a recursion over every child (ModelDefinition_ResolveNodeSprites). */
     if (ModelDefinition_ResolveNodeSprites
                   ((MdlSerializedNodeHeader *)((uint8_t *)asset + rootNodeOffset),(uint8_t *)asset,&status)) {
       *outError = status;
@@ -639,7 +636,7 @@ bool ModelDefinition_RegisterAndResolveReferences
 }
 
 
-/* Unlocks for the faction the technology that the model definition grants (record +0x1C4), so building
+/* Unlocks for the faction the technology that the model definition grants (researchTechnologyIds[0]), so building
    that model makes its successor technology available. An unknown id is silently ignored.
 */
 void ModelDefinition_UnlockLinkedTechnologyForFaction
@@ -656,9 +653,9 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
 }
 
 
-/* Tests whether the faction may use the model definition: the technology bit it requires (record +0x1C0)
-   must be set in the faction's 256-bit technology masks. True (CF set) means locked
-   (bit clear or unknown id); false (CF clear) means unlocked.
+/* Tests whether the faction may use the model definition: the technology bit it requires (requiredTechnologyBit)
+   must be set in the faction's 256-bit technology masks. True means locked (bit clear or unknown id); false
+   means unlocked.
 */
 bool ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
@@ -678,7 +675,7 @@ bool ModelDefinition_IsFactionTechnologyLocked
 
 /* Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
    g_PackageLastErrorPath for the error message and returns NULL (the original returned
-   FATAL_ERROR_MODEL_DEFINITION_MISSING with CF set; callers that passed that code on now supply it
+   FATAL_ERROR_MODEL_DEFINITION_MISSING with a failure flag; callers that passed that code on now supply it
    themselves). A found definition is never NULL.
 */
 ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId)
@@ -698,8 +695,7 @@ ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinition
     }
     registryCursor++;
   }
-  /* Original quirk: the number formatted is the last registry slot's content, not the missing id
-     (PUSH EAX at 0x00528E59) */
+  /* Original quirk: the number formatted is the last registry slot's content, not the missing id */
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
   return NULL;

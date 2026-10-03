@@ -15,7 +15,7 @@
    description and 14 further description lines reachable under the global ids the frontend uses for that
    level: TEXT_ID_LEVEL_TITLE_BASE + title index and TEXT_ID_LEVEL_DESCRIPTION_BASE + TEXT_ID_LEVEL_DESCRIPTION_STRIDE *
    title index (+1..14).
-   CF is set when the page cannot be loaded or one of the strings is missing.
+   Returns true when the page cannot be loaded or one of the strings is missing, false on success.
 */
 bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
 
@@ -72,7 +72,7 @@ void FontRuntime_Init(void)
   void *allocPayload;
 
   pathUtf16 = g_FontTexturePathsUtf16;
-  /* one scan budget for both paths: the original keeps a single REPNE SCASW count across the loop */
+  /* one scan budget for both paths: the original keeps a single terminator-scan count across the loop */
   scanUnitsLeft = FONT_TEXTURE_PATHS_SCAN_UNITS;
   for (sourceIndex = 0; sourceIndex < 2; sourceIndex++) {
     loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)pathUtf16,&textureLoadError);
@@ -95,7 +95,7 @@ void FontRuntime_Init(void)
   g_TextResourceOverrides = (TextResourceOverrideTable *)checkedValue;
   overrideDword = g_TextResourceOverrides->resourceIds;
   /* all dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
-     after this fill it finds no free slot (the original does the same: OR EAX,-1 / REP STOSD). */
+     after this fill it finds no free slot (the original fills the table with -1 the same way). */
   for (dwordsLeft = sizeof(TextResourceOverrideTable) / 4; dwordsLeft != 0; dwordsLeft--) {
     *overrideDword = TEXT_RESOURCE_ID_NONE;
     overrideDword++;
@@ -180,10 +180,10 @@ uint32_t FontGlyph_DrawBottomAligned
     }
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
               (clipBottom,clipRight,clipTop,clipLeft,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
-    /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
+    /* the glyph width measured before the blits */
     return textureSize.logicalWidthPixels;
   }
-  return 0; /* EAX = fontTexture = NULL */
+  return 0; /* no font loaded */
 }
 
 
@@ -220,10 +220,10 @@ uint32_t FontGlyph_DrawVerticallyCentered
     }
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
               (clipBottom,clipRight,clipTop,clipLeft,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
-    /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
+    /* the glyph width measured before the blits */
     return textureSize.logicalWidthPixels;
   }
-  return 0; /* EAX = fontTexture = NULL */
+  return 0; /* no font loaded */
 }
 
 
@@ -381,7 +381,7 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
   availableOverrideSlotFound = g_TextResourceOverrides == NULL;
   overrideWordScanCursor = (TextResourceOverrideParallelWord4 *)g_TextResourceOverrides;
   if (!availableOverrideSlotFound) {
-    /* REPNE SCASD over the id array for a zero id; the cursor ends one entry past the match */
+    /* scan the id array for a zero id; the cursor ends one entry past the match */
     do {
       overrideWordCursorAfterScan = overrideWordScanCursor;
       if (overrideSlotsRemaining == 0) break;

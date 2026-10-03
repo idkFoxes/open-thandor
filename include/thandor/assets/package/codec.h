@@ -35,10 +35,10 @@
 #define FIELD_GRID_WORLD_ROW_STEP_X 0x480 /* 1152, about half a column */
 #define FIELD_GRID_WORLD_ROW_STEP_Y (-1999)
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 /* All six codecs share the g_PckEncoderTable / g_PckDecoderTable slot interface (PckCodecProc): they return
    true on success and store the result byte count in *outByteCount (encoders: the packed size; decoders: an
-   incidental register value, see each decoder), or return false and store the error code in *outErrorCode.
+   incidental leftover value, see each decoder), or return false and store the error code in *outErrorCode.
    Only the out pointer of the outcome is written; either may be NULL. */
 
 bool PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,

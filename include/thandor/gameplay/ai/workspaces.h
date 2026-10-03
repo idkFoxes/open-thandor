@@ -41,7 +41,7 @@
   (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT30 | GRID_SCRATCH_TERRAIN_CLASS_BIT29 | \
    GRID_SCRATCH_TERRAIN_CLASS_BIT28) /* 0xf0000000 */
 #define AI_SITE_SCRATCH_BANDS_CLASSES_0_TO_5 (0x3f * GRID_SCRATCH_LOW_BAND0) /* 0x3f00 */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);

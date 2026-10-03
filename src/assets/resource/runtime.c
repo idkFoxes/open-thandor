@@ -149,8 +149,7 @@ bool Resource_Load(uint16_t *path,void **outBuffer,uint32_t *outByteCount,uint32
 }
 
 
-/* Frees a buffer returned by Resource_Load (or Package_LoadEntry) back to the arena heap. Unlike a direct
-   g_MemoryApi.free call it keeps EAX, ECX and EDX, so register-convention callers need not save them.
+/* Frees a buffer returned by Resource_Load (or Package_LoadEntry) back to the arena heap.
 */
 void Resource_Release(void *resourceBuffer)
 
@@ -164,8 +163,7 @@ void Resource_Release(void *resourceBuffer)
    array with its byte size (recordCount * 0x100) for Package_UpsertEntry. The payload pointer is rebased per
    domain (0 army/model, 1 shot, 2 effect). ResourceRegistrationRuntime_RebaseLoadedRecords undoes it.
    Called directly by the save-game writer InGameSaveGame_WritePackage.
-   Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX, and the
-   C caller splits the qword the same way, so the swap is internal to the C.
+   Return value: (base << 32) | byteSize; the C caller splits the qword the same way.
 */
 ResourceRegistrationImagePair
 InGameSaveGame_PrepareRegistrationRecords
@@ -273,11 +271,11 @@ InGameSaveGame_PrepareRegistrationRecords
 }
 
 /* Save-game preparation of the faction runtime image (the "daten.hex" entry): for each of the 8 faction
-   records the army asset pointers are replaced by the asset ids (+8 of each asset) and the 8x32 group member
+   records the army asset pointers are replaced by the asset ids (registryId of each asset) and the 8x32 group member
    pointers by saved army-slot offsets. Returns the image with its byte size 0x3A20 for Package_UpsertEntry;
    GameFactionRuntime_RebaseLoadedArmyReferences undoes it. Called directly by the save-game writer
    InGameSaveGame_WritePackage.
-   Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
+   Return value: (base << 32) | byteSize.
 */
 ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void)
 
@@ -325,7 +323,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void)
    the completion action) and the definition pointer becomes the definition id; free slots are zeroed.
    Returns the slot array with its byte size 0x40000; EffectRuntime_RebaseSlotsAfterLoad undoes it. Called
    directly by the save-game writer InGameSaveGame_WritePackage.
-   Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
+   Return value: (base << 32) | byteSize.
 */
 ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
 
@@ -347,7 +345,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
         slotWords[wordIndex] = 0;
       }
       if (slotIndex == EFFECT_RUNTIME_SLOT_COUNT - 1) {
-        /* Original quirk: NOT [slot0 + 0x3C] only on this exit (last slot free);
+        /* Original quirk: slot 0's effectAgeTicks is inverted only on this exit (last slot free);
            EffectRuntime_RebaseSlotsAfterLoad inverts it on every load */
         g_EffectRuntimeSlots->effectAgeTicks = ~g_EffectRuntimeSlots->effectAgeTicks;
       }
@@ -380,7 +378,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
    definition id; free slots are zeroed. Returns the slot array with its byte size 0x40000;
    ShotRuntime_RebaseSlotsAfterLoad undoes it. Called directly by the save-game writer
    InGameSaveGame_WritePackage.
-   Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
+   Return value: (base << 32) | byteSize.
 */
 ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
 
@@ -403,7 +401,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
         slotWords[wordIndex] = 0;
       }
       if (slotIndex == SHOT_RUNTIME_SLOT_COUNT - 1) {
-        /* Original quirk: NOT [slot0 + 0x3C] only on this exit (last slot free);
+        /* Original quirk: slot 0's secondaryEffectCountdownTicks is inverted only on this exit (last slot free);
            ShotRuntime_RebaseSlotsAfterLoad inverts it on every load */
         terminalToggleField =
              &g_ShotRuntimeSlots->ownerAndTrajectory.secondaryEffectCountdownTicks;

@@ -80,7 +80,7 @@ void Locale_Init(void)
 
 
 /* Installs the WinMM periodic-timer services and the Win32 message pump in their function pointers.
-   It cannot fail: the original returns with CF clear, which ProcessEntry relies on.
+   It cannot fail: the original always reports success, which ProcessEntry relies on.
 */
 void __cdecl TimerSystem_Init(void)
 
@@ -128,8 +128,8 @@ void TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc
       winmmTimerId = ((BootstrapTimeSetEventProc)g_BootstrapApiBindings[BOOTSTRAP_API_TIME_SET_EVENT].destination)
                                (intervalMilliseconds,0,WinMM_TimerDispatchCallback,
                                 callbackSlotByteOffset,TIME_PERIODIC);
-      /* Ghidra showed a stale 6th argument and indexed the ID array by intervalMilliseconds;
-         the ID pairs with the callback slot (see TimerSystem_UnregisterPeriodic). */
+      /* the ID is stored at the callback's slot index, not at intervalMilliseconds: the ID pairs with
+         the callback slot (see TimerSystem_UnregisterPeriodic). */
       TIMER_WINMM_ID_AT(callbackSlotByteOffset) = winmmTimerId;
       return;
     }
@@ -306,8 +306,8 @@ uint32_t Locale_FormatTimeFieldsUtf16
   /* the local time is fetched but not used */
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
-    /* The decompiler dropped the designator selection (ECX in the original); note the original
-       picks the field exported as pmDesignator for hours below 12. */
+    /* the designator is selected by the hour; note the original picks the field named pmDesignator
+       for hours below 12. */
     designatorText = g_LocaleSystemState.pmDesignator;
     if (11 < hour) {
       designatorText = g_LocaleSystemState.amDesignator;
@@ -366,7 +366,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
     hour = (uint32_t)g_LocaleSystemState.localTime.hour;
-    /* See Locale_FormatTimeFieldsUtf16: the designator selection was lost in decompilation. */
+    /* designator selection as in Locale_FormatTimeFieldsUtf16 (pmDesignator for hours below 12) */
     designatorText = g_LocaleSystemState.pmDesignator;
     if (11 < hour) {
       designatorText = g_LocaleSystemState.amDesignator;
@@ -510,8 +510,8 @@ void TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
 uint32_t Locale_ParseUnsignedDecimalAscii(uint8_t *text)
 
 {
-  /* The decompiled loop tested (c - '0') > 0x2f instead of "no borrow", so every digit ended the
-     parse and the locale's day-month order and 24-hour flag always read as 0 (US format). */
+  /* every digit '0'..'9' continues the parse (the locale's day-month order and 24-hour flag depend on it;
+     ending at the first digit would always read them as 0, US format). */
   uint32_t parsedValue = 0;
 
   while ((*text >= '0') && (*text < '9' + 1)) {

@@ -40,7 +40,7 @@
 #define FRONTEND_RESULTS_COLUMN_POINTS 5
 #define FRONTEND_RESULTS_COLUMN_PLAYER 6
 #define FRONTEND_RESULTS_COLUMN_FACTION 7
-#define FRONTEND_RESULTS_COLUMN_FACTION_FIELD 8 /* 8..0x11: faction record fields +0x98..+0xBC */
+#define FRONTEND_RESULTS_COLUMN_FACTION_FIELD 8 /* 8..0x11: faction record fields exploredTerrainPercent..relationCounterF */
 /* Results graph: g_GameStatTableImage holds one 0x38-byte sample (7 factions x 2 dwords) every 128 simulation
    ticks. */
 #define RESULTS_STAT_SAMPLE_BYTES 0x38
@@ -53,7 +53,7 @@
    dwords */
 #define FACTION_COLOUR_TEXT_PAIR_TOP_BYTE(highUnit, lowUnit) \
           (((uint8_t)(lowUnit) & FACTION_COLOUR_TEXT_DIGIT_MASK) << 24 | (uint32_t)(uint8_t)(highUnit) << 28)
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,int clipTop,int clipLeft,
           FrontendResultsColumnSequenceControl *control);

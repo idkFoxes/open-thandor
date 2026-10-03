@@ -25,7 +25,8 @@
 /* Chat. A line is sent as a begin command, four append commands of 12 narrow bytes (3 dwords) each and a
    publish command. Lobby: one 100-byte record per player block in g_FrontendPlayerMessageBuffers, dword 0 the
    byte offset of the next write (starting after itself), then the 0x30-byte text. In game the text is staged
-   at +0x80C0 of the player's SelectionPlayerRuntimeBlock, the write offset in the low byte of +0x809C. */
+   in chatStagingText of the player's SelectionPlayerRuntimeBlock, the write offset in the low byte of
+   chatRecipientMaskAndWriteOffset. */
 #define FRONTEND_PLAYER_MESSAGE_RECORD_BYTES 100
 #define FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET 4
 #define PLAYER_CHAT_TEXT_BYTES 0x30
@@ -39,7 +40,7 @@
 /* The player record whose playerName field name points at (loops that walk the records by their names). */
 #define FRONTEND_PLAYER_RECORD_OF_NAME(name) \
   ((FrontendPlayerRuntimeRecord *)((uint8_t *)(name) - offsetof(FrontendPlayerRuntimeRecord,playerName)))
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl);
 

@@ -12,8 +12,8 @@
 
 extern PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256];
 
-/* Huffman node workspace (original layout): [0..255] leaf nodes (index = byte symbol, 004084C0),
-   [256..511] internal nodes (004094C0); the tree-building scans run over both halves as one array. */
+/* Huffman node workspace (original layout): [0..255] leaf nodes (index = byte symbol), [256..511] internal
+   nodes; the tree-building scans run over both halves as one array. */
 extern PckHuffmanNode g_PckHuffmanNodeWorkspace[512];
 
 extern uint16_t g_FileSystemCombinedPathScratchUtf16[256];

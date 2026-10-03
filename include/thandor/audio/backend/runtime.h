@@ -29,7 +29,7 @@
 /* Memory_ZeroDwords size used for WaveFormat_PCM_22050_Stereo16: sizeof(WAVEFORMATEX), the 18 bytes of fields
    and the two bytes of tail padding */
 #define DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES 0x14
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void DirectSound_Shutdown(void);
 

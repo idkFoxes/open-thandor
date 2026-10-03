@@ -52,7 +52,7 @@
 /* Pixels of an asset with a single subresource record directly after the header (offscreen renders) */
 #define GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET (GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_RECORD_SIZE)
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 

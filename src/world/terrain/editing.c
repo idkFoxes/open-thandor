@@ -301,8 +301,8 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
-  /* The original ORs 1 into the dword 0x14C bytes before the field grid asset (OR [ESI-0x14C],1) instead of
-     its runtimeStateFlags at +0xB4, so the surface is not marked dirty here; kept as in the original. */
+  /* The original ORs 1 into the dword 0x14C bytes before the field grid asset instead of
+     its runtimeStateFlags, so the surface is not marked dirty here; kept as in the original. */
   *(uint32_t *)((uint8_t *)fieldGridAsset - TERRAIN_EDIT_STRAY_DIRTY_FLAG_BACK_OFFSET) =
        *(uint32_t *)((uint8_t *)fieldGridAsset - TERRAIN_EDIT_STRAY_DIRTY_FLAG_BACK_OFFSET) | 1;
   fieldCell = fieldGridAsset->cells;
@@ -364,7 +364,7 @@ void TerrainRegionCollection_RecordConnectedCell(FieldGridRegionMask requiredOcc
   cell->flagsAndMaterial = cell->flagsAndMaterial | FIELD_CELL_CONNECTED_REGION_VISITED;
   if ((requiredOccupancyMask & extractionDescriptor) != 0) {
     cell->resourceExtractionDescriptor = 0;
-    /* XCHG: take the model offset and clear it in one instruction */
+    /* take the model offset and clear it in one atomic step */
     LOCK();
     savedArmyOffset = cell->armyRuntimeSavedOffset;
     cell->armyRuntimeSavedOffset = 0;

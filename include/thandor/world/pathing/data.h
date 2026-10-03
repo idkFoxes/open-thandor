@@ -36,14 +36,14 @@ extern uint32_t g_GridPathUnreachableRegionReferenceRow;
 
 extern EntityPathingPriorityPair *g_EntityPathingPriorityPairs;
 
-/* 005367D4-005368D4: the 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
+/* The 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
    fills at most ENTITY_PATHING_PRIORITY_PAIR_CAPACITY of them and heap-sorts them in place) */
 #define ENTITY_PATHING_PRIORITY_PAIR_CAPACITY 32
 extern EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY];
 
 extern uint32_t g_EntityPathingPriorityPairCount;
 
-/* Indices into g_GridTerrainClassThresholds (one table at 0x536F10-0x536F54 in the original). Water surface
+/* Indices into g_GridTerrainClassThresholds (one table in the original). Water surface
    deltas are Q12, normal angles are the high 16 bits of the cell's packed normal angles. */
 enum {
     GRID_TERRAIN_THRESHOLD_BIT24_MAX_WATER_SURFACE_DELTA = 0,

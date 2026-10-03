@@ -12,9 +12,8 @@
 
 extern RandomGeneratorState g_RandomGeneratorState;
 
-/* one sine over 1.5 turns in Q28, from a quarter turn before angle 0: sin(-16384..-1) at
-   004246A0, sin(0..16383) at 004346A0 (FIXED_SINE_TABLE_SIN), cos(0..65535) at 004446A0
-   (FIXED_SINE_TABLE_COS); signed and full-turn lookups run on from one part into the next */
+/* one sine over 1.5 turns in Q28, from a quarter turn before angle 0: sin(-16384..-1), then
+   sin(0..16383) (FIXED_SINE_TABLE_SIN), then cos(0..65535) (FIXED_SINE_TABLE_COS); signed and full-turn lookups run on from one part into the next */
 extern int32_t g_FixedSineQ28[98304];
 
 extern GraphicsFixedMatrix3x4 g_FixedTransformInputRotationScratch;

@@ -13,8 +13,8 @@
 
 /* Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
    'lev' asset of converter version 0x70001, and the level\*.str text page must load as the level's text
-   aliases (keyed by the level's title text id). CF clear means the package stays mounted; on any failure it is
-   unmounted again and CF is set (a failed mount returns without unmounting).
+   aliases (keyed by the level's title text id). Returns false when the package stays mounted; on any failure
+   it is unmounted again and true is returned (a failed mount returns without unmounting).
 */
 bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 
@@ -56,10 +56,10 @@ bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 
 /* Package_UpsertEntry: copies the PCK_ENTRY_PATH_UNITS code units of path (PckEntryHeader.path) to
    nameDestination, two code units per dword.
-   Original quirk: the full field is copied (MOV ECX,0x7B; REP MOVSD = 492 bytes) whatever the path's length,
+   Original quirk: the full field is copied (0x7B whole dwords = 492 bytes) whatever the path's length,
    so for the short save-game entry names (u_army_hex_0050dfb4 ... u_oldunit_hex_0050e094, 0x12-0x1A bytes
    each) it reads up to 0x1EC bytes past the string: through the following names and on into
-   g_InGameResourceRegistrationBusyCount and the variables after 0x0050E0AC, which change at run time, so the
+   g_InGameResourceRegistrationBusyCount and the variables after it, which change at run time, so the
    original bytes cannot be kept by making the names one table. The extra bytes only land behind the
    terminator in the path field of the entry header written to the save file; every reader stops at the
    terminator (Package_FindEntryInMount / Package_FindEntryAcrossMounts compare up to it, Package_FindEntry's
@@ -661,7 +661,7 @@ static void Package_SortFoundEntries(PckEntryHeader *entries,int entryCount)
    copies each path into a PCK_ENTRY_HEADER_BYTES output record while the capacity lasts and sorts the records
    by path (UTF-16 code-unit order). Returns true with the match count in *outMatchCount (each record is
    PCK_ENTRY_HEADER_BYTES); returns false when the handle is not mounted, leaving *outMatchCount unchanged
-   (the original returned FATAL_ERROR_GENERAL_FAILURE with the caller's ECX, which no caller reads).
+   (the original returned FATAL_ERROR_GENERAL_FAILURE, which no caller reads).
 */
 bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                        uint16_t *pattern,EngineFileHandle fileHandle,uint32_t *outMatchCount)
@@ -682,7 +682,7 @@ bool Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader
   outputEntry = outputEntries;
   entry = mountSlot->entryHeaders;
   for (entriesRemaining = mountSlot->entryCount; entriesRemaining != 0; entriesRemaining--) {
-    if (!Package_WildcardPathMatches(pattern,entry->path)) { /* false (CF clear) means match */
+    if (!Package_WildcardPathMatches(pattern,entry->path)) { /* false means match */
       if (outputCapacityBytes < PCK_ENTRY_HEADER_BYTES) {
         /* output full: stop with the matches so far.
            Original quirk: these matches are returned unsorted */
@@ -727,7 +727,7 @@ void Package_Unmount(EngineFileHandle fileHandle)
 
 /* Compares a UTF-16 archive path against a pattern for the package entry search. '?' matches any one code
    unit; '*' only skips the candidate to its next dot or terminator (no full globbing), which is enough for
-   patterns like "level\*.lev". The comparison is case-sensitive. CF clear means match.
+   patterns like "level\*.lev". The comparison is case-sensitive. Returns false on a match.
 */
 bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
 
@@ -787,7 +787,7 @@ bool Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFi
 
 /* Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load. The length is measured
    in code units (at most 0x100, terminator included) but used as a byte count: the original copies twice as
-   many code units as the path has (SUB EDI,ESI then REP MOVSW), running past the terminator and, for paths
+   many code units as the path has, running past the terminator and, for paths
    over 0x80 units, into g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer.
 */
 THANDOR_ALLOWS_OVERREAD void Package_SetLastErrorPath(uint16_t *path)
@@ -863,7 +863,7 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
     return NULL; /* empty package */
   }
   do {
-    /* REPE CMPSW over the path length including its terminator */
+    /* compare code units over the path length including its terminator, stopping at the first difference */
     matched = false;
     remainingCount = -(lengthRemaining - PCK_ENTRY_PATH_UNITS);
     pathCursor = path;
@@ -890,7 +890,6 @@ PckEntryHeader *Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHan
    case). Returns the entry header and stores the package's handle in *outFileHandle; returns NULL (leaving
    *outFileHandle unchanged) when the path is too long for an entry or no package has it. A found entry is
    never NULL.
-   Original register convention: entry in EAX, handle in EBX, CF set on failure; ECX and EDX preserved.
 */
 PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *outFileHandle)
 

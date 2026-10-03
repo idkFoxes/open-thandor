@@ -28,7 +28,7 @@ typedef struct FrontendTextureQualityGroup {
 } FrontendTextureQualityGroup;
 
 /* Submodule: ui/frontend/settings. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *frontendRootPage);
 

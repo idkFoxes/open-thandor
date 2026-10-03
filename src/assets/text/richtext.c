@@ -155,8 +155,8 @@ bool RichTextCommandStream_DrawSingleLine
       g_RichTextCurrentShadowOffset = g_RichTextSavedShadowOffset;
       break;
     case RICHTEXT_OP_LITERAL_COLOR:
-      /* The eight payload code units are hex digits (only their low nibble is used, SHRD EDX,EAX,4 in the
-         original): units 1-2 form the lowest colour byte, 7-8 the highest, each pair high digit first. */
+      /* The eight payload code units are hex digits (only their low nibble is used, shifted in four bits
+         at a time): units 1-2 form the lowest colour byte, 7-8 the highest, each pair high digit first. */
       g_RichTextCurrentColorArgb =
            ((((((((uint8_t)commandCursor[2] & 0xf) << (RICHTEXT_COLOR_DIGIT_SHIFT - RICHTEXT_COLOR_DIGIT_BITS) |
                  (uint32_t)(uint8_t)*commandStream << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
@@ -657,7 +657,8 @@ static bool RichTextMarkup_FreeBufferAndFail(uint16_t *memory,uint32_t *outError
 }
 
 /* Frees the string buffer and fails with the "TXT2STR: unknown character" message, which gets the byte offset
-   after the offending character(s) (markupCursor - markupBytes) written in at +0x4C. */
+   after the offending character(s) (markupCursor - markupBytes) written in at code unit
+   RICHTEXT_MARKUP_ERROR_OFFSET_UNIT. */
 static bool RichTextMarkup_ReportInvalidCharacter
           (uint16_t *memory,uint8_t *markupBytes,uint8_t *markupCursor,uint32_t *outError)
 {
@@ -682,7 +683,7 @@ static bool RichTextMarkup_ReportInvalidCharacter
    *outError: for an invalid character (control byte, unknown escape, misplaced tag) the address of the
    formatted "TXT2STR: unknown character" message (with its byte offset), when the arena has no free block the
    allocator's error, when the arena space runs out FATAL_ERROR_GENERAL_FAILURE. On success the original also
-   returns the asset size in ECX and asset + 0x100 in EDX; they are dropped (there is no caller).
+   returns the asset size and asset + 0x100; they are dropped (there is no caller).
 */
 bool RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes,void **outAsset,uint32_t *outError)
 

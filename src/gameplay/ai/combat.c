@@ -17,8 +17,9 @@
 /* Per-step AI target choice of a non-neutral army, called by ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    (the army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases). Skipped while an
    interrupted command is pending or a target command is still running (commandGeneration > 0). Keeps the
-   current target (re-stamping commandGeneration), falls back to the stored group-attack target (+0x98) when
-   nothing was found although the army has hostile class counters, or else commands the selected target.
+   current target (re-stamping commandGeneration), falls back to the stored group-attack target
+   (assignedTargetArmyRuntime) when nothing was found although the army has hostile class counters, or else
+   commands the selected target.
 */
 void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
@@ -40,7 +41,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
     if (selectedTargetArmyRuntime == armyRuntime->commandTargetArmyRuntime) {
       armyRuntime->commandGeneration = g_AiCommandGenerationRetainedTarget;
     }
-    /* TEST EDX,EDX / JLE on the returned sum: count > 0 */
+    /* signed test of the returned sum: count > 0 */
     else if ((selectedTargetArmyRuntime == NULL) && (0 < sourceClassCount)) {
       ArmyRuntime_ResolveCommandTarget((ArmyRuntimeSlot *)armyRuntime->assignedTargetArmyRuntime,armyRuntime);
       if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
@@ -62,7 +63,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
 /* Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until
    the group is strong enough (sum >= 0x200), then picks the target with the highest class base score from
    workspace 07 (or workspace 03 when 07 is empty) and sends every collected army to attack it. The target
-   class is read with a single dereference from the target model's +0x4C, not from its type field.
+   class is the runtimeClassId of the target model's definition, not its type field.
 */
 void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
 
@@ -150,11 +151,11 @@ void AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
 
 
 /* Picks the best target for sourceArmyRuntime among the armies of the world owner list: sums the source's
-   eight class counters (+0x100); a positive sum searches armies of other factions, a negative one other armies
-   of the own faction (skipping entities flagged 0x400), zero searches nothing. Candidates must carry the
-   source faction's bit (2 << 2 * faction) in +0x50 and are scored by AiCombatTarget_EvaluateCandidateScore
-   within depth-bin masks around the source (radius +0x4C plus 4.0). Returns the best army (or NULL) and stores
-   the sum in *outSourceClassCount (the original returned the pair in EAX:EDX).
+   eight class counters (targetClassShotDamage); a positive sum searches armies of other factions, a negative one
+   other armies of the own faction (skipping entities flagged 0x400), zero searches nothing. Candidates must carry
+   the source faction's bit (2 << 2 * faction) in terrainOccupancyMask0 and are scored by
+   AiCombatTarget_EvaluateCandidateScore within depth-bin masks around the source (radius weaponRangeQ12 plus
+   4.0). Returns the best army (or NULL) and stores the sum in *outSourceClassCount.
    Only called by AiCombatDecision_UpdateTargetAssignment.
    Original quirk: a zero sum stores a stack leftover instead of the sum (see the body); the C stores the
    positive constant AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER, since every traced original path leaves a positive
@@ -185,22 +186,21 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
   sourceClassCount = 0;
   ownerNodeCursor = worldRuntime->ownerListHead;
   bestCandidateArmyRuntime = NULL;
-  /* the eight class counters at +0x100, summed from the last one down */
+  /* the eight class counters targetClassShotDamage, summed from the last one down */
   for (classIndex = 7; classIndex >= 0; classIndex--) {
     sourceClassCount = sourceClassCount + sourceArmyRuntime->targetClassShotDamage[classIndex];
   }
-  /* Original quirk: with a zero sum the original skips MOV [EBP-0x10],ESI (0x00537302) and returns in EDX
-     (0x00537403) whatever an earlier call left in that stack slot, 36 bytes below
-     AiCombatDecision_UpdateTargetAssignment's return address. The call just before at the same depth is
-     ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive (0x0051D2C0): for an army with child
-     entities each child's frame pushes EBX = worldRuntime there (0x0052A7D8), otherwise the class handler's
-     frame leaves e.g. the movement length ([EBP-8], 0x0052094B) or a pushed pointer / return address. The
-     value is class and state dependent, but every traced path leaves a positive one (the movement length is
-     0 only when the unit stands exactly on its movement point), and the caller only tests EDX > 0
-     (0x00537013). The C formerly returned the most common of them, the world runtime pointer (positive:
-     /LARGEADDRESSAWARE:NO); since the only use of the value is that sign test (the zero-sum path finds no
-     candidate, and AiCombatDecision_UpdateTargetAssignment reads sourceClassCount nowhere else), any positive
-     constant gives the same decisions and stays positive on 64-bit. */
+  /* Original quirk: with a zero sum the original never stores the count and returns, as the count, whatever
+     an earlier call left in that stack slot, 36 bytes below AiCombatDecision_UpdateTargetAssignment's return
+     address. The call just before at the same depth is
+     ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive: for an army with child entities each child's
+     frame leaves worldRuntime there, otherwise the class handler's frame leaves e.g. the movement length (a
+     local) or a pushed pointer / return address. The value is class and state dependent, but every traced path
+     leaves a positive one (the movement length is 0 only when the unit stands exactly on its movement point),
+     and the caller only tests the count > 0. The C formerly returned the most common of them, the world
+     runtime pointer (positive: /LARGEADDRESSAWARE:NO); since the only use of the value is that sign test (the
+     zero-sum path finds no candidate, and AiCombatDecision_UpdateTargetAssignment reads sourceClassCount nowhere
+     else), any positive constant gives the same decisions and stays positive on 64-bit. */
   returnedSourceClassCount = AI_SOURCE_CLASS_COUNT_ZERO_SUM_LEFTOVER;
   if (sourceClassCount != 0) {
     sourceModelNode = sourceArmyRuntime->modelNodeRuntime;
@@ -244,7 +244,7 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
       if (!relationFitsSearch) {
         continue;
       }
-      /* bit 1 of the source faction's 2-bit field in the candidate's +0x50 */
+      /* bit 1 of the source faction's 2-bit field in the candidate's terrainOccupancyMask0 */
       if ((candidateArmyRuntime->terrainOccupancyMask0 & 2 << ((char)sourceFactionIndex * 2 & 31U)) == 0) {
         continue;
       }
@@ -267,12 +267,13 @@ ArmyRuntimeSlot *AiCombatTarget_SelectBestCandidate
 
 /* Scores candidateArmyRuntime as a target for sourceArmyRuntime; 0 rejects it. Requires overlapping depth-bin
    masks, a faction relation that fits the search (not friendly for sourceClassCount > 0, friendly otherwise,
-   where only damaged candidates count) and a horizontal distance within the source radius (+0x4C) plus 2.0.
+   where only damaged candidates count) and a horizontal distance within the source radius (weaponRangeQ12) plus 2.0.
    The score adds weighted terms for the remaining clearance, the class base score, the two armies' class
    counters and the condition deficit (1.0 - ModelRuntime_QueryHierarchyConditionRatioQ12; the counter and
    deficit terms are divided by the Q12 unity); a score above currentBestScore is then
-   quartered when the weapon line-of-fire test returns true, and dropped unless the source definition's +0x18
-   is set. The class definitions are read through two dereferences (definition+0x5C), i.e. the live type.
+   quartered when the weapon line-of-fire test returns true, and dropped unless the source definition's
+   accelerationPerTick is set. The class definitions are read through two dereferences (the definition's
+   targetClassIndex), i.e. the live type.
    Called by AiCombatTarget_SelectBestCandidate and ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate.
 */
 AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
@@ -342,7 +343,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   sourceRadiusQ12 = sourceArmyRuntime->weaponRangeQ12;
   candidateDefinition = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
           definitionOrSavedId).runtimeDefinition;
-  /* class counters (+0x100): the candidate's for the source's class and the source's for the
+  /* class counters (targetClassShotDamage): the candidate's for the source's class and the source's for the
      candidate's class; a zero candidate counter selects the shorter command time (shift 2) */
   candidateCounterForSourceClass = candidateArmyRuntime->targetClassShotDamage
                   [(((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
@@ -403,7 +404,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
       return candidateScore;
     }
   }
-  /* aircraft are aimed at their first child node, all targets at the definition's height offset (+0x50)
+  /* aircraft are aimed at their first child node, all targets at the definition's height offset (aimHeightOffsetQ12)
      above the node */
   if (candidateDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
     candidateAimModelNode = candidateAimModelNode->childNodes[0];

@@ -74,7 +74,7 @@ static bool TerrainScan_BeginAroundWorldPoint
 
 /* Terrain placement test for every terrain class except 1 (g_TerrainClassPlacementAndOverlayCallbacks10
    .placementTests[0, 2..4], also called directly by the army placement code): maps the world point to its field
-   cell and checks the hexagon of radius radiusWorldUnits around it. Returns true (CF set, rejected) when a cell is
+   cell and checks the hexagon of radius radiusWorldUnits around it. Returns true (rejected) when a cell is
    a map-edge cell, lies under water, or its height relative to referenceHeightQ12 leaves
    [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; also when fieldGrid is NULL or the point is
    off the grid.
@@ -130,7 +130,7 @@ bool TerrainHeightBand_TestAroundWorldPoint
 
 /* Terrain placement test for terrain class 1 / water-surface contact (g_TerrainClassPlacementAndOverlayCallbacks10
    .placementTests[1], also called directly by the army placement code): maps the world point to its field cell and
-   checks the hexagon of radius radiusWorldUnits around it. Returns true (CF set, rejected) when a cell is a map-edge
+   checks the hexagon of radius radiusWorldUnits around it. Returns true (rejected) when a cell is a map-edge
    cell, has a negative waterSurfaceDelta, or the high word of its packed normal angles is below
    g_TerrainAuxHeightMinimum; also when fieldGrid is NULL or the point is off the grid.
 */
@@ -154,8 +154,8 @@ bool TerrainAuxHeightThreshold_TestAroundWorldPoint
                                          &centerCellIndex)) {
     return true;
   }
-  /* the centre cell's threshold test reads triangle0NormalAngles (+0x08); the sector tests read
-     triangle1NormalAngles (+0x78). Both as in the original. */
+  /* the centre cell's threshold test reads triangle0NormalAngles; the sector tests read
+     triangle1NormalAngles. Both as in the original. */
   centerCell = &fieldGrid->cells[centerCellIndex];
   if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
     return true;
@@ -735,9 +735,9 @@ Q12 g_TerrainRayNextCoord1Q12;
 
 /* One step of the terrain raycasts' cell walk (coord0 = grid row, coord1 = grid column, both Q12): moves to the
    next row when the ray segment start..end leaves the current cell through a row boundary, otherwise to the next
-   column. Returns true (CF set) when the current cell already contains the ray end or no step is possible (no
+   column. Returns true when the current cell already contains the ray end or no step is possible (no
    row crossing and no column movement), false with the next cell and corner in g_TerrainRayNext* otherwise.
-   On a true return g_TerrainRayNext* hold the original's registers too: coord0 (EDX) = end0 - cur0 for the
+   On a true return g_TerrainRayNext* hold the original's leftover results too: coord0 = end0 - cur0 for the
    destination-cell exit, cur0 with cell - 0x80 / cur1 - one cell for the no-column-movement exit.
 */
 bool TerrainRay_AdvanceGridTraversal
@@ -746,9 +746,8 @@ bool TerrainRay_AdvanceGridTraversal
           ,Q12 currentGridCoord1Q12)
 
 {
-  /* Rewritten from the assembly (0x005049E0-0x00504B04). Besides CF the original returns the next
-     cell in ESI and the next grid corner in EDX (coord0) / ECX (coord1); the decompiler dropped all
-     three, so callers never advanced their cell. They are published in g_TerrainRayNext*. */
+  /* Besides the boolean result the original returns the next cell and the next grid corner (coord0 /
+     coord1); they are published in g_TerrainRayNext*. */
   uint8_t *cell = (uint8_t *)currentCell;
   int delta0;
   int delta1;
@@ -758,12 +757,12 @@ bool TerrainRay_AdvanceGridTraversal
   g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12;
   delta1 = rayEndCoord1Q12 - currentGridCoord1Q12;
   delta0 = rayEndCoord0Q12 - currentGridCoord0Q12;
-  /* SUB + JL (0x005049EC/0x005049F1) is a true signed compare of end and current coordinate; the JG
-     checks against one cell use the wrapped differences */
+  /* end and current coordinate are compared as true signed values; the checks against one cell use the
+     wrapped differences */
   if (rayEndCoord1Q12 >= currentGridCoord1Q12 && rayEndCoord0Q12 >= currentGridCoord0Q12 &&
       delta1 <= FIELD_GRID_CELL_Q12 && delta0 <= FIELD_GRID_CELL_Q12) {
-    /* already in the destination cell: STC at 0x00504A05 with EDX still end0 - cur0 from 0x005049F1
-       (ESI/ECX untouched). The raycasts leave EDX as materialOrCellIndex of their miss result. */
+    /* already in the destination cell: returns true with coord0 = end0 - cur0 (cell and coord1
+       unchanged). The raycasts pass that coord0 on as materialOrCellIndex of their miss result. */
     g_TerrainRayNextCoord0Q12 = delta0;
     return true;
   }
@@ -796,7 +795,7 @@ bool TerrainRay_AdvanceGridTraversal
   }
   delta1 = rayEndCoord1Q12 - rayStartCoord1Q12;
   if (delta1 == 0) {
-    /* STC via 0x00504AEB after 0x00504ADC/0x00504AE2 already moved ESI/ECX one column back; EDX = cur0 */
+    /* returns true after cell and coord1 were already moved one column back; coord0 = cur0 */
     g_TerrainRayNextCell = (FieldGridCell *)cell - 1;
     g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 - FIELD_GRID_CELL_Q12;
     return true;
@@ -836,7 +835,7 @@ static bool TerrainHeightBand_IsCellOutside(const FieldGridCell *cell)
 
 /* Height-band placement test, sector 0 of the hexagon (see TerrainHeightBand_TestAroundWorldPoint): walks the
    sector's diagonal, tests each diagonal cell and the cell between it and the next one, and runs the straight
-   tests of directions 0 and 1 that cover the sector. Returns true (CF set) at the first cell outside the height
+   tests of directions 0 and 1 that cover the sector. Returns true at the first cell outside the height
    band, false when the step limit is reached.
 */
 bool TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1081,7 +1080,7 @@ bool TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridC
 
 /* Water-surface placement test, sector 0 of the hexagon (see TerrainAuxHeightThreshold_TestAroundWorldPoint):
    walks the sector's diagonal, tests each diagonal cell and the cell between it and the next one, and runs the
-   straight tests of directions 0 and 1 that cover the sector. Returns true (CF set) at the first failing cell,
+   straight tests of directions 0 and 1 that cover the sector. Returns true at the first failing cell,
    false when the step limit is reached.
 */
 bool TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1106,8 +1105,8 @@ bool TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,Fi
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      /* the in-between cell is one row up from directionStartCell (flags +0x50, height +0x48, water delta
-         +0x4C, normal angles +0x78) */
+      /* the in-between cell is one row up from directionStartCell (flagsAndMaterial, terrainHeight,
+         waterSurfaceDelta, triangle1NormalAngles) */
       if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(directionStartCell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
@@ -1156,7 +1155,8 @@ bool TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,Fi
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      /* the in-between cell is the one above (flags +0x50, height +0x48, water delta +0x4C, normal angles +0x78) */
+      /* the in-between cell is the one above (flagsAndMaterial, terrainHeight, waterSurfaceDelta,
+         triangle1NormalAngles) */
       if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
@@ -1372,7 +1372,7 @@ bool TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,Fi
 }
 
 
-/* Height-band placement test, straight leg along direction 0 (C+1, right): returns true (CF set) at the first
+/* Height-band placement test, straight leg along direction 0 (C+1, right): returns true at the first
    cell that is a map-edge cell, lies under water (waterSurfaceDelta > 0) or whose height relative to
    g_TerrainScanReferenceHeight leaves [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; false
    once the step limit is reached (4 scan steps per cell).
@@ -1516,7 +1516,7 @@ bool TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldG
 }
 
 
-/* Water-surface placement test, straight leg along direction 0 (C+1, right): returns true (CF set) at the first
+/* Water-surface placement test, straight leg along direction 0 (C+1, right): returns true at the first
    cell that is a map-edge cell, has a negative waterSurfaceDelta or whose triangle1NormalAngles high word is below
    g_TerrainAuxHeightMinimum; false once the step limit is reached (4 scan steps per cell).
 */

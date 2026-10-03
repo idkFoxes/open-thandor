@@ -49,7 +49,8 @@ void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableCon
 
 
 /* Opens the technology panel for the first selected entity: suppresses the world view and releases its keyboard
-   focus, deselects the seven area tabs and, when the entity is researching (runtime flags +0xEC bit 0x40/0x80),
+   focus, deselects the seven area tabs and, when the entity is researching (classState.stateFlags ARMY_MODEL_STATE_RESEARCHING or
+   ARMY_MODEL_STATE_RESEARCH_UNPAID),
    selects the tab of the area that holds its current technology; then resets the shown technology to the basic
    one and rebuilds the panel.
 */
@@ -126,9 +127,9 @@ static void BuildCatalog_FillSlots(InGameRuntimeRootUiGridView *inGameUiGridView
 
 
 /* Rebuilds the build catalog (48 entries): the production capabilities come from the selected buildings, or,
-   with none selected, from all own models (class 22 adds capability 8, class 13 its definition's flags at
-   +0xC4). Every registered army asset with flag 1, a texture and a matching capability that passes the
-   technology and ownership/unlock tests (CF results of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction,
+   with none selected, from all own models (class 22 adds capability 8, class 13 its definition's flags in
+   classParameterC4). Every registered army asset with flag 1, a texture and a matching capability that passes
+   the technology and ownership/unlock tests (the results of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction,
    FactionRuntime_IsArmyAssetNotPending, ArmyAssetRecord_HasFactionUnlockedLinkedDefinition) gets a
    slot, in a grid of at most eight columns with its texture and Xenite cost; the frame is sized to the grid
    (smaller margins below 800 pixels width) and the panel hidden when the catalog is empty.
@@ -232,7 +233,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
 
 /* Rebuilds the special build catalog (42 entries), offered only while the active faction owns a model of
    runtime class 11: every registered army asset with flags 1 and 0x10 and a texture that passes the technology
-   and ownership/unlock tests (CF results as in InGameBuildCatalog_RebuildGrid) gets a slot, in a grid of at most
+   and ownership/unlock tests (as in InGameBuildCatalog_RebuildGrid) gets a slot, in a grid of at most
    six columns with its texture and Xenite cost. The frame is sized to the grid (smaller margins below 800
    pixels width); an empty catalog hides its panel, and also the army stock panel when the stock is empty.
 */
@@ -384,8 +385,8 @@ void InGameTechnologyResearch_StartSelected(void *source)
 }
 
 
-/* Rebuilds the technology window for the first selected entity: the research button (off for definitions with
-   flag 0x40 at +0xEC), the unit picture, and one area tab per technology the owner may research (at most seven;
+/* Rebuilds the technology window for the first selected entity: the research button (off while the entity's
+   classState.stateFlags has ARMY_MODEL_STATE_RESEARCHING), the unit picture, and one area tab per technology the owner may research (at most seven;
    the definition's 28 technology slots are dealt out cyclically over the tab slots 6..0), each labelled with the
    technology name and its Xenite cost. With no tab selected it shows the general text; otherwise the selected
    technology's description with its Xenite cost (red when unaffordable), Energy cost and research time.
@@ -450,7 +451,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB5,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB6,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB7,&inGameRoot->base);
-    /* technology slots 28..1 (definition +0x1C8..), area tabs cycling 6..0 */
+    /* technology slots 28..1 (definition researchTechnologyIds), area tabs cycling 6..0 */
     areaIndex = TECHNOLOGY_AREA_TAB_COUNT - 1;
     for (slotIndex = TECHNOLOGY_DEFINITION_SLOT_COUNT; slotIndex != 0; slotIndex--) {
       isAvailable = Technology_IsAvailableForFaction
@@ -537,9 +538,9 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
            RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,energyCost,g_InGameTechnologyEnergyCostTextUtf16);
-      /* Original quirk: SHLD EDX,ESI,16 builds the upper colour words from EDX, which still holds the energy cost
-         (WideNumber_FormatUtf16 preserves EDX), so words 4, 6 and 7 get energy-cost bits shifted into their top
-         nibbles. Checked against the disassembly at 0x0056B2E4. */
+      /* Original quirk: the upper colour words are built from the energy cost shifted left by 16 combined with the
+         colour's high half (packedEnergyColor) instead of from the colour alone, so words 4, 6 and 7 get
+         energy-cost bits shifted into their top nibbles. */
       packedEnergyColor = energyCost << 16 | costColor >> 16;
       g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 1] = (uint16_t)costColor;
       g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 5] = (uint16_t)(costColor >> 16);

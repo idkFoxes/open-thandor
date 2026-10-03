@@ -21,7 +21,7 @@
 #define LOCALE_STRING_COPY_CAPACITY_BYTES 0x10
 /* Primary language bits the original keeps from GetUserDefaultLCID (9 bits; PRIMARYLANGID keeps 10, 0x3ff) */
 #define LOCALE_PRIMARY_LANGUAGE_MASK 0x1ff
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void TimerSystem_Shutdown(void);
 

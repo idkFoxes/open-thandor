@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/support/runtime. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Recent-text (chat message) history: 8 slots, each stamped with g_RecentTextSerialCounter when inserted.
    The counter advances with every RecentTextHistory_SortAndBuildPointerList call (once per frame in game),

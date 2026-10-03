@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/system/win32. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void Win32_PumpMessages(void);
 

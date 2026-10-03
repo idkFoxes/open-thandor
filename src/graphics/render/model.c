@@ -259,7 +259,7 @@ void ModelRender_PrepareProjectedVertex
       vertex->z = vertex->z + depthBiasHalf;
     }
     if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE) != 0) {
-      /* 64-bit product >> 12 (IMUL + SHRD) */
+      /* 64-bit product >> 12 */
       scaledCoordinateProduct = (int64_t)vertex->x * (int64_t)modelNode->modelScaleQ12;
       vertex->x = FIXED_PRODUCT_SHR(scaledCoordinateProduct, Q12_SHIFT);
       scaledCoordinateProduct = (int64_t)vertex->y * (int64_t)modelNode->modelScaleQ12;
@@ -301,7 +301,7 @@ void ModelRender_PrepareProjectedVertex
     vertex[3].z = vertexColor;
     return;
   }
-  /* the scaled path gets the vertex position as its normal (LEA EDX,[ESI] at 0x004BD636) */
+  /* the scaled path gets the vertex position as its normal, as in the original */
   vertexColor = ModelRender_ComputeVertexIntensityScaledPath
                     (vertex[2].y,&vertex[2].z,
                      ((modelNode->modelPayload).modelResource)->lightingScaleQ12,
@@ -467,7 +467,7 @@ void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGr
 
 
 /* Vertex preparation of the alternate model renderer (ModelRender_SubmitTriangleAlternatePath): transforms and
-   projects the vertex once per draw, but rejects it (CF set, projected X = 0x7FFFFFFF) when it lies in front of
+   projects the vertex once per draw, but rejects it (returns true, projected X = 0x7FFFFFFF) when it lies in front of
    the near plane (view z < g_ProjectionScaleFixed). The colour is lit per vertex by nearby lights
    (ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath), or white with the tint's alpha when unlit,
    and cached like in ModelRender_PrepareProjectedVertex.
@@ -632,7 +632,7 @@ void ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,Mode
 
 
 /* Back-face measure of a triangle for ModelRender_SubmitTriangle: the Q12 dot product of its plane normal
-   (+0x24) with the model-space view direction from ModelRender_PrepareViewDirections.
+   (planeNormalXQ12..planeNormalZQ12) with the model-space view direction from ModelRender_PrepareViewDirections.
 */
 int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
 
@@ -645,10 +645,10 @@ int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
 }
 
 
-/* Original quirk (0x004CC742 PMULHW MM0,qword ptr [EDX + EAX*8]): ModelRender_ComputeVertexIntensityDefaultPath
-   reads its directional weight at distanceAttenuationTable (0x004CB1A0, row MODEL_DISTANCE_ATTENUATION_ROW0 of
-   g_ModelLightingMmxMultiplierRows) + (dot >> 21) * 8 without a range check. FixedVec3_DotQ12 (0x004856B0) returns
-   the low dword of the 64-bit sum >> 12 (SHRD), so dot is any int32 and the row offset any value in -1024..1023:
+/* Original quirk: ModelRender_ComputeVertexIntensityDefaultPath reads its directional weight (the PMULHW
+   multiplier row) at distanceAttenuationTable (0x004CB1A0, row MODEL_DISTANCE_ATTENUATION_ROW0 of
+   g_ModelLightingMmxMultiplierRows) + (dot >> 21) * 8 without a range check. FixedVec3_DotQ12 returns
+   the low dword of the 64-bit sum >> 12, so dot is any int32 and the row offset any value in -1024..1023:
    the original reads 8 bytes anywhere in 0x004C91A0..0x004CD1A0, while the table covers only offsets -136..682.
    With the Q28 light direction (g_ModelAuxiliaryForwardDirectionLocal) and a normal of L units (Q12) the offset is
    floor(128 * L * cos): it leaves the table for L * cos < -1.0625 or > 5.33 and the dot wraps from |L * cos| >= 8
@@ -974,7 +974,7 @@ ModelRender_ComputeVertexIntensityDefaultPath
           remainderLow = remainderLow - axisSquareLow;
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
-            /* divisor r^2 >> 12 (SHRD) */
+            /* divisor r^2 >> 12 (64-bit shift, low dword kept) */
             lookupDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
                      (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
             if (lookupDivisor != 0) {
@@ -999,14 +999,14 @@ ModelRender_ComputeVertexIntensityDefaultPath
 /* The same vertex lighting as ModelRender_ComputeVertexIntensityDefaultPath for MODEL_TRIANGLE_LIGHTING_SCALED
    triangles: the directional weight comes from g_ModelLightingMmxMultiplierRows at MODEL_LIGHTING_SCALE_ROW0 plus
    the facing dot divided by the model resource's lightingScaleQ12 (>> 9).
-   Original quirk (0x004CC833 CDQ / IDIV [EBP+0x24] / SAR EAX,9 / PMULHW MM0,[EAX*8 + 0x004CC2B0]): no range check.
-   The normal here is the vertex position (Q12, P units along the light), the light direction is Q28, so
-   dot = 2^28 * P (low dword, wraps from |P| >= 8) and the row offset is floor(trunc(dot / s) / 512) with
-   s = lightingScaleQ12 = S units * 4096, i.e. about 128 * P / S. The table holds offsets -682..136
+   Original quirk: the row (signed dot / lightingScaleQ12, then >> 9) is read relative to the original address
+   0x004CC2B0 (MODEL_LIGHTING_SCALE_ROW0) as the PMULHW multiplier without a range check. The normal here is
+   the vertex position (Q12, P units along the light), the light direction is Q28, so dot = 2^28 * P (low
+   dword, wraps from |P| >= 8) and the row offset is floor(trunc(dot / s) / 512) with s = lightingScaleQ12 = S units * 4096, i.e. about 128 * P / S. The table holds offsets -682..136
    (P / S in -5.33..1.06). For |s| >= 4096 any wrapped dot gives offsets -1024..1023 (0x004CA2B0..0x004CE2B0);
    smaller |s| reach up to +-2^22 rows (+-32 MB), far outside the original image. s == 0 and
-   dot == INT_MIN with s == -1 raise #DE in the original as in this C division. Out-of-table rows go through
-   ModelLighting_ReadMultiplierQword: exact original bytes within 0x004C6D54..0x004CD1A0, 0 beyond it.
+   dot == INT_MIN with s == -1 fault (divide error) in the original as in this C division. Out-of-table rows go
+   through ModelLighting_ReadMultiplierQword: exact original bytes within 0x004C6D54..0x004CD1A0, 0 beyond it.
 */
 PackedArgb32
 ModelRender_ComputeVertexIntensityScaledPath
@@ -1068,7 +1068,7 @@ ModelRender_ComputeVertexIntensityScaledPath
           remainderLow = remainderLow - axisSquareLow;
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
-            /* divisor r^2 >> 12 (SHRD) */
+            /* divisor r^2 >> 12 (64-bit shift, low dword kept) */
             lookupDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
                      (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
             if (lookupDivisor != 0) {
@@ -1102,8 +1102,7 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
           GraphicsFixedVec3 *surfaceNormalQ12)
 
 {
-  /* Rewritten from the assembly (0x004CC940-0x004CCA88); Ghidra dropped the MMX accumulator, so every
-     light was added to an undefined register instead of the running color. */
+  /* The MMX lanes in plain C: color is the running accumulator every light is added to. */
   const short *lightingTable = (const short *)&g_PackedLightingLookupTable;
   const GraphicsShadingRuntimeRecord *record = g_GraphicsShadingNearbyRecords;
   GraphicsShadingRecordCount remaining;

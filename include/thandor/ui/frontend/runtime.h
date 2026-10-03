@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/runtime. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Frontend menu state machine (Frontend_MainLoop).
    g_FrontendPendingPageAction holds the next step of the menu. A ROM action-table record writes it when the
@@ -64,7 +64,7 @@
 #define FRONTEND_PAGE_MISSION_BRIEFING 12
 /* Up to 640 pixels wide the dialog pages cover the menu room, so opening one also stops the room's 3D
    rendering: FrontendModelPointerContext_RenderWorldViewQueuesClipped returns at once while
-   FRONTEND_MENU_ROOM_RENDER_SUPPRESSED is set in menuRoomModelView's contextFlags (+0x4C). */
+   FRONTEND_MENU_ROOM_RENDER_SUPPRESSED is set in menuRoomModelView's contextFlags. */
 #define FRONTEND_COMPACT_LAYOUT_MAX_WIDTH 640
 #define FRONTEND_MENU_ROOM_RENDER_SUPPRESSED 0x2000
 /* UiSelectableControl.stateFlags bit set together with UI_NODE_SUPPRESSED to switch a frontend button off:

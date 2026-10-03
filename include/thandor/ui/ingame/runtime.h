@@ -122,7 +122,7 @@ typedef struct InGameSavePackageHeader {
     uint8_t reserved1F8_1FF[8];
 } InGameSavePackageHeader;
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
           (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot);
@@ -131,7 +131,7 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source);
 
 void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEditPtr commandTextEdit);
 
-bool InGameSaveGame_WritePackage(void *worldView,void *savePath); /* CF: true = failed */
+bool InGameSaveGame_WritePackage(void *worldView,void *savePath); /* returns true on failure */
 
 void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl);
 

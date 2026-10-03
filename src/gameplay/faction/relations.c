@@ -82,9 +82,10 @@ void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerP
 }
 
 
-/* Decides which random drift GameFactionRelations_UpdateAllPairsForFaction applies to a pair. CF set (true)
+/* Decides which random drift GameFactionRelations_UpdateAllPairsForFaction applies to a pair. True
    selects the reset path: the pending states 2, 5 and 9, relations frozen by relationUiFlags, or a state
-   below 4 for which GameFactionRelations_EvaluateTransitionRules holds for either faction. CF clear lets the pair advance.
+   below 4 for which GameFactionRelations_EvaluateTransitionRules holds for either faction. False lets the pair
+   advance.
 */
 bool GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
@@ -164,7 +165,7 @@ static bool GameFactionRelations_IsOperandFactionInMask(FactionActiveMask factio
 
 /* Evaluates a BOOLEAN_POSTFIX_EXPRESSION condition on a bit stack: 0xFF OR, 0xFE AND, 0xFD NOT, 0xFC end,
    anything else pushes the satisfied bit of the condition with that index. Returns the bit stack; bit 0 is the
-   result. The stack keeps the signed int width of the original (a condition-kind enum register). */
+   result. The stack keeps the signed int width of the original (a condition-kind enum value). */
 static int GameFactionRelations_EvaluatePostfixExpression
           (InGameLevelConditionStorage *levelConditionStorage,const uint8_t *expression)
 {
@@ -224,7 +225,7 @@ static bool GameFactionRelations_PredictConditionHolds
    (used to judge whether two blocs may draw closer): unless the mask equals the currently active factions, the
    64 scheduled conditions are re-evaluated with faction presence taken from the mask, and the first active end
    trigger that then fires for an active faction decides: its movie variant, flipped when that faction is
-   neither focalFactionIndex nor in the mask. Returns true (CF) when that variant is 0 or nothing fires.
+   neither focalFactionIndex nor in the mask. Returns true when that variant is 0 or nothing fires.
    Leaves the recomputed satisfied bits in the real condition records.
 */
 bool GameFactionRelations_EvaluateTransitionRules
@@ -287,7 +288,7 @@ bool GameFactionRelations_EvaluateTransitionRules
 }
 
 
-/* Returns true (CF set) when the pair's relation state is none of 3, 6 and 10, the top state of each tier
+/* Returns true when the pair's relation state is none of 3, 6 and 10, the top state of each tier
    below the merge; only from those states does the random drift reset the relation
    (GameFactionRuntime_ResetPairwiseRelationState).
 */
@@ -392,8 +393,9 @@ void GameFactionRelations_MaybeResetPairState
 
 
 /* Appends the field cell (worldXQ12, worldYQ12) to the player's marked-cell list unless it is already listed or
-   the list is full (PLAYER_PAIR_LIST_CAPACITY). For the local player the in-game root's count at +0xBA4 (its
-   records pointer at +0xBA0 aliases this list) is raised too. Called by PlayerPairList_InsertRange.
+   the list is full (PLAYER_PAIR_LIST_CAPACITY). For the local player the in-game root's
+   localPlayerMarkedCellCount (its localPlayerMarkedCells pointer aliases this list) is raised too. Called by
+   PlayerPairList_InsertRange.
 */
 void PlayerPairList_InsertUnique
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
@@ -430,7 +432,7 @@ void PlayerPairList_InsertUnique
 
 
 /* Removes the field cell (worldXQ12, worldYQ12) from the player's marked-cell list, moving the later records
-   down so the order is kept, and lowers the in-game root's count at +0xBA4 for the local player. A list at
+   down so the order is kept, and lowers the in-game root's localPlayerMarkedCellCount for the local player. A list at
    PLAYER_PAIR_LIST_CAPACITY or above is left untouched. Called by PlayerPairList_RemoveRange.
 */
 void PlayerPairList_RemoveFirstMatch
@@ -455,7 +457,7 @@ void PlayerPairList_RemoveFirstMatch
       if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
         copySourceDword = (uint32_t *)(pairRecordCursor + 1);
         copyTargetDword = (uint32_t *)pairRecordCursor;
-        /* the records behind the match move down one dword at a time (REP MOVSD in the original) */
+        /* the records behind the match move down one dword at a time, as in the original */
         trailingDwordsToMove = recordsRemaining * 2 - 2;
         playerRuntimeBlock->markedCellCount--;
         for (; trailingDwordsToMove != 0; trailingDwordsToMove--) {

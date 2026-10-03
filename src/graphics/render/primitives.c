@@ -225,7 +225,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *que
 /* Appends a triangle packet for the model renderer: copies screen position, backend coordinates and depth of
    the three projected vertices and the texture coordinates from triangle, and sets renderFlags. The colours,
    material and texture are filled in afterwards by GraphicsPrimitiveQueue_SetVertexColors/SetMaterial. Returns
-   true (CF set) when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
+   true when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
    ModelRender_PrepareProjectedVertexAlternatePath (graphics/render/model.c).
 */
 bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
@@ -395,8 +395,9 @@ static void GraphicsPrimitiveVertex_SetFromTerrainSecondarySurface(GraphicsPrimi
 }
 
 /* Terrain counterpart of GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle for the second projected surface:
-   appends a packet from the terrain vertices' second screen/depth block (+0x2C..+0x3C), the per-vertex colours
-   (masked with g_UiCommandModeGColorVariantLimit for vertices whose +0x4C is negative) and the texture
+   appends a packet from the terrain vertices' second screen/depth block (projectedPointB, viewPointB), the per-vertex
+   colours (masked with g_UiCommandModeGColorVariantLimit for vertices whose secondaryProjectionDepthQ12 is
+   negative) and the texture
    coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2, texture index, palette entry). Blend mode 6; textured
    with g_TerrainPrimaryTextureSet when the index is in range, modulated by g_TerrainPrimaryPalette. Returns the
    packet, or NULL when the queue is full (one slot is always left unused). Called by
@@ -421,7 +422,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
   primitiveQueue = renderContext->activePrimitiveQueue;
   packetIndex = primitiveQueue->count;
   if (packetIndex + 1 >= primitiveQueue->capacity) {
-    /* Queue full (the original left the result register untouched and set CF; no caller reads the result) */
+    /* Queue full (the original returned no packet here; no caller reads the result) */
     return NULL;
   }
   primitiveQueue->count = packetIndex + 1;
@@ -459,7 +460,7 @@ GraphicsPrimitivePacket *GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTri
 
 
 /* Fills one packet vertex for GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle: the five projected
-   attribute dwords (+0x0C..+0x1C) are screenX, screenY, backendCoord0, backendCoord1 and depth. */
+   attribute dwords (texturedPacketAttributes[0..4]) are screenX, screenY, backendCoord0, backendCoord1 and depth. */
 static void GraphicsPrimitiveVertex_SetFromProjectedAttributes(GraphicsPrimitiveVertexRaw *vertex,
                                                                const GraphicsProjectedVertexSource *source,
                                                                PackedArgb32 diffuseColor)
@@ -473,7 +474,7 @@ static void GraphicsPrimitiveVertex_SetFromProjectedAttributes(GraphicsPrimitive
 }
 
 /* Appends a textured terrain triangle: copies each terrain vertex's screen position, backend coordinates and
-   depth (+0x0C..+0x1C) and its colour, the texture coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2,
+   depth (texturedPacketAttributes) and its colour, the texture coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2,
    texture-set index, palette entry), the modulation colour from g_TerrainSecondaryPalette, the first texture
    of g_TerrainMaterialTextureSets[index] and the render flags g_UiCommandModeGColorVariantFlags. Returns the
    packet, or NULL when the queue is full (one slot is always left unused). Called by
@@ -548,7 +549,7 @@ DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthI
 }
 
 
-/* Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): CF set when
+/* Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): true when
    axis 0 masks and axis 1 masks both share a bin, i.e. the objects may overlap.
 */
 bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,

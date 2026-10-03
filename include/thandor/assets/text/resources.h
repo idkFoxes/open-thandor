@@ -25,14 +25,14 @@
 #define TEXT_ID_LEVEL_PAGE_DESCRIPTION 0x3001
 #define TEXT_ID_LEVEL_PAGE_EXTRA_LINES 0x3002
 #define TEXT_LEVEL_EXTRA_LINE_COUNT 14
-/* FontRuntime_Init: REPNE SCASW limit in code units for stepping over the two consecutive font paths at
+/* FontRuntime_Init: terminator-scan limit in code units for stepping over the two consecutive font paths at
    g_FontTexturePathsUtf16 (0x42 bytes); shared by both scans. */
 #define FONT_TEXTURE_PATHS_SCAN_UNITS 0x21
 /* Colour of the drop shadow drawn under glyphs and UI icons: black at half alpha (ARGB). */
 #ifndef TEXT_SHADOW_COLOR_ARGB
 #define TEXT_SHADOW_COLOR_ARGB 0x7F000000
 #endif
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 

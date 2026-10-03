@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/terrain/grid. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Field-grid cell flag bits (FieldGridCell.flagsAndMaterial, +0x50) beyond the generated
    FieldCellPackedFlagsAndMaterial enum. FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets the four
@@ -65,8 +65,8 @@
    (column) and g (row), f + 2g and 2f + g compared with one and two cells (FIELD_GRID_CELL_Q12,
    FIELD_GRID_TWO_CELLS_Q12) pick the cell of the triangle the point lies in. */
 #define FIELD_GRID_TWO_CELLS_Q12 0x2000
-/* gridWidth as the original recovers it from the row stride (gridWidth * sizeof(FieldGridCell), SHL 7 then
-   SHR 7): the 25 width bits that survive the stride multiply */
+/* gridWidth as the original recovers it from the row stride (gridWidth * sizeof(FieldGridCell) divided by the
+   128-byte cell size in 32 bits): the 25 width bits that survive the stride multiply */
 #define FIELD_GRID_ROW_STRIDE_WIDTH_MASK 0x1ffffff
 /* sqrt(3) in Q12 (7094): FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface scales the radius by it for the X
    half-extent of the box around the circle */
@@ -89,7 +89,7 @@
    squared X offsets of the six lattice neighbours for a cell spacing of 2048 world units, so a plane's X/Y tilt
    sums come out against it roughly to scale (the real spacing is 2305, FIELD_GRID_WORLD_COLUMN_STEP_X). */
 #define FIELD_GRID_NORMAL_Z_COMPONENT 0xc00000
-/* Height-drag brush falloff (FieldGrid_ProcessHorizontalSpan/VerticalSpan): the decompiled 64-bit
+/* Height-drag brush falloff (FieldGrid_ProcessHorizontalSpan/VerticalSpan): the original 64-bit
    distance * FIXED_ANGLE16_HALF_TURN keeps bits 0..48 of the sign-extended distance and shifts them right by 17
    to get the product's high dword (a plain 64-bit multiply compiles differently). */
 #define FIELD_GRID_ANGLE_PRODUCT_HIGH_BITS_MASK 0x1ffffffffffffU

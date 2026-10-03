@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/terrain/occupancy. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint packs two bits per faction slot i: bit 2i+1 = present now,
    bit 2i = only the persistent occupancy bit (seen before). */

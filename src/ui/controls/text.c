@@ -8,7 +8,7 @@
 #include <thandor/ui/controls/text.h>
 #include <thandor/thandor.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 UiTooltipState g_UiTooltipState = {.countdownFrames = 8};
 
@@ -760,7 +760,7 @@ static void UiPathTextEdit_PlayInteractionSound(UiPathTextEditControl *control)
    characters a DOS 8.3 path may contain, edits and moves the cursor and Shift selection, and Ctrl+Left/Right
    jump between path segments. After every handled key the path is validated and, unless the control acts on
    Enter only, its action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext.
-   CF clear: consumed.
+   Returns false: consumed.
 */
 bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiPathTextEditControl *control)
@@ -965,7 +965,7 @@ static void UiRequiredTextEdit_PlayInteractionSound(UiRequiredTextEditControl *c
    g_UiRequiredTextEditControlVtable): inserts any character, edits and moves the cursor and Shift selection,
    Ctrl+Left/Right jump between space-separated words, and Escape clears the text when the control allows it.
    After every handled key the non-empty validity is updated and, unless the control acts on Enter only, its
-   action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext. CF clear: consumed.
+   action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext. Returns false: consumed.
 */
 bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
@@ -1675,8 +1675,8 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
 
 
 /* Closes the UI roots of an ending session: pops the front root until the stack is empty; a root that vetoes
-   its close stops the loop and is reported as CF (true). The original also stops at the dword after
-   g_UiRootNode (0x004B0E34, the window texture source), which is never a root, so in practice this pops every
+   its close stops the loop and is reported by returning true. The original also stops at the dword after
+   g_UiRootNode (g_UiWindowTextureSource), which is never a root, so in practice this pops every
    root.
 */
 bool UiRootStack_PopUntilWindowTextureBoundary(void)
@@ -2375,8 +2375,8 @@ void UiTextButtonControl_NonRightPress
    g_UiGraphicsAdapterTextButtonVtable, g_UiNumericPairTextButtonVtable and g_UiPayloadPairTextButtonVtable):
    Space on the focused button activates it like a pointer press (checkbox toggles, radio-style button gets
    selected) unless UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION is set. Everything else, including Space on
-   an already selected radio-style button, goes to UiNode_DefaultKeyboardEventMoveFocusNext. CF clear:
-   consumed.
+   an already selected radio-style button, goes to UiNode_DefaultKeyboardEventMoveFocusNext. Returns
+   false: consumed.
 */
 bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control)
@@ -2733,7 +2733,7 @@ void UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
     stateFlagsField = &control->editStateFlags;
     previousStateFlags = *stateFlagsField;
     *stateFlagsField = *stateFlagsField - UI_STATE_FRAME_COUNTER_UNIT;
-    /* the borrow of the SUB (JNC at 0x004B64F7): an unsigned compare, so the counter byte runs 0xFF..0 */
+    /* the subtraction borrowed: an unsigned compare, so the counter byte runs 0xFF..0 */
     if ((uint32_t)previousStateFlags < (uint32_t)UI_STATE_FRAME_COUNTER_UNIT) {
       blinkPhaseIncrement = g_UiTextEditCaretBlinkPhaseStep * UI_STATE_FRAME_COUNTER_UNIT;
       control->editStateFlags = control->editStateFlags ^ UI_TEXT_EDIT_CARET_VISIBLE_PHASE;
@@ -3789,7 +3789,7 @@ void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
 
 /* Keyboard handler of a software texture preview (keyboardEvent slot of
    g_UiSoftwareTexturePreviewControlVtable): Tab moves the focus on, any other key queues the control's action.
-   Always consumed (CF clear).
+   Always consumed (returns false).
 */
 bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control)
@@ -4181,7 +4181,7 @@ int UiPointerList_CompareExpandedText(uint16_t *rightText,uint16_t *leftText)
             (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedLeftTextUtf16,leftText,NULL);
   RichTextCommandStream_CopyExpanded
             (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,g_UiPointerListExpandedRightTextUtf16,rightText,NULL);
-  /* The order is the comparator's: nothing after the call changes its flags (0x004BB5A5). */
+  /* The order is the comparator's result, unchanged. */
   return (*(int (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
             (g_UiPointerListExpandedRightTextUtf16,g_UiPointerListExpandedLeftTextUtf16);
 }
@@ -4387,7 +4387,7 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
 }
 
 
-/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Class vtables. */
 
 UiNodeVtable g_UiGraphicsAdapterTextButtonVtable = {
         .relocate = (void *)UiTextButtonControl_Relocate,

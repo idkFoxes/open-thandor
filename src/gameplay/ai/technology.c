@@ -10,8 +10,8 @@
 
 /* Implementation ownership: gameplay/ai/technology. */
 
-/* Technology score callback for score kind 3 (g_AiTechnologyCandidateScoreCallbackTable[3], image
-   0x0053B9EC; technologies researched in class 13/22 structures). Looks up the model definition that
+/* Technology score callback for score kind 3 (g_AiTechnologyCandidateScoreCallbackTable[3]; technologies
+   researched in class 13/22 structures). Looks up the model definition that
    ModelDefinitionRegistry_FindByRuntimeClassId finds for the technology id and scores the technology by
    how many own units share that definition's family (AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8).
    Definitions of class 1 only score while the faction has none of ARM 302/303/304, at half weight, and at
@@ -40,8 +40,8 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
         runtimeClassId != MODEL_RUNTIME_CLASS_03_ARTICULATED_WALKER &&
         runtimeClassId != MODEL_RUNTIME_CLASS_17_DEPLOYING_GLIDER &&
         runtimeClassId != MODEL_RUNTIME_CLASS_19_WATER_SURFACE) {
-      /* Original quirk: the original leaves the definition pointer in EAX here (JNZ 0x0053BE79), so every
-         other class "scores" with its record address. */
+      /* Original quirk: the original returns the definition pointer here, so every other class "scores"
+         with its record address. */
       return (AiTechnologyCandidateScore)candidateDefinition;
     }
     rejected = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
@@ -73,9 +73,10 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
 }
 
 
-/* Returns false (CF clear) when the AI may plan this technology: no workspace-00 structure is already working
-   on it (runtimeFlags & 0xC0 with the technology id at +0x100), the faction (factionRecordOffset = faction *
-   0x740) has not unlocked it yet, and all eight prerequisite mask words are covered by its unlocked technologies.
+/* Returns false when the AI may plan this technology: no workspace-00 structure is already working
+   on it (runtimeFlags & 0xC0 with the technology id in researchTechnologyId), the faction
+   (factionRecordOffset = faction * 0x740) has not unlocked it yet, and all eight prerequisite mask words are
+   covered by its unlocked technologies.
    Note the inverted sense despite the name: true means NOT available (callers rely on it).
 */
 bool AiTechnologyCandidate_IsCurrentlyAvailable
@@ -103,7 +104,7 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
   }
   factionRecord = (const GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
                                                      factionRecordOffset);
-  /* already unlocked (bit in technologyMasks256Bits, faction record +0x6E0) */
+  /* already unlocked (bit in the faction record's technologyMasks256Bits) */
   if ((factionRecord->technologyMasks256Bits[technologyIndex >> 5] & 1 << ((uint8_t)technologyIndex & 31)) != 0) {
     return true;
   }
@@ -150,8 +151,7 @@ static enum AiTechnologyCandidateScoreKind AiTechnologyPlanning_SelectScoreKind
 /* Appends a technology that the source structure can research to the technology candidate list (workspace 12,
    at most 32; the pioneer vehicle is never added) and picks its score function: walls 0, mine and pump
    improvements 1, source of runtime class 11 2, of class 13 or 22 3, radar and AR-M silo technologies 4,
-   everything else 5. (The original preserved the caller's loop registers EAX/ECX/EDX; those were
-   pass-through pseudo-parameters and are dropped.)
+   everything else 5.
 */
 void AiTechnologyPlanning_AddCandidateRecord(ModelRuntimeSlot *sourceModelRuntime,PckTechnologyIdCatalog technologyId)
 
@@ -172,8 +172,8 @@ void AiTechnologyPlanning_AddCandidateRecord(ModelRuntimeSlot *sourceModelRuntim
 }
 
 
-/* Technology score callback for score kind 1 (g_AiTechnologyCandidateScoreCallbackTable[1], image
-   0x0053B9E4; xenite-mine and tritium-pump improvements). Nothing while the faction's xenite is below the
+/* Technology score callback for score kind 1 (g_AiTechnologyCandidateScoreCallbackTable[1]; xenite-mine and
+   tritium-pump improvements). Nothing while the faction's xenite is below the
    ki.dat minimum; mine improvements then score their base value, pump improvements their base value
    scaled by energy demand / energy supply (Q8), but only once demand reaches 0xF0/0x100 (about 94%)
    of supply.
@@ -183,8 +183,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
           WorldRuntimeContext *worldRuntime)
 
 {
-  /* EDI side channel: the caller loads g_AiKnowledgeData. It was a leading pseudo-parameter,
-     which shifted every argument of the three-argument table call. */
+  /* the original receives g_AiKnowledgeData from its caller outside the argument list; it is read directly */
   AiKnowledgeDataImage *knowledgeData = g_AiKnowledgeData;
   EnergyDemandQ4 totalEnergyDemandQ4;
   UQ8 energyDemandPressureRatioQ8;
@@ -214,8 +213,8 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
 }
 
 
-/* Technology score callback for score kind 2 (g_AiTechnologyCandidateScoreCallbackTable[2], image
-   0x0053B9E8; technologies researched in class 11 structures): the technology's base candidate score
+/* Technology score callback for score kind 2 (g_AiTechnologyCandidateScoreCallbackTable[2]; technologies
+   researched in class 11 structures): the technology's base candidate score
    from the technology asset, unconditionally.
 */
 AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind2
@@ -227,8 +226,8 @@ AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind2
 }
 
 
-/* Technology score callback for score kind 4 (g_AiTechnologyCandidateScoreCallbackTable[4], image
-   0x0053B9F0; radar and AR-M silo technologies): the technology's base candidate score, unconditionally.
+/* Technology score callback for score kind 4 (g_AiTechnologyCandidateScoreCallbackTable[4]; radar and AR-M silo
+   technologies): the technology's base candidate score, unconditionally.
 */
 AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind4
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
@@ -247,9 +246,9 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
           (AiTechnologyCategoryMask categoryMask,FactionRuntimeIndex factionIndex,
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
 
-/* Technology score callback for score kind 5 (g_AiTechnologyCandidateScoreCallbackTable[5], image
-   0x0053B9F4; every technology not caught by kinds 0-4). Hands the category mask (a global set by the
-   caller) to the body below, which holds the original code.
+/* Technology score callback for score kind 5 (g_AiTechnologyCandidateScoreCallbackTable[5]; every technology
+   not caught by kinds 0-4). Hands the category mask (a global set by the caller) to the body below, which holds
+   the original logic.
 */
 AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
@@ -260,7 +259,8 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
                    (g_AiTechnologyScoreCategoryMask,factionIndex,technologyId,worldRuntime);
 }
 
-/* Body of 0x0053BEC0 (C-only split, no address of its own; only called by the wrapper above).
+/* Body of AiTechnologyScore_ComputeCategoryCompatibleCandidateValue (a C-only split; only called by the wrapper
+   above).
    Category C and D technologies score nothing unless the faction already owns a technology of that
    category (bit 2 / bit 4 of categoryMask). Otherwise the score is the average faction-weighted score
    of the army assets the technology leads to (weights g_AiArmyCandidateScoreWeightsVariantC15) times the
@@ -298,8 +298,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
 
 
 /* Veto hook of AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue (its only caller, called
-   directly): would return true (CF set) to reject the candidate definition, but always accepts (CF clear).
-   The caller passes candidateDefinition in EAX as well as on the stack; EAX is preserved.
+   directly): would return true to reject the candidate definition, but always accepts (returns false).
 */
 bool AiTechnologyCompatibility_AcceptRuntimeClassCandidate
           (FactionRuntimeIndex factionIndex,ModelDefinitionRecordPrefix *candidateDefinition)

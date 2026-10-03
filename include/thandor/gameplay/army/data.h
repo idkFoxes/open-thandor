@@ -12,13 +12,13 @@
 
 extern GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderModelListToTextureSource;
 
-/* 00485A08..00485A24: origin X/Y/Z, projection scale, view angles 0/1, projection shift; passed whole to
+/* Origin X/Y/Z, projection scale, view angles 0/1, projection shift; passed whole to
    g_GraphicsOffscreenRenderModelListToTextureSource */
 extern GraphicsOffscreenViewParameters g_ArmyPreviewViewParameters;
 
 extern AngleTurn32 g_ArmyPreviewAuxiliaryOrientation[2];
 
-/* 00485A2C..00485A34: horizontalExtent = primary colour ARGB, verticalExtent = secondary colour ARGB; passed whole
+/* horizontalExtent = primary colour ARGB, verticalExtent = secondary colour ARGB; passed whole
    to g_GraphicsOffscreenRenderModelListToTextureSource, which forwards them as the scene colour pairs of
    Graphics_SetSceneBoundsAndColors */
 extern GraphicsOffscreenSceneExtents g_ArmyPreviewSceneExtents;
@@ -63,7 +63,7 @@ extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchA;
 
 extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchB;
 
-extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixComposedScratch; /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch; followed by 0x90 code alignment fill up to 00520F60 */
+extern GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixComposedScratch;
 
 extern RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases;
 

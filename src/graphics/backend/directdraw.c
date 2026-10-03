@@ -12,8 +12,8 @@
 /* Implementation ownership: graphics/backend/directdraw. */
 
 /* Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
-   (g_GraphicsDisplayModes, filled by DirectDraw_EnumDisplayModeCallback): CF clear (false) when it was, CF set
-   (true) when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/controls/misc.c) to offer only
+   (g_GraphicsDisplayModes, filled by DirectDraw_EnumDisplayModeCallback): returns false when it was, true
+   when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/controls/misc.c) to offer only
    available modes. The table is assumed non-empty: the first entry is compared before the count is checked.
 */
 bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
@@ -37,7 +37,7 @@ bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,F
 }
 
 
-/* Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: CF clear (false) when
+/* Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: returns false when
    the mode was enumerated. Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
    (ui/frontend/settings.c).
 */

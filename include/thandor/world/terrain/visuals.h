@@ -26,7 +26,7 @@
 #define TERRAIN_DIRECTIONAL_LIGHT_LUT_ENTRY_COUNT \
           (TERRAIN_LIGHTING_RAMP_ENTRY_COUNT + TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT) /* 513 */
 /* g_TerrainByteClampLookup (TerrainByteClampLookup_Initialize): 256 rows of 256 bytes, row = a cell's
-   occupancy byte, column = its runtime byte +0x68. Each row moves the runtime byte by one fade step towards the
+   occupancy byte, column = its runtime byte visibilityLightingIndex. Each row moves the runtime byte by one fade step towards the
    row's target level (the levels FieldGrid_ClassifyCellFlagsToRuntimeByte writes directly): rows 0x00..0x7F
    by bit 0 (clear -> NONE, set -> FULL), 0x80 and 0x82 -> PERSISTENT, 0x81 and 0x83..0xFF -> FULL. */
 #define TERRAIN_BYTE_CLAMP_LOOKUP_BYTES 0x10000
@@ -74,7 +74,7 @@
 /* faction dots, + colorIndex (0 = unselected); RebuildPlane0 adds the panel paletteIndex * 4, not * bank size */
 #define TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST 0x20
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool TerrainCompositeTexture_Create(uint32_t *outError);
 

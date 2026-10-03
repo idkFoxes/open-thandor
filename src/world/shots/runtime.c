@@ -236,8 +236,7 @@ ShotDefinition *ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog defini
     }
     registryCursor++;
   }
-  /* Original quirk: the original formats EAX, i.e. the last registry slot, not the missing id
-     (PUSH EAX at 0x0052B699) */
+  /* Original quirk: the original formats registryDefinition, i.e. the last registry slot, not the missing id */
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
   return NULL;
@@ -314,8 +313,8 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
    effect is spawned when the model has an effect point (MODEL_POINT_CLASS_EFFECT). Called by the army and model weapon
    code (ArmyRuntime_ResolveShotLaunchFromModelAttachment, ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate,
    ArmyRuntime_UpdateTimedShotAndEffectEmitters, ModelRuntime_EmitProjectilesFromAttachmentPoints) and by
-   EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions. The original sets CF when no slot
-   or record is free; this version just returns.
+   EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions. The original signals failure to the
+   caller when no slot or record is free; this version just returns.
 */
 void ShotRuntimePool_CreateProjectileFromDefinition
           (ShotTargetModelReference targetModelReference,ArmyRuntimeSlot *ownerArmyRuntime,

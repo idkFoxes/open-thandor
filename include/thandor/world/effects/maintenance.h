@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/effects/maintenance. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
           (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNode *modelNode);

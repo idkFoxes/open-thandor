@@ -32,7 +32,7 @@ extern uint16_t u_engine_mouse_gfx_00416864[17];
 
 extern uint16_t u_engine_mouse_dat_00416886[17];
 
-extern KeyboardInputEvent g_KeyboardEvents[256]; /* 004169E0 g_KeyboardEvents; the ring uses only the first 64 */
+extern KeyboardInputEvent g_KeyboardEvents[256]; /* the ring uses only the first 64 */
 
 extern KeyboardEventRingIndex g_KeyboardWriteIndex;
 

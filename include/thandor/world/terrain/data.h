@@ -36,7 +36,7 @@ extern FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5;
 
 extern TerrainProjectedRowSpan g_TerrainProjectedRowSpans[260];
 
-extern PackedArgb32 g_TerrainDirectionalLightColorLut[513]; /* shaded ramp (256) + lit half (257, from 00501590), indexed from the middle entry */
+extern PackedArgb32 g_TerrainDirectionalLightColorLut[513]; /* shaded ramp (256) + lit half (257), indexed from the middle entry */
 
 extern uint32_t g_TerrainDirectionalLightSecondaryColor;
 

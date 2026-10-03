@@ -15,7 +15,7 @@
    other, advancing by each type's width (types 0 and 1 are empty spacers). The "columns" advance downwards
    (drawY starts at base.top) and each one lays its header and its faction entries out from left to
    right (drawX starts at base.left, the entries advance by rowAdvancePixels in x). Graph mode first converts the colour of
-   each faction's colour text (TEXT_ID_FACTION_NAME_BASE + colour index at record +0x38) into a packed pixel
+   each faction's colour text (TEXT_ID_FACTION_NAME_BASE + the record's colorIndex) into a packed pixel
    for g_FrontendResultsFactionPackedPixelColors, then draws one pixel column per x through the control's
    factionWeightRaster, each showing the stat table sample at x / width of the game so far.
 */
@@ -88,7 +88,7 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
                      (FrontendResultsRowMetrics *)control);
           drawY = drawY + g_FrontendResultsColumnAdvanceFactionPixels;
           break;
-        /* faction record fields +0x98..+0xBC (value template, header, field offset) */
+        /* faction record fields exploredTerrainPercent..relationCounterF (value template, header, field offset) */
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE1,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 0,
@@ -277,7 +277,7 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
 }
 
 /* factionWeightRaster of resultsChart2: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
-   sample's first metric (lane 0, faction record +0x88 when sampled) only.
+   sample's first metric (lane 0, the faction record's combinedProgressScore when sampled) only.
 */
 void FrontendResultsGraph_DrawFactionWeightLane0Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
@@ -333,7 +333,7 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
 }
 
 /* factionWeightRaster of resultsChart3: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
-   sample's second metric (lane 1, faction record +0x8C when sampled) only.
+   sample's second metric (lane 1, the faction record's activeArmyContribution when sampled) only.
 */
 void FrontendResultsGraph_DrawFactionWeightLane1Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
@@ -407,8 +407,8 @@ static int FrontendResultsTable_DrawColumnHeader
 }
 
 /* Results table column type 2 (FrontendResultsTable_DrawColumnSequenceByType): header TEXT_ID_RESULTS_COLOUR,
-   then one row per active faction 1..7 with its colour name (TEXT_ID_FACTION_NAME_BASE + colour index at record
-   +0x38).
+   then one row per active faction 1..7 with its colour name (TEXT_ID_FACTION_NAME_BASE + the record's
+   colorIndex).
 */
 void FrontendResultsTable_DrawColourColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -501,7 +501,7 @@ void FrontendResultsTable_DrawFormattedFactionFieldColumn
 
 
 /* Results table column type 5: header TEXT_ID_RESULTS_POINTS, then for each active faction 1..7 its points,
-   the sum of the economy (+0x90) and military (+0x94) values of its faction record.
+   the sum of the economy (economyProgressScore) and military (relationScore) values of its faction record.
 */
 void FrontendResultsTable_DrawPointsColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -536,7 +536,7 @@ void FrontendResultsTable_DrawPointsColumn
 
 
 /* Results table column type 3: header TEXT_ID_RESULTS_ECONOMY, then for each active faction 1..7 the economy
-   value at +0x90 of its faction record.
+   value (economyProgressScore) of its faction record.
 */
 void FrontendResultsTable_DrawEconomyColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -570,7 +570,7 @@ void FrontendResultsTable_DrawEconomyColumn
 
 
 /* Results table column type 4: header TEXT_ID_RESULTS_MILITARY, then for each active faction 1..7 the military
-   value at +0x94 of its faction record.
+   value (relationScore) of its faction record.
 */
 void FrontendResultsTable_DrawMilitaryColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/ui/frontend/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/ui/frontend/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -2218,7 +2218,7 @@ __declspec(align(16)) FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAs
 
 /* row pointer table of the frontend network backend list (display
    names), one entry per network backend; Frontend_Init fills it and hands it to the backend list control. The
-   original addresses it on its own (0x005434EC), right after the control offset tables, and reserves 256 entries. */
+   original addresses it on its own, right after the control offset tables, and reserves 256 entries. */
 __declspec(align(4)) uint16_t *g_FrontendNetworkBackendNameRows[256] = {0};
 
 __declspec(align(4)) FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
@@ -2246,8 +2246,8 @@ __declspec(align(4)) uint32_t g_FrontendStateTickSpinLock = 0;
 __declspec(align(16)) uint32_t g_FrontendTimerCountdownTicks = 0;
 
 __declspec(align(4)) WorldMotionSplineKeyframe g_FrontendRomTransitionKeyframes[2] = {
-    {0, 0, 0, 0, 0, 0, 0, 0}, /* 00545734 keyframe 0 */
-    {0, 0, 0, 0, 0, 0, 0, 0}, /* 00545754 keyframe 1 */
+    {0, 0, 0, 0, 0, 0, 0, 0}, /* keyframe 0 */
+    {0, 0, 0, 0, 0, 0, 0, 0}, /* keyframe 1 */
 };
 
 __declspec(align(4)) uint32_t g_FrontendCentralRomAsset = 0;
@@ -2366,19 +2366,19 @@ __declspec(align(4)) uint16_t u_sound_menue01_sam_00545b54[18] = L"sound\\menue0
 
 __declspec(align(8)) uint16_t u_gfx_panel_menue_gfx_00545b78[20] = L"gfx\\panel\\menue.gfx";
 
-/* the four level digits at index 7 (00545C10) are overwritten with the level number (ui/frontend/scenario.c) */
+/* the four level digits at index 7 are overwritten with the level number (ui/frontend/scenario.c) */
 __declspec(align(4)) uint16_t g_FrontendMissionBriefingMoviePathUtf16[16] = L"flm\\lev0000.flm";
 
 __declspec(align(4)) uint16_t u_sound_music00_sam_00545c4e[18] = L"sound\\music00.sam";
 
 __declspec(align(4)) char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
 
-/* Original quirk: the string's terminating NUL (0x00545EA6) is the
+/* Original quirk: the string's terminating NUL is the
    first byte of the Package_FindEntry output buffer g_LevelPackageFoundEntry; the code passes explicit lengths. */
 __declspec(align(4)) char s_NAME__CLIENT__KARTE___00545e91[21] = "NAME=\"CLIENT=\"KARTE=\"";
 
 /* 3 command records and the terminator record
-   (commandCode 0) at 00548124 that ends the dispatcher's scan */
+   (commandCode 0) that ends the dispatcher's scan */
 __declspec(align(16)) UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4] = {
     /* 0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190},
     /* 1 */ {.commandCode = 0x20004, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190},

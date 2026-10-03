@@ -10,7 +10,7 @@
 #include <thandor/platform/debug/hooks.h>
 #include <intrin.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 uint32_t g_CursorUseOverridePosition = 0;
 
@@ -19,8 +19,8 @@ UiPointerWheelDelta g_CursorWheelDelta = 0;
 /* Implementation ownership: platform/input/devices. */
 
 /* Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of
-   g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218). Both 16-bit code units are upper-cased and the result
-   is returned in CF (upper(right) < upper(left)); EAX, ECX and EDX are preserved for the caller.
+   g_KeyboardAsciiCaseTransformCallbacks3. Both 16-bit code units are upper-cased; returns true when
+   upper(right) < upper(left).
 */
 bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
 
@@ -37,7 +37,7 @@ bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUni
 
 
 /* Discards every queued keyboard event by moving the ring's write index back onto its read index.
-   Reached through the g_KeyboardFlushEvents pointer (0x00417210).
+   Reached through the g_KeyboardFlushEvents pointer.
 */
 void Keyboard_FlushEvents(void)
 
@@ -47,9 +47,9 @@ void Keyboard_FlushEvents(void)
 }
 
 
-/* Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer
-   (0x00417214). Returns true with the key code in *outKeyCode and the modifier state in *outStateMask, or
-   false (outputs untouched) when the ring is empty. Original: EAX = key code, EDX = state mask, CF = empty.
+/* Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer.
+   Returns true with the key code in *outKeyCode and the modifier state in *outStateMask, or
+   false (outputs untouched) when the ring is empty.
 */
 bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask)
 
@@ -73,7 +73,7 @@ bool Keyboard_ReadNextEvent(uint32_t *outKeyCode, uint32_t *outStateMask)
 
 
 /* Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged. Reached through the toLower
-   slot of g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218).
+   slot of g_KeyboardAsciiCaseTransformCallbacks3.
 */
 uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 
@@ -153,7 +153,7 @@ bool DirectInputMouse_Init(uint32_t *outError)
     return DirectInputMouse_FailSetup(4,outError);
   }
   g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
-  /* chain in front of the graphics display-mode switch (XCHG in the original) */
+  /* chain in front of the graphics display-mode switch (an atomic exchange in the original) */
   g_DirectInputMouseChainedSetDisplayMode = g_GraphicsSetDisplayMode;
   LOCK();
   g_GraphicsSetDisplayMode = DirectInputMouse_SetDisplayMode;
@@ -448,7 +448,7 @@ void DirectInputMouse_PollBufferedEvents(void)
   if (DebugHook_IgnoreRealMouse()) {
     return;
   }
-  /* XCHG: the timer callback and the main thread (UiPointer_DispatchPendingEvents) both come here */
+  /* atomic exchange: the timer callback and the main thread (UiPointer_DispatchPendingEvents) both come here */
   if (THANDOR_ATOMIC_EXCHANGE(&g_MousePollBusy,1) != 0) {
     return;
   }
@@ -484,8 +484,8 @@ void DirectInputMouse_PollBufferedEvents(void)
 /* Mouse hook in front of g_GraphicsSetDisplayMode (installed by DirectInputMouse_Init): frees the three
    cursor buffers, switches the mode through the chained setter, recreates the buffers in the new pixel
    format, converts the cursor palette, centres the mouse and reacquires the device. Returns true on
-   success; false with the error in *errorCode when the mode switch fails or a buffer creation fails (JC after each g_SoftwareFramebufferCreate call: 0x00577377,
-   0x00577397, 0x005773B7; the failing create stores its allocator error there). On failure g_GraphicsBackendAccessState stays -1
+   success; false with the error in *errorCode when the mode switch fails or a buffer creation fails (checked after each of the three
+   g_SoftwareFramebufferCreate calls; the failing create stores its allocator error there). On failure g_GraphicsBackendAccessState stays -1
    and the buffers created so far stay installed, as in the original.
 */
 bool DirectInputMouse_SetDisplayMode
@@ -690,7 +690,7 @@ static bool Keyboard_MapKeyDownCode(KeyboardVirtualKeyCode virtualKey,uint32_t *
 /* WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle
    theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), and every other
    mapped key is queued as a KEYBOARD_KEY_CODE_* event with the modifier state of the moment in the 64-entry
-   keyboard ring (0x10000-family keys also mark g_KeyboardSpecialKeyDown). CF clear when an event was queued.
+   keyboard ring (0x10000-family keys also mark g_KeyboardSpecialKeyDown).
 */
 void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 
@@ -742,7 +742,7 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 /* WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock
    toggle, and releases the g_KeyboardSpecialKeyDown entry of a navigation key (cursor block, VK_SELECT,
    numpad digits and decimal point; the held state the in-game camera keys poll). Original quirk: Escape,
-   Enter, Tab, Backspace, Print and Pause also set their entry on key-down but are never released here. Queues no event. CF clear when a non-modifier key was processed.
+   Enter, Tab, Backspace, Print and Pause also set their entry on key-down but are never released here. Queues no event.
 */
 void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
@@ -803,7 +803,7 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
 
 
 /* Converts ASCII 'a'-'z' to 'A'-'Z' and returns every other value unchanged. Reached through the toUpper
-   slot of g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218); Keyboard_CompareAsciiCaseInsensitiveFlags
+   slot of g_KeyboardAsciiCaseTransformCallbacks3; Keyboard_CompareAsciiCaseInsensitiveFlags
    also calls it directly.
 */
 uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)

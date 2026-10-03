@@ -9,7 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 UiNodeBase *g_UiPointerCaptureTarget = UI_NODE_NONE;
 
@@ -69,7 +69,7 @@ static bool UiPointer_ReleaseCapture
    the active mouse). Presses and motion go to the node under the pointer; a release goes to the node
    that captured the pointer with that button, which then loses the capture and the pointer position is
    dispatched again as motion. A release without a matching capture is dropped.
-   Original quirk: a captured middle-button release also steps the primary random stream (0x004AF643 CALL
+   Original quirk: a captured middle-button release also steps the primary random stream (a call of
    Random_NextPrimary after the motion dispatch; the left/right release paths do not), so the primary seed
    depends on local mouse input. The session simulation draws through g_RandomGeneratorState.next, which is
    Random_NextSecondary during a network session, so this does not desync the game state; only the local
@@ -216,7 +216,7 @@ static bool UiKeyboard_PassToFollowingFocusTargets
 }
 
 /* Delivers the queued key events to the UI under the frame lock. A key goes to the focused node; if it
-   passes the key on (keyboardEvent returns true, CF in the original), the next focus targets in tree order
+   passes the key on (keyboardEvent returns true), the next focus targets in tree order
    get it and the first one that takes it receives the focus. Keys nobody takes, or pressed with no focus, go
    to the top root's keyboard fallback. While a node has captured the pointer (a mouse button is held), keys
    are discarded.
@@ -322,7 +322,7 @@ void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
 /* keyboardEvent slot of g_UiRangeSliderControlVtable. Left/Right (Down/Up for a vertical slider) move the
    value by stepValue, with Ctrl straight to the minimum/maximum; each step plays the click sound, queues
    actionId and redraws. Other keys, and all keys while suppressed, go to the default handler, which passes
-   them on. CF clear when the key was consumed.
+   them on. Returns false when the key was consumed.
 */
 bool UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control)
@@ -380,8 +380,8 @@ bool UiRangeSliderControl_HandleKeyboard
 
 /* keyboardEvent slot of g_UiFocusProxyControlVtable. Hands the key to the framed focus child and redraws
    when the child consumed it. Tab goes to the default handler (passed on); with UI_LABEL_SWALLOW_CHARACTERS
-   typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. CF clear when
-   consumed.
+   typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. Returns false
+   when consumed.
 */
 bool UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control)
@@ -568,8 +568,6 @@ void UiRangeSliderControl_HandlePointerWheel
 void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocationDelta,UiSingleLineTextControl *control)
 
 {
-  /* EBX is the control, the same node as the stack argument; the relocate vtable slot passes
-     only (delta, control). */
   UiSingleLineTextControl *controlReg = control;
   UiNodeFlags *childNodeFlagsField;
 
@@ -841,7 +839,7 @@ void UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control
 }
 
 
-/* pointerMove slot of the image-control vtable at 0x004BC570. Over an opaque pixel of the image the arrow
+/* pointerMove slot of g_UiImageControlVtable. Over an opaque pixel of the image the arrow
    is shown. Over a transparent pixel of a persistent-activation image, a child under the pointer supplies
    the cursor; without one, UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE while no image control is hovered.
 */
@@ -891,7 +889,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
 
 /* Weights of the bilinear scaler below, indexed by the 8-bit fraction between two source pixels: the first
    pixel's weight is g_UiScalerFirstPixelWeights, the second's g_UiScalerSecondPixelWeights, all four lanes
-   equal. Originally precomputed tables at 0x00420720 and 0x0041F720. */
+   equal. Precomputed tables in the original. */
 static SoftwareBgraWordLanes g_UiScalerFirstPixelWeights[256];
 static SoftwareBgraWordLanes g_UiScalerSecondPixelWeights[256];
 
@@ -1135,7 +1133,7 @@ void UiSelectionGeometryControl_DrawClipped
            ((FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) -
             stepTermU) *
            (((control->base).left + (control->base).right >> 1) - clipLeft)));
-  /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
+  /* per-pixel texture step (u and v) */
   pixelStepU =
        (FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) - stepTermU;
   pixelStepV = stepTermU * 2;
@@ -1591,8 +1589,8 @@ void UiNode_ForwardPointerWheelToParent
 
 
 /* Default keyboardEvent slot of many UI vtables, also the fallback of the slider and focus-proxy handlers.
-   It always returns CF set (key not consumed): the original compares the key with KEYBOARD_KEY_CODE_TAB but
-   then sets CF unconditionally (CMP; STC; RET 0xc), so the focus move its name suggests never happens.
+   It always returns true (key not consumed): the original compares the key with KEYBOARD_KEY_CODE_TAB but
+   then reports "not consumed" regardless of the result, so the focus move its name suggests never happens.
 */
 bool UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
@@ -1623,7 +1621,7 @@ void UiKeyboardFocus_Set(UiNodeBase *node)
 }
 
 
-/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Class vtables. */
 
 UiNodeVtable g_UiFocusProxyControlVtable = {
         .relocate = (void *)UiSingleLineTextControl_RelocateChild,

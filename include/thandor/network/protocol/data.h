@@ -10,7 +10,7 @@
 #include <thandor/generated/types.h>
 #include <thandor/generated/ui_templates.h>
 
-extern uint32_t g_UiTransferEncryptSboxes[8][16][16]; /* Encryption S-boxes of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[8][16][16], table n (0x400 bytes each, 0x00403160-0x00405160) indexed [round-key nibble n][data nibble n], each entry a 4-bit output (each row a permutation of 0..15). k_SpatialSoundStereoCosineSecondHalfBaseBias (0x004046A0) is only an address inside table 5 (+0x140). */
+extern uint32_t g_UiTransferEncryptSboxes[8][16][16]; /* Encryption S-boxes of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[8][16][16], table n (0x400 bytes each) indexed [round-key nibble n][data nibble n], each entry a 4-bit output (each row a permutation of 0..15). */
 
 extern uint32_t g_UiTransferDecryptSboxes[8][16][16]; /* Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSboxes); used by UiTransfer_DecryptPacketBlocks. */
 
@@ -24,11 +24,11 @@ extern uint32_t g_UiTransferSenderContext;
 
 extern UiTransferMailboxState g_UiTransferMailbox;
 
-extern uint32_t g_UiTransferRoundKeys[16]; /* uint32_t[16] packet cipher round keys (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table; keys 12..15 at 0x004AE9D8 were read by Ghidra as the text "mohTG sakere!!!e"). */
+extern uint32_t g_UiTransferRoundKeys[16]; /* uint32_t[16] packet cipher round keys (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table; keys 12..15 are plain key values, although their bytes spell the text "mohTG sakere!!!e"). */
 
-extern UiRuntimeRecord g_UiTransferChunkPacket; /* mailbox chunk packet (0x10031 request / 0x80030 chunk, 0x100 bytes): header (sequence token at 0x004AE9EC), payload = chunk offset (0x004AE9F8), transfer byte count (0x004AE9FC), chunk data (0x004AEA00, 58 dwords). */
+extern UiRuntimeRecord g_UiTransferChunkPacket; /* mailbox chunk packet (0x10031 request / 0x80030 chunk, 0x100 bytes): header (with packetHeader.sequenceToken), payload = chunk offset (payload byte 0), transfer byte count (payload byte 4), chunk data (from payload byte 8, 58 dwords). */
 
-extern FrontendPacket10032HostValue g_UiTransferPingEchoPacket; /* ping answer packet 0x10033 (same layout as the 0x10032 ping): header (sequence token at 0x004AEAEC), echoed tick (0x004AEAF8). */
+extern FrontendPacket10032HostValue g_UiTransferPingEchoPacket; /* ping answer packet 0x10033 (same layout as the 0x10032 ping): header (with header.sequenceToken), echoed tick (backendSessionValue). */
 
 extern UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter;
 
@@ -70,7 +70,7 @@ extern FrontendPacket10013HeartbeatAck g_FrontendPacket10013Buffer;
 
 extern FrontendPacket10032HostValue g_FrontendPacket10032Buffer;
 
-extern uint32_t g_FrontendPendingSessionPlayerCount; /* followed by an all-zero dword (0x0054DDA4) no code reaches (dropped) */
+extern uint32_t g_FrontendPendingSessionPlayerCount; /* followed by an all-zero dword no code reaches (dropped) */
 
 extern uint32_t g_FrontendExpectedPlayerRuntimeBlockCount;
 

@@ -8,7 +8,7 @@
 #include <thandor/ui/core/runtime.h>
 #include <thandor/thandor.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 RuntimeSpinLockValue *g_UiRuntimeFrameLock = 0;
 
@@ -17,8 +17,8 @@ UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback = 0;
 /* Implementation ownership: ui/core/runtime. */
 
 /* vetoClose callback of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: frees the
-   heap copy of the dialog root when UiRootStack_Pop closes it. The close is vetoed (CF set) only when the
-   free fails.
+   heap copy of the dialog root when UiRootStack_Pop closes it. The close is vetoed (returns true) only when
+   the free fails.
 */
 bool UiRootCallbacks_Free(UiRootNode *root)
 
@@ -27,9 +27,8 @@ bool UiRootCallbacks_Free(UiRootNode *root)
 }
 
 
-/* method08 of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: always sets CF, so a
-   pointer press that misses the dialog ends the root-stack hit test there (the dialogs are modal). The
-   caller removes the one stack argument.
+/* method08 of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: always returns true,
+   so a pointer press that misses the dialog ends the root-stack hit test there (the dialogs are modal).
 */
 bool UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root)
 
@@ -49,10 +48,10 @@ int UiModalDialogRoot_BlockMissedPointerMotion(UiRootNode *root)
 }
 
 /* Writes the two number readouts of the display settings dialog (root is a copy of
-   g_UiDisplaySettingsRootTemplate): the selected colour bias (applyButton +0x6C, Q16, -64..+64) divided by
-   64.0, i.e. -1.000..+1.000, and the colour scale (applyButton +0x70, Q16, 0.5..2.0) as a plain value, both
-   signed with up to 3 fraction digits into the number buffers in the tail of colorBiasValueText (+0x7C =
-   root +0xBB4 for the bias, +0x5C = root +0xB94 for the scale). Called when the dialog opens and by
+   g_UiDisplaySettingsRootTemplate): the selected colour bias (applyButton selectedColorBiasQ16, Q16, -64..+64)
+   divided by 64.0, i.e. -1.000..+1.000, and the colour scale (applyButton selectedColorScaleQ16, Q16,
+   0.5..2.0) as a plain value, both signed with up to 3 fraction digits into the number buffers in the tail of
+   colorBiasValueText (colorBiasTextUtf16 for the bias, colorScaleTextUtf16 for the scale). Called when the dialog opens and by
    UiDisplaySettingsRoot_RefreshModeSelection.
 */
 void UiDisplaySettingsRoot_FormatColorReadouts(void *root)
@@ -76,8 +75,8 @@ void UiDisplaySettingsRoot_FormatColorReadouts(void *root)
 /* Opens the "keep the new display mode?" dialog after UiDisplayModeAction_ApplyPendingMode switched modes:
    copies g_UiFourValueDialogTemplateImage to the heap, points the countdown text (text 0x109) at its number
    buffer, prints the starting seconds there and stores the previous mode tuple, which the revert action
-   0x20D (button or countdown expiry) restores. The original returns CF set when the allocation failed; no
-   caller looks at it.
+   0x20D (button or countdown expiry) restores. The original also reports a failed allocation to the caller;
+   no caller looks at it.
 */
 void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
           UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth)
@@ -97,7 +96,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
     root = (UiRootNode *)allocError;
   }
   else {
-    /* REP MOVSD of the 0x1A4-byte template, one dword per step */
+    /* copy the 0x1A4-byte template, one dword per step */
     templateCursor = (uint32_t *)&g_UiFourValueDialogTemplateImage;
     copyCursor = (uint32_t *)root;
     countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
@@ -126,7 +125,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
    pointers to it and to its sender endpoint. The slot is released, not copied, so the data stays valid only
    until the receiver wraps around to it again. Returns true with *outPacket (the packet slot) and
    *outEndpoint (its sender-endpoint slot) set; returns false and leaves both untouched when nothing was
-   pending (the original left the read index in both registers, which no caller reads).
+   pending.
 */
 bool UiRuntimeRecordRing_TakeOldest(void **outPacket,void **outEndpoint)
 
@@ -162,7 +161,7 @@ void UiRuntimeRecordRing_Clear(void)
 }
 
 
-/* Returns true (CF set) when a pending received packet carries sessionToken in its header, i.e. when the
+/* Returns true when a pending received packet carries sessionToken in its header, i.e. when the
    host of this session has sent something. The in-game client tick uses it to skip processing until the
    host's packets are there. Returns false when nothing matches or the ring lock is busy (it only try-locks).
 */
@@ -332,7 +331,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
   return;
 }
 
-/* Default method04 (vtable slot +0x04) of the UI node classes: does nothing. Installed statically in 40
+/* Default method04 vtable slot of the UI node classes: does nothing. Installed statically in 40
    UiNodeVtable tables; no caller of the slot is known yet.
 */
 void UiNode_DefaultMethod04_NoOp(void *node)
@@ -342,7 +341,7 @@ void UiNode_DefaultMethod04_NoOp(void *node)
 }
 
 
-/* Default nonRightPress (vtable slot +0x10, left/middle button press) of the UI node classes: ignores the
+/* Default nonRightPress (left/middle button press) of the UI node classes: ignores the
    press. Installed statically in 14 UiNodeVtable tables.
 */
 void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -353,7 +352,7 @@ void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
 }
 
 
-/* Default nonRightRelease (vtable slot +0x14, left/middle button release) of the UI node classes: ignores
+/* Default nonRightRelease (left/middle button release) of the UI node classes: ignores
    the release. Installed statically in 25 UiNodeVtable tables.
 */
 void UiNode_DefaultNonRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -364,7 +363,7 @@ void UiNode_DefaultNonRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordin
 }
 
 
-/* Default rightPress (vtable slot +0x18) of the UI node classes: passes the right-button press up to the
+/* Default rightPress of the UI node classes: passes the right-button press up to the
    parent, which also takes over the pointer capture; at the root nobody takes it and the capture is
    cleared. Installed statically in 32 UiNodeVtable tables.
 */
@@ -386,7 +385,7 @@ void UiNode_ForwardRightPressToParent
 }
 
 
-/* Default rightRelease (vtable slot +0x1C) of the UI node classes: ignores the right-button release.
+/* Default rightRelease of the UI node classes: ignores the right-button release.
    Installed statically in 34 UiNodeVtable tables.
 */
 void UiNode_DefaultRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -397,7 +396,7 @@ void UiNode_DefaultRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate
 }
 
 
-/* Default nonRightDrag (vtable slot +0x20, pointer motion while a left/middle press holds the capture) of the
+/* Default nonRightDrag (pointer motion while a left/middle press holds the capture) of the
    UI node classes: ignores it. Installed statically in 25 UiNodeVtable tables.
 */
 void UiNode_DefaultNonRightDrag
@@ -408,7 +407,7 @@ void UiNode_DefaultNonRightDrag
   return;
 }
 
-/* Default rightDrag (vtable slot +0x24, pointer motion while a right press holds the capture) of the UI
+/* Default rightDrag (pointer motion while a right press holds the capture) of the UI
    node classes: ignores it. Installed statically in 34 UiNodeVtable tables.
 */
 void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -419,7 +418,7 @@ void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate po
 }
 
 
-/* Default applyFlags (vtable slot +0x34) of the UI node classes: sets nodeFlags to
+/* Default applyFlags of the UI node classes: sets nodeFlags to
    (nodeFlags & retainMask) | setMask and passes the same masks to each direct child's applyFlags, so the change
    reaches the whole subtree. Installed statically in 39 UiNodeVtable tables; also called
    directly by UiLayoutContainerControl_ApplyFlagsRecursive once per page.
@@ -439,7 +438,7 @@ void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask
 }
 
 
-/* Default tick (vtable slot +0x40, per-frame update) of the UI node classes: does nothing. Installed
+/* Default tick (per-frame update) of the UI node classes: does nothing. Installed
    statically in 30 UiNodeVtable tables.
 */
 void UiNode_DefaultTick(UiNodeBase *control)

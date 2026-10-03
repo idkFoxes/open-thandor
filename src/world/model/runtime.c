@@ -65,8 +65,9 @@ bool ModelRuntimePool_RepairDeferredChild
     *outChildModelRuntime = childModelRuntime;
     return true;
   }
-  /* Original quirk: index past the attachment count still succeeds with EAX untouched, and in its only caller
-     (ModelNodeRuntime_InstantiateLinkedChildrenRecursive) EAX holds childDefinitionId at the call. */
+  /* Original quirk: index past the attachment count still succeeds and leaves a stale value as the child model
+     runtime; in its only caller (ModelNodeRuntime_InstantiateLinkedChildrenRecursive) that value is
+     childDefinitionId. */
   *outChildModelRuntime = (ModelRuntimeSlot *)(uintptr_t)childDefinitionId;
   return true;
 }
@@ -94,7 +95,7 @@ static bool ModelRuntime_ProjectAndDrawNode(ModelRuntimeNode *modelNodeRuntime)
     projectedRadiusScale = Q28_ONE;
   }
   else {
-    /* unsigned DIV */
+    /* unsigned division */
     projectedRadiusScale = (Q12)(((uint64_t)boundingRadius << 28) / (uint64_t)viewDistance);
   }
   FixedTransform_ApplyPoint
@@ -244,8 +245,8 @@ void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelN
    ray-transparent models (MODEL_NODE_FLAG_RAY_TRANSPARENT) and pre-filtering by the depth bin masks of the X and Y
    ranges the ray can reach. Returns true when a model was hit. *outNearestDistanceQ12 always receives the
    nearest distance (MODEL_RAYCAST_NO_HIT_DISTANCE on a miss) and *outNearestModelNode the nearest hit node.
-   Original quirk: on a miss *outNearestModelNode is NULL or the scratch EDX value of the last missing hierarchy
-   test; callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot
+   Original quirk: on a miss *outNearestModelNode is NULL or a leftover scratch value of the last missing
+   hierarchy test; callers only use it after a hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot
    updates (src/world/shots/maintenance.c).
 */
 bool ModelRuntime_RaycastCandidateListNearest
@@ -358,11 +359,11 @@ uint32_t __cdecl ModelRuntimePool_Init(void)
 }
 
 
-/* Part of ModelRuntimePool_ShutdownAndReleaseDefinitions (0x00528A70): releases the resource of one serialized
-   MDL definition node and then, depth first in index order, of all its children (child count at +0x14, child
-   pointers from +0x18). Only plain nodes (nodeFlags +4, low nibble 0) whose flag at +0x34 is set own a
-   resource (the sprite asset at +0x30). The original walks the tree with an explicit {count, index, node}
-   frame stack on the machine stack; the decompile only followed the first child. */
+/* Part of ModelRuntimePool_ShutdownAndReleaseDefinitions: releases the resource of one serialized
+   MDL definition node and then, depth first in index order, of all its children (childCount,
+   childSerializedOffsets). Only plain nodes (nodeFlags low nibble 0) whose ownedNestedResourcePresent is set own a
+   resource (spriteAssetReference). The original walks the tree with an explicit {count, index, node}
+   frame stack on the machine stack. */
 static void ModelRuntimePool_ReleaseDefinitionNodeResources(MdlSerializedNodeHeader *node)
 
 {
@@ -412,8 +413,7 @@ void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
 
 
 
-/* Part of ModelRuntimePool_UnrebaseBeforeSave: zeroes an unused slot's 0x80 dwords, one dword at a time
-   (REP STOSD in the original). */
+/* Part of ModelRuntimePool_UnrebaseBeforeSave: zeroes an unused slot's 0x80 dwords, one dword at a time. */
 static void ModelRuntimePool_ZeroUnusedSlotBeforeSave(ModelRuntimeSlotUnrebaseView *modelRuntime)
 
 {
@@ -483,8 +483,8 @@ static void ModelRuntimePool_UnrebaseUsedSlotBeforeSave(ModelRuntimeSlotUnrebase
    pointers of every used slot into offsets (owner and linked army against g_ArmyRuntimeRebaseBaseMinusOne, root
    and attachment parent nodes against g_RuntimeObjectRebaseBaseMinusOne, linked model runtime and attachment
    children against g_ModelRuntimeRebaseDelta; NULL stays 0), replaces the definition pointer by its id and runs
-   the class's modelUnrebase handler. Unused slots are zeroed. The original returns the pool (EAX) and its size
-   0x400000 (EDX) for the save. Counterpart of ModelRuntimePool_RebaseAfterLoad.
+   the class's modelUnrebase handler. Unused slots are zeroed. The original also returns the pool and its size
+   0x400000 for the save. Counterpart of ModelRuntimePool_RebaseAfterLoad.
 */
 void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
 
@@ -572,9 +572,9 @@ void ModelRuntimePool_RebaseAfterLoad(void)
     if (modelRuntime->rootModelNodeOrSavedOffset.modelNode == NULL) {
       continue;
     }
-    /* saved offsets + pool deltas: the owner army (+0x08, always rebased) and the linked army (+0xF0) get
-       g_ArmyRuntimeRebaseBaseMinusOne, the root node (+0x04) and attachment parent nodes
-       g_RuntimeObjectRebaseBaseMinusOne, the linked model runtime (+0x38) and attachment children
+    /* saved offsets + pool deltas: the owner army (always rebased) and the linked army
+       (classState.linkedArmyRuntimeOrSavedOffset) get g_ArmyRuntimeRebaseBaseMinusOne, the root node and
+       attachment parent nodes g_RuntimeObjectRebaseBaseMinusOne, the linked model runtime and attachment children
        g_ModelRuntimeRebaseDelta; zero offsets other than the owner stay NULL. */
     rebasedOwnerArmy = (ArmyRuntimeSlot *)((int)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime +
                                            (int)g_ArmyRuntimeRebaseBaseMinusOne);
@@ -620,8 +620,9 @@ void ModelRuntimePool_RebaseAfterLoad(void)
 /* Destroys a model runtime: drops player references to it, runs its class release handler, destroys the
    attached model runtimes, clears world nodes that still point to it and releases its node tree.
    An attached part is then removed from its parent's attachment list and the army's derived metrics are
-   rebuilt; a root model destroys its army instead, first spawning the army asset its definition names at
-   +0x74 at the same place, unless that id is -1 or flag 0x20 is set at +0xEC of the owner record.
+   rebuilt; a root model destroys its army instead, first spawning the army asset its definition names in
+   destroyedReplacementArmyAssetId at the same place, unless that id is -1 or the owner record's
+   classState.stateFlags has ARMY_MODEL_STATE_DESTRUCTION_STARTED (0x20).
 */
 void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
@@ -667,7 +668,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
   if (parentModelNode == NULL) {
     if (entityRuntime->common.ownership.definitionOrClassRecord != NULL) {
-      LOCK(); /* XCHG in the original */
+      LOCK(); /* read and cleared atomically in the original */
       ownerRecord = entityRuntime->common.ownership.definitionOrClassRecord;
       entityRuntime->common.ownership.definitionOrClassRecord = NULL;
       UNLOCK();
@@ -743,7 +744,7 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
 
 
 /* Creates a model runtime for an army from a model definition id: takes the first free pool slot, copies the
-   definition's starting values (armour points at +0x3C and the values at +0x40..+0x5C), raises two of the
+   definition's starting values (health and the destructionEffectTimers), raises two of the
    army's values to the definition's, builds the model node tree, its bounding radius and transforms, and runs
    the definition class's initialize handler. Returns 0 and stores the slot in *outModelRuntime, or returns
    FATAL_ERROR_GENERAL_FAILURE (no pool or no free slot), the node tree's error, or
@@ -793,7 +794,8 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
   if (armyRuntime->occupancyMarkRadius < definitionView->occupancyMarkRadius) {
     armyRuntime->occupancyMarkRadius = definitionView->occupancyMarkRadius;
   }
-  /* Original quirk: only +0x10..+0x2F are cleared; effectModelFlags (+0x30) and +0x34 keep the old slot's values. */
+  /* Original quirk: only the first 32 bytes of classPrefixState are cleared; effectModelFlags and the 4 bytes after
+     it keep the old slot's values. */
   for (prefixIndex = 0; prefixIndex < 32; prefixIndex++) {
     modelRuntime->classPrefixState[prefixIndex] = 0;
   }

@@ -17,8 +17,8 @@
 
 /* Proposes armyAssetId at the first workspace 08 site of that asset where it can be placed (placement mode 4),
    unless one of it is still unassigned. Weight: 3 * baseWeight / (existing count + 3); for assets other than
-   ARM 330 (0x14A) additionally scaled by (2 * unpowered + supplied Energy demand) / (record +0x358 rate << 4)
-   when that rate is nonzero.
+   ARM 330 (0x14A) additionally scaled by (2 * unpowered + supplied Energy demand) /
+   (record tritiumExtractionRateQ4PerTick << 4) when that rate is nonzero.
 */
 void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
@@ -426,7 +426,7 @@ static void AiPlanningRebuild_CollectProducibleAssets(FactionRuntimeIndex factio
   for (slotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     definitionNode = *armyAssetRegistryCursor;
     if ((definitionNode != NULL) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
-      /* returns true (CF set) while some technology of the hierarchy is still locked */
+      /* returns true while some technology of the hierarchy is still locked */
       technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                                (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
       if (!technologyLocked && ((definitionNode[1].selectionDetailTemplateVariantIndex & productionMask) != 0) &&
@@ -495,7 +495,7 @@ static void AiPlanningRebuild_CollectResearchCandidates(FactionRuntimeIndex fact
     if (modelRuntime != NULL) {
       slotDefinition = modelRuntime->definitionOrSavedId.runtimeDefinition;
       for (technologySlot = 28; technologySlot != 0; technologySlot--) {
-        /* returns false (CF clear) when the AI may plan this technology */
+        /* returns false when the AI may plan this technology */
         notAvailable = AiTechnologyCandidate_IsCurrentlyAvailable
                              ((PckTechnologyIdCatalog)slotDefinition->researchTechnologyIds[technologySlot],
                               factionRecordOffset);
@@ -701,7 +701,7 @@ void AiCandidateWorkspace_SortDescending(void)
     do {
       do {
         if (currentRecordScore < (int)scanRecordCursor->weightedScoreAndKind) {
-          /* the original swaps with XCHG, whose implicit bus lock Ghidra shows as LOCK/UNLOCK */
+          /* the original swaps with an atomic (bus-locked) exchange, shown as LOCK/UNLOCK */
           LOCK();
           promotedScore = scanRecordCursor->weightedScoreAndKind;
           scanRecordCursor->weightedScoreAndKind = currentRecordScore;
@@ -731,7 +731,7 @@ void AiCandidateWorkspace_SortDescending(void)
 
 
 /* Returns the xenite cost (Q4) of a candidate, which the purchase planner checks against the faction's xenite:
-   the technology's xeniteCostQ4 for a technology candidate, else the army asset's cost dword at +0x28, or
+   the technology's xeniteCostQ4 for a technology candidate, else the army asset's xeniteCostQ4, or
    0x7FFFFFFF (never affordable) when the asset is unknown.
 */
 int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
@@ -750,7 +750,7 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
     lookupError = ArmyAssetRegistry_FindById(registryId,&armyAsset);
     xeniteCostQ4 = INT32_MAX;
     if (lookupError == 0) {
-      /* +0x28 of the army asset record, reached through the 16-byte prefix type */
+      /* ArmyAssetRecord.xeniteCostQ4, reached through the 16-byte prefix type */
       xeniteCostQ4 = armyAsset[2].registryId;
     }
   }
@@ -758,7 +758,7 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 }
 
 
-/* Returns true (CF set) when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
+/* Returns true when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
    or not.
 */
 bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
@@ -1025,7 +1025,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
 }
 
 
-/* Technology score callback for score kind 0 (g_AiTechnologyCandidateScoreCallbackTable[0], image 0x0053B9E0,
+/* Technology score callback for score kind 0 (g_AiTechnologyCandidateScoreCallbackTable[0],
    called by AiTechnologyCandidate_AddBestResearch): a technology of this kind always scores 0, so it
    is never chosen for research.
 */
@@ -1121,7 +1121,7 @@ bool AiRuntime_InitWorkspace(uint32_t *outErrorCode)
 }
 
 
-/* Adds a field cell to workspace 09 (at most 1024 cells) when it lies inside the extent (+0x19C of the
+/* Adds a field cell to workspace 09 (at most 1024 cells) when it lies inside the extent (supportRadius of the
    definition) of some primary-workspace structure, i.e. when AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
    returns false. These cells are the build sites near the AI's own base.
 */
@@ -1170,7 +1170,7 @@ void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 }
 
 
-/* Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset whose
+/* Returns true when the primary workspace (workspace 00) holds an entry of this army asset whose
    runtime pointer is NULL.
 */
 bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
@@ -1192,7 +1192,7 @@ bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 }
 
 
-/* Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset, with or
+/* Returns true when the primary workspace (workspace 00) holds an entry of this army asset, with or
    without a runtime object.
 */
 bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
@@ -1283,8 +1283,8 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
 
 
 /* Returns false as soon as the point lies strictly inside the square extent of some assigned
-   primary-workspace (workspace 00) unit: both axis distances to the unit's position below the extent at +0x19C
-   of its definition. True when it is outside all of them. Arguments are Y first, then X, as every
+   primary-workspace (workspace 00) unit: both axis distances to the unit's position below the extent
+   supportRadius of its definition. True when it is outside all of them. Arguments are Y first, then X, as every
    caller passes them.
 */
 bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)

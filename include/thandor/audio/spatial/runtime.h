@@ -18,7 +18,7 @@
    attenuated gain is not above 0x100 are not played (SpatialSound_PlayPositionedOneShot) */
 #define SPATIAL_SOUND_GAIN_Q15_FULL 0x8000
 #define SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 0x100
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool SpatialSoundPool_Init(uint32_t *outError);
 

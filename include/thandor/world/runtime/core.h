@@ -56,7 +56,7 @@
 /* WorldLightingRuntime_UpdateInterpolatedTerrainLighting: one wrap of a 16-bit half of a packed field-region
    pair, added to the lower endpoint so the blend runs forward through the wrap */
 #define WORLD_LIGHTING_PACKED_HALF_WRAP 0x10000
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void);
 

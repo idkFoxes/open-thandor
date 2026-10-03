@@ -12,7 +12,7 @@
 
 /* Sets occupancy bit 1 (FIELD_CELL_OCCUPANCY_BIT1) in one faction slot's byte for every cell within the given
    radius of a world point: the centre cell here, the rest through the six hexagon sectors. Part of the occupancy
-   rebuild that runs over every owned army (the army's radius at +0x90). Nothing happens when the centre is outside
+   rebuild that runs over every owned army (the radius is ArmyRuntimeSlot.occupancyMarkRadius). Nothing happens when the centre is outside
    the grid or on a map-edge cell.
 */
 void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,

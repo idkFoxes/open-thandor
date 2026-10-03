@@ -56,7 +56,7 @@
 #define MOVIE_CHROMA_SQRT3_Q15 0xddb4
 /* 2^16 / 3: (r + g + b) * this >> 19 is the channel average scaled to 5 bits (MovieColor_ComputeLuma5FromRgb888) */
 #define MOVIE_LUMA_THIRD_Q16 0x5555
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,

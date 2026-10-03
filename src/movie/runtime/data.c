@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/movie/runtime/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/movie/runtime/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -24,10 +24,10 @@ __declspec(align(8)) MovieRuntime *g_ActiveMovie = 0;
 
 __declspec(align(4)) uint32_t g_MoviePlaybackCurrentFrame = 0;
 
-/* 2 command records and the terminator record (commandCode 0) at 005658D8
-   that ends the dispatcher's scan. The scan also reads the terminator's modifierClassFlags (0x90909090, NOP
-   fill). Original quirk: the original's terminator was only 8 bytes long, its code followed at 005658E0, so the
-   terminator's continuationEntryAddress is not original data (never read; the table entry ends at 005658E0). */
+/* 2 command records and the terminator record (commandCode 0) that ends the dispatcher's scan. The scan
+   also reads the terminator's modifierClassFlags (0x90909090, NOP fill). Original quirk: the original's
+   terminator was only 8 bytes long and code followed it, so the terminator's continuationEntryAddress is not
+   original data (never read). */
 __declspec(align(16)) UiCommandDispatchRecord g_EndMovieCommandDispatchRecords[3] = {
     /* 0 */ {.commandCode = 0x71, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x565990},
     /* 1 */ {.commandCode = 0x70, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x5658F0},

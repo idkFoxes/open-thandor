@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/resource/runtime. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool InGameSaveGame_CreatePackage(void *packagePath,EngineFileHandle *outHandle);
 

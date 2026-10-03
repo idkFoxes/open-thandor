@@ -14,8 +14,8 @@ bool g_Triangle2DBarycentricOutside;
 
 /* Computes the barycentric weights of a screen point for vertices A and B of a projected triangle
    (C's weight is the remainder to 1.0), used to interpolate texture/shade values when a clipped
-   terrain triangle is queued. Returns both weights in Q12 packed in EDX:EAX and publishes "point outside
-   the triangle" (the original CF) in g_Triangle2DBarycentricOutside.
+   terrain triangle is queued. Returns both weights in Q12 packed in one struct and publishes "point outside
+   the triangle" (a second result in the original) in g_Triangle2DBarycentricOutside.
    Called directly by the terrain projection code (TerrainProjectedTriangle_ClipInterpolateAndQueueTextured).
 */
 TriangleBarycentricWeightsQ12
@@ -26,9 +26,8 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
           GraphicsProjectedCoordinate pointY,GraphicsProjectedCoordinate pointX)
 
 {
-  /* Rewritten from the assembly (0x004869B0-0x00486AFC). The original reports "point outside the
-     triangle" through CF, which the decompiler dropped; it is published in
-     g_Triangle2DBarycentricOutside. Weights are Q16 internally and returned >> 4. */
+  /* "Point outside the triangle" is published in g_Triangle2DBarycentricOutside. Weights are Q16
+     internally and returned >> 4. */
   int64_t denominator;
   int64_t numerator;
   int denominatorShifted;
@@ -73,8 +72,8 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
   if (weightB < 0 || weightA + weightB > TRIANGLE_BARYCENTRIC_WEIGHT_ONE_Q16) {
     return result;
   }
-  result.weightVertexB_Q12 = weightB >> 4; /* EAX */
-  result.weightVertexA_Q12 = weightA >> 4; /* EDX */
+  result.weightVertexB_Q12 = weightB >> 4;
+  result.weightVertexA_Q12 = weightA >> 4;
   g_Triangle2DBarycentricOutside = false;
   return result;
 }

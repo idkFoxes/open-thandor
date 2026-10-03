@@ -65,7 +65,7 @@
 #define PERSISTENT_DEFAULT_BITS_PER_PIXEL 16 /* ProcessEntry: colour depth of the first display mode */
 #define PERSISTENT_DEFAULT_ADAPTER_INDEX 0
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void PersistentSettings_Flush(void);
 

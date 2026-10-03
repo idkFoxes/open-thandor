@@ -23,7 +23,7 @@
 #define GRAPHICS_PALETTE_ENTRY_UNUSED_MARK 0x70707
 /* Entries of g_GraphicsPaletteBankSlots (used-colour count per bank); the optimiser handles at most this many banks */
 #define GRAPHICS_PALETTE_BANK_SLOT_CAPACITY 0x200
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase);
 

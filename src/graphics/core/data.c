@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/graphics/core/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/graphics/core/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -88,7 +88,7 @@ __declspec(align(16)) char sz_DirectDrawEnumerateA[21] = "DirectDrawEnumerateA";
 
 __declspec(align(4)) uint32_t g_MouseEventsProcessed = 0;
 
-/* scratch descriptor the cursor save/restore Lock fills (lPitch at 00577D00, lpSurface at 00577D14) */
+/* scratch descriptor the cursor save/restore Lock fills (lPitch, lpSurface) */
 __declspec(align(16)) DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc = {0};
 
 __declspec(align(4)) int32_t g_CursorCurrentDrawX = 0;

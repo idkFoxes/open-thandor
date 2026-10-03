@@ -99,7 +99,7 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
 }
 
 
-/* Compares unitCount UTF-16 code units (REPE CMPSW in the original). */
+/* Compares unitCount UTF-16 code units, stopping at the first difference. */
 static bool FrontendScenarioSelectionPage_CodeUnitsEqual
           (const uint16_t *firstText,const uint16_t *secondText,uint32_t unitCount)
 {
@@ -158,7 +158,7 @@ static bool FrontendScenarioSelectionPage_ApplyMapOption(FrontendScenarioSelecti
   *scanCursor = '"';
   /* "KARTE" -> "kARTE": the option is used only once, returning to this page later finds no match. */
   *mapOption = 'k';
-  /* wcslen + 1 (REPNE SCASW): levelNameEnd ends behind the terminator, which the compare includes. */
+  /* wcslen + 1: levelNameEnd ends behind the terminator, which the compare includes. */
   levelName = (uint16_t *)g_PackageScratchBuffer;
   levelNameEnd = levelName;
   unitsLeft = 0x400000;
@@ -236,7 +236,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
 
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_STACK_CHOOSE_GAME,&scenarioSelectionPage->primaryPageStack);
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    /* compactLayoutControl.nodeFlags is menuRoomModelView's contextFlags (+0x4C): the page covers the menu room */
+    /* compactLayoutControl.nodeFlags is menuRoomModelView's contextFlags: the page covers the menu room */
     controlFlags = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
     *controlFlags = *controlFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
@@ -426,8 +426,7 @@ void FrontendScenarioAction_StartFieldGridLoad(void *source)
 }
 
 
-/* Copies a whole loaded catalog file (byteCount / 4 dwords, REP MOVSD in the original) into a catalog
-   section. */
+/* Copies a whole loaded catalog file (byteCount / 4 dwords) into a catalog section. */
 static void ScenarioCatalog_CopyFileIntoSection
           (ScenarioCatalogRecord *sectionRecords,const void *fileBytes,uint32_t byteCount)
 {
@@ -659,7 +658,7 @@ static void FrontendScenarioTransfer_SetFieldGridPathOfLevel(FrontendLoadedLevel
 static void FrontendScenarioTransfer_ProcessReceivedCatalog(void)
 {
   /* The three command payload dwords double as a 96-bit mask of levels that are new in the
-     received catalog: the original ORs bit n into [ESP + EBX*4] (EBX 3..1), and those slots are
+     received catalog: the original sets bit n in the payload dwords 3..1 directly, and those dwords are
      the 0xE00 command's arguments. Index 1 is the first argument after the command code. */
   uint32_t changedLevelMask[4];
   uint32_t *receivedDwords;
@@ -1012,10 +1011,10 @@ static void FrontendScenarioSession_LoadFieldGridOfLevel(FrontendLoadedLevelAsse
    locally and otherwise requests it through the mailbox (SCENARIO_TRANSFER_FIELD_GRID). Every other player
    that has the level locally counts as ready; then the frontend returns to the main page with code 1.
    Reached as frontend command FRONTEND_COMMAND_LOAD_FIELD_GRID (command-handler format: playerRuntimeId and
-   three unused arguments, RET 0x10 in the original).
+   three unused arguments).
    Original quirk: FRONTEND_PLAYER_STATE_LEVEL_RECEIVED is set on the first player block, not on the player the
-   scan stopped at (0x005443F6 MOV EAX,[g_FrontendPlayerRuntimeBlocks]; 0x00544401 OR [EAX+0x60],8, while ESI
-   is reloaded with the level asset). The flag thus marks "grid loaded on this machine"; a later call would find the
+   scan stopped at (the original sets it through g_FrontendPlayerRuntimeBlocks itself, its scan cursor having
+   been reused for the level asset). The flag thus marks "grid loaded on this machine"; a later call would find the
    same other player still unflagged (unless the has-level-locally pass below flagged it) and load again.
 */
 void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
@@ -1119,8 +1118,8 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       campaignRecordsRemaining--;
     } while (campaignRecordsRemaining != 0);
     if (campaignRecordsRemaining == 0) {
-      /* No record for the current level. As in the original (XOR EAX,EAX clears CF) this check never
-         fails; the cursor then points behind the last record. */
+      /* No record for the current level. As in the original this check never fails (it passes a cleared
+         failure flag); the cursor then points behind the last record. */
       FatalError_ExitIfFailed(0,false);
     }
     FrontendScenarioTransfer_ReleaseLoadedLevelAsset();
@@ -1138,7 +1137,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     WidePath_CombineDirectoryAndLeaf
               (g_LevelResourcePathScratchUtf16,(uint16_t *)fieldGridPath,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
-    /* the original does not check this load (no CF dispatch) */
+    /* the original does not check this load for failure */
     sourceGrid = Package_LoadEntry((uint16_t *)fieldGridPath,&loadErrorCode);
     if (sourceGrid == NULL) {
       /* Original quirk: the error code is used as the grid */
@@ -1412,7 +1411,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
 }
 
 
-/* Compares the 0x40-byte identifiers of two catalog records dword by dword (REPE CMPSD in the original). */
+/* Compares the 0x40-byte identifiers of two catalog records dword by dword. */
 static bool ScenarioCatalog_RecordIdentifiersEqual
           (const ScenarioCatalogRecord *firstRecord,const ScenarioCatalogRecord *secondRecord)
 {
@@ -1431,8 +1430,7 @@ static bool ScenarioCatalog_RecordIdentifiersEqual
 
 /* Merges sourceByteCount / 0x100 catalog records into destinationRecords, matching them by their 0x40-byte
    UTF-16 identifier: a match is overwritten, a new identifier is appended. Returns the new destination
-   record count (EDX in the original). The original scans with REPE CMPSD and copies with REP MOVSD; like it,
-   the loops assume at least one source and one existing destination record.
+   record count. Like the original, the loops assume at least one source and one existing destination record.
 */
 ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
           (ScenarioCatalogSourceByteCount sourceByteCount,ScenarioCatalogRecord *sourceRecords,

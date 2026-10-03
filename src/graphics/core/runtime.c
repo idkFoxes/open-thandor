@@ -62,7 +62,7 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
   if (DebugHook_Windowed()) {
     return;
   }
-  /* try-lock: the original swaps 1 into the access state (XCHG) and only draws when it was 0 */
+  /* try-lock: the original atomically swaps 1 into the access state and only draws when it was 0 */
   if (g_CursorSourceAsset != NULL) {
     previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
     if (previousAccessState == 0) {
@@ -78,8 +78,7 @@ void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
 
 /* Selects the software cursor frame (GRAPHICS_CURSOR_FRAME_*) that the cursor timer animates and draws.
    Returns true when the frame was selected, false (frame unchanged) for an index at or above g_CursorFrameCount;
-   the error to report for that is FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE. Installed in g_GraphicsCursorSetFrame
-   (image slot 0x00416848).
+   the error to report for that is FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE. Installed in g_GraphicsCursorSetFrame.
 */
 bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
@@ -94,12 +93,11 @@ bool GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 /* Takes the next mouse event from the 256-entry ring the mouse input code fills (returns false and leaves
    *outEvent untouched when it is empty; true with the event in *outEvent otherwise) and publishes it: button state, cursor position and wheel delta go to the g_Cursor* globals, a release stores
-   its clock per button, a press its position as the last click. Installed in g_GraphicsCursorConsumeEvent
-   (image slot 0x00416850). A press less than 16 clock ticks after the release of the same button and within
-   +-4 pixels of the last click also sets bit 31 (double click) in the returned button state (EBX;
+   its clock per button, a press its position as the last click. Installed in g_GraphicsCursorConsumeEvent.
+   A press less than 16 clock ticks after the release of the same button and within
+   +-4 pixels of the last click also sets bit 31 (double click) in the returned button state (outEvent->buttonState;
    g_CursorButtonState keeps the raw value), which UiPointer_DispatchPendingEvents passes on to the press
    dispatchers as UI_POINTER_BUTTON_REPEAT_CLICK.
-   Original register convention: the event came back in EAX/EBX/ECX/EDX/ESI, CF set for an empty ring.
 */
 bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
 
@@ -126,8 +124,8 @@ bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
   eventClock = g_CursorInputEvents[eventIndex].clockValue;
   rawButtonState = g_CursorInputEvents[eventIndex].buttonState;
   g_CursorButtonState = rawButtonState;
-  /* ESI: ticks since the release of the pressed button; releases (and motion) leave the limit itself, which
-     never counts as a double click. The compare is unsigned (JNC at 0x00416978). */
+  /* ticksSinceRelease: ticks since the release of the pressed button; releases (and motion) leave the limit
+     itself, which never counts as a double click. The compare is unsigned. */
   ticksSinceRelease = GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS;
   if (consumedEventType == LEFT_PRESS) {
     ticksSinceRelease = eventClock - g_CursorButtonReleaseClock[0];
@@ -147,7 +145,7 @@ bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
   else if (consumedEventType == RIGHT_RELEASE) {
     g_CursorButtonReleaseClock[2] = eventClock;
   }
-  /* The returned state (EBX) gets bit 31 for a double click; g_CursorButtonState above stays raw. The distance
+  /* The returned state gets bit 31 for a double click; g_CursorButtonState above stays raw. The distance
      is measured to the previous press, before this press becomes the last click below. */
   rawButtonState = rawButtonState & ~GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK;
   if (ticksSinceRelease < GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS) {
@@ -167,8 +165,6 @@ bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
     g_CursorLastClickX = g_CursorInputEvents[eventIndex].pointerX;
     g_CursorLastClickY = g_CursorInputEvents[eventIndex].pointerY;
   }
-  /* The original also left the button state in EBX, position in ECX/EDX and wheel delta in ESI, which Ghidra's
-     EAX/CF view of this function dropped. */
   outEvent->eventType = consumedEventType;
   outEvent->buttonState = (GraphicsCursorButtonState)rawButtonState;
   outEvent->pointerX = g_CursorInputEvents[eventIndex].pointerX;
@@ -178,10 +174,10 @@ bool GraphicsCursor_ConsumeNextInputEvent(CursorPointerEvent *outEvent)
 }
 
 
-/* Perspective-projects one view-space Q12 point to screen coordinates (EAX = x, EDX = y): the perspective scale
-   is the 64-bit projection numerator divided by z, x and y are scaled by it and offset by the projection
+/* Perspective-projects one view-space Q12 point to screen coordinates (returned as an x/y pair): the perspective
+   scale is the 64-bit projection numerator divided by z, x and y are scaled by it and offset by the projection
    centre. Points with z not above the numerator's high dword (behind or too close to the eye, where the
-   32-bit IDIV would overflow) project to (0,0).
+   32-bit division would overflow) project to (0,0).
 */
 GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
 
@@ -651,8 +647,7 @@ void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destination
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *sourceSurface)
 
 {
-  /* Rewritten from the assembly (0x00579EC0-0x0057A0BD); Ghidra's output confused the frame pointer
-     with the copy cursors. Copies a clipped rectangle of the locked surface into the buffer origin. */
+  /* Copies a clipped rectangle of the locked surface into the buffer origin. */
   int bytesPerPixel;
   int rowPixels;
   int copyWidth;
@@ -719,8 +714,7 @@ void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBu
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface)
 
 {
-  /* Rewritten from the assembly (0x0057A0C0-0x0057A2BD), mirror of
-     GraphicsCursor_SaveSurfaceBackground: buffer rows back into the locked surface. */
+  /* Mirror of GraphicsCursor_SaveSurfaceBackground: buffer rows back into the locked surface. */
   int bytesPerPixel;
   int rowPixels;
   int copyWidth;
@@ -762,7 +756,7 @@ void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBu
     /* the scratch DDSURFACEDESC: cleared, then dwSize set */
     Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDesc);
     g_GraphicsCursorSurfaceDesc.dwSize = sizeof(DDSURFACEDESC_DX6);
-    /* write lock, as the original (PUSH 0x21 at 0x0057A176 / 0x0057A266) */
+    /* write-only lock (DDLOCK_WAIT | DDLOCK_WRITEONLY), as in the original */
     result = destinationSurface->lpVtbl->Lock
                        (destinationSurface,NULL,&g_GraphicsCursorSurfaceDesc,DDLOCK_WAIT | DDLOCK_WRITEONLY,NULL);
   }

@@ -601,8 +601,8 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   /* the button's value pair is (grid half size, depth); the depth is stored as a quarter */
   subresourceCount = (uint32_t)((UiNumericPairTextButton *)control)->secondValue >> 2;
   newSubresourceCount = subresourceCount;
-  /* The option control stores the grid half size at +0x60 (ECX); the texture dimension is twice
-     that (EDX). The decompile passed both as uninitialized locals. */
+  /* The option control stores the grid half size in firstValue; the texture dimension is twice
+     that. */
   newGridHalfSize = (PersistentSettingsValue)((UiNumericPairTextButton *)control)->firstValue;
   newTextureDimension = newGridHalfSize * 2;
   GraphicsShadingRuntime_Shutdown();

@@ -8,7 +8,7 @@
 #include <thandor/ui/controls/misc.h>
 #include <thandor/thandor.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 /* the display settings dialog, copied and linked by
    UiDisplaySettings_OpenAndPopulateModeSelection. */
@@ -252,7 +252,7 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   UiDisplaySettingsApplyButton *applyButton;
 
   applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
-  /* the slider values (UiRangeSliderControl.value, +0x58) */
+  /* the slider values (UiRangeSliderControl.value) */
   colorBiasQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value;
   colorScaleQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value;
   if ((colorBiasQ16 != applyButton->selectedColorBiasQ16) ||
@@ -424,11 +424,11 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
       return;
     }
     hitVtable = (hitControl->selectable).base.vtable;
-    /* The handlers preserve EAX/EDX: the original keeps passing the hit child and its vtable, and
-       stores that child as the new activeChild (the decompiler lost both). */
+    /* All calls go to the hit child through its own vtable, and that child becomes the new
+       activeChild. */
     hitVtable->nonRightPress(0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,(UiNodeBase *)hitControl);
     hitVtable->nonRightDrag(wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
-    /* swap in the new active child (an XCHG in the original) */
+    /* swap in the new active child */
     previousActiveChild = control->activeChild;
     control->activeChild = (UiNodeBase *)hitControl;
   }
@@ -470,7 +470,7 @@ void UiImageControl_TickHover(UiImageControl *control)
           *hoverStateFlagsField = *hoverStateFlagsField & ~UI_IMAGE_CONTROL_PRESS_STARTED;
           hitChildVtable->nonRightRelease
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
-          /* EAX (the hovered child) and ECX (its vtable) survive the handler calls. */
+          /* all three calls go to the hovered child through its own vtable */
           hitChildVtable->nonRightPress
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
           hitChildVtable->nonRightDrag
@@ -1047,8 +1047,8 @@ static DisplayModeScratchWord UiDisplaySettings_InsertIntoSortedSlot(DisplayMode
    selected and the original values, installs its action handlers and pushes it. The option buttons are then
    labelled with the enumerated values in ascending order: up to 4 distinct bit depths, 8 resolutions and 5
    adapters (a sorted insert into the g_UiDisplayModeDistinctValueScratch slots, 0xFFFFFFFF = empty).
-   Reopened by UiDisplayModeAction_RevertAndReopenSettings. The original sets CF when the
-   allocation fails; that caller ignores it.
+   Reopened by UiDisplayModeAction_RevertAndReopenSettings. The original also reports a failed
+   allocation; that caller ignores it.
 */
 void UiDisplaySettings_OpenAndPopulateModeSelection(void)
 
@@ -1277,9 +1277,8 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
           UiNodeBase *displaySettingsRoot)
 
 {
-  /* Rewritten from the assembly (0x00423D70): every option button is a 0x68-byte node; the dwords
-     just before each button hold its mode value(s). The decompiled struct indexing picked wrong
-     fields, so no resolution button was ever marked as selected. */
+  /* Every option button is a 0x68-byte node; the dwords just before each button hold its mode
+     value(s) (DISPLAY_MODE_OPTION_PREFIX). */
   static const unsigned depthButtons[4] = {offsetof(DisplaySettingsUiImage,colorDepthOption1),
       offsetof(DisplaySettingsUiImage,colorDepthOption2),offsetof(DisplaySettingsUiImage,colorDepthOption3),
       offsetof(DisplaySettingsUiImage,colorDepthOption4)};
@@ -1308,7 +1307,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       UiNodeList_UnsuppressActionId(UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + i,displaySettingsRoot);
     }
     if (bitsPerPixel == depth) {
-      /* The original stores EAX (the width) instead of the button for the fourth depth. */
+      /* The original stores modeWidth instead of the button for the fourth depth. */
       selected = (i == 3) ? (void *)(uintptr_t)modeWidth : (void *)(root + depthButtons[i]);
     }
   }
@@ -1380,7 +1379,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
 }
 
 
-/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Class vtables. */
 
 UiNodeVtable g_UiRangeSliderControlVtable = {
         .relocate = (void *)UiContainer_RelocateChildren,

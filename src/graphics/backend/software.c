@@ -211,8 +211,8 @@ void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY
 }
 
 
-/* Software backend of g_GraphicsBeginScene (slot 0x00485820): the software renderer needs no scene setup, so it
-   only reports success (CLC; RET).
+/* Software backend of g_GraphicsBeginScene: the software renderer needs no scene setup, so it only reports
+   success.
 */
 void SoftwareGraphicsDispatch_SuccessNoOp(void)
 
@@ -220,7 +220,7 @@ void SoftwareGraphicsDispatch_SuccessNoOp(void)
   return;
 }
 
-/* Software backend of g_GraphicsEndScene (slot 0x00485824): nothing to finish (a bare RET).
+/* Software backend of g_GraphicsEndScene: nothing to finish.
 */
 void SoftwareGraphicsDispatch_NoOp(void)
 
@@ -229,12 +229,11 @@ void SoftwareGraphicsDispatch_NoOp(void)
 }
 
 
-/* Initial g_GraphicsSetDisplayMode hook (slot 0x004A8ED0) of the software pixel format: allocates the
+/* Initial g_GraphicsSetDisplayMode hook of the software pixel format: allocates the
    SoftwarePixelPackTables once, rebuilds them through g_SoftwareBuildPixelPackTables with the current colour
    scale/bias, and derives the MMX pack/unpack constants (g_SoftwarePixelMmxConstants) of the 16-bit rasterizer
    and blits from g_SoftwarePixelFormatConfig. The mode arguments are not used. Returns true on success;
-   false with the arena error in *errorCode when the allocation fails. (The original left the blue unpack
-   scale in EAX on success, which no caller reads.)
+   false with the arena error in *errorCode when the allocation fails.
 */
 bool SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
@@ -297,7 +296,7 @@ bool SoftwarePixelFormat_BaseDisplayModeHook
 }
 
 
-/* g_SoftwareFramebufferCreate (slot 0x004A8ED8): creates an in-memory framebuffer of width x height pixels in one
+/* g_SoftwareFramebufferCreate: creates an in-memory framebuffer of width x height pixels in one
    allocation, the 0x10-byte SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by
    the pixels, which are zeroed. Used for the off-screen buffers of the display setup (platform/input/devices.c).
    Returns the framebuffer, or NULL when the allocation fails; then the allocator error is stored in
@@ -336,7 +335,7 @@ SoftwareFramebufferAccess *SoftwareFramebuffer_Create
 }
 
 
-/* g_SoftwareFramebufferDestroy (slot 0x004A8EDC): frees a framebuffer made by SoftwareFramebuffer_Create
+/* g_SoftwareFramebufferDestroy: frees a framebuffer made by SoftwareFramebuffer_Create
    (header and pixels are one allocation).
 */
 void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
@@ -347,7 +346,7 @@ void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
 }
 
 
-/* g_SoftwareBuildPixelPackTables (slot 0x004A8EE8): rebuilds the blue, green and red tables that turn an 8-bit
+/* g_SoftwareBuildPixelPackTables: rebuilds the blue, green and red tables that turn an 8-bit
    channel into its bits of a framebuffer pixel, applying the display settings' colour scale (contrast) and bias
    (brightness), both Q16: value = 64 + (channel - 64) * scale + bias, clamped to 0..255. Called by the
    display-mode hook and by the display settings dialog (ui/controls/misc.c), which is why it also stores the two
@@ -399,7 +398,7 @@ void SoftwarePixelFormat_BuildChannelPackTables
 /* Clips and draws one source subresource into a two-byte framebuffer (source-alpha blit, see
    docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is copied, anything else is blended. A
    paletted texel tests the alpha of the entry's converted pixel (+4) and writes its low word, but blends the
-   entry's ARGB colour (+0) with the alpha of that colour. ABI: all registers are preserved and CF is cleared.
+   entry's ARGB colour (+0) with the alpha of that colour. Always returns false.
 */
 bool SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -445,8 +444,7 @@ bool SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,G
    docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is converted through
    g_SoftwarePixelPackTables and written, anything else is blended in 8-bit lanes. Unlike the 16-bit version, a
    paletted texel uses the entry's second dword (+4) for everything: the alpha test, the blend colour, and the
-   opaque write, which converts it through the pack tables again. ABI: all registers are preserved and CF is
-   cleared.
+   opaque write, which converts it through the pack tables again. Always returns false.
 */
 bool SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -481,8 +479,8 @@ bool SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,G
 /* Clips and draws one source subresource into a two-byte framebuffer, with the source RGB at half
    strength (see docs/software_raster.md "Blits"). Alpha 0 is skipped; every other alpha, 0xFF included, blends
    (source lanes (c * 0x101) >> 3 instead of >> 2), so there is no opaque copy. Unlike BlitSourceAlpha16, a
-   paletted texel uses the entry's ARGB colour (+0) for both the alpha test and the blend. ABI: all registers are
-   preserved and CF is cleared.
+   paletted texel uses the entry's ARGB colour (+0) for both the alpha test and the blend. Always returns
+   false.
 */
 bool SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -519,7 +517,7 @@ bool SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY
    so there is no opaque copy. Quirks kept from the original: a paletted texel uses the entry's second dword (+4)
    as its colour, like the other 32-bit blits, and only the paletted path halves the source ((c * 0x101) >> 3);
    the direct-colour path uses >> 2, i.e. it is an ordinary source-alpha blend whose alpha 0xFF still goes
-   through the blend tables. ABI: all registers are preserved and CF is cleared.
+   through the blend tables. Always returns false.
 */
 bool SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -568,12 +566,11 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  /* Rewritten from the assembly (0x004AA170-0x004AA3E8) with the MMX lanes in plain C, like the
-     32-bit variant. Two destination pixels per step; each blends four ARGB8888 neighbours through
-     the word tables g_SoftwareBilinearInverseFactors (0x00420F20, weight of the left/upper neighbour) and
-     g_SoftwareBilinearForwardFactors (0x0041FF20, weight of the right/lower one), then packs to 16 bits with the
-     runtime quantize masks (0x0041F6E8) and PMADDWD weights (0x0041F6E0), which the display
-     setup fills for 555 or 565. */
+  /* The MMX lanes in plain C, like the 32-bit variant. Two destination pixels per step; each blends four
+     ARGB8888 neighbours through the word tables g_SoftwareBilinearInverseFactors (weight of the left/upper
+     neighbour) and g_SoftwareBilinearForwardFactors (weight of the right/lower one), then packs to 16 bits with
+     the runtime quantize masks (g_SoftwarePixelMmxConstants.quantizeMasksQ12) and PMADDWD weights
+     (g_SoftwarePixelMmxConstants.packWeights), which the display setup fills for 555 or 565. */
   const short *firstWeights = (const short *)g_SoftwareBilinearInverseFactors;
   const short *secondWeights = (const short *)g_SoftwareBilinearForwardFactors;
   const uint16_t *quantizeMask = (const uint16_t *)&g_SoftwarePixelMmxConstants.quantizeMasksQ12;
@@ -674,11 +671,9 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  /* Rewritten from the assembly (0x004AA3F0-0x004AA616) with the MMX lanes in plain C. The
-     decompiled version (300 lines of lane emulation) left the end-movie frames static. Two
-     destination pixels per step; each blends four ARGB8888 neighbours through the word tables
-     g_SoftwareBilinearInverseFactors (0x00420F20, weight of the left/upper neighbour) and
-     g_SoftwareBilinearForwardFactors (0x0041FF20, weight of the right/lower one), as PMULHW does. */
+  /* The MMX lanes in plain C. Two destination pixels per step; each blends four ARGB8888 neighbours
+     through the word tables g_SoftwareBilinearInverseFactors (weight of the left/upper neighbour) and
+     g_SoftwareBilinearForwardFactors (weight of the right/lower one), as PMULHW does. */
   const short *firstWeights = (const short *)g_SoftwareBilinearInverseFactors;
   const short *secondWeights = (const short *)g_SoftwareBilinearForwardFactors;
   const unsigned long long clampMask = g_SoftwareBilinearPackedByteClampMask;
@@ -748,7 +743,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
         pixels[half] = pixel;
         fx = fx + stepX;
       }
-      /* PACKUSWB MM0,MM0 duplicates the first pixel into both halves; PAND with the clamp mask,
+      /* PACKUSWB of the first pixel with itself duplicates it into both halves; PAND with the clamp mask,
          then POR with the second pixel shifted into the high half. */
       *(unsigned long long *)out =
            ((((unsigned long long)pixels[0] << 32) | pixels[0]) & clampMask) |
@@ -769,7 +764,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
    written, anything else is blended. A paletted texel tests the alpha of the entry's converted pixel (+4) and
    writes its low word, but blends the entry's ARGB colour (+0), as in BlitSourceAlpha16. Quirks kept: every
    negative paletteIndex means ARGB texels, and the counters are do-while loops, so a scale or image size of 0
-   runs them 2^32 times. ABI: all registers are preserved and CF is cleared.
+   runs them 2^32 times.
 */
 void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -833,8 +828,7 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
    per-pixel clip test, alpha 0 skipped, 0xFF written, anything else blended in 8-bit lanes). Unlike
    BlitSourceAlpha32, a paletted texel here uses the 16-bit layout: it tests the alpha of the converted pixel
    (+4), blends the ARGB colour (+0), and writes +4 as it is (not converted again) when opaque. A direct texel is
-   converted through g_SoftwarePixelPackTables when opaque. Same quirks as the 16-bit version. ABI: all registers
-   are preserved and CF is cleared.
+   converted through g_SoftwarePixelPackTables when opaque. Same quirks as the 16-bit version.
 */
 void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -898,7 +892,7 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
    subresource is drawn with paletteBankIndex instead of its own paletteIndex; the entry's paletteIndex must still
    be valid, and paletteBankIndex is only checked (unsigned, < paletteBankCount) after clipping. A direct-colour
    subresource ignores paletteBankIndex. The pixel operation is that of BlitSourceAlpha16, including the palette
-   +0/+4 mix. ABI: all registers are preserved and CF is cleared.
+   +0/+4 mix.
 */
 void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -952,7 +946,7 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
    subresource is drawn with paletteBankIndex instead of its own paletteIndex; the entry's paletteIndex must still
    be valid, and paletteBankIndex is only checked (unsigned, < paletteBankCount) after clipping. A direct-colour
    subresource ignores paletteBankIndex. The pixel operation is that of BlitSourceAlpha32 (the palette entry's +4
-   dword used for everything). ABI: all registers are preserved and CF is cleared.
+   dword used for everything).
 */
 void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -995,8 +989,8 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
 /* Clips and adds one source subresource onto a two-byte framebuffer (saturated add, see
    docs/software_raster.md "Blits"). A texel whose RGB is 0 is skipped whatever its alpha; every other one is
    added lane by lane with unsigned 16-bit saturation (Blit_AddArgb16) and the sum is packed back. Source alpha
-   is not a blend factor. A paletted texel uses the entry's ARGB colour (+0), unlike the 32-bit version. ABI: all
-   registers are preserved and CF is cleared.
+   is not a blend factor. A paletted texel uses the entry's ARGB colour (+0), unlike the 32-bit version. Always
+   returns false.
 */
 bool SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1030,8 +1024,8 @@ bool SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMa
 /* Clips and adds one source subresource onto a four-byte framebuffer (saturated add). A texel whose RGB
    is 0 is skipped whatever its alpha; every other one is added byte by byte, clamped at 0xFF (Blit_AddArgb32).
    The alpha byte is summed and written as well. Quirk kept from the original: a paletted texel uses the entry's
-   second dword (+4, the converted pixel), not its ARGB colour, both for the RGB-zero test and for the add. ABI:
-   all registers are preserved and CF is cleared.
+   second dword (+4, the converted pixel), not its ARGB colour, both for the RGB-zero test and for the add.
+   Always returns false.
 */
 bool SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1064,7 +1058,7 @@ bool SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMa
 
 /* Same as SoftwareTextureSource_BlitSaturatedAddRgb16, but the source lanes are halved (PSRLW 1 of
    c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour. A paletted texel uses the
-   entry's ARGB colour (+0). ABI: all registers are preserved and CF is cleared.
+   entry's ARGB colour (+0). Always returns false.
 */
 bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1098,7 +1092,7 @@ bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
 
 /* Same as SoftwareTextureSource_BlitSaturatedAddRgb32, but the source lanes are halved (PSRLW 1 of
    c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour, and a paletted texel again
-   uses the entry's second dword (+4). ABI: all registers are preserved and CF is cleared.
+   uses the entry's second dword (+4). Always returns false.
 */
 bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1134,8 +1128,8 @@ bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
    the matching channel of modulationArgb8888 first (Blit_Modulate, see docs/software_raster.md "Blits"). The
    modulated colour then goes through the source-alpha rules: alpha 0 skipped, alpha 0xFF converted and written,
    anything else blended. Unlike BlitSourceAlpha16, a paletted texel uses the entry's ARGB colour (+0) for
-   everything. Quirk: the modulated alpha is at most 0xFE, so the opaque branch is never taken. ABI: all
-   registers are preserved and CF is cleared.
+   everything. Quirk: the modulated alpha is at most 0xFE, so the opaque branch is never taken. Always
+   returns false.
 */
 bool SoftwareTextureSource_BlitModulatedSourceAlpha16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1172,7 +1166,7 @@ bool SoftwareTextureSource_BlitModulatedSourceAlpha16
 /* Four-byte framebuffer version of BlitModulatedSourceAlpha16: each source channel is multiplied by the
    matching channel of modulationArgb8888 (Blit_Modulate), then drawn with the source-alpha rules. Unlike
    BlitSourceAlpha32, a paletted texel uses the entry's ARGB colour (+0). Quirk: the modulated alpha is at most
-   0xFE, so the opaque branch is never taken. ABI: all registers are preserved and CF is cleared.
+   0xFE, so the opaque branch is never taken. Always returns false.
 */
 bool SoftwareTextureSource_BlitModulatedSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1209,7 +1203,7 @@ bool SoftwareTextureSource_BlitModulatedSourceAlpha32
 /* Fills the intersection of [rectMinX, rectMaxX) x [rectMinY, rectMaxY), the framebuffer and the clip
    rectangle of a two-byte framebuffer with argb8888: alpha 0 draws nothing, alpha 0xFF writes the colour
    converted through g_SoftwarePixelPackTables, anything else blends it over every pixel (see
-   docs/software_raster.md "Blits"). ABI: all registers are preserved and CF is cleared.
+   docs/software_raster.md "Blits").
 */
 void SoftwareFramebuffer_FillRectArgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1239,8 +1233,7 @@ void SoftwareFramebuffer_FillRectArgb16(GraphicsScreenCoordinate clipMaxY,Graphi
 
 
 /* Four-byte framebuffer version of SoftwareFramebuffer_FillRectArgb16: alpha 0 draws nothing, alpha
-   0xFF writes the converted colour, anything else is blended in 8-bit lanes (alpha lane included). ABI: all
-   registers are preserved and CF is cleared.
+   0xFF writes the converted colour, anything else is blended in 8-bit lanes (alpha lane included).
 */
 void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1296,7 +1289,7 @@ static void SoftwareFramebuffer_CopyRows(uint8_t *destRow,int destStrideBytes,co
   }
 }
 
-/* g_GraphicsFramebufferCopyRegionToOrigin (slot 0x004A8F34): copies the copyWidth x copyHeight rectangle at
+/* g_GraphicsFramebufferCopyRegionToOrigin: copies the copyWidth x copyHeight rectangle at
    (sourceX, sourceY) of source to the top-left corner of destination. Nothing is copied unless both have the
    same pixel size and destination is at least copyWidth x copyHeight. The rectangle is clipped to source; a
    negative source coordinate moves the destination start instead, so the copy stays aligned. Rows are copied in
@@ -1354,7 +1347,7 @@ void SoftwareFramebuffer_CopyRegionToOrigin(GraphicsPixelDimension copyHeight,Gr
 }
 
 
-/* g_GraphicsFramebufferCopyOriginToRegion (slot 0x004A8F38), the reverse of SoftwareFramebuffer_CopyRegionToOrigin:
+/* g_GraphicsFramebufferCopyOriginToRegion, the reverse of SoftwareFramebuffer_CopyRegionToOrigin:
    copies the copyWidth x copyHeight rectangle at the top-left corner of source to (destinationX, destinationY) of
    destination. Nothing is copied unless both have the same pixel size and source is at least copyWidth x
    copyHeight. The rectangle is clipped to destination; a negative destination coordinate moves the source start
@@ -1675,8 +1668,8 @@ static void Raster16_SpanShadedOpaque(RasterSpan *span)
 }
 
 /* g_SoftwareRasterHandlers16Bit entry 0 (render mode 0): Gouraud-shaded, depth-tested, opaque triangle on the
-   16-bit framebuffer (Raster16_SpanShadedOpaque). Handler ABI: docs/software_raster.md (five stack arguments, ret
-   0x14; the draw queue passes the prepared packet).
+   16-bit framebuffer (Raster16_SpanShadedOpaque). Handler interface: docs/software_raster.md (clip rectangle and
+   packet; the draw queue passes the prepared packet).
 */
 void SoftwareRaster16_Mode00
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1727,7 +1720,7 @@ static void Raster16_DrawAlphaBlendDepth(RasterShading shading, GraphicsScreenCo
 
 /* g_SoftwareRasterHandlers16Bit entry 6 (render mode 6): Gouraud-shaded, depth-tested, alpha-blended triangle that
    also writes depth where the interpolated alpha is >= 128. Byte-identical to mode 4 in the original, which tests
-   a stale MM2 instead of the alpha (docs/software_raster.md, "Stale MM2"); the C keeps the alpha rule.
+   a stale value instead of the alpha (docs/software_raster.md, "Stale MM2"); the C keeps the alpha rule.
 */
 void SoftwareRaster16_Mode06
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1831,7 +1824,7 @@ void SoftwareRaster16_Mode08
 }
 
 /* g_SoftwareRasterHandlers16Bit entry 14 (render mode 14): flat-shaded version of mode 6 (colour of v0).
-   Byte-identical to mode 12 in the original; same stale-MM2 note as mode 6.
+   Byte-identical to mode 12 in the original; same stale-value note as mode 6.
 */
 void SoftwareRaster16_Mode14
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2128,8 +2121,8 @@ void SoftwareRasterNon16_Mode00
 }
 
 /* Span of the Non16 modes 4/6/12/14: alpha blend like mode 1 that also writes the depth of pixels whose
-   source alpha is >= 128 (Raster_AlphaWritesDepth). The original tests a stale MM2 instead, which it never
-   loads in these modes (see docs/software_raster.md); the C rule is deliberate. */
+   source alpha is >= 128 (Raster_AlphaWritesDepth). The original tests a stale value instead, which it never
+   sets in these modes (see docs/software_raster.md); the C rule is deliberate. */
 static void Raster32_SpanShadedAlphaBlendDepth(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2147,7 +2140,7 @@ static void Raster32_SpanShadedAlphaBlendDepth(RasterSpan *span)
     }
 }
 
-/* Modes 4 and 6 (0x004EE4A0 and 0x004ECB90, byte-identical in the original): Gouraud-shaded with
+/* Modes 4 and 6 (identical code in the original): Gouraud-shaded with
    Raster32_SpanShadedAlphaBlendDepth. */
 static void RasterNon16_DrawShadedAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
                                                   GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX,
@@ -2268,8 +2261,8 @@ void SoftwareRasterNon16_Mode08
   }
 }
 
-/* Modes 12 and 14 (0x004F02D0 and 0x004EF230, byte-identical in the original): the flat-shaded (v0's
-   colour) version of RasterNon16_DrawShadedAlphaBlendDepth, with the same replacement of the stale-MM2 test. */
+/* Modes 12 and 14 (identical code in the original): the flat-shaded (v0's
+   colour) version of RasterNon16_DrawShadedAlphaBlendDepth, with the same replacement of the stale-value test. */
 static void RasterNon16_DrawFlatAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
                                                 GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX,
                                                 GraphicsPrimitivePacket *packet)
@@ -2383,8 +2376,8 @@ static void RasterAux_SpanTexturedNoDepthWrite(RasterSpan *span)
 }
 
 /* Modes 20/22 and 28/30: like 17, but the depth is written when the span's U prestep,
-   (prestep * uStepX) >> 12, is >= 0x800 as an unsigned value. The original tests MM2 here, meant
-   to be the modulated alpha, but MM2 still holds that prestep from the span setup; the decision
+   (prestep * uStepX) >> 12, is >= 0x800 as an unsigned value. The original tests a value here meant
+   to be the modulated alpha, but it still holds that prestep from the span setup; the decision
    is therefore the same for the whole span. The prestep is recovered as the span's first U minus
    the long edge's U. */
 static void RasterAux_SpanTexturedPrestepDepth(RasterSpan *span)
@@ -2582,7 +2575,7 @@ static __forceinline void RasterAux_DrawUntextured(GraphicsScreenCoordinate clip
 }
 
 /* Span of the Aux modes 4/6/12/14: opaque shaded write; the depth buffer is written only where the
-   alpha rule allows it (Raster_AlphaWritesDepth, the C replacement of the original's stale-MM2 test). */
+   alpha rule allows it (Raster_AlphaWritesDepth, the C replacement of the original's stale-value test). */
 static void Raster32_SpanShadedOpaqueAlphaDepth(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2600,7 +2593,7 @@ static void Raster32_SpanShadedOpaqueAlphaDepth(RasterSpan *span)
 }
 
 /* g_SoftwareRasterHandlersAuxiliary entry 6 (render mode 6): Gouraud-shaded, depth-tested, opaque colour write;
-   the depth is written only by pixels that pass Raster_AlphaWritesDepth (the original tests a stale MM2 instead,
+   the depth is written only by pixels that pass Raster_AlphaWritesDepth (the original tests a stale value instead,
    see docs/software_raster.md). Byte-identical to mode 4.
 */
 void SoftwareRasterAux_Mode06
@@ -2723,7 +2716,6 @@ void SoftwareRasterAux_Mode12
    chained mode switch succeeds it picks the queue renderer for the new pixel depth, replaces the depth buffer
    with one of the new size and rebuilds the MMX colour constants from the new pixel format. Returns true on
    success; false with the error in *errorCode when the chained hook or the depth-buffer allocation fails.
-   (The original left the blue unpack scale in EAX on success, which no caller reads.)
 */
 bool SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
@@ -3054,7 +3046,7 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
    is taken from g_GraphicsTextureSourceGetLogicalSize, and the buffer is processed in 32-byte blocks,
    width * height >> 5 of them (the remainder is left alone). Quirk kept:
    the block counter is a do-while loop, so fewer than 32 pixels means 2^32 blocks. Nothing happens when
-   maskPixels is NULL. ABI: all registers are preserved.
+   maskPixels is NULL.
 */
 void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime)
 

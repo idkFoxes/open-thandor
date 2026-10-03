@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/backend/directdraw. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);

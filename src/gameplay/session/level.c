@@ -10,11 +10,11 @@
 
 /* Implementation ownership: gameplay/session/level. */
 
-/* Prepares the movies of a level before it is loaded: stores the level's loading movie (the path at LEV +0xCC
-   with its extension set to "flm") in *outMoviePath and writes the matching end movie number into
-   "flm\ende0000.flm" from the 5th and 6th characters of that path ('w' 0xFC -> 2, "ei" -> 3, "la" -> 4, anything
-   else 0). It keeps a copy of the level path in g_LevelEndingMovieSourcePath, which the loaders report on errors.
-   Returns true on success; false with FATAL_ERROR_LEVEL_ASSET_INVALID in *outError when asset is not a LEV
+/* Prepares the movies of a level before it is loaded: stores the level's loading movie (the path at
+   header pathOffsets.endingMovieBasePathOffset, with its extension set to "flm") in *outMoviePath and writes
+   the matching end movie number into "flm\ende0000.flm" from the 5th and 6th characters of that path
+   ('w' 0xFC -> 2, "ei" -> 3, "la" -> 4, anything else 0). It keeps a copy of the level path in
+   g_LevelEndingMovieSourcePath, which the loaders report on errors. Returns true on success; false with FATAL_ERROR_LEVEL_ASSET_INVALID in *outError when asset is not a LEV
    asset of converter version 0x70001.
 */
 bool LevelAsset_PrepareEndingMoviePath
@@ -103,8 +103,8 @@ static bool NewLevel_Fail(uint32_t *outError,uint32_t error)
 }
 
 
-/* Allocates g_InGameLevelRuntimeGlobalBlock.conditionStorage and copies the level prefix (LEV +0xDC bytes) into
-   it dword by dword. */
+/* Allocates g_InGameLevelRuntimeGlobalBlock.conditionStorage and copies the level prefix (header
+   resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset bytes) into it dword by dword. */
 static bool NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint32_t *outError)
 
 {
@@ -132,8 +132,8 @@ static bool NewLevel_CopyRuntimePrefix(LevelAssetRuntimePrefix *levelImage,uint3
 }
 
 
-/* Loads the level's technology file (LEV +0xD4) into g_TechnologyAsset and checks that it is a TEC asset of
-   converter version 0x20000. */
+/* Loads the level's technology file (pathOffsets.technologyPathOffset) into g_TechnologyAsset and checks that it
+   is a TEC asset of converter version 0x20000. */
 static bool NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t *outError)
 
 {
@@ -156,7 +156,7 @@ static bool NewLevel_LoadTechnology(LevelAssetRuntimePrefix *levelImage,uint32_t
 }
 
 
-/* Player slots (LEV +0x200): camera bookmarks 1-7, start resources and class/mode of factions 1-7, plus the
+/* Player slots (playerSlots): camera bookmarks 1-7, start resources and class/mode of factions 1-7, plus the
    active faction count of the tail. */
 static void NewLevel_ApplyPlayerSlots(LevelAssetRuntimePrefix *levelImage)
 
@@ -288,8 +288,9 @@ static bool NewLevel_LoadAssetList
 }
 
 
-/* Loading stages 1 to 5: terrain textures (surface, ground) and the field grid, the model pool, the army
-   (+0xC0), shot (+0xC4) and effect (+0xC8) texture sets, then the terrain lighting of the tail. */
+/* Loading stages 1 to 5: terrain textures (surface, ground) and the field grid, the model pool, the army,
+   shot and effect texture sets (pathOffsets.armyTextureBasePathOffset, shotTextureBasePathOffset,
+   effectTextureBasePathOffset), then the terrain lighting of the tail. */
 static bool NewLevel_InitTerrainAndGraphics
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
@@ -424,9 +425,9 @@ static bool NewLevel_SpawnInitialArmies
 }
 
 
-/* Spatial sound slots (loading stage 6): cleared, then filled from the level's sound directory (LEV +0xD0),
-   listed from the sound package or, failing that, from disk. A 'sam' file whose name ends in the number n
-   becomes slot n; one loading-movie step per loaded sound. */
+/* Spatial sound slots (loading stage 6): cleared, then filled from the level's sound directory
+   (pathOffsets.soundBasePathOffset), listed from the sound package or, failing that, from disk. A 'sam' file
+   whose name ends in the number n becomes slot n; one loading-movie step per loaded sound. */
 static bool NewLevel_LoadSpatialSounds
           (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime,uint32_t *outError)
 
@@ -580,8 +581,9 @@ static void NewLevel_LoadLevelSamples(void)
 
 
 /* Default build list for factions that start with class-18 models but no structure: the last registered army
-   assets (army flag +0x14 bit 0) whose model class is 0x0B, 0x0E without / with the model's +0xC0 value, and
-   0x10. Nothing is assigned unless both a class-0x0B and a class-0x0E asset without +0xC0 value exist. */
+   assets (army flags bit 0) whose model class is 0x0B, 0x0E without / with the model's classParameterC0 value,
+   and 0x10. Nothing is assigned unless both a class-0x0B and a class-0x0E asset without classParameterC0 value
+   exist. */
 static void NewLevel_AssignDefaultBuildLists(WorldRuntimeContext *worldRuntime)
 
 {
@@ -700,8 +702,8 @@ static void NewLevel_ApplyGroupRelations(uint32_t groupMasks,FactionRelationStat
 }
 
 
-/* Initial relations: every pair inside one 8-bit faction group of tail +0x40 gets state 4/4, of tail +0x3C
-   state 8/8; also copies the relation UI flags. */
+/* Initial relations: every pair inside one 8-bit faction group of relationState4FactionGroupMasks gets state 4/4,
+   of relationState8FactionGroupMasks state 8/8; also copies the relation UI flags. */
 static void NewLevel_ApplyInitialRelations(void)
 
 {
@@ -1240,7 +1242,7 @@ bool InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldVi
     levelImage->header.initialArmyPlacementRecordCount++;
     levelImage->header.common.allocationSizeBytes += sizeof(LevelInitialArmyPlacementRecord20);
     armyRuntime = ((ModelRuntimeSlot *)ownerListNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-    /* +0x08 receives the node's world X and +0x0C its world Y, the reverse of the placement record's field
+    /* worldYQ12 receives the node's world X and worldXQ12 its world Y, the reverse of the placement record's field
        names (which follow the parameters the loader passes them to, ArmyRuntime_CreateInstanceFromAsset) */
     placementRecordCursor->worldYQ12 = ownerListNode->worldXQ12;
     placementRecordCursor->factionIndex = armyRuntime->factionIndex;

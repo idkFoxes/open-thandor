@@ -239,7 +239,7 @@ uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent
 
 
 /* Writes input / |input| as a Q28 unit vector (output may alias input). Each component is multiplied by
-   2^32 / length (unsigned 64/32 DIV) and shifted right by 4. Vectors shorter than 2 give {0, 0, 0}.
+   2^32 / length (unsigned 64-by-32-bit division) and shifted right by 4. Vectors shorter than 2 give {0, 0, 0}.
    Used to normalize the frustum plane normals and model light directions.
 */
 void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
@@ -259,7 +259,7 @@ void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
   }
   else {
     reciprocalLengthScaleQ32 = (int)(Q32_ONE / (uint64_t)inputLengthQ12);
-    /* SHLD EDX,EAX,28: bits 4..35 of each product */
+    /* bits 4..35 of each 64-bit product */
     normalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->x;
     output->x = FIXED_PRODUCT_SHR(normalizedComponentProduct,4);
     currentNormalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->y;
@@ -270,8 +270,8 @@ void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
 }
 
 
-/* Wrapper around FixedTransform_RotateScaledDirectionCore; the original only moved the result into a
-   different register layout, so it returns the same rotated direction. Used by the model hierarchy.
+/* Wrapper around FixedTransform_RotateScaledDirectionCore; the original only repacked the result, so it
+   returns the same rotated direction. Used by the model hierarchy.
 */
 FixedVectorQ12
 FixedTransform_RotateScaledDirection
@@ -309,7 +309,7 @@ void __cdecl CosineDerivedLookupTables_Init(void)
   }
   else {
     g_CosineDerivedLookupAllocation = outputCursor;
-    /* row 0: 256 entries of 1/sqrt(2) in Q12, written as 128 pairs (REP STOSD in the original) */
+    /* row 0: 256 entries of 1/sqrt(2) in Q12, written as 128 pairs */
     for (entriesRemainingInRow = COSINE_DERIVED_TABLE_ORDER / 2; entriesRemainingInRow != 0; entriesRemainingInRow--) {
       outputCursor[0] = COSINE_DERIVED_INV_SQRT2_Q12;
       outputCursor[1] = COSINE_DERIVED_INV_SQRT2_Q12;
@@ -480,8 +480,7 @@ void FixedTransform_ApplyTransposeDirection
 }
 
 
-/* Returns (0 - xProduct - yProduct - zProduct) >> 28 (64-bit, arithmetic) as the original's XOR/SUB/SBB chain
-   computes it: the low halves are subtracted with explicit borrows into the high half, and the result is
+/* Returns (0 - xProduct - yProduct - zProduct) >> 28 (64-bit, arithmetic) as the original computes it: the low halves are subtracted with explicit borrows into the high half, and the result is
    high * 16 | low >> 28. */
 static uint32_t FixedTransform_NegatedProductSumShr28(int64_t xProduct,int64_t yProduct,int64_t zProduct)
 
@@ -577,7 +576,7 @@ void FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedM
 }
 
 
-/* Dot product of two Q12 vectors, summed in 64 bits and shifted right by 12 (SHRD), so the result is Q12.
+/* Dot product of two Q12 vectors, summed in 64 bits and shifted right by 12, so the result is Q12.
    Used by the model renderer for back-face and light-facing tests.
 */
 int32_t FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
@@ -608,7 +607,7 @@ int32_t FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 
 /* Writes leftOperand x rightOperand (cross product of two Q12 vectors, 64-bit differences shifted right by 12).
-   The parameters are in the original's stack order: output, rightOperand, leftOperand. Used to build the
+   The parameters are in the original's order: output, rightOperand, leftOperand. Used to build the
    frustum plane normals from the corner rays.
 */
 void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
@@ -969,7 +968,7 @@ FixedVectorAngles FixedMath_VectorToAngles
 
 
 /* Moves a point through a rigid transform: output = basis * point + translation, where each row is a Q28
-   dot product summed in 64 bits and shifted back by 28 (SHLD 4), so the point keeps its own scale.
+   dot product summed in 64 bits and shifted back by 28, so the point keeps its own scale.
 */
 void FixedTransform_ApplyPoint(GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
@@ -1138,10 +1137,10 @@ uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComp
 
 
 /* Approximate square root of a Q12 value, returned in Q12 (about 0.6% low): the input is shifted left by an
-   even amount so its top bit lands on bit 27 or 28 (BSR), a cubic polynomial in the normalized value is
-   evaluated with the high halves of IMULs, and the result is shifted right by half the normalizing shift.
-   Inputs of 2^29 or more give wrong results (the shift wraps). No caller, function-pointer table or data
-   reference to 0x004846A0 was found in the port or the image data.
+   even amount so its top bit lands on bit 27 or 28, a cubic polynomial in the normalized value is
+   evaluated with the high 32 bits of signed 64-bit products, and the result is shifted right by half the
+   normalizing shift. Inputs of 2^29 or more give wrong results (the shift wraps). No caller, function-pointer
+   table or data reference to it was found in the port or the image data.
 */
 uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue)
 
@@ -1166,8 +1165,8 @@ uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue)
 }
 
 /* Integer square root of the 64-bit value high:low, used for vector lengths from 64-bit sums of squares.
-   The start value is the power of two just above the root (from the highest set bit, BSR); three Newton
-   steps x = (x + value / x) / 2 follow, the divisions being 64/32-bit DIVs.
+   The start value is the power of two just above the root (from the highest set bit); three Newton
+   steps x = (x + value / x) / 2 follow, the divisions being unsigned 64-by-32-bit divisions.
 */
 uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
 
@@ -1199,7 +1198,7 @@ uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
     initialRootShift = (uint8_t)(highestSetBitIndex + 33U >> 1);
   }
   rootEstimate = 1 << (initialRootShift & 31);
-  /* unsigned DIV of EDX:EAX = high:low */
+  /* unsigned division of the 64-bit value high:low */
   refinedRootEstimate = (rootEstimate + (int)(((uint64_t)high << 32 | (uint64_t)low) / (uint64_t)rootEstimate)) >> 1;
   secondRootEstimate =
        (refinedRootEstimate + (int)(((uint64_t)high << 32 | (uint64_t)low) / (uint64_t)refinedRootEstimate)) >> 1;
@@ -1207,8 +1206,8 @@ uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
 }
 
 
-/* Not in the original: the original executable carries these tables precomputed (0x004246A0,
-   98304 dwords). They are one sine over 1.5 turns, from a quarter turn before angle 0:
+/* Not in the original: the original executable carries these tables precomputed (98304
+   dwords). They are one sine over 1.5 turns, from a quarter turn before angle 0:
    g_FixedSineQ28 holds angles -16384..-1, then 0..16383 (from FIXED_SINE_TABLE_SIN), then the
    cosine 0..65535 (from FIXED_SINE_TABLE_COS, cos(i) = sin(i + quarter turn)); lookups with signed
    or full-turn angles run on from one part into the next.

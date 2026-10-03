@@ -122,7 +122,7 @@
 #define UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED 0x7FFFFFFF
 #define UI_COMMAND_MODE_G_COLOR_LIMIT_RAW 0x00FFFFFF
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void InGameCommandModeG_Select0(UiSelectableControl *source);
 

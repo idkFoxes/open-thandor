@@ -357,7 +357,7 @@ void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *host
 void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
 
 {
-  /* source is the frontend template's hostGameSetupBackButton (+0x4F94). */
+  /* source is the frontend template's hostGameSetupBackButton. */
   FrontendUiImage *frontendUi;
 
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,hostGameSetupBackButton));
@@ -400,7 +400,7 @@ static uint32_t CommandLineOption_ParseQuotedDigit(const uint8_t *option, int di
 void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
 
 {
-  /* hostButton is the frontend template's networkGameHostButton (+0x4920). */
+  /* hostButton is the frontend template's networkGameHostButton. */
   FrontendUiImage *frontendUi;
   uint32_t maxPlayers;
   uint32_t optionNetworkSpeed;
@@ -483,7 +483,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
 void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
 
 {
-  /* createButton is the frontend template's hostGameCreateButton (+0x4FF4). */
+  /* createButton is the frontend template's hostGameCreateButton. */
   FrontendUiImage *frontendUi;
   uint32_t sequenceToken;
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
@@ -526,7 +526,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
     localEndpointDwordCursor++;
     localPlayerRecordDwordCursor++;
   }
-  /* the cursor now points at +0x50 of the player record; the indices below are dwords from there */
+  /* the cursor now points at commandSyncPending of the player record; the indices below are dwords from there */
   *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING; /* commandSyncPending */
   g_FrontendPendingSessionPlayerCount = 0;
   g_FrontendPlayerRuntimeCount = 1;
@@ -534,21 +534,21 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   g_FrontendPlayerRuntimeBlockCount = 1;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_HOST;
   localPlayerRecordDwordCursor[6] = 0; /* snapshotTransferFlags */
-  /* the preview goes into snapshotPayload (+0xB0), its name is the player name (+0x18) */
+  /* the preview goes into snapshotPayload, its name is the player name (playerName) */
   previewLoadFailed = PcxPreview_Load64x64PaletteAndPixels
                     ((PcxPreview64 *)(localPlayerRecordDwordCursor + 24),
                      (uint16_t *)(localPlayerRecordDwordCursor + -14));
   if (!previewLoadFailed) {
     localPlayerRecordDwordCursor[6] = FRONTEND_SNAPSHOT_SOURCE_AVAILABLE | FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE;
   }
-  /* +0x90..+0x9B: two empty code units, then L"0ms" */
+  /* pingRoundTripTicks 0, pingTextUtf16 L"0ms" */
   localPlayerRecordDwordCursor[16] = 0;
   localPlayerRecordDwordCursor[17] = L'm' << 16 | L'0';
   localPlayerRecordDwordCursor[18] = L's';
   localPlayerRecordDwordCursor[9] = FRONTEND_CAPABILITY_CD; /* capabilityFlags */
   localPlayerRecordDwordCursor[10] = 0;
   localPlayerRecordDwordCursor[11] = 0;
-  localPlayerRecordDwordCursor[10] = L'D' << 16 | L'C'; /* L"CD" at +0x78 */
+  localPlayerRecordDwordCursor[10] = L'D' << 16 | L'C'; /* L"CD" in capabilityLabelUtf16 */
   FrontendPlayerRuntime_UpdateStartButtonByCdShare();
   return;
 }

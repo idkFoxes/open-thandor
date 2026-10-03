@@ -196,7 +196,7 @@ static void GraphicsPaletteTextureSource_PackUsedEntriesOfBank(GraphicsTextureSo
 /* Shrinks the palette banks of a palette texture source in place: marks every entry unused, clears the mark
    on each entry a subresource pixel references, removes banks without a used colour, folds duplicate colours
    within a bank, merges bank pairs whose used colours fit into one bank and finally packs the used entries of
-   every bank to its front (zeroing the rest), remapping the pixel indices at each step. CF set (true) when the
+   every bank to its front (zeroing the rest), remapping the pixel indices at each step. Returns true when the
    source has no palette bank or no subresource. No caller or table reference is known (converter/editor code left
    in the game).
 */

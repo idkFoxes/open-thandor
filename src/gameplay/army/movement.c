@@ -338,8 +338,8 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
   rootNode = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
-  /* Drop the linked model (+0xF0) unless both definitions have a footprint radius and this unit is still
-     within it. */
+  /* Drop the linked model (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint
+     radius and this unit is still within it. */
   if ((linkedModelRuntime != NULL) &&
      ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
       (modelRuntime->modelDefinition->footprintRadius == 0) ||
@@ -378,7 +378,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
   else {
     ArticulatedWalker_StartClosingStep(worldRuntime,modelRuntime);
   }
-  /* The original also stores leftover register values into the root X/Y here (the real position only on
+  /* The original also stores left-over intermediate values into the root X/Y here (the real position only on
      the standing path); ArmyArticulatedRuntime_UpdateSuspensionHierarchy overwrites both before anything
      reads them, so that store is left out. */
   rootNode = modelRuntime->rootModelNode;
@@ -1133,8 +1133,8 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   rootNode = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
-  /* Drop the linked model (+0xF0) unless both definitions have a footprint radius and this unit is still
-     within it. */
+  /* Drop the linked model (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint
+     radius and this unit is still within it. */
   if ((linkedModelRuntime != NULL) &&
       ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
        (modelRuntime->modelDefinition->footprintRadius == 0) ||
@@ -1187,10 +1187,10 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
 }
 
 
-/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: drops the linked model (+0xF0) unless
-   both definitions have a footprint radius and this unit is still within it. When the link is dropped while
-   class state bit 4 is set and the root node has at least three children, the child-part animation starts
-   and the sound whose index is at definition +0x274 is played. */
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: drops the linked model
+   (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint radius and this unit is
+   still within it. When the link is dropped while class state bit 4 is set and the root node has at least three
+   children, the child-part animation starts and the definition's sound positionedSoundSlotIndex is played. */
 static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
           (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime)
 {
@@ -1240,8 +1240,8 @@ static void ArmyRuntimeClass_ReleaseLinkedModelOutsideFootprint
   }
 }
 
-/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: counts down +0x70 (clearing behaviour
-   bits 0-2 when it runs out) and spins the three child parts by one step. */
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: counts down classState70 (clearing
+   behaviour bits 0-2 when it runs out) and spins the three child parts by one step. */
 static void ArmyRuntimeClass_SpinBankingChildParts
           (ModelRuntimeGroundMovementSteeringView *modelRuntime,ModelRuntimeNode *rootNode)
 {
@@ -1414,7 +1414,7 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   int travelDistance;
   int recoilTilt;
 
-  /* a new route point (+0x68/+0x6C) restarts from standstill */
+  /* a new route point (classState68/armyLinkOrState) restarts from standstill */
   if ((waypointWorldX != (modelRuntime->classLinkState).classState68) &&
      ((uint32_t)waypointWorldY != (modelRuntime->classLinkState).armyLinkOrState.classState)) {
     (modelRuntime->classLinkState).classState68 = waypointWorldX;
@@ -1488,8 +1488,8 @@ static ModelRuntimeNode *ArmyRuntimeClass_MoveBankingUnitTowardsRoutePoint
   return rootNode;
 }
 
-/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation. Banking: +0x60 (modelLinkOrState) is
-   the bank value, ARMY_GLIDER_BANK_LEVEL_ANGLE16 = level, +0x64 (classState64) the bank heading. Applies the
+/* Helper for ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation. Banking: classLinkState.modelLinkOrState
+   is the bank value, ARMY_GLIDER_BANK_LEVEL_ANGLE16 = level, classState64 the bank heading. Applies the
    current bank to the root node, then updates bank value and bank heading for the next tick.
    targetAngleLength is only read while the unit moves (it is not set when the unit stands). */
 static void ArmyRuntimeClass_UpdateBankAngle
@@ -1547,10 +1547,10 @@ static void ArmyRuntimeClass_UpdateBankAngle
    ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). The unit slides straight towards the route
    point while it turns (turning like ArmyRuntimeClass_UpdateGroundMovement, but it keeps its heading
    when it is close and not turning), stops at blocking armies and is placed by its placement callback. It then
-   banks: while moving the bank value (+0x60) sinks from 0x4000 (level) to at least 0x3800 and the bank heading
-   (+0x64) follows the travel direction by at most 0x400 per tick; when stopped it returns to level. When the
-   unit leaves its linked army while class state bit 4 is set, it plays the definition's positioned sound and
-   spins its three child parts for the countdown at +0x70.
+   banks: while moving the bank value (modelLinkOrState) sinks from 0x4000 (level) to at least 0x3800 and the
+   bank heading (classState64) follows the travel direction by at most 0x400 per tick; when stopped it returns
+   to level. When the unit leaves its linked army while class state bit 4 is set, it plays the definition's
+   positioned sound and spins its three child parts for the countdown classState70.
 */
 
 void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
@@ -1632,7 +1632,7 @@ static void ArmyRuntime_ClearModelTreeFlags218(ModelRuntimeSlot *node)
 
 /* Stops the army where its model currently stands: clears the move flags, cancels an active target
    command (unless state field 0x100 is zero), and sets every move target to the current model position.
-   If the attached model has class-state bit 0x10 and a non-zero definition value +0x3C, state bits 0x218
+   If the attached model has class-state bit 0x10 and a non-zero health, state bits 0x218
    are cleared on its whole model tree.
 */
 void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
@@ -1671,7 +1671,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   attachedModelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((attachedModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) &&
       (attachedModelRuntime->health != 0)) {
-    /* Rewritten from the assembly (0x0051C460-0x0051C4A4): clear 0x218 on the whole model tree. */
+    /* clear 0x218 on the whole model tree */
     ArmyRuntime_ClearModelTreeFlags218(attachedModelRuntime);
   }
   return;
@@ -1857,7 +1857,7 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
 }
 
 
-/* Class command that does nothing (RET 0x08): model classes without their own command handling. It fills the
+/* Class command that does nothing: model classes without their own command handling. It fills the
    classCommand slots 0-3, 5-9, 12, 17-19 and 21 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, which
    ArmyRuntime_DispatchClassCommand calls by model class.
 */
@@ -2196,8 +2196,8 @@ void ArmyRuntimeClass_UpdateGroundMovement
   rootNode = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
-  /* Drop the linked model (+0xF0) unless both definitions have a footprint radius and this unit is still
-     within it. */
+  /* Drop the linked model (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint
+     radius and this unit is still within it. */
   if ((linkedModelRuntime != NULL) &&
       ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
        (modelRuntime->modelDefinition->footprintRadius == 0) ||
@@ -2247,8 +2247,8 @@ void ArmyRuntimeClass_UpdateGroundMovement
 }
 
 
-/* Step rate of a terrain-contact step: (stride (definition +0xC0) << 13) / (3D foot travel + 2 * lift height
-   (definition +0xC4)), or 0x2000 when that sum is zero. */
+/* Step rate of a terrain-contact step: (stride (definition classParameterC0) << 13) / (3D foot travel + 2 * lift
+   height (definition classParameterC4)), or 0x2000 when that sum is zero. */
 static void ArticulatedContact_SetStepRateFromTravel(ArmyArticulatedRuntimeSlotView *armyRuntime,
           uint32_t footTravelLength)
 
@@ -2289,8 +2289,8 @@ static void ArticulatedContact_MarkStepObstructed(ArmyArticulatedRuntimeSlotView
 }
 
 
-/* Left foot step rate from its 3D travel between the previous contact (+0x78/+0x80/+0x88) and the new one
-   (X +0x90, sampled Y and height). */
+/* Left foot step rate from its 3D travel between the previous contact (movementTarget0Q12,
+   definitionClassValue80, definitionClassValue88) and the new one (X runtimeState90, sampled Y and height). */
 static void ArticulatedContact_SetLeftStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,int footZ,
           uint32_t footY)
 
@@ -2347,7 +2347,7 @@ static void ArticulatedContact_PlaceLeftFootBesideRightFoot(AngleTurn32 headingA
 
 
 /* Plans a walking step of the left foot towards heading headingAngle16 (routeDistanceQ12 = distance to the
-   route point). The foot target is one stride (definition +0xC0) past the spot beside the right foot, or on
+   route point). The foot target is one stride (definition classParameterC0) past the spot beside the right foot, or on
    the route point itself when that is closer, offset to the left side. When the target is blocked by an army
    (whose owner is notified) or has no ground sample, the foot is set down right beside the right foot instead,
    the route point is advanced, and the step is marked obstructed (a second obstruction in a row cancels it).
@@ -2444,8 +2444,8 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
 }
 
 
-/* Right foot step rate from its 3D travel between the previous contact (+0x7C/+0x84/+0x8C) and the new one
-   (X +0x94, sampled Y and height). */
+/* Right foot step rate from its 3D travel between the previous contact (movementTarget1Q12,
+   definitionClassValue84, runtimeState8C) and the new one (X runtimeState94, sampled Y and height). */
 static void ArticulatedContact_SetRightStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,uint32_t footZ,
           int footY)
 
@@ -2771,8 +2771,8 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
   rootNode = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_STATIONARY;
-  /* Drop the linked model (+0xF0) unless both definitions have a footprint radius and this unit is still
-     within it. */
+  /* Drop the linked model (classState.linkedArmyRuntimeOrSavedOffset) unless both definitions have a footprint
+     radius and this unit is still within it. */
   if ((linkedModelRuntime != NULL) &&
       ((linkedModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
        (modelRuntime->modelDefinition->footprintRadius == 0) ||
@@ -2908,7 +2908,7 @@ void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNo
 
 {
   GraphicsFixedVec3 *worldPosition;
-  /* the footstep sound index is the class parameter at +0xCC of the walker's definition */
+  /* the footstep sound index is the class parameter classParameterCC of the walker's definition */
   ModelDefinition *definition;
   uint32_t soundIndex;
   DirectSoundVoiceSet **voiceSetRef;
@@ -3032,8 +3032,9 @@ static void ArticulatedWalker_SetFootLocalOrientation
 /* Poses the two-legged articulated walker from its foot state (layout at
    ArmyArticulatedRuntime_InitializeTerrainContactGeometry). Each foot node (four levels below root child 0 =
    left leg, child 1 = right leg) is interpolated from its position to its step target by the step progress,
-   lifted in an arc by the lift height (definition +0xC4), and tilted by the blended ground normals. The body
-   heading follows the step progress, the root sits midway between the feet at hip height (definition +0x54),
+   lifted in an arc by the lift height (definition classParameterC4), and tilted by the blended ground normals.
+   The body heading follows the step progress, the root sits midway between the feet at hip height (definition
+   placementHeightOffsetQ12),
    the hip joints yaw towards the feet, and thigh and shin are bent by a two-bone triangle solution; finally
    the foot orientation is converted into the shin's local frame. Called by
    ArmyRuntimeClass_UpdateArticulatedMovement and ArmyPlacementContact_InitializeArticulatedSuspension
@@ -3307,7 +3308,8 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
 
 
 /* Sets the step rate of a planned foot step (articulatedContact.fallbackPosition1Q12): stride length
-   (definition +0xC0) << 13 divided by footTravel plus 4 * lift height (definition +0xC4), or 2.0 when that
+   (definition classParameterC0) << 13 divided by footTravel plus 4 * lift height (definition
+   classParameterC4), or 2.0 when that
    sum is 0. Returns false in that case. */
 static bool ArmyArticulatedRuntime_SetStepRate(ArmyArticulatedRuntimeSlotView *armyRuntime,uint32_t footTravel)
 
@@ -3447,7 +3449,7 @@ static void ArmyArticulatedRuntime_PlanLeftTurnStep
   Q12 terrainHeightQ12;
   uint32_t terrainNormalAngles;
 
-  /* definition +0xC8: maximum turn per step */
+  /* definition classParameterC8: maximum turn per step */
   movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
   if ((uint32_t)movementDefinition->classParameterC8 < steeringAngle16) {
     steeringAngle16 = (AngleTurn32)movementDefinition->classParameterC8;
@@ -3525,7 +3527,7 @@ static void ArmyArticulatedRuntime_PlanRightTurnStep
   Q12 terrainHeightQ12;
   uint32_t terrainNormalAngles;
 
-  /* definition +0xC8: maximum turn per step */
+  /* definition classParameterC8: maximum turn per step */
   movementDefinition = (ModelDefinition *)armyRuntime->definitionOrAsset;
   minimumSteeringAngle = FIXED_ANGLE16_FULL_TURN - movementDefinition->classParameterC8;
   if (steeringAngle16 < minimumSteeringAngle) {
@@ -3577,7 +3579,7 @@ static void ArmyArticulatedRuntime_PlanRightTurnStep
 }
 
 /* Plans the first step of a turn on the spot. steeringAngle16 (0..0xFFFF, clamped to +-the maximum turn per
-   step at definition +0xC8) selects the foot: up to 0x8000 the left foot (turning left), otherwise the right
+   step, definition classParameterC8) selects the foot: up to 0x8000 the left foot (turning left), otherwise the right
    foot. The foot target is found by turning the root position about a pivot 1.5 * lateralOffsetQ12 behind it
    by the full steering angle and stepping out to that side; the body heading target becomes the start heading
    plus half the steering angle, and that half is also kept in the upper 16 bits of the step state for the
@@ -3602,8 +3604,8 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
 
 /* Called by a weapon that is aimed and ready to fire. When the shot to the target is blocked, the owning army
    (if this weapon is its primary weapon or it has none, and it is not already following) starts a
-   target-following move towards the target, clamped for AI combat targets, and CF (true) tells the weapon not
-   to fire. With a clear line of fire a running target-following move is stopped and false is returned. Called
+   target-following move towards the target, clamped for AI combat targets, and true is returned: the weapon
+   must not fire. With a clear line of fire a running target-following move is stopped and false is returned. Called
    by the aim-and-fire class updates (runtime-update slots 7 and 8 here, and gameplay/army/combat.c).
 */
 bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
@@ -3704,9 +3706,9 @@ void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
          movementRuntime->movementStateFlags &
          ~(ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ROUTE_POINT_REACHED |ARMY_MOVEMENT_WAYPOINTS_QUEUED);
     if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE) != 0) {
-      /* Forward dword copy of 16 dwords from fallbackPosition (+0xB8) to queuedWaypoints (+0xC0), exactly
-         like the original REP MOVSD. The ranges overlap by 8 bytes, so this does not shift the queue: it
-         fills all 8 waypoints with fallbackPosition. */
+      /* Forward dword-by-dword copy (not memmove) of 16 dwords from fallbackPosition to the queuedWaypoints
+         that directly follow it, exactly as in the original. The ranges overlap by 8 bytes, so this does not
+         shift the queue: it fills all 8 waypoints with fallbackPosition. */
       remainingCount = 16;
       fallbackCoordinateRead = &(movementRuntime->fallbackPosition).worldXQ12;
       waypointCoordinateWrite = &movementRuntime->queuedWaypoints[0].worldXQ12;
@@ -3908,10 +3910,10 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
     return true;
   }
   /* Original quirk: the "position" returned here is the pair of absolute distances to the target, not a
-     world position. The arrival flag is whatever ArmyRuntime_StartDirectMoveCommand left in CF (clear when
-     locked, else the pathing call's CF); belowThreshold is always false here since
+     world position. In the original the arrival flag is the status ArmyRuntime_StartDirectMoveCommand leaves
+     behind (not arrived when locked, else the pathing call's status); belowThreshold is always false here since
      exceededDistance > ARMY_MOVEMENT_TARGET_RADIUS_Q12. That matches: EntityPathing_ResolveDestinationAndRebuildRoutes
-     has a single exit with CLC (0x00534E61), so the CF left by the direct move is always clear (not arrived). */
+     always reports "not arrived", so the status left by the direct move is always "not arrived". */
   /* the first distance that is outside the target radius */
   if (distanceX < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1) {
     exceededDistance = distanceY;

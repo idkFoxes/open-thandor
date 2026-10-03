@@ -86,7 +86,7 @@ extern char sz_DirectDrawEnumerateA[21];
 
 extern uint32_t g_MouseEventsProcessed;
 
-extern DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc; /* scratch descriptor the cursor save/restore Lock fills (lPitch at 00577D00, lpSurface at 00577D14) */
+extern DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc; /* scratch descriptor the cursor save/restore Lock fills (lPitch, lpSurface) */
 
 extern int32_t g_CursorCurrentDrawX;
 

@@ -12,7 +12,7 @@
 
 /* Replaces the extension of the final path component with the packed code (one character per byte, first
    character in the lowest byte, e.g. 0x786667 = "gfx"), appending '.' when there is none. Asset
-   loaders use it to derive sibling files (.gfx/.pal/.dat, .lev/.fld, ...). Always returns with CF clear.
+   loaders use it to derive sibling files (.gfx/.pal/.dat, .lev/.fld, ...). Always returns false (success).
    Only three characters come out right: a fourth byte would be merged into the third code unit (all callers
    pass three-character codes).
 */
@@ -51,15 +51,14 @@ bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t 
 
 /* Splits a UTF-16 path (at most WIDE_PATH_MAX_CODE_UNITS units) at its last backslash: leafOut gets the
    file name, parentOut the directory without the trailing backslash. Without a backslash the leaf is the
-   whole path and the parent is empty. Always returns false (CF clear).
+   whole path and the parent is empty. Always returns false (success).
 */
 bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
 
 {
-  /* Rewritten from the assembly (0x0040F320): the decompiler lost the start of the final component
-     (EDX), so nothing was ever split and every "directory" still ended in the file name. Leaf gets
-     everything after the last backslash (with the terminator); parent gets everything before it. */
-  int count; /* code units including the terminator (REPNE SCASW, at most WIDE_PATH_MAX_CODE_UNITS) */
+  /* Leaf gets everything after the last backslash (with the terminator); parent gets everything before
+     it. */
+  int count; /* code units including the terminator (at most WIDE_PATH_MAX_CODE_UNITS) */
   int remaining;
   int i;
   uint16_t *leafStart;
@@ -120,7 +119,7 @@ void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint1
   bool terminatorFound;
   bool leafTerminatorFound;
 
-  /* REPNE SCASW over the directory */
+  /* find the directory's terminator (at most WIDE_PATH_MAX_CODE_UNITS code units) */
   terminatorFound = true;
   codeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS;
   directoryScanCursor = directory;

@@ -54,7 +54,6 @@ bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresent();
     DebugHook_SessionFrameEnd();
-    /* (the original success paths also left 0x0C in EAX, which no caller reads) */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED) != 0) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
@@ -618,10 +617,8 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
           InGameRuntimeRootFrameView *inGameRoot)
 
 {
-  /* Rewritten from the assembly (0x00567060-0x005678B9). The record table holds continuation
-     addresses inside this function; the decompiled version jumped into the original machine code,
-     which then called the recovered C functions with the wrong calling convention (crash on ESC
-     after loading). Each continuation is translated below; EBX is the runtime root. */
+  /* The record table holds the original game's continuation addresses inside this function; they are only
+     used as keys here, each continuation is one case of the switch below. rt is the runtime root. */
   uint8_t *rt = (uint8_t *)inGameRoot;
   UiCommandDispatchRecord *record = g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30;
   uint32_t target = 0;
@@ -665,7 +662,7 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
            worldView))->activeFactionRuntimeIndex].xeniteCurrentQ4 += 1000 << Q4_SHIFT;
     }
     break;
-  case 0x567230: /* Ctrl+Alt+E, cheat: +100 energy supply and capacity (record +0x20 and +0x24, Q4) */
+  case 0x567230: /* Ctrl+Alt+E, cheat: +100 energy supply and capacity (Q4) */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
       g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(rt,
            worldView))->activeFactionRuntimeIndex].baselineEnergySupplyQ4 += 100 << Q4_SHIFT;
@@ -980,8 +977,8 @@ static void InGameNewSession_ResetSessionState(void)
   g_EndMovieVariantIndex = 0;
   g_EndMoviePath = NULL;
   /* clear the client packet buffers and all selection blocks (0x10230 dwords). The original clears the six packet
-     buffers with one REP STOSD of 0x280 bytes over their image range 0x572040..0x5722C0; they are separate
-     variables here, so each is cleared on its own, in the original address order. */
+     buffers with one 0x280-byte fill over their contiguous memory range; they are separate variables here, so
+     each is cleared on its own, in the original memory order. */
   memset(&g_FrontendClientPlayerRemovalPacket10007,0,sizeof(g_FrontendClientPlayerRemovalPacket10007));
   memset(g_FrontendClientPlayerCommandRecords,0,sizeof(g_FrontendClientPlayerCommandRecords));
   memset(g_FrontendClientCommandBatchPacketBuffer,0,sizeof(g_FrontendClientCommandBatchPacketBuffer));
@@ -1300,8 +1297,8 @@ static bool InGameNewSession_FinishWorldUnderTickLock(InGameRuntimeRoot *inGameR
             (world,WORLD_RUNTIME_FLAG_HIDE_PANEL,(linkOptionFlags & PERSISTENT_LINK_OPTION_HIDE_PANEL) != 0);
   mapMouseOptionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   /* Original quirk: the (unreachable) failure of the optional subsystem below reports the map/mouse option flags
-     as its error code, or the address of the resource bar page stack when bit 2 of them is set (the values left in
-     the error register). */
+     as its error code, or the address of the resource bar page stack when bit 2 of them is set (left-over
+     intermediate values). */
   subsystemFailureError = mapMouseOptionFlags;
   if ((mapMouseOptionFlags & 4) != 0) {
     UiPageStack_SetActiveIndex(1,&inGameRoot->sidePanelPageStack);
@@ -1684,8 +1681,8 @@ static bool InGameLoadedSession_LoadWorld(uint16_t *savePackagePath,FrontendLoad
   WorldRuntime_AttachAndClearDwordArray
             (INGAME_WORLD_DWORD_ARRAY_COUNT,g_InGameWorldRuntimeDwordArray256,world);
   if (GameData_LoadExternalTables()) {
-    /* Original quirk: this failure reports the local player's faction index as its error code (the value left in
-       the error register). */
+    /* Original quirk: this failure reports the local player's faction index as its error code (a left-over
+       intermediate value). */
     *outError = localFactionIndex;
     return false;
   }
@@ -2272,7 +2269,7 @@ void InGameConditionRuntime_UpdateScheduledRecords(void)
 typedef struct FactionEnergyConsumerEntry {
   uint32_t modelRuntime; /* the consumer's model runtime (pointer value) */
   uint32_t factionIndex;
-  EnergyDemandQ4 demandQ4; /* model runtime +0xF4 */
+  EnergyDemandQ4 demandQ4; /* model runtime classState.energyLoadQ4 */
   uint32_t priority; /* g_FactionEnergyAllocationPriorityByModelClass[runtime class] */
 } FactionEnergyConsumerEntry;
 
@@ -2408,7 +2405,8 @@ static void InGameFactionEconomy_CapStocksAtStorageLimits(void)
   }
 }
 
-/* Fills one consumer entry from a model runtime (+0x08 army slot, +0xF4 energy demand). */
+/* Fills one consumer entry from a model runtime (ownerArmyRuntimeOrSavedOffset army slot, classState.energyLoadQ4
+   energy demand). */
 static void InGameFactionEconomy_FillEnergyConsumer(FactionEnergyConsumerEntry *consumer,int *modelRuntime)
 {
   consumer->modelRuntime = (uint32_t)(uintptr_t)modelRuntime;
@@ -2418,9 +2416,9 @@ static void InGameFactionEconomy_FillEnergyConsumer(FactionEnergyConsumerEntry *
        g_FactionEnergyAllocationPriorityByModelClass[((ModelDefinition *)*modelRuntime)->runtimeClassId];
 }
 
-/* Collects the powered models (energy demand at +0xF4 != 0, not dismantling) and, for models whose definition
-   has MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY, their powered attached parts (count at +0x0C, part runtimes at
-   +0x140 in 32-byte slots) into consumers, at most 256. Returns the number collected. */
+/* Collects the powered models (energy demand classState.energyLoadQ4 != 0, not dismantling) and, for models
+   whose definition has MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY, their powered attached parts (attachmentCount,
+   part runtimes in attachments[], 32-byte slots) into consumers, at most 256. Returns the number collected. */
 static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsumerEntry *consumers)
 {
   uint32_t consumerCount;
@@ -2459,7 +2457,7 @@ static uint32_t InGameFactionEconomy_CollectEnergyConsumers(FactionEnergyConsume
 }
 
 /* Selection sort of the consumers by priority, highest first: each position is swapped with every later entry
-   of higher priority (the original swaps with XCHG). */
+   of higher priority. */
 static void InGameFactionEconomy_SortEnergyConsumersByPriority
           (FactionEnergyConsumerEntry *consumers,uint32_t consumerCount)
 {
@@ -2511,8 +2509,8 @@ static void InGameFactionEconomy_NotifyLocalEnergyShortage
 
 /* Energy allocation for one faction: the supply (baselineEnergySupplyQ4 + Tritium stock * 16, capped by
    energyGenerationCapacityQ4, signed comparison) first covers the fixed demand of its army assets, then its
-   consumers in priority order; consumers left over get model runtime +0xEC bit 0 (unpowered). The energy used
-   above the baseline burns Tritium. */
+   consumers in priority order; consumers left over get model runtime classState.stateFlags bit 0 (unpowered).
+   The energy used above the baseline burns Tritium. */
 static void InGameFactionEconomy_AllocateFactionEnergy
           (GameFactionRuntimeRecord *factionRecord,uint32_t factionIndex,
           const FactionEnergyConsumerEntry *consumers,uint32_t consumerCount)
@@ -2998,8 +2996,8 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
 }
 
 
-/* Optional initialisation step of new and loaded sessions; it always succeeds (CF clear), so the callers' failure
-   branches never run. The unreachable CF-set epilogue at 0x0050E0C4 is not part of the function.
+/* Optional initialisation step of new and loaded sessions; it always succeeds (returns 0), so the callers' failure
+   branches never run.
 */
 uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument)
 

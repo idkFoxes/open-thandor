@@ -128,7 +128,7 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
               (g_ScenarioCatalogPathScratchUtf16,leaf,
                g_ScenarioCatalogPathScratchUtf16);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,g_ScenarioCatalogPathScratchUtf16);
-    /* a failed delete is reported through the fatal-error dispatch (0x0056C20B) */
+    /* a failed delete is reported through the fatal-error dispatch */
     deleteError = g_FileSystemDelete(0,g_ScenarioCatalogPathScratchUtf16);
     FatalError_ReportIfFailed(deleteError,deleteError != 0);
     /* deleteButton - 0x760 = gameMenuSaveButton, the node RebuildCatalog expects */
@@ -215,7 +215,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   }
   newRowText = TextResource_Resolve(TEXT_ID_SAVE_GAME_NEW_ROW);
   RichTextCommandStream_CopyExpanded(256,(uint16_t *)record,newRowText,NULL);
-  /* The action source is the game menu's Save button (in-game template +0x2550). */
+  /* The action source is the game menu's Save button (InGameUiImage.gameMenuSaveButton). */
   inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
   saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
   descriptionText = (UiWrappedTextControl *)INGAME_UI(inGameUi, saveGameDescriptionText);
@@ -315,8 +315,8 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
     parentWalk = firstNode->parent;
   }
   if ((((UiTextEditControl *)nameControl)->editStateFlags & 1) != 0) {
-    /* REPNE SCASW for the NUL; nameLength then counts the characters including the NUL. Each forbidden
-       character is searched by its own REPNE SCASW pass below. */
+    /* scan for the NUL; nameLength then counts the characters including the NUL. Each forbidden
+       character is searched by its own scan pass below. */
     remainingLength = ((UiTextEditControl *)nameControl)->bufferCapacityCodeUnits;
     matched = true;
     charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;

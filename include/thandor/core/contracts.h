@@ -11,7 +11,7 @@
 /*
 Core contracts shared by the split submodules.
 Q12: 0x1000 == 1.0. Q4 resource values use 16 units per displayed unit. Q5 research time uses 32 units per displayed unit.
-FieldGridCell is 0x80 bytes. FLD flags/material at +0x50 and runtime occupancy at +0x70 are separate namespaces.
+FieldGridCell is 0x80 bytes. FLD flags/material (flagsAndMaterial) and runtime occupancy (occupancyMask) are separate namespaces.
 LEV file offsets and the loaded LevelAsset overlay are separate representations.
 Faction runtime index, frontend player index, player-runtime ID, ARM ID, MDL ID and TEC ID are separate identity domains.
 */
@@ -21,16 +21,16 @@ Faction runtime index, frontend player index, player-runtime ID, ARM ID, MDL ID 
 typedef int Q12;
 typedef unsigned int UQ12;
 
-/* `bool` is Ghidra's one-byte boolean from generated/types.h, so <stdbool.h> cannot be used. */
+/* `bool` is the one-byte boolean from generated/types.h, so <stdbool.h> cannot be used. */
 #ifndef true
 #define true 1
 #define false 0
 #endif
 
 /*
-Reinterpret the bytes of a register-image value as another type. Ghidra models multi-register
-results as structs ({eax, carry}, {eax, ecx, carry}, ...) and casts them to integers such as uint5
-or to other layout-compatible structs, which C only allows through a union.
+Reinterpret the bytes of a value as another type: multi-value results are structs (a value plus a
+failure flag, two values plus a flag, ...) that some code casts to integers such as uint5 or to other
+layout-compatible structs, which C only allows through a union.
 */
 #define THANDOR_BITCAST(From, To, value) (((union { From from_; To to_; }){ .from_ = (value) }).to_)
 #ifdef _MSC_VER
@@ -61,8 +61,8 @@ or to other layout-compatible structs, which C only allows through a union.
 #define THANDOR_ADDR(object, offset) ((uintptr_t)&(object) + (int)(offset))
 #include <thandor/generated/imports.h>
 
-/* Variadic UiSelectableGroup_* helpers take the group's controls as extra stack arguments, which
-   the decompiler dropped at every call site. The original addresses them as base + byte offset. */
+/* A UI node at a byte offset from base: the variadic UiSelectableGroup_* helpers take the group's controls
+   as extra arguments, which the original addresses as base + byte offset. */
 #define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
 
 /* A field of a UI node inside a template image copy (root + byte offset), for bytes past the node's

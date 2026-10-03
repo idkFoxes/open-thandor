@@ -103,7 +103,6 @@ static void TerrainProjectedScan_SelectNearestGridVertex
    hide from an eye at referenceHeightQ12 within the radius. The centre cell is marked here, the rest by the six
    sector traces, each seeded with the height of the next sector's first cell. Nothing happens outside the grid or
    on a map-edge cell.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
           (uint64_t occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
@@ -167,7 +166,7 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
    overlayColor of every cell within the radius around the world point that has a bit of
    cellFlagMask and no water above it; the centre cell here, the rest by the six sector walks (the same hexagon
    as TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint, without line of sight). Marks the field grid
-   surface dirty. CF set (nothing applied) without a grid, outside it or on a map-edge cell.
+   surface dirty. Returns true (nothing applied) without a grid, outside it or on a map-edge cell.
 */
 bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
@@ -452,7 +451,6 @@ void TerrainProjectedGrid_TransformShadeAndQueue
    two spine cells, and hands the current horizon to a straight leg along each bounding direction. The first spine
    cell is tested against its own unscaled height above the eye; unless it is visible, the legs start from the
    average of that height and the caller's projectedHeightThresholdQ20.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_TraceWedge0(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -526,7 +524,6 @@ void TerrainProjectedOcclusion_TraceWedge0(uint64_t occupancyMaskBits,
 /* Line-of-sight marking for the sector between directions 1 (C+1-W) and 2 (C-W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C+1-2W (scan step +7), the direction-2 neighbour between two
    spine cells, a straight leg along each bounding direction.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_TraceWedge1(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -600,7 +597,6 @@ void TerrainProjectedOcclusion_TraceWedge1(uint64_t occupancyMaskBits,
 /* Line-of-sight marking for the sector between directions 2 (C-W) and 3 (C-1), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-1-W (scan step +7), the direction-3 neighbour between two
    spine cells, a straight leg along each bounding direction.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_TraceWedge2(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -670,7 +666,6 @@ void TerrainProjectedOcclusion_TraceWedge2(uint64_t occupancyMaskBits,
 /* Line-of-sight marking for the sector between directions 3 (C-1) and 4 (C-1+W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-2+W (scan step +7), the direction-4 neighbour between two
    spine cells, a straight leg along each bounding direction.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_TraceWedge3(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -745,7 +740,6 @@ void TerrainProjectedOcclusion_TraceWedge3(uint64_t occupancyMaskBits,
 /* Line-of-sight marking for the sector between directions 4 (C-1+W) and 5 (C+W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-1+2W (scan step +7), the direction-5 neighbour between two
    spine cells, a straight leg along each bounding direction.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_TraceWedge4(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -820,7 +814,6 @@ void TerrainProjectedOcclusion_TraceWedge4(uint64_t occupancyMaskBits,
 /* Line-of-sight marking for the sector between directions 5 (C+W) and 0 (C+1), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C+1+W (scan step +7), the direction-0 neighbour between two
    spine cells, a straight leg along each bounding direction.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_TraceWedge5(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -1600,7 +1593,7 @@ static void TerrainProjectedTriangle_PickCursor
                      (projected2->projectedY,projected2->projectedX,projected1->projectedY,projected1->projectedX,
                       projected0->projectedY,projected0->projectedX,renderContext->cursorWorldYQ12,
                       renderContext->cursorWorldXQ12);
-  outsideTriangle = g_Triangle2DBarycentricOutside; /* the original's JC after the call */
+  outsideTriangle = g_Triangle2DBarycentricOutside; /* the original tests the outside flag right after the call */
   vertex0ViewDepth = vertex0ViewPoint->z;
   if ((!outsideTriangle) && ((int)vertex0ViewDepth < (int)renderContext->surfaceHitDepth)) {
     renderContext->surfaceHitDepth = vertex0ViewDepth;
@@ -1920,7 +1913,6 @@ void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,Gra
    above the eye (g_TerrainScanReferenceHeight) is scaled by the per-step table g_TerrainHeightDeltaScaleByStepQ12;
    a cell whose value reaches the highest value seen so far on this line is visible and gets occupancyMaskBits,
    and its value becomes the new horizon. 4 scan steps per cell, until the step limit or a map-edge cell.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection0(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -1940,7 +1932,7 @@ void TerrainProjectedOcclusion_ScanDirection0(uint64_t occupancyMaskBits,
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      /* the table holds one int per scan step; the product keeps bits 12..43 (SHLD EDX,EAX,20) */
+      /* the table holds one int per scan step; the product keeps bits 12..43 */
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
               (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightQ20 = FIXED_PRODUCT_SHR(scaledHeightProduct, 12);
@@ -1957,7 +1949,6 @@ void TerrainProjectedOcclusion_ScanDirection0(uint64_t occupancyMaskBits,
 
 
 /* Line-of-sight leg along direction 1 (C+1-W, up and right); works like TerrainProjectedOcclusion_ScanDirection0.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection1(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -1993,7 +1984,6 @@ void TerrainProjectedOcclusion_ScanDirection1(uint64_t occupancyMaskBits,
 
 
 /* Line-of-sight leg along direction 2 (C-W, up); works like TerrainProjectedOcclusion_ScanDirection0.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection2(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -2029,7 +2019,6 @@ void TerrainProjectedOcclusion_ScanDirection2(uint64_t occupancyMaskBits,
 
 
 /* Line-of-sight leg along direction 3 (C-1, left); works like TerrainProjectedOcclusion_ScanDirection0.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection3(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -2065,7 +2054,6 @@ void TerrainProjectedOcclusion_ScanDirection3(uint64_t occupancyMaskBits,
 
 
 /* Line-of-sight leg along direction 4 (C-1+W, down and left); works like TerrainProjectedOcclusion_ScanDirection0.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection4(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
@@ -2101,7 +2089,6 @@ void TerrainProjectedOcclusion_ScanDirection4(uint64_t occupancyMaskBits,
 
 
 /* Line-of-sight leg along direction 5 (C+W, down); works like TerrainProjectedOcclusion_ScanDirection0.
-   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
 void TerrainProjectedOcclusion_ScanDirection5(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,

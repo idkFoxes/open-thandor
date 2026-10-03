@@ -59,11 +59,11 @@
 #ifndef SHIFT_COUNT_MASK
 #define SHIFT_COUNT_MASK 0x1f
 #endif
-/* A dword count derived from its byte count ((count * 4) >> 2, the original's REP STOSD/MOVSD count): the
+/* A dword count derived from its byte count ((count * 4) >> 2, as the original's dword fill/copy loops count): the
    top two bits drop */
 #define DWORD_COUNT_MASK 0x3fffffff
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
 

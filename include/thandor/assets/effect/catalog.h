@@ -13,9 +13,9 @@
 
 /* Submodule: assets/effect/catalog. */
 
-/* Slots of g_EffectDefinitionRegistry (0x0051DBD0, 256 pointers; a null slot is free). */
+/* Slots of g_EffectDefinitionRegistry (256 pointers; a null slot is free). */
 #define EFFECT_DEFINITION_REGISTRY_SLOT_COUNT 256
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError);
 

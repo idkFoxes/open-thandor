@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/assets/package/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/assets/package/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -13,7 +13,7 @@
 
 __declspec(align(16)) PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256] = {0};
 
-/* [0..255] leaf nodes (004084C0), [256..511] internal nodes (004094C0) */
+/* [0..255] leaf nodes, [256..511] internal nodes */
 __declspec(align(16)) PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {0};
 
 __declspec(align(16)) uint16_t g_FileSystemCombinedPathScratchUtf16[256] = {0};

@@ -22,7 +22,7 @@
 #define MODEL_POINT_CLASS_SHOT 2 /* shot launch point, keyIndex = weapon / emitter index */
 #define MODEL_POINT_CLASS_EFFECT 3 /* effect spawn point (0 linked effect, 1 periodic effect) */
 #define MODEL_POINT_CLASS_LIGHT 4 /* shading light position */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 ModelDefinitionRecordPrefix *ModelDefinition_SelectFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);

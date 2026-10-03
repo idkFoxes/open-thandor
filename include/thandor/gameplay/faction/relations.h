@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/faction/relations. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Records in a player's marked-cell list (SelectionPlayerRuntimeBlock.markedCells[4096]); the
    PlayerPairList_* functions ignore a list whose count has reached this value. */
@@ -22,7 +22,8 @@
    the pending states 2, 5 and 9 and the top states 3, 6 and 10; 11 is FACTION_RELATION_MERGE. */
 #define FACTION_RELATION_STATE_FRIENDLY 4 /* states 4 and up: same bloc (GameFactionRelations_BuildEligibleFactionMask) */
 #define FACTION_RELATION_STATE_ALLIED 8   /* states 8 and up: allied; the game ends when no two active factions are below */
-/* GameFactionRuntimeImageTail.relationUiFlags (from the level tail +0x318): relation drift freezes */
+/* GameFactionRuntimeImageTail.relationUiFlags (from the level's LevelWorldSettings.relationUiFlags): relation
+   drift freezes */
 #define FACTION_RELATION_FREEZE_ALLIED 0x1   /* states 8 and up stay */
 #define FACTION_RELATION_FREEZE_FRIENDLY 0x2 /* states 4 and up stay */
 #define FACTION_RELATION_FREEZE_ALL 0x4

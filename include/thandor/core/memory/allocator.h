@@ -24,7 +24,7 @@
 #define ARENA_BLOCK_SPLIT_SLACK_BYTES 0x40
 /* DwordBlock64Array_ContainsExactRecord: dwords per compared record */
 #define DWORD_BLOCK64_RECORD_DWORDS 0x40
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase);
 

@@ -152,7 +152,7 @@ static bool InGameWorldOverlay_BuildOwnedEntityMarkers(WorldRuntimeContext *worl
          worldRuntime->activeFactionRuntimeIndex)) {
       continue;
     }
-    /* the unit factory's exit point: X at +0x78, Y at +0x7C (classLinkState.classState78 / 7C) */
+    /* the unit factory's exit point: X in classLinkState.classState78, Y in classState7C */
     FieldGrid_InterpolateTopSurfaceHeight
               ((factoryModelRuntime->classLinkState).classState7C,
                (factoryModelRuntime->classLinkState).classState78,worldRuntime->fieldGrid,&surfaceHeightQ12);
@@ -409,7 +409,7 @@ void SelectionOverlay_RenderArmyMetricsForEntity
     ModelProjectedBounds_AccumulateHierarchyRecursive(&g_ModelProjectedBoundsPixels,modelNode);
     savedPanelData = g_SelectionPanelData;
     savedTextureSource = g_SelectionPanelTextureSource;
-    /* no-op write-back from the decompilation; the original saves both only inside the if below */
+    /* no-op write-back; the original saves both only inside the if below */
     g_SelectionPanelTextureSource = savedTextureSource;
     g_SelectionPanelData = savedPanelData;
     if ((g_ModelProjectedBoundsPixels.minX < g_ModelProjectedBoundsPixels.maxX) &&
@@ -420,7 +420,7 @@ void SelectionOverlay_RenderArmyMetricsForEntity
                 (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                  g_ModelProjectedBoundsPixels.minX,
-                 (RuntimeModelFactionPrefix *)entity); /* EDX: the entity (lost local) */
+                 (RuntimeModelFactionPrefix *)entity);
       g_SelectionPanelTextureSource = savedTextureSource;
       g_SelectionPanelData = savedPanelData;
     }
@@ -605,7 +605,7 @@ void SelectionOverlay_DrawWorldPointMarker
              (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,&g_ViewProjectionMatrixFixed)
   ;
   projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
-  accessFailed = g_GraphicsFramebufferBeginAccess(); /* Ghidra passed stale register values (worldYQ12, worldXQ12, fieldGrid); the callee takes none */
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_WORLD_POINT,
                                                        g_SelectionPanelTextureSource);
@@ -656,7 +656,7 @@ void SelectionOverlay_DrawGridVertexMarkers
     columnsRemaining = columnCount;
     rowStart = vertexCursor;
     if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
-      coordinateOffset = 32; /* projectedPointB (+0x2C) instead of projectedPointA (+0x0C) */
+      coordinateOffset = 32; /* projectedPointB instead of projectedPointA (32 bytes further) */
     }
     do {
       do {

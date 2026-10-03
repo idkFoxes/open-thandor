@@ -200,9 +200,8 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
    FRONTEND_PACKET_10007_PLAYER_REMOVAL per removed player, and the ready wait is re-evaluated without a new
    report (player id -1).
    The command records start at g_FrontendPlayerCommandRecords[0] while the scan starts at player block 1, and
-   the announcements go out in reverse removal order (the original pushes each removed id on the stack,
-   0x0054F5AC PUSH [ESI+0x14], and pops one per round, 0x0054F63C); both are kept from the original. The id
-   stack does not overlap the command cursors at [EBP-4]/[EBP-8] (verified against the asm).
+   the announcements go out in reverse removal order (each removed playerRuntimeId is stacked during the scan
+   and taken back one per round); both are kept from the original.
 */
 void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
@@ -216,7 +215,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
   FrontendCommandPacketRecord *commandDest;
   UiTransferEndpointDescriptor *endpoint;
   uint16_t *removalText;
-  /* the original's PUSH/POP stack of removed player ids (at most 8 player blocks) */
+  /* stack of removed player ids, sent last first (at most 8 player blocks) */
   FrontendPlayerRuntimeId removedPlayerIds[8];
   
   removedCount = 0;
@@ -236,7 +235,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
       removedCount++;
     }
     else {
-      /* keep: REP MOVSD of the 0x13B0-byte player block, then of its 8-dword command record */
+      /* keep: copy the 0x13B0-byte player block, then its 8-dword command record */
       if (destBlock != sourceBlock) {
         *destBlock = *sourceBlock;
         *commandDest = *commandSource;
@@ -254,7 +253,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
     endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
     g_FrontendPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
          FRONTEND_PACKET_10007_PLAYER_REMOVAL;
-    /* POP: the last removed id first */
+    /* the last removed id first */
     g_FrontendPlayerRemovalPacket10007.removedPlayerToken = removedPlayerIds[removedCount - 1];
     /* every client: player blocks 1..n-1 */
     for (sendRemaining = g_FrontendPlayerRuntimeBlockCount - 1; sendRemaining != 0; sendRemaining--) {
@@ -269,7 +268,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
 /* Tells whether any player other than excludedPlayerId has assignmentToken recorded in technologyPageBuilding
    (see FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch); the in-game HUD uses it to decide whether the
-   technology window of a selected object is offered. CF set when such a player exists.
+   technology window of a selected object is offered. Returns true when such a player exists.
 */
 bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
           (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId)
@@ -293,7 +292,7 @@ bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
 }
 
 
-/* Releases an assignment token: every frontend player whose selection player block (+0x80A0) still holds
+/* Releases an assignment token: every frontend player whose selection player block (technologyPageBuilding) still holds
    the token gets it cleared to 0. Assumes at least one frontend player block (do/while as in the original).
 */
 void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
@@ -513,7 +512,6 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
 /* Default faction line-up for a freshly loaded level (scenario catalogue, frontend main loop): marks factions
    1..active count as active and clears the slots above, then hands the players the assignable factions
    round-robin (player n gets faction (n mod assignable count) + 1) and clears their ready and consensus state.
-   The original also computes the local player's zero-based faction in EDX but restores EDX before returning.
 */
 void FrontendPlayerRuntime_InitializeFactionAssignments(void)
 
@@ -578,7 +576,7 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
   FrontendPlayerRuntimeRecord *firstPlayerBlock;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
   uint32_t sessionTickInterval;
-  /* source is the frontend template's hostLobbyBackButton (+0x543C). */
+  /* source is the frontend template's hostLobbyBackButton. */
   FrontendUiImage *frontendUi;
 
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,hostLobbyBackButton));
@@ -872,8 +870,8 @@ void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
                 (army2,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     }
   }
-  /* Original quirk (0x0055FCA1): a fourth, unconditional removal with the third argument as left in EAX: the
-     rebased pointer, or the raw offset 0 when it was empty. */
+  /* Original quirk: a fourth, unconditional removal of army2 (the third argument rebased, or NULL when it
+     was empty). */
   SelectionPointerArray_RemoveFirstMatch
             (army2,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
@@ -1041,7 +1039,7 @@ void FrontendPlayerTextCommand_SetPackedState(FrontendPlayerIndex playerIndex,ui
 
 
 /* Handler of INGAME_COMMAND_CHAT_APPEND: writes 12 more bytes of the player's chat line (value0 first) into the
-   staging text at +0x80C0, at the write offset kept in the low byte of chatRecipientMaskAndWriteOffset, and advances
+   staging text chatStagingText, at the write offset kept in the low byte of chatRecipientMaskAndWriteOffset, and advances
    the offset. The offset stops at 0x24, the last of the four 12-byte pieces of the 0x30-byte line, so extra
    pieces overwrite it instead of running past the buffer.
 */
@@ -1071,7 +1069,7 @@ void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerInd
 /* Handler of INGAME_COMMAND_CHAT_PUBLISH, the last command of an in-game chat line: in a network session, when
    the sender's recipient mask includes the local faction (bit 8 + faction) or the local player (bit 16 +
    player), shows "<sender>: <text>" (TEXT_ID_CHAT_MESSAGE) from the staged text in the in-game message
-   history. The sender's name is the one kept at +0x80F0 of its block.
+   history. The sender's name is the one kept in playerNameUtf16 of its block.
 */
 void FrontendPlayerTextCommand_PublishConditionalRichText
           (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
@@ -1090,7 +1088,7 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
             SHIFT_COUNT_MASK)) != 0)) &&
      ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL)) {
-    /* +0x80C0: the 0x30 staged bytes, widened into a 0x60-byte buffer */
+    /* chatStagingText: the 0x30 staged bytes, widened into a 0x60-byte buffer */
     Text_CopyNarrowToUtf16
               (96,g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText);
     messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
@@ -1123,7 +1121,7 @@ void FrontendPlayerSelection_ApplyEntryOrAll
   targetEntity = (GameEntityRuntime *)(armyRuntimeOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   remainingEntries = 32;
-  /* SelectionPointerArray_Contains sets CF (true) when the army is NOT in the selection */
+  /* SelectionPointerArray_Contains returns true when the army is NOT in the selection */
   notInSelection = SelectionPointerArray_Contains(targetEntity,&selectionCursor->selection);
   if (notInSelection) {
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,targetEntity);
@@ -1419,7 +1417,7 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsR
         if (nextDestBlock != nextSourceBlock) {
           nextSourceBlock = sourceBlock;
           nextDestBlock = destBlock;
-          /* REP MOVSD of one 0x13B0-byte player block */
+          /* copy one 0x13B0-byte player block, one dword per step */
           for (copyRemaining = sizeof(FrontendPlayerRuntimeRecord) / sizeof(uint32_t); copyRemaining != 0;
                copyRemaining--) {
             nextDestBlock->reserved00 = nextSourceBlock->reserved00;
@@ -1469,9 +1467,9 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 
 
 /* Handler of INGAME_COMMAND_ASSIGN_ARMY_TOKEN: turns modelOffset (the offset from g_ModelRuntimeRebaseDelta of
-   the building whose technology page opened) back into a pointer and, if it is live (dword +4 non-zero),
-   records it for the player in technologyPageBuilding. Its ARMY_MODEL_STATE_RESEARCH_UNPAID flag (bit 0x80 of
-   the state flags at +0xEC) is moved into heldResearchUnpaidFlag and cleared on the building until the page
+   the building whose technology page opened) back into a pointer and, if it is live (rootModelNodeOrSavedOffset non-NULL),
+   records it for the player in technologyPageBuilding. Its ARMY_MODEL_STATE_RESEARCH_UNPAID flag (in
+   classState.stateFlags) is moved into heldResearchUnpaidFlag and cleared on the building until the page
    closes.
 */
 void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch

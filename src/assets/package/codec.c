@@ -205,7 +205,7 @@ bool PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,Fi
 }
 
 
-/* PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable (0x0040E224).
+/* PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable.
    Copies the source dword by dword when it fits into the destination and returns true with its size rounded up
    to four bytes in *outByteCount; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when it does not fit.
 */
@@ -217,7 +217,7 @@ bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8
   PckDwordCopyCount dwordCopyCount;
 
   if (sourceSizeBytes <= destinationCapacityBytes) {
-    /* only whole dwords are copied (REP MOVSD); a 1..3-byte tail is left out */
+    /* only whole dwords are copied; a 1..3-byte tail is left out */
     for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0; dwordCopyCount--) {
       *(uint32_t *)destination = *(uint32_t *)source;
       source = source + 4;
@@ -229,12 +229,13 @@ bool PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8
 }
 
 
-/* PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable (0x0040E230).
+/* PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable.
    Copies the stored bytes dword by dword to the destination; the capacity is not checked.
-   Original quirk: the outcome is what SHR ECX,2 shifted out last, so it fails exactly when bit 1 of
-   sourceSizeBytes is set (stored sizes written by the encoder are multiples of four, so it succeeds for them).
-   Either way the reported value (byte count or error code) is sourceSizeBytes: EAX is untouched and in
-   Package_DecodeEntryInto still holds the read size (packedSize).
+   Original quirk: the outcome is the last bit shifted out when the size is turned into a dword count (size >> 2),
+   so it fails exactly when bit 1 of sourceSizeBytes is set (stored sizes written by the encoder are multiples
+   of four, so it succeeds for them). Either way the reported value (byte count or error code) is
+   sourceSizeBytes: the original sets no result of its own, and in Package_DecodeEntryInto the leftover value
+   is the read size (packedSize).
 */
 bool PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckStoredByteCount sourceSizeBytes,uint8_t *source,
@@ -265,8 +266,8 @@ typedef struct PckHuffmanBitWriter {
 
 /* Clears the symbol table and both node workspaces, then counts how often each byte value occurs in source.
    An empty source is not guarded: the count loop would run 2^32 times.
-   The original clears all three with one REP STOSD of PCK_HUFFMAN_WORKSPACE_DWORDS dwords from 0x004080C0,
-   relying on the node workspace following the symbol table directly in its image. Here they are two separate
+   The original clears all three with one run of PCK_HUFFMAN_WORKSPACE_DWORDS dwords from the start of
+   g_PckHuffmanSymbolWorkspace256, relying on the node workspace following the symbol table directly in its image. Here they are two separate
    objects whose distance is up to the linker (an AddressSanitizer build puts a redzone between them), so each
    is cleared on its own. A single run through the symbol table pointer left the tail of the node workspace
    uncleared there: the previous call's root kept its weight, joined the new tree as a stale live node and
@@ -391,7 +392,7 @@ static bool PckCodec_EncoderBuildTree(void)
     lowestNode->weight = 0;
     secondLowestNode->weight = 0;
     nextInternalNode++;
-    /* Workspace exhausted: all 256 internal nodes used (original: CMP next,end; JC continue). */
+    /* Workspace exhausted: all 256 internal nodes used (the original continues only while next < end). */
     if (g_PckHuffmanNodeWorkspace + PCK_HUFFMAN_NODE_COUNT <= nextInternalNode) {
       return false;
     }
@@ -536,7 +537,7 @@ bool PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,u
     *outputClearCursor = 0;
     outputClearCursor++;
   }
-  /* SUB [capacity],4 / JBE fail (0x0040A69F): exactly 4 free bytes also fail */
+  /* the original reserves 4 bytes of the capacity and fails unless some are left: exactly 4 free bytes also fail */
   if (alignedOutputBytes <= 4) {
     return PckCodec_Fail(outErrorCode,FATAL_ERROR_GENERAL_FAILURE);
   }
@@ -643,7 +644,7 @@ static uint8_t *PckCodec_DecoderSkipWholeBytes(uint8_t *inputByte,PckHuffmanBitO
    written. Returns true on success; false with FATAL_ERROR_GENERAL_FAILURE in *outErrorCode when the tree
    overflows the workspace. sourceSizeBytes is not checked: the bitstream is trusted.
    Original quirk: the byte count reported on success is not a size but what is left of the last token: the
-   unused code bits of a literal, or the run counter of a run (EAX).
+   unused code bits of a literal, or the run counter of a run.
 */
 bool PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,

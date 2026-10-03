@@ -19,7 +19,7 @@
 /* The output is (first step * 2^14) ^ (second step >> 2): the first step's factor */
 #define RANDOM_OUTPUT_FIRST_STEP_SCALE 0x4000
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 uint32_t Random_NextPrimary(void);
 

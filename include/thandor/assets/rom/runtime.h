@@ -12,14 +12,14 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/rom/runtime. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Frontend ROM action table (a RomRecord, g_FrontendActiveRomRecord): the 0x200-byte RomRecord header with the
-   entry count at +0x3C, followed by 0x200-byte FrontendRomActionEntry entries. */
+   entry count in entryCount, followed by 0x200-byte FrontendRomActionEntry entries. */
 #define FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE 0x200
 #define FRONTEND_ROM_ACTION_ENTRY_SIZE 0x200
-/* One 0x200-byte entry of the frontend ROM action table (FrontendRomActionTable_ExecuteRecord; Ghidra also
-   views it as RomAssetRecordPrefix[]: record[2].recordId = +0x20, record[3] = +0x24..+0x2F). */
+/* One 0x200-byte entry of the frontend ROM action table (FrontendRomActionTable_ExecuteRecord; some code
+   also reads it as RomAssetRecordPrefix[]: record[2].recordId = +0x20, record[3] = +0x24..+0x2F). */
 typedef struct FrontendRomActionEntry {
     uint8_t unknown00_1B[0x1c];
     RomRecordId linkedRecordId;          /* +0x1C searched by RomRecordTable_FindRecordById/FindIndexById; its
@@ -31,7 +31,7 @@ typedef struct FrontendRomActionEntry {
     uint8_t unknown30_3F[0x10];
     WorldMotionSplineKeyframe keyframes[14]; /* +0x40 camera flight; keyframe 0 is the current camera */
 } FrontendRomActionEntry;
-/* Light of a ROM record (0x10 bytes from +0x50), placed at the matching ROM_NODE_DESCRIPTOR_KIND_LIGHT
+/* Light of a ROM record (0x10-byte entries of RomRecord.lights), placed at the matching ROM_NODE_DESCRIPTOR_KIND_LIGHT
    descriptor of the record's root sprite (RomRuntime_ApplyIndexedDescriptor). */
 typedef struct RomRecordLight {
     PackedRgb24 packedColorRgb;          /* +0x00 */
@@ -39,8 +39,8 @@ typedef struct RomRecordLight {
     uint8_t unknown08_0F[8];
 } RomRecordLight;
 /* A registered ROM record (a menu-room location; g_RomRegistrySlots[].record, g_FrontendActiveRomRecord):
-   this 0x200-byte header, then entryCount FrontendRomActionEntry entries. Ghidra views the header as
-   RomAssetRecordPrefix[] (12-byte elements), e.g. record[3].byteSize = +0x24. */
+   this 0x200-byte header, then entryCount FrontendRomActionEntry entries. Some code reads the header
+   as RomAssetRecordPrefix[] (12-byte elements), e.g. record[3].byteSize = +0x24. */
 typedef struct RomRecord {
     RomRecordByteSize byteSize;          /* +0x00 */
     uint32_t rootNodeOffsetOrPointer;    /* +0x04 serialized sprite-node tree (RomSerializedNodeHeader) */
@@ -49,7 +49,7 @@ typedef struct RomRecord {
     uint32_t visibleRecordMask[4];       /* +0x10 one bit per record id: records shown together with this one.
                                             Covers ids 0..127 only; its users (FrontendRomTransition_ActivateRecordById,
                                             RomRuntime_UpdateRecordVisibilityAndDescriptors) index it with id >> 5
-                                            unchecked, like the original (SHR ECX,5 / [ESI+ECX*4+0x10]), and nothing
+                                            unchecked, like the original, and nothing
                                             limits the ids at registration: a record id >= 128 would test a bit of the
                                             camera pose from +0x20 on. */
     Q12 cameraXQ12;                      /* +0x20 camera pose while the record is active (keyframe channels 0..5) */

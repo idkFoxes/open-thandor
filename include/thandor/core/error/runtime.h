@@ -39,7 +39,7 @@
 #define FATAL_ERROR_DIRECTINPUT_SETUP 0x25 /* DirectInputMouse_Init: DirectInputCreateA or a mouse-device
                                               setup call failed; the stage number (0..4) is left in
                                               g_PackageLastErrorPath */
-/* Generic failure code returned with CF set by many helpers (package mount/lookup, PCK codec, text copies,
+/* Generic failure code returned as a failure by many helpers (package mount/lookup, PCK codec, text copies,
    runtime pools); InGameRuntime_RunSessionUntilExit returns it when the UI root stack runs empty */
 #define FATAL_ERROR_GENERAL_FAILURE 0x14
 /* Out of memory: the arena allocation failed (Package_LoadEntry, Resource_Load and the FileSystem whole-file
@@ -104,8 +104,8 @@
 #define FATAL_ERROR_EFFECT_REGISTRY_FULL 0x49 /* all 256 effect-definition registry slots are taken */
 #define FATAL_ERROR_SHOT_ID_DUPLICATE 0x4D /* a shot definition id is registered twice */
 #define FATAL_ERROR_EFFECT_ID_DUPLICATE 0x4E /* an effect definition id is registered twice */
-/* Movie_Open: the file is not an 'flm' of converter version 0x20001 (Movie_AdvanceFrame also returns it with
-   CF set when no movie is open) */
+/* Movie_Open: the file is not an 'flm' of converter version 0x20001 (Movie_AdvanceFrame also returns it as a
+   failure when no movie is open) */
 #define FATAL_ERROR_MOVIE_INVALID 0x30
 /* Army catalog (assets/army/catalog.c), same scheme as the shot/effect codes above */
 #define FATAL_ERROR_ARMY_ASSET_INVALID 0x40 /* ArmyAsset_PrepareRecords: not an 'arm' asset of converter version
@@ -136,7 +136,7 @@
 /* FatalError_CopyRichTextToNarrow: nested rich-text streams it follows at most (deeper nesting cuts the text) */
 #define FATAL_ERROR_RICHTEXT_NESTING_MAX 64
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void __cdecl ErrorSystem_Init(void);
 

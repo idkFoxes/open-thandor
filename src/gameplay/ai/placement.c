@@ -12,7 +12,7 @@
 
 /* Tests whether one more special site of this asset fits at a workspace-08 cell: the mode-7 placement query must
    report a nonzero count, the mode-4 query must fail, and the count rounded up to whole separation quanta must be
-   at most 4; the result is then that of AiPlacement_ReserveSeparatedSpecialSiteChain. CF (true) means rejected.
+   at most 4; the result is then that of AiPlacement_ReserveSeparatedSpecialSiteChain. True means rejected.
 */
 bool AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
@@ -91,8 +91,9 @@ void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionInde
 
 /* Adds a field cell to the general site list (workspace 05, at most 32 entries) unless an entry already lies
    closer than generalSiteMinimumAxisSeparationQ12 on both axes. The entry's score rewards closeness to the
-   primary workspace and distance (capped) from workspaces 02 and 01, weighted by the ki.dat parameters at
-   +0x84..+0xA0; unlike the flagged-site list below, these parameters are read from the right base.
+   primary workspace and distance (capped) from workspaces 02 and 01, weighted by the ki.dat parameters
+   generalSitePrimaryDistanceCapQ12..generalSiteVisibleHostileDistanceCoefficient; unlike the flagged-site list
+   below, these parameters are read from the right base.
 */
 void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
 
@@ -165,9 +166,10 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
 
 /* Adds a field cell to the flagged site list (workspace 06, at most 64 entries) unless an entry already lies
    closer than flaggedSiteMinimumAxisSeparationQ12 on both axes; the score is built like the general site score.
-   Original bug: the caps and weights are read at +0xC4..+0xE0 from the new entry's address in the workspace
-   buffer (EDI still holds it) instead of from g_AiKnowledgeData, so they are whatever lies further on in the
-   buffer. Nothing reads workspace 06, so the list is filled but never used.
+   Original bug: the caps and weights (the offsets of flaggedSitePrimaryDistanceCapQ12..
+   flaggedSiteVisibleHostileDistanceCoefficient) are read relative to the new entry's address in the workspace
+   buffer instead of from g_AiKnowledgeData, so they are whatever lies further on in the buffer. Nothing reads
+   workspace 06, so the list is filled but never used.
 */
 void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
 
@@ -475,7 +477,7 @@ bool AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId
 
 /* Tests a workspace-08 site cell for the asset: the mode-3 placement query must succeed with a count of at least
    one separation quantum (rounded up). More than 4 quanta accept the site outright; 1-4 quanta accept it only
-   when AiPlacement_ReserveSeparatedSpecialSiteChain reports CF set. CF (true) means rejected.
+   when AiPlacement_ReserveSeparatedSpecialSiteChain reports true. True means rejected.
 */
 bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
@@ -501,7 +503,7 @@ bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,Field
     return true;
   }
   if (bucketCount < 5) {
-    /* A small cluster is accepted only when the separated chain reports CF set. */
+    /* A small cluster is accepted only when the separated chain reports true. */
     if (!AiPlacement_ReserveSeparatedSpecialSiteChain(armyAssetId,workspaceRecord,factionIndex,worldRuntime)) {
       return true;
     }
@@ -647,9 +649,9 @@ static uint32_t AiPlacement_AnchorManhattanDistanceToCell(Q12 anchorYQ12,Q12 anc
 
 /* Probes the ARM_0333 building positions around a workspace cell: up to four times it takes the nearest free
    workspace-09 anchor (AiPlacement_FindNearestPlaceableBaseSite), creates a temporary ARM_0333 instance
-   there (so the next search finds the next anchor) and checks its Manhattan distance to the cell. CF is clear
-   as soon as one of them lies closer than specialSiteSeparationQuantumQ12, and set when all are at least that
-   far or an anchor/instance is missing. Every temporary instance is destroyed again before returning; the
+   there (so the next search finds the next anchor) and checks its Manhattan distance to the cell. Returns
+   false as soon as one of them lies closer than specialSiteSeparationQuantumQ12, and true when all are at least
+   that far or an anchor/instance is missing. Every temporary instance is destroyed again before returning; the
    armyAssetId argument is not used.
 */
 bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,

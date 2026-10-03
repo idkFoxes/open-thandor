@@ -93,7 +93,7 @@ typedef struct UiFourValueDialogCountdownText {
    it sends when the pointer moves from one child to another (the new child's press, the old child's drag and
    release), so that no pixel test of theirs hits. */
 #define UI_POINTER_FAR_OUTSIDE 0x70000000
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root);
 
@@ -159,7 +159,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
 
 extern UiNodeVtable g_UiRangeSliderControlVtable;
 extern UiNodeVtable g_UiImageControlVtable;
-extern UiNodeVtable g_UiTransferProgressGaugeVtable; /* UiHorizontalGaugeControl subclass of the transfer progress gauge; followed by 0x90 code alignment fill */
+extern UiNodeVtable g_UiTransferProgressGaugeVtable; /* UiHorizontalGaugeControl subclass of the transfer progress gauge */
 
 extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate;
 

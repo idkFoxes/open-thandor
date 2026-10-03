@@ -526,7 +526,7 @@ void PlayerSelection_StopMovement
 
 
 /* In-game command handler 0xE50 (Alt+S): interrupts the active targets of the eligible entries of the player's
-   selection and clears flag 0x10 of their dword +0x2C.
+   selection and clears flag 0x10 of their commandModeFlags.
 */
 void PlayerSelection_CancelTargets
           (PlayerRuntimeId playerId,CommandPayload unusedPayload1,
@@ -585,11 +585,11 @@ void InGameSelection_SetAircraftPadTargetLane2
 }
 
 
-/* In-game command handler 0x2F20: moves the player's primary selected model (block +0x8094, rebased offset, 0 =
-   none) by a pointer-drag delta, writes the new point into its path and tracked coordinates and the model
-   transform, and lets the definition's placement contact kind (+0x278) set its height before the transforms and
-   depth bins are rebuilt. Sent by InGameUiCommand_UpdateInteractionByMode (ui/ingame/runtime.c) while the
-   pointer drags with bit 0x4 of g_CursorButtonState set.
+/* In-game command handler 0x2F20: moves the player's primary selected model (block placedArmyToken, rebased
+   offset, 0 = none) by a pointer-drag delta, writes the new point into its path and tracked coordinates and the
+   model transform, and lets the definition's placement contact kind (placementContactKindIndex) set its height
+   before the transforms and depth bins are rebuilt. Sent by InGameUiCommand_UpdateInteractionByMode
+   (ui/ingame/runtime.c) while the pointer drags with bit 0x4 of g_CursorButtonState set.
 */
 void SelectionPlayerRuntime_MovePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved,Q12 deltaYQ12,Q12 deltaXQ12)
@@ -636,7 +636,7 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
 }
 
 
-/* In-game command handler 0x30F0: turns the player's primary selected model (block +0x8094) by angleDelta
+/* In-game command handler 0x30F0: turns the player's primary selected model (block placedArmyToken) by angleDelta
    (16-bit angle, wraps) and rebuilds its transforms. Sent by InGameUiCommand_UpdateInteractionByMode
    (ui/ingame/runtime.c) with the horizontal pointer drag * 64.
 */
@@ -720,7 +720,7 @@ static void SelectionInfoPanel_PatchLongRecord(uint8_t *record,uint32_t first,ui
 }
 
 
-/* select.gfx: swaps the data offsets of subresources 45 and 46 (an XCHG in the original). */
+/* select.gfx: swaps the data offsets of subresources 45 and 46. */
 static void SelectionInfoPanel_PatchSelectionTexture(GraphicsTextureSourceAsset *selectionTextureSource)
 
 {
@@ -860,7 +860,9 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
     } while (entriesRemainingInBlock != 0);
     entriesRemainingInBlock = SELECTION_ENTRY_CAPACITY;
     playerBlocksRemaining--;
-    /* from the last entry (+0x7C) to the next block: 0x7C + 0x809C = 0x8118 = sizeof(SelectionPlayerRuntimeBlock) */
+    /* currentSelectionEntry points at the last entry (entries[31]); seen through that pointer,
+       chatRecipientMaskAndWriteOffset lies exactly sizeof(SelectionPlayerRuntimeBlock) further on, at the first
+       entry of the next block */
     selectionEntryCursor =
          (SelectionPlayerRuntimeBlock *)&currentSelectionEntry->chatRecipientMaskAndWriteOffset;
   } while (playerBlocksRemaining != 0);
@@ -918,7 +920,7 @@ void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionP
 {
   int entryIndex;
 
-  /* REPNE SCASD over the 32 entries; the first match is cleared. */
+  /* search the 32 entries; the first match is cleared. */
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     if (array->entries[entryIndex] == target) {
       array->entries[entryIndex] = NULL;
@@ -928,7 +930,7 @@ void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionP
 }
 
 
-/* Returns true (CF set) when the local selection holds at least one entity, false when it is empty.
+/* Returns true when the local selection holds at least one entity, false when it is empty.
 */
 bool SelectionInfo_HasAnyEntry(void)
 
@@ -941,7 +943,7 @@ bool SelectionInfo_HasAnyEntry(void)
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   entryIsEmpty = true;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  /* REPE SCASD against 0 in the original */
+  /* skip the empty entries */
   do {
     if (entriesRemaining == 0) break;
     entriesRemaining--;
@@ -953,7 +955,7 @@ bool SelectionInfo_HasAnyEntry(void)
 }
 
 
-/* Returns false (CF clear) when every entity of the local selection belongs to the faction ownerIndex (an empty
+/* Returns false when every entity of the local selection belongs to the faction ownerIndex (an empty
    selection passes), true as soon as one belongs to another faction.
 */
 bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
@@ -976,9 +978,9 @@ bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 }
 
 
-/* Returns false (CF clear) when the local selection consists only of class-0x16 entities of faction ownerIndex
-   and at least one of them has a non-zero dword +0x70 in its runtime record; true otherwise (also for an empty
-   selection).
+/* Returns false when the local selection consists only of class-0x16 entities of faction ownerIndex
+   and at least one of them has a non-zero classLinkState.classState70 in its model runtime; true otherwise
+   (also for an empty selection).
 */
 bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex)
 
@@ -1009,8 +1011,8 @@ bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerI
 }
 
 
-/* Returns false (CF clear) when the local selection can take a ground position order: some entity's
-   definition has a non-zero dword +0x18, or the selection is a single entity of definition class 0x0D (13).
+/* Returns false when the local selection can take a ground position order: some entity's
+   definition has a non-zero accelerationPerTick, or the selection is a single entity of definition class 0x0D (13).
    True otherwise; the world input then ignores the ground click.
 */
 bool SelectionInfo_TestAnyActiveOrSingleClass13(void)
@@ -1080,10 +1082,10 @@ static bool SelectionInfo_TestClass13CellBandsAtWorldPoint(Q12 worldXQ12,Q12 wor
 }
 
 
-/* Tests whether the local selection could be ordered to a world point (CF = result of the test). The first
-   entity whose definition has a non-zero dword +0x18 is temporarily moved to the point and asked through its
-   typed callback; without such an entity the first class-0x0D entity tests the grid cell mask bands selected by
-   its capability flags (0x80 -> band 3, 4 -> band 1, else 6). CF is set when neither exists.
+/* Tests whether the local selection could be ordered to a world point (returns the result of the test). The
+   first entity whose definition has a non-zero accelerationPerTick is temporarily moved to the point and asked
+   through its typed callback; without such an entity the first class-0x0D entity tests the grid cell mask bands
+   selected by its capability flags (0x80 -> band 3, 4 -> band 1, else 6). Returns true when neither exists.
 */
 bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
 
@@ -1111,7 +1113,7 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
   if (entryIndex == SELECTION_ENTRY_CAPACITY) {
     return SelectionInfo_TestClass13CellBandsAtWorldPoint(worldXQ12,worldYQ12);
   }
-  /* swap the point in (an XCHG in the original); note that translation.x receives worldYQ12 and
+  /* swap the point in; note that translation.x receives worldYQ12 and
      translation.y worldXQ12 */
   savedTranslationX = (selectedModelNode->worldTransform).translation.x;
   (selectedModelNode->worldTransform).translation.x = worldYQ12;
@@ -1124,9 +1126,9 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
 }
 
 
-/* Returns false (CF clear) as soon as one entity of the local selection passes
-   ArmyRuntime_TestWeaponDamageNonnegative but fails ArmyRuntime_TestHasNoWeaponDamage (its state value at
-   +0x100 is positive); true when none does.
+/* Returns false as soon as one entity of the local selection passes
+   ArmyRuntime_TestWeaponDamageNonnegative but fails ArmyRuntime_TestHasNoWeaponDamage (its state value
+   stateOrTechnologyId is positive); true when none does.
 */
 bool SelectionInfo_TestNoEntryHasWeaponDamage(void)
 
@@ -1156,7 +1158,7 @@ bool SelectionInfo_TestNoEntryHasWeaponDamage(void)
 }
 
 
-/* Returns true (CF set) when ArmyRuntime_TestWeaponDamageNonnegative holds for any entity of the local
+/* Returns true when ArmyRuntime_TestWeaponDamageNonnegative holds for any entity of the local
    selection, false otherwise.
 */
 bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
@@ -1194,7 +1196,7 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
   GameEntityRuntime **nextSelectionEntryCursor;
   bool currentEntryIsEmpty;
 
-  /* REPE SCASD against 0 in the original */
+  /* skip the empty entries */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   firstEntry = NULL;
   currentEntryIsEmpty = true;
@@ -1213,12 +1215,12 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
   return firstEntry;
 }
 
-/* Tests whether entry is missing from the local selection: true (CF set) when absent, false (CF clear) when it is selected.
+/* Tests whether entry is missing from the local selection: true when absent, false when it is selected.
 */
 bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
 
 {
-  /* REPNE SCASD over the 32 selection slots in the original */
+  /* search the 32 selection slots */
   int slotIndex;
 
   for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
@@ -1253,7 +1255,7 @@ uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
 
 
 /* Returns the OR of the capability flags of the local selection: definition class 0x16 contributes 8, class
-   0x0D the capability dword +0xC4 of its definition; other classes contribute nothing.
+   0x0D the capability dword classParameterC4 of its definition; other classes contribute nothing.
 */
 uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
 
@@ -1281,8 +1283,9 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
 }
 
 /* In-game command handler 0x1ED0: empties the player's marked-cell list (the field cells collected by
-   PlayerPairList_InsertRange) and, for the local player, the in-game root's copy of its count (+0xBA4). Sent by
-   InGameUiCommand_BeginInteractionByMode and InGameUiCommand_ResetInteractionByMode (ui/ingame/runtime.c).
+   PlayerPairList_InsertRange) and, for the local player, the in-game root's copy of its count
+   (localPlayerMarkedCellCount). Sent by InGameUiCommand_BeginInteractionByMode and
+   InGameUiCommand_ResetInteractionByMode (ui/ingame/runtime.c).
 */
 void SelectionPlayerRuntime_ClearTerrainEditSelectionState
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
@@ -1301,7 +1304,7 @@ void SelectionPlayerRuntime_ClearTerrainEditSelectionState
 
 
 /* Tells whether the field cell (worldXQ12, worldYQ12) is in the player's marked-cell list (see
-   PlayerPairList_InsertUnique): CF clear (false) when listed, CF set (true) when not. Used by the FieldGrid cell
+   PlayerPairList_InsertUnique): false when listed, true when not. Used by the FieldGrid cell
    updates in world/terrain/grid.c.
 */
 bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
@@ -1326,8 +1329,8 @@ bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,Sel
 /* Move command for a selection (ArmyRuntime_StartRoutedMoveCommand per entity): each entity is sent to
    the target shifted by its offset from the selection's centre, so the group keeps its formation, unless the
    selection is spread too widely, then all go to the target itself. If the selection is exactly one class-0xD
-   entity (a production structure, cf. gameplay/faction/runtime.c), the target becomes its point at model
-   runtime +0x78/+0x7C (flag 0x800 at +0xEC) and the selection is cleared.
+   entity (a production structure, cf. gameplay/faction/runtime.c), the target becomes its point in the model
+   runtime's classLinkState.classState78/7C (flag 0x800 in classState.stateFlags) and the selection is cleared.
 */
 void SelectionPointerArray_ApplyMoveCommand
           (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection)
@@ -1352,7 +1355,8 @@ void SelectionPointerArray_ApplyMoveCommand
     if (movementRuntime == NULL) {
       continue;
     }
-    /* classState60/ownerValue64 are the entity's selection offsets (common +0x60/+0x64, centre - position)
+    /* classState60/ownerValue64 are the entity's selection offsets (common.selectionOffsetXQ12/YQ12,
+       centre - position)
        written by SelectionPointerArray_RecenterOffsetsAroundAveragePosition */
     if (!spreadTooLarge) {
       entryTargetX = entryTargetX - movementRuntime->classState60;
@@ -1393,8 +1397,8 @@ void SelectionPointerArray_ApplyMoveCommand
 /* Stops the selected entities: every entity without command flag 0x2 has its movement reset to its current
    model position and command-mode bit 0x10 and movement bit 0x200 cleared; class-0x16 entities are dropped
    from the selection. The formation offsets are then recomputed, and a selection of exactly one class-0xD
-   entity gets its point at model runtime +0x78/+0x7C reset to its model's lookup point (1,5) (flag 0x800
-   cleared) and the selection cleared.
+   entity gets its point in the model runtime's classLinkState.classState78/7C reset to its model's lookup point
+   (1,5) (flag 0x800 cleared) and the selection cleared.
 */
 void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries)
 
@@ -1939,8 +1943,9 @@ void SelectionPanel_DrawSegmentedCappedBar
 }
 
 
-/* Orders a selection onto a target entity: every entity with a non-zero state (+0x100) gets targetArmyRuntime as
-   its command target (ArmyRuntime_ResolveCommandTarget), stored again at +0x98, command-mode bits 0x14 set and
+/* Orders a selection onto a target entity: every entity with a non-zero state (stateOrTechnologyId) gets
+   targetArmyRuntime as its command target (ArmyRuntime_ResolveCommandTarget), stored again in
+   assignedTargetArmyRuntime, command-mode bits 0x14 set and
    movement bit 0x200 cleared.
 */
 void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRuntime,SelectionPointerArray32 *selection)
@@ -1970,7 +1975,8 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
 }
 
 
-/* Orders a selection onto a target position: every entity with a non-zero state (+0x100) gets the three
+/* Orders a selection onto a target position: every entity with a non-zero state (stateOrTechnologyId) gets the
+   three
    command coordinates (ArmyRuntime_ApplyTargetPositionCommand), command-mode bits 0x14 set, movement bit 0x200
    cleared and its command generation shifted left by 2.
 */
@@ -2084,7 +2090,7 @@ void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRunt
 {
   int entryIndex;
 
-  /* Two REPNE SCASD passes: look for entityRuntime, and when absent store it in the first null slot. */
+  /* Two search passes: look for entityRuntime, and when absent store it in the first null slot. */
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     if (selection->entries[entryIndex] == entityRuntime) break;
   }
@@ -2101,7 +2107,7 @@ void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRunt
 
 
 /* Computes the centre (average model world X/Y) of a selection and stores for every entity its offset
-   centre - position in common.selectionOffsetXQ12/YQ12 (+0x60/+0x64); move orders subtract that offset from
+   centre - position in common.selectionOffsetXQ12/YQ12; move orders subtract that offset from
    the target so the group keeps its formation.
 */
 void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection)
@@ -2142,16 +2148,16 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
 }
 
 
-/* Tells whether target is one of the 32 entries of a selection array: CF clear (false) when found, CF set (true)
-   when not. Used by FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.c); the primary-selection
-   move/rotate handlers call it and ignore the result.
+/* Tells whether target is one of the 32 entries of a selection array: false when found, true when not. Used by
+   FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.c); the primary-selection move/rotate handlers call
+   it and ignore the result.
 */
 bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
   int entryIndex;
 
-  /* REPNE SCASD over the 32 entries: CF clear when target was found. */
+  /* search the 32 entries: false when target was found. */
   for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     if (array->entries[entryIndex] == target) {
       return false;
@@ -2161,8 +2167,8 @@ bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerAr
 }
 
 
-/* Tells the move commands whether a selection is too scattered to keep its formation: true (CF) when the
-   bounding box of the entities' selection offsets (common.selectionOffsetXQ12/YQ12, +0x60/+0x64) is wider
+/* Tells the move commands whether a selection is too scattered to keep its formation: true when the
+   bounding box of the entities' selection offsets (common.selectionOffsetXQ12/YQ12) is wider
    than 5.0 (Q12 0x5000) on either axis or the two extents add up to more than 7.0 (0x7000). An empty
    selection returns false.
 */
@@ -2217,8 +2223,9 @@ bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *sele
 
 /* For every selected entity whose definition class is 0x16, counts how often each of the three lane asset ids
    (g_InGamePointerModePreviewArmyIds[1], [2] and [4]) occurs among the
-   13 child asset ids at model runtime +0x78..+0xA8. For every lane bit set in laneMask (1, 2, 4) it stores that
-   lane's count byte (+0xDC + lane) and the point (worldYQ12, worldXQ12, heading16) at +0xB8 + lane * 0xC.
+   13 child asset ids completedSecondaryArmyAssetIds of the model runtime. For every lane bit set in laneMask
+   (1, 2, 4) it stores that lane's count byte (linkedChildPendingSpawnCounts.slot0..2) and the point
+   (worldYQ12, worldXQ12, heading16) in linkedChildSpawnInheritedState[lane].
    Called by the pointer-mode handlers InGameSelection_SetAircraftPadTargetLane1/2 and
    SelectionMarkerCoordinates_ApplyType3..7.
 */
@@ -2289,7 +2296,7 @@ void SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
 {
   int entriesRemaining;
 
-  /* array is advanced as a cursor over its entries (REP STOSD in the original) */
+  /* array is advanced as a cursor over its entries */
   for (entriesRemaining = SELECTION_ENTRY_CAPACITY; entriesRemaining != 0; entriesRemaining--) {
     array->entries[0] = NULL;
     array = (SelectionPointerArray32 *)((int)array + 4);

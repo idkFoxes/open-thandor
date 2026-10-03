@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/buttons. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* UiSpriteButtonControl stateFlags bits beyond UiSelectableStateFlags (UiSpriteButtonControl_* functions):
    ANIMATED cycles the frames of the normal/selected range (UiSpriteButtonControl_AdvanceAnimation);

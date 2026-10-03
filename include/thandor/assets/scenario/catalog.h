@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/scenario/catalog. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Scenario catalog (g_ScenarioCatalog): ScenarioCatalogHeader followed by the level, campaign and save
    records (0x100 bytes each). Every counted record advances the following section offsets and

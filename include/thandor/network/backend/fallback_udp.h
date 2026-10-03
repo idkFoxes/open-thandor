@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: network/backend/fallback_udp. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 uint32_t NetworkBackendFallback_SetSessionContext(uint32_t backendIndex);
 

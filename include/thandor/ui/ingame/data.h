@@ -12,7 +12,7 @@
 
 extern uint32_t g_RenderedFrameCountSinceDebugRefresh;
 
-extern GraphicsTextureSet *g_TerrainMaterialTextureSets[38]; /* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the original's object runs on to 0x00503A74 with 12 more NULL entries. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
+extern GraphicsTextureSet *g_TerrainMaterialTextureSets[38]; /* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the remaining 12 entries are NULL. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
 
 extern uint32_t g_UiCommandModeGColorVariantFlags; /* uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
 
@@ -58,7 +58,7 @@ extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16
 
 /* one rich-text stream, patched in as payload 0 of the technology label
    (ui/ingame/technology.c): [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
-   (005504FE), [9..24] the xenite cost text (0055050E, RICHTEXT_RECORD_UNITS_LITERAL_COLOR units in); the
+   [9..24] the xenite cost text (RICHTEXT_RECORD_UNITS_LITERAL_COLOR units in); the
    interpreter reads on from the colour command into the text */
 extern uint16_t g_InGameTechnologyCostRichText[25];
 
@@ -196,7 +196,7 @@ extern UiCommandRuntimeRecordPrefix *g_UiCommandSpriteVariantARecords[24];
 
 extern uint32_t g_UiAction1012TargetPlayerIndices[7];
 
-extern UiCommandDispatchRecord g_InGameCommandDispatchRecords[64]; /* 63 records + terminator at 00567CA4 */
+extern UiCommandDispatchRecord g_InGameCommandDispatchRecords[64]; /* 63 records + terminator */
 
 extern uint32_t g_UiCommandModeG;
 
@@ -208,7 +208,7 @@ extern uint32_t g_UiCommandModeE;
 
 extern uint32_t g_UiCommandModeA;
 
-extern uint32_t g_UiCommandModeB; /* followed by an all-zero dword (0x0056D738) no code reaches (dropped) */
+extern uint32_t g_UiCommandModeB; /* followed in the original by an all-zero dword no code reaches (dropped) */
 
 extern uint32_t g_UiCommandModeF;
 

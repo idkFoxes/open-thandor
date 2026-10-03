@@ -13,7 +13,7 @@
 
 /* Submodule: gameplay/army/combat. */
 
-/* healthRegenerationDelayTicks (+0xF8) after every hit: health regenerates again this many ticks later */
+/* healthRegenerationDelayTicks after every hit: health regenerates again this many ticks later */
 #define ARMY_DAMAGE_REGENERATION_DELAY_TICKS 0x200
 /* launch attachments (reload timers, projectile mesh bits) of the turret-weapon class */
 #define ARMY_WEAPON_ATTACHMENT_COUNT 8
@@ -25,7 +25,7 @@
 #define ARMY_GROUND_SHOT_LANDING_TOLERANCE_Q12 0x400
 /* packed point key class of a model's damage-effect emitter points (ArmyRuntime_EmitDamageThresholdEffect) */
 #define ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER 3
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);
 

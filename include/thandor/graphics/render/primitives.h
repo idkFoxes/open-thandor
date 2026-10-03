@@ -42,7 +42,7 @@
 #define GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE 0xb0000000
 #define GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS 0x30000000
 #define GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK 0x7fffffff
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 

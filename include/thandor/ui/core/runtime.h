@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/core/runtime. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Receive ring of network packets (g_UiRuntimeRecordRing, 0x100-byte UiRuntimeRecord slots) with a parallel
    array of 0x80-byte sender-endpoint slots (g_UiRuntimeRecordEndpointSlots); indices wrap after 256. */

@@ -84,7 +84,7 @@
 #define DIRECTINPUT_BUTTON_DOWN_BIT 0x80
 /* DirectInputMouse_PollBufferedEvents: device errors after which a poll gives up until the next tick */
 #define MOUSE_POLL_MAX_ERRORS 16
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit);
 

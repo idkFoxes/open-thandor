@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/gameplay/army/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/gameplay/army/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -14,23 +14,23 @@
 __declspec(align(8)) GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderModelListToTextureSource = (void *)GraphicsOffscreen_RenderModelListToTextureSource;
 
 __declspec(align(8)) GraphicsOffscreenViewParameters g_ArmyPreviewViewParameters = {
-    0, /* 00485A08 originX */
-    0, /* 00485A0C originY */
-    0, /* 00485A10 originZ */
-    0, /* 00485A14 projectionScale */
-    0, /* 00485A18 viewAngle0 */
-    0, /* 00485A1C viewAngle1 */
-    0, /* 00485A20 projectionShift */
+    0, /* originX */
+    0, /* originY */
+    0, /* originZ */
+    0, /* projectionScale */
+    0, /* viewAngle0 */
+    0, /* viewAngle1 */
+    0, /* projectionShift */
 };
 
 __declspec(align(4)) AngleTurn32 g_ArmyPreviewAuxiliaryOrientation[2] = {
-    0, /* 00485A24 */
-    0, /* 00485A28 */
+    0,
+    0,
 };
 
 __declspec(align(4)) GraphicsOffscreenSceneExtents g_ArmyPreviewSceneExtents = {
-    0, /* 00485A2C horizontalExtent (primary colour ARGB) */
-    0, /* 00485A30 verticalExtent (secondary colour ARGB) */
+    0, /* horizontalExtent (primary colour ARGB) */
+    0, /* verticalExtent (secondary colour ARGB) */
 };
 
 __declspec(align(4)) ModelRuntimeNode *g_ArmyPreviewModelNode = 0;
@@ -435,7 +435,6 @@ __declspec(align(8)) GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratc
 
 __declspec(align(8)) GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixScratchB = {0};
 
-/* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch; followed by 0x90 code alignment fill up to 00520F60 */
 __declspec(align(8)) GraphicsFixedMatrix3x4 g_ArmySuspensionRotationMatrixComposedScratch = {0};
 
 __declspec(align(4)) RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases = {

@@ -76,7 +76,7 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
     if (selectedChildPriority <= currentHeapPair->priority) {
       return;
     }
-    /* swap parent and child (XCHG in the original) */
+    /* swap parent and child */
     displacedParentPriority = currentHeapPair->priority;
     currentHeapPair->priority = selectedChildPriority;
     displacedParentEntity = currentHeapPair->entity;
@@ -90,7 +90,7 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
 
 
 /* Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to
-   candidateRecord. Inverted like all CF results: false (CF clear) = found, true (CF set) = not found.
+   candidateRecord. Inverted like all failure flags: false = found, true = not found.
    recordCount must be at least 1.
 */
 bool DwordBlock64Array_ContainsExactRecord
@@ -102,7 +102,8 @@ bool DwordBlock64Array_ContainsExactRecord
   bool dwordsEqual;
 
   do {
-    /* REPE CMPSD over the 0x40 dwords (the count is nonzero, so ZF is the last comparison) */
+    /* compare the 0x40 dwords until the first difference (the count is nonzero, so dwordsEqual holds the
+       last comparison) */
     dwordsRemainingInRecord = DWORD_BLOCK64_RECORD_DWORDS;
     candidateRecordCursor = candidateRecord;
     do {
@@ -289,7 +290,8 @@ uint32_t ArenaHeap_Free(void *memory)
       }
     }
   }
-  /* The original leaves EAX unchanged on success; the few callers that read it get 0 here. */
+  /* The original returns an unrelated leftover value on success; the few callers that read it get 0
+     here. */
   return 0;
 }
 
@@ -353,7 +355,7 @@ uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
   if (block->stateMagic != ARENA_BLOCK_ALLOCATED || alignedBytes > block->payloadSize) {
     return ARENA_HEAP_CORRUPT;
   }
-  /* The original returns split-block scratch in EAX on success; no caller reads it, so 0 here. */
+  /* The original returns a leftover split-block value on success; no caller reads it, so 0 here. */
   if (block->payloadSize <= alignedBytes + ARENA_BLOCK_SPLIT_SLACK_BYTES) {
     return 0;
   }
@@ -403,7 +405,7 @@ uint32_t ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes,void **outBase)
 }
 
 
-/* Zeroes bytes / 4 dwords at destination (REP STOSD); a trailing one to three bytes are left unchanged,
+/* Zeroes bytes / 4 dwords at destination; a trailing one to three bytes are left unchanged,
    so callers pass multiples of 4.
 */
 void Memory_ZeroDwords(MemoryByteCount bytes,void *destination)

@@ -39,7 +39,7 @@
 /* g_InGamePointerInteractionStateFlags bits. */
 #define WORLD_POINTER_STATE_OVER_OWN_ARMY 0x1 /* command mode: the pointer rests on an own army (click selects it) */
 #define WORLD_POINTER_STATE_SELECTION_CAPTURE 0x2 /* selection mode: the pointer was captured on press */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView *targetingContext);
 

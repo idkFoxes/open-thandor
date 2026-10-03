@@ -61,7 +61,7 @@
 #define BOOTSTRAP_API_REG_QUERY_VALUE_EX_A 6 /* ADVAPI32 */
 #define BOOTSTRAP_API_REG_CLOSE_KEY 7 /* ADVAPI32 */
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void __cdecl ProcessEntry(void);
 
@@ -99,9 +99,9 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
 void CommandLine_Parse(void);
 
 /*
-g_BootstrapApiBindings (0x00573F74) is resolved at startup from {name, module} pairs; each slot then
-holds the __stdcall entry of that Win32 API. Calls must use these types: the Ghidra `code` type is
-cdecl and would leave the stack unbalanced after every call.
+g_BootstrapApiBindings is resolved at startup from {name, module} pairs; each slot then
+holds the __stdcall entry of that Win32 API. Calls must use these types: calling a slot through a
+cdecl function type would leave the stack unbalanced after every call.
 */
 typedef HINSTANCE (__stdcall *BootstrapLoadLibraryAProc)(char *moduleName);                 /* [0] */
 typedef BOOL (__stdcall *BootstrapFreeLibraryProc)(HINSTANCE module);                        /* [1] */

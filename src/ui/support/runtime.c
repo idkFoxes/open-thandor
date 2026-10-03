@@ -184,7 +184,7 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 /* Loads a 64x64 8-bit PCX picture named by sourcePath (a leaf name; path and wildcard characters are
    dropped, the extension becomes .pcx, the file is looked up next to the executable) into outputPreview:
    its 256-colour palette (3 bytes per colour in the order blue, green, red) followed by the 4096 pixel
-   indices. CF set when the file is missing, cannot be decoded (see Pcx_DecodeIndexed8: only 8-bit paletted
+   indices. Returns true when the file is missing, cannot be decoded (see Pcx_DecodeIndexed8: only 8-bit paletted
    files) or has another size.
 */
 bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath)
@@ -242,8 +242,8 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
 
 
 /* Swaps two entries of the recent-text history, for the sort in RecentTextHistory_SortAndBuildPointerList:
-   their serials and their whole 256-byte text slots (in 32 steps of two dwords, swapped with XCHG as in the
-   original: the history is rebuilt on the main thread and on the timer thread, FrontendSession_PeriodicTick).
+   their serials and their whole 256-byte text slots (in 32 steps of two dwords, swapped with atomic exchanges as in
+   the original: the history is rebuilt on the main thread and on the timer thread, FrontendSession_PeriodicTick).
 */
 void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
 

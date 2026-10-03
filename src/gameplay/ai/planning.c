@@ -13,7 +13,8 @@
 /* Runs the planning phase for every active AI faction (1..7, a faction without a player block) and scales its
    terrain contribution by the game speed, then rebuilds the per-faction AI pressure table: each of the eight
    pressure channels decays to about 3/4, every runtime model adds 0x100 to the channel of its definition
-   (+0x5C, stock data ~0) for each other faction flagged in its faction mask, and the channel maximum is stored.
+   (targetClassIndex, stock data ~0) for each other faction flagged in its faction mask, and the channel maximum
+   is stored.
    Called on tick-wheel cases 2 and 6.
 */
 void AiFactionRuntime_RebuildPlanningCapacityState(void)
@@ -75,7 +76,7 @@ void AiFactionRuntime_RebuildPlanningCapacityState(void)
   for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) continue;
     /* runtimePayload is the ModelRuntimeSlot: its definition's target class is the pressure channel;
-       the owner army holds the owning faction and a faction mask at +0x50 (bit 3 + 2 * (f - 1) for
+       the owner army holds the owning faction and a faction mask terrainOccupancyMask0 (bit 3 + 2 * (f - 1) for
        faction f). */
     ownerArmy = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     if (ownerArmy->factionIndex == 0) continue;
@@ -166,7 +167,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[6])))) &&
            (candidateModelDefinitionId !=
             ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[7])) {
-          /* true (CF set) while the technology is still locked */
+          /* true while the technology is still locked */
           technologyLocked = ModelDefinition_IsFactionTechnologyLocked
                             (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                              ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]);
@@ -366,7 +367,7 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InG
 /* Works through the faction's pending asset requests (workspace 04) in order and hands each to its placement
    handler by ARM id: 300 only while no unassigned 330 exists, 330/332 at a workspace site, 333 derived from a
    330/332 site, other ids below 340 at a reachable candidate, ids from 340 on near the faction anchor.
-   Returns true (CF set) as soon as a handler has placed an asset (g_AiConstructionPendingAssetConsumedCount).
+   Returns true as soon as a handler has placed an asset (g_AiConstructionPendingAssetConsumedCount).
 */
 bool AiConstructionPlanner_ProcessPendingAssetRequests
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
@@ -401,8 +402,8 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
     }
     else if (armyAssetId < ARM_0340_BUILDING_MDL0314) {
       if (ArmyAssetRegistry_FindById(armyAssetId,&armyAsset) == 0) {
-        /* The original then compares the selected definition's +0x278 word with 1 (ignoring the selector's
-           CF), but both outcomes call the same placement handler. */
+        /* The original then compares the selected definition's placementContactKindIndex with 1 (ignoring the
+           selector's status), but both outcomes call the same placement handler. */
         (void)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                           (factionIndex,armyAsset->rootNodeOffsetOrPointer);
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
@@ -423,7 +424,7 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
 
 /* Buys the AI's candidates in descending weight order: each candidate's cost is taken from a running copy of
    the faction's Xenite, and every candidate with an eligible producer is applied, until one is no longer
-   affordable. The cost is deducted even when no producer is found. Returns true (CF set) when candidates
+   affordable. The cost is deducted even when no producer is found. Returns true when candidates
    existed but none was applied, false otherwise.
 */
 bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
@@ -863,7 +864,7 @@ void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,Wo
 /* Attack: while there are targets (workspace 07) and workspace 01 has at most 10 entries, scores the eligible
    army assets of workspace 11 with weight profile C and proposes the best one with armyVariantCBaseWeight.
    The halving for an empty workspace 07 can never apply (the entry check requires targets); the original
-   (0x0053A95D) has the same dead test.
+   has the same dead test.
 */
 void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -919,12 +920,13 @@ static bool AiPurchaseCandidate_DefinitionListsResearch(ModelDefinition *definit
   return false;
 }
 
-/* Returns false (CF clear) when an idle structure of workspace 00 can carry out a purchase candidate. A
-   technology must be available to the faction and listed in the 28 research slots (+0x1C8..+0x234) of the
-   definition of a structure whose runtimeFlags have none of 0x89. An army asset's producer class mask (asset +0x14) must not
-   overlap g_AiPurchaseAppliedArmyClassMask (one purchase per producer class and round); bit 0x10 needs a
-   class-11 structure with +0xB8 clear, bit 0x08 a class-22 structure with +0xAC clear, the bits 0xEE a class-13
-   structure whose definition mask at +0xC4 shares them and with +0xB8 clear (runtimeFlags without 0xC9 each).
+/* Returns false when an idle structure of workspace 00 can carry out a purchase candidate. A
+   technology must be available to the faction and listed in the 28 research slots (researchTechnologyIds[1..28])
+   of the definition of a structure whose runtimeFlags have none of 0x89. An army asset's producer class mask (the
+   asset's flags) must not overlap g_AiPurchaseAppliedArmyClassMask (one purchase per producer class and round);
+   bit 0x10 needs a class-11 structure with classState.behaviorState clear, bit 0x08 a class-22 structure with
+   classState.classStateAC clear, the bits 0xEE a class-13 structure whose definition mask classParameterC4
+   shares them and with classState.behaviorState clear (runtimeFlags without 0xC9 each).
 */
 bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
 
@@ -938,7 +940,8 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
 
   candidateId = candidateEntry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
   workspaceEntry = g_AiWorkspace00Structures;
-  /* entitySlot[0] = definition, [43] = +0xAC, [46] = +0xB8, [59] = runtimeFlags (+0xEC) */
+  /* entitySlot[0] = definition, [43] = classState.classStateAC, [46] = classState.behaviorState,
+     [59] = runtimeFlags (classState.stateFlags) */
   if ((candidateEntry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
     if (!Technology_IsAvailableForFaction(candidateId,factionIndex)) {
       return true;
@@ -953,8 +956,8 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
     }
     return true;
   }
-  /* Original quirk: the lookup status is not checked; the class mask is read at +0x14 of whatever
-     armyAsset holds (the error code for an unknown id) */
+  /* Original quirk: the lookup status is not checked; the class mask (the asset's flags) is read through
+     whatever armyAsset holds (the error code for an unknown id) */
   ArmyAssetRegistry_FindById(candidateId,&armyAsset);
   producerClassMask = armyAsset[1].selectionDetailTemplateVariantIndex;
   if ((g_AiWorkspace00Count == 0) || ((g_AiPurchaseAppliedArmyClassMask & producerClassMask) != 0)) {
@@ -1036,7 +1039,8 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
 
 /* Sets bit 0 of the faction's runtimeFlags when the faction is active enough: one assigned workspace 00
    structure below ARM 340, two assigned ARM 340..379 structures, or three qualifying entries counting one such
-   structure plus the armies of workspace 01 (field +0x0C >= 1 with +0x140 set, or >= 2 with +0x160 set).
+   structure plus the armies of workspace 01 (attachmentCount >= 1 with attachments[0] set, or >= 2 with
+   attachments[1] set).
    When nothing triggers but the flag is already set, re-applies the model flags of every workspace 00/01
    entity in the world runtime.
 */
@@ -1183,7 +1187,7 @@ void AiStructureCandidate_AddResourceStorage
 
 
 /* Proposes ARM 310 (0x136) once an ARM 330 exists and no ARM 310 is unassigned, when baseline Energy supply
-   plus the record's +0x358 rate (typed tritiumExtractionRateQ4PerTick) exceeds the Energy generation capacity.
+   plus the record's rate tritiumExtractionRateQ4PerTick exceeds the Energy generation capacity.
    Weight: surplus * demand / capacity * resource136DeficitScoreNumerator / resource136DeficitScoreDenominator
    (Q4 values taken as integers, demand at least 1).
 */
@@ -1284,7 +1288,7 @@ AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
     existingClassCount = 4;
     if (!ArmyAssetRegistry_FindEnabledById(ARM_0302_BUILDING_MDL0300)) {
       selectedToken = ARM_0302_BUILDING_MDL0300;
-      /* the original rotates (ROR 5); a shift gives the same low 14 bits for the at most three steps used */
+      /* the original rotates right by 5; a shift gives the same low 14 bits for the at most three steps used */
       tieBreakBits = randomizedTieBits & AI_STRATEGIC_TIE_BREAK_MASK;
       randomizedTieBits = randomizedTieBits >> 5;
       bestCandidateScore =
@@ -1362,9 +1366,8 @@ static uint32_t AiStrategicClass_ScorePressureCoefficients
 /* Picks which of the buildings ARM_0321..ARM_0323 (0x141..0x143) to propose next. Each is scored from the
    faction's AI pressure values 2..4 as sum((pressure + 1) * coefficient) / (pressure2 + pressure3 + pressure4 + 1)
    with its own three ki.dat coefficients, plus 7 random bits; only buildings the faction lacks (not in workspace
-   00) but may build (enabled) compete. Returns the winner in EBX (0 = none) and the number of these three
-   buildings already present in ECX.
-   Original register convention: result in EBX and ECX; EAX and EDX preserved.
+   00) but may build (enabled) compete. Returns the winner in selectedRuntimeToken (0 = none) and the number of
+   these three buildings already present in existingCountOrPressure.
 */
 AiStrategicClassSelection AiStrategicClass_SelectPressureWeightedBuilding
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
@@ -1519,7 +1522,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
 
 /* Called after the AI has placed an army asset: counts the placement (global counter and the faction's
    relationCounterB) and removes the first entry for that asset's registry record from the faction's pending
-   primary army asset list, shifting the rest down. The registry lookup's CF is not checked; an unknown id simply
+   primary army asset list, shifting the rest down. The registry lookup's result is not checked; an unknown id simply
    matches no entry.
 */
 void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
@@ -1557,7 +1560,7 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
 }
 
 
-/* Returns true (CF set) when the faction's energy would not cover its demand plus additionalEnergyDemand
+/* Returns true when the faction's energy would not cover its demand plus additionalEnergyDemand
    (whole units): the usable supply is the smaller of the generation capacity and baseline supply + tritium
    extraction rate, the demand is supplied + unpowered demand (Q4 values shifted down by 4).
 */
@@ -1609,11 +1612,12 @@ static int AiArmyCandidate_ScoreWeaponPressureDamage
 }
 
 /* Scores an army asset for the purchase planner with one weight profile (scoreWeights). The faction's unlocked
-   variant of the asset's model definition gives baseScore (+ a bonus when +0x18 is nonzero) plus its +0x0C and
-   +0x60 values scaled to their maxima, x8; for each of up to two linked child definitions (the weapons) with a
-   nonzero divisor at +0x30 (and while the faction has AI pressure), the shot's impact damage against each of the 8 target classes is weighted
+   variant of the asset's model definition gives baseScore (+ a bonus when accelerationPerTick is nonzero) plus
+   its movementSpeed and maximumHealth values scaled to their maxima, x8; for each of up to two linked child
+   definitions (the weapons) with a nonzero divisor reloadTicks (and while the faction has AI pressure), the
+   shot's impact damage against each of the 8 target classes is weighted
    by the profile, divided by that divisor, scaled by the faction's AI pressure on that class / maximum pressure
-   and added as << 10 / the class maximum. Result: 12 * that + the weighted asset values at +0x70/+0x74/+0x78;
+   and added as << 10 / the class maximum. Result: 12 * that + the weighted asset values definitionClassValue70/74/78;
    0 when a definition is not available to the faction.
 */
 AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
@@ -1629,7 +1633,8 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
   AiLinkedDefinitionListView *linkedDefinitionList;
 
   linkedDefinitionList = (AiLinkedDefinitionListView *)armyAssetRecord->rootNodeOffsetOrPointer;
-  /* the original tests the selector's CF after each of the three selections below, but it is always clear */
+  /* the original tests the selector's status after each of the three selections below, but it is always
+     "found" */
   selectedModelDefinition = (ModelDefinitionResolveView *)ModelDefinition_SelectFactionUnlockedLinkedDefinition
                     (factionIndex,(ModelLinkedDefinitionListAddress32)linkedDefinitionList);
   weightedDefinitionScore = scoreWeights->baseScore;

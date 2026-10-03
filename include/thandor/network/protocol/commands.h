@@ -14,8 +14,8 @@
 /* Submodule: network/protocol/commands. */
 
 /* In-game command codes are handler addresses relative to InGameCommandQueue_AppendLocalPlayerCommand
-   (0x0055F130); a command is executed by calling INGAME_COMMAND_CODE_BASE + code. Single player calls the
-   named handler directly instead of queueing the code. */
+   (whose original address is INGAME_COMMAND_CODE_BASE); a command is executed by calling
+   INGAME_COMMAND_CODE_BASE + code. Single player calls the named handler directly instead of queueing the code. */
 #define INGAME_COMMAND_CODE_BASE 0x0055F130
 #define INGAME_COMMAND_SELECT_SINGLE_ARMY 0x9A0 /* FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection */
 #define INGAME_COMMAND_REPLACE_SELECTION 0xA00 /* InGamePlayerSelection_ReplaceWithArmyRuntimeIndex */
@@ -82,7 +82,7 @@
 #define INGAME_COMMAND_EDITOR_SET_SOURCE_EXCLUDED 0x32E0 /* FieldGrid_SetCellFluidSourceExcluded */
 #define INGAME_COMMAND_EDITOR_APPLY_REGION_MASK 0x3320 /* FieldGrid_SetCellResourceSupportFlag */
 /* Frontend command codes work the same way, relative to FrontendCommandQueue_EnqueueLocalPlayerCommand
-   (0x00543F50). */
+   (whose original address is FRONTEND_COMMAND_CODE_BASE). */
 #define FRONTEND_COMMAND_CODE_BASE 0x00543F50
 #define FRONTEND_COMMAND_PLAYER_READY 0xD0 /* FrontendPlayerRuntime_RecordReadyAndUpdateWaitState */
 #define FRONTEND_COMMAND_XOR_PLAYER_STATE 0x3B0 /* FrontendPlayerRuntime_XorStateMaskByPlayerId */
@@ -121,10 +121,10 @@
 #define FRONTEND_COMMAND_RELEASE_CAMPAIGN 0x320 /* FrontendSession_ReleaseSelectedResourceAndReturnToMainPage */
 /* Records of the frontend and in-game command queues (g_*CommandQueueRecords[16]); more commands are dropped. */
 #define COMMAND_QUEUE_CAPACITY 16
-/* Received commands are executed only below these original addresses (CMP EAX,imm32; JNC skip). */
+/* Received commands are executed only when codeBase + code lies below these original addresses. */
 #define FRONTEND_COMMAND_HANDLER_REGION_END 0x005456F0 /* g_FrontendRootNode in the original image */
 #define INGAME_COMMAND_HANDLER_REGION_END 0x00562499 /* InGameCommandHandlerCodeRegionEnd: the 0x90 filler bytes before g_InGameUiActionHandlersPage10 in the original image */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,CommandPayload payload1,
           CommandPayload payload2,CommandPayload payload3);

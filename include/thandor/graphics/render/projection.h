@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/render/projection. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,

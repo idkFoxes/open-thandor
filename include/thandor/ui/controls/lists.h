@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/lists. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Scrollbar pieces in g_UiWindowTextureSource (UiScrollableControl_RefreshChildAndScrollThumbs): the arrow
    buttons give the bar thickness and arrow length, a thumb is at least two thumb pieces long. */
@@ -266,7 +266,7 @@ extern UiNodeVtable g_UiScrollableControlVtable;
 extern UiNodeVtable g_UiListControlVtable;
 extern UiNodeVtable g_UiTimedListControlVtable;
 extern UiNodeVtable g_UiListOffsetControlVtable;
-extern UiNodeVtable g_UiCommandVisibilityWrappedTextVtable; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable; followed by 0x90 code alignment fill */
+extern UiNodeVtable g_UiCommandVisibilityWrappedTextVtable;
 
 extern uint32_t g_UiCatalogGroup48ColumnCount;
 extern uint32_t g_UiCatalogGroup42ColumnCount;

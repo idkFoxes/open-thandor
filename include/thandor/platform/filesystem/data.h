@@ -52,13 +52,13 @@ extern uint16_t g_DefaultComputerLabelUtf16[32];
 
 extern uint32_t g_Win32FileBytesTransferred;
 
-extern _WIN32_FIND_DATAA g_Win32FindDataScratch; /* the WIN32_FIND_DATAA of FindFirstFileA/FindNextFileA (cFileName at 00575980), reused as scratch by platform/filesystem/win32.c: GetFileTime FILETIMEs at +0x00/+0x08/+0x10 (4 bytes off the find-data FILETIME fields), the FileTimeToDosDateTime dword at +0x00, the GetDiskFreeSpaceA dwords at +0x18..+0x24 */
+extern _WIN32_FIND_DATAA g_Win32FindDataScratch; /* the WIN32_FIND_DATAA of FindFirstFileA/FindNextFileA, reused as scratch by platform/filesystem/win32.c: GetFileTime FILETIMEs at +0x00/+0x08/+0x10 (4 bytes off the find-data FILETIME fields), the FileTimeToDosDateTime dword at +0x00, the GetDiskFreeSpaceA dwords at +0x18..+0x24 */
 
 extern pointer g_FileSystemInitComputerNameCapacityOrConfigCursor;
 
 extern uint32_t g_FileSystemConfigRemainingBytes;
 
-extern uint8_t g_Win32PathScratch[2][256]; /* two 0x100-byte narrow path buffers ([1] at 00575B9C, second path of move/copy); the directory sort swaps 0x200-byte records through the whole block */
+extern uint8_t g_Win32PathScratch[2][256]; /* two 0x100-byte narrow path buffers ([1] is the second path of move/copy); the directory sort swaps 0x200-byte records through the whole block */
 
 extern char g_Win32DriveRootPathScratchA[4]; /* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */
 

@@ -8,7 +8,7 @@
 #include <thandor/ui/controls/lists.h>
 #include <thandor/thandor.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 uint32_t g_UiCatalogGroup48ColumnCount = 0;
 
@@ -130,7 +130,7 @@ static uint16_t g_UiCatalogEntryRichTextScratchUtf16[16] = {0};
    Page Up/Down walk the visible rows of the record tree, Left/Right collapse/expand the selected row through
    recordSelectionCallback. A moved selection is scrolled into view and its action queued after
    g_UiTimedListActionDelayFrames frames (UiTimedListControl_TickActionDelay). Other keys go to the default
-   focus handling; the keys handled here return false (CF clear).
+   focus handling; the keys handled here return false.
 */
 bool UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control)
@@ -322,7 +322,7 @@ bool UiTimedListControl_HandleKeyboardNavigation
    and queues the list's action at once; Home/End, Up/Down and Page Up/Down (one row less than the view
    holds) move the selection, play the selection sound, scroll the row into view and queue the action after
    g_UiListActivationPulseFrames frames (UiListControl_TickActivationPulse). Other keys go to the default
-   focus handling; the keys handled here return false (CF clear).
+   focus handling; the keys handled here return false.
 */
 bool UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control)
@@ -1075,8 +1075,8 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
 void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int pointerX,UiNodeBase *control)
 
 {
-  /* Rewritten from the assembly (0x004BBCD0-0x004BBE56): expanded records with children push
-     their position on the machine stack and descend; the decompiler kept only one level. */
+  /* Expanded records with children save their position (savedRecord/savedRemaining, at most
+     TREE_DEPTH_LIMIT levels) and descend, so every level of the tree is walked. */
   enum { TREE_DEPTH_LIMIT = 64 };
   UiTimedListTreeControl *list = (UiTimedListTreeControl *)control;
   UiTimedListTreeRecord *savedRecord[TREE_DEPTH_LIMIT];
@@ -1459,8 +1459,8 @@ bool UiTimedListTree_BuildDirectoryHierarchy
           UiTimedListTreeRecord **outSelectedRecord)
 
 {
-  /* The original keeps one (record, block) pair per level on the machine stack (PUSH record,
-     PUSH block) and pops them again when linking the levels. A path buffer holds at most 256
+  /* levelStack keeps one (record, block) pair per level and gives them back in reverse order
+     when linking the levels. A path buffer holds at most 256
      code units, so there are at most 255 path levels plus the root-level match. */
   UiTimedListTreeRecord *levelStack[514];
   int levelStackTop;
@@ -1544,8 +1544,8 @@ bool UiTimedListTree_BuildDirectoryHierarchy
   return true;
 }
 
-/* Frees a record block and every expanded child block below it (collapsing a directory row) and tells in
-   CF whether targetRecord (the list's selected row) was one of the freed rows, so the caller can move the
+/* Frees a record block and every expanded child block below it (collapsing a directory row) and returns
+   true when targetRecord (the list's selected row) was one of the freed rows, so the caller can move the
    selection to the collapsed row.
 */
 bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
@@ -1706,8 +1706,8 @@ void UiTimedListControl_ToggleDirectoryRecordExpansion
 }
 
 /* Writes the full path of a tree row to outputPathDwords (256 code units): the row label joined to the
-   labels of its ancestor rows; a drive row gives "X:", the root "computer" row its label unchanged. CF set
-   when the ancestor chain does not end in a drive row. No caller found in src/.
+   labels of its ancestor rows; a drive row gives "X:", the root "computer" row its label unchanged. Returns
+   true when the ancestor chain does not end in a drive row. No caller found in src/.
 */
 bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record)
 
@@ -1891,10 +1891,10 @@ void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableCo
 
 
 /* Finds the first enabled (not suppressed), selected control of a group (controlCount control pointers
-   follow controlCount on the stack). Returns true when there is one, with its node in *outNode and its
+   follow controlCount as variadic arguments). Returns true when there is one, with its node in *outNode and its
    index in *outIndex; false when none is. Both out-parameters are optional (NULL) and written in either case.
    Original quirk: when none is selected, *outNode is the last control of the group and *outIndex is
-   controlCount (the original's EAX/ECX after the loop); some callers use them without testing the result.
+   controlCount (where the original's search loop stops); some callers use them without testing the result.
 */
 bool UiSelectableGroup_FindVisibleSelected
           (UiNodeBase **outNode,uint32_t *outIndex,UiControlCount controlCount,...)
@@ -1981,7 +1981,7 @@ void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *s
 }
 
 
-/* Tells (in CF) whether a selectable control counts as selected/checked: only a visible (not suppressed)
+/* Tells whether a selectable control counts as selected/checked: only a visible (not suppressed)
    control can be.
 */
 uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control)
@@ -2764,11 +2764,10 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
 }
 
 
-/* Returns the index of the selected row of a pointer list. The original also reports
-   UI_LIST_SELECTION_CONFIRMED in CF (CLC 0x004BA57F / STC 0x004BA587), which this C signature does not carry
-   (both branches return the index). No caller reads it: FrontendNetworkSetupPage_InitializeBackendMode
-   (0x0054C29C) passes EAX straight to the backend call, FrontendNetworkSetup_OpenSelectedBackend (0x0054D4AD) overwrites
-   CF with a CMP.
+/* Returns the index of the selected row of a pointer list. The original also reports whether
+   UI_LIST_SELECTION_CONFIRMED is set, which this C signature does not carry (both branches return the index).
+   No caller reads it: FrontendNetworkSetupPage_InitializeBackendMode passes the index straight to the backend
+   call, and FrontendNetworkSetup_OpenSelectedBackend ignores the flag.
 */
 UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control)
 
@@ -3002,10 +3001,9 @@ void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationD
 void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop,int clipLeft,UiNodeBase *control)
 
 {
-  /* Rewritten from the assembly (0x004BBA00-0x004BBCCC). Expanded records push (record,
-     remaining) on the machine stack and descend; the tree connector columns test the saved
-     remaining counts of the parent levels. The decompiler kept only one level. Argument
-     positions follow the original pushes. */
+  /* Expanded records save (record, remaining) in savedRecord/savedRemaining and descend; the tree
+     connector columns test the saved remaining counts of the parent levels. Argument order of the
+     draw calls follows the original. */
   enum { TREE_DEPTH_LIMIT = 64 };
   UiTimedListTreeControl *list = (UiTimedListTreeControl *)control;
   UiTimedListTreeRecord *savedRecord[TREE_DEPTH_LIMIT];
@@ -3267,8 +3265,9 @@ static int UiCatalogEntryControl_FindGroup48BuildPercent
     }
     slotModelRuntime = (modelNode->runtimePayload).modelRuntime;
     if (slotModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-      /* class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView): +0xAC == 1 while it builds, +0x60/+0x64/+0x68
-         the selected secondary asset and its elapsed / required build ticks */
+      /* class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView): classState.classStateAC == 1 while it builds,
+         classLinkState modelLinkOrState.classState / classState64 / classState68 the selected secondary asset
+         and its elapsed / required build ticks */
       if (((slotModelRuntime->classState).classStateAC == 1) &&
           (factionIndex == slotModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
           (catalogArmyAssetId == (slotModelRuntime->classLinkState).modelLinkOrState.classState)) {
@@ -3312,7 +3311,7 @@ static void UiCatalogEntryControl_DrawBuildPercent
 /* Draws a build catalog entry of the in-game command panel (g_UiCatalogEntryControlVtable drawClipped): the
    sprite button, its price (runtimeDisplayValueQ4 in whole units, in the alert colour when the active
    faction's xenite does not cover it), how many of this army asset the faction already owns (top left) and
-   the highest build progress (elapsed / required ticks at model runtime +0x64 / +0x68) among the faction's
+   the highest build progress (elapsed / required ticks, classLinkState.classState64 / classState68 of the model runtime) among the faction's
    factories (class 11, 13) and pads (class 22) currently building this asset (top right, alert colour when that
    model is switched off). The entry is looked up by its
    offset in the in-game root in the group-42 and group-48 catalog tables.
@@ -3596,8 +3595,8 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
           (UiTimedListTreeRecord *recordTree,UiTimedListTreeControl *control)
 
 {
-  /* Rewritten from the assembly (0x004BC1C0): expanded records with children push their position
-     on the machine stack and descend; the decompiler kept only one level. */
+  /* Expanded records with children save their position (savedRecord/savedRemaining) and descend,
+     so every level of the tree is walked. */
   enum { TREE_DEPTH_LIMIT = 64 };
   UiTimedListTreeRecord *savedRecord[TREE_DEPTH_LIMIT];
   uint32_t savedRemaining[TREE_DEPTH_LIMIT];
@@ -3898,7 +3897,7 @@ void UiScrollableControl_ClampOffsetsToViewport
 }
 
 
-/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Class vtables. */
 
 UiNodeVtable g_UiScrollableControlVtable = {
     .relocate = (void *)UiScrollableControl_RelocateChildren,

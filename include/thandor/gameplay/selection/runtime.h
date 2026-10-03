@@ -46,7 +46,7 @@
 #define SELECTION_PANEL_CELL_HIERARCHY_METER 0x12   /* top left: active/total hierarchy metric */
 #define SELECTION_PANEL_CELL_TOP_BAR 0x16
 #define SELECTION_PANEL_CELL_BOTTOM_BAR 0x19        /* hierarchy scale ratio */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void SelectionPanel_RenderArmyRuntimeMetrics
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,

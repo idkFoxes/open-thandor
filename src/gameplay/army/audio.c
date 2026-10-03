@@ -101,11 +101,12 @@ static void ArmyRuntimeAudio_UpdateSoundAtModel(WorldRuntimeContext *worldRuntim
 }
 
 
-/* Per-tick sound update of a turning/moving unit: while it turns, the turn sound (sound slot index at +0xD8
-   of the model's definition) and the movement sound (+0xD0) follow the unit's position; while it only
-   moves, just the movement sound does. A sound is fed only when TerrainGrid_TestProjectedCellMaskBits01
-   reports occupancy bit 0 or 1 of the active faction at the unit's cell (CF clear).
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[2] (0x0051FCF8), which
+/* Per-tick sound update of a turning/moving unit: while it turns, the turn sound (sound slot index
+   turningLoopSoundSlotIndex of the model's definition) and the movement sound (movingLoopSoundSlotIndex) follow
+   the unit's position; while it only moves, just the movement sound does. A sound is fed only when
+   TerrainGrid_TestProjectedCellMaskBits01 reports occupancy bit 0 or 1 of the active faction at the unit's cell
+   (returns false).
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[2], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
@@ -130,10 +131,10 @@ void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
 }
 
 
-/* Picks the positioned-sound update by the placement contact kind at +0x278 of the model's definition:
-   kind 1 (water surface, see g_ArmyPlacementContactKindDispatchTable) uses
+/* Picks the positioned-sound update by the placement contact kind (placementContactKindIndex) of the model's
+   definition: kind 1 (water surface, see g_ArmyPlacementContactKindDispatchTable) uses
    ArmyRuntimeClass_UpdateWaterPositionedSounds, every other kind ArmyRuntimeClass_UpdateGroundPositionedSounds.
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[18] (0x0051FCF8), which
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[18], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 
@@ -152,8 +153,9 @@ void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldR
 
 
 /* Byte-for-byte duplicate of ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds for another class:
-   turn sound (+0xD8) and movement sound (+0xD0) of the definition follow a turning or moving unit.
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[17] (0x0051FCF8), which
+   turn sound (turningLoopSoundSlotIndex) and movement sound (movingLoopSoundSlotIndex) of the definition follow
+   a turning or moving unit.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[17], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
@@ -178,9 +180,10 @@ void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
 }
 
 
-/* Turret sound: moves the turning sound (definition turningLoopSoundSlotIndex, +0xD8) with the turret while it
-   turns in pitch (+0x18) or yaw (+0x14), if its cell passes TerrainGrid_TestProjectedCellMaskBits01.
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[5..8] (0x0051FCF8), which
+/* Turret sound: moves the turning sound (definition turningLoopSoundSlotIndex) with the turret while it
+   turns in pitch (pitchTurnVelocityAngle16) or yaw (yawTurnVelocityAngle16), if its cell passes
+   TerrainGrid_TestProjectedCellMaskBits01.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[5..8], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateTurretTurnSound
@@ -199,10 +202,10 @@ void ArmyRuntimeAudio_UpdateTurretTurnSound
 }
 
 
-/* Structure factory sound (class 11): moves the looping sound (definition +0x1AC) with the model unless it is
-   switched off (state flag 0x1), and only while it researches (flag 0x40) or builds (behaviorState
+/* Structure factory sound (class 11): moves the looping sound (definition loopingSoundSlotIndex) with the model
+   unless it is switched off (state flag 0x1), and only while it researches (flag 0x40) or builds (behaviorState
    ARMY_FACTORY_STATE_BUILDING); the model's cell must pass TerrainGrid_TestProjectedCellMaskBits01.
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[11] (0x0051FCF8), which
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[11], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
@@ -222,11 +225,12 @@ void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRunt
 }
 
 
-/* Unit factory sounds (class 13), two sounds that follow the model: the looping one (definition +0x1AC) under
-   the same condition as ArmyRuntimeAudio_UpdateStructureFactorySound (not switched off, researching or
-   building), the positioned one (+0x274) while the factory is neither idle nor building (door opening, waiting
-   for the exit, closing). Each is fed only when the model's cell passes TerrainGrid_TestProjectedCellMaskBits01.
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[13] (0x0051FCF8), which
+/* Unit factory sounds (class 13), two sounds that follow the model: the looping one (definition
+   loopingSoundSlotIndex) under the same condition as ArmyRuntimeAudio_UpdateStructureFactorySound (not switched
+   off, researching or building), the positioned one (positionedSoundSlotIndex) while the factory is neither idle
+   nor building (door opening, waiting for the exit, closing). Each is fed only when the model's cell passes
+   TerrainGrid_TestProjectedCellMaskBits01.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[13], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateUnitFactorySounds
@@ -252,9 +256,9 @@ void ArmyRuntimeAudio_UpdateUnitFactorySounds
 }
 
 
-/* Unconditionally moves the sound whose slot index is at +0x1AC of the definition with the unit, when
+/* Unconditionally moves the sound whose slot index is the definition's loopingSoundSlotIndex with the unit, when
    the unit's cell passes TerrainGrid_TestProjectedCellMaskBits01.
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[21] (0x0051FCF8), which
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[21], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
@@ -271,11 +275,12 @@ void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntim
 
 
 /* Sounds of the class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView), two sounds that follow the model:
-   the looping one (definition +0x1AC) while it is not switched off and researches (flag 0x40) or builds
-   (+0xAC secondaryArmyAssetBuildState == 1), the positioned one (+0x274) while its linked-child transition
-   state (+0xB0) is neither 0 nor 6. Each is fed only when the model's cell passes
+   the looping one (definition loopingSoundSlotIndex) while it is not switched off and researches (flag 0x40)
+   or builds (classState.classStateAC, the view's secondaryArmyAssetBuildState, == 1), the positioned one
+   (positionedSoundSlotIndex) while its linked-child transition state (classState.classStateB0) is neither 0
+   nor 6. Each is fed only when the model's cell passes
    TerrainGrid_TestProjectedCellMaskBits01.
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[22] (0x0051FCF8), which
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[22], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
@@ -301,7 +306,7 @@ void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
 
 
 /* Runs the looping positioned-sound update only while the model researches (state flag 0x40).
-   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[4] (0x0051FCF8), which
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[4], which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)

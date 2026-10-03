@@ -17,11 +17,12 @@
 
 /* MMX lane helpers for the 4x4 block encoders (not in the original, which does this inline with MMX
    instructions; the helpers are inlined into Movie_EncodeFrame4x4Keyframe/Delta). Per 4-pixel row the original
-   does MOVD mm,[pixel]; PUNPCKLBW mm,mm (each byte duplicated into a word); PSRLW mm,6; PADDW into MM7 -- four 16-bit channel
-   sums, one lane per pixel byte, wrapping at 16 bits. After four rows PSRLW MM7,6; PACKUSWB MM7,MM7;
-   MOVD packs the four averages back into one pixel. */
+   loads each pixel (MOVD), duplicates each byte into a word (PUNPCKLBW with itself), shifts the words right by
+   6 (PSRLW) and adds them into an accumulator (PADDW) -- four 16-bit channel sums, one lane per pixel byte,
+   wrapping at 16 bits. After four rows PSRLW by 6, PACKUSWB and MOVD pack the four averages back into one
+   pixel. */
 
-/* One byte lane of one pixel after PUNPCKLBW mm,mm and PSRLW mm,6. */
+/* One byte lane of one pixel after PUNPCKLBW with itself and PSRLW by 6. */
 static __inline uint16_t Movie_DuplicatedByteLaneShr6(PackedRgb24 pixel,int lane)
 {
   uint8_t value = (uint8_t)(pixel >> (lane * 8));
@@ -45,7 +46,7 @@ Movie_AddRowToChannelSums(uint64_t channelSums,PackedRgb24 pixel0,PackedRgb24 pi
   return result;
 }
 
-/* PSRLW mm,6; PACKUSWB mm,mm; MOVD: the four channel averages as one pixel. The saturation to 0xFF can
+/* PSRLW by 6, PACKUSWB, MOVD: the four channel averages as one pixel. The saturation to 0xFF can
    never trigger (16 lanes of at most 0x3FF, shifted right by 6), so PACKUSWB's signed input view does not
    matter either. */
 static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
@@ -69,8 +70,8 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
 /* Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame
    the provider returns as a keyframe and every further frame as a delta against it (the delta encoder keeps
    the first frame's pixels up to date as its reference), then fills in the frame count and sizes. The
-   provider is called with NULL for the next frame and with a frame to release it; it ends the sequence with CF
-   set and 0xFFFFFFFF. Returns true and stores the total byte count in *outByteCount, or returns false
+   provider is called with NULL for the next frame and with a frame to release it; it ends the sequence with
+   noFrame set and frameOrError 0xFFFFFFFF. Returns true and stores the total byte count in *outByteCount, or returns false
    (*outByteCount untouched, the buffer already written) when the provider yields no frame at all or ends
    with any other error. A leftover of the movie tools: no caller found in src/.
 */
@@ -183,7 +184,7 @@ void MoviePlayback_AdvanceScheduledFrameAndTick(void)
 }
 
 
-/* Part of Movie_Open (0x004A870D-0x004A87AF): picks one of the header's audio tracks at random and turns it
+/* Part of Movie_Open: picks one of the header's audio tracks at random and turns it
    into a sample voice set. The stream stands right after the initially loaded video bytes; the audio tracks
    follow the whole video stream. Returns 0 on success and stores the voice set in *outVoiceSet (NULL when the
    header has no usable track); otherwise returns the error of the failing seek/alloc/read/voice-set call. The
@@ -211,7 +212,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   }
   selectedTrack = 0;
   if (1 < audioTrackCount) {
-    selectedTrack = (Random_NextPrimary() & 0xffff) % audioTrackCount; /* DIV: unsigned */
+    selectedTrack = (Random_NextPrimary() & 0xffff) % audioTrackCount; /* unsigned division */
   }
   trackOffset = 0;
   /* the tracks are stored back to back, so skip the sizes of all tracks before the selected one */
@@ -265,7 +266,7 @@ static bool Movie_OpenFail(void *handle,MovieSharedStreamHandleFlag isSharedPack
    A partly loaded stream gets the refill worker thread. Returns true on success and stores the header's
    frame timer rate (frameIntervalMilliseconds, the value callers pass to TimerRegisterPeriodic) in
    *outPlaybackRateHz; returns false and stores the error code of the failing step in *outError. Either
-   pointer may be NULL. (The original also returned frameCount in EAX on success; no caller uses it.)
+   pointer may be NULL. (The original also returned frameCount on success; no caller uses it.)
 */
 bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlaybackRateHz,uint32_t *outError)
 
@@ -370,7 +371,7 @@ bool Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path,uint32_t *outPlayba
     return Movie_OpenFail(handle,isSharedPackageHandle,status,outError);
   }
   if (!g_FileSystemGetPosition(handle,&streamPosition)) {
-    /* a failed position query fails the open with the position value as the error (0, JC 0x004a89f1) */
+    /* a failed position query fails the open with the position value as the error (0) */
     g_MemoryApi.free(header);
     return Movie_OpenFail(handle,isSharedPackageHandle,streamPosition,outError);
   }
@@ -497,8 +498,8 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
   MovieRuntime *movie;
   uint32_t byteCount;
 
-  /* The original keeps the movie in ESI: it re-reads g_ActiveMovie only at the loop top, after the wait
-     and at the exit. */
+  /* The original keeps the movie in a local: it re-reads g_ActiveMovie only at the loop top, after the
+     wait and at the exit. */
   while ((movie = g_ActiveMovie) != NULL) {
     MsgWaitForMultipleObjects(1,&movie->refillSemaphore,FALSE,256,0);
     movie = g_ActiveMovie;
@@ -631,8 +632,8 @@ void EndMovieUiRuntime_DispatchCommandByFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime)
 
 {
-  /* Rewritten from the assembly (0x00565810-0x00565A29). The decompiled version jumped to the
-     continuation labels inside the original machine code. EBX is the end-movie runtime (the in-game root). */
+  /* The matching record's continuationEntryAddress selects the action below. endMovieRuntime is the in-game
+     root. */
   UiCommandDispatchRecord *record = g_EndMovieCommandDispatchRecords;
   uint32_t target = 0;
 
@@ -691,7 +692,7 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     break;
   }
   case 0x565990: /* skip the end movie */
-    /* +0x6EC bit 3: nodeFlags of the results continue button */
+    /* UI_NODE_SUPPRESSED in the nodeFlags of the results continue button */
     if (((INGAME_UI(endMovieRuntime,resultsContinueButton)->nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
         ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0)) {
       break;
@@ -1014,8 +1015,8 @@ static bool Movie_ReportAdvanceEnd(uint32_t *outEndCode,uint32_t endCode)
 }
 
 /* Not in the original (split out of Movie_AdvanceFrame): once the read position of a streamed movie is a
-   whole MOVIE_COMPACT_SHIFT_BYTES past the header, moves the unplayed bytes down by that shift (a REP MOVSD
-   in the original) to make room for further refills. */
+   whole MOVIE_COMPACT_SHIFT_BYTES past the header, moves the unplayed bytes down by that shift (dword by
+   dword) to make room for further refills. */
 static void Movie_CompactStreamBuffer(MovieRuntime *movie)
 {
   uint32_t readOffset;
@@ -1046,8 +1047,8 @@ static void Movie_CompactStreamBuffer(MovieRuntime *movie)
    after the last frame, on a read failure of the worker or when no movie is open; *outEndCode then gets
    FATAL_ERROR_MOVIE_INVALID (no movie / read failure) or the unplayed bytes left in the buffer (after the
    last frame). Either output may be NULL; only the one for the returned case is written.
-   Original quirk: after a worker read failure it closes the caller's leftover EBX instead of the stream
-   handle (0x004A8BDD); the C closes NULL, which has the same effect on the movie (see the body).
+   Original quirk: after a worker read failure it closes an unrelated value left over by its caller instead
+   of the stream handle; the C closes NULL, which has the same effect on the movie (see the body).
 */
 bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
 
@@ -1066,11 +1067,10 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
     return Movie_ReportAdvanceEnd(outEndCode,FATAL_ERROR_MOVIE_INVALID);
   }
   if (movie->streamState == MOVIE_STREAM_READ_FAILED) {
-    /* 0x004A8BDD PUSH EBX; CALL g_FileSystemClose. On this path the function never loads EBX, so the
-       original closes whatever EBX its caller left there -- never the movie stream handle: a UI/runtime
-       object pointer in the frontend/in-game/briefing callers, g_FramebufferHeight in the
-       Game_PlayIntroMovies frame loop (0x00573B2C MOV EBX,ECX), the outer caller's EBX via
-       MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
+    /* The original passes g_FileSystemClose a value it never sets on this path, so it closes whatever
+       its caller left there -- never the movie stream handle: a UI/runtime object pointer in the
+       frontend/in-game/briefing callers, g_FramebufferHeight in the Game_PlayIntroMovies frame loop, the
+       outer caller's value via MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
        open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
        CloseHandle on an unrelated value. */
     g_FileSystemClose(NULL);
@@ -1099,8 +1099,8 @@ bool Movie_AdvanceFrame(MovieRuntime **outMovie,uint32_t *outEndCode)
   }
   if ((movie->remainingVideoBytes != 0) && (bufferedBytes < MOVIE_REFILL_CHUNK_BYTES)) {
     /* Not enough bytes buffered yet: success without decoding. Original quirk: the original returns
-       ESI - 0x220 here (0x004A8BD0 LEA EAX,[ESI-0x220]) because ESI is only advanced to the pixels at
-       0x004A8B48. Callers keep the value as the movie only after the first-frame call, which cannot
+       the movie pointer minus MOVIE_RUNTIME_PIXELS_OFFSET here, because its working pointer is only
+       advanced to the pixels further down. Callers keep the value as the movie only after the first-frame call, which cannot
        get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
     if (outMovie != NULL) {
       *outMovie = (MovieRuntime *)((uint8_t *)movie - MOVIE_RUNTIME_PIXELS_OFFSET);
@@ -1273,7 +1273,7 @@ uint32_t MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
 
 
 /* Not in the original: the original executable carries g_MovieChromaLumaToArgb precomputed
-   (0x00486D90, 1024 x 32 ARGB values). An FLM colour is a 10-bit chroma code and a 5-bit luma:
+   (1024 x 32 ARGB values). An FLM colour is a 10-bit chroma code and a 5-bit luma:
    the chroma code is saturation (bits 5-9, 0..31) and hue (bits 0-4, 32 steps around the
    circle). Every entry is opaque grey luma * 8 plus a chroma offset whose three channels sum to
    zero, clamped to 0..255:

@@ -10,8 +10,8 @@
 
 /* Implementation ownership: ui/controls/buttons. */
 
-/* Rewritten from the assembly (0x004B1D20): a depth-first walk that pushes each node's next
-   sibling on the machine stack before descending; the decompiler kept only one level. */
+/* Depth-first walk over node, its descendants and its following siblings: each node's subtree is
+   visited before its next sibling, at every depth. */
 static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node) {
   while (node != UI_NODE_NONE) {
     if (node->vtable == (UiNodeVtable *)&g_UiSpriteButtonControlVtable) {
@@ -33,8 +33,8 @@ void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
 }
 
 
-/* Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables at 0x005162C0, 0x00516310
-   and 0x00516530. For an animated button it first expands a serialized 8-int descriptor (node rectangle,
+/* Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables g_UiNodeVtable_005162C0,
+   g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable. For an animated button it first expands a serialized 8-int descriptor (node rectangle,
    normal and selected frame ranges) and starts the animation on a random normal frame, so buttons of the
    same kind do not animate in lockstep; then the children are relocated.
 */
@@ -70,8 +70,8 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
 }
 
 
-/* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables at 0x005162C0 and
-   0x00516310. Draws the current frame (normal or selected, plus the animation offset) twice: first as a
+/* drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiNodeVtable_005162C0
+   and g_UiNodeVtable_00516310. Draws the current frame (normal or selected, plus the animation offset) twice: first as a
    half-transparent black shadow shifted by the state's drawOffsets, then the sprite itself, optionally
    over the normal frame (NORMAL_UNDER_SELECTED).
 */
@@ -284,8 +284,8 @@ void UiSpriteButtonControl_NonRightRelease
 }
 
 
-/* nonRightDrag slot of g_UiSpriteButtonControlVtable, and both drag slots of the sprite-button vtables at
-   0x005162C0, 0x00516310 and 0x00516530. While a momentary, non-animated button holds the
+/* nonRightDrag slot of g_UiSpriteButtonControlVtable, and both drag slots of the sprite-button vtables
+   g_UiNodeVtable_005162C0, g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable. While a momentary, non-animated button holds the
    pointer, it shows the pressed state only while the pointer is over the button (opaque sprite pixel or
    node rectangle), so dragging off cancels the click.
 */
@@ -347,8 +347,8 @@ void UiSpriteButtonControl_NonRightDrag
 }
 
 
-/* hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables at 0x005162C0, 0x00516310
-   and 0x00516530. Returns the button when the point lies on an opaque pixel of its normal frame (selected
+/* hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables g_UiNodeVtable_005162C0,
+   g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable. Returns the button when the point lies on an opaque pixel of its normal frame (selected
    frame for SELECTED_ONLY buttons); RECT_HIT_TEST buttons accept the whole node (the caller has already
    checked the rectangle). Otherwise UI_NODE_NONE.
 */
@@ -497,7 +497,7 @@ void UiImageActionControl_EnqueueSecondaryAction
 
 /* keyboardEvent slot of g_UiImageActionControlVtable. Tab moves the keyboard focus on; with
    UI_IMAGE_ACTION_KEY_ACTIVATES any other key queues primaryActionId, like a left click.
-   CF clear when the key was consumed, set to pass it on.
+   Returns false when the key was consumed, true to pass it on.
 */
 bool UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control)
@@ -722,7 +722,7 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
 }
 
 
-/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Class vtables. */
 
 UiNodeVtable g_UiSpriteButtonControlVtable = {
     .relocate = (void *)UiSpriteButtonControl_Relocate,

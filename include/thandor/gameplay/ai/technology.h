@@ -14,9 +14,9 @@
 /* Submodule: gameplay/ai/technology. */
 
 /* Score factor of AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue:
-   score = (relationScaleQ8 * 40000 >> 8) * baseCandidateScore >> 8 (IMUL EAX,EAX,0x9C40 at 0x0053BDE5). */
+   score = (relationScaleQ8 * 40000 >> 8) * baseCandidateScore >> 8. */
 #define AI_TECHNOLOGY_RELATION_SCORE_FACTOR 40000
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,

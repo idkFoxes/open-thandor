@@ -1201,7 +1201,7 @@ void FrontendModelPointerContext_DispatchWorldCameraPointerInput
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & ~(FRONTEND_CAMERA_MOTION_MOVE | FRONTEND_CAMERA_MOTION_DISTANCE);
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | (FRONTEND_CAMERA_MOTION_HEADING | FRONTEND_CAMERA_MOTION_PITCH);
         WorldMotion_AdjustHeadingAndClearFieldGridDirty(pointerDeltaX,callbackContext);
-        /* EDX: the pointer Y delta, as in the other pitch branches (the decompile lost it). */
+        /* the pointer Y delta, as in the other pitch branches */
         WorldMotion_AdjustPitchClampAndClearFieldGridDirty(pointerDeltaY,callbackContext);
       }
     }
@@ -1344,7 +1344,7 @@ void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
   UQ12 clampedCommittedDistance;
   FixedDirection cameraOffset;
   
-  /* 0x40: right button held (ROUTE_TO_BUILTIN_ACTION_RESOLUTION); +0x11C is rightButtonHeldTicks of the
+  /* 0x40: right button held (ROUTE_TO_BUILTIN_ACTION_RESOLUTION); the counter is rightButtonHoldTicks of the
      pointer-context view of this record */
   if ((callbackContext->runtimeFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION) != 0) {
     callbackStateCounter = &callbackContext->selection.rightButtonHoldTicks;
@@ -1458,15 +1458,14 @@ void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void)
    (commandCode + required modifier class, see KEYBOARD_STATE_*). Alt+Q and Alt+key 0x20004 leave the
    current menu: back to the main page, a network session is closed first; Ctrl+key 0x20001 on the faction
    setup page toggles bit 0 of the local player's colourCycleFlags (an eighth entry in the faction cycle,
-   FrontendFactionSetup_CycleFactionColour). Returns true (CF set) when the key is not in the table.
+   FrontendFactionSetup_CycleFactionColour). Returns true when the key is not in the table.
 */
 bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime)
 
 {
-  /* Rewritten from the assembly (0x00548030-0x0054813A and the continuations 0x00548140 /
-     0x00548190-0x005483BA, which Ghidra does not assign to any function). The decompiled version
-     jumped into the original machine code. EBX is g_FrontendRootNode. CF set = not handled. */
+  /* Each dispatch record names its handler by continuationEntryAddress, which only serves as the case label
+     of the switch below. root is g_FrontendRootNode. Returns true = not handled. */
   UiCommandDispatchRecord *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
   uint8_t *root = (uint8_t *)g_FrontendRootNode;
   uint32_t target = 0;
@@ -1538,8 +1537,8 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
                 (FRONTEND_ROM_RECORD_MAIN_MENU,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
       break;
     }
-    /* Leaving a network session. The transcription names bit 0 the host (0x00548320) and bit 1 the client
-       (0x00548250), but SESSION_NETWORK_ROLE_CLIENT is bit 0; the variable follows the enum. */
+    /* Leaving a network session. An earlier transcription named bit 0 the host and bit 1 the client, but
+       SESSION_NETWORK_ROLE_CLIENT is bit 0; the variable follows the enum. */
     {
       int wasClient = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != 0;
       g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
@@ -2470,7 +2469,7 @@ static void FrontendInit_StartMenuMusic(void)
 }
 
 /* Fills the frontend's network-backend list with the backends' display names (0x100 bytes apart); the row
-   pointer table is g_FrontendNetworkBackendNameRows (0x005434EC), right after the control offset tables. */
+   pointer table is g_FrontendNetworkBackendNameRows. */
 static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *frontendUiState)
 {
   uint32_t backendCount;
@@ -2491,7 +2490,7 @@ static void FrontendInit_FillNetworkBackendList(FrontendRootResourceSlots *front
              (UiPointerListControl *)FRONTEND_UI(frontendUiState,networkProtocolList));
 }
 
-/* Installs the menu room's handlers on its 3D pointer-context control (root+0x368); they do not all match the
+/* Installs the menu room's handlers on its 3D pointer-context control (menuRoomModelView); they do not all match the
    generic callback field types, hence the casts. */
 static void FrontendInit_InstallMenuRoomPointerCallbacks(FrontendModelPointerContext *pointerContext)
 {
@@ -2653,7 +2652,7 @@ bool Frontend_Init(RomRecordId initialRomRecordId,uint32_t *outError)
   UiRootStack_Push(&g_UiRootCallbacks_0053DA70,(UiRootNode *)frontendUiState);
   FrontendInit_StartMenuMusic();
   FrontendInit_FillNetworkBackendList(frontendUiState);
-  /* the 3D pointer-context control of the menu room is the world runtime at root+0x368 */
+  /* the 3D pointer-context control of the menu room is the world runtime menuRoomModelView */
   FrontendInit_InstallMenuRoomPointerCallbacks((FrontendModelPointerContext *)worldRuntime);
   RecentTextHistory_SortAndBuildPointerList
             (5,(RecentTextHistoryPointerList *)

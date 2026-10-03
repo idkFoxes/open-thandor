@@ -172,7 +172,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
 }
 
 
-/* Moves the camera (motion.position, +0x60) to the given point and keeps its target point (+0x80): the
+/* Moves the camera (motion.position) to the given point and keeps its target point (motion.targetPosition): the
    target and committed distances become the new distance between the two.
 */
 void WorldRuntime_SetCameraPositionKeepingTarget
@@ -232,8 +232,8 @@ void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
 }
 
 
-/* Points the camera at a target: stores the target point (motion.targetPosition, +0x80), pitch, heading and
-   distance, and places the camera (motion.position, +0x60) that distance away from the target, looking at it
+/* Points the camera at a target: stores the target point (motion.targetPosition), pitch, heading and
+   distance, and places the camera (motion.position) that distance away from the target, looking at it
    along the given angles (the offset uses the reversed direction: negated pitch, heading + half a turn).
 */
 void WorldRuntime_PointCameraAtTarget
@@ -353,7 +353,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
 }
 
 
-/* Drag selection test: projects the node's world position to the screen and returns CF set when that pixel
+/* Drag selection test: projects the node's world position to the screen and returns true when that pixel
    lies inside the rectangle spanned by the pointer press position and the current pointer position of
    boundsControl (inclusive, in either corner order).
 */
@@ -428,7 +428,8 @@ void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime
 }
 
 
-/* Commits the camera's target distance (+0x8C) as its committed distance (+0x7C), the base that later
+/* Commits the camera's target distance (motion.targetDistanceQ12) as its committed distance
+   (motion.committedDistanceQ12), the base that later
    distance input is added to.
 */
 void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world)
@@ -452,7 +453,7 @@ void WorldRuntime_AttachObjectArray
 }
 
 
-/* Returns the camera position (motion.positionX/Y/ZQ12, context +0x60..+0x68).
+/* Returns the camera position (motion.positionX/Y/ZQ12).
 */
 WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world)
 
@@ -466,8 +467,7 @@ WorldCameraPosition WorldRuntime_GetCameraPosition(WorldRuntimeContext *world)
 }
 
 
-/* Returns the camera orientation (motion.positionMagnitudeQ12, headingAngle, pitchAngle, context
-   +0x6C..+0x74).
+/* Returns the camera orientation (motion.positionMagnitudeQ12, headingAngle, pitchAngle).
 */
 WorldCameraOrientation WorldRuntime_GetCameraOrientation(WorldRuntimeContext *world)
 
@@ -498,7 +498,7 @@ void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint
 
 /* Takes the first free record of the world's object pool (WorldRuntime_AttachObjectArray): marks it allocated
    (which also resets its other flag bits) and stores the owning world. Returns the record, or NULL when the
-   pool is exhausted (the original returned FATAL_ERROR_GENERAL_FAILURE with CF set; callers that pass an error
+   pool is exhausted (the original returned FATAL_ERROR_GENERAL_FAILURE as its failure result; callers that pass an error
    code on use that constant).
 */
 WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
@@ -523,8 +523,8 @@ WorldObjectRecord *WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worl
 }
 
 
-/* Marks node as linked and puts it at the head of its world's owner list (head at +0xD8; the head is
-   swapped with XCHG, the neighbour links are then set without a lock).
+/* Marks node as linked and puts it at the head of its world's owner list (ownerListHead; the head is
+   swapped atomically, the neighbour links are then set without a lock).
 */
 void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
 
@@ -576,7 +576,7 @@ void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
 }
 
 
-/* Calls callback(callbackContext, node) for every node of the world's owner list (head at +0xD8), from the most
+/* Calls callback(callbackContext, node) for every node of the world's owner list (ownerListHead), from the most
    recently linked one on.
 */
 void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
@@ -622,8 +622,8 @@ void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void)
 }
 
 /* Pre-serializer provider of the field.hex save segment (called by
-   InGameSaveGame_WritePackage): returns the attached field grid (+0x54) and its whole
-   allocation size (asset +0x04), so the field image is saved as one block.
+   InGameSaveGame_WritePackage): returns the attached field grid (fieldGridAsset) and its whole
+   allocation size (common.allocationSizeBytes), so the field image is saved as one block.
 */
 RuntimeHexSegmentImage RuntimeHexSegment_GetFieldImage(InGameFieldImageSaveContext58 *fieldImageContext)
 
@@ -646,8 +646,8 @@ void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldI
 
 /* Callback of WorldRuntime_ForEachOwnerListNode from ArmyRuntime_DestroyInstanceAndRefreshUi: removes
    every reference to the destroyed object from one world node, so nothing keeps targeting it. For a model
-   node: its hierarchy's targets and two fields of the entity linked at payload dword 2; for an effect node:
-   its target at +0x1C.
+   node: its hierarchy's targets and two fields of the owning army (ownerArmyRuntimeOrSavedOffset); for an
+   effect node: its owner model node (lifecycleOwnerAndDefinition).
 */
 void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode *node)
 
@@ -685,8 +685,8 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
 
 
 /* Applies the terrain-class overlay of sourceRuntime's model definition at every model of the world's active
-   faction: for each such owner-list node whose model has an overlay base (+0x19C of its first payload
-   record), the overlay callback of the definition's terrain class runs at the node's position on the field
+   faction: for each such owner-list node whose model has an overlay base (supportRadius of its
+   definition), the overlay callback of the definition's terrain class runs at the node's position on the field
    grid. The extent is 0x800 << n for definitions of kind 0xE, else unlimited (-1).
 */
 void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime)
@@ -783,7 +783,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
 }
 
 /* Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
-   0, 5-9, 12 and 21): accepts every placement (CF clear).
+   0, 5-9, 12 and 21): accepts every placement.
 */
 bool UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
@@ -805,8 +805,9 @@ void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRu
 
 
 /* WorldRuntime_ForEachOwnerListNode callback run while a model runtime is destroyed
-   (detachedObject = that model runtime): every effect (+0x1C), shot (+0x14) or entity (+0xF0, and +0x60 for
-   definition class 0x15) that still points at it gets the pointer cleared, so nothing keeps a dangling reference.
+   (detachedObject = that model runtime): every effect (owner model node), shot (runtimeStateOrSavedOffset) or
+   entity (classState.linkedArmyRuntimeOrSavedOffset, and classLinkState.modelLinkOrState for definition class
+   0x15) that still points at it gets the pointer cleared, so nothing keeps a dangling reference.
 */
 void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject,WorldOwnerListNode *node)
 
@@ -821,7 +822,7 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
     }
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-    /* the linked model runtime (+0xF0) and, for an aircraft, the linked base model runtime (+0x60) */
+    /* the linked model runtime and, for an aircraft, the linked base model runtime */
     modelRuntime = node->runtimePayload;
     if (detachedObject == modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime) {
       modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
@@ -842,8 +843,8 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
 
 /* WorldRuntime_ForEachOwnerListNode callback used when an in-game session shuts down, before the level
    resources are destroyed: destroys the army of every model node; for shot and effect nodes it clears flag bits
-   31 (linked into the owner list) and 30 (record allocated) and zeroes one back-reference field of their runtime payload (+0x10 for
-   shots, +4 for effects).
+   31 (linked into the owner list) and 30 (record allocated) and zeroes the back-reference modelNodeOrSavedOffset of their runtime
+   payload.
 */
 void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutdownContext,WorldOwnerListNode *node)
 

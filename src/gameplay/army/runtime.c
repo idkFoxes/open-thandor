@@ -11,7 +11,7 @@
 
 /* Implementation ownership: gameplay/army/runtime. */
 
-/* Poses the aircraft body (the root's first child) on its vertical arc: the arc position at +0x7C gives the
+/* Poses the aircraft body (the root's first child) on its vertical arc: the arc position (classState7C) gives the
    height above heightBaseQ12 (arcCoefficient * ticks * position^2) and the pitch, then the arc position advances
    by one movement step for this batch of ticks. Returns that step. */
 static int ArmyAircraft_PoseOnVerticalArc(ModelRuntimeClass21UpdateView *modelRuntime,
@@ -39,7 +39,7 @@ static int ArmyAircraft_PoseOnVerticalArc(ModelRuntimeClass21UpdateView *modelRu
 }
 
 /* One tick batch of the take-off or landing arc over the home pad: the body follows the vertical arc above the
-   parked height (+0x80) and the aircraft moves one step along its heading. */
+   parked height (classState80) and the aircraft moves one step along its heading. */
 static void ArmyAircraft_FlyPadArc(ModelRuntimeClass21UpdateView *modelRuntime,
           ArmyRuntimeClassUpdate21DefinitionView *definition)
 {
@@ -118,7 +118,7 @@ static void ArmyAircraft_TouchDownOnPad(WorldRuntimeContext *worldRuntime,ModelR
   }
 }
 
-/* Landing arc onto the pad; when the landing countdown (+0x68) runs out the aircraft is parked again. */
+/* Landing arc onto the pad; when the landing countdown (classState68) runs out the aircraft is parked again. */
 static void ArmyAircraft_UpdateLanding(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
           ModelRuntimeSlot *homeModelRuntime)
 {
@@ -132,8 +132,8 @@ static void ArmyAircraft_UpdateLanding(WorldRuntimeContext *worldRuntime,ModelRu
   }
 }
 
-/* Take-off arc from the pad: the hangar starts lowering when the countdown at +0x64 reaches 0; when the
-   countdown at +0x68 runs out the aircraft leaves the map and starts its approach. */
+/* Take-off arc from the pad: the hangar starts lowering when the countdown classState64 reaches 0; when the
+   countdown classState68 runs out the aircraft leaves the map and starts its approach. */
 static void ArmyAircraft_UpdateTakingOff(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime,
           ModelRuntimeSlot *homeModelRuntime)
 {
@@ -154,11 +154,11 @@ static void ArmyAircraft_UpdateTakingOff(WorldRuntimeContext *worldRuntime,Model
   }
 }
 
-/* Approach: as soon as ArmyRuntime_TestWorldPointAllowedDefault rejects the target point (+0x70/+0x74), the
-   aircraft is placed travelStepCount movement steps behind it on the attack heading (+0x78) and starts the
-   attack run (drop countdown +0x6C = travelStepCount, run length +0x68 = twice that). The run height is the
-   highest terrain sampled every 10 movement steps along the run, plus half a unit and twice the parked
-   height (+0x80). */
+/* Approach: as soon as ArmyRuntime_TestWorldPointAllowedDefault rejects the target point (classState70/74), the
+   aircraft is placed travelStepCount movement steps behind it on the attack heading (classState78) and starts
+   the attack run (drop countdown armyLinkOrState = travelStepCount, run length classState68 = twice that). The
+   run height is the highest terrain sampled every 10 movement steps along the run, plus half a unit and twice
+   the parked height (classState80). */
 static void ArmyAircraft_UpdateApproach(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime)
 {
   ArmyRuntimeClassUpdate21DefinitionView *definition;
@@ -213,7 +213,7 @@ static void ArmyAircraft_UpdateApproach(WorldRuntimeContext *worldRuntime,ModelR
        maxTerrainHeightQ12 + Q12_ONE / 2 + parkedHeightQ12 * 2;
 }
 
-/* Releases one model-point effect of the attack run when the drop countdown (+0x6C) sits on a mark: the marks
+/* Releases one model-point effect of the attack run when the drop countdown (armyLinkOrState) sits on a mark: the marks
    are modelPointStep apart from three steps before the target point (model point 7) to three steps after it
    (model point 1). Nothing is dropped when modelPointStep is 0. */
 static void ArmyAircraft_DropModelPointEffectAtMark(WorldRuntimeContext *worldRuntime,
@@ -243,8 +243,9 @@ static void ArmyAircraft_DropModelPointEffectAtMark(WorldRuntimeContext *worldRu
   }
 }
 
-/* Attack run: flies along the heading at the run height (+0xA4, measured from the terrain below), then per tick
-   counts down the drop countdown (+0x6C) and the run (+0x68, leaving the map when it runs out), plays the
+/* Attack run: flies along the heading at the run height (trajectoryTerrainReferenceHeightQ12, measured from the
+   terrain below), then per tick counts down the drop countdown (armyLinkOrState) and the run (classState68,
+   leaving the map when it runs out), plays the
    mapped terrain sound and drops the model-point effects at their marks. */
 static void ArmyAircraft_UpdateAttackRun(WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime)
 {
@@ -331,10 +332,10 @@ static void ArmyAircraft_TryStartLanding(WorldRuntimeContext *worldRuntime,Model
 /* Runtime update of the aircraft class (MODEL_RUNTIME_CLASS_21_AIRCRAFT), reached only through
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[21] (called by
    ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). State machine in behaviorState around the
-   aircraft's home pad (the army at +0x60): 1 parked on the pad, 3 take-off arc and off the map, 4/5 re-entry
-   along the attack heading at a height above the highest terrain on the path, dropping its model-point effects
-   on a countdown, 6 off the map again, 2 landing arc back onto the pad. Afterwards the model is re-seated on
-   the terrain and its transforms, emitters and damage effect are refreshed.
+   aircraft's home pad (classLinkState.modelLinkOrState): 1 parked on the pad, 3 take-off arc and off the map,
+   4/5 re-entry along the attack heading at a height above the highest terrain on the path, dropping its
+   model-point effects on a countdown, 6 off the map again, 2 landing arc back onto the pad. Afterwards the model
+   is re-seated on the terrain and its transforms, emitters and damage effect are refreshed.
 */
 
 void ArmyRuntimeClass_UpdateAircraft
@@ -361,10 +362,10 @@ void ArmyRuntimeClass_UpdateAircraft
   case ARMY_AIRCRAFT_STATE_TAKING_OFF:
     ArmyAircraft_UpdateTakingOff(worldRuntime,modelRuntime,homeModelRuntime);
     break;
-  case ARMY_AIRCRAFT_STATE_APPROACH: /* line up behind the target point (+0x70/+0x74) on heading +0x78 */
+  case ARMY_AIRCRAFT_STATE_APPROACH: /* line up behind the target point (classState70/74) on heading classState78 */
     ArmyAircraft_UpdateApproach(worldRuntime,modelRuntime);
     break;
-  case ARMY_AIRCRAFT_STATE_ATTACK_RUN: /* releases the model-point effects when the countdown at +0x6C hits a mark */
+  case ARMY_AIRCRAFT_STATE_ATTACK_RUN: /* releases the model-point effects when the drop countdown hits a mark */
     ArmyAircraft_UpdateAttackRun(worldRuntime,modelRuntime);
     break;
   case ARMY_AIRCRAFT_STATE_RETURNING:
@@ -508,8 +509,9 @@ static bool ArmyPadHangar_TryLaunchPendingAircraft(WorldRuntimeContext *worldRun
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[22]. While the pad is being dismantled it
    passes the dismantling on to every aircraft (class 21) based on it. It builds one queued secondary army asset
    (asset flag 8) at a time: Xenite is paid up front, the asset's Energy load is held while building, and the
-   finished id goes into a free slot of +0x78 (with a notification for the active faction). Then it drives the
-   hangar transition in +0xB0 (1 open, 2 lift, 4 lower, 5 close, 6/0 idle) and launches pending linked aircraft.
+   finished id goes into a free slot of completedSecondaryArmyAssetIds (with a notification for the active
+   faction). Then it drives the hangar transition in linkedChildTransitionState (1 open, 2 lift, 4 lower,
+   5 close, 6/0 idle) and launches pending linked aircraft.
 */
 
 void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldRuntimeContext *worldRuntime,
@@ -537,7 +539,8 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
   ArmyRuntimeSlot *ownerArmyRuntime;
 
   if ((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_DISMANTLING) != 0) {
-    /* every aircraft (class 21) based on this pad (+0x60) that is not dismantling already */
+    /* every aircraft (class 21) based on this pad (its classLinkState.modelLinkOrState) that is not dismantling
+       already */
     ownerNode = worldRuntime->ownerListHead;
     do {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
@@ -595,7 +598,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
         secondaryAssetId = (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetId;
         (modelRuntime->linkedChildBuildState).selectedSecondaryArmyAssetId = 0;
         if (completedAssetValue <= energyLoadBefore) {
-          /* the last free slot of +0x78 (scanning down from the capacity) */
+          /* the last free slot of completedSecondaryArmyAssetIds (scanning down from the capacity) */
           for (reverseSlotIndex = modelRuntime->modelDefinition->linkedChildSlotCapacity - 1; -1 < reverseSlotIndex;
                reverseSlotIndex = reverseSlotIndex - 1) {
             if (modelRuntime->completedSecondaryArmyAssetIds[reverseSlotIndex] == 0) {
@@ -791,7 +794,7 @@ static void ArmyUnitFactory_PlayPrimarySound(WorldRuntimeContext *worldRuntime,M
     return;
   }
   rootNode = modelRuntime->rootModelNode;
-  /* Original quirk (0x0052499F, 0x00524B0B): the voice set is read from rootNode + index * 4, not from
+  /* Original quirk: the voice set is read from rootNode + index * 4, not from
      worldRuntime->dwordArray, which is only tested for NULL. */
   soundVoiceSet = *(DirectSoundVoiceSet ***)((uint8_t *)rootNode + soundIndex * 4);
   translationVec = &(rootNode->worldTransform).translation;
@@ -945,7 +948,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
       }
     }
     break;
-  case ARMY_FACTORY_STATE_OPENING: /* then send the new army out to the point stored at +0x78/+0x7C */
+  case ARMY_FACTORY_STATE_OPENING: /* then send the new army out to the point in classState78/7C */
     rootNode->primaryTextureOffsetV =
          rootNode->primaryTextureOffsetV +
          factoryDefinition->movementSpeed * g_InGameSimulationStepTicks;
@@ -994,10 +997,10 @@ void ArmyRuntimeClass_UpdateUnitFactory
 
 /* Runtime update of production class 11, reached only through
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[11]. Builds one queued secondary army asset
-   with flag 0x10 at a time: its Xenite cost (+0x28) is paid once up front, its Energy load (+0x2C) is held on
-   the building while it is built. The finished asset is appended to the faction's primary asset list (at most
-   64 entries, from where it is placed) and, for the active faction, the command grid is rebuilt and a
-   notification is queued.
+   with flag 0x10 at a time: its Xenite cost (xeniteCostQ4) is paid once up front, its Energy load
+   (energyLoadQ4) is held on the building while it is built. The finished asset is appended to the faction's
+   primary asset list (at most 64 entries, from where it is placed) and, for the active faction, the command grid
+   is rebuilt and a notification is queued.
 */
 void ArmyRuntimeClass_UpdateStructureFactory
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
@@ -1254,7 +1257,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
         (candidateSupportRadius == 0)) {
       continue;
     }
-    /* reach = own definition +0x1A8 + candidate supportRadius; inside when reach^2 - dx^2 - dy^2 >= 0 in
+    /* reach = own definition placementFlags + candidate supportRadius; inside when reach^2 - dx^2 - dy^2 >= 0 in
        64 bits */
     proximityRadius =
          modelRuntime->definitionOrSavedId.runtimeDefinition->placementFlags + candidateSupportRadius;
@@ -1333,7 +1336,7 @@ void ArmyRuntimeMaintenance_DispatchClassMethodDRecursive
 /* Army entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
    once per simulation step and owner-list node): updates the army's model hierarchy, lets the AI pick targets
    for non-neutral factions, drops a timed-out target command, clears the LOCKED movement flag once nothing
-   links to the model any more and counts down the timer at +0xA4.
+   links to the model any more and counts down movementRetryCountdown.
 */
 void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *ownerNode)
@@ -1401,7 +1404,7 @@ bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphics
     *outError = allocError;
     return false;
   }
-  /* base - 1 (MOV then DEC): the rebase value for saved offsets, see ArmyRuntimePool_RebaseAfterLoad */
+  /* base - 1: the rebase value for saved offsets, see ArmyRuntimePool_RebaseAfterLoad */
   g_ArmyRuntimeRebaseBaseMinusOne = (uint8_t *)armyPool - 1;
   g_ArmyRuntimeSlots = armyPool;
   poolDwordCursor = (uint32_t *)armyPool;
@@ -1472,8 +1475,9 @@ bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphics
   }
   pathEnd[0] = 0;
   pathEnd[1] = 0;
-  /* Preview textures for army assets with a non-zero selection detail variant (bits 1-7 of +0x14): the panel
-     size one (subresource 34) into +0x1C, a third of the subresource-2 width into +0x18. */
+  /* Preview textures for army assets with a non-zero selection detail variant (bits 1-7 of
+     armyAsset[1].selectionDetailTemplateVariantIndex): the panel size one (subresource 34) into
+     armyAsset[1].rootNodeOffsetOrPointer, a third of the subresource-2 width into armyAsset[1].registryId. */
   registryCursor = g_ArmyAssetRecordRegistry;
   for (remainingCount = ARMY_ASSET_REGISTRY_SLOT_COUNT; remainingCount != 0; remainingCount--) {
     armyAsset = *registryCursor;
@@ -1507,8 +1511,8 @@ bool ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphics
 
 /* Runtime update of class 12, reached only through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[12]:
    runs the emitters and moves the model vertically by the definition's step per tick, subtracting the step
-   from the distance counter at +0x60; once that counter exceeds the model's own height (bounds Z1 - Z0) the
-   whole model hierarchy is destroyed, e.g. a wreck that has sunk out of sight.
+   from the distance counter in classLinkState.modelLinkOrState; once that counter exceeds the model's own
+   height (bounds Z1 - Z0) the whole model hierarchy is destroyed, e.g. a wreck that has sunk out of sight.
 */
 
 void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
@@ -1529,7 +1533,7 @@ void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
        modelRuntime->modelDefinition->verticalTranslationStepQ12PerTick *
        g_InGameSimulationStepTicks;
   (modelNodeRuntime->worldTransform).translation.z += verticalStepQ12;
-  /* the class link field (+0x60) holds the distance counter here */
+  /* the class link field (modelLinkOrState) holds the distance counter here */
   (modelRuntime->classLinkState).modelLinkOrState.signedScalarState -= verticalStepQ12;
   modelHeightQ12 = rootModelResource->localBoundsZ1Q12 - rootModelResource->localBoundsZ0Q12;
   remainingClassDistanceQ12 = (modelRuntime->classLinkState).modelLinkOrState.signedScalarState;
@@ -1673,9 +1677,8 @@ ArmyRuntime_ResolveShotAimPoint
   FixedDirection leadDirection;
   GameEntityRuntime *targetEntity;
 
-  /* On failure the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values or the
-     partial visibility mask / definition pointers). All three callers ignore the coordinates on failure, so
-     the point is zeroed. */
+  /* On failure the original leaves the aim point undefined (left-over intermediate values). All three callers
+     ignore the coordinates on failure, so the point is zeroed. */
   outAimPoint->x = 0;
   outAimPoint->y = 0;
   outAimPoint->z = 0;
@@ -1761,7 +1764,7 @@ ArmyRuntime_ResolveShotAimPoint
 
 
 /* World owner-list callback: for a model node of an owned army, adds the army's projected terrain occlusion
-   (its +0x9C mask in the byte of every faction whose nibble in the owner's packed relation states has bit 3
+   (its depthBinClass mask in the byte of every faction whose nibble in the owner's packed relation states has bit 3
    set) around the node, and marks occupancy bit 2 around it when the active faction's nibble has bit 3 set. First pass of the occupancy rebuild; see
    ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback.
 */
@@ -1783,7 +1786,7 @@ void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
   if (node->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
     return;
   }
-  /* node->worldXQ12 (+0x94) goes to the callees' worldYQ12 and node->worldYQ12 (+0x98) to their worldXQ12,
+  /* node->worldXQ12 goes to the callees' worldYQ12 and node->worldYQ12 to their worldXQ12,
      as in the original; one of the two namings is swapped. */
   worldYQ12 = node->worldXQ12;
   ownerArmy = ((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
@@ -1816,8 +1819,8 @@ void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
 }
 
 
-/* Tests the army's summed weapon damage against target class 0 (+0x100, targetClassShotDamage[0]) for zero, i.e.
-   an unarmed army (CF set when it is zero, SETZ / RCR); used by
+/* Tests the army's summed weapon damage against target class 0 (targetClassShotDamage[0], stateOrTechnologyId)
+   for zero, i.e. an unarmed army (returns true when it is zero); used by
    ArmyRuntime_ResetMovementStateFromModel to decide whether a targeted command is dropped.
 */
 bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
@@ -1827,8 +1830,8 @@ bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 }
 
 
-/* Tests the army's summed weapon damage against target class 0 (+0x100, targetClassShotDamage[0]) for being
-   non-negative (CF set when it is >= 0, SETGE / RCR). No C code calls it directly.
+/* Tests the army's summed weapon damage against target class 0 (targetClassShotDamage[0], stateOrTechnologyId)
+   for being non-negative (returns true when it is >= 0). No C code calls it directly.
 */
 bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
 
@@ -1837,8 +1840,9 @@ bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
 }
 
 
-/* Runs the placement-validation handler of the army's runtime class (table at 0x0051FED8, indexed by the class id
-   at model runtime +0x4C) for the army in *armyRuntimeHolder and returns its acceptance in CF.
+/* Runs the placement-validation handler of the army's runtime class
+   (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, indexed by the definition's
+   runtimeClassId) for the army in *armyRuntimeHolder and returns its acceptance.
 */
 bool ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
 
@@ -1854,8 +1858,8 @@ bool ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,W
 }
 
 
-/* Runs the class-command handler of the runtime class of the army's model runtime (class id at definition
-   +0x4C) with that model runtime; the AI planners call it to start the class-specific behaviour of the armies
+/* Runs the class-command handler of the runtime class of the army's model runtime (the definition's
+   runtimeClassId) with that model runtime; the AI planners call it to start the class-specific behaviour of the armies
    they create or re-task.
 */
 void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime)
@@ -1869,8 +1873,8 @@ void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeC
 
 
 /* Counterpart of ArmyRuntime_InitializePoolAndGraphics: frees the army runtime pool, releases every faction's
-   army texture set and palette, frees the two preview textures (+0x18/+0x1C) of every registered army asset
-   and clears the asset registry.
+   army texture set and palette, frees the two preview textures (armyAsset[1].rootNodeOffsetOrPointer and
+   .registryId) of every registered army asset and clears the asset registry.
 */
 void ArmyRuntime_ShutdownPoolAndGraphics(void)
 
@@ -1896,7 +1900,7 @@ void ArmyRuntime_ShutdownPoolAndGraphics(void)
   for (registryIndex = 0; registryIndex < ARMY_ASSET_REGISTRY_SLOT_COUNT; registryIndex++) {
     armyAsset = g_ArmyAssetRecordRegistry[registryIndex];
     if (armyAsset != NULL) {
-      /* the two preview textures stored in the record that follows the prefix (+0x18/+0x1C) */
+      /* the two preview textures stored in the record that follows the prefix */
       g_MemoryApi.free((void *)armyAsset[1].rootNodeOffsetOrPointer);
       g_MemoryApi.free((void *)armyAsset[1].registryId);
       g_ArmyAssetRecordRegistry[registryIndex] = NULL;
@@ -1906,9 +1910,9 @@ void ArmyRuntime_ShutdownPoolAndGraphics(void)
 
 
 /* Savegame writing (called by the in-game save in ui/ingame/runtime): turns the four pointers of every used
-   army slot (model runtime, model node, command target, +0x98) into offsets and zeroes the unused slots, so the
-   pool can be written as it is (the caller then writes g_ArmyRuntimeSlots, ARMY_RUNTIME_SLOT_COUNT slots);
-   ArmyRuntimePool_RebaseAfterLoad is the counterpart.
+   army slot (model runtime, model node, command target, assigned target) into offsets and zeroes the unused
+   slots, so the pool can be written as it is (the caller then writes g_ArmyRuntimeSlots,
+   ARMY_RUNTIME_SLOT_COUNT slots); ArmyRuntimePool_RebaseAfterLoad is the counterpart.
 */
 void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void)
 
@@ -1951,9 +1955,10 @@ void ArmyRuntimePool_ConvertPointersToOffsetsForSave(void)
 
 
 /* After a savegame load: turns the saved offsets in every used army slot (model node != 0) back into
-   pointers, the counterpart of ArmyRuntimePool_ConvertPointersToOffsetsForSave. Model runtime (+0x00)
-   and model node (+0x04) are rebased by their pools' deltas; the army references (+0x1C, +0x98) are saved
-   as pointer - (pool base - 1), so 0 stays NULL.
+   pointers, the counterpart of ArmyRuntimePool_ConvertPointersToOffsetsForSave. Model runtime
+   (modelRuntimeOrSavedOffset) and model node (modelNodeRuntime) are rebased by their pools' deltas; the army
+   references (commandTargetArmyRuntime, assignedTargetArmyRuntime) are saved as pointer - (pool base - 1), so 0
+   stays NULL.
 */
 void ArmyRuntimePool_RebaseAfterLoad(void)
 
@@ -2021,10 +2026,10 @@ static void ArmyRuntimeClass_UpdateGroundLoopSoundAtModel(WorldRuntimeContext *w
 }
 
 /* Sound update of a moving ground army, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
-   .classMethodD[1] (0x0051FCF8) and through ArmyRuntimeAudio_DispatchPositionedSoundVariant (classMethodD[18],
+   .classMethodD[1] and through ArmyRuntimeAudio_DispatchPositionedSoundVariant (classMethodD[18],
    every placement kind but water). While the model turns it keeps the turning sound (definition
-   turningLoopSoundSlotIndex, +0xD8) at the model's position; while it turns or drives it keeps the movement
-   sound (movingLoopSoundSlotIndex, +0xD0) there; both only
+   turningLoopSoundSlotIndex) at the model's position; while it turns or drives it keeps the movement
+   sound (movingLoopSoundSlotIndex) there; both only
    where the active faction's cell bits 0/1 are set (TerrainGrid_TestProjectedCellMaskBits01). Identical to
    ArmyRuntimeClass_UpdateWaterPositionedSounds except for the reload below.
 */
@@ -2053,7 +2058,7 @@ void ArmyRuntimeClass_UpdateGroundPositionedSounds(WorldRuntimeContext *worldRun
 
 
 /* Empty sound update of class 3, reached only through
-   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[3] (0x0051FCF8).
+   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[3].
 */
 void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
@@ -2087,8 +2092,9 @@ static uint8_t *ArmyRuntimeClass_FindLastClass10Node(uint8_t *node)
 
 /* Owner-list callback of ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (passed to
    WorldRuntime_ForEachOwnerListNode). For a model of another, non-neutral faction within the shot's
-   selection range it stores the last radar node (class 10) of that model as the target at +0x60, unless that
-   node is destroyed; for a shot of the same shot definition it records that one is still in flight (+0x64).
+   selection range it stores the last radar node (class 10) of that model as the target
+   (timedTargetLinkState.selectedTargetModelRuntime), unless that node is destroyed; for a shot of the same shot
+   definition it records that one is still in flight (timedTargetLinkState.matchingActiveShotRuntime).
 */
 
 void ArmyRuntimeClass_SelectProjectileTargetNode(ModelRuntimeTimedTargetProjectileView *modelRuntime,
@@ -2123,8 +2129,7 @@ void ArmyRuntimeClass_SelectProjectileTargetNode(ModelRuntimeTimedTargetProjecti
     if ((candidateFactionIndex == modelRuntime->ownerArmyRuntime->factionIndex) || (candidateFactionIndex == 0)) {
       return;
     }
-    /* Rewritten from the assembly (0x00523F09-0x00523F7C): pick the last node, depth-first, whose
-       definition has class 10 (+0x4C); the walk kept its frames on the machine stack. */
+    /* pick the last node, depth-first, whose definition has class 10 (runtimeClassId) */
     targetModelRuntime = (ModelRuntimeSlot *)ArmyRuntimeClass_FindLastClass10Node((uint8_t *)candidateNode->runtimePayload);
     if ((targetModelRuntime != NULL) && (((targetModelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0)) {
       (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime = targetModelRuntime;
@@ -2203,10 +2208,10 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
 
 
 /* Sound update of a moving army on water, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
-   .classMethodD[19] (0x0051FCF8) and through ArmyRuntimeAudio_DispatchPositionedSoundVariant (classMethodD[18],
+   .classMethodD[19] and through ArmyRuntimeAudio_DispatchPositionedSoundVariant (classMethodD[18],
    placement kind 1 = water surface). Same as ArmyRuntimeClass_UpdateGroundPositionedSounds: the turning sound
-   (definition +0xD8) while turning, the movement sound (+0xD0) while turning or driving, only where the active faction's
-   cell bits 0/1 are set.
+   (definition turningLoopSoundSlotIndex) while turning, the movement sound (movingLoopSoundSlotIndex) while
+   turning or driving, only where the active faction's cell bits 0/1 are set.
 */
 
 void ArmyRuntimeClass_UpdateWaterPositionedSounds(WorldRuntimeContext *worldRuntime,
@@ -2231,8 +2236,8 @@ void ArmyRuntimeClass_UpdateWaterPositionedSounds(WorldRuntimeContext *worldRunt
 
 
 /* Segment meter of the selection panel (called directly by gameplay/selection/runtime with a model runtime):
-   filled segments from +0x6C of the passed runtime (the completed linked assets of a class-22 pad), total
-   segments from +0xC4 of its definition (the linked-child slot capacity).
+   filled segments from linkedChildBuildState.completedSecondaryArmyAssetCount of the passed runtime (the
+   completed linked assets of a class-22 pad), total segments from its definition's linkedChildSlotCapacity.
 */
 ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeter(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime)
 
@@ -2246,7 +2251,7 @@ ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeter(ModelRuntimeLinkedChildSpaw
 
 
 /* Returns which of the three linked-child asset ids (g_InGamePointerModePreviewArmyIds[1]/[2]/[4] as bits 1/2/4)
-   occur among the army's 13 attachment asset-id slots (dwords from +0x78); the selection panel ORs these
+   occur among the army's 13 attachment asset-id slots (completedSecondaryArmyAssetIds); the selection panel ORs these
    masks over all selected armies.
 */
 int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime)
@@ -2259,8 +2264,8 @@ int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBu
   variantMask = 0;
   attachmentEffectSlotsRemaining = 13;
   do {
-    /* completedSecondaryArmyAssetIds[0] (+0x78) of the current window; the runtime pointer itself moves one
-       dword per slot below (ADD ESI,4 in the original) */
+    /* completedSecondaryArmyAssetIds[0] of the current window; the runtime pointer itself moves one dword per
+       slot below */
     attachmentAssetId = linkedChildRuntime->completedSecondaryArmyAssetIds[0];
     if (attachmentAssetId == g_InGamePointerModePreviewArmyIds[1]) {
       variantMask = variantMask | 1;
@@ -2278,9 +2283,9 @@ int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBu
 }
 
 
-/* Keeps the model's looping sound (slot index at +0x1AC of its definition) at the model's position while
+/* Keeps the model's looping sound (its definition's loopingSoundSlotIndex) at the model's position while
    state flag 1 (switched off) is clear and the active faction's cell bits 0/1 are set there. Reached through
-   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[10], [14] and [16] (0x0051FCF8) and through
+   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[10], [14] and [16] and through
    ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled (classMethodD[4]).
 */
 void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
@@ -2342,10 +2347,11 @@ static void ArmyRuntimeClass_PlayVerticalDeploymentSound(WorldRuntimeContext *wo
 
 /* Runtime update of class 23 (a platform that armies of its faction can dock on, see
    ArmyRuntime_HandleCollisionPartner), reached only through
-   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[23]. While an army is linked (bit 0 of +0xB8,
-   re-checked against the army's expanded radius every 8 ticks) the child platform node moves by the step per
-   tick until the travel at +0x60 reaches the definition's limit; without a linked army it moves back until the
-   travel is 0. A positioned one-shot sound marks the start of either movement.
+   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[23]. While an army is linked (bit 0 of
+   classState.behaviorState, re-checked against the army's expanded radius every 8 ticks) the child platform node
+   moves by the step per tick until the travel (deploymentState.deploymentTravelQ12) reaches the definition's
+   limit; without a linked army it moves back until the travel is 0. A positioned one-shot sound marks the start
+   of either movement.
 */
 
 void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
@@ -2422,8 +2428,8 @@ void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
 
 /* Fires a shot of the weapon code (called directly by gameplay/army/combat): looks up the launch point
    (packed key attachmentSelectorOrdinal << 4 | 2) in the sprite model of definitionNode, transforms it by the
-   freshly rebuilt modelNode and creates the projectile from there towards the target point. Returns true (CF
-   set) when the model has no such launch point.
+   freshly rebuilt modelNode and creates the projectile from there towards the target point. Returns true
+   when the model has no such launch point.
 */
 bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotTargetModelReference targetModelReference,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
@@ -2465,9 +2471,9 @@ bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
 
 
 /* Accelerates a moving model (called directly by the movement class updates in gameplay/army/movement): the
-   speed limit is the definition's movementSpeed (+0x0C). While the pitch (worldRotationAngle1) is below the first class threshold it is cut to 5/16, unless
+   speed limit is the definition's movementSpeed. While the pitch (worldRotationAngle1) is below the first class threshold it is cut to 5/16, unless
    the pitch is at least the second threshold: then it stays full, or 5/8 when angle2 - angle0 lies between a
-   quarter and three quarters of a turn. The advance per tick grows by accelerationPerTick (+0x18) up to that
+   quarter and three quarters of a turn. The advance per tick grows by accelerationPerTick up to that
    limit (and drops to it at once). When the model starts from standstill its start sound plays where the active faction's cell bits 0/1 are set.
 */
 void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
@@ -2511,7 +2517,7 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
       newAdvance = acceleratedAdvance;
     }
   }
-  /* XCHG in the original */
+  /* atomic exchange, as in the original */
   LOCK();
   previousAdvance = (modelRuntime->movementControl).movementAdvancePerTickQ12;
   (modelRuntime->movementControl).movementAdvancePerTickQ12 = newAdvance;
@@ -2541,8 +2547,8 @@ void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *wo
 /* Reacts to the model a moving model has run into (called directly by the movement code in
    gameplay/army/movement with the mover's model runtime and position, Y before X). A free class-23 platform of
    the same faction is told to dock (behaviorState bit 0, collision retry countdown 0x20) and, once it is ready
-   (bit 1), the two model runtimes are linked to each other (+0xF0); a model of class 0 is run over and takes
-   impact damage 0x100000 from the direction of the collision.
+   (bit 1), the two model runtimes are linked to each other (classState.linkedArmyRuntimeOrSavedOffset); a model
+   of class 0 is run over and takes impact damage 0x100000 from the direction of the collision.
 */
 void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q12 currentWorldYQ12,Q12 currentWorldXQ12,
           ModelRuntimeSlot *collisionPartnerModelRuntime,WorldRuntimeContext *worldRuntime)
@@ -2798,7 +2804,7 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
   definition = (ModelDefinition *)(modelRuntime->definitionOrSavedId).savedIdOrOffset;
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[definition->runtimeClassId]
             (worldRuntime,modelRuntime);
-  /* every 4 ticks health (+0x3C) regenerates by healthRegenerationPerStep up to 3/4 of the definition's
+  /* every 4 ticks health regenerates by healthRegenerationPerStep up to 3/4 of the definition's
      health (maximumHealth), or decays down to it while bit 0 is set */
   if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DISMANTLING) == 0) {
     (modelRuntime->classState).healthRegenerationDelayTicks -= g_InGameSimulationStepTicks;
@@ -2933,11 +2939,11 @@ void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
 
 
 /* Launches one linked asset of a class-22 pad (called directly by
-   ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode): finds a not yet launched slot of +0x78
-   holding linkedArmyAssetId, creates that army on the pad, marks the slot as used and links the new aircraft to
-   the pad (+0x60, state 1 = parked) with the attack point and heading (+0x70..+0x78) and the pad's platform
-   height; its health is scaled by the pad's health. Returns true (CF set) when no slot matches or the creation
-   fails.
+   ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode): finds a not yet launched slot of
+   completedSecondaryArmyAssetIds holding linkedArmyAssetId, creates that army on the pad, marks the slot as used
+   and links the new aircraft to the pad (classLinkState.modelLinkOrState, state 1 = parked) with the attack
+   point and heading (classState70..78) and the pad's platform height; its health is scaled by the pad's health.
+   Returns true when no slot matches or the creation fails.
 */
 bool ArmyRuntimeSpawner_CreateLinkedChildInstance
           (WorldMotionValue78 inheritedValue78,WorldMotionValue74 inheritedValue74,
@@ -2954,7 +2960,8 @@ bool ArmyRuntimeSpawner_CreateLinkedChildInstance
   ArmyRuntimeSlot *createdArmy;
   ModelRuntimeNode *modelNode;
 
-  /* the pad's slots hold one 32-bit asset id each, from +0x78 on (classParameterC4 slots). Original quirk: slot 0
+  /* the pad's slots hold one 32-bit asset id each, from completedSecondaryArmyAssetIds on (this view's
+     movementTarget0Q12; classParameterC4 slots). Original quirk: slot 0
      is tested even with 0 slots, and the count then runs below 0 instead of stopping. */
   slotBit = 1;
   remainingSlots = ((ModelDefinition *)armyRuntime->definitionOrAsset)->classParameterC4;
@@ -2983,7 +2990,7 @@ bool ArmyRuntimeSpawner_CreateLinkedChildInstance
   slotMaskState = &(armyRuntime->articulatedContact).linkedChildSlotMaskState;
   slotMaskState->linkedChildSlotMask = slotMaskState->linkedChildSlotMask | slotBit;
   armyRuntime->fallbackWorldYQ12 = armyRuntime->fallbackWorldYQ12 - 1;
-  /* the aircraft's home pad (+0x60), state 1 = parked (+0xB8), attack point and heading (+0x70..+0x78) */
+  /* the aircraft's home pad, state 1 = parked (behaviorState), attack point and heading (classState70..78) */
   childModelRuntime->classLinkState.modelLinkOrState.modelRuntime = (ModelRuntimeSlot *)armyRuntime;
   childModelRuntime->classState.behaviorState = ARMY_AIRCRAFT_STATE_PARKED;
   modelNode = childModelRuntime->rootModelNodeOrSavedOffset.modelNode;
@@ -3002,9 +3009,9 @@ bool ArmyRuntimeSpawner_CreateLinkedChildInstance
 }
 
 
-/* Returns true (CF set) when the candidate model is within the combined radius (definition footprintRadiusCopy,
-   +0x1A0) of the source model and of every attached child model of the source (attachments at +0x140, count at
-   +0xC); false as soon as one of them is out of reach.
+/* Returns true when the candidate model is within the combined radius (definition footprintRadiusCopy) of the
+   source model and of every attached child model of the source (attachments, attachmentCount); false as soon as
+   one of them is out of reach.
 */
 bool ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime)
 
@@ -3017,9 +3024,9 @@ bool ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRu
 
   candidateDefinition = candidateModelRuntime->definitionOrSavedId.runtimeDefinition;
   remainingAttachments = sourceModelRuntime->attachmentCount;
-  /* The candidate radius is candidateDefinition->footprintRadiusCopy (+0x1A0). It is read through a
-     pointer-typed field at the same offset as in the original C: a uint32_t read schedules the loads and the
-     spill of the radius differently. */
+  /* The candidate radius is candidateDefinition->footprintRadiusCopy. It is read through a pointer-typed field
+     at the same offset (attachments[3].childModelRuntimeOrSavedOffset of a ModelRuntimeSlot view): a uint32_t
+     read schedules the loads and the spill of the radius differently. */
   baseWithinRadius = ArmyRuntime_TestPositionDistanceWithinCombinedRadius
                     ((UQ12)((ModelRuntimeSlot *)candidateDefinition)->attachments[3].childModelRuntimeOrSavedOffset,
                      sourceModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadiusCopy,
@@ -3093,7 +3100,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
 }
 
 
-/* Group-A command check: returns true (CF set) when the source model is of class 13 and the candidate model is
+/* Group-A command check: returns true when the source model is of class 13 and the candidate model is
    within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry (1,5),
    transformed to world space), measured in x/y.
 */
@@ -3110,7 +3117,7 @@ bool ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime
   if (sourceModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_13) {
     return false;
   }
-  /* the candidate definition's radius at +0x1A0 */
+  /* the candidate definition's radius (footprintRadiusCopy) */
   candidateRadius = candidateModelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadiusCopy;
   sourceNode = sourceModelRuntime->rootModelNodeOrSavedOffset.modelNode;
   candidateNode = candidateModelRuntime->rootModelNodeOrSavedOffset.modelNode;
@@ -3126,7 +3133,7 @@ bool ArmyRuntime_TestArmyNearFactoryExit(ModelRuntimeSlot *candidateModelRuntime
 
 /* Air-raid alert (called directly by ArmyRuntimeClass_UpdateAircraft on every tick of an attack
    run): when the aircraft of factionIndex is hostile to the active faction and flies over a grid cell with bit
-   0x10 in the active faction's byte (+0x70 + faction of the cell), the sound soundAssetIndex is played
+   0x10 in the active faction's byte of the cell's occupancyMask, the sound soundAssetIndex is played
    unpositioned at the effects gain, at most once per 16 ticks of the faction's relationTransitionTick.
 */
 void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex factionIndex,Q12 worldYQ12,Q12 worldXQ12,
@@ -3179,7 +3186,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
 
 
 /* Xenite refund for the not yet launched linked assets of a class-22 pad that is being dismantled (called
-   directly by ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): sums the value at +0x184 of the
+   directly by ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): sums xeniteValueQ4 of the
    faction's model definition of every linked asset whose slot bit is still clear, divided by 32 (the same
    rate as the pad's own refund).
 */
@@ -3218,10 +3225,10 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
 }
 
 
-/* Plays the one-shot sound at +0x270 of the model's definition at the model's position, with the
-   definition's range and gain (+0x7C/+0x78), where the active faction's cell bits 0/1 are set. Called directly
-   by ArmyRuntimeClass_UpdateAircraft for the home pad when an aircraft lands or takes off (the
-   pad's platform sound).
+/* Plays the one-shot sound secondarySoundIndex of the model's definition at the model's position, with the
+   definition's range and gain (positionedSoundMaximumDistanceQ12/positionedSoundGainQ15), where the active
+   faction's cell bits 0/1 are set. Called directly by ArmyRuntimeClass_UpdateAircraft for the home pad when an
+   aircraft lands or takes off (the pad's platform sound).
 */
 void ModelRuntime_PlayDefinitionSecondaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime)
 
@@ -3253,10 +3260,10 @@ void ModelRuntime_PlayDefinitionSecondaryOneShotSound(ModelRuntimeSlot *modelRun
 }
 
 
-/* Plays the one-shot sound at +0x26C of the model's definition at the model's position, with the
-   definition's range and gain (+0x7C/+0x78), where the active faction's cell bits 0/1 are set. Called directly
-   by ArmyRuntimeClass_UpdateAircraft when a returning aircraft opens its home pad. Despite the
-   name no effect is spawned; it is the hatch sound class 22 plays itself in
+/* Plays the one-shot sound primarySoundIndex of the model's definition at the model's position, with the
+   definition's range and gain (positionedSoundMaximumDistanceQ12/positionedSoundGainQ15), where the active
+   faction's cell bits 0/1 are set. Called directly by ArmyRuntimeClass_UpdateAircraft when a returning aircraft
+   opens its home pad. Despite the name no effect is spawned; it is the hatch sound class 22 plays itself in
    ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode.
 */
 void ModelRuntime_PlayDefinitionPrimaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldContext)
@@ -3290,8 +3297,8 @@ void ModelRuntime_PlayDefinitionPrimaryOneShotSound(ModelRuntimeSlot *modelRunti
 
 
 /* Tests whether two model nodes are closer in the XY plane than the sum of their radii (collision/contact test
-   of two armies or attachments): CF clear when dx^2 + dy^2 <= (candidateRadius + sourceRadius)^2, in 64-bit
-   Q24 arithmetic.
+   of two armies or attachments): returns false when dx^2 + dy^2 <= (candidateRadius + sourceRadius)^2, true
+   otherwise, in 64-bit Q24 arithmetic.
 */
 bool ArmyRuntime_TestPositionDistanceWithinCombinedRadius
           (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidateModelNode,
@@ -3424,11 +3431,12 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
 
 
 /* One tick of a model whose health is gone (called directly by
-   ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, which then counts the eight channel timers at
-   +0x40..+0x5C down). For every channel i whose timer is 0 it spawns the channel's
-   effect (definition +0x80 + 8 * i) at every model point with packed key i << 4 | 3 of the root model, using the
-   root's orientation, and, when the definition has a child model, at those of child node 0 with a fixed
-   orientation. Also sets its own health to 0 and clears health and link (+0x38) of every attached child model.
+   ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, which then counts the eight channel timers
+   destructionEffectTimers down). For every channel i whose timer is 0 it spawns the channel's
+   effect (definition (&destructionEffect0)[2 * i]) at every model point with packed key i << 4 | 3 of the root
+   model, using the root's orientation, and, when the definition has a child model, at those of child node 0 with
+   a fixed orientation. Also sets its own health to 0 and clears health and link (linkedModelRuntimeOrSavedOffset)
+   of every attached child model.
 */
 void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
@@ -3471,7 +3479,7 @@ void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntim
                    (modelNode->modelPayload).worldRotationAngle2,
                    (modelNode->modelPayload).worldRotationAngle1,
                    (modelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
-                   /* the definition's eight {effect, value} pairs from +0x80 */
+                   /* the definition's eight {effect, value} pairs from destructionEffect0 */
                    (&(modelRuntime->definitionOrSavedId).runtimeDefinition->destructionEffect0)
                    [channelIndex * 2].definition,worldRuntime);
       }
@@ -3553,8 +3561,9 @@ void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *wor
 
 
 /* Recomputes the army's derived combat figures shown on selection from its model hierarchy (after creation or
-   a change of attachments): the maxima at +0x90, +0x44, +0x48 and the shot selection range at +0x4C are
-   cleared, as are the eight per-target-class damage sums at +0x100, then
+   a change of attachments): the maxima occupancyMarkRadius, visibilityRadius, visibilityHeightOffset and the
+   shot selection range weaponRangeQ12 are cleared, as are the eight per-target-class damage sums
+   targetClassShotDamage, then
    ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics adds up every node of the model.
 */
 void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
@@ -3577,7 +3586,7 @@ void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
 
 
 /* Stub of a world point test (called directly by the aircraft and pad updates, slots 21 and 22): always
-   returns false (CF clear), so the callers' `!result` branches are always taken.
+   returns false, so the callers' `!result` branches are always taken.
 */
 bool ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12)
 
@@ -3783,9 +3792,9 @@ ArmyRuntimeSlot *ArmyRuntime_CreateInstanceFromAsset
 
 
 /* Sets up the terrain occupancy of a newly placed army: classifies the field-grid neighbourhood of its model
-   node (within the model definition's radius at +0xDC), lets TerrainOccupancyMask_ResolveRuntimeClassFlags
+   node (within the model definition's footprintRadius), lets TerrainOccupancyMask_ResolveRuntimeClassFlags
    derive the two occupancy masks and the node's occupancy flags (0x4, 0x8, 0x1000) from it, and forces node flag 0x1000
-   when the model runtime has flag 0x200 set at +0xEC.
+   when the model runtime has flag 0x200 set in classState.stateFlags.
 */
 void ArmyRuntime_InitializeTerrainOccupancyFlags
                (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
@@ -3822,8 +3831,9 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
 }
 
 
-/* Idle animation of a building model: child nodes 0 and 1 spin (localRotationAngle2 += definition +0x10 / +0x1C
-   per tick), child node 2 bobs in Z by definition +0x14 per tick between +0x24 and +0x28, reversing at the
+/* Idle animation of a building model: child nodes 0 and 1 spin (localRotationAngle2 += definition
+   animatedChild0RotationStep / animatedChild1RotationStep per tick), child node 2 bobs in Z by
+   animatedChild2BobStep per tick between runtimeValue24 and runtimeValue28, reversing at the
    limits (stateFlags bit 2 = direction). While bit 0 is set the animation stands still; bit 4 follows bit 0,
    and each change of it rebuilds the owner's selection metrics. Reached through
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[10] and directly from the class updates 11,
@@ -3956,10 +3966,13 @@ static bool ArmyEmitter_FindEffectPoint(ModelRuntimeUpdateView *modelRuntime,Mod
 
 /* Timed emitters of an army model, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
    .runtimeUpdate[0] and [16] and directly from most class updates (here, gameplay/army/combat and movement).
-   Timer +0xE4: fires the definition's shot (+0x168) straight ahead (1.0 along the root's orientation) and
-   restarts at +0x16C plus a random part below +0x170. Timer +0xE8: spawns the land (+0x174) or, where
-   FieldGrid_GetNearestWaterDelta is positive, the water (+0x58) effect at a model point with key n << 4 | 6 (random, or in turn when definition +0x68
-   bit 0 is set; the root position when there is none) and restarts at +0x178 plus a random part below +0x17C.
+   Timer classState.shotEmitterTimerTicks: fires the definition's shot (emitterShotDefinitionReference) straight
+   ahead (1.0 along the root's orientation) and restarts at shotEmitterIntervalTicks plus a random part below
+   shotEmitterRandomTicks. Timer classState.effectEmitterTimerTicks: spawns the land
+   (emitterEffectDefinitionReference) or, where FieldGrid_GetNearestWaterDelta is positive, the water
+   (waterEmitterEffectDefinitionReference) effect at a model point with key n << 4 | 6 (random, or in turn when
+   definition modelFlags bit 0 is set; the root position when there is none) and restarts at
+   effectEmitterIntervalTicks plus a random part below effectEmitterRandomTicks.
 */
 void ArmyRuntime_UpdateTimedShotAndEffectEmitters
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)

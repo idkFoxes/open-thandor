@@ -11,10 +11,11 @@
 /* Implementation ownership: gameplay/ai/units. */
 
 /* Per AI tick for the faction's own units (workspace 01): clears the collected-army list, lets busy units
-   (ARMY_MOVEMENT_ACTIVE / _ROUTE_POINT_REACHED in the movement state at +0x18, the entity's commandFlags) wait
-   for their behaviour cooldown (common +0x8C), skips units with ARMY_MOVEMENT_LOCKED, and dispatches the rest by model class: class 18 to UpdateSpecialClass12Entity, the ground,
-   tracked, walker, water and glider classes (1/2/3/19/17) to SelectBestAnchorAction. The class is read with a
-   single dereference from the model at +0x4C.
+   (ARMY_MOVEMENT_ACTIVE / _ROUTE_POINT_REACHED in the movement state, the entity's common.commandFlags) wait
+   for their behaviour cooldown (common.aiCommandCooldownTicks), skips units with ARMY_MOVEMENT_LOCKED, and
+   dispatches the rest by model class: class 18 to UpdateSpecialClass12Entity, the ground, tracked, walker, water
+   and glider classes (1/2/3/19/17) to SelectBestAnchorAction. The class is the runtimeClassId of the model's
+   definition.
 */
 void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -126,7 +127,6 @@ void AiUnitBehavior_SelectBestAnchorAction
    score = ((max(0, bias - Manhattan distance) * scale + site score) >> 12) * the unit's aiSiteScoreWeight,
    so nearer and richer sites score higher. Returns currentBestScore and a NULL entry when none beats it.
    modelDefinition is not used.
-   Original register convention: result in EAX and EBX, CF set on failure; ECX and EDX preserved.
 */
 AiGeneralSiteDistanceSelection AiUnitBehavior_ComputeGeneralSiteDistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
@@ -187,8 +187,8 @@ static AiCandidateScore32 AiUnitBehavior_ScoreFactionAnchorPoint
   int distanceTerm;
   int anchorScore;
 
-  /* Both anchor coordinates are compared with translation.x: the original reads [modelNode + 0x94] twice
-     (0x0053B281/0x0053B287 and 0x0053B2D5/0x0053B2DB), so this "distance" ignores the unit's Y. */
+  /* Both anchor coordinates are compared with translation.x: the original reads that field twice, so this
+     "distance" ignores the unit's Y. */
   negAbsDeltaFirstQ12 = (modelNode->worldTransform).translation.x - anchorYQ12;
   if (negAbsDeltaFirstQ12 >= 0) {
     negAbsDeltaFirstQ12 = -negAbsDeltaFirstQ12;
@@ -244,7 +244,6 @@ AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
    when workspace 07 is empty: ((max(0, bias - Manhattan distance) * scale) >> 12) * aiSecondaryWorkspaceScoreWeight.
    Returns the best entry if it beats currentBestScore, else currentBestScore and NULL. modelDefinition is not
    used.
-   Original register convention: result in EAX and EBX, CF set on failure; ECX and EDX preserved.
 */
 AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
@@ -330,7 +329,7 @@ void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,Arm
   GraphicsWorldCoordinateQ12 targetWorldX;
   GraphicsWorldCoordinateQ12 targetWorldY;
   
-  /* The field at +0x390 (named ...AnchorYQ12) goes to the targetWorldX parameter and +0x394 to targetWorldY,
+  /* The field ...AnchorYQ12 goes to the targetWorldX parameter and ...AnchorXQ12 to targetWorldY,
      so the faction record's anchor X/Y field names are probably swapped. */
   targetWorldX = g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorYQ12;
   targetWorldY = g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorXQ12;

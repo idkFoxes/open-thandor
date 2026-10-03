@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: audio/codec/sam. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* A .sam block: 256 transform coefficients <-> 256 PCM samples per channel. */
 #define SAM_BLOCK_SAMPLE_COUNT 256

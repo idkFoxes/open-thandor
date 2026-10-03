@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/package/runtime. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Size of g_PackageScratchBuffer (8 MiB), allocated once by FileSystem_Init and used as the default
    load/enumeration buffer (the original repeats the literal 0x800000 at every use). */

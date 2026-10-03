@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/scenario. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* First code unit of a level title: rich-text style code, normal or highlighted (a level that some other player
    of the session does not have). */

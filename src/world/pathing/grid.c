@@ -202,8 +202,8 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       }
       fallbackWorldPosition.worldYQ12 = targetWorldYQ12;
       fallbackWorldPosition.worldXQ12 = targetWorldXQ12;
-      /* high-cost cells block the backtrack's straight-line test, unless bit 1 of the runtime record's +0x18
-         flags is set */
+      /* high-cost cells block the backtrack's straight-line test, unless bit 1 of the runtime record's
+         movementStateFlags is set */
       callerBlockingMask = g_GridPathHighCostMask;
       if ((((ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink)->movementStateFlags & 2) != 0) {
         callerBlockingMask = 0;
@@ -268,7 +268,7 @@ static bool GridReachability_IsMarkedRingEdgeCell(GridScratchCell *rowAboveCell,
    scratch cell is marked visited with count 0; the footprint of 3 * radius is unmarked (its cells get a non-zero
    count), the open region around the point is flood-marked inside it, and the inner footprint of radius is
    unmarked again. The first marked cell on the outer footprint's edge has its piece of the ring cleared; any
-   other marked edge cell left over means the ring fell apart and returns true (CF). A point outside the grid
+   other marked edge cell left over means the ring fell apart and returns true. A point outside the grid
    also returns true.
 */
 bool GridReachability_RebuildConnectedRegionAroundWorldPoint
@@ -441,8 +441,9 @@ static GridScratchStateMask GridScratch_ClassifyFieldCell(FieldGridCell *fieldCe
 }
 
 /* Flood-fills (GridScratch_FloodFillConnectedCells with wallMask) from every placed runtime model in the owner
-   list starting at ownerNode (not NULL): the +0x08 record of its payload must have a non-zero +0x0C, and its
-   model definition's placement contact kind (+0x278, the ArmyPlacementContact dispatch index) must not be 1.
+   list starting at ownerNode (not NULL): its owner army must have a non-zero factionIndex, and its model
+   definition's placement contact kind (placementContactKindIndex, the ArmyPlacementContact dispatch index) must
+   not be 1.
    The world point is projected into the skewed scratch grid: row from Y, column from X minus half the row
    term, both rounded (+ GRID_SCRATCH_INDEX_BIAS_Q12 >> GRID_SCRATCH_CELL_SHIFT); points off the grid are
    skipped. */
@@ -695,7 +696,7 @@ bool GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid,uint32_t *outErr
   allocError = g_MemoryApi.alloc(bytes,(void **)&newScratchBuffer);
   previousScratchBuffer = g_GridScratchPrimary;
   if (allocError == 0) {
-    /* the original swaps the pointers with XCHG */
+    /* the original swaps the pointers atomically */
     LOCK();
     UNLOCK();
     g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
@@ -763,7 +764,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
   scratchCellCursor = &g_GridScratchPrimary->stateMask;
   do {
     do {
-      /* the original advances first and tests [ESI-0x30]: the flags of the current cell */
+      /* the original advances first and then tests the flags of the current cell */
       nextScratchCellCursor = scratchCellCursor + 8;
       if ((currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
         factionPresenceMask =
@@ -863,7 +864,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
 
 
 /* Tests whether a world point may be used for pathing: projects it onto the grid-scratch cells (the same
-   skewed field projection as the placement tests, with 10 instead of 12 fraction bits) and rejects it (CF set)
+   skewed field projection as the placement tests, with 10 instead of 12 fraction bits) and rejects it (returns true)
    when it lies outside the scratch grid, the cell is GRID_SCRATCH_BLOCKED, or the cell has distance band bit
    8 + lowBandIndex or bit 24 + highBandIndex set.
 */
@@ -875,7 +876,7 @@ bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t 
   uint32_t scaledRowTerm;
   int cellRow;
 
-  /* 64-bit products shifted back (SHLD EDX,EAX,11 / 12); column = x term - row term, row = 2 * row term,
+  /* 64-bit products shifted back by 21 / 20 bits; column = x term - row term, row = 2 * row term,
      both biased by GRID_SCRATCH_INDEX_BIAS_Q12 and taken in scratch cells */
   scaledRowTerm = FIXED_MUL_SHR(worldYQ12, FIELD_GRID_WORLD_Y_TO_ROW_Q20, Q20_SHIFT + 1);
   cellColumn = (int)((FIXED_MUL_SHR(worldXQ12, FIELD_GRID_WORLD_X_TO_COLUMN_Q20, Q20_SHIFT) - scaledRowTerm) + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT;
@@ -899,7 +900,7 @@ bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t 
 /* Plans the routes of every runtime model near the move of routeEntityRuntime together, on a copy of the scratch
    grid (the real grid is swapped back at the end). Up to 32 models whose depth-bin masks overlap the box around
    the move are collected and heap-sorted by priority (other factions lowest, then the own faction plus the
-   definition's +0x0C weight); after their influence is added to the copy, other-faction models only stamp their
+   definition's movementSpeed weight); after their influence is added to the copy, other-faction models only stamp their
    low distance bands and all others have their route segment updated in that order. Returns the target of
    routeEntityRuntime's own segment (the input target when fewer than two models were found).
 */
@@ -982,8 +983,8 @@ EntityPathing_RebuildOverlappingGroupRoutes
     ownerNode = ownerNode->nextNode;
   } while (ownerNode != NULL);
   if (1 < g_EntityPathingPriorityPairCount) {
-    /* priority: 0 when bit 1 of the runtime record's +0x18 flags is set, 1 for another faction (+0x0C),
-       2 for the own faction, plus the definition's +0x0C weight when flag bit 0 is clear */
+    /* priority: 0 when bit 1 of the runtime record's movementStateFlags is set, 1 for another faction
+       (factionIndex), 2 for the own faction, plus the definition's movementSpeed weight when flag bit 0 is clear */
     routeFactionIndex = ((ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink)->factionIndex;
     pairsRemaining = g_EntityPathingPriorityPairCount;
     pairCursor = g_EntityPathingPriorityPairs;
@@ -1288,12 +1289,11 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   }
   footprintRadius = routeEntityRuntime->modelDefinition->footprintRadius;
   {
-    /* Rewritten from the assembly (0x00536BB0-0x00536C89). The segment from the entity to the
+    /* The segment from the entity to the
        target is split in halves until each piece spans at most one scratch column (0x240) on both axes (or 64 pieces
        are pending); the low-distance influence bands are stamped at the end of each piece. The
        original keeps the pending pieces as pushed frames on the machine stack, processing the
-       half towards the target first; the decompiled version lost that stack and used the
-       return address 0x00536C13 as a coordinate. */
+       half towards the target first; here they live in the pieces array. */
     struct { int startX; int startY; int endX; int endY; } pieces[64];
     int pending = 1;
     pieces[0].startX = (routeEntityRuntime->modelNode->worldTransform).translation.x;
@@ -1451,8 +1451,7 @@ void GridPathRegion_MarkUnreachableFromCell
 }
 
 
-/* Copies the whole primary scratch grid into the secondary one (two dwords per 8-byte GridScratchCell, a
-   REP MOVSD in the original), so pathing can plan on a copy and swap back afterwards.
+/* Copies the whole primary scratch grid into the secondary one (two dwords per 8-byte GridScratchCell), so pathing can plan on a copy and swap back afterwards.
 */
 void __cdecl GridScratch_CopyPrimaryToSecondary(void)
 
@@ -1472,7 +1471,7 @@ void __cdecl GridScratch_CopyPrimaryToSecondary(void)
   return;
 }
 
-/* Swaps the primary and secondary scratch grid pointers (XCHG in the original), making the copy made by
+/* Swaps the primary and secondary scratch grid pointers, making the copy made by
    GridScratch_CopyPrimaryToSecondary the working grid, or restoring the original afterwards.
 */
 void GridScratch_SwapPrimarySecondary(void)
@@ -1839,7 +1838,7 @@ GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
    is at cellWorldY/X) it walks downwards, two scratch rows and one column left per step, i.e. straight down in
    world space, while the cell centre lies within g_GridInfluenceSquaredThreshold[6] of the centre point. Each cell
    loses its blocked and visited bits and has its pathCost counter incremented. Stops before a blocked cell.
-   Returns the number of cells cleared, one less when the walk ended at a blocked cell (DEC in the original).
+   Returns the number of cells cleared, one less when the walk ended at a blocked cell (as in the original).
 */
 int GridFootprint_ClearTraversalFlagsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,

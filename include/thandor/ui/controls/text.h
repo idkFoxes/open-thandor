@@ -120,7 +120,7 @@
 #define CP1252_EURO_SIGN 0x80
 /* UiNumericTextEdit hexadecimal output: a bit index 0..31 rounded down to the lowest bit of its hex digit */
 #define UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK 0x1c
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void UiTooltip_TickCountdown(void);
 
@@ -324,7 +324,7 @@ extern UiNodeVtable g_UiNumericPairTextButtonVtable;
 extern UiNodeVtable g_UiPayloadPairTextButtonVtable;
 extern UiNodeVtable g_UiFormattedContainerVtable;
 extern UiNodeVtable g_UiArmyMetricsPanelVtable;
-extern UiNodeVtable g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable; followed by 0x90 code alignment fill */
+extern UiNodeVtable g_UiSoftwareTexturePreviewControlVtable;
 
 extern UiTooltipState g_UiTooltipState;
 extern AudioMixerGainQ15 g_UiSoundGainQ15;

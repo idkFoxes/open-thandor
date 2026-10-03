@@ -654,7 +654,7 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   UiNodeBase *parentCursor;
   UiNodeBase *selectedShadingRow;
   UiNodeBase *selectedTextureRow;
-  /* source is the frontend template's settings3DButton (+0x2794). */
+  /* source is the frontend template's settings3DButton. */
   FrontendUiImage *frontendUi;
   
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,settings3DButton));
@@ -836,7 +836,7 @@ void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
   PersistentSettings_Write((int)shadingGridSize * 2,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
   PersistentSettings_Write((PersistentSettingsValue)shadingGridSize,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
   PersistentSettings_Write(shadingDepthQuarter,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
-  /* The parent is the frontend template's shadingLevelGroup (+0x385C). */
+  /* The parent is the frontend template's shadingLevelGroup. */
   shadingLevelGroup = (FrontendShadingLevelGroup *)(control->base).parent;
   if (shadingGridSize == 32) {
     selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[0] /* shadingLevelGrid32Depth32 */;
@@ -895,7 +895,7 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
   UiNodeBase *selectedQualityControl;
   FrontendTextureQualityGroup *textureQualityGroup;
 
-  /* The parent is the frontend template's textureQualityGroup (+0x3C9C). */
+  /* The parent is the frontend template's textureQualityGroup. */
   textureQualityGroup = (FrontendTextureQualityGroup *)(control->base).parent;
   if (&textureQualityGroup->low.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
@@ -1213,8 +1213,9 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
 
 /* Handler of the network game page's session list (sessionList, action 0x2009, slot 9 of
    g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_SetPlayerName). Join
-   (FRONTEND_ACTION_JOIN_GAME) is offered only while the list has rows (+0x54), its selected row (+0x60) holds
-   a session (row +0x14) and the local player has a name; if then bit 2 of the list's flags at +0x4C is set
+   (FRONTEND_ACTION_JOIN_GAME) is offered only while the list has rows (rowCount), its selected row (selectedRowSlot)
+   holds a session (advertisement.joinAvailableFlag) and the local player has a name; if then bit 2 of the
+   list's listStateFlags is set
    (presumably a double click), it is cleared and the join request is sent at once, as if Join had been pressed.
    The field names of FrontendNetworkSettingsControlView used here do not fit a list (text edit overlay).
 */
@@ -1340,9 +1341,9 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   ((UiWrappedTextControl *)FRONTEND_UI(taskAssignmentRoot,taskDescriptionText))->text =
        (uint16_t *)
        (localFactionIndex + TEXT_ID_LEVEL_DESCRIPTION_BASE + g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
-  /* Offsets from the control tables are control offsets in the page: + nodeFlags (+0x48) gives the control's
-     nodeFlags (UI_NODE_SUPPRESSED), + rootFlags (+0x4C) its stateFlags (UI_SELECTABLE_SELECTED_OR_CHECKED,
-     FRONTEND_CONTROL_INACTIVE), + previousRoot (+0x54) its caption text id. Rows 7..1 (entry row - 1).
+  /* Offsets from the control tables are control offsets in the page: + nodeFlags gives the control's nodeFlags
+     (UI_NODE_SUPPRESSED), + rootFlags its stateFlags (UI_SELECTABLE_SELECTED_OR_CHECKED,
+     FRONTEND_CONTROL_INACTIVE), + previousRoot its caption text id. Rows 7..1 (entry row - 1).
      Some nodeFlags accesses add offsetof(UiNodeBase,nodeFlags) to the offset first (THANDOR_UI_FIELD): that
      order is the one of the original code there. */
   for (row = 7; row != 0; row--) {
@@ -1421,7 +1422,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   } while (remainingPlayers != 0);
   /* Not a client: update the mode buttons, then hide those of factions taken by players. Original quirk: the
      original ORs the last player's faction index and ANDs the address of g_FrontendLoadedLevelAsset here
-     (EAX/ESI still hold them, 0x00549878), where the set/clear masks were probably meant; kept as in the
+     (both left over from the loop above), where the set/clear masks were probably meant; kept as in the
      original. */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     for (row = 7; row != 0; row--) {
@@ -1563,9 +1564,9 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
 
 /* Handler of the network game page's Join button (FRONTEND_ACTION_JOIN_GAME, slot 2 of
    g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick):
-   takes the session token (+0x04) and host endpoint (+0xA0, 16 bytes) of the session list's selected row
-   (reached at +0x248 from the button, i.e. sessionList +0x60) and sends the join request (player descriptor
-   packet 0x20002) to it. Returns the send's CF.
+   takes the session token (advertisement.header.sequenceToken) and host endpoint (senderEndpoint, 16 bytes)
+   of the selected row (selectedRowSlot) of the sibling sessionList and sends the join request (player
+   descriptor packet 0x20002) to it. Returns the result of UiTransfer_SendPlayerDescriptor.
 */
 bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings)
 
@@ -1603,19 +1604,18 @@ bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSett
    hidden unless the adapter offers it together with the other two pending values, the choices matching the
    pending mode are selected, and the apply button is only offered while the pending mode differs from the saved
    one.
-   How the selection works in the original (0x0054B1A3..0x0054B227 and the three groups): it first pushes all
-   19 choice controls (adapter 1..5, resolution 1..10, colour depth 1..4, so colour depth 4 ends on top), then
-   per group pushes every choice whose value equals the pending one (colour depth: bits per pixel == +0x60,
-   e.g. 0x0054B287; resolution: width == +0x60 and height == +0x64, e.g. 0x0054B33B; adapter: pending adapter
-   == 0..4, e.g. 0x0054B5E4) and calls UiSelectableGroup_SelectExclusive(count, <top of stack>, <the count
-   entries below it>), which pops count and the selected control, and then pops count entries (ADD ESP 0x10 /
-   0x28 / 0x14). With exactly one match per group this selects the matching choice. Quirk of the original:
+   How the selection works in the original: it first pushes all 19 choice controls on the machine stack
+   (adapter 1..5, resolution 1..10, colour depth 1..4, so colour depth 4 ends on top), then per group pushes
+   every choice whose value equals the pending one (colour depth: bits per pixel == the button's firstValue;
+   resolution: width == firstValue and height == secondValue; adapter: pending adapter == 0..4) and calls
+   UiSelectableGroup_SelectExclusive(count, <top of stack>, <the count entries below it>), which pops count
+   and the selected control, and then the caller pops count entries. With exactly one match per group this selects the matching choice. Quirk of the original:
    when a group has no match, the entry on top (without earlier shifts: that group's last choice) is taken as
    the selected control but is not in the list, so it keeps its state; the group's other choices plus the
    next group's first choice are deselected, and every later group works on a stack shifted by one entry
    (two matches in one group shift it the other way). modeStack models that stack exactly. Once a shift
-   reaches past the 19 pushed controls the original also deselects and redraws whatever its saved
-   EBP/ESI/EDI registers point at; this C leaves those entries out (listCount is cut at the last control).
+   reaches past the 19 pushed controls the original also deselects and redraws whatever the values
+   saved below them on its stack point at; this C leaves those entries out (listCount is cut at the last control).
 */
 #define DISPLAY_MODE_STACK_BASE 19 /* room for the pushed matches above the 19 controls */
 #define DISPLAY_MODE_STACK_END (DISPLAY_MODE_STACK_BASE + 19)
@@ -1629,7 +1629,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   uint32_t persistedValue;
   bool modeCheckCarry;
   /* the original's stack: modeStack[modeStackTop] is the top; the 5 NULL entries after the 19 controls stand
-     for the original's saved registers */
+     for the values the original saved below them */
   UiNodeBase *modeStack[DISPLAY_MODE_STACK_END + 5];
   int modeStackTop;
   UiControlCount listCount;
@@ -1646,7 +1646,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   while (frontendRoot->parent != UI_NODE_NONE) {
     frontendRoot = frontendRoot->parent;
   }
-  /* 0x0054B1A3..0x0054B227: push all 19 choices */
+  /* push all 19 choices */
   modeStackTop = DISPLAY_MODE_STACK_BASE;
   modeStack[DISPLAY_MODE_STACK_BASE + 0] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption4);
   modeStack[DISPLAY_MODE_STACK_BASE + 1] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption3);

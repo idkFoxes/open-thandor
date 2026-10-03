@@ -9,8 +9,8 @@
 #include <thandor/platform/debug/hooks.h>
 
 /*
-The original image has no C runtime: its PE entry point is ProcessEntry (0x00585D40), which
-ends in ExitProcess. The rebuilt executable keeps the MSVC CRT (the Ghidra helpers use memcpy),
+The original image has no C runtime: its PE entry point is ProcessEntry, which
+ends in ExitProcess. The rebuilt executable keeps the MSVC CRT (the code uses memcpy),
 has the original data compiled in (the modules' data.c files) and enters ProcessEntry from WinMain.
 */
 

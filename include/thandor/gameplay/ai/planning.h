@@ -20,7 +20,7 @@
    pressure score as jitter (AiStrategicClass_SelectPressureWeightedBuilding) */
 #define AI_STRATEGIC_TIE_BREAK_MASK 0x3fff
 #define AI_STRATEGIC_SCORE_JITTER_MASK 0x7f
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void AiFactionRuntime_RebuildPlanningCapacityState(void);
 

@@ -43,7 +43,7 @@
    away from the current final target (movementTargetWorld*Q12) */
 #define ARMY_MOVEMENT_FOLLOW_MAX_STEP_Q12 0x2000
 /* Step state of the two-legged articulated walker (runtime-update slot 3), kept in
-   ArmyArticulatedRuntimeSlotView.articulatedContact.fallbackPosition0Q12 (+0xB8). The upper 16 bits hold half
+   ArmyArticulatedRuntimeSlotView.articulatedContact.fallbackPosition0Q12. The upper 16 bits hold half
    the heading change of a turn step (ArmyArticulatedRuntime_UpdateSelectedTerrainContact). */
 #define ARMY_ARTICULATED_STEP_LEFT 0x1          /* the left foot is moving (progress runtimeStateA8) */
 #define ARMY_ARTICULATED_STEP_RIGHT 0x2         /* the right foot is moving (progress terrainContactMode) */
@@ -74,7 +74,7 @@
 #define ARMY_ARTICULATED_NORMAL_UP (FIXED_ANGLE16_QUARTER_TURN << 16)
 /* Tracked vehicles: the track texture U offsets are kept within +-one texture width (Q20) */
 #define ARMY_TRACK_TEXTURE_U_WRAP 0x100000
-/* Glider banking (runtime class 17, classLinkState +0x60): the bank elevation is level at the quarter turn,
+/* Glider banking (runtime class 17, classLinkState.modelLinkOrState): the bank elevation is level at the quarter turn,
    drops by ARMY_GLIDER_BANK_STEP_ANGLE16 per tick while turning down to ARMY_GLIDER_BANK_MAX_ANGLE16
    and recovers by ARMY_GLIDER_BANK_RECOVER_ANGLE16; the bank heading turns at most
    ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16 per tick */
@@ -89,7 +89,7 @@
 /* angle16 difference * this >> 16 sign-extends it to the shortest signed turn (-0x8000..0x7fff); the
    multiplication form is kept because a shift compiles differently */
 #define ARMY_ANGLE16_SIGN_EXTEND_SCALE 0x10000
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void ArmyRuntimeClass_UpdateArticulatedMovement (WorldRuntimeContext *worldRuntime, ModelRuntimeArticulatedMovementDefinitionView *modelRuntime);
 

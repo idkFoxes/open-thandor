@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/layout. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* End marker of the UI root stack: g_UiRootNode holds it when no root is open, and the bottom root's
    previousRoot link holds it. */

@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/session. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Game speed slider percent to gameSpeedQ8: percent * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16 >> 16 =
    percent * 256 / 100 (0x28F5C = 2.56 in Q16, truncated). */

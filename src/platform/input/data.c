@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/platform/input/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/platform/input/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -33,7 +33,7 @@ __declspec(align(4)) uint16_t u_engine_mouse_gfx_00416864[17] = L"engine\\mouse.
 
 __declspec(align(4)) uint16_t u_engine_mouse_dat_00416886[17] = L"engine\\mouse.dat";
 
-/* 004169E0 g_KeyboardEvents. Original quirk: the original reserves 256 events (0x800 bytes) for the ring, but
+/* g_KeyboardEvents. Original quirk: the original reserves 256 events (0x800 bytes) for the ring, but
    the read and write indices wrap at KEYBOARD_EVENT_RING_SIZE (64), so entries 64-255 are never used. */
 __declspec(align(16)) KeyboardInputEvent g_KeyboardEvents[256] = {0};
 

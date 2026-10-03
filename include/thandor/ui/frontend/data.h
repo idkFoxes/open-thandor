@@ -190,7 +190,7 @@ extern uint16_t u_sound_menue01_sam_00545b54[18];
 
 extern uint16_t u_gfx_panel_menue_gfx_00545b78[20];
 
-extern uint16_t g_FrontendMissionBriefingMoviePathUtf16[16]; /* L"flm\\lev0000.flm", the mission briefing movie path; the four digits at index 7 (00545C10) are overwritten with the level number; opened with Movie_Open (ui/frontend/scenario.c) */
+extern uint16_t g_FrontendMissionBriefingMoviePathUtf16[16]; /* L"flm\\lev0000.flm", the mission briefing movie path; the four digits at index 7 are overwritten with the level number; opened with Movie_Open (ui/frontend/scenario.c) */
 
 extern uint16_t u_sound_music00_sam_00545c4e[18];
 
@@ -198,7 +198,7 @@ extern char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31];
 
 extern char s_NAME__CLIENT__KARTE___00545e91[21]; /* the option names NAME=" CLIENT=" KARTE=" (used with explicit lengths); Original quirk: its terminating NUL is the first byte of g_LevelPackageFoundEntry */
 
-extern UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4]; /* 3 records + the terminator record [3] at 00548124 (command code 0 ends the dispatch scan; its other fields are the original's NOP fill) */
+extern UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[4]; /* 3 records + the terminator record [3] (command code 0 ends the dispatch scan; its other fields are the original's NOP fill) */
 
 extern FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007;
 

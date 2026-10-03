@@ -15,7 +15,7 @@
    EffectDefinition_RegisterAndLoadSprite, stopping at the first failure. An invalid header leaves the asset
    path in g_PackageLastErrorPath and fails with FATAL_ERROR_EFFECT_ASSET_INVALID.
    Returns true on success; on failure returns false with the error code in *outError (left untouched on
-   success). (The original's success EAX, the last loaded sprite asset, was read by no caller.)
+   success). (The original's success return value, the last loaded sprite asset, was read by no caller.)
 */
 bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
 
@@ -47,7 +47,8 @@ bool EffectAsset_PrepareEntries(EffectAssetHeader *asset,uint32_t *outError)
 /* Runs once all effect and shot assets are registered: replaces the linked effect and linked shot ids stored
    in every registered effect definition by pointers to those definitions. Returns 0 on success, or the
    lookup's error code (FATAL_ERROR_EFFECT_ID_NOT_FOUND / FATAL_ERROR_SHOT_ID_NOT_FOUND) as soon as an id is
-   not registered. (The original's success EAX, the last resolved definition, was read by no caller.)
+   not registered. (The original's success return value, the last resolved definition, was read by no
+   caller.)
 */
 uint32_t EffectDefinitions_ResolveCrossReferences(void)
 
@@ -90,8 +91,8 @@ uint32_t EffectDefinitions_ResolveCrossReferences(void)
 /* Registers one 0xC0-byte effect definition in the first free registry slot, switches its resource path to
    .spr and loads the sprite asset, reusing an already registered sprite with the same id (the fresh load is
    then released). Returns true on success; returns false with the error code in *outError (untouched on
-   success) on a duplicate id, a full registry or a path/package/sprite failure. (The original's success EAX,
-   the sprite asset, was read by no caller.)
+   success) on a duplicate id, a full registry or a path/package/sprite failure. (The original's success return
+   value, the sprite asset, was read by no caller.)
 */
 bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_t *outError)
 

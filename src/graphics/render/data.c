@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/graphics/render/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/graphics/render/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -314,12 +314,12 @@ __declspec(align(4)) GraphicsShadingRecordCount g_GraphicsShadingNearbyRecordCou
 
 /* SoftwareBgraWordLanes[819] (MODEL_LIGHTING_MMX_ROW_COUNT), PMULHW
    multipliers (alpha lane 0x4000) of the model vertex lighting. One table in the original, reached from two base rows:
-   ModelRender_ComputeVertexIntensityDefaultPath indexes from row MODEL_DISTANCE_ATTENUATION_ROW0 (136, 0x004CB1A0)
+   ModelRender_ComputeVertexIntensityDefaultPath indexes from row MODEL_DISTANCE_ATTENUATION_ROW0 (136)
    with the signed light-facing dot >> 21, ModelRender_ComputeVertexIntensityScaledPath from row
-   MODEL_LIGHTING_SCALE_ROW0 (682, 0x004CC2B0) with (dot / lightingScaleQ12) >> 9; negative indices of either run
+   MODEL_LIGHTING_SCALE_ROW0 (682) with (dot / lightingScaleQ12) >> 9; negative indices of either run
    into the rows before. Row numbers in the comments below restart at each former start. */
 __declspec(align(16)) SoftwareBgraWordLanes g_ModelLightingMmxMultiplierRows[819] = {
-    /* rows 0..135 (0x004CAD60, former g_ModelDistanceAttenuationMmxNegativeRows): attenuation rows -136..-1; B/G/R
+    /* rows 0..135 (formerg_ModelDistanceAttenuationMmxNegativeRows): attenuation rows -136..-1; B/G/R
        lanes 0x007F (row -1) rising by 0x80 to 0x3F7F, then 0x3FFF */
     /*   0 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16384},
     /*   1 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16384},
@@ -457,7 +457,7 @@ __declspec(align(16)) SoftwareBgraWordLanes g_ModelLightingMmxMultiplierRows[819
     /* 133 */ {.blue = 383, .green = 383, .red = 383, .alpha = 16384},
     /* 134 */ {.blue = 255, .green = 255, .red = 255, .alpha = 16384},
     /* 135 */ {.blue = 127, .green = 127, .red = 127, .alpha = 16384},
-    /* rows 136..681 (0x004CB1A0, MODEL_DISTANCE_ATTENUATION_ROW0, former g_ModelDistanceAttenuationMmx): MMX
+    /* rows 136..681 (MODEL_DISTANCE_ATTENUATION_ROW0, former g_ModelDistanceAttenuationMmx): MMX
        distance attenuation per (light-facing dot >> 21), rows 0..545 */
         /*   0 */ {.alpha = 16384},
         /*   1 */ {.alpha = 16384},
@@ -1005,7 +1005,7 @@ __declspec(align(16)) SoftwareBgraWordLanes g_ModelLightingMmxMultiplierRows[819
         /* 543 */ {.blue = 8575, .green = 8575, .red = 8575, .alpha = 16384},
         /* 544 */ {.blue = 8447, .green = 8447, .red = 8447, .alpha = 16384},
         /* 545 */ {.blue = 8319, .green = 8319, .red = 8319, .alpha = 16384},
-    /* rows 682..818 (0x004CC2B0, MODEL_LIGHTING_SCALE_ROW0, former g_ModelLightingScaleMmxMultiplierTable):
+    /* rows 682..818 (MODEL_LIGHTING_SCALE_ROW0, former g_ModelLightingScaleMmxMultiplierTable):
        multipliers for ModelRender_ComputeVertexIntensityScaledPath, rows 0..136; B/G/R lanes 0x1FFF at row 0
        falling by 0x80 to 0x007F, then 0 */
     /*   0 */ {.blue = 8191, .green = 8191, .red = 8191, .alpha = 16384},

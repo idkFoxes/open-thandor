@@ -86,7 +86,7 @@ extern uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16];
 
 extern uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16];
 
-extern uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32]; /* owns the unnamed 0x20 bytes up to 0x563514 (elapsed time can exceed 16 units) */
+extern uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32]; /* owns the unnamed 0x20 bytes after its first 16 units in the original (elapsed time can exceed 16 units) */
 
 extern uint32_t g_DataPackageHandle;
 

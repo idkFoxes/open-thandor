@@ -38,7 +38,7 @@
 #define FRONTEND_SNAPSHOT_REQUEST_RETRY_TICKS 4
 #define FRONTEND_SNAPSHOT_FLAGS_BYTES 4 /* the snapshotTransferFlags dword in front of each packed payload */
 
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,

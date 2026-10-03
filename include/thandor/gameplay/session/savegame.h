@@ -21,7 +21,7 @@
 #define INGAME_ACTION_SAVE_GAME_DELETE 0x1219
 /* Caption of the last row of the save list, the "new savegame" entry (InGameSaveGamePage_RebuildCatalog). */
 #define TEXT_ID_SAVE_GAME_NEW_ROW 0x2151
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList);
 

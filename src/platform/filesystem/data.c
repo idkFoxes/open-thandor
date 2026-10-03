@@ -5,7 +5,7 @@
  */
 
 /* Data of the original image that this module uses (moved here from the generated image data in
-   step 4c); declared in <thandor/platform/filesystem/data.h>. Original addresses in the comments. */
+   step 4c); declared in <thandor/platform/filesystem/data.h>. */
 
 #include <thandor/thandor.h>
 
@@ -78,7 +78,7 @@ __declspec(align(4)) pointer g_FileSystemInitComputerNameCapacityOrConfigCursor 
 
 __declspec(align(8)) uint32_t g_FileSystemConfigRemainingBytes = 0;
 
-/* two 0x100-byte narrow path buffers ([1] at 00575B9C, second path of move/copy); the directory sort swaps 0x200-byte records through the whole block */
+/* two 0x100-byte narrow path buffers ([1] is the second path of move/copy); the directory sort swaps 0x200-byte records through the whole block */
 __declspec(align(4)) uint8_t g_Win32PathScratch[2][256] = {0};
 
 /* char[4]: "x:\" root path, drive letter patched at [0] before GetDiskFreeSpaceA/GetVolumeInformationA/GetDriveTypeA; platform/filesystem/win32.c */

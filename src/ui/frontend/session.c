@@ -162,7 +162,7 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
 
 
 /* Handler of frontend command FRONTEND_COMMAND_SET_GAME_SPEED (0x300): stores the game-speed percent in the
-   mission briefing's gameSpeedSlider value (+0x58). Called directly by
+   mission briefing's gameSpeedSlider value. Called directly by
    FrontendGameplaySettings_SetGameSpeedPercent in a local game, through the command queue in a network game.
 */
 void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
@@ -200,7 +200,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
 {
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
-  /* source is the frontend template's clientLobbyLeaveButton (+0x5784). */
+  /* source is the frontend template's clientLobbyLeaveButton. */
   FrontendUiImage *frontendUi;
 
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
@@ -384,9 +384,8 @@ void FrontendSession_PeriodicTick(void)
    then tells the remaining clients about each dropped player with a 0x10007 packet and re-evaluates the ready
    consensus.
    Quirks kept from the original: the command records start at g_FrontendClientPlayerCommandRecords[0] while the
-   players start at block 1, and the 0x10007 packets go out in reverse drop order (the ids are pushed on the
-   stack while scanning, 0x00572646 PUSH [ESI+0x14], and popped one per packet, 0x005726CC). The id stack does
-   not overlap the command cursors, which live at [EBP-4]/[EBP-8] above it (verified against the asm).
+   players start at block 1, and the 0x10007 packets go out in reverse drop order (the dropped players'
+   playerRuntimeId values are stacked while scanning and taken back one per packet).
 */
 void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
 
@@ -401,7 +400,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
   FrontendCommandPacketRecord *destinationCommandRecord;
   UiTransferEndpointDescriptor *endpoint;
   uint16_t *timeoutText;
-  /* the original's PUSH/POP stack of dropped player ids (at most 8 player blocks) */
+  /* stack of dropped player ids, sent last first (at most 8 player blocks) */
   FrontendPlayerRuntimeId removedPlayerIds[8];
   
   removedCount = 0;
@@ -428,7 +427,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
       removedCount++;
     }
     else {
-      /* keep: move the player block and its command record down over the gap (REP MOVSD) */
+      /* keep: move the player block and its command record down over the gap */
       if (destinationPlayer != sourcePlayer) {
         *destinationPlayer = *sourcePlayer;
         *destinationCommandRecord = *sourceCommandRecord;
@@ -509,7 +508,7 @@ void FrontendClientSession_TickHostTimeout(void)
   /* the local player becomes the only player, with id 0 (the block pointer is read after the vote) */
   localPlayerRecord = g_FrontendPlayerRuntimeBlocks;
   g_FrontendPlayerRuntimeBlockCount = 1;
-  /* XCHG: the timer thread reads the id (InGameCommandQueue_AppendLocalPlayerCommand) */
+  /* atomic exchange: the timer thread reads the id (InGameCommandQueue_AppendLocalPlayerCommand) */
   previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
   inGameRoot->worldRuntime.selection.activePlayerRuntimeId = 0;
   g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];

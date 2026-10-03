@@ -63,7 +63,7 @@
 #define RESOURCE_EXTRACTION_FACTION_SHIFT 13
 #define RESOURCE_EXTRACTION_FACTION_MASK 0x7FF /* after the shift: bits 13..23 */
 #define RESOURCE_EXTRACTION_SHARE_SHIFT 24
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 bool InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16,uint32_t *outError);

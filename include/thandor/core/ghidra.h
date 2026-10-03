@@ -8,7 +8,8 @@
 #define THANDOR_CORE_GHIDRA_H
 
 /*
-Ghidra decompiler pseudo-operations, expressed in C.
+Low-level helpers of the translated code, expressed in C: partial accesses, container-of, atomic exchange,
+rounding, CPUID and MMX lane emulation.
 */
 
 #include <stddef.h>
@@ -18,7 +19,7 @@ Ghidra decompiler pseudo-operations, expressed in C.
 #include <string.h>
 
 /*
-Partial access "base._off_size_" (Ghidra field-piece syntax).
+Partial access: the size-byte piece at byte offset off of base.
 Power-of-two sizes stay lvalues; odd sizes go through exact-width byte copies.
 */
 #define THANDOR_PART(T, base, off) (*(T *)((unsigned char *)&(base) + (off)))
@@ -38,10 +39,11 @@ static __inline void thandor_write_part(void *base, unsigned off, unsigned size,
 #define THANDOR_READ_PART(base, off, size) thandor_read_part(&(base), (off), (size))
 #define THANDOR_WRITE_PART(base, off, size, v) thandor_write_part(&(base), (off), (size), (unsigned long long)(v))
 
-/* ADJ(p) on a Ghidra shifted pointer: the structure that contains the member p points at. */
+/* The structure that contains the member p points at. */
 #define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
 
-/* LOCK()/UNLOCK(): Ghidra's markers around implicitly locked XCHG; the swap itself is spelled out. */
+/* LOCK()/UNLOCK(): no-op markers where the original swaps memory atomically (XCHG); the swap itself is
+   spelled out. */
 #define LOCK() ((void)0)
 #define UNLOCK() ((void)0)
 
@@ -49,7 +51,7 @@ static __inline void thandor_write_part(void *base, unsigned off, unsigned size,
 THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit
 location shared with the WinMM timer thread (TimerSystem_RegisterPeriodic callbacks): stores value and
 returns the previous contents as uint32_t, in one atomic step. Compiles to XCHG. Sites whose memory only
-one thread touches keep Ghidra's LOCK()/UNLOCK() plus a plain load and store.
+one thread touches keep LOCK()/UNLOCK() plus a plain load and store.
 */
 #define THANDOR_ATOMIC_EXCHANGE(ptr, value) \
     ((uint32_t)_InterlockedExchange((volatile long *)(ptr), (long)(uintptr_t)(value)))
@@ -58,8 +60,8 @@ one thread touches keep Ghidra's LOCK()/UNLOCK() plus a plain load and store.
 #define ROUND(x) rint(x)
 
 /*
-cpuid_Version_info(leaf): Ghidra's CPUID pseudo-op. Returns the address of the result as
-{EAX, EBX, EDX, ECX}; callers read feature bits from offset 8 (EDX).
+cpuid_Version_info(leaf): runs CPUID for leaf. Returns the address of a static array holding the result
+as {EAX, EBX, EDX, ECX} (the CPUID output order); callers read feature bits from offset 8 (EDX).
 */
 static __inline int cpuid_Version_info(int leaf)
 {
@@ -153,7 +155,7 @@ static __inline unsigned long long thandor_mmx_psllw(unsigned long long a, unsig
 }
 
 static __inline unsigned long long thandor_mmx_identity(unsigned long long v) { return v; }
-/* Operands are integers or the 8-byte lane structs Ghidra typed some MMX registers as. */
+/* Operands are integers or the 8-byte lane structs some MMX values are typed as. */
 static __inline unsigned long long thandor_mmx_rgb(SoftwareRgbWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
 static __inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { unsigned long long q; memcpy(&q, &v, 8); return q; }
 #define THANDOR_MMX_Q(v) _Generic((v),     SoftwareRgbWordLanes: thandor_mmx_rgb,     SoftwareBgraWordLanes: thandor_mmx_bgra,     default: thandor_mmx_identity)(v)
@@ -167,8 +169,8 @@ static __inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { u
 #define psllw(a, n) thandor_mmx_psllw(THANDOR_MMX_Q(a), (unsigned long long)(n))
 
 
-/* The original scales floats by powers of two with integer adds on their bit pattern
-   (e.g. `add dword ptr [x], -0x6000000` divides by 2^12); Ghidra shows those as value casts. */
+/* The original scales floats by powers of two with integer adds on their bit pattern (e.g. adding
+   -0x6000000 to the exponent bits divides by 2^12); this adds delta to the bit pattern of lvalue. */
 #define THANDOR_FLOAT_ADD_EXPONENT_BITS(lvalue, delta) (*(int32_t *)&(lvalue) += (int32_t)(delta))
 
 #endif /* THANDOR_CORE_GHIDRA_H */

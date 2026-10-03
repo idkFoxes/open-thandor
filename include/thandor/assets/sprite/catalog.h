@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/sprite/catalog. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 void SpriteAssetRegistry_Reset(void);
 

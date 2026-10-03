@@ -295,13 +295,13 @@ static bool GraphicsShadingGeneratedTexture_DropSampleOntoTerrain
   if (!terrainSurfaceHit) {
     return false;
   }
-  /* Original quirk, kept (all 12 such sites, e.g. 0x004CE3F4-0x004CE3F8): after the hit the original
-     pushes EAX (distance), ECX (azimuth, preserved by the raycast) and EDX as the elevation. EDX was
-     -lightElevationAngle - 0x4000 before the call, but the raycast returns the hit cell's material byte in
-     EDX (0x00504C80), so the material byte becomes the elevation angle. */
+  /* Original quirk, kept (all 12 such sites): after the hit the original passes the hit distance, the
+     azimuth and, as the elevation, a value it expected to still be -lightElevationAngle - 0x4000. But
+     FieldGrid_RaycastTerrainSurfaceDistance overwrites that value with the hit cell's material byte
+     (terrainHitMaterial), so the material byte becomes the elevation angle. */
   Shading_AddDirectionToPoint
             (&sample->worldPoint,
-             FixedMath_DirectionFromAnglesScaled /* quirk: EDX */
+             FixedMath_DirectionFromAnglesScaled /* quirk: material byte as elevation */
                        (terrainHitMaterial,oppositeAzimuth,surfaceDistanceQ12));
   sample->textureCoordinateOffsetQ20 =
        sample->textureCoordinateOffsetQ20 +
@@ -537,8 +537,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
        (GraphicsPrimitiveBackendCoordinate)
        (g_GraphicsShadingTextureSet->entries + g_GraphicsShadingGeneratedTextureSubresourceIndex);
   GraphicsShadingGeneratedTexture_ShareShadowPatchVertices(projectedBlocks);
-  /* The original tests EBX as left by the traversal (0x004D09CD); the decompile tested a
-     stale local instead. */
+  /* The original tests the result the soft shadow traversal leaves (its return value here). */
   if (GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(modelNode) != 0) {
     GraphicsShadingGeneratedTexture_FilterGridScratchMmx();
   }
@@ -589,7 +588,7 @@ uint32_t GraphicsIntensityClampTable_Initialize(void)
           *tableCursor = targetByte;
         }
         tableCursor = tableCursor + 1;
-        /* 8-bit wrap ends the row after target 255 (INC DL; JNZ in the original) */
+        /* 8-bit wrap ends the row after target 255 (the original counts the target in a byte) */
         targetIntensity = (uint32_t)(uint8_t)(targetByte + 1U);
       } while ((uint8_t)(targetByte + 1U) != 0);
       previousIntensity++;
@@ -988,7 +987,7 @@ void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
 }
 
 
-/* Shadow silhouette pass for a mesh record without MODEL_MESH_SOFT_SHADOW (+0x10), called per mesh record by
+/* Shadow silhouette pass for a mesh record without MODEL_MESH_SOFT_SHADOW (ModelMeshHeader.flags), called per mesh record by
    GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy after the blur: projects every vertex into the
    current shadow tile (quantized to whole texels) and fills every triangle with 0xFF. A mesh record is a
    ModelMeshHeader, then 0x40-byte vertices (position at +0, projected XY stored at +0x20) followed by
@@ -1087,9 +1086,9 @@ void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNo
 
 /* Counterpart of GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh for mesh records with
    MODEL_MESH_SOFT_SHADOW (the parts that get the soft, filtered shadow); called per mesh record by
-   GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy. Returns EBX: 0 when nothing was rasterized, 1
-   when triangles were, otherwise the last transformed record address (the original leaves EBX there when
-   the batch has vertices but no triangles).
+   GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy. Returns 0 when nothing was rasterized, 1
+   when triangles were, otherwise the address of the last transformed vertex's shadow XY (what the original
+   leaves as its result when the batch has vertices but no triangles).
 */
 uint32_t
 GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 meshRecord)
@@ -1465,8 +1464,8 @@ void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
 }
 
 
-/* Returns true (CF set in the original) when neither the node's model resource nor any descendant has a mesh
-   group (resource +0xEC), so GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy skips hierarchies
+/* Returns true when neither the node's model resource nor any descendant has a mesh
+   group (ModelResource.shadowMeshGroupOffset), so GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy skips hierarchies
    that cannot cast a shadow. Children are probed from the last to the first; the first hit ends the search.
 */
 bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
@@ -1795,7 +1794,8 @@ void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
       rowPixels = rowPixels + g_GraphicsShadingTextureDimension;
       upperEdgeX = upperEdgeX + upperEdgeStep;
       longEdgeX = longEdgeX + longEdgeStep;
-      /* the original keeps the total row count in MM2 and decrements it with PSUBD by this {1, 0} constant */
+      /* the original keeps the total row count in an MMX lane and decrements it with PSUBD by this {1, 0}
+         constant */
       rowsRemaining = rowsRemaining - (int)g_GraphicsShadingRasterizeMmxPackedDwordOneZero;
     }
   }
@@ -1813,7 +1813,7 @@ void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
 
 
 /* Not in the original: the original executable carries g_PackedLightingLookupTable precomputed
-   (0x0041DE80, 512 entries). Each entry holds one light level as four Q12 words for PMULHW: the
+   (512 entries). Each entry holds one light level as four Q12 words for PMULHW: the
    same factor in the three colour lanes and 0x1000 (1.0) in the alpha lane. Levels 0..255 map to
    (level * 0x101) >> 4, i.e. 0..0x0FFF; levels 256..511 saturate at 0x1000. Called once at startup. */
 void GraphicsLighting_BuildPackedLookupTable(void)

@@ -9,7 +9,7 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+/* Module data. */
 
 SoundPlayVoiceProc *g_SoundPlayOneShot = (void *)SoundBackendDisabled_PlayOneShot;
 
@@ -21,8 +21,8 @@ SoundPlayVoiceProc *g_SoundPlayOneShot = (void *)SoundBackendDisabled_PlayOneSho
 void DirectSound_Shutdown(void)
 
 {
-  /* The original calls the silent stub here (CALL 0x004175F0), not DirectSound_StopAllVoices, so
-     playing voices are not stopped. */
+  /* The original calls the silent stub here, not DirectSound_StopAllVoices, so playing voices are not
+     stopped. */
   SoundBackendDisabled_StopAllVoices();
   if (g_PrimarySoundBuffer != NULL) {
     g_PrimarySoundBuffer->lpVtbl->SetVolume(g_PrimarySoundBuffer,g_PrimaryVolume);
@@ -40,8 +40,8 @@ void DirectSound_Shutdown(void)
 }
 
 
-/* Silent-backend stub in slot g_SoundCreateSampleVoiceSet (image 0x00417338, until DirectSound_Init
-   switches the slots to DirectSound). Always succeeds (returns 0) with the dummy voice set 0xFFFFFFFF in
+/* Silent-backend stub in slot g_SoundCreateSampleVoiceSet (until DirectSound_Init switches the slots to
+   DirectSound). Always succeeds (returns 0) with the dummy voice set 0xFFFFFFFF in
    *outVoiceSet, so callers holding a sample keep a non-NULL handle even without sound.
 */
 uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset,DirectSoundVoiceSet **outVoiceSet)
@@ -52,8 +52,7 @@ uint32_t SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset
 }
 
 
-/* Silent-backend stub in slot g_SoundReleaseSampleVoiceSet (image 0x0041733C): nothing to release,
-   clears CF.
+/* Silent-backend stub in slot g_SoundReleaseSampleVoiceSet: nothing to release.
 */
 void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 
@@ -62,10 +61,9 @@ void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 }
 
 
-/* Silent-backend stub in slot g_SoundPlayOneShot (image 0x00417348): plays nothing and reports
-   success (returns true) with a NULL voice in *outVoice; the original leaves EAX unchanged, so its callers
-   store their own leftover EAX as the voice (e.g. the random effect index at 0x005665A6, the music gain at
-   0x0056666F). Those handles only ever go back to the silent stubs (the backend is chosen once at startup)
+/* Silent-backend stub in slot g_SoundPlayOneShot: plays nothing and reports success (returns true)
+   with a NULL voice in *outVoice; the original never writes the voice, so its callers store an unrelated
+   leftover value of their own as the voice (e.g. a random effect index or a music gain). Those handles only ever go back to the silent stubs (the backend is chosen once at startup)
    or through a NULL test before one (Movie_Rewind), so NULL here behaves the same.
 */
 bool SoundBackendDisabled_PlayOneShot
@@ -80,9 +78,9 @@ bool SoundBackendDisabled_PlayOneShot
 }
 
 
-/* Silent-backend stub in slot g_SoundPlayLooping (image 0x0041734C): plays nothing and reports
-   success (returns true) with a NULL voice in *outVoice; the original leaves EAX unchanged (callers store
-   it: the music gain at 0x0054C03B / 0x00546988, the non-zero gain at 0x0050BAC2). As for
+/* Silent-backend stub in slot g_SoundPlayLooping: plays nothing and reports success (returns true)
+   with a NULL voice in *outVoice; the original never writes the voice (callers store an unrelated leftover
+   value instead: a music gain, or the non-zero gain). As for
    SoundBackendDisabled_PlayOneShot those values only reach the silent stubs again, so NULL behaves the same
    (the spatial pool merely calls this stub again instead of the gain stub on the next frame).
 */
@@ -98,8 +96,7 @@ bool SoundBackendDisabled_PlayLooping
 }
 
 
-/* Silent-backend stub in slot g_SoundStopVoice (image 0x00417350): nothing plays, so nothing to
-   stop; clears CF.
+/* Silent-backend stub in slot g_SoundStopVoice: nothing plays, so nothing to stop.
 */
 void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
 
@@ -108,8 +105,8 @@ void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
 }
 
 
-/* Silent-backend stub in slot g_SoundIsVoicePlaying (image 0x00417358): always sets CF, meaning the
-   voice is not playing.
+/* Silent-backend stub in slot g_SoundIsVoicePlaying: always returns true, meaning the voice is not
+   playing.
 */
 bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 
@@ -118,8 +115,7 @@ bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 }
 
 
-/* Silent-backend stub in slot g_SoundSetVoiceGains (image 0x00417360): ignores the new left/right
-   gains.
+/* Silent-backend stub in slot g_SoundSetVoiceGains: ignores the new left/right gains.
 */
 void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice)
@@ -229,8 +225,8 @@ uint32_t DirectSound_Init(void)
   directSoundResult = pDirectSoundCreate(NULL,&g_DirectSound,NULL);
   Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
   if (directSoundResult != 0) {
-    /* no DirectSound device: not an error, the game runs silent (the original returns the HRESULT with
-       CF clear; no caller reads it) */
+    /* no DirectSound device: not an error, the game runs silent (the original returns the HRESULT as a
+       success; no caller reads it) */
     return 0;
   }
 
@@ -403,7 +399,7 @@ void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
       }
     }
     g_MemoryApi.free(voiceSet);
-    /* the original's loop register holds the registry pointer on the first pass (a NULL registry searches
+    /* the original's loop counter holds the registry pointer on the first pass (a NULL registry searches
        nothing) and the remaining count afterwards */
     registry = g_DirectSoundVoiceSetRegistry;
     if (registry != NULL) {
@@ -419,10 +415,8 @@ void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 }
 
 
-/* No own address: shared tail of the play functions (0x00583AD0) and DirectSound_SetVoiceGains
-   (0x00583C70). The attenuation of the louder channel is the volume and left - right attenuation is the
-   pan. The original leaves the pan argument on the stack for the following SetPan call, which Ghidra
-   could not follow.
+/* Shared tail of the play functions and DirectSound_SetVoiceGains. The attenuation of the louder channel is
+   the volume and left - right attenuation is the pan.
 */
 static void DirectSound_ApplyChannelGains
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
@@ -435,8 +429,7 @@ static void DirectSound_ApplyChannelGains
   voice->lpVtbl->SetPan(voice,leftAttenuation - rightAttenuation);
 }
 
-/* Shared body of PlayOneShot/PlayLooping (0x00583940 / 0x00583A70), rewritten from the assembly:
-   the first idle voice of the set plays; an empty slot is filled with DuplicateSoundBuffer of
+/* Shared body of DirectSound_PlayOneShot/DirectSound_PlayLooping: the first idle voice of the set plays; an empty slot is filled with DuplicateSoundBuffer of
    voice 0 rewound to position 0; with all eight voices busy it fails (false, NULL voice). */
 static bool DirectSound_PlayVoiceSet
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
@@ -516,8 +509,8 @@ void DirectSound_StopVoice(IDirectSoundBuffer *voice)
 }
 
 
-/* Tells whether a voice is still playing. The result is inverted like all CF flags here: CF clear
-   (false) means playing, CF set (true) means NULL or stopped; EAX is preserved.
+/* Tells whether a voice is still playing. The result is inverted like all failure flags here: false means
+   playing, true means NULL or stopped.
 */
 bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
 
@@ -545,7 +538,7 @@ void DirectSound_StopAllVoices(void)
   int registryIndex;
   int voiceIndex;
 
-  /* The original's loop registers hold the registry pointer and the set's voices pointer on the first pass
+  /* The original's loop counters hold the registry pointer and the set's voices pointer on the first pass
      and the remaining counts afterwards: a NULL registry stops nothing, and since voices is at offset 0 an
      empty registry slot skips its set. */
   registry = g_DirectSoundVoiceSetRegistry;
@@ -583,7 +576,7 @@ void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSou
 
 
 /* Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until
-   DirectSound_Init installs DirectSound_StopAllVoices): there are no voices, so it only clears CF.
+   DirectSound_Init installs DirectSound_StopAllVoices): there are no voices, so it does nothing.
 */
 void SoundBackendDisabled_StopAllVoices(void)
 

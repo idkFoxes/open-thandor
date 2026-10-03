@@ -95,7 +95,7 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
   }
   savedDepthEpoch = g_SoftwareDepthEpoch;
   savedDepthBuffer = g_SoftwareDepthBuffer;
-  /* the original swaps the depth epoch and buffer in with XCHG */
+  /* the original swaps the depth epoch and buffer in with atomic exchanges (the LOCK/UNLOCK pairs) */
   LOCK();
   g_SoftwareDepthEpoch = -1;
   UNLOCK();

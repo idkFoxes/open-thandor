@@ -87,7 +87,7 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
 
 /* Effect entry of the occupancyRebuild phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
    table, from InGameRuntime_UpdateSimulationAndNetworkTick): effects take no part in the occupancy rebuild, so this
-   does nothing (RET 8).
+   does nothing.
 */
 void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
@@ -98,7 +98,7 @@ void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRun
 
 /* Effect entry of the audioRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
    from the every-8th-frame spatial sound pass in InGameUiRoot_UpdateFrame): effects add no
-   spatial sound, so this does nothing (RET 8).
+   spatial sound, so this does nothing.
 */
 void EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
@@ -294,7 +294,7 @@ static void EffectLifecycle_CountDownLinkedShot
 }
 
 /* EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL: only an owner whose model definition has class 18 turns into the
-   army asset named by classParameterC0. The new model keeps the owner's armour points (+0x3C) in proportion,
+   army asset named by classParameterC0. The new model keeps the owner's armour points (ModelRuntimeSlot.health) in proportion,
    rescaled by the two definitions' maximumHealth (presumably the full armour), and the owner is destroyed. */
 static void EffectLifecycle_SpawnArmyFromOwner(WorldRuntimeContext *worldRuntime,GameEntityRuntime *ownerEntity)
 

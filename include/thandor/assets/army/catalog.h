@@ -15,9 +15,9 @@
 
 /* Pointer slots in g_ArmyAssetRecordRegistry (the global is declared as an array of 768). */
 #define ARMY_ASSET_REGISTRY_SLOT_COUNT 768
-/* Number of linked army-asset ids stored from record offset +0x30 (ArmyAssetRecord_HasFactionUnlockedLinkedDefinition). */
+/* Length of ArmyAssetRecord.linkedArmyAssetIds (ArmyAssetRecord_HasFactionUnlockedLinkedDefinition). */
 #define ARMY_ASSET_LINKED_ID_COUNT 16
-/* Bits of an army record's flags dword (+0x14) that pick the map-editor placement lists: unit placement
+/* Bits of an army record's flags (ArmyAssetRecord.flags) that pick the map-editor placement lists: unit placement
    (g_UiCommandModeG 3, g_UiCommandModeGArmyAssetId) cycles records with 0x0100 set and 0x0200 clear, object
    placement (mode 4, g_UiCommandMode4ArmyAssetId) records with both set (ArmyAssetRegistry_HasNo*WithId). */
 /* Bit 0 of the flags: the record is enabled (buildable); ArmyAssetRegistry_FindEnabledById. */
@@ -38,7 +38,7 @@ typedef struct ArmyModelTreeNode {
     struct ArmyModelTreeNode *children[5];    /* +0x0C */
     enum PckModelDefinitionIdCatalog linkedDefinitionIds[8]; /* +0x20 [0] default, others need a technology; 0 = none */
 } ArmyModelTreeNode;
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 ArmyAssetId ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId);
 

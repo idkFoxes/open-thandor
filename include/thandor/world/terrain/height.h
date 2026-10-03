@@ -12,7 +12,7 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/terrain/height. */
-/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+/* Functions are grouped by semantic ownership. */
 
 /* Hexagonal radius scans (TerrainHeightDelta_*, TerrainHeightBand_*, TerrainAuxHeightThreshold_*): the scan step
    counter grows by 4 per cell along a straight direction and by 7 (about 4 * sqrt(3)) per step along a wedge's
@@ -47,7 +47,7 @@ bool TerrainTriangle_IntersectRayDistance
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12,Q12 *outDistanceQ12);
 
-/* ESI/EDX/ECX results of TerrainRay_AdvanceGridTraversal: next cell and grid corner. */
+/* Extra results of TerrainRay_AdvanceGridTraversal: next cell and grid corner. */
 extern FieldGridCell *g_TerrainRayNextCell;
 extern Q12 g_TerrainRayNextCoord0Q12;
 extern Q12 g_TerrainRayNextCoord1Q12;

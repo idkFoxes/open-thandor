@@ -10,11 +10,11 @@
 
 /* Implementation ownership: network/protocol/transfer. */
 
-/* Header bytes of the mailbox chunk packet g_UiTransferChunkPacket (0x004AE9E8); its payload holds the chunk
+/* Header bytes of the mailbox chunk packet g_UiTransferChunkPacket; its payload holds the chunk
    offset (+0), the transfer byte count (+4) and the chunk data (+8). The packed type is written byte by byte:
    0x31,0,1,0 = FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST, 0x30,0,8,0 = FRONTEND_PACKET_80030_MAILBOX_CHUNK.
-   Round keys 12..15 of g_UiTransferRoundKeys are not a string: Ghidra read their bytes "mohTG sakere!!!e" as
-   text. The packet directly follows the key table in memory. */
+   Round keys 12..15 of g_UiTransferRoundKeys are not a string, although their bytes spell "mohTG sakere!!!e".
+   The packet directly follows the key table in memory. */
 #define UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES ((uint8_t *)&g_UiTransferChunkPacket.packetHeader)
 #define UI_TRANSFER_CHUNK_PACKET_OFFSET (*(UiTransferMailboxByteOffset *)(g_UiTransferChunkPacket.payload + 0))
 #define UI_TRANSFER_CHUNK_PACKET_BYTE_COUNT (*(UiTransferMailboxByteCount *)(g_UiTransferChunkPacket.payload + 4))
@@ -155,7 +155,8 @@ static void UiTransferMailbox_ServeChunkRequest
       return; /* not a player: drop the request */
     }
   }
-  /* original quirk: ESI (receive scratch slot) instead of EBX (player record), see the timer's comment */
+  /* original quirk: extends the sender's receive scratch slot instead of the player record, see the timer's
+     comment */
   senderEndpointSlot->transferTimeoutTicks =
        senderEndpointSlot->transferTimeoutTicks + UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS;
   UI_TRANSFER_CHUNK_PACKET_OFFSET = *(UiTransferMailboxByteOffset *)ringRecord->payload;
@@ -227,15 +228,15 @@ static void UiTransferMailbox_StorePingRoundTrip
    each requested by the receiver with a 0x10031 packet naming the next offset; a request that stays
    unanswered for UI_TRANSFER_CHUNK_RETRY_TICKS ticks is sent again. Ping: 0x10032 is echoed as 0x10033,
    whose round trip becomes the player's latency text. Skipped while the ring lock is held elsewhere.
-   Original quirk: the checksum loop trusts the unit count of the (descrambled) packet header (0x004AEB74..
-   0x004AEB96: SHR 0x10, SHL 3, DEC/JNZ) - neither the received byte count nor the 0x100-byte ring slot limit it,
+   Original quirk: the checksum loop XORs (unit count * 8) dwords, taking the unit count from the (descrambled)
+   packet header - neither the received byte count nor the 0x100-byte ring slot limit it,
    so a count above 8 XORs past the slot and a count of 0 wraps the counter and reads on until it faults. Here
    such packets are rejected (UiTransferMailbox_DecryptAndVerifyRecord); valid packets are not affected.
-   Original quirk: on a host chunk request (0x10031) the timeout extension goes to the dword at +0x10 of the
-   sender's receive scratch slot (0x004AED10 ADD [ESI+0x10],0x40; ESI = auxiliary endpoint slot), not to the
-   requesting player's heartbeatExpiryTicks at +0x10 of the player record (EBX), which was probably meant; the
+   Original quirk: on a host chunk request (0x10031) the timeout extension goes to
+   senderEndpointSlot->transferTimeoutTicks (the sender's slot of the auxiliary endpoint buffer), not to the
+   requesting player's heartbeatExpiryTicks (the same offset in the player record), which was probably meant; the
    scratch dword is never read, so the host's heartbeat countdown is not extended by chunk requests. The client
-   branch (0x80030) extends g_SessionTransferTimeoutTicks as intended (0x004AEBDD).
+   branch (0x80030) extends g_SessionTransferTimeoutTicks as intended.
 */
 void UiTransferMailbox_ServiceAndRetransmitTimer(void)
 
@@ -303,7 +304,7 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
 }
 
 
-/* Copies one 0x20-byte command packet record dword by dword (REP MOVSD in the original). */
+/* Copies one 0x20-byte command packet record dword by dword. */
 static void FrontendTransfer_CopyCommandRecord
           (FrontendCommandPacketRecord *destination,const FrontendCommandPacketRecord *source)
 {
@@ -392,7 +393,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       playerRecord = g_FrontendPlayerRuntimeBlocks +
                packet->packet40008LobbyRosterSnapshot.selectedPlayerIndex;
       playerRecord->playerRuntimeId = packet->packet40008LobbyRosterSnapshot.selectedPlayerRuntimeId;
-      /* the player's name at +0x38 */
+      /* the player's name (playerName.textUtf16) */
       nameSourceCursor = packet->packet40008LobbyRosterSnapshot.playerDescriptorPayload;
       nameDestinationCursor = (uint32_t *)playerRecord->playerName.textUtf16;
       for (dwordCount = 10; dwordCount != 0; dwordCount--) {
@@ -444,7 +445,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
 /* Client side of the session start: executes a new command batch from the host (a repeated batch only
    re-sends the last 0x10011 answer), answers 0x10012 with 0x10013, removes a player on 0x10007, stores the
    next player snapshot (0x30005, which also seeds the random streams) and serves chunks of the local
-   player's PCX preview on 0x10009. Only packets of the selected host and session count; CF is set only when
+   player's PCX preview on 0x10009. Only packets of the selected host and session count; returns true only when
    a new command batch was executed.
 */
 bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
@@ -632,7 +633,7 @@ void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllRea
 
 /* Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to
    g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address. Hosts answer
-   with a 0x50001 session advertisement. CF is the send result.
+   with a 0x50001 session advertisement. Returns the result of UiTransfer_StagePacketAndSend.
 */
 bool UiTransfer_SendDiscoveryProbe(void)
 
@@ -649,8 +650,8 @@ bool UiTransfer_SendDiscoveryProbe(void)
 
 /* Introduces the local player to the host (0x20002 player descriptor): the player name (20 UTF-16 units)
    whose last unit is replaced by flags: bit 0 = a 64x64 picture <name>.pcx was found (loaded into
-   g_FrontendLocalPlayerPcxPreview), bit 8 = shown as "CD" in the lobby list (always set). CF is the send
-   result.
+   g_FrontendLocalPlayerPcxPreview), bit 8 = shown as "CD" in the lobby list (always set). Returns the
+   result of UiTransfer_StagePacketAndSend.
 */
 bool UiTransfer_SendPlayerDescriptor(void)
 
@@ -1058,7 +1059,7 @@ static void FrontendTransfer_ResendBatchOrWaitToClients(void)
   peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
   for (peersRemaining = g_FrontendPlayerRuntimeBlockCount - 1; peersRemaining != 0; peersRemaining--) {
     /* peerEndpointCursor[1] is the 0x10 bytes after the endpoint, i.e. the same record's
-       commandSyncPending (+0x50) */
+       commandSyncPending */
     if (peerEndpointCursor[1].addressHeader.packedFamilyAndPort == 0) {
       UiTransfer_StagePacketAndSend
                 (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
@@ -1075,7 +1076,7 @@ static void FrontendTransfer_ResendBatchOrWaitToClients(void)
 /* Host side of the in-game command exchange. When every client (player records 1..n-1) has submitted its
    command, clears their ready flags, takes the host's own next command into slot 0, packs all non-empty
    command slots into g_FrontendClientCommandBatchPacketBuffer (at least one record) and sends that
-   COMMAND_BATCH to every client; returns false (CF clear). Otherwise returns true (CF set) and, with
+   COMMAND_BATCH to every client; returns false. Otherwise returns true and, with
    notifyWaitingPeers, resends the previous batch to clients that have not submitted yet and COMMAND_WAIT
    to those that have.
 */
@@ -1175,8 +1176,8 @@ void UiTransferMailbox_ClearReceivedState(void)
 
 /* Hands out a completely received transfer: returns its (non-NULL) buffer and stores its byte count in
    *outByteCount once an allocation exists and no bytes are outstanding. An empty, unavailable or still
-   incomplete mailbox returns NULL and leaves *outByteCount untouched (the original left the caller's EAX/ECX
-   as they were; every caller reads them only on success).
+   incomplete mailbox returns NULL and leaves *outByteCount untouched (the original returned nothing
+   meaningful then; every caller reads the results only on success).
 */
 void *UiTransferMailbox_GetReceivedBuffer(uint32_t *outByteCount)
 
@@ -1313,14 +1314,14 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
 
 /* Frontend copy of FrontendTransfer_ConsumeProcessedFlag: atomically takes and clears
    g_FrontendTransferResponsePending (set by FrontendTransfer_HandleGameplayCommandAndRosterPackets after a new
-   command batch). Returns true (CF set) when no batch arrived, so Frontend_StateTick ends its tick early.
+   command batch). Returns true when no batch arrived, so Frontend_StateTick ends its tick early.
 */
 bool FrontendTransfer_ConsumeProcessedFlagForMenuTick(void)
 
 {
   int previousFlag;
 
-  /* XCHG in the original: the flag is set and consumed on both the main and the timer thread */
+  /* atomic exchange: the flag is set and consumed on both the main and the timer thread */
   previousFlag = (int)THANDOR_ATOMIC_EXCHANGE(&g_FrontendTransferResponsePending,0);
   return previousFlag == 0;
 }
@@ -1381,7 +1382,7 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
   /* the client bumps its sender context per new command; an equal one is a retransmit */
   if (packetSenderContext != commandRecord->header.senderContext) {
     playerRecord->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
-    /* copy the whole 0x20-byte packet, header included, into the slot (REP MOVSD) */
+    /* copy the whole 0x20-byte packet, header included, into the slot */
     copySource = (uint32_t *)packet;
     copyDestination = (uint32_t *)commandRecord;
     for (dwordCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); dwordCount != 0; dwordCount--) {
@@ -1398,7 +1399,7 @@ void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
    the local simulation, so host and clients run the same commands in the same tick. The high 24 bits of
    each packed command are the handler's offset from InGameCommandQueue_AppendLocalPlayerCommand, the low
    8 bits the player id; offsets beyond the handler code region are ignored. The original handler address
-   is resolved to its recovered C function by CommandDispatch_ResolveHandler.
+   is resolved to its C function by CommandDispatch_ResolveHandler.
 */
 void FrontendTransfer_DispatchStagedCommandRecords(void)
 
@@ -1433,14 +1434,14 @@ void FrontendTransfer_DispatchStagedCommandRecords(void)
 
 /* Client side: atomically takes and clears g_FrontendTransferResponsePending, which
    FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch. Returns true
-   (CF set) when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
+   when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
 */
 bool FrontendTransfer_ConsumeProcessedFlag(void)
 
 {
   int previousFlag;
 
-  /* XCHG in the original: the flag is set and consumed on both the main and the timer thread */
+  /* atomic exchange: the flag is set and consumed on both the main and the timer thread */
   previousFlag = (int)THANDOR_ATOMIC_EXCHANGE(&g_FrontendTransferResponsePending,0);
   return previousFlag == 0;
 }
@@ -1448,7 +1449,7 @@ bool FrontendTransfer_ConsumeProcessedFlag(void)
 
 /* Encrypts an outgoing packet: byteCount/8 64-bit blocks in CBC mode (each input block is XORed with the
    previous output block, starting from zero), each through 16 rounds keyed by roundKeys16 and the eight
-   nibble substitution tables at 0x00403160. UiTransfer_DecryptPacketBlocks is the
+   nibble substitution tables g_UiTransferEncryptSboxes. UiTransfer_DecryptPacketBlocks is the
    matching decryption used on receive.
 */
 void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
@@ -1526,7 +1527,7 @@ void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks
 
 /* Decrypts a received packet in place or into destination (they may alias): the inverse of
    UiTransfer_EncryptPacketBlocks, running the 16 rounds backwards with the second table set
-   (g_UiTransferDecryptSboxes, 0x00405160) and XORing each result with the previous ciphertext block (CBC).
+   (g_UiTransferDecryptSboxes) and XORing each result with the previous ciphertext block (CBC).
 */
 void UiTransfer_DecryptPacketBlocks
           (uint32_t *roundKeys16,void *destination,UiTransferPayloadByteCount byteCount,void *source)
