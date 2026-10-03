@@ -53,10 +53,10 @@ void __cdecl ProcessEntry(void)
 #else
   if (FindWindowA(sz_MainWindowClass,NULL) == NULL) {
 #endif
-    g_MainWindowClass.instance = g_hInstance;
-    g_MainWindowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
-    g_MainWindowClass.cursor = LoadCursorA(NULL,IDC_ARROW);
-    if (RegisterClassA((WNDCLASSA *)&g_MainWindowClass) != 0) { /* the original tests the 16-bit ATOM in AX */
+    g_MainMessageStorage.overlay.windowClass.instance = g_hInstance;
+    g_MainMessageStorage.overlay.windowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
+    g_MainMessageStorage.overlay.windowClass.cursor = LoadCursorA(NULL,IDC_ARROW);
+    if (RegisterClassA((WNDCLASSA *)&g_MainMessageStorage.overlay.windowClass) != 0) { /* the original tests the 16-bit ATOM in AX */
       windowInstance = g_hInstance; /* read before the GetSystemMetrics calls, as in the original */
       screenHeight = GetSystemMetrics(SM_CYSCREEN);
       screenWidth = GetSystemMetrics(SM_CXSCREEN);
@@ -441,7 +441,7 @@ void DynDLL_UnloadAll(void)
 
 
 /* Address: 0x00585F50.
-   Window procedure of the main window (g_MainWindowClass.windowProc, registered by ProcessEntry). Counts
+   Window procedure of the main window (g_MainMessageStorage.overlay.windowClass.windowProc, registered by ProcessEntry). Counts
    WM_CLOSE/WM_DESTROY, hides the cursor and forwards keys and characters to the keyboard layer. On
    WM_ACTIVATEAPP it drops to normal priority, releases the mouse and lets the graphics backend give up the
    display when deactivated, and on reactivation returns to real-time priority, reacquires the mouse, restores

@@ -188,15 +188,15 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
   /* Take the candidate as the opaque format when none is chosen yet, when it has fewer bits per pixel, or
      when it has the same depth and color bits the current format lacks. */
   replaceOpaqueFormat = 1;
-  if (g_Direct3DOpaqueTextureFormatBitsPerPixel != 0) {
-    if (g_Direct3DOpaqueTextureFormatBitsPerPixel < candidateBitCount) {
+  if (g_Direct3DOpaqueTextureFormat.dwRGBBitCount != 0) {
+    if (g_Direct3DOpaqueTextureFormat.dwRGBBitCount < candidateBitCount) {
       replaceOpaqueFormat = 0;
     }
-    else if (g_Direct3DOpaqueTextureFormatBitsPerPixel == candidateBitCount) {
+    else if (g_Direct3DOpaqueTextureFormat.dwRGBBitCount == candidateBitCount) {
       candidateColorMask = (surfaceDesc->ddpfPixelFormat).dwRBitMask | (surfaceDesc->ddpfPixelFormat).dwGBitMask
               | (surfaceDesc->ddpfPixelFormat).dwBBitMask;
-      colorMaskDelta = (_g_Direct3DOpaqueTextureFormatRedBitMask | _g_Direct3DOpaqueTextureFormatGreenBitMask
-              | _g_Direct3DOpaqueTextureFormatBlueBitMask) ^ candidateColorMask;
+      colorMaskDelta = (g_Direct3DOpaqueTextureFormat.dwRBitMask | g_Direct3DOpaqueTextureFormat.dwGBitMask
+              | g_Direct3DOpaqueTextureFormat.dwBBitMask) ^ candidateColorMask;
       if ((colorMaskDelta == 0) || ((colorMaskDelta & candidateColorMask) == 0)) {
         replaceOpaqueFormat = 0;
       }
@@ -208,8 +208,8 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
   if (((pixelFormatFlags & DDPF_ALPHAPIXELS) != 0) && (8 < (surfaceDesc->ddpfPixelFormat).dwRGBBitCount)) {
     /* BSR/BSF of both alpha masks, compared as unsigned (low - high): a one-bit mask gives 0 and never wins,
        otherwise the narrower mask gives the larger value (e.g. 4444 beats 8888). */
-    currentAlphaHighBit = Direct3D_HighestSetBit(_g_Direct3DAlphaTextureFormatAlphaBitMask);
-    currentAlphaLowBit = Direct3D_LowestSetBit(_g_Direct3DAlphaTextureFormatAlphaBitMask);
+    currentAlphaHighBit = Direct3D_HighestSetBit(g_Direct3DAlphaTextureFormat.dwRGBAlphaBitMask);
+    currentAlphaLowBit = Direct3D_LowestSetBit(g_Direct3DAlphaTextureFormat.dwRGBAlphaBitMask);
     candidateAlphaHighBit = Direct3D_HighestSetBit((surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask);
     candidateAlphaLowBit = Direct3D_LowestSetBit((surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask);
     if ((uint32_t)(currentAlphaLowBit - currentAlphaHighBit) <

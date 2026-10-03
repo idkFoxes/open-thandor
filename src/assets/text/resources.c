@@ -442,7 +442,7 @@ void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
    Looks up the text of a resource id: TEXT_RESOURCE_ID_NONE gives the shared empty string, then the runtime
    override table is searched, then the bound locale block of the id's page (compact or extended id, see
    resources.h). Stores the text in *outText and returns true when found; a missing text stores
-   TEXT_RESOURCE_MISSING_SENTINEL_0x33 (&k_LowAddressLiteral00000033) there and returns false.
+   TEXT_RESOURCE_MISSING_SENTINEL_0x33 (the pointer value 0x33, not a real string) there and returns false.
 */
 bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
 
@@ -497,7 +497,7 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText)
   }
   Thandor_Log("text resource 0x%08X missing (page binding %p)", resourceId,
               g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 16].selectedLocaleBlock);
-  *outText = (uint16_t *)&k_LowAddressLiteral00000033;
+  *outText = (uint16_t *)(uintptr_t)TEXT_RESOURCE_MISSING_SENTINEL_0x33;
   return false;
 }
 

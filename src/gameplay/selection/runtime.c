@@ -2609,7 +2609,7 @@ bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *sele
 
 /* Address: 0x00530650.
    For every selected entity whose definition class is 0x16, counts how often each of the three lane asset ids
-   (g_ArmyLinkedChildAssetIdSlot0/1/2, i.e. g_InGamePointerModePreviewArmyIds[1], [2] and [4]) occurs among the
+   (g_InGamePointerModePreviewArmyIds[1], [2] and [4]) occurs among the
    13 child asset ids at model runtime +0x78..+0xA8. For every lane bit set in laneMask (1, 2, 4) it stores that
    lane's count byte (+0xDC + lane) and the point (worldYQ12, worldXQ12, heading16) at +0xB8 + lane * 0xC.
    Called by the pointer-mode handlers InGameSelection_SetAircraftPadTargetLane1/2 and
@@ -2640,13 +2640,13 @@ void SelectionPointerArray_SetAircraftPadTargets
       packedMarkerMatches = 0;
       for (markerSlotIndex = 12; markerSlotIndex >= 0; markerSlotIndex--) {
         markerSourceId = padRuntime->completedSecondaryArmyAssetIds[markerSlotIndex];
-        if (markerSourceId == g_ArmyLinkedChildAssetIdSlot0) {
+        if (markerSourceId == g_InGamePointerModePreviewArmyIds[1]) {
           packedMarkerMatches = packedMarkerMatches + SELECTION_PACKED_LANE_ONE(0);
         }
-        if (markerSourceId == g_ArmyLinkedChildAssetIdSlot1) {
+        if (markerSourceId == g_InGamePointerModePreviewArmyIds[2]) {
           packedMarkerMatches = packedMarkerMatches + SELECTION_PACKED_LANE_ONE(1);
         }
-        if (markerSourceId == g_ArmyLinkedChildAssetIdSlot2) {
+        if (markerSourceId == g_InGamePointerModePreviewArmyIds[4]) {
           packedMarkerMatches = packedMarkerMatches + SELECTION_PACKED_LANE_ONE(2);
         }
       }

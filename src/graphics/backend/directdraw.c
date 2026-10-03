@@ -593,10 +593,10 @@ static bool GraphicsDirect3D_CreateDeviceAndViewport
   if (comResult != 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECT3D_TEXTURE_FORMAT,completedStages + 12,errorCode);
   }
-  if (g_Direct3DOpaqueTextureFormatBitsPerPixel == 0) {
+  if (g_Direct3DOpaqueTextureFormat.dwRGBBitCount == 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECT3D_TEXTURE_FORMAT,completedStages + 13,errorCode);
   }
-  if (g_Direct3DAlphaTextureFormatBitsPerPixel == 0) {
+  if (g_Direct3DAlphaTextureFormat.dwRGBBitCount == 0) {
     return GraphicsDirectDraw_FailSetupStep(FATAL_ERROR_DIRECT3D_TEXTURE_FORMAT,completedStages + 14,errorCode);
   }
   g_Direct3DSelectedOpaqueTextureFormat = g_Direct3DOpaqueTextureFormat;

@@ -10,6 +10,212 @@
 
 /* Implementation ownership: graphics/backend/glide. */
 
+/* The Glide 3 entry points, called through the addresses that DynAPI_Resolve stored in g_GlideImportBindings
+   (GraphicsGlide3_ApplyDisplayModeAndInitializeResources, Glide3_InitAndEnumerate). Each wrapper is the original
+   indirect call through the binding's .procedure, same arguments in the same order. */
+static __inline void *GlideImport_Procedure(enum GlideImportIndex index)
+{
+  return g_GlideImportBindings[index].procedure;
+}
+
+static __inline void GlideImport_grAlphaBlendFunction(uint32_t rgbSourceFactor,uint32_t rgbDestinationFactor,
+          uint32_t alphaSourceFactor,uint32_t alphaDestinationFactor)
+{
+  ((GrAlphaBlendFunctionImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_ALPHA_BLEND_FUNCTION))(rgbSourceFactor,
+            rgbDestinationFactor,alphaSourceFactor,alphaDestinationFactor);
+}
+
+static __inline void GlideImport_grAlphaCombine(uint32_t function,uint32_t factor,uint32_t local,uint32_t other,
+          uint32_t invert)
+{
+  ((GrAlphaCombineImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_ALPHA_COMBINE))(function,factor,local,other,
+            invert);
+}
+
+static __inline void GlideImport_grBufferClear(uint32_t color,uint32_t alpha,uint32_t depth)
+{
+  ((GrBufferClearImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_BUFFER_CLEAR))(color,alpha,depth);
+}
+
+static __inline void GlideImport_grBufferSwap(uint32_t swapInterval)
+{
+  ((GrBufferSwapImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_BUFFER_SWAP))(swapInterval);
+}
+
+static __inline void GlideImport_grClipWindow(uint32_t minX,uint32_t minY,uint32_t maxX,uint32_t maxY)
+{
+  ((GrClipWindowImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_CLIP_WINDOW))(minX,minY,maxX,maxY);
+}
+
+static __inline void GlideImport_grColorCombine(uint32_t function,uint32_t factor,uint32_t local,uint32_t other,
+          uint32_t invert)
+{
+  ((GrColorCombineImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_COLOR_COMBINE))(function,factor,local,other,
+            invert);
+}
+
+static __inline void GlideImport_grCoordinateSpace(uint32_t mode)
+{
+  ((GrCoordinateSpaceImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_COORDINATE_SPACE))(mode);
+}
+
+static __inline void GlideImport_grCullMode(uint32_t mode)
+{
+  ((GrCullModeImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_CULL_MODE))(mode);
+}
+
+static __inline void GlideImport_grDepthBufferFunction(uint32_t function)
+{
+  ((GrDepthBufferFunctionImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_DEPTH_BUFFER_FUNCTION))(function);
+}
+
+static __inline void GlideImport_grDepthBufferMode(uint32_t mode)
+{
+  ((GrDepthBufferModeImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_DEPTH_BUFFER_MODE))(mode);
+}
+
+static __inline void GlideImport_grDepthMask(uint32_t enabled)
+{
+  ((GrDepthMaskImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_DEPTH_MASK))(enabled);
+}
+
+static __inline void GlideImport_grDrawTriangle(uint32_t *vertexA,uint32_t *vertexB,uint32_t *vertexC)
+{
+  ((GrDrawTriangleImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_DRAW_TRIANGLE))(vertexA,vertexB,vertexC);
+}
+
+static __inline void GlideImport_grFinish(void)
+{
+  ((GrFinishImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_FINISH))();
+}
+
+static __inline uint32_t GlideImport_grGet(uint32_t selector,uint32_t sizeBytes,void *output)
+{
+  return ((GrGetImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_GET))(selector,sizeBytes,output);
+}
+
+static __inline char *GlideImport_grGetString(uint32_t selector)
+{
+  return ((GrGetStringImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_GET_STRING))(selector);
+}
+
+static __inline void GlideImport_grGlideInit(void)
+{
+  ((GrGlideInitImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_GLIDE_INIT))();
+}
+
+static __inline void GlideImport_grGlideShutdown(void)
+{
+  ((GrGlideShutdownImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_GLIDE_SHUTDOWN))();
+}
+
+static __inline uint32_t GlideImport_grLfbLock(uint32_t lockType,uint32_t buffer,uint32_t writeMode,uint32_t origin,
+          uint32_t pixelPipeline,void *lfbInfo)
+{
+  return ((GrLfbLockImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_LFB_LOCK))(lockType,buffer,writeMode,origin,
+            pixelPipeline,lfbInfo);
+}
+
+static __inline uint32_t GlideImport_grLfbReadRegion(uint32_t buffer,GraphicsScreenCoordinate sourceX,
+          GraphicsScreenCoordinate sourceY,GraphicsPixelDimension width,GraphicsPixelDimension height,
+          uint32_t destinationStrideBytes,uint16_t *destinationPixels)
+{
+  return ((GrLfbReadRegionImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_LFB_READ_REGION))(buffer,sourceX,
+            sourceY,width,height,destinationStrideBytes,destinationPixels);
+}
+
+static __inline void GlideImport_grLfbUnlock(uint32_t lockType,uint32_t buffer)
+{
+  ((GrLfbUnlockImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_LFB_UNLOCK))(lockType,buffer);
+}
+
+static __inline uint32_t GlideImport_grQueryResolutions(void *query,void *output)
+{
+  return ((GrQueryResolutionsImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_QUERY_RESOLUTIONS))(query,output);
+}
+
+static __inline void GlideImport_grSstSelect(uint32_t boardIndex)
+{
+  ((GrSstSelectImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_SST_SELECT))(boardIndex);
+}
+
+static __inline void GlideImport_grSstWinClose(uint32_t context)
+{
+  ((GrSstWinCloseImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_SST_WIN_CLOSE))(context);
+}
+
+static __inline uint32_t GlideImport_grSstWinOpen(uint32_t windowHandle,uint32_t screenResolution,
+          uint32_t refreshRate,uint32_t colorFormat,uint32_t origin,uint32_t colorBufferCount,
+          uint32_t auxiliaryBufferCount)
+{
+  return ((GrSstWinOpenImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_SST_WIN_OPEN))(windowHandle,
+            screenResolution,refreshRate,colorFormat,origin,colorBufferCount,auxiliaryBufferCount);
+}
+
+static __inline void GlideImport_grTexClampMode(uint32_t tmuIndex,uint32_t sClampMode,uint32_t tClampMode)
+{
+  ((GrTexClampModeImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_TEX_CLAMP_MODE))(tmuIndex,sClampMode,
+            tClampMode);
+}
+
+static __inline void GlideImport_grTexCombine(uint32_t tmuIndex,uint32_t rgbFunction,uint32_t rgbFactor,
+          uint32_t alphaFunction,uint32_t alphaFactor,uint32_t rgbInvert,uint32_t alphaInvert)
+{
+  ((GrTexCombineImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_TEX_COMBINE))(tmuIndex,rgbFunction,rgbFactor,
+            alphaFunction,alphaFactor,rgbInvert,alphaInvert);
+}
+
+static __inline void GlideImport_grTexDownloadMipMap(GraphicsTextureResidentTmuIndex tmuIndex,
+          GraphicsTextureMemoryAddress startAddress,uint32_t evenOddMask,GrTexInfo *textureInfo)
+{
+  ((GrTexDownloadMipMapImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_TEX_DOWNLOAD_MIP_MAP))(tmuIndex,
+            startAddress,evenOddMask,textureInfo);
+}
+
+static __inline void GlideImport_grTexFilterMode(uint32_t tmuIndex,uint32_t minifyFilter,uint32_t magnifyFilter)
+{
+  ((GrTexFilterModeImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_TEX_FILTER_MODE))(tmuIndex,minifyFilter,
+            magnifyFilter);
+}
+
+static __inline GraphicsTextureMemoryAddress GlideImport_grTexMaxAddress(GraphicsTextureResidentTmuIndex tmuIndex)
+{
+  return ((GrTexMaxAddressImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_TEX_MAX_ADDRESS))(tmuIndex);
+}
+
+static __inline GraphicsTextureMemoryAddress GlideImport_grTexMinAddress(GraphicsTextureResidentTmuIndex tmuIndex)
+{
+  return ((GrTexMinAddressImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_TEX_MIN_ADDRESS))(tmuIndex);
+}
+
+static __inline void GlideImport_grTexMipMapMode(uint32_t tmuIndex,uint32_t mode,uint32_t lodBlend)
+{
+  ((GrTexMipMapModeImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_TEX_MIP_MAP_MODE))(tmuIndex,mode,lodBlend);
+}
+
+static __inline void GlideImport_grTexSource(GraphicsTextureResidentTmuIndex tmuIndex,
+          GraphicsTextureMemoryAddress residentAddress,uint32_t mode,GrTexInfo *textureInfo)
+{
+  ((GrTexSourceImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_TEX_SOURCE))(tmuIndex,residentAddress,mode,
+            textureInfo);
+}
+
+static __inline void GlideImport_grVertexLayout(uint32_t parameter,uint32_t byteOffset,uint32_t mode)
+{
+  ((GrVertexLayoutImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_VERTEX_LAYOUT))(parameter,byteOffset,mode);
+}
+
+static __inline void GlideImport_grViewport(uint32_t x,uint32_t y,uint32_t width,uint32_t height)
+{
+  ((GrViewportImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GR_VIEWPORT))(x,y,width,height);
+}
+
+static __inline void GlideImport_guGammaCorrectionRGB(uint32_t redGamma,uint32_t greenGamma,uint32_t blueGamma)
+{
+  ((GuGammaCorrectionRGBImportProc *)GlideImport_Procedure(GLIDE_IMPORT_GU_GAMMA_CORRECTION_RGB))(redGamma,
+            greenGamma,blueGamma);
+}
+
 /* MMX lane helpers for the converters and blitters below. Each one is exactly the Ghidra CONCAT form it
    replaces (same masking, same unsigned result). */
 
@@ -219,7 +425,7 @@ static void Glide3_InstallFramebufferAndRenderState(FrontendDisplayAdapterIndex 
   GraphicsTextureMemoryAddress tmuAddress;
 
   tmuCountOutput = &g_GraphicsAdapters[adapterIndex].glideTmuCount;
-  g_GrGet(GR_NUM_TMU,sizeof *tmuCountOutput,tmuCountOutput);
+  GlideImport_grGet(GR_NUM_TMU,sizeof *tmuCountOutput,tmuCountOutput);
   g_GlideTmuCount = *tmuCountOutput;
   g_FramebufferWidth = width;
   g_FramebufferHeight = height;
@@ -260,41 +466,42 @@ static void Glide3_InstallFramebufferAndRenderState(FrontendDisplayAdapterIndex 
   g_GraphicsTextureSourceBlitHalfSourceRgb = Glide3_TextureSource_BlitHalfSourceRgb;
   g_GraphicsTextureSourceStretchDirectColorBilinear = Glide3_TextureSource_StretchDirectColorBilinear;
   g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = Glide3_TextureSource_BlitHalfRgbSaturatedAdd;
-  g_GuGammaCorrectionRGB(GLIDE_FLOAT_BITS_ONE,GLIDE_FLOAT_BITS_ONE,GLIDE_FLOAT_BITS_ONE); /* 1.0f for red, green and blue */
-  g_GrCoordinateSpace(GR_WINDOW_COORDS);
+  /* 1.0f for red, green and blue */
+  GlideImport_guGammaCorrectionRGB(GLIDE_FLOAT_BITS_ONE,GLIDE_FLOAT_BITS_ONE,GLIDE_FLOAT_BITS_ONE);
+  GlideImport_grCoordinateSpace(GR_WINDOW_COORDS);
   /* the layout of the g_GlideVertices records handed to grDrawTriangle (byte offsets of GLIDE_VERTEX_*) */
-  g_GrVertexLayout(GR_PARAM_XY,0,GR_PARAM_ENABLE);
-  g_GrVertexLayout(GR_PARAM_Z,8,GR_PARAM_ENABLE);
-  g_GrVertexLayout(GR_PARAM_Q,12,GR_PARAM_ENABLE);
-  g_GrVertexLayout(GR_PARAM_ST0,20,GR_PARAM_ENABLE);
-  g_GrVertexLayout(GR_PARAM_PARGB,28,GR_PARAM_ENABLE);
-  g_GrCullMode(GR_CULL_DISABLE);
-  g_GrDepthBufferMode(GR_DEPTHBUFFER_ZBUFFER);
-  g_GrDepthBufferFunction(GR_CMP_GEQUAL); /* the vertices carry a scaled 1/depth as Z */
-  g_GrDepthMask(FXTRUE);
+  GlideImport_grVertexLayout(GR_PARAM_XY,0,GR_PARAM_ENABLE);
+  GlideImport_grVertexLayout(GR_PARAM_Z,8,GR_PARAM_ENABLE);
+  GlideImport_grVertexLayout(GR_PARAM_Q,12,GR_PARAM_ENABLE);
+  GlideImport_grVertexLayout(GR_PARAM_ST0,20,GR_PARAM_ENABLE);
+  GlideImport_grVertexLayout(GR_PARAM_PARGB,28,GR_PARAM_ENABLE);
+  GlideImport_grCullMode(GR_CULL_DISABLE);
+  GlideImport_grDepthBufferMode(GR_DEPTHBUFFER_ZBUFFER);
+  GlideImport_grDepthBufferFunction(GR_CMP_GEQUAL); /* the vertices carry a scaled 1/depth as Z */
+  GlideImport_grDepthMask(FXTRUE);
   g_GlideDepthWriteEnabledState = 1;
   /* g_GlideTmuCount is 1..16 here */
   tmuCount = g_GlideTmuCount;
   for (tmuIndex = GRAPHICS_TEXTURE_RESIDENT_TMU0; (uint32_t)tmuIndex < tmuCount; tmuIndex++) {
-    g_GrTexMipMapMode(tmuIndex,GR_MIPMAP_DISABLE,FXFALSE);
-    g_GrTexClampMode(tmuIndex,GR_TEXTURECLAMP_WRAP,GR_TEXTURECLAMP_WRAP);
-    g_GrTexFilterMode(tmuIndex,GR_TEXTUREFILTER_BILINEAR,GR_TEXTUREFILTER_BILINEAR);
-    g_GrTexCombine(tmuIndex,GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_FUNCTION_LOCAL,
+    GlideImport_grTexMipMapMode(tmuIndex,GR_MIPMAP_DISABLE,FXFALSE);
+    GlideImport_grTexClampMode(tmuIndex,GR_TEXTURECLAMP_WRAP,GR_TEXTURECLAMP_WRAP);
+    GlideImport_grTexFilterMode(tmuIndex,GR_TEXTUREFILTER_BILINEAR,GR_TEXTUREFILTER_BILINEAR);
+    GlideImport_grTexCombine(tmuIndex,GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_FUNCTION_LOCAL,
                    GR_COMBINE_FACTOR_LOCAL,FXFALSE,FXFALSE);
-    tmuAddress = g_GrTexMinAddress(tmuIndex);
+    tmuAddress = GlideImport_grTexMinAddress(tmuIndex);
     g_GlideTmuMinAddress[tmuIndex] = tmuAddress;
-    tmuAddress = g_GrTexMaxAddress(tmuIndex);
+    tmuAddress = GlideImport_grTexMaxAddress(tmuIndex);
     g_GlideTmuMaxAddress[tmuIndex] = tmuAddress;
   }
   /* textured: texture colour/alpha times the iterated vertex colour/alpha */
-  g_GrColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_LOCAL_ITERATED,
+  GlideImport_grColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_LOCAL_ITERATED,
                    GR_COMBINE_OTHER_TEXTURE,FXFALSE);
-  g_GrAlphaCombine(GR_COMBINE_FUNCTION_SCALE_OTHER,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_LOCAL_ITERATED,
+  GlideImport_grAlphaCombine(GR_COMBINE_FUNCTION_SCALE_OTHER,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_LOCAL_ITERATED,
                    GR_COMBINE_OTHER_TEXTURE,FXFALSE);
   g_GlideTexturingDisabledState = 1;
   /* State 0 stands for SRC_ALPHA/ONE_MINUS_SRC_ALPHA in Glide3_DrawPrimitiveQueue, but the original
      starts with ONE_MINUS_DST_ALPHA here, which stays until another blend mode is drawn. */
-  g_GrAlphaBlendFunction(GR_BLEND_SRC_ALPHA,GR_BLEND_ONE_MINUS_DST_ALPHA,GR_BLEND_ONE,GR_BLEND_ZERO);
+  GlideImport_grAlphaBlendFunction(GR_BLEND_SRC_ALPHA,GR_BLEND_ONE_MINUS_DST_ALPHA,GR_BLEND_ONE,GR_BLEND_ZERO);
   g_GlideBlendModeState = 0;
   g_GlideBoundTexture = NULL;
   g_GlideResidentTextureHead = NULL;
@@ -349,18 +556,18 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
     }
     binding++;
   } while (binding->importName != NULL);
-  g_GrGlideInit();
+  GlideImport_grGlideInit();
   /* Glide3_InitAndEnumerate stored the board index in Data2/Data3 of the adapter GUID */
   sstIndex = (uint32_t)g_GraphicsAdapters[adapterIndex].adapterGuid.Data2 |
              ((uint32_t)g_GraphicsAdapters[adapterIndex].adapterGuid.Data3 << 16);
-  g_GrSstSelect(sstIndex);
+  GlideImport_grSstSelect(sstIndex);
   g_GlideSelectedResolutionQuery.resolution = resolutionQueryCode;
-  resolutionListSize = g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,NULL);
+  resolutionListSize = GlideImport_grQueryResolutions(&g_GlideSelectedResolutionQuery,NULL);
   /* at least one GrResolution record, and the list buffer allocated */
   if ((15 < (int)resolutionListSize) &&
       (g_MemoryApi.alloc(resolutionListSize,(void **)&resolutionList) == 0)) {
     resolutionCount = resolutionListSize / sizeof(GrResolution);
-    g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,resolutionList);
+    GlideImport_grQueryResolutions(&g_GlideSelectedResolutionQuery,resolutionList);
     bestRefreshRateHz = 0;
     for (resolutionNumber = 0; resolutionNumber < resolutionCount; resolutionNumber++) {
       /* codes beyond GR_REFRESH_120Hz (8) are ignored */
@@ -376,7 +583,7 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
     g_MemoryApi.free(resolutionList);
     /* two colour buffers, one aux (depth) buffer */
     g_GlideWindowContextHandle =
-         g_GrSstWinOpen((uint32_t)g_MainWindow,resolutionQueryCode,selectedRefreshRateCode,
+         GlideImport_grSstWinOpen((uint32_t)g_MainWindow,resolutionQueryCode,selectedRefreshRateCode,
                         GR_COLORFORMAT_ARGB,GR_ORIGIN_UPPER_LEFT,2,1);
     if (g_GlideWindowContextHandle != 0) {
       Glide3_InstallFramebufferAndRenderState(adapterIndex,height,width);
@@ -388,10 +595,10 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
         }
         return false;
       }
-      g_GrSstWinClose(g_GlideWindowContextHandle);
+      GlideImport_grSstWinClose(g_GlideWindowContextHandle);
     }
   }
-  g_GrGlideShutdown(); /* grGlideShutdown(void) */
+  GlideImport_grGlideShutdown(); /* grGlideShutdown(void) */
   DynDLL_Unload(sz_GLIDE3X);
   g_GlideRuntimeActiveCount = 0;
   return true;
@@ -608,9 +815,9 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
       if (((renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) == 0) || (currentPacket->textureEntry == NULL)) {
         if (g_GlideTexturingDisabledState != 0) {
           /* Untextured color and alpha combine. */
-          g_GrColorCombine(GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_ZERO,GR_COMBINE_LOCAL_ITERATED,
+          GlideImport_grColorCombine(GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_ZERO,GR_COMBINE_LOCAL_ITERATED,
                            GR_COMBINE_OTHER_CONSTANT,FXFALSE);
-          g_GrAlphaCombine(GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_ZERO,GR_COMBINE_LOCAL_ITERATED,
+          GlideImport_grAlphaCombine(GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_ZERO,GR_COMBINE_LOCAL_ITERATED,
                            GR_COMBINE_OTHER_CONSTANT,FXFALSE);
         }
       }
@@ -621,21 +828,21 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
         }
         if ((int)texture->residentTmuIndex < 0) {
           /* Texture could not be made resident: untextured color and alpha combine. */
-          g_GrColorCombine(GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_ZERO,GR_COMBINE_LOCAL_ITERATED,
+          GlideImport_grColorCombine(GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_ZERO,GR_COMBINE_LOCAL_ITERATED,
                            GR_COMBINE_OTHER_CONSTANT,FXFALSE);
-          g_GrAlphaCombine(GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_ZERO,GR_COMBINE_LOCAL_ITERATED,
+          GlideImport_grAlphaCombine(GR_COMBINE_FUNCTION_LOCAL,GR_COMBINE_FACTOR_ZERO,GR_COMBINE_LOCAL_ITERATED,
                            GR_COMBINE_OTHER_CONSTANT,FXFALSE);
         }
         else {
           if (g_GlideBoundTexture != texture) {
             g_GlideBoundTexture = texture;
-            g_GrTexSource(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+            GlideImport_grTexSource(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
                              &texture->glideInfo);
           }
           if (g_GlideTexturingDisabledState == 0) {
-            g_GrColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_LOCAL_ITERATED,
+            GlideImport_grColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_LOCAL_ITERATED,
                              GR_COMBINE_OTHER_TEXTURE,FXFALSE);
-            g_GrAlphaCombine(GR_COMBINE_FUNCTION_SCALE_OTHER,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_LOCAL_ITERATED,
+            GlideImport_grAlphaCombine(GR_COMBINE_FUNCTION_SCALE_OTHER,GR_COMBINE_FACTOR_LOCAL,GR_COMBINE_LOCAL_ITERATED,
                              GR_COMBINE_OTHER_TEXTURE,FXFALSE);
           }
         }
@@ -648,32 +855,32 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
       }
       if (blendMode == GRAPHICS_PRIMITIVE_BLEND_ADDITIVE) {
         if (g_GlideBlendModeState != 1) {
-          g_GrAlphaBlendFunction(GR_BLEND_ONE,GR_BLEND_ONE,GR_BLEND_ONE,GR_BLEND_ZERO);
+          GlideImport_grAlphaBlendFunction(GR_BLEND_ONE,GR_BLEND_ONE,GR_BLEND_ONE,GR_BLEND_ZERO);
           g_GlideBlendModeState = 1;
         }
       }
       else if (blendMode == GRAPHICS_PRIMITIVE_BLEND_OPAQUE) {
         if (g_GlideBlendModeState != 2) {
-          g_GrAlphaBlendFunction(GR_BLEND_ONE,GR_BLEND_ZERO,GR_BLEND_ONE,GR_BLEND_ZERO);
+          GlideImport_grAlphaBlendFunction(GR_BLEND_ONE,GR_BLEND_ZERO,GR_BLEND_ONE,GR_BLEND_ZERO);
           g_GlideBlendModeState = 2;
         }
       }
       else if (g_GlideBlendModeState != 0) {
-        g_GrAlphaBlendFunction(GR_BLEND_SRC_ALPHA,GR_BLEND_ONE_MINUS_SRC_ALPHA,GR_BLEND_ONE,GR_BLEND_ZERO);
+        GlideImport_grAlphaBlendFunction(GR_BLEND_SRC_ALPHA,GR_BLEND_ONE_MINUS_SRC_ALPHA,GR_BLEND_ONE,GR_BLEND_ZERO);
         g_GlideBlendModeState = 0;
       }
       if ((blendMode == GRAPHICS_PRIMITIVE_BLEND_ADDITIVE) ||
           (blendMode == GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT)) {
         if (g_GlideDepthWriteEnabledState != 0) {
-          g_GrDepthMask(FXFALSE);
+          GlideImport_grDepthMask(FXFALSE);
           g_GlideDepthWriteEnabledState = 0;
         }
       }
       else if (g_GlideDepthWriteEnabledState == 0) {
-        g_GrDepthMask(FXTRUE);
+        GlideImport_grDepthMask(FXTRUE);
         g_GlideDepthWriteEnabledState = 1;
       }
-      g_GrDrawTriangle(g_GlideVertices[2],g_GlideVertices[1],g_GlideVertices[0]);
+      GlideImport_grDrawTriangle(g_GlideVertices[2],g_GlideVertices[1],g_GlideVertices[0]);
       g_PrimitiveDrawCallCount++;
       currentPacket = GraphicsPrimitiveQueue_Next(queue);
     }
@@ -766,8 +973,8 @@ void Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   Glide3_Cursor_ComposeBeforePresent(GLIDE_CURSOR_PRESENT_SENTINEL);
   previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (previousAccessState == 0) {
-    g_GrFinish();
-    g_GrBufferSwap(1); /* swap interval: one vertical retrace */
+    GlideImport_grFinish();
+    GlideImport_grBufferSwap(1); /* swap interval: one vertical retrace */
     g_GraphicsBackendAccessState--;
   }
   Glide3_Cursor_SwapWithAlternate();
@@ -869,13 +1076,13 @@ uint32_t Glide3_InitAndEnumerate(void)
     }
     binding = binding + 1;
   } while (binding->importName != NULL);
-  g_GrGet(GR_NUM_BOARDS,sizeof remainingBoards,&remainingBoards);
+  GlideImport_grGet(GR_NUM_BOARDS,sizeof remainingBoards,&remainingBoards);
   sstIndex = 0;
   while ((remainingBoards != 0) && (g_GraphicsAdapterCount <= GRAPHICS_ADAPTER_CAPACITY - 1)) {
-    g_GrGlideInit();
-    g_GrSstSelect(sstIndex);
-    boardName = (uint8_t *)g_GrGetString(GR_RENDERER);
-    driverDescription = (uint8_t *)g_GrGetString(GR_HARDWARE);
+    GlideImport_grGlideInit();
+    GlideImport_grSstSelect(sstIndex);
+    boardName = (uint8_t *)GlideImport_grGetString(GR_RENDERER);
+    driverDescription = (uint8_t *)GlideImport_grGetString(GR_HARDWARE);
     adapter = g_GraphicsAdapters + g_GraphicsAdapterCount;
     Text_CopyNarrowToUtf16(40,adapter->driverDescriptionUtf16,driverDescription);
     Text_CopyNarrowToUtf16(40,adapter->deviceNameUtf16,boardName);
@@ -883,16 +1090,16 @@ uint32_t Glide3_InitAndEnumerate(void)
     (adapter->adapterGuid).Data2 = (uint16_t)sstIndex;
     (adapter->adapterGuid).Data3 = (uint16_t)(sstIndex >> 16);
     (adapter->deviceGuid).Data1 = 1; /* nonzero: the adapter renders in 3D */
-    resolutionQuerySize = g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,NULL);
+    resolutionQuerySize = GlideImport_grQueryResolutions(&g_GlideEnumerationResolutionQuery,NULL);
     if (resolutionQuerySize != 0) {
       resolutionAllocError = g_MemoryApi.alloc(resolutionQuerySize,(void **)&resolutionList);
       if (resolutionAllocError == 0) {
-        g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,resolutionList);
+        GlideImport_grQueryResolutions(&g_GlideEnumerationResolutionQuery,resolutionList);
         Glide3_AddDisplayModesForAdapter(resolutionList,resolutionQuerySize / sizeof(GrResolution));
         g_MemoryApi.free(resolutionList);
       }
     }
-    g_GrGlideShutdown();
+    GlideImport_grGlideShutdown();
     g_GraphicsAdapterCount++;
     sstIndex++;
     remainingBoards--;
@@ -933,12 +1140,12 @@ void Glide3_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordi
 
 {
   if (g_GlideDepthWriteEnabledState == 0) {
-    g_GrDepthMask(FXTRUE);
+    GlideImport_grDepthMask(FXTRUE);
     g_GlideDepthWriteEnabledState = 1;
   }
-  g_GrViewport(clipMinX,clipMinY,clipMaxX - clipMinX,clipMaxY - clipMinY);
-  g_GrClipWindow(clipMinX,clipMinY,clipMaxX,clipMaxY);
-  g_GrBufferClear(0,0,0);
+  GlideImport_grViewport(clipMinX,clipMinY,clipMaxX - clipMinX,clipMaxY - clipMinY);
+  GlideImport_grClipWindow(clipMinX,clipMinY,clipMaxX,clipMaxY);
+  GlideImport_grBufferClear(0,0,0);
   return;
 }
 
@@ -956,7 +1163,7 @@ void Glide3_TextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,Gr
   entryTexture = set->entries[subresourceIndex].texture;
   g_GlideTextureColorUpload[entryTexture->downsampleShift](entryTexture);
   if (-1 < (int)entryTexture->residentTmuIndex) {
-    g_GrTexDownloadMipMap(entryTexture->residentTmuIndex,entryTexture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+    GlideImport_grTexDownloadMipMap(entryTexture->residentTmuIndex,entryTexture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
                           &entryTexture->glideInfo);
     g_TextureDeviceReloadCount++;
   }
@@ -976,7 +1183,7 @@ void Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Gr
   entryTexture = set->entries[subresourceIndex].texture;
   g_GlideTextureAlphaUpload[entryTexture->downsampleShift](entryTexture);
   if (-1 < (int)entryTexture->residentTmuIndex) {
-    g_GrTexDownloadMipMap(entryTexture->residentTmuIndex,entryTexture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+    GlideImport_grTexDownloadMipMap(entryTexture->residentTmuIndex,entryTexture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
                           &entryTexture->glideInfo);
     g_TextureDeviceReloadCount++;
   }
@@ -1024,8 +1231,9 @@ GraphicsCapturedTextureSourceAsset *Glide3_Framebuffer_CaptureRegion
     *clearCursor = 0;
     clearCursor++;
   }
-  g_GrFinish();
-  g_GrLfbReadRegion(GR_BUFFER_BACKBUFFER,sourceX,sourceY,captureWidth,captureHeight,rowStrideBytes,rgb565Staging);
+  GlideImport_grFinish();
+  GlideImport_grLfbReadRegion(GR_BUFFER_BACKBUFFER,sourceX,sourceY,captureWidth,captureHeight,rowStrideBytes,
+                              rgb565Staging);
   (capturedAsset->common).magic = ASSET_MAGIC_GFX;
   /* The original stores EDX after the Glide calls, i.e. whatever glide3x left there; this is the
      allocation size, as the DirectDraw capture stores (the screenshot writer uses it as file size). */
@@ -3164,8 +3372,8 @@ void Glide3_Shutdown(void)
       textureSlotCursor++;
       textureSlotsRemaining--;
     } while (textureSlotsRemaining != 0);
-    g_GrSstWinClose(g_GlideWindowContextHandle);
-    g_GrGlideShutdown();
+    GlideImport_grSstWinClose(g_GlideWindowContextHandle);
+    GlideImport_grGlideShutdown();
     DynDLL_Unload(sz_GLIDE3X);
     g_GlideRuntimeActiveCount = 0;
   }
@@ -3188,14 +3396,14 @@ bool Glide3_Framebuffer_BeginAccess(void)
   
   previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (previousAccessState == 0) {
-    g_GrFinish();
-    lfbLockSucceeded = g_GrLfbLock(GR_LFB_WRITE_ONLY | GR_LFB_NOIDLE,GR_BUFFER_BACKBUFFER,GR_LFBWRITEMODE_565,
+    GlideImport_grFinish();
+    lfbLockSucceeded = GlideImport_grLfbLock(GR_LFB_WRITE_ONLY | GR_LFB_NOIDLE,GR_BUFFER_BACKBUFFER,GR_LFBWRITEMODE_565,
                                    GR_ORIGIN_UPPER_LEFT,FXFALSE,&g_GlidePrimaryLfbInfo);
     if (lfbLockSucceeded != 0) {
       g_FramebufferRowStrideBytes = g_GlidePrimaryLfbInfo.strideBytes;
       g_DisplayFramebufferAccess.width = g_GlidePrimaryLfbInfo.strideBytes >> 1; /* 2 bytes per pixel */
       g_DisplayFramebufferAccess.pixels = g_GlidePrimaryLfbInfo.pixels;
-      secondaryLfbLockSucceeded = g_GrLfbLock(GR_LFB_READ_ONLY | GR_LFB_NOIDLE,GR_BUFFER_BACKBUFFER,
+      secondaryLfbLockSucceeded = GlideImport_grLfbLock(GR_LFB_READ_ONLY | GR_LFB_NOIDLE,GR_BUFFER_BACKBUFFER,
                                               GR_LFBWRITEMODE_565,GR_ORIGIN_UPPER_LEFT,FXFALSE,
                                               &g_GlideSecondaryLfbInfo);
       if ((secondaryLfbLockSucceeded != 0) &&
@@ -3221,11 +3429,11 @@ void Glide3_Framebuffer_EndAccess(void)
 
 {
   if (g_GlideSecondBufferBase != NULL) {
-    g_GrLfbUnlock(GR_LFB_READ_ONLY,GR_BUFFER_BACKBUFFER);
+    GlideImport_grLfbUnlock(GR_LFB_READ_ONLY,GR_BUFFER_BACKBUFFER);
     g_GlideSecondBufferOffset = 0;
     g_GlideSecondBufferBase = NULL;
   }
-  g_GrLfbUnlock(GR_LFB_WRITE_ONLY,GR_BUFFER_BACKBUFFER);
+  GlideImport_grLfbUnlock(GR_LFB_WRITE_ONLY,GR_BUFFER_BACKBUFFER);
   g_DisplayFramebufferAccess.pixels = NULL;
   g_GraphicsBackendAccessState = 0;
   return;
@@ -3243,7 +3451,7 @@ static void Glide3_TextureResource_Download(GraphicsTextureResource *texture)
 
 {
   g_GlideBoundTexture = NULL;
-  g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+  GlideImport_grTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
                         &texture->glideInfo);
 }
 

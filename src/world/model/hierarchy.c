@@ -1437,15 +1437,15 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
       currentChild = modelNodeRuntime->childNodes[childIndex];
       childIndex++;
       if (currentChild != NULL) {
-        /* the scratch matrix plus the translation globals form the child's local transform */
+        /* the scratch matrix (rotation basis plus translation) forms the child's local transform */
         FixedTransform_BuildRotationBasis
                   ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
                    currentChild->modelPayload.localRotationAngle2,
                    currentChild->modelPayload.localRotationAngle1,
                    currentChild->modelPayload.localRotationAngle0);
-        g_ModelTransformTranslationX = currentChild->modelPayload.localTranslationXQ12;
-        g_ModelTransformTranslationY = currentChild->modelPayload.localTranslationYQ12;
-        g_ModelTransformTranslationZ = currentChild->modelPayload.localTranslationZQ12;
+        g_ModelTransformScratchMatrix.translation.x = currentChild->modelPayload.localTranslationXQ12;
+        g_ModelTransformScratchMatrix.translation.y = currentChild->modelPayload.localTranslationYQ12;
+        g_ModelTransformScratchMatrix.translation.z = currentChild->modelPayload.localTranslationZQ12;
         FixedTransform_Compose
                   (&currentChild->worldTransform,
                    (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
@@ -1454,9 +1454,9 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
         currentChild->modelPayload.worldRotationAngle2 = childEulerAngles.rollAngle;
         currentChild->modelPayload.worldRotationAngle0 = childEulerAngles.azimuthAngle;
         currentChild->modelPayload.worldRotationAngle1 = childEulerAngles.elevationAngle;
-        g_ModelTransformTranslationX = 0;
-        g_ModelTransformTranslationY = 0;
-        g_ModelTransformTranslationZ = 0;
+        g_ModelTransformScratchMatrix.translation.x = 0;
+        g_ModelTransformScratchMatrix.translation.y = 0;
+        g_ModelTransformScratchMatrix.translation.z = 0;
         inheritedTintArgb = modelNodeRuntime->tintArgb;
         currentChild->runtimeFlags = currentChild->runtimeFlags | 1;
         currentChild->tintArgb = inheritedTintArgb;

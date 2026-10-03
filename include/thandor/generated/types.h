@@ -9721,7 +9721,7 @@ struct Win32Message32 {
     Win32CursorCoordinate32 pointY;
 };
 
-/* WNDCLASSA as the image stores it (the main window's class, see g_MainWindowClass). */
+/* WNDCLASSA as the image stores it (the main window's class, see g_MainMessageStorage.overlay.windowClass). */
 typedef struct Win32WindowClass32 Win32WindowClass32;
 struct Win32WindowClass32 {
     uint32_t style;

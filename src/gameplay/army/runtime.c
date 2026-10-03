@@ -702,21 +702,21 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
       if (((modelRuntime->linkedChildPendingSpawnCounts).slot0 != 0) &&
          ArmyPadHangar_TryLaunchPendingAircraft
                    (worldRuntime,modelRuntime,&(modelRuntime->linkedChildPendingSpawnCounts).slot0,
-                    &modelRuntime->linkedChildSpawnInheritedState[0],g_ArmyLinkedChildAssetIdSlot0,
+                    &modelRuntime->linkedChildSpawnInheritedState[0],g_InGamePointerModePreviewArmyIds[1],
                     linkedChildDefinition,modelNodeRuntime)) {
         break;
       }
       if (((modelRuntime->linkedChildPendingSpawnCounts).slot1 != 0) &&
          ArmyPadHangar_TryLaunchPendingAircraft
                    (worldRuntime,modelRuntime,&(modelRuntime->linkedChildPendingSpawnCounts).slot1,
-                    &modelRuntime->linkedChildSpawnInheritedState[1],g_ArmyLinkedChildAssetIdSlot1,
+                    &modelRuntime->linkedChildSpawnInheritedState[1],g_InGamePointerModePreviewArmyIds[2],
                     linkedChildDefinition,modelNodeRuntime)) {
         break;
       }
       if ((modelRuntime->linkedChildPendingSpawnCounts).slot2 != 0) {
         ArmyPadHangar_TryLaunchPendingAircraft
                   (worldRuntime,modelRuntime,&(modelRuntime->linkedChildPendingSpawnCounts).slot2,
-                   &modelRuntime->linkedChildSpawnInheritedState[2],g_ArmyLinkedChildAssetIdSlot2,
+                   &modelRuntime->linkedChildSpawnInheritedState[2],g_InGamePointerModePreviewArmyIds[4],
                    linkedChildDefinition,modelNodeRuntime);
       }
     }
@@ -2276,7 +2276,7 @@ ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeter(ModelRuntimeLinkedChildSpaw
 
 
 /* Address: 0x00527150.
-   Returns which of the three linked-child asset ids (g_ArmyLinkedChildAssetIdSlot0/1/2 as bits 1/2/4)
+   Returns which of the three linked-child asset ids (g_InGamePointerModePreviewArmyIds[1]/[2]/[4] as bits 1/2/4)
    occur among the army's 13 attachment asset-id slots (dwords from +0x78); the selection panel ORs these
    masks over all selected armies.
 */
@@ -2293,13 +2293,13 @@ int ArmyRuntime_GetAttachmentEffectVariantMask(ModelRuntimeLinkedChildSpawnAndBu
     /* completedSecondaryArmyAssetIds[0] (+0x78) of the current window; the runtime pointer itself moves one
        dword per slot below (ADD ESI,4 in the original) */
     attachmentAssetId = linkedChildRuntime->completedSecondaryArmyAssetIds[0];
-    if (attachmentAssetId == g_ArmyLinkedChildAssetIdSlot0) {
+    if (attachmentAssetId == g_InGamePointerModePreviewArmyIds[1]) {
       variantMask = variantMask | 1;
     }
-    if (attachmentAssetId == g_ArmyLinkedChildAssetIdSlot1) {
+    if (attachmentAssetId == g_InGamePointerModePreviewArmyIds[2]) {
       variantMask = variantMask | 2;
     }
-    if (attachmentAssetId == g_ArmyLinkedChildAssetIdSlot2) {
+    if (attachmentAssetId == g_InGamePointerModePreviewArmyIds[4]) {
       variantMask = variantMask | 4;
     }
     linkedChildRuntime = (ModelRuntimeLinkedChildSpawnAndBuildView *)((uint8_t *)linkedChildRuntime + 4);

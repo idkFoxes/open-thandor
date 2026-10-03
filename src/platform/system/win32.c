@@ -36,15 +36,15 @@ void Win32_PumpMessages(void)
   DebugAutoShot_Tick();
   DebugScript_Tick();
 
-  while (PeekMessageA((LPMSG)&g_MainMessage,g_MainWindow,0,0,PM_REMOVE) != 0) {
-    if (g_WindowDestroyDepth != 0 || g_MainMessage.message == WM_QUIT) {
+  while (PeekMessageA((LPMSG)&g_MainMessageStorage.message,g_MainWindow,0,0,PM_REMOVE) != 0) {
+    if (g_WindowDestroyDepth != 0 || g_MainMessageStorage.message.message == WM_QUIT) {
       Win32_ShutdownAndExit();
       return;
     }
-    if (Win32_ShouldTranslateMessageFlags(&g_MainMessage)) {
-      TranslateMessage((MSG *)&g_MainMessage);
+    if (Win32_ShouldTranslateMessageFlags(&g_MainMessageStorage.message)) {
+      TranslateMessage((MSG *)&g_MainMessageStorage.message);
     }
-    DispatchMessageA((MSG *)&g_MainMessage);
+    DispatchMessageA((MSG *)&g_MainMessageStorage.message);
   }
   if (g_WindowDestroyDepth != 0) {
     Win32_ShutdownAndExit();

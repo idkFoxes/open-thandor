@@ -55,22 +55,19 @@ void SpatialSound_RebuildListenerTransformFromPose
   g_SpatialSoundListenerRotation.translation.x = 0;
   g_SpatialSoundListenerRotation.translation.y = 0;
   g_SpatialSoundListenerRotation.translation.z = 0;
-  /* world-to-local: identity basis (Q28) with the translation -origin. The basis is written through the
-     separate dword globals (g_SpatialSoundListenerWorldToLocalBasisRC = basisRowR[C]): as
-     g_SpatialSoundListenerWorldToLocal.basisRow* members the compiler merges the stores
-     into SSE stores. */
+  /* world-to-local: identity basis (Q28) with the translation -origin. */
   g_SpatialSoundListenerWorldToLocal.translation.x = -originX;
   g_SpatialSoundListenerWorldToLocal.translation.y = -originY;
   g_SpatialSoundListenerWorldToLocal.translation.z = -originZ;
-  g_SpatialSoundListenerWorldToLocalBasis00 = Q28_ONE;
-  g_SpatialSoundListenerWorldToLocalBasis01 = 0;
-  g_SpatialSoundListenerWorldToLocalBasis02 = 0;
-  g_SpatialSoundListenerWorldToLocalBasis10 = 0;
-  g_SpatialSoundListenerWorldToLocalBasis11 = Q28_ONE;
-  g_SpatialSoundListenerWorldToLocalBasis12 = 0;
-  g_SpatialSoundListenerWorldToLocalBasis20 = 0;
-  g_SpatialSoundListenerWorldToLocalBasis21 = 0;
-  g_SpatialSoundListenerWorldToLocalBasis22 = Q28_ONE;
+  g_SpatialSoundListenerWorldToLocal.basisRow0[0] = Q28_ONE;
+  g_SpatialSoundListenerWorldToLocal.basisRow0[1] = 0;
+  g_SpatialSoundListenerWorldToLocal.basisRow0[2] = 0;
+  g_SpatialSoundListenerWorldToLocal.basisRow1[0] = 0;
+  g_SpatialSoundListenerWorldToLocal.basisRow1[1] = Q28_ONE;
+  g_SpatialSoundListenerWorldToLocal.basisRow1[2] = 0;
+  g_SpatialSoundListenerWorldToLocal.basisRow2[0] = 0;
+  g_SpatialSoundListenerWorldToLocal.basisRow2[1] = 0;
+  g_SpatialSoundListenerWorldToLocal.basisRow2[2] = Q28_ONE;
   FixedTransform_Compose
             (&g_SpatialSoundListenerTransform,
              &g_SpatialSoundListenerWorldToLocal,&g_SpatialSoundListenerRotation);

@@ -49,12 +49,17 @@ or to other layout-compatible structs, which C only allows through a union.
 
 #include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
 #include <thandor/core/ghidra.h>
-/* The original image data: C variables in src/generated/image_data.c (declared in image_data.h); globals.h
-   and recovered.h name the parts of the objects that are not yet variables of their own. */
-#include <thandor/generated/globals.h>
+/* The function pointer types the data uses, the UI template layouts, and the data of the original image: C
+   variables in the modules (src/<area>/<module>/data.c, declared in <thandor/<area>/<module>/data.h>), all
+   included through generated/image_data.h. */
+#include <thandor/generated/proc_types.h>
 #include <thandor/generated/ui_templates.h>
 #include <thandor/generated/image_data.h>
-#include <thandor/data/recovered.h>
+
+/* Address of `offset` bytes into an object, as an integer (THANDOR_ADDR) or a byte pointer (THANDOR_BYTE_AT):
+   for code that steps through a table or record by byte offsets like the original. */
+#define THANDOR_BYTE_AT(object, offset) ((uint8_t *)&(object) + (int)(offset))
+#define THANDOR_ADDR(object, offset) ((uintptr_t)&(object) + (int)(offset))
 #include <thandor/generated/imports.h>
 
 /* EAX + CF results: CF clear with a value, or CF set with an engine error code in EAX. */
