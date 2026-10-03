@@ -1170,23 +1170,23 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 
 /* Address: 0x004CDAB0.
    First silhouette pass of GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy: like
    GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy, but rasterizes the mesh records with
-   MODEL_MESH_SOFT_SHADOW. Returns EBX, which the caller tests before filtering the generated texture: the last
-   mesh record's result plus the mesh-group table offset (EAX at 0x004CDB36), plus the children's results. Nonzero
-   whenever the hierarchy has a mesh group.
+   MODEL_MESH_SOFT_SHADOW. Returns a value the caller tests before filtering the generated texture: the last
+   mesh record's result plus the shadow mesh-group offset, plus the children's results. Nonzero whenever the
+   hierarchy has a mesh group.
 */
 uint32_t
 GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *modelNode)
 
 {
   uint32_t result;
-  int meshGroupTableOffset;
   GraphicsFixedVec3 *nodeTranslation;
-  GraphicsWorldCoordinateQ12 *translationComponent;
   ModelResource *resourceView;
   GraphicsWorldCoordinateQ12 originX;
   GraphicsWorldCoordinateQ12 originY;
   GraphicsWorldCoordinateQ12 originZ;
-  int offsetCountOrChildIndex;
+  int meshGroupOffset;
+  int meshesRemaining;
+  int childIndex;
   uint32_t childrenRemaining;
   uint8_t *meshRecord;
 
@@ -1195,43 +1195,38 @@ GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *m
   originX = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
   /* the node translation is made relative to the shadow origin only for the compose, then restored */
   nodeTranslation = &(modelNode->worldTransform).translation;
-  nodeTranslation->x = nodeTranslation->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  translationComponent = &(modelNode->worldTransform).translation.y;
-  *translationComponent = *translationComponent - originY;
-  translationComponent = &(modelNode->worldTransform).translation.z;
-  *translationComponent = *translationComponent - originZ;
+  nodeTranslation->x = nodeTranslation->x - originX;
+  nodeTranslation->y = nodeTranslation->y - originY;
+  nodeTranslation->z = nodeTranslation->z - originZ;
   GraphicsShadingGeneratedTexture_ComposeTransform
             (&g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform,
              &modelNode->worldTransform,
              &g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform);
-  nodeTranslation = &(modelNode->worldTransform).translation;
   nodeTranslation->x = nodeTranslation->x + originX;
-  translationComponent = &(modelNode->worldTransform).translation.y;
-  *translationComponent = *translationComponent + originY;
-  translationComponent = &(modelNode->worldTransform).translation.z;
-  *translationComponent = *translationComponent + originZ;
+  nodeTranslation->y = nodeTranslation->y + originY;
+  nodeTranslation->z = nodeTranslation->z + originZ;
   result = 0;
   resourceView = (modelNode->modelPayload).modelResource;
-  offsetCountOrChildIndex = resourceView->shadowMeshGroupOffset;
-  meshGroupTableOffset = offsetCountOrChildIndex;
-  if (offsetCountOrChildIndex != 0) {
-    meshRecord = (uint8_t *)resourceView + offsetCountOrChildIndex + sizeof(ModelMeshGroupHeader);
-    for (offsetCountOrChildIndex = ((ModelMeshGroupHeader *)((uint8_t *)resourceView +
-                                                             offsetCountOrChildIndex))->meshCount;
-         offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
-      result = GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh
-                         ((ModelMeshGroupAddress32)meshRecord) + meshGroupTableOffset;
+  /* the shadow mesh group: a ModelMeshGroupHeader, then the mesh records from +0x20, each starting with its
+     own size */
+  meshGroupOffset = resourceView->shadowMeshGroupOffset;
+  if (meshGroupOffset != 0) {
+    meshRecord = (uint8_t *)resourceView + meshGroupOffset + sizeof(ModelMeshGroupHeader);
+    for (meshesRemaining = ((ModelMeshGroupHeader *)((uint8_t *)resourceView + meshGroupOffset))->meshCount;
+         meshesRemaining != 0; meshesRemaining--) {
+      /* Original quirk: each mesh overwrites the result (it does not accumulate) and the mesh-group offset is
+         added to it; the caller only tests the sum for nonzero. */
+      result = GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh((ModelMeshGroupAddress32)meshRecord) +
+               meshGroupOffset;
       meshRecord = meshRecord + ((ModelMeshHeader *)meshRecord)->byteSize;
     }
   }
-  offsetCountOrChildIndex = 0;
+  childIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
-    if (modelNode->childNodes[offsetCountOrChildIndex] != NULL) {
-      result = result +
-               GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy
-                         (modelNode->childNodes[offsetCountOrChildIndex]);
+    if (modelNode->childNodes[childIndex] != NULL) {
+      result = result + GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(modelNode->childNodes[childIndex]);
     }
-    offsetCountOrChildIndex++;
+    childIndex++;
   }
   return result;
 }

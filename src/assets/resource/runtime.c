@@ -176,109 +176,104 @@ InGameSaveGame_PrepareRegistrationRecords
           (ResourceRegistrationRuntimeImageSavedView *runtimeImage)
 
 {
-  uint32_t rebasedOffset;
-  uint32_t secondaryOffsetOrNestedCount;
-  int clearCountOrArmyDefinition;
-  ResourceRegistrationRecord *tailRecord;
-  uint32_t recordsRemainingOrCount;
+  uint32_t primaryOffset;
+  uint32_t secondaryOffset;
   uint32_t nestedBaseOffset;
-  ResourceRegistrationRecordSavedView *nestedOffsetCursor;
+  uint32_t auxiliaryOffset;
+  uint32_t nestedCount;
+  uint32_t payloadOffset;
+  uint32_t clearCount;
+  uint32_t *recordDword;
+  uint32_t *nestedOffset;
+  ArmyRuntimeSlot *ownerArmy;
+  ResourceRegistrationRecord *tailRecord;
+  uint32_t recordsRemaining;
+  uint32_t recordCount;
+  ResourceRegistrationRecordSavedView *records;
   ResourceRegistrationRecordSavedView *recordCursor;
-  
+
   recordCursor = runtimeImage->records;
-  recordsRemainingOrCount = runtimeImage->recordCount;
+  recordsRemaining = runtimeImage->recordCount;
+  /* Original quirk: a do-while, so a record count of 0 still processes the first record and then wraps
+     the counter. */
   do {
-    while ((recordCursor->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
-      /* free record: zero its 0x40 dwords, which also advances recordCursor to the next record */
-      for (clearCountOrArmyDefinition = sizeof(ResourceRegistrationRecordSavedView) / 4;
-           clearCountOrArmyDefinition != 0; clearCountOrArmyDefinition--) {
-        recordCursor->primarySavedIdOrOffset = 0;
-        recordCursor = (ResourceRegistrationRecordSavedView *)((uint32_t *)recordCursor + 1);
+    if ((recordCursor->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
+      /* free record: zero its 0x40 dwords */
+      recordDword = (uint32_t *)recordCursor;
+      for (clearCount = sizeof(ResourceRegistrationRecordSavedView) / 4; clearCount != 0; clearCount--) {
+        *recordDword = 0;
+        recordDword++;
       }
-      recordsRemainingOrCount--;
-      if (recordsRemainingOrCount == 0) {
-        tailRecord = runtimeImage->tailRecord;
-        recordCursor = runtimeImage->records;
-        if (tailRecord != NULL) {
-          tailRecord = (ResourceRegistrationRecord *)
-                   ((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne);
+    }
+    else {
+      primaryOffset = recordCursor->primarySavedIdOrOffset;
+      secondaryOffset = recordCursor->secondarySavedIdOrOffset;
+      nestedBaseOffset = recordCursor->nestedBaseSavedOffset;
+      if (primaryOffset != 0) {
+        primaryOffset = primaryOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
+      }
+      if (secondaryOffset != 0) {
+        secondaryOffset = secondaryOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
+      }
+      if (nestedBaseOffset != 0) {
+        nestedBaseOffset = nestedBaseOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
+      }
+      recordCursor->primarySavedIdOrOffset = primaryOffset;
+      recordCursor->secondarySavedIdOrOffset = secondaryOffset;
+      recordCursor->nestedBaseSavedOffset = nestedBaseOffset;
+      recordCursor->ownerRuntimeSavedOffset = 0;
+      auxiliaryOffset = recordCursor->auxiliarySavedIdOrOffset;
+      nestedCount = recordCursor->nestedCount;
+      if (auxiliaryOffset != 0) {
+        auxiliaryOffset = auxiliaryOffset - THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1); /* 1-based offset, 0 = none */
+      }
+      recordCursor->auxiliarySavedIdOrOffset = auxiliaryOffset;
+      /* nestedCount is not clamped to the 13 array entries: walk the dwords from the array start */
+      nestedOffset = recordCursor->nestedSavedOffsets;
+      for (; nestedCount != 0; nestedCount--) {
+        if (*nestedOffset != 0) {
+          *nestedOffset = *nestedOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
         }
-        recordsRemainingOrCount = runtimeImage->recordCount;
-        /* the saved tail-record offset goes into the last dword of the image (record array + size - 4) */
-        recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets[12] = (uint32_t)tailRecord;
-        return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) |
-               (uint32_t)(recordsRemainingOrCount * sizeof(ResourceRegistrationRecordSavedView));
+        nestedOffset++;
       }
-    }
-    rebasedOffset = recordCursor->primarySavedIdOrOffset;
-    secondaryOffsetOrNestedCount = recordCursor->secondarySavedIdOrOffset;
-    nestedBaseOffset = recordCursor->nestedBaseSavedOffset;
-    if (rebasedOffset != 0) {
-      rebasedOffset = rebasedOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
-    }
-    if (secondaryOffsetOrNestedCount != 0) {
-      secondaryOffsetOrNestedCount = secondaryOffsetOrNestedCount - (int)g_RuntimeObjectRebaseBaseMinusOne;
-    }
-    if (nestedBaseOffset != 0) {
-      nestedBaseOffset = nestedBaseOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
-    }
-    recordCursor->primarySavedIdOrOffset = rebasedOffset;
-    recordCursor->secondarySavedIdOrOffset = secondaryOffsetOrNestedCount;
-    recordCursor->nestedBaseSavedOffset = nestedBaseOffset;
-    recordCursor->ownerRuntimeSavedOffset = 0;
-    rebasedOffset = recordCursor->auxiliarySavedIdOrOffset;
-    secondaryOffsetOrNestedCount = recordCursor->nestedCount;
-    if (rebasedOffset != 0) {
-      rebasedOffset = rebasedOffset - THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1); /* 1-based offset, 0 = none */
-    }
-    recordCursor->auxiliarySavedIdOrOffset = rebasedOffset;
-    nestedOffsetCursor = recordCursor;
-    for (; secondaryOffsetOrNestedCount != 0; secondaryOffsetOrNestedCount--) {
-      if (nestedOffsetCursor->nestedSavedOffsets[0] != 0) {
-        nestedOffsetCursor->nestedSavedOffsets[0] =
-             nestedOffsetCursor->nestedSavedOffsets[0] - (int)g_RuntimeObjectRebaseBaseMinusOne;
+      payloadOffset = recordCursor->runtimePayloadSavedOffset;
+      switch(recordCursor->domainIndex) {
+      case RESOURCE_DOMAIN_ARMY_RUNTIME:
+        /* the payload is a model runtime: the faction of its owner army is saved as the texture set
+           (army graphics binding) index */
+        ownerArmy = ((ModelRuntimeSlot *)payloadOffset)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+        recordCursor->paletteAssetSavedIdOrOffset = 0;
+        payloadOffset = payloadOffset - g_ModelRuntimeRebaseDelta;
+        recordCursor->textureSetSavedIdOrOffset = ownerArmy->factionIndex;
+        break;
+      case RESOURCE_DOMAIN_SHOT_RUNTIME:
+        payloadOffset = payloadOffset - (int)g_ShotRuntimeRebaseBaseMinusOne;
+        recordCursor->textureSetSavedIdOrOffset = 0;
+        recordCursor->paletteAssetSavedIdOrOffset = 0;
+        break;
+      case RESOURCE_DOMAIN_EFFECT_RUNTIME:
+        payloadOffset = payloadOffset - (int)g_EffectRuntimeRebaseBaseMinusOne;
+        recordCursor->textureSetSavedIdOrOffset = 0;
+        recordCursor->paletteAssetSavedIdOrOffset = 0;
       }
-      /* next dword */
-      nestedOffsetCursor = (ResourceRegistrationRecordSavedView *)((uint32_t *)nestedOffsetCursor + 1);
+      recordCursor->runtimePayloadSavedOffset = payloadOffset;
+      /* the sprite asset pointer is replaced by the asset's registry id */
+      recordCursor->spriteAssetSavedIdOrOffset =
+           ((SpriteAssetHeader *)recordCursor->spriteAssetSavedIdOrOffset)->registryHeader.registryId;
     }
-    rebasedOffset = recordCursor->runtimePayloadSavedOffset;
-                    
-    switch(recordCursor->domainIndex) {
-    case RESOURCE_DOMAIN_ARMY_RUNTIME:
-      /* the payload is a model runtime: the faction of its owner army is saved as the texture set
-         (army graphics binding) index */
-      clearCountOrArmyDefinition =
-           (int)((ModelRuntimeSlot *)rebasedOffset)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-      recordCursor->paletteAssetSavedIdOrOffset = 0;
-      rebasedOffset = rebasedOffset - g_ModelRuntimeRebaseDelta;
-      recordCursor->textureSetSavedIdOrOffset = ((ArmyRuntimeSlot *)clearCountOrArmyDefinition)->factionIndex;
-      break;
-    case RESOURCE_DOMAIN_SHOT_RUNTIME:
-      rebasedOffset = rebasedOffset - (int)g_ShotRuntimeRebaseBaseMinusOne;
-      recordCursor->textureSetSavedIdOrOffset = 0;
-      recordCursor->paletteAssetSavedIdOrOffset = 0;
-      break;
-    case RESOURCE_DOMAIN_EFFECT_RUNTIME:
-      rebasedOffset = rebasedOffset - (int)g_EffectRuntimeRebaseBaseMinusOne;
-      recordCursor->textureSetSavedIdOrOffset = 0;
-      recordCursor->paletteAssetSavedIdOrOffset = 0;
-    }
-    recordCursor->runtimePayloadSavedOffset = rebasedOffset;
-    /* the sprite asset pointer is replaced by the asset's registry id */
-    recordCursor->spriteAssetSavedIdOrOffset =
-         ((SpriteAssetHeader *)recordCursor->spriteAssetSavedIdOrOffset)->registryHeader.registryId;
     recordCursor = recordCursor + 1;
-    recordsRemainingOrCount--;
-  } while (recordsRemainingOrCount != 0);
+    recordsRemaining--;
+  } while (recordsRemaining != 0);
   tailRecord = runtimeImage->tailRecord;
-  recordCursor = runtimeImage->records;
+  records = runtimeImage->records;
   if (tailRecord != NULL) {
     tailRecord = (ResourceRegistrationRecord *)((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne);
   }
-  recordsRemainingOrCount = runtimeImage->recordCount;
-  recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets[12] = (uint32_t)tailRecord;
-  return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) |
-               (uint32_t)(recordsRemainingOrCount * sizeof(ResourceRegistrationRecordSavedView));
+  recordCount = runtimeImage->recordCount;
+  /* the saved tail-record offset goes into the last dword of the image (record array + size - 4) */
+  records[recordCount - 1].nestedSavedOffsets[12] = (uint32_t)tailRecord;
+  return ((uint64_t)(uint32_t)(uintptr_t)records << 32) |
+         (uint32_t)(recordCount * sizeof(ResourceRegistrationRecordSavedView));
 }
 
 /* Address: 0x00513020.

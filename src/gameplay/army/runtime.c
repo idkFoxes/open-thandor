@@ -1668,15 +1668,20 @@ ArmyRuntime_ResolveShotAimPoint
 
 {
   int *targetDefinitionRecord;
-  int targetClassRecord;
+  ModelDefinition *targetDefinition;
+  ArmyRuntimeSlot *targetArmy;
   int64_t deltaYSquared;
   int64_t remainingRangeSquared;
   uint32_t visibilityMask;
-  uint32_t distanceOrAngle;
+  uint32_t targetDistance;
+  uint32_t rampUpLeadTime;
+  uint32_t targetHeading;
   int leadDistance;
-  int definitionOrDelta;
+  Q12 trackedX;
+  Q12 trackedY;
+  int deltaX;
+  int deltaY;
   int aimWorldX;
-  uint32_t directionY;
   int aimWorldY;
   int aimWorldZ;
   ModelRuntimeNode *targetNode;
@@ -1711,53 +1716,52 @@ ArmyRuntime_ResolveShotAimPoint
         }
         aimWorldX = (targetNode->worldTransform).translation.x;
         targetDefinitionRecord = (targetEntity->common).ownership.definitionOrClassRecord;
-        definitionOrDelta = *targetDefinitionRecord;
+        targetDefinition = (ModelDefinition *)*targetDefinitionRecord;
         aimWorldY = (targetNode->worldTransform).translation.y;
-        aimWorldZ = (targetNode->worldTransform).translation.z + ((ModelDefinition *)definitionOrDelta)->aimHeightOffsetQ12;
-        targetClassRecord = targetDefinitionRecord[2];
-        if ((((ModelDefinition *)definitionOrDelta)->accelerationPerTick != 0) &&
-           ((((ArmyRuntimeSlot *)targetClassRecord)->movementStateFlags & 4) == 0)) {
-          distanceOrAngle = FixedMath_Length3(aimWorldZ - sourceWorldZQ12,aimWorldY - sourceWorldYQ12,
-                                    aimWorldX - sourceWorldXQ12);
+        aimWorldZ = (targetNode->worldTransform).translation.z + targetDefinition->aimHeightOffsetQ12;
+        targetArmy = (ArmyRuntimeSlot *)targetDefinitionRecord[2];
+        if ((targetDefinition->accelerationPerTick != 0) && ((targetArmy->movementStateFlags & 4) == 0)) {
+          targetDistance = FixedMath_Length3(aimWorldZ - sourceWorldZQ12,aimWorldY - sourceWorldYQ12,
+                                             aimWorldX - sourceWorldXQ12);
           shotLeadSpeedQ12 = ShotDefinition_GetLeadSpeed(shotDefinition);
-          leadDistance = (int)(((int64_t)(int)distanceOrAngle * (int64_t)((ModelDefinition *)definitionOrDelta)->movementSpeed) /
-                       (int64_t)shotLeadSpeedQ12);
-          distanceOrAngle = ShotDefinition_ComputeRampUpLeadTime(shotDefinition);
-          leadDistance = leadDistance + distanceOrAngle * ((ModelDefinition *)definitionOrDelta)->movementSpeed;
-          distanceOrAngle = FixedMath_Atan2Angle16
-                            (((ArmyRuntimeSlot *)targetClassRecord)->movementPosition1Q12 -
-                             ((ArmyRuntimeSlot *)targetClassRecord)->modelNodeRuntime->worldTransform.translation.y,
-                             ((ArmyRuntimeSlot *)targetClassRecord)->movementPosition0Q12 -
-                             ((ArmyRuntimeSlot *)targetClassRecord)->modelNodeRuntime->worldTransform.translation.x);
-          leadDirection = FixedMath_DirectionFromAnglesScaled(0,distanceOrAngle,leadDistance);
-          directionY = leadDirection.y;
-          distanceOrAngle = leadDirection.x;
+          leadDistance = (int)(((int64_t)(int)targetDistance * (int64_t)targetDefinition->movementSpeed) /
+                               (int64_t)shotLeadSpeedQ12);
+          rampUpLeadTime = ShotDefinition_ComputeRampUpLeadTime(shotDefinition);
+          leadDistance = leadDistance + rampUpLeadTime * targetDefinition->movementSpeed;
+          targetHeading = FixedMath_Atan2Angle16
+                            (targetArmy->movementPosition1Q12 -
+                             targetArmy->modelNodeRuntime->worldTransform.translation.y,
+                             targetArmy->movementPosition0Q12 -
+                             targetArmy->modelNodeRuntime->worldTransform.translation.x);
+          leadDirection = FixedMath_DirectionFromAnglesScaled(0,targetHeading,leadDistance);
           targetEntity = (targetState->common).commandTarget.targetEntity;
-          definitionOrDelta = (targetEntity->common).damageState.trackedCoordinate0Q12;
-          if (definitionOrDelta == (targetEntity->common).pathCoordinate0Q12) {
-            definitionOrDelta = definitionOrDelta - (targetNode->worldTransform).translation.x;
-            remainingRangeSquared = ((int64_t)(int)directionY * (int64_t)(int)directionY +
-                    (int64_t)(int)distanceOrAngle * (int64_t)(int)distanceOrAngle) - (int64_t)definitionOrDelta * (int64_t)definitionOrDelta
-            ;
-            if (((-1 < remainingRangeSquared) &&
-                (definitionOrDelta = (targetEntity->common).damageState.trackedCoordinate1Q12,
-                definitionOrDelta == (targetEntity->common).pathCoordinate1Q12)) &&
-               (definitionOrDelta = definitionOrDelta - (targetNode->worldTransform).translation.y,
-               deltaYSquared = (int64_t)definitionOrDelta * (int64_t)definitionOrDelta,
-               -1 < remainingRangeSquared - deltaYSquared)) {
-              /* The target is standing still within lead range: aim at its path position directly. */
-              outAimPoint->x = (targetEntity->common).pathCoordinate0Q12;
-              outAimPoint->y = (targetEntity->common).pathCoordinate1Q12;
-              outAimPoint->z =
-                   (((targetEntity->common).ownership.modelNode)->worldTransform).translation.z +
-                   ((ModelRuntimeSlot *)(targetEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
-                   runtimeDefinition->aimHeightOffsetQ12;
-              return true;
+          trackedX = (targetEntity->common).damageState.trackedCoordinate0Q12;
+          if (trackedX == (targetEntity->common).pathCoordinate0Q12) {
+            deltaX = trackedX - (targetNode->worldTransform).translation.x;
+            remainingRangeSquared = ((int64_t)(int)leadDirection.y * (int64_t)(int)leadDirection.y +
+                                     (int64_t)(int)leadDirection.x * (int64_t)(int)leadDirection.x) -
+                                    (int64_t)deltaX * (int64_t)deltaX;
+            if (-1 < remainingRangeSquared) {
+              trackedY = (targetEntity->common).damageState.trackedCoordinate1Q12;
+              if (trackedY == (targetEntity->common).pathCoordinate1Q12) {
+                deltaY = trackedY - (targetNode->worldTransform).translation.y;
+                deltaYSquared = (int64_t)deltaY * (int64_t)deltaY;
+                if (-1 < remainingRangeSquared - deltaYSquared) {
+                  /* The target is standing still within lead range: aim at its path position directly. */
+                  outAimPoint->x = (targetEntity->common).pathCoordinate0Q12;
+                  outAimPoint->y = (targetEntity->common).pathCoordinate1Q12;
+                  outAimPoint->z =
+                       (((targetEntity->common).ownership.modelNode)->worldTransform).translation.z +
+                       ((ModelRuntimeSlot *)(targetEntity->common).ownership.definitionOrClassRecord)->
+                       definitionOrSavedId.runtimeDefinition->aimHeightOffsetQ12;
+                  return true;
+                }
+              }
             }
           }
           aimWorldZ = leadDirection.z + aimWorldZ;
-          aimWorldY = directionY + aimWorldY;
-          aimWorldX = distanceOrAngle + aimWorldX;
+          aimWorldY = leadDirection.y + aimWorldY;
+          aimWorldX = leadDirection.x + aimWorldX;
         }
         outAimPoint->x = aimWorldX;
         outAimPoint->y = aimWorldY;

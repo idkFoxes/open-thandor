@@ -74,11 +74,13 @@ void SpinLock_Release(RuntimeSpinLockValue *lockValue)
 void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue)
 
 {
-  if ((lockValue != NULL) &&
-     (*lockValue = SPIN_LOCK_UNLOCKED, callback != NULL)) {
+  if (lockValue == NULL) {
+    return;
+  }
+  *lockValue = SPIN_LOCK_UNLOCKED;
+  if (callback != NULL) {
     callback();
   }
-  return;
 }
 
 

@@ -65,53 +65,48 @@ SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
 uint32_t SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
 
 {
-  AssetAllocationSizeBytes relocationBlocksRemaining;
-  int pointerRecordsRemaining;
+  SprRelocationCount relocationBlocksRemaining;
+  SprRelocationCount pointerRecordsRemaining;
   SprGroupRelocationHeader *groupRelocationCursor;
   SprRelocationBlockHeader *relocationBlockCursor;
   SprPointerRelocationRecord *pointerRelocationCursor;
   AssetRecordCount groupsRemaining;
-  SpriteAssetHeader *previousRegistryHead;
 
-  previousRegistryHead = g_SpriteAssetRegistryHead;
-  if ((asset->registryHeader.common.magic == ASSET_MAGIC_SPR) &&
-     (asset->registryHeader.common.converterVersion == PCK_CONVERTER_SPR_00020007)) {
-    g_SpriteAssetRegistryHead = asset;
-    asset->registryHeader.previousRegistryAsset = previousRegistryHead;
-    groupRelocationCursor = (SprGroupRelocationHeader *)(asset + 1);
-    for (groupsRemaining = asset->registryHeader.groupCount; groupsRemaining != 0; groupsRemaining--) {
-      relocationBlocksRemaining = groupRelocationCursor->relocationBlockCount;
-      if (relocationBlocksRemaining != 0) {
-        relocationBlockCursor = (SprRelocationBlockHeader *)(groupRelocationCursor + 1);
-        do {
-          /* the pointer records follow the block header and its fixed records (both 0x40 bytes) */
-          pointerRelocationCursor = (SprPointerRelocationRecord *)(relocationBlockCursor + 1) +
-                                    relocationBlockCursor->fixedRecordCount;
-          for (pointerRecordsRemaining = relocationBlockCursor->pointerRelocationCount;
-              pointerRecordsRemaining != 0; pointerRecordsRemaining--)
-          {
-            /* asset start + serialized offset */
-            pointerRelocationCursor->pointerOrSerializedOffset00 =
-                 (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset00);
-            pointerRelocationCursor->pointerOrSerializedOffset0C =
-                 (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset0C);
-            pointerRelocationCursor->pointerOrSerializedOffset18 =
-                 (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset18);
-            pointerRelocationCursor++;
-          }
-          /* advance by the block's leading byte size */
-          relocationBlockCursor = (SprRelocationBlockHeader *)
-               ((uint8_t *)relocationBlockCursor + relocationBlockCursor->blockByteSize);
-          relocationBlocksRemaining--;
-        } while (relocationBlocksRemaining != 0);
-      }
-      /* advance by the group's leading byte size */
-      groupRelocationCursor = (SprGroupRelocationHeader *)
-           ((uint8_t *)groupRelocationCursor + groupRelocationCursor->nextGroupByteOffset);
-    }
-    return 0;
+  if ((asset->registryHeader.common.magic != ASSET_MAGIC_SPR) ||
+      (asset->registryHeader.common.converterVersion != PCK_CONVERTER_SPR_00020007)) {
+    return FATAL_ERROR_SPRITE_ASSET_INVALID;
   }
-  return FATAL_ERROR_SPRITE_ASSET_INVALID;
+  asset->registryHeader.previousRegistryAsset = g_SpriteAssetRegistryHead;
+  g_SpriteAssetRegistryHead = asset;
+
+  groupRelocationCursor = (SprGroupRelocationHeader *)(asset + 1);
+  for (groupsRemaining = asset->registryHeader.groupCount; groupsRemaining != 0; groupsRemaining--) {
+    relocationBlockCursor = (SprRelocationBlockHeader *)(groupRelocationCursor + 1);
+    for (relocationBlocksRemaining = groupRelocationCursor->relocationBlockCount;
+         relocationBlocksRemaining != 0; relocationBlocksRemaining--) {
+      /* the pointer records follow the block header and its fixed records (both 0x40 bytes) */
+      pointerRelocationCursor = (SprPointerRelocationRecord *)(relocationBlockCursor + 1) +
+                                relocationBlockCursor->fixedRecordCount;
+      for (pointerRecordsRemaining = relocationBlockCursor->pointerRelocationCount;
+           pointerRecordsRemaining != 0; pointerRecordsRemaining--) {
+        /* asset start + serialized offset */
+        pointerRelocationCursor->pointerOrSerializedOffset00 =
+             (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset00);
+        pointerRelocationCursor->pointerOrSerializedOffset0C =
+             (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset0C);
+        pointerRelocationCursor->pointerOrSerializedOffset18 =
+             (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset18);
+        pointerRelocationCursor++;
+      }
+      /* advance by the block's leading byte size */
+      relocationBlockCursor = (SprRelocationBlockHeader *)
+           ((uint8_t *)relocationBlockCursor + relocationBlockCursor->blockByteSize);
+    }
+    /* advance by the group's leading byte size */
+    groupRelocationCursor = (SprGroupRelocationHeader *)
+         ((uint8_t *)groupRelocationCursor + groupRelocationCursor->nextGroupByteOffset);
+  }
+  return 0;
 }
 
 /* Address: 0x004BE5A0.

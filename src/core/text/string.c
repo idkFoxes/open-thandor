@@ -22,49 +22,67 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
           WideNumberSignedValue32 value,uint16_t *destination)
 
 {
-  uint64_t previousValue;
-  uint32_t integerPartOrHexDigit;
-  uint16_t *source;
-  WideNumberFormatCodeUnitCount segmentLength;
-  uint32_t digitCount;
-  UiTextCodeUnitCount codeUnitCount;
+  uint32_t integerPart;
   uint32_t fractionRemainder;
+  uint64_t scaledRemainder;
+  uint32_t hexBits;
+  uint32_t hexDigit;
+  uint32_t digitCount;
+  uint32_t leadingDigitCount;
+  WideNumberFormatCodeUnitCount signLength;
   uint16_t *signText;
   uint16_t *paddingText;
+  uint16_t *digitText;
   uint16_t *destinationCursor;
 
-  segmentLength = g_WideNumberFormatState.hexPrefixLength;
-  if ((flags & WIDE_FORMAT_HEXADECIMAL) == 0) {
-    /* without a sign signText stays unset, but then zero code units are copied from it */
-    segmentLength = 0;
-    if (((flags & WIDE_FORMAT_SIGNED_VALUE) != 0) &&
-       (((flags & WIDE_FORMAT_SHOW_PLUS_SIGN) != 0 || (value < 0)))) {
+  if ((flags & WIDE_FORMAT_HEXADECIMAL) != 0) {
+    WideText_CopyCodeUnits
+              (g_WideNumberFormatState.hexPrefixLength,g_WideNumberFormatState.hexPrefix,destination);
+    destinationCursor = destination + g_WideNumberFormatState.hexPrefixLength;
+    /* drop leading zero bytes, keeping at least one byte (two digits) */
+    hexBits = (uint32_t)value;
+    for (digitCount = 8; (hexBits & 0xff000000U) == 0 && digitCount > 2; digitCount -= 2) {
+      hexBits = hexBits << 8;
+    }
+    for (; digitCount != 0; digitCount--) {
+      hexDigit = hexBits >> 28;
+      hexBits = hexBits << 4;
+      *destinationCursor = g_WideNumberFormatState.digitAlphabet[hexDigit];
+      destinationCursor++;
+    }
+    WideText_CopyCodeUnits
+              (g_WideNumberFormatState.hexSuffixLength,g_WideNumberFormatState.hexSuffix,destinationCursor);
+    destinationCursor = destinationCursor + g_WideNumberFormatState.hexSuffixLength;
+  }
+  else {
+    /* without a sign zero code units are copied, so signText is never read */
+    signText = NULL;
+    signLength = 0;
+    if ((flags & WIDE_FORMAT_SIGNED_VALUE) != 0) {
       if (value < 0) {
         signText = g_WideNumberFormatState.negativeSign;
+        signLength = g_WideNumberFormatState.negativeSignLength;
         value = -value;
-        segmentLength = g_WideNumberFormatState.negativeSignLength;
       }
-      else {
+      else if ((flags & WIDE_FORMAT_SHOW_PLUS_SIGN) != 0) {
         signText = g_WideNumberFormatState.positiveSign;
-        segmentLength = g_WideNumberFormatState.positiveSignLength;
+        signLength = g_WideNumberFormatState.positiveSignLength;
       }
     }
-    WideText_CopyCodeUnits(segmentLength,signText,destination);
-    destinationCursor = destination + segmentLength;
-    integerPartOrHexDigit = (uint32_t)value / denominator;
+    WideText_CopyCodeUnits(signLength,signText,destination);
+    destinationCursor = destination + signLength;
+    integerPart = (uint32_t)value / denominator;
     fractionRemainder = (uint32_t)value % denominator;
     /* the integer digits are built backwards in the scratch array just before digitAlphabet */
-    source = g_WideNumberFormatState.digitAlphabet;
+    digitText = g_WideNumberFormatState.digitAlphabet;
     digitCount = 0;
     do {
-      previousValue = (uint64_t)integerPartOrHexDigit;
-      integerPartOrHexDigit = integerPartOrHexDigit / 10;
-      source--;
+      digitText--;
+      *digitText = (uint16_t)('0' + integerPart % 10);
+      integerPart = integerPart / 10;
       digitCount++;
-      *source = (short)(previousValue % 10) + '0';
-    } while (integerPartOrHexDigit != 0);
+    } while (integerPart != 0);
     /* only the integerDigitLimit most significant digits are printed */
-    paddingText = g_WideNumberFormatState.spacePadding;
     if (integerDigitLimit < digitCount) {
       digitCount = integerDigitLimit;
     }
@@ -72,33 +90,37 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
       if ((flags & WIDE_FORMAT_PAD_WITH_ZERO) != 0) {
         paddingText = g_WideNumberFormatState.zeroPadding;
       }
+      else {
+        paddingText = g_WideNumberFormatState.spacePadding;
+      }
       WideText_CopyCodeUnits(integerDigitLimit - digitCount,paddingText,destinationCursor);
       destinationCursor = destinationCursor + (integerDigitLimit - digitCount);
     }
+    /* a single group separator, before the last three digits */
     if (((flags & WIDE_FORMAT_GROUP_THOUSANDS) != 0) && (3 < digitCount)) {
-      codeUnitCount = digitCount - 3;
-      WideText_CopyCodeUnits(codeUnitCount,source,destinationCursor);
-      segmentLength = g_WideNumberFormatState.groupSeparatorLength;
-      source = source + codeUnitCount;
+      leadingDigitCount = digitCount - 3;
+      WideText_CopyCodeUnits(leadingDigitCount,digitText,destinationCursor);
+      destinationCursor = destinationCursor + leadingDigitCount;
+      digitText = digitText + leadingDigitCount;
       WideText_CopyCodeUnits
-                (g_WideNumberFormatState.groupSeparatorLength,g_WideNumberFormatState.groupSeparator
-                 ,destinationCursor + codeUnitCount);
-      destinationCursor = destinationCursor + codeUnitCount + segmentLength;
+                (g_WideNumberFormatState.groupSeparatorLength,g_WideNumberFormatState.groupSeparator,
+                 destinationCursor);
+      destinationCursor = destinationCursor + g_WideNumberFormatState.groupSeparatorLength;
       digitCount = 3;
     }
-    WideText_CopyCodeUnits(digitCount,source,destinationCursor);
-    segmentLength = g_WideNumberFormatState.decimalSeparatorLength;
+    WideText_CopyCodeUnits(digitCount,digitText,destinationCursor);
     destinationCursor = destinationCursor + digitCount;
     if (((flags & WIDE_FORMAT_FIXED_FRACTION_WIDTH) != 0) || (denominator != 1)) {
       WideText_CopyCodeUnits
                 (g_WideNumberFormatState.decimalSeparatorLength,
                  g_WideNumberFormatState.decimalSeparator,destinationCursor);
-      destinationCursor = destinationCursor + segmentLength;
+      destinationCursor = destinationCursor + g_WideNumberFormatState.decimalSeparatorLength;
+      /* long division: at least one fraction digit, then stop early once the fraction is exact */
       if (fractionalDigits != 0) {
         do {
-          previousValue = (uint64_t)fractionRemainder;
-          fractionRemainder = (uint32_t)((previousValue * 10) % (uint64_t)denominator);
-          *destinationCursor = (short)((previousValue * 10) / (uint64_t)denominator) + '0';
+          scaledRemainder = (uint64_t)fractionRemainder * 10;
+          *destinationCursor = (uint16_t)('0' + scaledRemainder / denominator);
+          fractionRemainder = (uint32_t)(scaledRemainder % denominator);
           destinationCursor++;
           fractionalDigits--;
         } while ((fractionalDigits != 0) && (fractionRemainder != 0));
@@ -109,32 +131,9 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
         }
       }
     }
-    if ((flags & WIDE_FORMAT_WRITE_TERMINATOR) != 0) {
-      *destinationCursor = 0;
-    }
   }
-  else {
-    WideText_CopyCodeUnits
-              (g_WideNumberFormatState.hexPrefixLength,g_WideNumberFormatState.hexPrefix,destination);
-    destinationCursor = destination + segmentLength;
-    /* drop leading zero bytes, keeping at least one byte (two digits) */
-    for (digitCount = 8; (value & 0xff000000U) == 0 && digitCount > 2; digitCount -= 2) {
-      value = value << 8;
-    }
-    do {
-      integerPartOrHexDigit = (uint32_t)value >> 28;
-      value = value << 4;
-      *destinationCursor = g_WideNumberFormatState.digitAlphabet[integerPartOrHexDigit];
-      segmentLength = g_WideNumberFormatState.hexSuffixLength;
-      destinationCursor++;
-      digitCount--;
-    } while (digitCount != 0);
-    WideText_CopyCodeUnits
-              (g_WideNumberFormatState.hexSuffixLength,g_WideNumberFormatState.hexSuffix,destinationCursor);
-    destinationCursor = destinationCursor + segmentLength;
-    if ((flags & WIDE_FORMAT_WRITE_TERMINATOR) != 0) {
-      *destinationCursor = 0;
-    }
+  if ((flags & WIDE_FORMAT_WRITE_TERMINATOR) != 0) {
+    *destinationCursor = 0;
   }
   return (uint8_t *)destinationCursor - (uint8_t *)destination;
 }
@@ -150,33 +149,30 @@ int Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *l
 
 {
   uint16_t leftCodeUnit;
-  uint16_t otherCodeUnit;
   uint16_t rightCodeUnit;
 
   do {
-    do {
-      leftCodeUnit = *leftText;
-      rightCodeUnit = *rightText;
-      leftText++;
-      rightText++;
-      otherCodeUnit = rightCodeUnit;
-      if ((leftCodeUnit == 0) || (otherCodeUnit = leftCodeUnit, rightCodeUnit == 0)) {
-        return otherCodeUnit == 0 ? 0 : 1;
-      }
-    } while (leftCodeUnit == rightCodeUnit);
+    leftCodeUnit = *leftText;
+    rightCodeUnit = *rightText;
+    leftText++;
+    rightText++;
+    if (leftCodeUnit == 0) {
+      return rightCodeUnit == 0 ? 0 : 1;
+    }
+    if (rightCodeUnit == 0) {
+      return 1;
+    }
     /* Fold only when one side is an upper-case letter ('A'..'Z', 0x41..0x5A) and the other a lower-case one
-       ('a'..'z', 0x61..0x7A); the lower-case test on leftCodeUnit has no upper bound in the original either
-       (CMP EAX,0x61 / JC only), which is harmless because rightCodeUnit is then an upper-case letter. */
-    if ('A' - 1 < leftCodeUnit) {
-      if (leftCodeUnit < 'Z' + 1) {
-        if ('a' - 1 < rightCodeUnit && rightCodeUnit < 'z' + 1) {
-          leftCodeUnit = leftCodeUnit | TEXT_ASCII_LOWER_CASE_BIT;
-        }
+       ('a'..'z', 0x61..0x7A), so equal code units are never changed; the lower-case test on leftCodeUnit has
+       no upper bound in the original either, which is harmless because rightCodeUnit is then an upper-case
+       letter. */
+    if (leftCodeUnit >= 'A' && leftCodeUnit <= 'Z') {
+      if (rightCodeUnit >= 'a' && rightCodeUnit <= 'z') {
+        leftCodeUnit = leftCodeUnit | TEXT_ASCII_LOWER_CASE_BIT;
       }
-      else if ('a' - 1 < leftCodeUnit && rightCodeUnit < 'z' + 1 && 'A' - 1 < rightCodeUnit &&
-               rightCodeUnit < 'Z' + 1) {
-        rightCodeUnit = rightCodeUnit | TEXT_ASCII_LOWER_CASE_BIT;
-      }
+    }
+    else if (leftCodeUnit >= 'a' && rightCodeUnit >= 'A' && rightCodeUnit <= 'Z') {
+      rightCodeUnit = rightCodeUnit | TEXT_ASCII_LOWER_CASE_BIT;
     }
   } while (leftCodeUnit == rightCodeUnit);
   return leftCodeUnit < rightCodeUnit ? -1 : 1;

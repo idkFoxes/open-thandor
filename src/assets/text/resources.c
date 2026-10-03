@@ -62,40 +62,33 @@ void FontRuntime_Init(void)
 
 {
   wchar_t pathChar;
-  int scanLimitOrSlotCount;
-  int remainingSources;
-  GraphicsTextureSourceAsset **textureSourceSlot;
+  int scanUnitsLeft;
+  int sourceIndex;
+  int dwordsLeft;
   wchar_t *pathUtf16;
-  wchar_t *pathCursor;
   uint32_t *overrideDword;
   GraphicsTextureSourceAsset *loadedTexture;
   uint32_t textureLoadError;
   uint32_t checkedValue;
   uint32_t allocError;
   void *allocPayload;
-  
+
   pathUtf16 = u_engine_font_gfx_0041b030;
-  textureSourceSlot = g_FontTextureSources;
-  remainingSources = 2;
-  scanLimitOrSlotCount = FONT_TEXTURE_PATHS_SCAN_UNITS;
-  do {
+  /* one scan budget for both paths: the original keeps a single REPNE SCASW count across the loop */
+  scanUnitsLeft = FONT_TEXTURE_PATHS_SCAN_UNITS;
+  for (sourceIndex = 0; sourceIndex < 2; sourceIndex++) {
     loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)pathUtf16,&textureLoadError);
     checkedValue = FatalError_ExitIfFailed(loadedTexture != NULL ? (uint32_t)loadedTexture : textureLoadError,
                                             loadedTexture == NULL);
-    *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedValue;
+    g_FontTextureSources[sourceIndex] = (GraphicsTextureSourceAsset *)checkedValue;
     /* step pathUtf16 past the terminator to the next path */
-    pathCursor = pathUtf16;
-    do {
-      pathUtf16 = pathCursor;
-      if (scanLimitOrSlotCount == 0) break;
-      scanLimitOrSlotCount--;
-      pathUtf16 = pathCursor + 1;
-      pathChar = *pathCursor;
-      pathCursor = pathUtf16;
-    } while (pathChar != L'\0');
-    textureSourceSlot++;
-    remainingSources--;
-  } while (remainingSources != 0);
+    while (scanUnitsLeft != 0) {
+      scanUnitsLeft--;
+      pathChar = *pathUtf16;
+      pathUtf16++;
+      if (pathChar == L'\0') break;
+    }
+  }
   allocError = g_MemoryApi.alloc(RICHTEXT_RUNTIME_BUFFER_UNITS * sizeof(uint16_t),&allocPayload); /* 16 KiB */
   checkedValue = FatalError_ExitIfFailed(allocError != 0 ? allocError : (uint32_t)allocPayload,allocError != 0);
   g_FontRuntimeBuffer = (uint8_t *)checkedValue;
@@ -105,8 +98,7 @@ void FontRuntime_Init(void)
   overrideDword = g_TextResourceOverrides->resourceIds;
   /* all dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
      after this fill it finds no free slot (the original does the same: OR EAX,-1 / REP STOSD). */
-  for (scanLimitOrSlotCount = sizeof(TextResourceOverrideTable) / 4; scanLimitOrSlotCount != 0;
-       scanLimitOrSlotCount--) {
+  for (dwordsLeft = sizeof(TextResourceOverrideTable) / 4; dwordsLeft != 0; dwordsLeft--) {
     *overrideDword = TEXT_RESOURCE_ID_NONE;
     overrideDword++;
   }
@@ -271,6 +263,43 @@ uint32_t FontGlyph_DrawVerticallyCentered
 }
 
 
+/* Returns the first locale block of a 'str' asset whose country code is countryCode, or NULL. The blocks follow
+   the 0x200-byte asset header; block + blockSizeBytes is the next block.
+   Original quirk: the first block is always checked and the count is only tested after stepping, so a block
+   count of 0 wraps and keeps scanning past the asset. */
+static TextResourceLocaleBlockPrefix *TextResourceAsset_FindLocaleBlock
+          (TextResourceAssetHeader *asset,LocaleTelephoneCountryCode countryCode)
+{
+  TextResourceLocaleBlockPrefix *block;
+  AssetRecordCount remainingBlocks;
+
+  remainingBlocks = (asset->localeCountHeader).localeBlockCount;
+  block = (TextResourceLocaleBlockPrefix *)(asset + 1);
+  do {
+    if (block->countryCode == countryCode) {
+      return block;
+    }
+    block = (TextResourceLocaleBlockPrefix *)((uint8_t *)block + block->blockSizeBytes);
+    remainingBlocks--;
+  } while (remainingBlocks != 0);
+  return NULL;
+}
+
+
+/* Returns the number held by a command record's four UTF-16 decimal digits d0..d3 (recordStart[1..4], the two
+   payload dwords): d0*1000 + d1*100 + d2*10 + d3. */
+static uint32_t RichTextRecord_ParseDecimalDigits(const uint16_t *recordStart)
+{
+  uint32_t highDigits;
+  uint32_t lowDigits;
+
+  highDigits = *(const uint32_t *)(recordStart + 1);
+  lowDigits = *(const uint32_t *)(recordStart + 3);
+  return ((lowDigits >> 16 & 0xf) + (lowDigits & 0xf) * 10) + (highDigits >> 16 & 0xf) * 100 +
+         (highDigits & 0xf) * 1000;
+}
+
+
 /* Address: 0x0041CA50.
    Loads a 'str' text asset as page pageIndex: picks the locale block of the configured (or system) country,
    else the Great Britain block, else the first one, binds it, and prepares every string's command records for
@@ -283,11 +312,11 @@ bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32
 
 {
   uint16_t codeUnit;
-  uint32_t packedHighDigits;
+  uint32_t decimalValue;
   TextResourceAssetHeader *allocation;
-  TextResourceAssetHeader *localeBlockOrError;
+  TextResourceLocaleBlockPrefix *localeBlock;
+  uint32_t *stringOffsets;
   LocaleTelephoneCountryCode countryCode;
-  AssetRecordCount remainingBlocks;
   TextResourceStringCount remainingStrings;
   uint16_t *recordStart;
   uint16_t *textCursor;
@@ -298,100 +327,78 @@ bool TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path,uint32
   if (allocation == NULL) {
     Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
                 loadErrorCode);
-    localeBlockOrError = (TextResourceAssetHeader *)loadErrorCode;
-  }
-  else {
-    localeBlockOrError = (TextResourceAssetHeader *)TEXT_RESOURCE_MISSING_SENTINEL_0x33;
-    if ((allocation->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
-      remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
-      countryCode = g_LocaleCountryCodeOverride;
-      if (g_LocaleCountryCodeOverride == 0) {
-        countryCode = g_LocaleGetDefaultTelephoneCountryCode();
-      }
-      /* Select the block for the country code, else the Great Britain block, else the first block. The blocks
-         (TextResourceLocaleBlockPrefix) follow the 0x200-byte asset header; block + blockSizeBytes is the next
-         block. */
-      localeBlockOrError = allocation + 1;
-      do {
-        if (countryCode == ((TextResourceLocaleBlockPrefix *)localeBlockOrError)->countryCode) break;
-        localeBlockOrError = (TextResourceAssetHeader *)
-                 ((uint8_t *)localeBlockOrError + ((TextResourceLocaleBlockPrefix *)localeBlockOrError)->blockSizeBytes);
-        remainingBlocks--;
-      } while (remainingBlocks != 0);
-      if (remainingBlocks == 0) {
-        remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
-        localeBlockOrError = allocation + 1;
-        do {
-          if (((TextResourceLocaleBlockPrefix *)localeBlockOrError)->countryCode == LOCALE_COUNTRY_GREAT_BRITAIN) break;
-          localeBlockOrError = (TextResourceAssetHeader *)
-                   ((uint8_t *)localeBlockOrError + ((TextResourceLocaleBlockPrefix *)localeBlockOrError)->blockSizeBytes);
-          remainingBlocks--;
-        } while (remainingBlocks != 0);
-        if (remainingBlocks == 0) {
-          localeBlockOrError = allocation + 1;
-        }
-      }
-      g_TextResourcePageBindings[pageIndex].selectedLocaleBlock =
-           (TextResourceLocaleBlockPrefix *)localeBlockOrError;
-      g_TextResourcePageBindings[pageIndex].asset = allocation;
-      /* the string offsets (relative to the block) follow the 16-byte block prefix */
-      stringIndex = 0;
-      for (remainingStrings = ((TextResourceLocaleBlockPrefix *)localeBlockOrError)->stringCount; remainingStrings != 0;
-          remainingStrings--) {
-        textCursor = (uint16_t *)((uint8_t *)localeBlockOrError +
-                                  ((uint32_t *)((TextResourceLocaleBlockPrefix *)localeBlockOrError + 1))[stringIndex]);
-        while (recordStart = textCursor, codeUnit = *recordStart, textCursor = recordStart + 1,
-               codeUnit != 0) {
-          if ((short)codeUnit < 0) {
-            /* The converter stores the nested-stream selector and the image subresource as four UTF-16 decimal
-               digits d0..d3 filling both payload dwords. They become a binary number (d0*1000 + d1*100 + d2*10
-               + d3) in the second dword, and the first dword becomes the pointer slot: the missing-text stream
-               for nested streams, NULL for images (bound later by RichTextCommandStream_BindTextureSource). */
-            switch(codeUnit & RICHTEXT_OPCODE_MASK) {
-            case RICHTEXT_OP_LITERAL_COLOR:
-              textCursor = recordStart + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
-              break;
-            case RICHTEXT_OP_INLINE_VALUE_0:
-            case RICHTEXT_OP_INLINE_VALUE_1:
-            case RICHTEXT_OP_INLINE_VALUE_2:
-              textCursor = recordStart + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
-              break;
-            case RICHTEXT_OP_CALL_NESTED:
-            case RICHTEXT_OP_JUMP_NESTED:
-              packedHighDigits = *(uint32_t *)textCursor;
-              *(uint32_t *)(recordStart + 3) =
-                   (*(uint32_t *)(recordStart + 3) >> 16 & 0xf) + (*(uint32_t *)(recordStart + 3) & 0xf) * 10;
-              *(void **)textCursor = &g_MissingTextResourceFallbackStream;
-              *(uint32_t *)(recordStart + 3) =
-                   *(int *)(recordStart + 3) + (packedHighDigits >> 16 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
-              textCursor = recordStart + RICHTEXT_RECORD_UNITS_NESTED;
-              break;
-            case RICHTEXT_OP_INLINE_IMAGE:
-              /* The high digits are read before the pointer slot is cleared (0x0041CC23 MOV EBX,[ESI] precedes
-                 0x0041CC3E MOV [ESI],0). */
-              packedHighDigits = *(uint32_t *)textCursor;
-              *(uint32_t *)(recordStart + 3) =
-                   (*(uint32_t *)(recordStart + 3) >> 16 & 0xf) + (*(uint32_t *)(recordStart + 3) & 0xf) * 10;
-              *(uint32_t *)textCursor = 0;
-              *(uint32_t *)(recordStart + 3) =
-                   *(int *)(recordStart + 3) + (packedHighDigits >> 16 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
-              textCursor = recordStart + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
-            }
-          }
-        }
-        stringIndex++;
-      }
-      if (outLocaleBlockOrError != NULL) {
-        *outLocaleBlockOrError = (uint32_t)localeBlockOrError;
-      }
-      return true;
+    if (outLocaleBlockOrError != NULL) {
+      *outLocaleBlockOrError = loadErrorCode;
     }
+    return false;
+  }
+  if ((allocation->localeCountHeader).common.magic != ASSET_MAGIC_STR) {
     Resource_Release(allocation);
+    if (outLocaleBlockOrError != NULL) {
+      *outLocaleBlockOrError = TEXT_RESOURCE_MISSING_SENTINEL_0x33;
+    }
+    return false;
+  }
+  countryCode = g_LocaleCountryCodeOverride;
+  if (g_LocaleCountryCodeOverride == 0) {
+    countryCode = g_LocaleGetDefaultTelephoneCountryCode();
+  }
+  /* the block for the country code, else the Great Britain block, else the first block */
+  localeBlock = TextResourceAsset_FindLocaleBlock(allocation,countryCode);
+  if (localeBlock == NULL) {
+    localeBlock = TextResourceAsset_FindLocaleBlock(allocation,LOCALE_COUNTRY_GREAT_BRITAIN);
+    if (localeBlock == NULL) {
+      localeBlock = (TextResourceLocaleBlockPrefix *)(allocation + 1);
+    }
+  }
+  g_TextResourcePageBindings[pageIndex].selectedLocaleBlock = localeBlock;
+  g_TextResourcePageBindings[pageIndex].asset = allocation;
+  /* the string offsets (relative to the block) follow the 16-byte block prefix */
+  stringOffsets = (uint32_t *)(localeBlock + 1);
+  stringIndex = 0;
+  for (remainingStrings = localeBlock->stringCount; remainingStrings != 0; remainingStrings--) {
+    textCursor = (uint16_t *)((uint8_t *)localeBlock + stringOffsets[stringIndex]);
+    while (*textCursor != 0) {
+      recordStart = textCursor;
+      codeUnit = *recordStart;
+      textCursor = recordStart + 1;
+      if ((short)codeUnit < 0) {
+        /* The converter stores the nested-stream selector and the image subresource as four UTF-16 decimal
+           digits d0..d3 filling both payload dwords. They become a binary number (d0*1000 + d1*100 + d2*10
+           + d3) in the second dword, and the first dword becomes the pointer slot: the missing-text stream
+           for nested streams, NULL for images (bound later by RichTextCommandStream_BindTextureSource). The
+           digits are parsed before the pointer slot overwrites the high ones. */
+        switch(codeUnit & RICHTEXT_OPCODE_MASK) {
+        case RICHTEXT_OP_LITERAL_COLOR:
+          textCursor = recordStart + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
+          break;
+        case RICHTEXT_OP_INLINE_VALUE_0:
+        case RICHTEXT_OP_INLINE_VALUE_1:
+        case RICHTEXT_OP_INLINE_VALUE_2:
+          textCursor = recordStart + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
+          break;
+        case RICHTEXT_OP_CALL_NESTED:
+        case RICHTEXT_OP_JUMP_NESTED:
+          decimalValue = RichTextRecord_ParseDecimalDigits(recordStart);
+          *(void **)(recordStart + 1) = &g_MissingTextResourceFallbackStream;
+          *(uint32_t *)(recordStart + 3) = decimalValue;
+          textCursor = recordStart + RICHTEXT_RECORD_UNITS_NESTED;
+          break;
+        case RICHTEXT_OP_INLINE_IMAGE:
+          decimalValue = RichTextRecord_ParseDecimalDigits(recordStart);
+          *(uint32_t *)(recordStart + 1) = 0;
+          *(uint32_t *)(recordStart + 3) = decimalValue;
+          textCursor = recordStart + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
+          break;
+        }
+      }
+    }
+    stringIndex++;
   }
   if (outLocaleBlockOrError != NULL) {
-    *outLocaleBlockOrError = (uint32_t)localeBlockOrError;
+    *outLocaleBlockOrError = (uint32_t)localeBlock;
   }
-  return false;
+  return true;
 }
 
 

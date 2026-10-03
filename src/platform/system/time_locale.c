@@ -415,62 +415,62 @@ uint32_t Locale_FormatTimeFieldsUtf16
 uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
 
 {
-  uint32_t hourOrMinute;
-  uint32_t currentAppendByteLength;
+  uint32_t hour;
+  uint32_t minute;
+  uint32_t hourByteLength;
   uint32_t appendByteLength;
   uint32_t separatorByteLength;
   uint16_t *designatorText;
   uint16_t *outputCursor;
-  int completedByteOffset;
-  uint16_t *timeCursor;
+  uint8_t *outputEnd;
 
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
-    hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.hour;
+    hour = (uint32_t)g_LocaleSystemState.localTime.hour;
     /* See Locale_FormatTimeFieldsUtf16: the designator selection was lost in decompilation. */
     designatorText = g_LocaleSystemState.pmDesignator;
-    if (11 < hourOrMinute) {
+    if (11 < hour) {
       designatorText = g_LocaleSystemState.amDesignator;
-      hourOrMinute = hourOrMinute - 12;
+      hour = hour - 12;
     }
-    currentAppendByteLength =
-         g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,destination);
-    appendByteLength = Utf16_CopyAndReturnByteLength
-                      ((uint16_t *)((uint8_t *)destination + currentAppendByteLength),
+    hourByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,destination);
+    separatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((uint16_t *)((uint8_t *)destination + hourByteLength),
                        g_LocaleSystemState.timeSeparator);
-    outputCursor = (uint16_t *)((uint8_t *)destination + currentAppendByteLength + appendByteLength);
-    hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.minute;
-    if (hourOrMinute < 10) {
+    outputCursor = (uint16_t *)((uint8_t *)destination + hourByteLength + separatorByteLength);
+    minute = (uint32_t)g_LocaleSystemState.localTime.minute;
+    if (minute < 10) {
       outputCursor[0] = '0';
       outputCursor[1] = 0;
       outputCursor = outputCursor + 1;
     }
-    appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,outputCursor);
-    separatorByteLength = Utf16_CopyAndReturnByteLength((uint16_t *)((uint8_t *)outputCursor + appendByteLength),designatorText);
-    completedByteOffset = (int)((int)outputCursor + appendByteLength) + separatorByteLength;
+    appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,outputCursor);
+    separatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((uint16_t *)((uint8_t *)outputCursor + appendByteLength),designatorText);
+    outputEnd = (uint8_t *)outputCursor + appendByteLength + separatorByteLength;
   }
   else {
-    hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.hour;
-    timeCursor = destination;
-    if (hourOrMinute < 10) {
+    hour = (uint32_t)g_LocaleSystemState.localTime.hour;
+    outputCursor = destination;
+    if (hour < 10) {
       destination[0] = '0';
       destination[1] = 0;
-      timeCursor = destination + 1;
+      outputCursor = destination + 1;
     }
-    appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,timeCursor);
+    appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,outputCursor);
     separatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((uint16_t *)((uint8_t *)timeCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
-    timeCursor = (uint16_t *)((uint8_t *)timeCursor + appendByteLength + separatorByteLength);
-    hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.minute;
-    if (hourOrMinute < 10) {
-      timeCursor[0] = '0';
-      timeCursor[1] = 0;
-      timeCursor = timeCursor + 1;
+                      ((uint16_t *)((uint8_t *)outputCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
+    outputCursor = (uint16_t *)((uint8_t *)outputCursor + appendByteLength + separatorByteLength);
+    minute = (uint32_t)g_LocaleSystemState.localTime.minute;
+    if (minute < 10) {
+      outputCursor[0] = '0';
+      outputCursor[1] = 0;
+      outputCursor = outputCursor + 1;
     }
-    appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,timeCursor);
-    completedByteOffset = (int)timeCursor + appendByteLength;
+    appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,outputCursor);
+    outputEnd = (uint8_t *)outputCursor + appendByteLength;
   }
-  return completedByteOffset - (int)destination;
+  return (uint32_t)(outputEnd - (uint8_t *)destination);
 }
 
 

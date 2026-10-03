@@ -87,6 +87,8 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
   if (!failed) {
     return valueOrError;
   }
+  /* valueOrError is the FatalErrorPassThroughProc contract: a caller value passed through unchanged, or
+     (failed set) the error code or rich-text stream, which is all it means from here on */
   error = valueOrError;
   if (g_FatalErrorUiRootTemplate == NULL) {
     /* no dialog state allocated yet: FatalError_Exit, which does not return */
@@ -198,6 +200,7 @@ uint32_t FatalError_Exit(uint32_t valueOrError,bool failed)
   if (!failed) {
     return valueOrError;
   }
+  /* from here on valueOrError (see FatalErrorPassThroughProc) is the error code or rich-text stream */
   error = valueOrError;
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
   Thandor_Log("fatal error 0x%08X, last path \"%ls\"", error, (wchar_t *)g_PackageLastErrorPath);

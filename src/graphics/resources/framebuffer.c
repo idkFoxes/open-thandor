@@ -145,6 +145,87 @@ void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 }
 
 
+/* Clears a freshly allocated capture asset (dword by dword, REP STOSD in the original) and fills its 'gfx'
+   header and its single source entry for a captureWidth x captureHeight ARGB8888 image. */
+static void GraphicsFramebuffer_InitCaptureAsset
+          (GraphicsCapturedTextureSourceAsset *capturedAsset,uint32_t allocationSize,
+          GraphicsPixelDimension captureWidth,GraphicsPixelDimension captureHeight)
+
+{
+  uint32_t *clearDword;
+  uint32_t remainingDwords;
+  uint32_t packedTimestamp;
+
+  clearDword = (uint32_t *)capturedAsset;
+  for (remainingDwords = allocationSize >> 2; remainingDwords != 0; remainingDwords--) {
+    *clearDword = 0;
+    clearDword++;
+  }
+  (capturedAsset->common).magic = ASSET_MAGIC_GFX;
+  (capturedAsset->common).allocationSizeBytes = allocationSize;
+  (capturedAsset->common).formatVersion = 1;
+  (capturedAsset->common).converterVersion = 0;
+  packedTimestamp = g_LocaleGetPackedCurrentTime();
+  (capturedAsset->common).buildMetadata.timestamps.timeValue0 = packedTimestamp;
+  (capturedAsset->common).buildMetadata.timestamps.timeValue1 = packedTimestamp;
+  (capturedAsset->common).buildMetadata.timestamps.timeValue2 = packedTimestamp;
+  packedTimestamp = g_LocaleGetPackedCurrentDate();
+  (capturedAsset->common).buildMetadata.timestamps.dateValue0 = packedTimestamp;
+  (capturedAsset->common).buildMetadata.timestamps.dateValue1 = packedTimestamp;
+  (capturedAsset->common).buildMetadata.timestamps.dateValue2 = packedTimestamp;
+  g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.producerName);
+  g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.sourceName);
+  capturedAsset->unusedText[0] = 0;
+  (capturedAsset->tableDescriptor).subresourceCount = 1;
+  (capturedAsset->tableDescriptor).paletteBankCount = 0;
+  (capturedAsset->tableDescriptor).subresourceTableOffset = GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET;
+  (capturedAsset->sourceEntry).logicalWidth = captureWidth;
+  (capturedAsset->sourceEntry).logicalHeight = captureHeight;
+  (capturedAsset->sourceEntry).pixelWidth = captureWidth;
+  (capturedAsset->sourceEntry).pixelHeight = captureHeight;
+  (capturedAsset->sourceEntry).originX = 0;
+  (capturedAsset->sourceEntry).originY = 0;
+  (capturedAsset->sourceEntry).paletteIndex = -1;
+  (capturedAsset->sourceEntry).dataOffset = GRAPHICS_CAPTURE_PIXELS_OFFSET;
+}
+
+
+/* Restores the back surface if it was lost and locks it read-only into g_SurfaceDesc. Returns false when the
+   restore or the lock fails (no lock is attempted after a failed restore). */
+static bool GraphicsFramebuffer_LockBackSurfaceForCapture(void)
+
+{
+  TH_LEGACY_HRESULT isLostResult;
+  int restoreResult;
+  TH_LEGACY_HRESULT lockResult;
+
+  isLostResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
+  restoreResult = 0;
+  if (isLostResult != 0) {
+    restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
+  }
+  if (restoreResult != 0) {
+    return false;
+  }
+  Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
+  g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
+  lockResult = g_BackSurface3->lpVtbl->Lock(g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT | DDLOCK_READONLY,NULL);
+  return lockResult == 0;
+}
+
+
+/* Expands one channel of a packed pixel to 8 bits: isolates it with its mask, shifts it down to bit 0 and
+   then up so its top bit lands on bit 7 (the low bits stay zero, no replication). */
+static uint8_t GraphicsFramebuffer_ExpandChannelTo8Bit
+          (uint32_t pixel,GraphicsPackedPixelMask channelMask,GraphicsPixelChannelBitShift channelShift,
+          GraphicsPixelChannelBitCount channelBitCount)
+
+{
+  return (uint8_t)(((pixel & channelMask) >> ((uint8_t)channelShift & SHIFT_COUNT_MASK)) <<
+                   (8U - (char)channelBitCount & SHIFT_COUNT_MASK));
+}
+
+
 /* Address: 0x005798A0.
    g_GraphicsFramebufferCaptureRegion in 16-bit modes (callers grab the whole screen): copies a rectangle of
    the back surface into a newly allocated one-image 'gfx' asset in opaque ARGB8888, expanding each channel
@@ -158,113 +239,63 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
 
 {
   TH_LEGACY_LPVOID lockedSurfacePixels;
-  uint32_t packedTimestamp;
-  TH_LEGACY_HRESULT surfaceResult;
-  int restoreResultOrPixelOffset;
-  uint32_t allocationSizeOrPixel;
+  uint32_t allocationSize;
   GraphicsCapturedTextureSourceAsset *capturedAsset;
-  uint32_t remainingDwords;
-  GraphicsPixelDimension remainingColumns;
+  int firstPixelOffset;
+  uint8_t *sourceRow;
   uint16_t *sourcePixel;
-  GraphicsCapturedTextureSourceAsset *clearCursor;
   uint32_t *destinationPixel;
-  uint32_t allocError;
-  uint16_t *sourceRowStart;
+  GraphicsPixelDimension remainingColumns;
+  uint32_t pixel;
 
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
     return Glide3_Framebuffer_CaptureRegion(captureHeight,captureWidth,sourceY,sourceX);
   }
-  allocationSizeOrPixel = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
-  allocError = g_MemoryApi.alloc(allocationSizeOrPixel,(void **)&capturedAsset);
-  if (allocError != 0) {
-    capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocError;
+  allocationSize = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
+  if (g_MemoryApi.alloc(allocationSize,(void **)&capturedAsset) != 0) {
+    return NULL;
   }
-  else {
-    /* dword clear of the whole asset (REP STOSD in the original) */
-    clearCursor = capturedAsset;
-    for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords--) {
-      (clearCursor->common).magic = 0;
-      clearCursor = (GraphicsCapturedTextureSourceAsset *)&(clearCursor->common).allocationSizeBytes;
-    }
-    (capturedAsset->common).magic = ASSET_MAGIC_GFX;
-    (capturedAsset->common).allocationSizeBytes = allocationSizeOrPixel;
-    (capturedAsset->common).formatVersion = 1;
-    (capturedAsset->common).converterVersion = 0;
-    packedTimestamp = g_LocaleGetPackedCurrentTime();
-    (capturedAsset->common).buildMetadata.timestamps.timeValue0 = packedTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.timeValue1 = packedTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.timeValue2 = packedTimestamp;
-    packedTimestamp = g_LocaleGetPackedCurrentDate();
-    (capturedAsset->common).buildMetadata.timestamps.dateValue0 = packedTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.dateValue1 = packedTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.dateValue2 = packedTimestamp;
-    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.producerName);
-    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.sourceName);
-    capturedAsset->unusedText[0] = 0;
-    (capturedAsset->tableDescriptor).subresourceCount = 1;
-    (capturedAsset->tableDescriptor).paletteBankCount = 0;
-    (capturedAsset->tableDescriptor).subresourceTableOffset = GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET;
-    (capturedAsset->sourceEntry).logicalWidth = captureWidth;
-    (capturedAsset->sourceEntry).logicalHeight = captureHeight;
-    (capturedAsset->sourceEntry).pixelWidth = captureWidth;
-    (capturedAsset->sourceEntry).pixelHeight = captureHeight;
-    (capturedAsset->sourceEntry).originX = 0;
-    (capturedAsset->sourceEntry).originY = 0;
-    (capturedAsset->sourceEntry).paletteIndex = -1;
-    (capturedAsset->sourceEntry).dataOffset = GRAPHICS_CAPTURE_PIXELS_OFFSET;
-    surfaceResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
-    restoreResultOrPixelOffset = 0;
-    if (surfaceResult != 0) {
-      restoreResultOrPixelOffset = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
-    }
-    if (restoreResultOrPixelOffset == 0) {
-      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
-      surfaceResult = g_BackSurface3->lpVtbl->Lock
-                        (g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT | DDLOCK_READONLY,NULL);
-      lockedSurfacePixels = g_SurfaceDesc.lpSurface;
-      if (surfaceResult == 0) {
-        destinationPixel = capturedAsset->argb8888Pixels;
-        restoreResultOrPixelOffset = sourceY * g_FramebufferWidth + sourceX;
-        sourcePixel = (uint16_t *)g_SurfaceDesc.lpSurface + restoreResultOrPixelOffset;
-        remainingColumns = captureWidth;
-        sourceRowStart = sourcePixel;
-        do {
-          do {
-            /* The original loads the pixel into AX; the stale high word of EAX is masked away by the 16-bit
-               channel masks. */
-            allocationSizeOrPixel = ((uint32_t)restoreResultOrPixelOffset & ~0xffffu) | (uint32_t)*sourcePixel;
-            ((uint8_t *)destinationPixel)[3] = ARGB8888_CHANNEL_MAX;
-            ((char *)destinationPixel)[2] =
-                 (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.redMask) >>
-                        ((uint8_t)g_SoftwarePixelFormatConfig.redShift & SHIFT_COUNT_MASK)) <<
-                       (8U - (char)g_SoftwarePixelFormatConfig.redBitCount & SHIFT_COUNT_MASK));
-            ((char *)destinationPixel)[1] =
-                 (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.greenMask) >>
-                        ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & SHIFT_COUNT_MASK)) <<
-                       (8U - (char)g_SoftwarePixelFormatConfig.greenBitCount & SHIFT_COUNT_MASK));
-            restoreResultOrPixelOffset = ((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.blueMask) >>
-                    ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & SHIFT_COUNT_MASK)) <<
-                    (8U - (char)g_SoftwarePixelFormatConfig.blueBitCount & SHIFT_COUNT_MASK);
-            *(char *)destinationPixel = (char)restoreResultOrPixelOffset;
-            sourcePixel = sourcePixel + 1;
-            destinationPixel = destinationPixel + 1;
-            remainingColumns--;
-          } while (remainingColumns != 0);
-          sourcePixel = (uint16_t *)((uint8_t *)sourceRowStart + g_SurfaceDesc.lPitch);
-          captureHeight--;
-          remainingColumns = captureWidth;
-          sourceRowStart = sourcePixel;
-        } while (captureHeight != 0);
-        g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
-        return capturedAsset;
-      }
-    }
+  GraphicsFramebuffer_InitCaptureAsset(capturedAsset,allocationSize,captureWidth,captureHeight);
+  if (!GraphicsFramebuffer_LockBackSurfaceForCapture()) {
     g_MemoryApi.free(capturedAsset);
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,GRAPHICS_CAPTURE_FAILED_STAGE_16BIT,
                             g_PackageLastErrorPath);
+    return NULL;
   }
-  return NULL;
+  lockedSurfacePixels = g_SurfaceDesc.lpSurface;
+  firstPixelOffset = sourceY * g_FramebufferWidth + sourceX;
+  sourceRow = (uint8_t *)((uint16_t *)g_SurfaceDesc.lpSurface + firstPixelOffset);
+  destinationPixel = capturedAsset->argb8888Pixels;
+  /* Bottom-tested loops as in the original: a width or height of 0 would wrap the unsigned counters. */
+  do {
+    sourcePixel = (uint16_t *)sourceRow;
+    remainingColumns = captureWidth;
+    do {
+      /* The original loads the pixel into AX and leaves a stale high word in EAX; the 16-bit channel masks
+         remove it, so the zero-extended pixel gives the same channels. */
+      pixel = *sourcePixel;
+      ((uint8_t *)destinationPixel)[3] = ARGB8888_CHANNEL_MAX;
+      ((uint8_t *)destinationPixel)[2] =
+           GraphicsFramebuffer_ExpandChannelTo8Bit(pixel,g_SoftwarePixelFormatConfig.redMask,
+                                                   g_SoftwarePixelFormatConfig.redShift,
+                                                   g_SoftwarePixelFormatConfig.redBitCount);
+      ((uint8_t *)destinationPixel)[1] =
+           GraphicsFramebuffer_ExpandChannelTo8Bit(pixel,g_SoftwarePixelFormatConfig.greenMask,
+                                                   g_SoftwarePixelFormatConfig.greenShift,
+                                                   g_SoftwarePixelFormatConfig.greenBitCount);
+      ((uint8_t *)destinationPixel)[0] =
+           GraphicsFramebuffer_ExpandChannelTo8Bit(pixel,g_SoftwarePixelFormatConfig.blueMask,
+                                                   g_SoftwarePixelFormatConfig.blueShift,
+                                                   g_SoftwarePixelFormatConfig.blueBitCount);
+      sourcePixel++;
+      destinationPixel++;
+      remainingColumns--;
+    } while (remainingColumns != 0);
+    sourceRow += g_SurfaceDesc.lPitch;
+    captureHeight--;
+  } while (captureHeight != 0);
+  g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
+  return capturedAsset;
 }
 
 
@@ -279,105 +310,50 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
 
 {
-  uint32_t allocationSizeOrPixel;
+  uint32_t allocationSize;
   TH_LEGACY_LPVOID lockedSurfacePixels;
-  uint32_t packedTimestamp;
-  TH_LEGACY_HRESULT surfaceResult;
-  int restoreResult;
   GraphicsCapturedTextureSourceAsset *capturedAsset;
-  uint32_t remainingDwords;
-  GraphicsPixelDimension remainingColumns;
+  uint8_t *sourceRow;
   uint32_t *sourcePixel;
-  GraphicsCapturedTextureSourceAsset *clearCursor;
-  uint32_t *destinationPair;
   uint32_t *destinationPixel;
-  uint32_t allocError;
-  uint32_t *sourceRowStart;
-  
-  allocationSizeOrPixel = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
-  allocError = g_MemoryApi.alloc(allocationSizeOrPixel,(void **)&capturedAsset);
-  if (allocError != 0) {
-    capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocError;
+  GraphicsPixelDimension remainingColumns;
+
+  allocationSize = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
+  if (g_MemoryApi.alloc(allocationSize,(void **)&capturedAsset) != 0) {
+    return NULL;
   }
-  else {
-    /* dword clear of the whole asset (REP STOSD in the original) */
-    clearCursor = capturedAsset;
-    for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords--) {
-      (clearCursor->common).magic = 0;
-      clearCursor = (GraphicsCapturedTextureSourceAsset *)&(clearCursor->common).allocationSizeBytes;
-    }
-    (capturedAsset->common).magic = ASSET_MAGIC_GFX;
-    (capturedAsset->common).allocationSizeBytes = allocationSizeOrPixel;
-    (capturedAsset->common).formatVersion = 1;
-    (capturedAsset->common).converterVersion = 0;
-    packedTimestamp = g_LocaleGetPackedCurrentTime();
-    (capturedAsset->common).buildMetadata.timestamps.timeValue0 = packedTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.timeValue1 = packedTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.timeValue2 = packedTimestamp;
-    packedTimestamp = g_LocaleGetPackedCurrentDate();
-    (capturedAsset->common).buildMetadata.timestamps.dateValue0 = packedTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.dateValue1 = packedTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.dateValue2 = packedTimestamp;
-    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.producerName);
-    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.sourceName);
-    capturedAsset->unusedText[0] = 0;
-    (capturedAsset->tableDescriptor).subresourceCount = 1;
-    (capturedAsset->tableDescriptor).paletteBankCount = 0;
-    (capturedAsset->tableDescriptor).subresourceTableOffset = GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET;
-    (capturedAsset->sourceEntry).logicalWidth = captureWidth;
-    (capturedAsset->sourceEntry).logicalHeight = captureHeight;
-    (capturedAsset->sourceEntry).pixelWidth = captureWidth;
-    (capturedAsset->sourceEntry).pixelHeight = captureHeight;
-    (capturedAsset->sourceEntry).originX = 0;
-    (capturedAsset->sourceEntry).originY = 0;
-    (capturedAsset->sourceEntry).paletteIndex = -1;
-    (capturedAsset->sourceEntry).dataOffset = GRAPHICS_CAPTURE_PIXELS_OFFSET;
-    surfaceResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
-    restoreResult = 0;
-    if (surfaceResult != 0) {
-      restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
-    }
-    if (restoreResult == 0) {
-      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
-      surfaceResult = g_BackSurface3->lpVtbl->Lock
-                        (g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT | DDLOCK_READONLY,NULL);
-      lockedSurfacePixels = g_SurfaceDesc.lpSurface;
-      if (surfaceResult == 0) {
-        sourcePixel = (uint32_t *)g_SurfaceDesc.lpSurface + (sourceY * g_FramebufferWidth + sourceX);
-        remainingColumns = captureWidth;
-        destinationPixel = capturedAsset->argb8888Pixels;
-        sourceRowStart = sourcePixel;
-        do {
-          do {
-            destinationPair = destinationPixel;
-            allocationSizeOrPixel = sourcePixel[1];
-            remainingColumns = remainingColumns - 2;
-            *destinationPair = *sourcePixel | ARGB8888_ALPHA_MASK;
-            destinationPair[1] = allocationSizeOrPixel | ARGB8888_ALPHA_MASK;
-            sourcePixel = sourcePixel + 2;
-            destinationPixel = destinationPair + 2;
-          } while (1 < remainingColumns);
-          /* odd width: one pixel left. A width of 1 would not stop: the unsigned count wraps below 0 and the
-             pair loop runs on (as in the original, SUB EBX,2; CMP EBX,1; JA) */
-          if (remainingColumns == 1) {
-            *destinationPixel = *sourcePixel | ARGB8888_ALPHA_MASK;
-            destinationPixel = destinationPair + 3;
-          }
-          sourcePixel = (uint32_t *)((uint8_t *)sourceRowStart + g_SurfaceDesc.lPitch);
-          captureHeight--;
-          remainingColumns = captureWidth;
-          sourceRowStart = sourcePixel;
-        } while (captureHeight != 0);
-        g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
-        return capturedAsset;
-      }
-    }
+  GraphicsFramebuffer_InitCaptureAsset(capturedAsset,allocationSize,captureWidth,captureHeight);
+  if (!GraphicsFramebuffer_LockBackSurfaceForCapture()) {
     g_MemoryApi.free(capturedAsset);
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,GRAPHICS_CAPTURE_FAILED_STAGE_32BIT,
                             g_PackageLastErrorPath);
+    return NULL;
   }
-  return NULL;
+  lockedSurfacePixels = g_SurfaceDesc.lpSurface;
+  sourceRow = (uint8_t *)((uint32_t *)g_SurfaceDesc.lpSurface + (sourceY * g_FramebufferWidth + sourceX));
+  destinationPixel = capturedAsset->argb8888Pixels;
+  /* Bottom-tested loops as in the original: a height of 0 would wrap the unsigned counter. */
+  do {
+    sourcePixel = (uint32_t *)sourceRow;
+    remainingColumns = captureWidth;
+    do {
+      remainingColumns -= 2;
+      destinationPixel[0] = sourcePixel[0] | ARGB8888_ALPHA_MASK;
+      destinationPixel[1] = sourcePixel[1] | ARGB8888_ALPHA_MASK;
+      sourcePixel += 2;
+      destinationPixel += 2;
+    } while (1 < remainingColumns);
+    /* odd width: one pixel left. A width of 1 would not stop: the unsigned count wraps below 0 and the
+       pair loop runs on (as in the original, SUB EBX,2; CMP EBX,1; JA) */
+    if (remainingColumns == 1) {
+      *destinationPixel = *sourcePixel | ARGB8888_ALPHA_MASK;
+      destinationPixel++;
+    }
+    sourceRow += g_SurfaceDesc.lPitch;
+    captureHeight--;
+  } while (captureHeight != 0);
+  g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
+  return capturedAsset;
 }
 
 

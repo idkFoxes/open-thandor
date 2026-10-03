@@ -203,14 +203,17 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
   PcxIndexedImage image;
   uint32_t sourceByteCount;
 
-  /* copy the leaf, dropping every character that is not allowed in a file name, and '.' */
+  /* copy the leaf, dropping every character that is not allowed in a file name, and '.' (each character is
+     written first and the cursor only advances past kept ones) */
   sanitizedPathCursor = g_LevelEndingMovieSourcePath;
-  while (pathChar = *sourcePath, *sanitizedPathCursor = pathChar, sourcePath++, pathChar != 0) {
+  for (pathChar = *sourcePath++; pathChar != 0; pathChar = *sourcePath++) {
+    *sanitizedPathCursor = pathChar;
     if (pathChar != '*' && pathChar != '.' && pathChar != '?' && pathChar != '/' && pathChar != '\\' &&
         pathChar != '<' && pathChar != '>' && pathChar != '"' && pathChar != ':' && pathChar != '|') {
       sanitizedPathCursor++;
     }
   }
+  *sanitizedPathCursor = 0;
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
@@ -251,26 +254,27 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
 void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
 
 {
+  uint32_t secondSerial;
+  uint32_t firstLowDword;
   uint32_t firstHighDword;
-  uint32_t serialOrFirstLowDword;
   uint32_t secondHighDword;
   int dwordPairsRemaining;
   uint32_t *firstSlotDwords;
   uint32_t *secondSlotDwords;
-  
-  serialOrFirstLowDword = g_RecentTextEntrySerials[secondIndex];
+
+  secondSerial = g_RecentTextEntrySerials[secondIndex];
   g_RecentTextEntrySerials[secondIndex] = g_RecentTextEntrySerials[firstIndex];
-  g_RecentTextEntrySerials[firstIndex] = serialOrFirstLowDword;
+  g_RecentTextEntrySerials[firstIndex] = secondSerial;
   secondSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + secondIndex);
   firstSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + firstIndex);
   for (dwordPairsRemaining = 32; dwordPairsRemaining != 0; dwordPairsRemaining--) {
     secondHighDword = secondSlotDwords[1];
-    serialOrFirstLowDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords,*secondSlotDwords);
+    firstLowDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords,*secondSlotDwords);
     firstHighDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords + 1,secondHighDword);
-    *secondSlotDwords = serialOrFirstLowDword;
+    secondSlotDwords[0] = firstLowDword;
     secondSlotDwords[1] = firstHighDword;
-    firstSlotDwords = firstSlotDwords + 2;
-    secondSlotDwords = secondSlotDwords + 2;
+    firstSlotDwords += 2;
+    secondSlotDwords += 2;
   }
 }
 

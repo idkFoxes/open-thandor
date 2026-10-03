@@ -148,21 +148,18 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
 
 /* Address: 0x0055F200.
    Tells whether the local player already queued the command whose handler lives at commandHandlerAddress
-   with payloadValue in any of its three payload dwords (returned in CF), so input handlers do not queue a
-   selection change twice. Single player has no queue and always answers no.
+   with payloadValue in any of its three payload dwords, so input handlers do not queue a selection change
+   twice. Single player has no queue and always answers no.
 */
 bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress)
 
 {
-  UiCommandQueueRecord *nextRecord;
   UiCommandQueueRecord *record;
-  
+
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
-    nextRecord = g_InGameCommandQueueRecords;
-    while (record = nextRecord, record < g_InGameCommandQueueEnd) {
-      nextRecord = record + 1;
+    for (record = g_InGameCommandQueueRecords; record < g_InGameCommandQueueEnd; record++) {
       if (((commandHandlerAddress - INGAME_COMMAND_CODE_BASE) * 256 | g_LocalPlayerRuntimeId) ==
             record->packedCommandAndPlayerId &&
           (payloadValue == record->payload3 || payloadValue == record->payload2 ||

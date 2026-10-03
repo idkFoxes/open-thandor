@@ -43,6 +43,39 @@ static __inline PackedArgb32 Direct3D_MmxPackColorWords(uint64_t words)
   return color;
 }
 
+/* No address: the caps test of Direct3D_EnumDeviceCallback. Nonzero when the hardware description reports
+   everything the renderer needs: color model, a 16-bit z-buffer, TL vertices in system memory, textures in
+   video memory, LESSEQUAL z compare, wrap addressing, MODULATE texture blending, source blend ONE and SRCALPHA,
+   destination blend ZERO, ONE and INVSRCALPHA, Gouraud RGB shading and some form of alpha shading (Gouraud
+   blend, Gouraud stipple or stippled rasterization). */
+static int Direct3D_DeviceHasRequiredCaps(const D3DDEVICEDESC_DX6 *desc)
+{
+  const D3DPRIMCAPS_DX6 *triCaps;
+
+  triCaps = &desc->dpcTriCaps;
+  if ((desc->dwFlags & D3DDD_COLORMODEL) == 0 ||
+      (desc->dwFlags & D3DDD_DEVICEZBUFFERBITDEPTH) == 0 ||
+      (desc->dwDeviceZBufferBitDepth & DDBD_16) == 0 ||
+      (desc->dwFlags & D3DDD_DEVCAPS) == 0 ||
+      (desc->dwDevCaps & D3DDEVCAPS_TLVERTEXSYSTEMMEMORY) == 0 ||
+      (desc->dwDevCaps & D3DDEVCAPS_TEXTUREVIDEOMEMORY) == 0 ||
+      (desc->dwFlags & D3DDD_TRICAPS) == 0 ||
+      (triCaps->dwZCmpCaps & D3DPCMPCAPS_LESSEQUAL) == 0 ||
+      (triCaps->dwTextureAddressCaps & D3DPTADDRESSCAPS_WRAP) == 0 ||
+      (triCaps->dwTextureBlendCaps & D3DPTBLENDCAPS_MODULATE) == 0 ||
+      (triCaps->dwSrcBlendCaps & D3DPBLENDCAPS_ONE) == 0 ||
+      (triCaps->dwSrcBlendCaps & D3DPBLENDCAPS_SRCALPHA) == 0 ||
+      (triCaps->dwDestBlendCaps & D3DPBLENDCAPS_ZERO) == 0 ||
+      (triCaps->dwDestBlendCaps & D3DPBLENDCAPS_ONE) == 0 ||
+      (triCaps->dwDestBlendCaps & D3DPBLENDCAPS_INVSRCALPHA) == 0 ||
+      (triCaps->dwShadeCaps & D3DPSHADECAPS_COLORGOURAUDRGB) == 0) {
+    return 0;
+  }
+  return (triCaps->dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) != 0 ||
+         (triCaps->dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDSTIPPLED) != 0 ||
+         (triCaps->dwRasterCaps & D3DPRASTERCAPS_STIPPLE) != 0;
+}
+
 /* Address: 0x00578270.
    IDirect3D2::EnumDevices callback for the DirectDraw adapter in adapterContext: adds one adapter record per
    Direct3D device (copy of the adapter record plus device GUID, name and both device descriptions). Without
@@ -57,80 +90,68 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
 {
   GraphicsAdapterRecord *filledRecord;
   uint32_t newAdapterIndex;
-  uint32_t updatedAdapterCount;
-  int remainingDwords;
-  GraphicsAdapterRecord *newRecord;
-  uint32_t *recordCursor;
-  uint32_t *guidCursor;
-  uint32_t *descCursor;
-  uint32_t descAllocationError;
+  D3DDEVICEDESC_DX6 *descCopies;
+  uint32_t allocError;
 
   newAdapterIndex = g_GraphicsAdapterCount;
+  if (g_GraphicsAdapterCount >= GRAPHICS_ADAPTER_CAPACITY) {
+    return 1;
+  }
   /* The original also tests D3DDEVCAPS_DRAWPRIMTLVERTEX (0x400) but never branches on the result. */
-  if ((g_GraphicsAdapterCount < GRAPHICS_ADAPTER_CAPACITY) &&
-     ((g_GraphicsEnumerateAllDevicesFlag == 0 ||
-      (((((((hardwareDesc->dwFlags & D3DDD_COLORMODEL) != 0 &&
-            ((hardwareDesc->dwFlags & D3DDD_DEVICEZBUFFERBITDEPTH) != 0)) &&
-          ((hardwareDesc->dwDeviceZBufferBitDepth & DDBD_16) != 0)) &&
-         (((hardwareDesc->dwFlags & D3DDD_DEVCAPS) != 0 &&
-           ((hardwareDesc->dwDevCaps & D3DDEVCAPS_TLVERTEXSYSTEMMEMORY) != 0)))) &&
-        ((((hardwareDesc->dwDevCaps & D3DDEVCAPS_TEXTUREVIDEOMEMORY) != 0 &&
-          (((hardwareDesc->dwFlags & D3DDD_TRICAPS) != 0 &&
-           (((hardwareDesc->dpcTriCaps).dwZCmpCaps & D3DPCMPCAPS_LESSEQUAL) != 0)))) &&
-         (((hardwareDesc->dpcTriCaps).dwTextureAddressCaps & D3DPTADDRESSCAPS_WRAP) != 0)))) &&
-       (((((((hardwareDesc->dpcTriCaps).dwTextureBlendCaps & D3DPTBLENDCAPS_MODULATE) != 0 &&
-           (((hardwareDesc->dpcTriCaps).dwSrcBlendCaps & D3DPBLENDCAPS_ONE) != 0)) &&
-          (((hardwareDesc->dpcTriCaps).dwSrcBlendCaps & D3DPBLENDCAPS_SRCALPHA) != 0)) &&
-         (((((hardwareDesc->dpcTriCaps).dwDestBlendCaps & D3DPBLENDCAPS_ZERO) != 0 &&
-           (((hardwareDesc->dpcTriCaps).dwDestBlendCaps & D3DPBLENDCAPS_ONE) != 0)) &&
-          ((((hardwareDesc->dpcTriCaps).dwDestBlendCaps & D3DPBLENDCAPS_INVSRCALPHA) != 0 &&
-           (((hardwareDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_COLORGOURAUDRGB) != 0)))))) &&
-        (((((hardwareDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) != 0 ||
-          (((hardwareDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDSTIPPLED) != 0)) ||
-         (((hardwareDesc->dpcTriCaps).dwRasterCaps & D3DPRASTERCAPS_STIPPLE) != 0)))))))))) {
-    /* one block for the copies of the hardware and the software device description */
-    descAllocationError = g_MemoryApi.alloc(2 * sizeof(D3DDEVICEDESC_DX6),(void **)&descCursor);
-    updatedAdapterCount = g_GraphicsAdapterCount;
-    if (descAllocationError == 0) {
-      newRecord = g_GraphicsAdapters + newAdapterIndex;
-      remainingDwords = sizeof(GraphicsAdapterRecord) / sizeof(uint32_t);
-      g_GraphicsAdapterCount++;
-      recordCursor = (uint32_t *)newRecord;
-      /* in the filtered mode the first device of an adapter reuses the adapter's record (count bumped back) */
-      if ((g_GraphicsEnumerateAllDevicesFlag == 0) ||
-         (filledRecord = adapterContext, (adapterContext->deviceGuid).Data1 != 0)) {
-        for (; filledRecord = newRecord, updatedAdapterCount = g_GraphicsAdapterCount, remainingDwords != 0;
-             remainingDwords--) {
-          *recordCursor = *(uint32_t *)adapterContext;
-          adapterContext = (GraphicsAdapterRecord *)((uint32_t *)adapterContext + 1);
-          recordCursor++;
-        }
-      }
-      g_GraphicsAdapterCount = updatedAdapterCount;
-      guidCursor = (uint32_t *)&filledRecord->deviceGuid;
-      for (remainingDwords = sizeof(TH_LEGACY_GUID) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-        *guidCursor = *(uint32_t *)deviceGuid;
-        deviceGuid = (TH_LEGACY_GUID *)((uint32_t *)deviceGuid + 1);
-        guidCursor++;
-      }
-      Text_CopyNarrowToUtf16(40,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
-      filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descCursor;
-      for (remainingDwords = sizeof(D3DDEVICEDESC_DX6) / sizeof(uint32_t); remainingDwords != 0;
-           remainingDwords--) {
-        *descCursor = *(uint32_t *)hardwareDesc;
-        hardwareDesc = (D3DDEVICEDESC_DX6 *)((uint32_t *)hardwareDesc + 1);
-        descCursor++;
-      }
-      filledRecord->softwareDesc = (D3DDEVICEDESC_DX6 *)descCursor; /* the second half of the block */
-      for (remainingDwords = sizeof(D3DDEVICEDESC_DX6) / sizeof(uint32_t); remainingDwords != 0;
-           remainingDwords--) {
-        *descCursor = *(uint32_t *)softwareDesc;
-        softwareDesc = (D3DDEVICEDESC_DX6 *)((uint32_t *)softwareDesc + 1);
-        descCursor++;
-      }
+  if (g_GraphicsEnumerateAllDevicesFlag != 0 && !Direct3D_DeviceHasRequiredCaps(hardwareDesc)) {
+    return 1;
+  }
+  /* one block for the copies of the hardware and the software device description */
+  allocError = g_MemoryApi.alloc(2 * sizeof(D3DDEVICEDESC_DX6),(void **)&descCopies);
+  if (allocError != 0) {
+    return 1;
+  }
+  if (g_GraphicsEnumerateAllDevicesFlag != 0 && adapterContext->deviceGuid.Data1 == 0) {
+    /* in the filtered mode the first device of an adapter fills the adapter's own record */
+    filledRecord = adapterContext;
+  }
+  else {
+    filledRecord = &g_GraphicsAdapters[newAdapterIndex];
+    *filledRecord = *adapterContext;
+    g_GraphicsAdapterCount++;
+  }
+  filledRecord->deviceGuid = *deviceGuid;
+  Text_CopyNarrowToUtf16(40,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
+  filledRecord->hardwareDesc = &descCopies[0];
+  descCopies[0] = *hardwareDesc;
+  filledRecord->softwareDesc = &descCopies[1]; /* the second half of the block */
+  descCopies[1] = *softwareDesc;
+  return 1;
+}
+
+
+/* Index of the highest set bit of mask, or 31 when mask is 0 (the original's BSR with a preset result). */
+static int Direct3D_HighestSetBit(uint32_t mask)
+{
+  int bit;
+
+  bit = 31;
+  if (mask != 0) {
+    while (mask >> bit == 0) {
+      bit--;
     }
   }
-  return 1;
+  return bit;
+}
+
+
+/* Index of the lowest set bit of mask, or 0 when mask is 0 (the original's BSF with a preset result). */
+static int Direct3D_LowestSetBit(uint32_t mask)
+{
+  int bit;
+
+  bit = 0;
+  if (mask != 0) {
+    while ((mask >> bit & 1) == 0) {
+      bit++;
+    }
+  }
+  return bit;
 }
 
 
@@ -147,25 +168,18 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
 
 {
   uint32_t pixelFormatFlags;
-  int currentAlphaLowBit;
-  int candidateAlphaLowBit;
-  int candidateAlphaHighBit;
-  uint32_t bitCountOrMaskDelta; /* first the candidate's bits per pixel, then the colour mask difference */
-  int highBitOrCopyCount; /* first the current alpha mask's highest bit, then the dword copy counter */
+  uint32_t candidateBitCount;
   uint32_t candidateColorMask;
+  uint32_t colorMaskDelta;
   int replaceOpaqueFormat;
-  TH_LEGACY_DWORD *pixelFormatCursor;
-  TH_LEGACY_DWORD *formatDwordCursor;
+  int currentAlphaHighBit;
+  int currentAlphaLowBit;
+  int candidateAlphaHighBit;
+  int candidateAlphaLowBit;
 
-  bitCountOrMaskDelta = (surfaceDesc->ddpfPixelFormat).dwRGBBitCount;
+  candidateBitCount = (surfaceDesc->ddpfPixelFormat).dwRGBBitCount;
   pixelFormatFlags = (surfaceDesc->ddpfPixelFormat).dwFlags;
-  if (bitCountOrMaskDelta < 8) {
-    return D3DENUMRET_OK;
-  }
-  if (bitCountOrMaskDelta == 8) {
-    return D3DENUMRET_OK;
-  }
-  if ((bitCountOrMaskDelta != 16) && (bitCountOrMaskDelta != 32)) {
+  if ((candidateBitCount != 16) && (candidateBitCount != 32)) {
     return D3DENUMRET_OK;
   }
   if ((pixelFormatFlags & DDPF_RGB) == 0) {
@@ -175,63 +189,32 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
      when it has the same depth and color bits the current format lacks. */
   replaceOpaqueFormat = 1;
   if (g_Direct3DOpaqueTextureFormatBitsPerPixel != 0) {
-    if (g_Direct3DOpaqueTextureFormatBitsPerPixel < bitCountOrMaskDelta) {
+    if (g_Direct3DOpaqueTextureFormatBitsPerPixel < candidateBitCount) {
       replaceOpaqueFormat = 0;
     }
-    else if (g_Direct3DOpaqueTextureFormatBitsPerPixel == bitCountOrMaskDelta) {
+    else if (g_Direct3DOpaqueTextureFormatBitsPerPixel == candidateBitCount) {
       candidateColorMask = (surfaceDesc->ddpfPixelFormat).dwRBitMask | (surfaceDesc->ddpfPixelFormat).dwGBitMask
               | (surfaceDesc->ddpfPixelFormat).dwBBitMask;
-      bitCountOrMaskDelta = (_g_Direct3DOpaqueTextureFormatRedBitMask | _g_Direct3DOpaqueTextureFormatGreenBitMask
+      colorMaskDelta = (_g_Direct3DOpaqueTextureFormatRedBitMask | _g_Direct3DOpaqueTextureFormatGreenBitMask
               | _g_Direct3DOpaqueTextureFormatBlueBitMask) ^ candidateColorMask;
-      if ((bitCountOrMaskDelta == 0) || ((bitCountOrMaskDelta & candidateColorMask) == 0)) {
+      if ((colorMaskDelta == 0) || ((colorMaskDelta & candidateColorMask) == 0)) {
         replaceOpaqueFormat = 0;
       }
     }
   }
   if (replaceOpaqueFormat) {
-    pixelFormatCursor = (TH_LEGACY_DWORD *)&surfaceDesc->ddpfPixelFormat;
-    formatDwordCursor = (TH_LEGACY_DWORD *)&g_Direct3DOpaqueTextureFormat;
-    for (highBitOrCopyCount = sizeof(DDPIXELFORMAT) / sizeof(TH_LEGACY_DWORD); highBitOrCopyCount != 0;
-         highBitOrCopyCount--) {
-      *formatDwordCursor = *pixelFormatCursor;
-      pixelFormatCursor++;
-      formatDwordCursor++;
-    }
+    g_Direct3DOpaqueTextureFormat = surfaceDesc->ddpfPixelFormat;
   }
   if (((pixelFormatFlags & DDPF_ALPHAPIXELS) != 0) && (8 < (surfaceDesc->ddpfPixelFormat).dwRGBBitCount)) {
     /* BSR/BSF of both alpha masks, compared as unsigned (low - high): a one-bit mask gives 0 and never wins,
        otherwise the narrower mask gives the larger value (e.g. 4444 beats 8888). */
-    highBitOrCopyCount = 31;
-    if (_g_Direct3DAlphaTextureFormatAlphaBitMask != 0) {
-      for (; _g_Direct3DAlphaTextureFormatAlphaBitMask >> highBitOrCopyCount == 0; highBitOrCopyCount--) {
-      }
-    }
-    currentAlphaLowBit = 0;
-    if (_g_Direct3DAlphaTextureFormatAlphaBitMask != 0) {
-      for (; (_g_Direct3DAlphaTextureFormatAlphaBitMask >> currentAlphaLowBit & 1) == 0; currentAlphaLowBit++) {
-      }
-    }
-    formatDwordCursor = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
-    candidateAlphaHighBit = 31;
-    if (*formatDwordCursor != 0) {
-      for (; *formatDwordCursor >> candidateAlphaHighBit == 0; candidateAlphaHighBit--) {
-      }
-    }
-    formatDwordCursor = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
-    candidateAlphaLowBit = 0;
-    if (*formatDwordCursor != 0) {
-      for (; (*formatDwordCursor >> candidateAlphaLowBit & 1) == 0; candidateAlphaLowBit++) {
-      }
-    }
-    if ((uint32_t)(currentAlphaLowBit - highBitOrCopyCount) < (uint32_t)(candidateAlphaLowBit - candidateAlphaHighBit)) {
-      pixelFormatCursor = (TH_LEGACY_DWORD *)&surfaceDesc->ddpfPixelFormat;
-      formatDwordCursor = (TH_LEGACY_DWORD *)&g_Direct3DAlphaTextureFormat;
-      for (highBitOrCopyCount = sizeof(DDPIXELFORMAT) / sizeof(TH_LEGACY_DWORD); highBitOrCopyCount != 0;
-           highBitOrCopyCount--) {
-        *formatDwordCursor = *pixelFormatCursor;
-        pixelFormatCursor++;
-        formatDwordCursor++;
-      }
+    currentAlphaHighBit = Direct3D_HighestSetBit(_g_Direct3DAlphaTextureFormatAlphaBitMask);
+    currentAlphaLowBit = Direct3D_LowestSetBit(_g_Direct3DAlphaTextureFormatAlphaBitMask);
+    candidateAlphaHighBit = Direct3D_HighestSetBit((surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask);
+    candidateAlphaLowBit = Direct3D_LowestSetBit((surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask);
+    if ((uint32_t)(currentAlphaLowBit - currentAlphaHighBit) <
+        (uint32_t)(candidateAlphaLowBit - candidateAlphaHighBit)) {
+      g_Direct3DAlphaTextureFormat = surfaceDesc->ddpfPixelFormat;
     }
   }
   return D3DENUMRET_OK;

@@ -676,11 +676,11 @@ ModelRender_ComputeVertexIntensityDefaultPath
   int64_t axisDistanceSquared;
   int32_t lightFacingDotQ12;
   int remainderHigh;
-  uint32_t squareOrRemainderLow;
+  uint32_t remainderLow;
   int axisDelta;
-  uint32_t radiusOrSquareLow;
+  uint32_t axisSquareLow;
   GraphicsShadingRecordCount remainingRecords;
-  uint32_t remainderLowOrDivisor;
+  uint32_t lookupDivisor;
   GraphicsShadingRuntimeRecord *shadingRecord;
   uint64_t directionalLanes;
   uint64_t accumulatedLanes;
@@ -696,39 +696,41 @@ ModelRender_ComputeVertexIntensityDefaultPath
               ModelLighting_UnpackBytesMmx(materialPackedColor,2));
   for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords--) {
     if (shadingRecord->targetRadiusQ12 != 0) {
-      /* r^2 - dx^2 - dy^2 - dz^2 in 64 bits; the light reaches the vertex while it stays >= 0 */
-      radiusOrSquareLow = (uint32_t)shadingRecord->squaredRadiusQ24;
-      remainderHigh = *vertexPositionQ12 - shadingRecord->worldXQ12;
-      axisDistanceSquared = (int64_t)remainderHigh * (int64_t)remainderHigh;
-      squareOrRemainderLow = (uint32_t)axisDistanceSquared;
-      remainderLowOrDivisor = radiusOrSquareLow - squareOrRemainderLow;
-      /* high dword of r^2 */
-      remainderHigh = (((int *)&shadingRecord->squaredRadiusQ24)[1] -
-               (int)((uint64_t)axisDistanceSquared >> 32)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
+      /* r^2 - dx^2 - dy^2 - dz^2 as a 64-bit subtraction on dword halves (remainderHigh:remainderLow, the low
+         dword borrowing from the high one); the light reaches the vertex while remainderHigh stays >= 0 */
+      remainderLow = (uint32_t)shadingRecord->squaredRadiusQ24;
+      remainderHigh = ((int *)&shadingRecord->squaredRadiusQ24)[1];
+      axisDelta = *vertexPositionQ12 - shadingRecord->worldXQ12;
+      axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
+      axisSquareLow = (uint32_t)axisDistanceSquared;
+      remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
+                      (uint32_t)(remainderLow < axisSquareLow);
+      remainderLow = remainderLow - axisSquareLow;
       if (-1 < remainderHigh) {
         axisDelta = vertexPositionQ12[1] - shadingRecord->worldYQ12;
         axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
-        radiusOrSquareLow = (uint32_t)axisDistanceSquared;
-        squareOrRemainderLow = remainderLowOrDivisor - radiusOrSquareLow;
+        axisSquareLow = (uint32_t)axisDistanceSquared;
         remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
-                        (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
+                        (uint32_t)(remainderLow < axisSquareLow);
+        remainderLow = remainderLow - axisSquareLow;
         if (-1 < remainderHigh) {
           axisDelta = vertexPositionQ12[2] - shadingRecord->worldZQ12;
           axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
-          radiusOrSquareLow = (uint32_t)axisDistanceSquared;
+          axisSquareLow = (uint32_t)axisDistanceSquared;
           remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
-                          (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
+                          (uint32_t)(remainderLow < axisSquareLow);
+          remainderLow = remainderLow - axisSquareLow;
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (SHRD) */
-            remainderLowOrDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
+            lookupDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
                      (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
-            if (remainderLowOrDivisor != 0) {
+            if (lookupDivisor != 0) {
+              /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
               lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * (1 << 27) |
-                                                       (squareOrRemainderLow - radiusOrSquareLow) >> 5) /
-                                                      remainderLowOrDivisor]);
+                          g_PackedLightingLookupTable[(remainderHigh * (1 << 27) | remainderLow >> 5) /
+                                                      lookupDivisor]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }
@@ -759,11 +761,11 @@ ModelRender_ComputeVertexIntensityScaledPath
   int64_t axisDistanceSquared;
   int32_t lightFacingDotQ12;
   int remainderHigh;
-  uint32_t squareOrRemainderLow;
+  uint32_t remainderLow;
   int axisDelta;
-  uint32_t radiusOrSquareLow;
+  uint32_t axisSquareLow;
   GraphicsShadingRecordCount remainingRecords;
-  uint32_t remainderLowOrDivisor;
+  uint32_t lookupDivisor;
   GraphicsShadingRuntimeRecord *shadingRecord;
   uint64_t directionalLanes;
   uint64_t accumulatedLanes;
@@ -780,39 +782,41 @@ ModelRender_ComputeVertexIntensityScaledPath
               ModelLighting_UnpackBytesMmx(materialPackedColor,2));
   for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords--) {
     if (shadingRecord->targetRadiusQ12 != 0) {
-      /* r^2 - dx^2 - dy^2 - dz^2 in 64 bits; the light reaches the vertex while it stays >= 0 */
-      radiusOrSquareLow = (uint32_t)shadingRecord->squaredRadiusQ24;
-      remainderHigh = *vertexPositionQ12 - shadingRecord->worldXQ12;
-      axisDistanceSquared = (int64_t)remainderHigh * (int64_t)remainderHigh;
-      squareOrRemainderLow = (uint32_t)axisDistanceSquared;
-      remainderLowOrDivisor = radiusOrSquareLow - squareOrRemainderLow;
-      /* high dword of r^2 */
-      remainderHigh = (((int *)&shadingRecord->squaredRadiusQ24)[1] -
-               (int)((uint64_t)axisDistanceSquared >> 32)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
+      /* r^2 - dx^2 - dy^2 - dz^2 as a 64-bit subtraction on dword halves (remainderHigh:remainderLow, the low
+         dword borrowing from the high one); the light reaches the vertex while remainderHigh stays >= 0 */
+      remainderLow = (uint32_t)shadingRecord->squaredRadiusQ24;
+      remainderHigh = ((int *)&shadingRecord->squaredRadiusQ24)[1];
+      axisDelta = *vertexPositionQ12 - shadingRecord->worldXQ12;
+      axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
+      axisSquareLow = (uint32_t)axisDistanceSquared;
+      remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
+                      (uint32_t)(remainderLow < axisSquareLow);
+      remainderLow = remainderLow - axisSquareLow;
       if (-1 < remainderHigh) {
         axisDelta = vertexPositionQ12[1] - shadingRecord->worldYQ12;
         axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
-        radiusOrSquareLow = (uint32_t)axisDistanceSquared;
-        squareOrRemainderLow = remainderLowOrDivisor - radiusOrSquareLow;
+        axisSquareLow = (uint32_t)axisDistanceSquared;
         remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
-                        (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
+                        (uint32_t)(remainderLow < axisSquareLow);
+        remainderLow = remainderLow - axisSquareLow;
         if (-1 < remainderHigh) {
           axisDelta = vertexPositionQ12[2] - shadingRecord->worldZQ12;
           axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
-          radiusOrSquareLow = (uint32_t)axisDistanceSquared;
+          axisSquareLow = (uint32_t)axisDistanceSquared;
           remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
-                          (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
+                          (uint32_t)(remainderLow < axisSquareLow);
+          remainderLow = remainderLow - axisSquareLow;
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (SHRD) */
-            remainderLowOrDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
+            lookupDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
                      (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
-            if (remainderLowOrDivisor != 0) {
+            if (lookupDivisor != 0) {
+              /* table index: (remainder >> 5) / (r^2 >> 12), low dword only */
               lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * (1 << 27) |
-                                                       (squareOrRemainderLow - radiusOrSquareLow) >> 5) /
-                                                      remainderLowOrDivisor]);
+                          g_PackedLightingLookupTable[(remainderHigh * (1 << 27) | remainderLow >> 5) /
+                                                      lookupDivisor]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }

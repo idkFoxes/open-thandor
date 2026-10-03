@@ -55,28 +55,30 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
 
 {
   int selectedChildPriority;
+  uint32_t leftChildIndex;
   uint32_t selectedChildIndex;
   GameEntityRuntime *selectedChildEntity;
   EntityPathingPriorityPair *currentHeapPair;
-  int doubledParentIndex;
   int32_t displacedParentPriority;
   GameEntityRuntime *displacedParentEntity;
 
-  selectedChildIndex = 0;
   currentHeapPair = heapBase;
-  /* children of index i are 2i + 1 and 2i + 2 */
-  while (doubledParentIndex = selectedChildIndex * 2, selectedChildIndex = doubledParentIndex + 1,
-         heapSize - 1U >= selectedChildIndex) {
+  /* children of index i are 2i + 1 and 2i + 2; the index comparisons are unsigned (heapSize - 1U) */
+  leftChildIndex = 1;
+  while (leftChildIndex <= heapSize - 1U) {
+    selectedChildIndex = leftChildIndex;
     selectedChildPriority = heapBase[selectedChildIndex].priority;
     selectedChildEntity = heapBase[selectedChildIndex].entity;
-    if ((selectedChildIndex < heapSize - 1U) &&
-       (selectedChildPriority < heapBase[doubledParentIndex + 2].priority)) {
-      selectedChildIndex = doubledParentIndex + 2;
+    if ((leftChildIndex < heapSize - 1U) &&
+       (selectedChildPriority < heapBase[leftChildIndex + 1].priority)) {
+      selectedChildIndex = leftChildIndex + 1;
       selectedChildPriority = heapBase[selectedChildIndex].priority;
       selectedChildEntity = heapBase[selectedChildIndex].entity;
     }
-    if (selectedChildPriority <= currentHeapPair->priority) break;
-    /* the original swaps parent and child with XCHG */
+    if (selectedChildPriority <= currentHeapPair->priority) {
+      return;
+    }
+    /* swap parent and child (XCHG in the original) */
     displacedParentPriority = currentHeapPair->priority;
     currentHeapPair->priority = selectedChildPriority;
     displacedParentEntity = currentHeapPair->entity;
@@ -84,6 +86,7 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
     heapBase[selectedChildIndex].priority = displacedParentPriority;
     heapBase[selectedChildIndex].entity = displacedParentEntity;
     currentHeapPair = heapBase + selectedChildIndex;
+    leftChildIndex = selectedChildIndex * 2 + 1;
   }
 }
 
@@ -183,10 +186,11 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
   ArenaBlockHeader *followingBlock;
   uint32_t alignedBytes;
   ArenaBlockHeader *splitBlock;
-  uint32_t largestFreeOrOriginalSize;
+  uint32_t largestFreePayloadBytes;
+  uint32_t originalPayloadSize;
   ArenaBlockHeader *blockCursor;
 
-  largestFreeOrOriginalSize = 1;
+  largestFreePayloadBytes = 1;
   alignedBytes = (bytes + ARENA_BLOCK_ALIGNMENT_MASK) & ~ARENA_BLOCK_ALIGNMENT_MASK;
   blockCursor = g_Arena.firstBlock;
   do {
@@ -194,8 +198,8 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
       if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
         return ARENA_HEAP_CORRUPT;
       }
-      if (largestFreeOrOriginalSize < blockCursor->payloadSize) {
-        largestFreeOrOriginalSize = blockCursor->payloadSize;
+      if (largestFreePayloadBytes < blockCursor->payloadSize) {
+        largestFreePayloadBytes = blockCursor->payloadSize;
       }
       if (alignedBytes <= blockCursor->payloadSize) {
         blockCursor->stateMagic = ARENA_BLOCK_ALLOCATED;
@@ -203,12 +207,12 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
           *outPayload = blockCursor + 1;
           return 0;
         }
-        largestFreeOrOriginalSize = blockCursor->payloadSize;
+        originalPayloadSize = blockCursor->payloadSize;
         blockCursor->payloadSize = alignedBytes;
         followingBlock = blockCursor->next;
         /* the new free block starts right behind the shortened payload */
         splitBlock = (ArenaBlockHeader *)((uint8_t *)(blockCursor + 1) + blockCursor->payloadSize);
-        splitBlock->payloadSize = largestFreeOrOriginalSize - (blockCursor->payloadSize + ARENA_BLOCK_HEADER_BYTES);
+        splitBlock->payloadSize = originalPayloadSize - (blockCursor->payloadSize + ARENA_BLOCK_HEADER_BYTES);
         splitBlock->stateMagic = ARENA_BLOCK_FREE;
         splitBlock->previous = blockCursor;
         blockCursor->next = splitBlock;
@@ -222,7 +226,7 @@ uint32_t ArenaHeap_Alloc(ArenaPayloadByteCount bytes,void **outPayload)
     }
     blockCursor = blockCursor->next;
   } while (blockCursor != ARENA_BLOCK_LIST_END);
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreeOrOriginalSize,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreePayloadBytes,g_PackageLastErrorPath);
   return FATAL_ERROR_ARENA_EXHAUSTED;
 }
 
@@ -345,45 +349,48 @@ uint32_t ArenaHeap_AllocLargestFreeBlock(void **outAllocation,uint32_t *outBlock
 uint32_t ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 
 {
-  uint32_t originalPayloadSize;
-  int *followingBlock;
-  int followingPayloadSize;
-  int followingNextAddress;
+  ArenaBlockHeader *block;
   uint32_t alignedBytes;
-  int *thresholdOrSplitBlock;
-  int splitPayloadSize;
-  uint32_t *blockHeader;
+  uint32_t originalPayloadSize;
+  uint32_t splitPayloadSize;
+  ArenaBlockHeader *splitBlock;
+  ArenaBlockHeader *followingBlock;
+  ArenaBlockHeader *followingNextBlock;
 
-  /* header dwords: [0] payloadSize, [1] stateMagic, [2] next, [3] previous (see ArenaBlockHeader) */
-  blockHeader = (uint32_t *)((int)memory - ARENA_BLOCK_HEADER_BYTES);
+  /* the ArenaBlockHeader lies directly below the payload */
+  block = (ArenaBlockHeader *)memory - 1;
   alignedBytes = (newSize + ARENA_BLOCK_ALIGNMENT_MASK) & ~ARENA_BLOCK_ALIGNMENT_MASK;
-  if ((((ArenaBlockHeader *)memory)[-1].stateMagic == ARENA_BLOCK_ALLOCATED) && (alignedBytes <= *blockHeader)) {
-    thresholdOrSplitBlock = (int *)(alignedBytes + ARENA_BLOCK_SPLIT_SLACK_BYTES);
-    if (thresholdOrSplitBlock < (int *)*blockHeader) {
-      originalPayloadSize = *blockHeader;
-      *blockHeader = alignedBytes;
-      splitPayloadSize = originalPayloadSize - (alignedBytes + ARENA_BLOCK_HEADER_BYTES);
-      followingBlock = (int *)((ArenaBlockHeader *)memory)[-1].next;
-      thresholdOrSplitBlock = (int *)(alignedBytes + ARENA_BLOCK_HEADER_BYTES + (int)blockHeader);
-      ((ArenaBlockHeader *)memory)[-1].next = (ArenaBlockHeader *)thresholdOrSplitBlock;
-      thresholdOrSplitBlock[1] = (int)ARENA_BLOCK_FREE;
-      *thresholdOrSplitBlock = splitPayloadSize;
-      thresholdOrSplitBlock[3] = (int)blockHeader;
-      thresholdOrSplitBlock[2] = (int)followingBlock;
-      if ((followingBlock != (int *)ARENA_BLOCK_LIST_END) && (followingBlock[3] = (int)thresholdOrSplitBlock, followingBlock[1] == (int)ARENA_BLOCK_FREE)) {
-        followingPayloadSize = *followingBlock;
-        followingNextAddress = followingBlock[2];
-        thresholdOrSplitBlock[2] = followingNextAddress;
-        *thresholdOrSplitBlock = splitPayloadSize + followingPayloadSize + ARENA_BLOCK_HEADER_BYTES;
-        if (followingNextAddress != -1) {
-          ((ArenaBlockHeader *)followingNextAddress)->previous = (ArenaBlockHeader *)thresholdOrSplitBlock;
-        }
-      }
-    }
-    /* The original leaves split-block scratch in EAX here; no caller reads it on success. */
+  if (block->stateMagic != ARENA_BLOCK_ALLOCATED || alignedBytes > block->payloadSize) {
+    return ARENA_HEAP_CORRUPT;
+  }
+  /* The original returns split-block scratch in EAX on success; no caller reads it, so 0 here. */
+  if (block->payloadSize <= alignedBytes + ARENA_BLOCK_SPLIT_SLACK_BYTES) {
     return 0;
   }
-  return ARENA_HEAP_CORRUPT;
+  originalPayloadSize = block->payloadSize;
+  block->payloadSize = alignedBytes;
+  splitPayloadSize = originalPayloadSize - (alignedBytes + ARENA_BLOCK_HEADER_BYTES);
+  followingBlock = block->next;
+  /* the new free block starts right behind the shortened payload */
+  splitBlock = (ArenaBlockHeader *)((uint8_t *)block + ARENA_BLOCK_HEADER_BYTES + alignedBytes);
+  block->next = splitBlock;
+  splitBlock->stateMagic = ARENA_BLOCK_FREE;
+  splitBlock->payloadSize = splitPayloadSize;
+  splitBlock->previous = block;
+  splitBlock->next = followingBlock;
+  if (followingBlock != ARENA_BLOCK_LIST_END) {
+    followingBlock->previous = splitBlock;
+    if (followingBlock->stateMagic == ARENA_BLOCK_FREE) {
+      /* merge the free following block into the split block */
+      followingNextBlock = followingBlock->next;
+      splitBlock->next = followingNextBlock;
+      splitBlock->payloadSize = splitPayloadSize + followingBlock->payloadSize + ARENA_BLOCK_HEADER_BYTES;
+      if (followingNextBlock != ARENA_BLOCK_LIST_END) {
+        followingNextBlock->previous = splitBlock;
+      }
+    }
+  }
+  return 0;
 }
 
 

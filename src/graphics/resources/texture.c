@@ -1203,30 +1203,30 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsPaletteTextureSourceAsset *clonedAsset;
-  uint32_t allocationSizeOrCount;
-  GraphicsPaletteTextureSourceAsset *cloneCursor;
+  uint32_t allocationSizeBytes;
+  uint32_t dwordsRemaining;
+  const uint32_t *sourceDword;
+  uint32_t *cloneDword;
   uint32_t cloneAllocationError;
 
-  allocationSizeOrCount = (sourceAsset->common).allocationSizeBytes;
-  cloneAllocationError = g_MemoryApi.alloc(allocationSizeOrCount,(void **)&clonedAsset);
+  allocationSizeBytes = (sourceAsset->common).allocationSizeBytes;
+  cloneAllocationError = g_MemoryApi.alloc(allocationSizeBytes,(void **)&clonedAsset);
   if (cloneAllocationError != 0) {
-    clonedAsset = (GraphicsPaletteTextureSourceAsset *)cloneAllocationError;
+    return (GraphicsTextureSourceAsset *)cloneAllocationError;
   }
-  else {
-    /* REP MOVSD of the whole allocation */
-    cloneCursor = clonedAsset;
-    for (allocationSizeOrCount = allocationSizeOrCount >> 2; allocationSizeOrCount != 0; allocationSizeOrCount--) {
-      cloneCursor->magic = (sourceAsset->common).magic;
-      sourceAsset = (GraphicsTextureSourceAsset *)&(sourceAsset->common).allocationSizeBytes;
-      cloneCursor = (GraphicsPaletteTextureSourceAsset *)&cloneCursor->allocationSizeBytes;
-    }
-    if (g_GraphicsTextureSourceConvertPaletteEntries(clonedAsset) == 0) {
-      return (GraphicsTextureSourceAsset *)clonedAsset;
-    }
-    /* Original quirk: the clone's result after a failed conversion is the free's status (0 = NULL) */
-    clonedAsset = (GraphicsPaletteTextureSourceAsset *)g_MemoryApi.free(clonedAsset);
+  /* copy the whole allocation dword by dword (a trailing partial dword is not copied) */
+  sourceDword = (const uint32_t *)sourceAsset;
+  cloneDword = (uint32_t *)clonedAsset;
+  for (dwordsRemaining = allocationSizeBytes >> 2; dwordsRemaining != 0; dwordsRemaining--) {
+    *cloneDword = *sourceDword;
+    sourceDword++;
+    cloneDword++;
   }
-  return (GraphicsTextureSourceAsset *)clonedAsset;
+  if (g_GraphicsTextureSourceConvertPaletteEntries(clonedAsset) == 0) {
+    return (GraphicsTextureSourceAsset *)clonedAsset;
+  }
+  /* Original quirk: the clone's result after a failed conversion is the free's status (0 = NULL) */
+  return (GraphicsTextureSourceAsset *)g_MemoryApi.free(clonedAsset);
 }
 
 
@@ -2205,45 +2205,42 @@ GraphicsTexture_SelectPixelFormat
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  int entryOffset;
-  DDPIXELFORMAT *selectedFormat;
-  GraphicsTextureSourceAsset *paletteEntryCursor;
-  uint8_t *pixelCursor;
-  int paletteIndexOrCount;
-  
-  /* byte offset of the image's GraphicsTextureSourceEntry */
-  entryOffset = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset;
-  paletteIndexOrCount =((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + entryOffset))->paletteIndex
-  ;
-  if (paletteIndexOrCount < 0) {
+  const GraphicsTextureSourceEntry *entry;
+  int paletteIndex;
+  int pixelsRemaining;
+  int paletteEntriesRemaining;
+  const uint32_t *pixelCursor;
+  const GraphicsTexturePaletteEntry *paletteEntryCursor;
+
+  entry = (const GraphicsTextureSourceEntry *)
+          ((uint8_t *)sourceAsset +
+           (subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset));
+  paletteIndex = entry->paletteIndex;
+  if (paletteIndex < 0) {
     /* no palette: scan the ARGB pixels */
-    pixelCursor= (uint8_t *)sourceAsset + ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + entryOffset))->dataOffset;
-    paletteIndexOrCount = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + entryOffset))->pixelWidth *
-            ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + entryOffset))->pixelHeight;
+    pixelCursor = (const uint32_t *)((uint8_t *)sourceAsset + entry->dataOffset);
+    /* Original quirk: a 0-pixel image wraps the count and scans on past its data */
+    pixelsRemaining = entry->pixelWidth * entry->pixelHeight;
     do {
-      if (*(uint32_t *)pixelCursor < ARGB8888_ALPHA_MASK) { /* alpha below 0xFF */
+      if (*pixelCursor < ARGB8888_ALPHA_MASK) { /* alpha below 0xFF */
         return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
       }
-      pixelCursor = pixelCursor + 4;
-      paletteIndexOrCount--;
-    } while (paletteIndexOrCount != 0);
-    selectedFormat = (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
+      pixelCursor++;
+      pixelsRemaining--;
+    } while (pixelsRemaining != 0);
+    return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
   }
-  else {
-    /* palette bank paletteIndex: 0x400 bytes (256 ARGB colours) each, starting right after the 0x100-byte
-       asset header (sourceAsset + 1) */
-    paletteEntryCursor = sourceAsset + paletteIndexOrCount * 4 + 1;
-    paletteIndexOrCount = 256;
-    do {
-      if ((paletteEntryCursor->common).magic < ARGB8888_ALPHA_MASK) { /* alpha below 0xFF */
-        return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedAlphaTextureFormat,0);
-      }
-      paletteEntryCursor = (GraphicsTextureSourceAsset *)&(paletteEntryCursor->common).formatVersion;
-      paletteIndexOrCount--;
-    } while (paletteIndexOrCount != 0);
-    selectedFormat = (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0);
+  /* palette bank paletteIndex: GFX_PALETTE_BANK_SIZE bytes (256 GraphicsTexturePaletteEntry) each, starting
+     right after the GFX_ASSET_HEADER_SIZE-byte asset header */
+  paletteEntryCursor = (const GraphicsTexturePaletteEntry *)
+                       ((uint8_t *)sourceAsset + GFX_ASSET_HEADER_SIZE + paletteIndex * GFX_PALETTE_BANK_SIZE);
+  for (paletteEntriesRemaining = 256; paletteEntriesRemaining != 0; paletteEntriesRemaining--) {
+    if (paletteEntryCursor->argb8888 < ARGB8888_ALPHA_MASK) { /* alpha below 0xFF */
+      return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedAlphaTextureFormat,0);
+    }
+    paletteEntryCursor++;
   }
-  return selectedFormat;
+  return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0);
 }
 
 /* Address: 0x0057A740.

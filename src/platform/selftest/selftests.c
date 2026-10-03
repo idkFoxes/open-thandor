@@ -561,6 +561,38 @@ static void Thandor_SelfTestFixedMath(void)
                 hashTriangle, hashLength, hashAngleLength);
 }
 
+/* OPEN_THANDOR_SELFTEST=numberformat formats random and edge values with WideNumber_FormatUtf16 under random flag
+   combinations, digit counts and denominators (into a zeroed 256-unit buffer) and logs an FNV-1a hash over the
+   returned lengths and every buffer. Run it with two builds to check that a rewrite kept the formatting. */
+static void Thandor_SelfTestNumberFormat(void)
+{
+    static const int32_t edges[] = {0, 1, -1, 9, 10, 99, 100, 999, 1000, 1234, -1234, 12345, 999999, 1000000,
+                                    0x7fffffff, (int32_t)0x80000000, 0x7fff, -0x8000};
+    static uint16_t buffer[256];
+    uint32_t seed = 7;
+    uint32_t hash = 2166136261u;
+    uint32_t i;
+    for (i = 0; i < 40000; i++) {
+        uint32_t flags;
+        uint32_t fractionalDigits;
+        uint32_t integerDigitLimit;
+        uint32_t denominator;
+        int32_t value;
+        uint32_t written;
+        flags = SelfTest_FixedRandom(&seed) & 0x7f;
+        fractionalDigits = SelfTest_FixedRandom(&seed) % 5;
+        integerDigitLimit = 1 + SelfTest_FixedRandom(&seed) % 10;
+        denominator = (SelfTest_FixedRandom(&seed) & 3) == 0 ? 1 : 1 + SelfTest_FixedRandom(&seed) % 1000;
+        value = i < 18 * 4 ? edges[i % 18] : (int32_t)SelfTest_FixedRandom(&seed) >> (SelfTest_FixedRandom(&seed) % 31);
+        memset(buffer, 0, sizeof buffer);
+        written = WideNumber_FormatUtf16((WideNumberFormatFlags)flags, fractionalDigits, integerDigitLimit, denominator,
+                                         value, buffer);
+        hash = SelfTest_HashBytes(hash, &written, 4);
+        hash = SelfTest_HashBytes(hash, buffer, sizeof buffer);
+    }
+    Thandor_Log("numberformat: 40000 numbers, hash %08X", hash);
+}
+
 static void Thandor_SelfTestScanAddresses(void)
 {
     uint32_t (*savedAlloc)(uint32_t, void **) = g_MemoryApi.alloc;
@@ -767,6 +799,10 @@ int SelfTest_Run(const char *name)
     }
     if (name != NULL && strcmp(name, "pcx") == 0) {
         Thandor_SelfTestPcx();
+        return 1;
+    }
+    if (name != NULL && strcmp(name, "numberformat") == 0) {
+        Thandor_SelfTestNumberFormat();
         return 1;
     }
     if (name != NULL && strcmp(name, "fixedmath") == 0) {

@@ -36,64 +36,59 @@ uint32_t FncModule_GetBindingMode(FncModuleHeader *module)
 bool FncModule_LoadAndRelocate(FncModuleHeader *serializedModule,FncModuleHeader **outModule,uint32_t *outError)
 
 {
-  ArenaFreeProc *arenaFreeProc;
-  ArenaShrinkProc *arenaShrinkProc;
-  LocaleGetPackedCurrentDateProc *packedDateProc;
-  AssetMagic *moduleBaseOrError;
-  uint32_t sizeOrDwordCount;
-  AssetMagic relocationsRemaining;
-  AssetMagic *copyCursor;
-  int *relocationCursor;
+  void *moduleBase;
+  FncModuleHeader *module;
+  const uint32_t *source;
+  uint32_t *destination;
+  uint32_t dwordCount;
+  uint32_t exportsRemaining;
+  int *exportEntry;
   void **hostApiTable;
   uint32_t reserveError;
 
-  moduleBaseOrError = (AssetMagic *)FATAL_ERROR_FNC_MODULE_INVALID;
-  if (serializedModule->magic == ASSET_MAGIC_FNC) {
-    moduleBaseOrError = (AssetMagic *)FATAL_ERROR_FNC_MODULE_BINDING;
-    sizeOrDwordCount = serializedModule->allocationSizeBytes;
-    if (serializedModule->exportBinding.bindingMode == 0) {
-      reserveError = g_MemoryApi.reserveLinear(sizeOrDwordCount,(void **)&moduleBaseOrError);
-      if (reserveError != 0) {
-        moduleBaseOrError = (AssetMagic *)reserveError;
-      }
-      else {
-        /* dword copy of the whole image (REP MOVSD in the original) */
-        copyCursor = moduleBaseOrError;
-        for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount--) {
-          *copyCursor = serializedModule->magic;
-          serializedModule = (FncModuleHeader *)&serializedModule->allocationSizeBytes;
-          copyCursor = copyCursor + 1;
-        }
-        /* relocate the export table of the copy */
-        relocationCursor = (int *)((int)moduleBaseOrError +
-                                   ((FncModuleHeader *)moduleBaseOrError)->exportBinding.exportTableOffset);
-        arenaFreeProc = g_MemoryApi.free;
-        for (relocationsRemaining = ((FncModuleHeader *)moduleBaseOrError)->exportBinding.exportCount;
-             g_MemoryApi.free = arenaFreeProc, relocationsRemaining != 0; relocationsRemaining--) {
-          *relocationCursor = *relocationCursor + (int)moduleBaseOrError;
-          relocationCursor = relocationCursor + 1;
-          arenaFreeProc = g_MemoryApi.free;
-        }
-        hostApiTable = (void **)((int)moduleBaseOrError +
-                                 ((FncModuleHeader *)moduleBaseOrError)->exportBinding.hostApiTableOffset);
-        if (((FncModuleHeader *)moduleBaseOrError)->exportBinding.bindingMode == 0) {
-          *hostApiTable = g_MemoryApi.alloc;
-          hostApiTable[1] = arenaFreeProc;
-          arenaShrinkProc = g_MemoryApi.shrinkInPlace;
-          hostApiTable[2] = g_MemoryApi.allocLargestFreeBlock;
-          hostApiTable[3] = arenaShrinkProc;
-          packedDateProc = g_LocaleGetPackedCurrentDate;
-          hostApiTable[4] = g_LocaleGetPackedCurrentTime;
-          hostApiTable[5] = packedDateProc;
-          hostApiTable[6] = g_LocaleCopyDefaultComputerLabelUtf16;
-        }
-        *outModule = (FncModuleHeader *)moduleBaseOrError;
-        return true;
-      }
-    }
+  if (serializedModule->magic != ASSET_MAGIC_FNC) {
+    *outError = FATAL_ERROR_FNC_MODULE_INVALID;
+    return false;
   }
-  *outError = (uint32_t)moduleBaseOrError;
-  return false;
+  if (serializedModule->exportBinding.bindingMode != 0) {
+    *outError = FATAL_ERROR_FNC_MODULE_BINDING;
+    return false;
+  }
+  reserveError = g_MemoryApi.reserveLinear(serializedModule->allocationSizeBytes,&moduleBase);
+  if (reserveError != 0) {
+    *outError = reserveError;
+    return false;
+  }
+
+  /* dword copy of the whole image (REP MOVSD in the original; a size remainder of 1-3 bytes is not copied) */
+  source = (const uint32_t *)serializedModule;
+  destination = (uint32_t *)moduleBase;
+  for (dwordCount = serializedModule->allocationSizeBytes >> 2; dwordCount != 0; dwordCount--) {
+    *destination = *source;
+    source++;
+    destination++;
+  }
+  module = (FncModuleHeader *)moduleBase;
+
+  /* relocate the export table of the copy: image offsets become absolute addresses */
+  exportEntry = (int *)((uint8_t *)moduleBase + module->exportBinding.exportTableOffset);
+  for (exportsRemaining = module->exportBinding.exportCount; exportsRemaining != 0; exportsRemaining--) {
+    *exportEntry = *exportEntry + (int)moduleBase;
+    exportEntry++;
+  }
+
+  hostApiTable = (void **)((uint8_t *)moduleBase + module->exportBinding.hostApiTableOffset);
+  if (module->exportBinding.bindingMode == 0) {
+    hostApiTable[0] = g_MemoryApi.alloc;
+    hostApiTable[1] = g_MemoryApi.free;
+    hostApiTable[2] = g_MemoryApi.allocLargestFreeBlock;
+    hostApiTable[3] = g_MemoryApi.shrinkInPlace;
+    hostApiTable[4] = g_LocaleGetPackedCurrentTime;
+    hostApiTable[5] = g_LocaleGetPackedCurrentDate;
+    hostApiTable[6] = g_LocaleCopyDefaultComputerLabelUtf16;
+  }
+  *outModule = module;
+  return true;
 }
 
 

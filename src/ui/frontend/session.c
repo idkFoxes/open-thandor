@@ -420,56 +420,53 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
   destinationPlayer = g_FrontendPlayerRuntimeBlocks + 1;
   sourceCommandRecord = g_FrontendClientPlayerCommandRecords;
   destinationCommandRecord = g_FrontendClientPlayerCommandRecords;
-  playersRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1;
-  if (0 < playersRemaining) {
-    do {
-      expired = sourcePlayer->heartbeatExpiryTicks == 0;
-      if (!expired) {
-        sourcePlayer->heartbeatExpiryTicks = sourcePlayer->heartbeatExpiryTicks - 1;
-        if (sourcePlayer->heartbeatExpiryTicks == 0) {
-          timeoutText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
-          RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText);
-          InGameRecentTextHistory_InsertAndRebuild8(timeoutText);
-          expired = true;
-        }
+  for (playersRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1; playersRemaining > 0;
+       playersRemaining--) {
+    expired = sourcePlayer->heartbeatExpiryTicks == 0;
+    if (!expired) {
+      sourcePlayer->heartbeatExpiryTicks = sourcePlayer->heartbeatExpiryTicks - 1;
+      if (sourcePlayer->heartbeatExpiryTicks == 0) {
+        timeoutText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
+        RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText);
+        InGameRecentTextHistory_InsertAndRebuild8(timeoutText);
+        expired = true;
       }
-      if (expired) {
-        /* drop: only the source cursors advance */
-        g_FrontendPlayerRuntimeBlockCount--;
-        removedPlayerIds[removedCount] = sourcePlayer->playerRuntimeId;
-        removedCount++;
+    }
+    if (expired) {
+      /* drop: only the source cursors advance */
+      g_FrontendPlayerRuntimeBlockCount--;
+      removedPlayerIds[removedCount] = sourcePlayer->playerRuntimeId;
+      removedCount++;
+    }
+    else {
+      /* keep: move the player block and its command record down over the gap (REP MOVSD) */
+      if (destinationPlayer != sourcePlayer) {
+        *destinationPlayer = *sourcePlayer;
+        *destinationCommandRecord = *sourceCommandRecord;
       }
-      else {
-        /* keep: move the player block and its command record down over the gap (REP MOVSD) */
-        if (destinationPlayer != sourcePlayer) {
-          *destinationPlayer = *sourcePlayer;
-          *destinationCommandRecord = *sourceCommandRecord;
-        }
-        destinationPlayer++;
-        destinationCommandRecord++;
-      }
-      sourcePlayer++;
-      sourceCommandRecord++;
-      playersRemaining--;
-    } while (playersRemaining != 0);
+      destinationPlayer++;
+      destinationCommandRecord++;
+    }
+    sourcePlayer++;
+    sourceCommandRecord++;
   }
-  if (removedCount != 0) {
-    do {
-      g_FrontendClientPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
-           FRONTEND_PACKET_10007_PLAYER_REMOVAL;
-      endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-      /* POP: the last dropped id first */
-      g_FrontendClientPlayerRemovalPacket10007.removedPlayerToken = removedPlayerIds[removedCount - 1];
-      recipientsRemaining = g_FrontendPlayerRuntimeBlockCount;
-      while (recipientsRemaining = recipientsRemaining - 1, recipientsRemaining != 0) {
-        UiTransfer_StagePacketAndSend(endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
-        endpoint = endpoint + FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE;
-      }
-      removedCount--;
-    } while (removedCount != 0);
-    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(0xffffffff,0,0,0); /* no player: only re-check */
+  if (removedCount == 0) {
+    return;
   }
-  return;
+  /* pop the dropped ids: the last dropped id first */
+  for (; removedCount != 0; removedCount--) {
+    g_FrontendClientPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
+         FRONTEND_PACKET_10007_PLAYER_REMOVAL;
+    endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
+    g_FrontendClientPlayerRemovalPacket10007.removedPlayerToken = removedPlayerIds[removedCount - 1];
+    /* every remaining client (blocks 1 .. count-1) */
+    for (recipientsRemaining = g_FrontendPlayerRuntimeBlockCount - 1; recipientsRemaining != 0;
+         recipientsRemaining--) {
+      UiTransfer_StagePacketAndSend(endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
+      endpoint = endpoint + FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE;
+    }
+  }
+  FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(0xffffffff,0,0,0); /* no player: only re-check */
 }
 
 
@@ -483,59 +480,55 @@ void FrontendClientSession_TickHostTimeout(void)
 
 {
   PlayerRuntimeId previousLocalPlayerId;
-  FrontendPlayerRuntimeRecord *firstPlayerRecord;
   InGameRuntimeRoot *inGameRoot;
   FrontendPlayerRuntimeBlockCount playersRemaining;
   FrontendPlayerRuntimeRecord *playerRecord;
+  FrontendPlayerRuntimeRecord *localPlayerRecord;
   uint16_t *shutdownText;
-  
+
   inGameRoot = g_InGameRuntimeRoot;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks - 1;
-  if (g_SessionTransferTimeoutTicks == 0) {
-    g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
-    g_NetworkBackendSlot3(); /* close */
-    g_NetworkBackendSlot1(); /* cleanup */
-    shutdownText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);
-    RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText);
-    InGameRecentTextHistory_InsertAndRebuild8(shutdownText);
-    firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
-    playersRemaining = g_FrontendPlayerRuntimeBlockCount;
-    do {
-      if (playerRecord->factionAssignment.readyOrWaitState == 0) {
-        /* always true here, the role was cleared above */
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
-        }
-        playerRecord = g_FrontendPlayerRuntimeBlocks;
-        g_FrontendPlayerRuntimeBlockCount = 1;
-        /* XCHG: the timer thread reads the id (InGameCommandQueue_AppendLocalPlayerCommand) */
-        previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
-        inGameRoot->worldRuntime.selection.activePlayerRuntimeId = 0;
-        g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
-        playerRecord->playerName.textUtf16[0] = 0;
-        playerRecord->playerName.textUtf16[1] = 0;
-        playerRecord->playerRuntimeId = 0;
-        playerRecord->factionAssignment.roleStateFlags = 0;
-        return;
-      }
-      playerRecord++;
-      playersRemaining--;
-    } while (playersRemaining != 0);
-    g_FrontendPlayerRuntimeBlockCount = 1;
-    previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
-    inGameRoot->worldRuntime.selection.activePlayerRuntimeId = 0;
-    g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
-    firstPlayerRecord->playerName.textUtf16[0] = 0;
-    firstPlayerRecord->playerName.textUtf16[1] = 0;
-    firstPlayerRecord->playerRuntimeId = 0;
-    firstPlayerRecord->factionAssignment.roleStateFlags = 0;
+  if (g_SessionTransferTimeoutTicks != 0) {
+    return;
   }
-  return;
+  g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
+  g_NetworkBackendSlot3(); /* close */
+  g_NetworkBackendSlot1(); /* cleanup */
+  shutdownText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);
+  RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText);
+  InGameRecentTextHistory_InsertAndRebuild8(shutdownText);
+
+  /* submit the pending ready vote once if some player has not voted yet
+     (do/while as in the original: the first record is checked even with a block count of 0) */
+  playersRemaining = g_FrontendPlayerRuntimeBlockCount;
+  do {
+    if (playerRecord->factionAssignment.readyOrWaitState == 0) {
+      /* always true here, the role was cleared above */
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+          SESSION_NETWORK_ROLE_LOCAL) {
+        FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
+      }
+      else {
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
+      }
+      break;
+    }
+    playerRecord++;
+    playersRemaining--;
+  } while (playersRemaining != 0);
+
+  /* the local player becomes the only player, with id 0 (the block pointer is read after the vote) */
+  localPlayerRecord = g_FrontendPlayerRuntimeBlocks;
+  g_FrontendPlayerRuntimeBlockCount = 1;
+  /* XCHG: the timer thread reads the id (InGameCommandQueue_AppendLocalPlayerCommand) */
+  previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
+  inGameRoot->worldRuntime.selection.activePlayerRuntimeId = 0;
+  g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
+  localPlayerRecord->playerName.textUtf16[0] = 0;
+  localPlayerRecord->playerName.textUtf16[1] = 0;
+  localPlayerRecord->playerRuntimeId = 0;
+  localPlayerRecord->factionAssignment.roleStateFlags = 0;
 }
 
 

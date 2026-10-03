@@ -26,47 +26,54 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
   uint32_t gridColumnCount;
   uint32_t cellRow;
   int cellIndex;
-  FieldGridCell *wedge0Or3Cell;
-  FieldGridCell *wedge1Or4Cell;
-  FieldGridCell *cell;
+  FieldGridCell *wedge0Cell;
+  FieldGridCell *wedge1Cell;
+  FieldGridCell *wedge2Cell;
+  FieldGridCell *wedge3Cell;
+  FieldGridCell *wedge4Cell;
+  FieldGridCell *wedge5Cell;
   FieldGridCoordinates gridCoordinates;
 
-  if (fieldGrid != NULL) {
-    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / TERRAIN_SCAN_RADIUS_PER_STEP;
-    if (g_TerrainScanStepLimit == 0) {
-      g_TerrainScanStepLimit = 1;
-    }
-    else if (TERRAIN_SCAN_STEP_LIMIT_MAX < g_TerrainScanStepLimit) {
-      g_TerrainScanStepLimit = TERRAIN_SCAN_STEP_LIMIT_MAX;
-    }
-    g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex = occupancyByteOffset;
-    gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
-    cellColumn = gridCoordinates.columnQ12 >> 12;
-    g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7; /* 0x80-byte cells */
-    cellRow = gridCoordinates.rowQ12 >> 12;
-    if ((((-1 < (int)cellColumn) && (gridColumnCount = fieldGrid->gridWidth & FIELD_GRID_ROW_STRIDE_WIDTH_MASK, -1 < (int)cellRow)) &&
-        (cellRow < fieldGrid->gridHeight)) &&
-       ((cellColumn < gridColumnCount &&
-        (cellIndex = cellRow * gridColumnCount + cellColumn,
-         (fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)))) {
-      centerMaskByte = &FIELD_CELL_OCCUPANCY_BYTE(&fieldGrid->cells[cellIndex],occupancyByteOffset);
-      *centerMaskByte = *centerMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
-      /* the six neighbours of centre cell C, one per sector: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width;
-         the first address is cells[cellIndex + 1]) */
-      wedge0Or3Cell = &fieldGrid->cells[cellIndex + 1];
-      wedge1Or4Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedge0Or3Cell,-g_TerrainScanRowStrideBytes);
-      TerrainOccupancyBit2_MarkWedge0(0,wedge0Or3Cell);
-      cell = wedge1Or4Cell - 1;
-      TerrainOccupancyBit2_MarkWedge1(0,wedge1Or4Cell);
-      wedge0Or3Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,rowStrideBytes);
-      TerrainOccupancyBit2_MarkWedge2(0,cell);
-      wedge1Or4Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedge0Or3Cell,rowStrideBytes);
-      TerrainOccupancyBit2_MarkWedge3(0,wedge0Or3Cell);
-      TerrainOccupancyBit2_MarkWedge4(0,wedge1Or4Cell);
-      TerrainOccupancyBit2_MarkWedge5(0,wedge1Or4Cell + 1);
-    }
+  if (fieldGrid == NULL) {
+    return;
   }
+  g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / TERRAIN_SCAN_RADIUS_PER_STEP;
+  if (g_TerrainScanStepLimit == 0) {
+    g_TerrainScanStepLimit = 1;
+  }
+  else if (TERRAIN_SCAN_STEP_LIMIT_MAX < g_TerrainScanStepLimit) {
+    g_TerrainScanStepLimit = TERRAIN_SCAN_STEP_LIMIT_MAX;
+  }
+  g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex = occupancyByteOffset;
+  gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
+  cellColumn = gridCoordinates.columnQ12 >> 12;
+  g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7; /* 0x80-byte cells */
+  cellRow = gridCoordinates.rowQ12 >> 12;
+  gridColumnCount = fieldGrid->gridWidth & FIELD_GRID_ROW_STRIDE_WIDTH_MASK;
+  if ((int)cellColumn < 0 || (int)cellRow < 0 || cellRow >= fieldGrid->gridHeight ||
+      cellColumn >= gridColumnCount) {
+    return;
+  }
+  cellIndex = cellRow * gridColumnCount + cellColumn;
+  if ((fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+    return;
+  }
+  centerMaskByte = &FIELD_CELL_OCCUPANCY_BYTE(&fieldGrid->cells[cellIndex],occupancyByteOffset);
+  *centerMaskByte = *centerMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
+  rowStrideBytes = g_TerrainScanRowStrideBytes;
+  /* the six neighbours of centre cell C, one per sector: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width) */
+  wedge0Cell = &fieldGrid->cells[cellIndex + 1];
+  wedge1Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedge0Cell,-rowStrideBytes);
+  wedge2Cell = wedge1Cell - 1;
+  wedge3Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedge2Cell - 1,rowStrideBytes);
+  wedge4Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedge3Cell,rowStrideBytes);
+  wedge5Cell = wedge4Cell + 1;
+  TerrainOccupancyBit2_MarkWedge0(0,wedge0Cell);
+  TerrainOccupancyBit2_MarkWedge1(0,wedge1Cell);
+  TerrainOccupancyBit2_MarkWedge2(0,wedge2Cell);
+  TerrainOccupancyBit2_MarkWedge3(0,wedge3Cell);
+  TerrainOccupancyBit2_MarkWedge4(0,wedge4Cell);
+  TerrainOccupancyBit2_MarkWedge5(0,wedge5Cell);
 }
 
 
@@ -88,123 +95,99 @@ static __inline uint64_t TerrainOccupancy_Pcmpeqb(uint64_t a,uint64_t b)
 }
 
 
+/* ORs into mask the occupancy masks of up to stepCount cells along one ray from centerCell (cellStep cells per
+   step); the ray stops after the first map-edge cell, which is still included. */
+static uint64_t TerrainOccupancyMask_OrRay(uint64_t mask,const FieldGridCell *centerCell,int cellStep,int stepCount)
+
+{
+  const FieldGridCell *cell;
+  int step;
+
+  cell = centerCell;
+  for (step = 0; step < stepCount; step++) {
+    cell = cell + cellStep;
+    mask = mask | cell->occupancyMask;
+    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      break;
+    }
+  }
+  return mask;
+}
+
+
 /* Address: 0x00507610.
    Answers "which factions are around this point": ORs the occupancy masks of the centre cell and of six straight
    rays (right, left, up-right, up, down-left, down; length from the radius, 1..255 cells, stopping at map-edge
    cells) and packs two bits per faction slot i: bit 2i+1 = a current presence bit is set, bit 2i = only the
    persistent bit 7 is (bits 1 and 2 are ignored). TerrainOccupancyMask_ResolveRuntimeClassFlags consumes the
-   result. Returns 0 (in EDX) when the grid is missing or the point lies outside it or on a map-edge cell.
+   result. Returns 0 when the grid is missing or the point lies outside it or on a map-edge cell.
 */
 uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
           (Q12 neighborhoodRadiusQ12,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
-  uint32_t radiusStepsOrGridWidth;
+  uint32_t radiusSteps;
+  uint32_t gridWidth;
   uint32_t cellColumn;
   int runStepCount;
   uint32_t cellRow;
-  FieldGridCell *runCursorB;
-  FieldGridCell *runCursorA;
-  FieldGridCell *centerCell;
-  int runRemainingA;
-  int runRemainingB;
+  int rowStep;
+  const FieldGridCell *centerCell;
   uint64_t combinedMask;
   uint64_t currentPresenceSums;
   uint64_t persistentOnlyBytes;
   uint64_t persistentOnlySums;
   FieldGridCoordinates gridCoordinates;
 
-  if (fieldGrid != NULL) {
-    /* cells per ray, rounded; the original divides by 0x901, not by the cell size 0x900 */
-    radiusStepsOrGridWidth = (neighborhoodRadiusQ12 + TERRAIN_OCCUPANCY_RADIUS_ROUND_Q12) / FIELD_GRID_WORLD_COLUMN_STEP_X;
-    if (radiusStepsOrGridWidth == 0) {
-      runStepCount = 2;
-    }
-    else if (radiusStepsOrGridWidth < 256) {
-      runStepCount = radiusStepsOrGridWidth + 1;
-    }
-    else {
-      runStepCount = 256;
-    }
-    gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
-    radiusStepsOrGridWidth = fieldGrid->gridWidth;
-    /* round the Q12 grid coordinates to the nearest cell */
-    cellColumn = (gridCoordinates.columnQ12 >> 11) + 1 >> 1;
-    cellRow = (gridCoordinates.rowQ12 >> 11) + 1 >> 1;
-    if ((((-1 < (int)cellColumn) && (-1 < (int)cellRow)) && (cellRow < fieldGrid->gridHeight)) &&
-       (cellColumn < radiusStepsOrGridWidth)) {
-      centerCell = fieldGrid->cells + cellRow * radiusStepsOrGridWidth + cellColumn;
-      combinedMask = centerCell->occupancyMask;
-      if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-        runStepCount--;
-        runCursorA = centerCell;
-        runRemainingA = runStepCount;
-        if (runStepCount != 0) {
-          /* each ray restarts at the centre; the edge cell that stops a ray is still counted */
-          do { /* right */
-            combinedMask = combinedMask | runCursorA[1].occupancyMask;
-            runCursorB = centerCell;
-            runRemainingB = runStepCount;
-            if ((runCursorA[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
-            runRemainingA--;
-            runCursorA = runCursorA + 1;
-          } while (runRemainingA != 0);
-          do { /* left */
-            combinedMask = combinedMask | runCursorB[-1].occupancyMask;
-            runCursorA = centerCell;
-            runRemainingA = runStepCount;
-            if ((runCursorB[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
-            runRemainingB--;
-            runCursorB = runCursorB - 1;
-          } while (runRemainingB != 0);
-          do { /* up and right */
-            runCursorA = runCursorA + (1 - radiusStepsOrGridWidth);
-            combinedMask = combinedMask | runCursorA->occupancyMask;
-            runCursorB = centerCell;
-            runRemainingB = runStepCount;
-            if ((runCursorA->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
-            runRemainingA--;
-          } while (runRemainingA != 0);
-          do { /* up */
-            runCursorB = runCursorB + -radiusStepsOrGridWidth;
-            combinedMask = combinedMask | runCursorB->occupancyMask;
-            runCursorA = centerCell;
-            runRemainingA = runStepCount;
-            if ((runCursorB->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
-            runRemainingB--;
-          } while (runRemainingB != 0);
-          do { /* down and left */
-            runCursorA = runCursorA + (radiusStepsOrGridWidth - 1);
-            combinedMask = combinedMask | runCursorA->occupancyMask;
-            if ((runCursorA->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
-            runRemainingA--;
-          } while (runRemainingA != 0);
-          do { /* down */
-            centerCell = centerCell + radiusStepsOrGridWidth;
-            combinedMask = combinedMask | centerCell->occupancyMask;
-            if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
-            runStepCount--;
-          } while (runStepCount != 0);
-        }
-        /* MMX byte classification per faction byte (0xF9 mask drops bits 1 and 2): 0x80 alone -> persistent
-           only; any other non-zero value -> currently present. PAND 0x0280 and PMADDWD with the 2/0x20 and
-           4/0x40 weights move the flag of faction i to bit 2i (persistent) or 2i+1 (present), bytes 0..3 in
-           bits 8..15 of the low dword and bytes 4..7 in bits 8..15 of the high dword. */
-        combinedMask = combinedMask & g_TerrainOccupancyMmxClearBits1And2Mask;
-        persistentOnlyBytes = TerrainOccupancy_Pcmpeqb((uint64_t)g_TerrainOccupancyMmxSignBiasBytes,combinedMask);
-        persistentOnlySums =
-             pmaddwd(persistentOnlyBytes & g_TerrainOccupancyMmxPackedScale0280,
-                     g_TerrainOccupancyMmxPersistentWeights);
-        currentPresenceSums =
-             pmaddwd((TerrainOccupancy_Pcmpeqb(0,combinedMask) ^
-                      g_TerrainOccupancyMmxAllBitsMask ^ persistentOnlyBytes) &
-                     g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxCurrentWeights);
-        return (int)((uint64_t)currentPresenceSums >> 32) + (int)((uint64_t)persistentOnlySums >> 32)
-               | (uint32_t)((int)currentPresenceSums + (int)persistentOnlySums) >> 8;
-      }
-    }
+  if (fieldGrid == NULL) {
+    return 0;
   }
-  return 0;
+  /* cells per ray, rounded; the original divides by 0x901, not by the cell size 0x900 */
+  radiusSteps = (neighborhoodRadiusQ12 + TERRAIN_OCCUPANCY_RADIUS_ROUND_Q12) / FIELD_GRID_WORLD_COLUMN_STEP_X;
+  if (radiusSteps == 0) {
+    runStepCount = 2;
+  }
+  else if (radiusSteps < 256) {
+    runStepCount = radiusSteps + 1;
+  }
+  else {
+    runStepCount = 256;
+  }
+  gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
+  gridWidth = fieldGrid->gridWidth;
+  /* round the Q12 grid coordinates to the nearest cell */
+  cellColumn = ((gridCoordinates.columnQ12 >> 11) + 1) >> 1;
+  cellRow = ((gridCoordinates.rowQ12 >> 11) + 1) >> 1;
+  if ((int)cellColumn < 0 || (int)cellRow < 0 || cellRow >= fieldGrid->gridHeight || cellColumn >= gridWidth) {
+    return 0;
+  }
+  centerCell = fieldGrid->cells + cellRow * gridWidth + cellColumn;
+  combinedMask = centerCell->occupancyMask;
+  if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+    return 0;
+  }
+  /* 1..255 cells per ray; every ray starts at the centre */
+  runStepCount--;
+  rowStep = (int)gridWidth;
+  combinedMask = TerrainOccupancyMask_OrRay(combinedMask,centerCell,1,runStepCount);            /* right */
+  combinedMask = TerrainOccupancyMask_OrRay(combinedMask,centerCell,-1,runStepCount);           /* left */
+  combinedMask = TerrainOccupancyMask_OrRay(combinedMask,centerCell,1 - rowStep,runStepCount);  /* up and right */
+  combinedMask = TerrainOccupancyMask_OrRay(combinedMask,centerCell,-rowStep,runStepCount);     /* up */
+  combinedMask = TerrainOccupancyMask_OrRay(combinedMask,centerCell,rowStep - 1,runStepCount);  /* down and left */
+  combinedMask = TerrainOccupancyMask_OrRay(combinedMask,centerCell,rowStep,runStepCount);      /* down */
+  /* byte classification per faction byte (0xF9 mask drops bits 1 and 2): 0x80 alone -> persistent only; any
+     other non-zero value -> currently present. PAND 0x0280 and PMADDWD with the 2/0x20 and 4/0x40 weights move
+     the flag of faction i to bit 2i (persistent) or 2i+1 (present), bytes 0..3 in bits 8..15 of the low dword
+     and bytes 4..7 in bits 8..15 of the high dword. */
+  combinedMask = combinedMask & g_TerrainOccupancyMmxClearBits1And2Mask;
+  persistentOnlyBytes = TerrainOccupancy_Pcmpeqb((uint64_t)g_TerrainOccupancyMmxSignBiasBytes,combinedMask);
+  persistentOnlySums =
+       pmaddwd(persistentOnlyBytes & g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxPersistentWeights);
+  currentPresenceSums =
+       pmaddwd((TerrainOccupancy_Pcmpeqb(0,combinedMask) ^ g_TerrainOccupancyMmxAllBitsMask ^ persistentOnlyBytes) &
+               g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxCurrentWeights);
+  return ((int)(currentPresenceSums >> 32) + (int)(persistentOnlySums >> 32)) |
+         ((uint32_t)((int)currentPresenceSums + (int)persistentOnlySums) >> 8);
 }
 
 
