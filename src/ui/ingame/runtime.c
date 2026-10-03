@@ -2404,7 +2404,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
 }
 
 
-/* Continuation addresses stored in g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 (entry points
+/* Continuation addresses stored in g_InGameCommandDispatchRecords (entry points
    inside the original function; the rewritten dispatcher below switches on them). */
 enum InGameKeyCommandContinuation {
   INGAME_KEY_RECALL_GROUP = 0x567cc0,                /* 1..8 */
@@ -2456,7 +2456,7 @@ static bool InGameKeyCommand_ModifiersMatch(uint32_t classFlags,UiKeyboardStateM
 
 /* Address: 0x005678C0.
    In-game key commands (the world view's dispatchCommandCallback): the first record of
-   g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 whose key code matches and whose modifier class
+   g_InGameCommandDispatchRecords whose key code matches and whose modifier class
    (Shift / Ctrl / Alt, left or right) equals the held modifiers selects the command. Selection commands are
    ignored while the game is paused or the world input is disabled; network games queue them as player
    commands (code in brackets) instead of executing them.
@@ -2487,7 +2487,7 @@ bool InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
 {
   /* Rewritten from the assembly (0x005678C0-0x00568204). The decompiled version jumped to the
      continuation labels inside the original machine code. world is the world view (worldRuntime). */
-  UiCommandDispatchRecord *record = g_InGameCommandDispatchRecords_00_Code00030073_Modifier33;
+  UiCommandDispatchRecord *record = g_InGameCommandDispatchRecords; /* ends at the terminator record [63] */
   uint32_t target;
   bool localSession =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL;

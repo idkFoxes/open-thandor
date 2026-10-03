@@ -1241,8 +1241,7 @@ typedef struct ImageObject_00501184 {
     uint8_t at_gap_00501184[12]; /* 00501184 gap */
 } ImageObject_00501184;
 extern ImageObject_00501184 g_ImageObject_00501184;
-extern PackedArgb32 g_TerrainLightingColorRampArgb256[256]; /* 00501190 g_TerrainLightingColorRampArgb256 */
-extern PackedArgb32 g_TerrainDirectionalLightColorLut[257]; /* 00501590 g_TerrainDirectionalLightColorLut */
+extern PackedArgb32 g_TerrainDirectionalLightColorLut[513]; /* 00501190 g_TerrainDirectionalLightColorLut: shaded ramp (256) + lit half (257, from 00501590), indexed from the middle entry */
 extern uint32_t g_TerrainDirectionalLightSecondaryColor; /* 00501994 g_TerrainDirectionalLightSecondaryColor */
 extern GraphicsFixedVec3 g_TerrainLightDirection; /* 00501998 g_TerrainLightDirection: Q28 unit vector */
 extern uint8_t *g_TerrainByteClampLookup; /* 005019A4 g_TerrainByteClampLookup */
@@ -1944,22 +1943,10 @@ typedef struct ImageObject_005367CC {
 } ImageObject_005367CC;
 extern ImageObject_005367CC g_ImageObject_005367CC;
 extern EntityPathingPriorityPair *g_EntityPathingPriorityPairs; /* 005367D0 g_EntityPathingPriorityPairs */
-typedef struct ImageObject_005367D4 {
-    uint32_t at_g_EntityPathingPriorityPairStorage[1]; /* 005367D4 g_EntityPathingPriorityPairStorage */
-} ImageObject_005367D4;
-extern ImageObject_005367D4 g_ImageObject_005367D4;
-typedef struct ImageObject_005367D8 {
-    uint32_t at_g_EntityPathingPriorityPairStorage_0__priority[1]; /* 005367D8 g_EntityPathingPriorityPairStorage[0].priority */
-} ImageObject_005367D8;
-extern ImageObject_005367D8 g_ImageObject_005367D8;
-typedef struct ImageObject_005367DC {
-    uint32_t at_g_EntityPathingPriorityPairStorage_1__entity[1]; /* 005367DC g_EntityPathingPriorityPairStorage[1].entity */
-} ImageObject_005367DC;
-extern ImageObject_005367DC g_ImageObject_005367DC;
-typedef struct ImageObject_005367E0 {
-    uint32_t at_g_EntityPathingPriorityPairStorage_1__priority[61]; /* 005367E0 g_EntityPathingPriorityPairStorage[1].priority */
-} ImageObject_005367E0;
-extern ImageObject_005367E0 g_ImageObject_005367E0;
+/* 005367D4-005368D4: the 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
+   fills at most ENTITY_PATHING_PRIORITY_PAIR_CAPACITY of them and heap-sorts them in place) */
+#define ENTITY_PATHING_PRIORITY_PAIR_CAPACITY 32
+extern EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY]; /* 005367D4 g_EntityPathingPriorityPairStorage */
 extern uint32_t g_EntityPathingPriorityPairCount; /* 005368D4 g_EntityPathingPriorityPairCount */
 
 /* original 0x00536F08-0x00536FC0 */
@@ -2513,11 +2500,7 @@ typedef struct ImageObject_005679AC {
     uint8_t at_gap_005679AC[4]; /* 005679AC gap */
 } ImageObject_005679AC;
 extern ImageObject_005679AC g_ImageObject_005679AC;
-extern UiCommandDispatchRecord g_InGameCommandDispatchRecords_00_Code00030073_Modifier33[63]; /* 005679B0 g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 */
-typedef struct ImageObject_00567CA4 {
-    uint32_t at_g_InGameCommandDispatchRecords_Terminator[3]; /* 00567CA4 g_InGameCommandDispatchRecords_Terminator */
-} ImageObject_00567CA4;
-extern ImageObject_00567CA4 g_ImageObject_00567CA4;
+extern UiCommandDispatchRecord g_InGameCommandDispatchRecords[64]; /* 005679B0 g_InGameCommandDispatchRecords: 63 records + terminator at 00567CA4 */
 
 /* original 0x0056A604-0x0056A610 */
 extern uint8_t g_InGameSessionStartedNetworked; /* 0056A604 g_InGameSessionStartedNetworked (followed by NOP fill up to 0056A610) */
@@ -4125,14 +4108,12 @@ extern ImageObject_0058B400 g_ImageObject_0058B400;
 #define g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0 (g_ImageObject_005247D0.at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0)
 #define g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90 (g_ImageObject_00525A90.at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90)
 #define g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990 (g_ImageObject_00526990.at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990)
-#define g_EntityPathingPriorityPairStorage (g_ImageObject_005367D4.at_g_EntityPathingPriorityPairStorage)
 #define g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160 (g_ImageObject_0053C160.at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160)
 #define g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90 (g_ImageObject_00547D90.at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90)
 #define g_FrontendCommandDispatchRecords_Terminator (g_ImageObject_00548124.at_g_FrontendCommandDispatchRecords_Terminator)
 #define g_EndMovieCommandDispatchRecords_Terminator (g_ImageObject_005658D8.at_g_EndMovieCommandDispatchRecords_Terminator)
 #define g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 (g_ImageObject_00566040.at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040)
 #define g_EndGameResultsCommandDispatchRecords_Terminator (g_ImageObject_005671C4.at_g_EndGameResultsCommandDispatchRecords_Terminator)
-#define g_InGameCommandDispatchRecords_Terminator (g_ImageObject_00567CA4.at_g_InGameCommandDispatchRecords_Terminator)
 #define g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340 (g_ImageObject_0056D340.at_g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340)
 #define g_InGameUiCommandCursorCodeModeDispatchTable (g_ImageObject_0056F820.at_g_InGameUiCommandCursorCodeModeDispatchTable)
 #define g_InGameUiCommandBeginInteractionModeDispatchTable (g_ImageObject_0056FAA0.at_g_InGameUiCommandBeginInteractionModeDispatchTable)

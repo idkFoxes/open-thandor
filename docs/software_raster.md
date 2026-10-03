@@ -111,10 +111,15 @@ pixel's blend index instead: write depth when the alpha lane `>> 4 > 0x7f`. rast
 original with MM2 = 0 and with MM2 = ~0. Colour must then match exactly, and every depth dword
 must match one of the two runs. Keep the C behaviour; read it from the current function.
 
-The blend index is `(word)S.alpha >> 4`, which can be as large as 0xFFF. The original then reads
-past the 256-entry `g_SoftwareBlendAlphaFactors` and `g_SoftwareBlendInverseAlphaFactors` tables
-into the image data behind them. `Raster_BlendAlpha` indexes by pointer the same way. Do not
-clamp the index.
+The blend index is `(word)S.alpha >> 4`. The alpha lane is in -0x2000..0x1FFF, so the index is
+0..0x1FF (alpha overshoots 255, e.g. 256/257 from interpolation) or 0xE00..0xFFF (negative alpha).
+The original then reads past the 256-entry `g_SoftwareBlendAlphaFactors` and
+`g_SoftwareBlendInverseAlphaFactors` tables: the alpha table runs into the inverse table, the
+inverse table into 0x422720-0x422F1F (a vtable, scratch strings, code, UI callbacks and template),
+and the 0xE00.. indexes land in `g_FixedSineQ28`. `Raster_BlendAlpha` reproduces these reads
+through `Raster_OriginalBlendDword`: today's variables for the tables, the scratch strings and the
+sine table, and a constant table of the original dwords (pointers, code, UI data) for the rest.
+Do not clamp the index.
 
 ## Globals
 

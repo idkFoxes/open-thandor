@@ -255,21 +255,164 @@ static __inline uint16_t Raster_ShadeToPixel16(RasterColor color)
 
 /* ---- blending ---------------------------------------------------------------------------- */
 
+/* Original addresses of the two blend factor tables (256 rows of 8 bytes each). */
+#define RASTER_BLEND_ALPHA_FACTORS_ORIGINAL 0x00421720u
+#define RASTER_BLEND_INVERSE_FACTORS_ORIGINAL 0x00421F20u
+
+/* The original dwords at 0x00422720-0x00422F1F, as the inverse table rows 256..511 read them, with
+   pointers as their original values (fixed image base). Static in the original: the parts below are
+   never written at runtime, so constants give the same values.
+     00422720-00422767  g_UiGraphicsAdapterTextButtonVtable (18 function pointers)
+     00422768-004227A7  g_GraphicsAdapterFormatScratch0/1Utf16: written at runtime, read live from
+                        today's variables (g_SoftwareBlendOverreadRanges); the zeros here are unused
+     004227A8-0042299F  0x90 padding and the machine code of UiGraphicsAdapterTextButton_DrawFormattedAdapterText,
+                        UiRootCallbacks_Free, UiDisplaySettingsRoot_RefreshModeSelection,
+                        UiModalDialogRoot_BlockMissedPointerPress/Motion
+     004229A0-004229B3  g_UiDisplaySettingsRootCallbacks
+     004229B4-00422F1F  start of g_UiDisplaySettingsRootTemplate (only copied, never written) */
+static const uint32_t g_SoftwareBlendOverreadOriginalDwords[512] = {
+    /* 00422720 */ 0x004B2E40, 0x004B05A0, 0x004227B0, 0x004B0640, 0x004B31B0, 0x004B0760, 0x004B0770, 0x004B07C0,
+    /* 00422740 */ 0x004B07D0, 0x004B07E0, 0x004B07F0, 0x004B0800, 0x004B32C0, 0x004B08E0, 0x004B26E0, 0x004B2710,
+    /* 00422760 */ 0x004B09E0, 0x004B09F0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422780 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* 004227A0 */ 0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x57525350, 0x8BE58955, 0x43F7285D, 0x00000848,
+    /* 004227C0 */ 0x1C850F00, 0xFF000001, 0x000054B3, 0xA60EE800, 0xD08BFFFF, 0x804C43F7, 0x0F000000, 0x00006F85,
+    /* 004227E0 */ 0x4C43F700, 0x00000800, 0x00A2850F, 0x68680000, 0xFF004227, 0x016AF873, 0x006A0A6A, 0x15FF406A,
+    /* 00422800 */ 0x00402628, 0x42278868, 0xF473FF00, 0x0A6A016A, 0x406A006A, 0x262815FF, 0x68520040, 0x00422768,
+    /* 00422820 */ 0xD9E8006A, 0x52FFFF88, 0x42278868, 0xE8016A00, 0xFFFF88CC, 0x2475FF53, 0xFF2075FF, 0x75FF1C75,
+    /* 00422840 */ 0x061AE818, 0xEC890009, 0x5B5A5F5D, 0x0014C258, 0x42276868, 0xF873FF00, 0x0A6A016A, 0x406A006A,
+    /* 00422860 */ 0x262815FF, 0x68520040, 0x00422768, 0x8DE8006A, 0x53FFFF88, 0xFF2475FF, 0x75FF2075, 0x1875FF1C,
+    /* 00422880 */ 0x0905DBE8, 0x5DEC8900, 0x585B5A5F, 0x900014C2, 0xC1F87B8B, 0x3D0307E7, 0x004A8EA4, 0x0020C781,
+    /* 004228A0 */ 0x57520000, 0x55E8006A, 0x83FFFF88, 0xFFFFF0BF, 0x0E7500FF, 0x00011168, 0xA522E800, 0xF88BFFFF,
+    /* 004228C0 */ 0xC78106EB, 0x0000002A, 0x016A5752, 0xFF882FE8, 0x75FF53FF, 0x2075FF24, 0xFF1C75FF, 0x7DE81875,
+    /* 004228E0 */ 0x89000905, 0x5A5F5DEC, 0x14C2585B, 0x90909000, 0xE5895550, 0xFF0C75FF, 0x40200415, 0x5DEC8900,
+    /* 00422900 */ 0x0004C258, 0x90909090, 0x90909090, 0x90909090, 0x52515350, 0x8BE58955, 0x838B185D, 0x00000AD0,
+    /* 00422920 */ 0x0A10938B, 0x833B0000, 0x00000140, 0x933B0875, 0x00000144, 0x83893874, 0x00000140, 0x01449389,
+    /* 00422940 */ 0x52500000, 0x8EE815FF, 0xFF53004A, 0x000130B3, 0x34B3FF00, 0xFF000001, 0x000138B3, 0x3CB3FF00,
+    /* 00422960 */ 0xE8000001, 0x00001408, 0x1902E853, 0xEC890000, 0x5B595A5D, 0x0004C258, 0x90909090, 0x90909090,
+    /* 00422980 */ 0x9090C3F9, 0x90909090, 0x90909090, 0x90909090, 0x000008B8, 0x9090C300, 0x90909090, 0x90909090,
+    /* 004229A0 */ 0x004228F0, 0x00422910, 0x00422980, 0x00000000, 0x00422990, 0xFFFFFFFF, 0x00000078, 0xFFFFFFFF,
+    /* 004229C0 */ 0x004B4CC0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFF28, 0xFFFFFF70, 0x000000D8,
+    /* 004229E0 */ 0x00000090, 0x40000000, 0x40000000, 0x40000000, 0x40000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000021,
+    /* 00422A00 */ 0x00000007, 0x00000000, 0x00000000, 0x00000108, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422A20 */ 0x00000000, 0x00000000, 0x00000000, 0x000000D4, 0xFFFFFFFF, 0x00000000, 0x004B1D80, 0x00000000,
+    /* 00422A40 */ 0x00000000, 0x00000000, 0x00000000, 0x00000010, 0x000000E8, 0x00000070, 0x00000100, 0x00000000,
+    /* 00422A60 */ 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000002, 0x00000008, 0x0000020E,
+    /* 00422A80 */ 0x00000101, 0x00000000, 0x00000160, 0xFFFFFFFF, 0x00000000, 0x004B1D80, 0x00000000, 0x00000000,
+    /* 00422AA0 */ 0x00000000, 0x00000000, 0x00000080, 0x000000E8, 0x000000F0, 0x00000100, 0x00000000, 0x00000000,
+    /* 00422AC0 */ 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000028, 0x00000004, 0x00000200, 0x00000100,
+    /* 00422AE0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422B00 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000001BC, 0xFFFFFFFF, 0x00000000,
+    /* 00422B20 */ 0x004B9530, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000A0, 0x00000008, 0x000000F8,
+    /* 00422B40 */ 0x0000001C, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000,
+    /* 00422B60 */ 0x00000000, 0x00000000, 0x0000010C, 0x00000000, 0x00000218, 0xFFFFFFFF, 0x00000000, 0x004B9530,
+    /* 00422B80 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000018, 0x00000008, 0x00000078, 0x0000001C,
+    /* 00422BA0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000,
+    /* 00422BC0 */ 0x00000000, 0x0000010D, 0x00000000, 0x00000280, 0xFFFFFFFF, 0x00000000, 0x004B9530, 0x00000000,
+    /* 00422BE0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000018, 0x00000070, 0x00000078, 0x00000084, 0x00000000,
+    /* 00422C00 */ 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422C20 */ 0x0000010F, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000002E8, 0xFFFFFFFF, 0x00000000,
+    /* 00422C40 */ 0x00422720, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000010, 0x0000001C, 0x00000078,
+    /* 00422C60 */ 0x00000030, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000028,
+    /* 00422C80 */ 0x00000480, 0x00000201, 0x00000106, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000350,
+    /* 00422CA0 */ 0xFFFFFFFF, 0x00000000, 0x00422720, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000010,
+    /* 00422CC0 */ 0x00000030, 0x00000078, 0x00000044, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF,
+    /* 00422CE0 */ 0xFFFFFFFF, 0x00000028, 0x00000480, 0x00000202, 0x00000106, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422D00 */ 0x00000000, 0x000003B8, 0xFFFFFFFF, 0x00000000, 0x00422720, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422D20 */ 0x00000000, 0x00000010, 0x00000044, 0x00000078, 0x00000058, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422D40 */ 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000028, 0x00000480, 0x00000203, 0x00000106, 0x00000000,
+    /* 00422D60 */ 0x00000000, 0x00000000, 0x00000000, 0x00000420, 0xFFFFFFFF, 0x00000000, 0x00422720, 0x00000000,
+    /* 00422D80 */ 0x00000000, 0x00000000, 0x00000000, 0x00000010, 0x00000058, 0x00000078, 0x0000006C, 0x00000000,
+    /* 00422DA0 */ 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000028, 0x00000480, 0x00000204,
+    /* 00422DC0 */ 0x00000106, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000488, 0xFFFFFFFF, 0x00000000,
+    /* 00422DE0 */ 0x00422720, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000098, 0x0000001C, 0x000000F8,
+    /* 00422E00 */ 0x00000030, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000028,
+    /* 00422E20 */ 0x00000400, 0x00000205, 0x00000107, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000004F0,
+    /* 00422E40 */ 0xFFFFFFFF, 0x00000000, 0x00422720, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000098,
+    /* 00422E60 */ 0x00000030, 0x000000F8, 0x00000044, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF,
+    /* 00422E80 */ 0xFFFFFFFF, 0x00000028, 0x00000400, 0x00000206, 0x00000107, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422EA0 */ 0x00000000, 0x00000558, 0xFFFFFFFF, 0x00000000, 0x00422720, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422EC0 */ 0x00000000, 0x00000098, 0x00000044, 0x000000F8, 0x00000058, 0x00000000, 0x00000000, 0x00000000,
+    /* 00422EE0 */ 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000028, 0x00000400, 0x00000207, 0x00000107, 0x00000000,
+    /* 00422F00 */ 0x00000000, 0x00000000, 0x00000000, 0x000005C0, 0xFFFFFFFF, 0x00000000, 0x00422720, 0x00000000};
+
+/* What lies at an original address in the range a blend factor row can be read from. */
+typedef struct RasterOriginalRange {
+    uint32_t start; /* original address */
+    uint32_t end;   /* exclusive */
+    const void *data;
+} RasterOriginalRange;
+
+static const RasterOriginalRange g_SoftwareBlendOverreadRanges[] = {
+    {0x00421720, 0x00421F20, g_SoftwareBlendAlphaFactors},
+    {0x00421F20, 0x00422720, g_SoftwareBlendInverseAlphaFactors},
+    /* runtime scratch, read live; listed before the constant table that spans them */
+    {0x00422768, 0x00422788, g_GraphicsAdapterFormatScratch0Utf16},
+    {0x00422788, 0x004227A8, g_GraphicsAdapterFormatScratch1Utf16},
+    {0x00422720, 0x00422F20, g_SoftwareBlendOverreadOriginalDwords},
+    {0x004246A0, 0x004846A0, g_FixedSineQ28},
+};
+
+/* Original quirk: the blend index is the top 12 bits of the source alpha lane (PSRLQ 0x34) and is
+   never clamped. The lane is a PSRAW / PMULHW result in -0x2000..0x1FFF, so the index is 0..0x1FF
+   (an alpha that overshoots 255, e.g. 256 and 257 from interpolation at alpha 255) or 0xE00..0xFFF
+   (a negative alpha). The original then reads its rows of 8 bytes beyond the 256-row tables:
+     alpha table, index 256..511       -> g_SoftwareBlendInverseAlphaFactors
+     inverse table, index 256..511     -> 0x422720-0x422F1F: the text button vtable, two scratch
+                                          strings, code, the display settings callbacks and template
+     both tables, index 0xE00..0xFFF   -> g_FixedSineQ28 (0x428720-0x429F1F)
+   This returns the dword the original reads at such an address, from the first range of
+   g_SoftwareBlendOverreadRanges that holds it: the variables that hold it today (tables, scratch
+   strings, sine table) or the original constants g_SoftwareBlendOverreadOriginalDwords. */
+static uint32_t Raster_OriginalBlendDword(uint32_t address)
+{
+    unsigned i;
+    for (i = 0; i < sizeof g_SoftwareBlendOverreadRanges / sizeof g_SoftwareBlendOverreadRanges[0]; i++) {
+        const RasterOriginalRange *range = &g_SoftwareBlendOverreadRanges[i];
+        if (address >= range->start && address < range->end) {
+            return *(const uint32_t *)((const uint8_t *)range->data + (address - range->start));
+        }
+    }
+    return 0; /* not reachable with an index of 0..0x1FF or 0xE00..0xFFF */
+}
+
+/* The four word lanes of the 8-byte row at an original address (see Raster_OriginalBlendDword). */
+static void Raster_OriginalBlendRow(uint32_t address, short lanes[RASTER_LANE_COUNT])
+{
+    uint32_t low = Raster_OriginalBlendDword(address);
+    uint32_t high = Raster_OriginalBlendDword(address + 4);
+    lanes[0] = (short)low;
+    lanes[1] = (short)(low >> 16);
+    lanes[2] = (short)high;
+    lanes[3] = (short)(high >> 16);
+}
+
 /* Alpha blend of two Q4 colours: source * alpha + destination * (1 - alpha), both through the
    g_SoftwareBlendAlphaFactors / g_SoftwareBlendInverseAlphaFactors tables (PMULHW). The table index
-   is the top 12 bits of the source alpha lane, so a negative or overflowed alpha reads past the
-   256 entries into the image data behind them, as the original does. Result in Q4. */
+   is the top 12 bits of the source alpha lane; an index past the 256 rows reads the original bytes
+   behind the tables (Raster_OriginalBlendDword). Result in Q4. */
 static __inline RasterColor Raster_BlendAlpha(RasterColor sourceQ4, RasterColor destinationQ4)
 {
     unsigned index = (uint16_t)sourceQ4.lane[RASTER_LANE_ALPHA] >> 4;
-    const SoftwareRgbWordLanes *alpha = &g_SoftwareBlendAlphaFactors[0] + index;
-    const SoftwareRgbWordLanes *inverse = &g_SoftwareBlendInverseAlphaFactors[0] + index;
-    const short alphaLanes[RASTER_LANE_COUNT] = {(short)alpha->blue, (short)alpha->green, (short)alpha->red,
-                                                 (short)alpha->zero};
-    const short inverseLanes[RASTER_LANE_COUNT] = {(short)inverse->blue, (short)inverse->green, (short)inverse->red,
-                                                   (short)inverse->zero};
+    short alphaLanes[RASTER_LANE_COUNT];
+    short inverseLanes[RASTER_LANE_COUNT];
     RasterColor result;
     int i;
+    if (index < 256) {
+        const SoftwareRgbWordLanes *alpha = &g_SoftwareBlendAlphaFactors[index];
+        const SoftwareRgbWordLanes *inverse = &g_SoftwareBlendInverseAlphaFactors[index];
+        alphaLanes[0] = (short)alpha->blue;
+        alphaLanes[1] = (short)alpha->green;
+        alphaLanes[2] = (short)alpha->red;
+        alphaLanes[3] = (short)alpha->zero;
+        inverseLanes[0] = (short)inverse->blue;
+        inverseLanes[1] = (short)inverse->green;
+        inverseLanes[2] = (short)inverse->red;
+        inverseLanes[3] = (short)inverse->zero;
+    } else {
+        Raster_OriginalBlendRow(RASTER_BLEND_ALPHA_FACTORS_ORIGINAL + index * 8u, alphaLanes);
+        Raster_OriginalBlendRow(RASTER_BLEND_INVERSE_FACTORS_ORIGINAL + index * 8u, inverseLanes);
+    }
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
         short source = (short)(sourceQ4.lane[i] << 2);
         short destination = (short)(destinationQ4.lane[i] << 2);

@@ -16,10 +16,15 @@
 /* g_TerrainMaterialTextureSets: one texture set per terrain material, loaded from the secondary path with
    the suffix letter a..z (TerrainVisualResources_LoadPrimary). */
 #define TERRAIN_MATERIAL_TEXTURE_SET_COUNT 26
-/* Entries of g_TerrainLightingColorRampArgb256 and g_TerrainDirectionalLightColorLut
-   (TerrainLighting_BuildColorRampAndSetBaseColor). */
+/* g_TerrainDirectionalLightColorLut (TerrainLighting_BuildColorRampAndSetBaseColor,
+   FieldGridCell_ComputeDirectionalLightColor) is indexed by the signed Q8 dot product of the cell normal and
+   the light direction (-256..256) from its middle entry: the first RAMP_ENTRY_COUNT entries (dot -256..-1) hold
+   the shaded colour ramp, the following LIT_ENTRY_COUNT entries (dot 0..256) the base colour. */
 #define TERRAIN_LIGHTING_RAMP_ENTRY_COUNT 256
-#define TERRAIN_DIRECTIONAL_LIGHT_LUT_ENTRY_COUNT 257
+#define TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT 257
+#define TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX TERRAIN_LIGHTING_RAMP_ENTRY_COUNT /* entry of dot 0 */
+#define TERRAIN_DIRECTIONAL_LIGHT_LUT_ENTRY_COUNT \
+          (TERRAIN_LIGHTING_RAMP_ENTRY_COUNT + TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT) /* 513 */
 /* g_TerrainByteClampLookup (TerrainByteClampLookup_Initialize): 256 rows of 256 bytes, row = a cell's
    occupancy byte, column = its runtime byte +0x68. Each row moves the runtime byte by one fade step towards the
    row's target level (the levels FieldGrid_ClassifyCellFlagsToRuntimeByte writes directly): rows 0x00..0x7F

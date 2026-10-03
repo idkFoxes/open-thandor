@@ -482,9 +482,10 @@ void TerrainVisualResources_Shutdown(void)
 
 
 /* Address: 0x00505780.
-   Sets up the terrain lighting colours: g_TerrainLightingColorRampArgb256[i] = base + ramp * (256 - i) / 256
-   per colour channel (saturated at 0xFF, alpha taken from base), the directional-light LUT is filled with
-   the base colour and the secondary colour is stored in g_TerrainDirectionalLightSecondaryColor.
+   Sets up the terrain lighting colours: the shaded half of g_TerrainDirectionalLightColorLut gets
+   [i] = base + ramp * (256 - i) / 256 per colour channel (saturated at 0xFF, alpha taken from base), the lit
+   half (from TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX) is filled with the base colour and the secondary colour
+   is stored in g_TerrainDirectionalLightSecondaryColor.
 */
 void TerrainLighting_BuildColorRampAndSetBaseColor
           (PackedArgb32 secondaryColorArgb,PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb
@@ -496,7 +497,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
   uint32_t *rampEntryCursor;
   PackedArgb32 *lightLutCursor;
   
-  rampEntryCursor = g_TerrainLightingColorRampArgb256;
+  rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
     channelValue = ((rampStepColorArgb & ARGB8888_BLUE_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_BLUE_MASK);
@@ -507,7 +508,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     rampEntryCursor++;
     rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
-  rampEntryCursor = g_TerrainLightingColorRampArgb256;
+  rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
     channelValue = ((rampStepColorArgb & ARGB8888_GREEN_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_GREEN_MASK);
@@ -518,7 +519,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     rampEntryCursor++;
     rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
-  rampEntryCursor = g_TerrainLightingColorRampArgb256;
+  rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
     channelValue = ((rampStepColorArgb & ARGB8888_RED_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_RED_MASK);
@@ -529,7 +530,7 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     rampEntryCursor++;
     rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
-  rampEntryCursor = g_TerrainLightingColorRampArgb256;
+  rampEntryCursor = g_TerrainDirectionalLightColorLut;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
     *rampEntryCursor = *rampEntryCursor | baseColorArgb & ARGB8888_ALPHA_MASK;
@@ -537,8 +538,8 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
     rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
   g_TerrainDirectionalLightSecondaryColor = secondaryColorArgb;
-  lightLutCursor = g_TerrainDirectionalLightColorLut;
-  for (rampStepsRemaining = TERRAIN_DIRECTIONAL_LIGHT_LUT_ENTRY_COUNT; rampStepsRemaining != 0;
+  lightLutCursor = &g_TerrainDirectionalLightColorLut[TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX];
+  for (rampStepsRemaining = TERRAIN_DIRECTIONAL_LIGHT_LUT_LIT_ENTRY_COUNT; rampStepsRemaining != 0;
        rampStepsRemaining--) {
     *lightLutCursor = baseColorArgb;
     lightLutCursor++;

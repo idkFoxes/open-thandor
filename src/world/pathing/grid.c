@@ -991,7 +991,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
   searchRadius = searchRadius + (int)((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->footprintRadius;
   secondMaskHigh = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldX + targetWorldX) >> 1);
   secondMaskLow = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldY + targetWorldY) >> 1);
-  pairSlotsLeft = 32; /* capacity of g_EntityPathingPriorityPairs */
+  pairSlotsLeft = ENTITY_PATHING_PRIORITY_PAIR_CAPACITY; /* g_EntityPathingPriorityPairs points at g_EntityPathingPriorityPairStorage */
   g_EntityPathingPriorityPairCount = 0;
   pairCursor = g_EntityPathingPriorityPairs;
   do {

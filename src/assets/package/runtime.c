@@ -56,8 +56,16 @@ bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 
 
 /* Package_UpsertEntry: copies the PCK_ENTRY_PATH_UNITS code units of path (PckEntryHeader.path) to
-   nameDestination, two code units per dword. */
-static void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
+   nameDestination, two code units per dword.
+   Original quirk: the full field is copied (MOV ECX,0x7B; REP MOVSD = 492 bytes) whatever the path's length,
+   so for the short save-game entry names (u_army_hex_0050dfb4 ... u_oldunit_hex_0050e094, 0x12-0x1A bytes
+   each) it reads up to 0x1EC bytes past the string: through the following names and on into
+   g_InGameResourceRegistrationBusyCount and the variables after 0x0050E0AC, which change at run time, so the
+   original bytes cannot be kept by making the names one table. The extra bytes only land behind the
+   terminator in the path field of the entry header written to the save file; every reader stops at the
+   terminator (Package_FindEntryInMount / Package_FindEntryAcrossMounts compare up to it, Package_FindEntry's
+   copy is then used as a string), so they never reach a result. */
+static THANDOR_ALLOWS_OVERREAD void Package_CopyEntryPathDwords(uint8_t *nameDestination,uint16_t *path)
 
 {
   int dwordsRemaining;

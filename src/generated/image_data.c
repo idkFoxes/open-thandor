@@ -6277,11 +6277,10 @@ __declspec(align(4)) ImageObject_00501184 g_ImageObject_00501184 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00501184 gap */
 };
 
-/* 00501190 g_TerrainLightingColorRampArgb256 */
-__declspec(align(16)) PackedArgb32 g_TerrainLightingColorRampArgb256[256] = {0};
-
-/* 00501590 g_TerrainDirectionalLightColorLut */
-__declspec(align(16)) PackedArgb32 g_TerrainDirectionalLightColorLut[257] = {0};
+/* 00501190 g_TerrainDirectionalLightColorLut: entries 0..255 the shaded colour ramp (originally
+   g_TerrainLightingColorRampArgb256), entries 256..512 the lit half (00501590); indexed by the signed dot
+   product -256..256 from entry 256 */
+__declspec(align(16)) PackedArgb32 g_TerrainDirectionalLightColorLut[513] = {0};
 
 /* 00501994 g_TerrainDirectionalLightSecondaryColor */
 __declspec(align(4)) uint32_t g_TerrainDirectionalLightSecondaryColor = 0;
@@ -8420,23 +8419,10 @@ __declspec(align(4)) ImageObject_005367CC g_ImageObject_005367CC = {
 };
 
 /* 005367D0 g_EntityPathingPriorityPairs */
-__declspec(align(16)) EntityPathingPriorityPair *g_EntityPathingPriorityPairs = (void *)&g_EntityPathingPriorityPairStorage;
+__declspec(align(16)) EntityPathingPriorityPair *g_EntityPathingPriorityPairs = g_EntityPathingPriorityPairStorage;
 
-__declspec(align(4)) ImageObject_005367D4 g_ImageObject_005367D4 = {
-    {0}, /* 005367D4 g_EntityPathingPriorityPairStorage */
-};
-
-__declspec(align(8)) ImageObject_005367D8 g_ImageObject_005367D8 = {
-    {0}, /* 005367D8 g_EntityPathingPriorityPairStorage[0].priority */
-};
-
-__declspec(align(4)) ImageObject_005367DC g_ImageObject_005367DC = {
-    {0}, /* 005367DC g_EntityPathingPriorityPairStorage[1].entity */
-};
-
-__declspec(align(16)) ImageObject_005367E0 g_ImageObject_005367E0 = {
-    {0}, /* 005367E0 g_EntityPathingPriorityPairStorage[1].priority */
-};
+/* 005367D4 g_EntityPathingPriorityPairStorage (Ghidra had split it at [0].priority, [1].entity, [1].priority) */
+__declspec(align(4)) EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY] = {0};
 
 /* 005368D4 g_EntityPathingPriorityPairCount */
 __declspec(align(4)) uint32_t g_EntityPathingPriorityPairCount = 0;
@@ -15813,8 +15799,9 @@ __declspec(align(4)) ImageObject_005679AC g_ImageObject_005679AC = {
     {0x00, 0x00, 0x00, 0x90}, /* 005679AC gap */
 };
 
-/* 005679B0 g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 */
-__declspec(align(16)) UiCommandDispatchRecord g_InGameCommandDispatchRecords_00_Code00030073_Modifier33[63] = {
+/* 005679B0 g_InGameCommandDispatchRecords: 63 key command records and the terminator record (commandCode 0) at
+   00567CA4 that ends the dispatcher's scan */
+__declspec(align(16)) UiCommandDispatchRecord g_InGameCommandDispatchRecords[64] = {
     /*  0 */ {.commandCode = 0x30073, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567F60},
     /*  1 */ {.commandCode = 0x30073, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567FC0},
     /*  2 */ {.commandCode = 0x30073, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568020},
@@ -15877,13 +15864,8 @@ __declspec(align(16)) UiCommandDispatchRecord g_InGameCommandDispatchRecords_00_
     /* 59 */ {.commandCode = 0x30076, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x5681B0},
     /* 60 */ {.commandCode = 0x30063, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568190},
     /* 61 */ {.commandCode = 0x10015, .continuationEntryAddress = 0x567EA0},
-    /* 62 */ {.commandCode = 0x30064, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568130}};
-
-__declspec(align(4)) ImageObject_00567CA4 g_ImageObject_00567CA4 = {
-    /* 00567CA4 g_InGameCommandDispatchRecords_Terminator */
-    {
-        0x00000000, 0x90909090, 0x90909090},
-};
+    /* 62 */ {.commandCode = 0x30064, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568130},
+    /* 63 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* 00567CA4 terminator: commandCode 0, the rest is the original's NOP fill */
 
 /* 0056A604 g_InGameSessionStartedNetworked */
 __declspec(align(4)) uint8_t g_InGameSessionStartedNetworked = 0;
@@ -18962,8 +18944,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004FFC78, 0x004FFC80, (const uint8_t *)&g_ImageObject_004FFC78},
     {0x004FFC80, 0x005004A0, (const uint8_t *)&g_TerrainProjectedRowSpans},
     {0x00501184, 0x00501190, (const uint8_t *)&g_ImageObject_00501184},
-    {0x00501190, 0x00501590, (const uint8_t *)&g_TerrainLightingColorRampArgb256},
-    {0x00501590, 0x00501994, (const uint8_t *)&g_TerrainDirectionalLightColorLut},
+    {0x00501190, 0x00501994, (const uint8_t *)&g_TerrainDirectionalLightColorLut},
     {0x00501994, 0x00501998, (const uint8_t *)&g_TerrainDirectionalLightSecondaryColor},
     {0x00501998, 0x005019A4, (const uint8_t *)&g_TerrainLightDirection},
     {0x005019A4, 0x005019A8, (const uint8_t *)&g_TerrainByteClampLookup},
@@ -19304,10 +19285,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00533EE0, 0x00533EE4, (const uint8_t *)&g_GridPathUnreachableRegionReferenceRow},
     {0x005367CC, 0x005367D0, (const uint8_t *)&g_ImageObject_005367CC},
     {0x005367D0, 0x005367D4, (const uint8_t *)&g_EntityPathingPriorityPairs},
-    {0x005367D4, 0x005367D8, (const uint8_t *)&g_ImageObject_005367D4},
-    {0x005367D8, 0x005367DC, (const uint8_t *)&g_ImageObject_005367D8},
-    {0x005367DC, 0x005367E0, (const uint8_t *)&g_ImageObject_005367DC},
-    {0x005367E0, 0x005368D4, (const uint8_t *)&g_ImageObject_005367E0},
+    {0x005367D4, 0x005368D4, (const uint8_t *)&g_EntityPathingPriorityPairStorage},
     {0x005368D4, 0x005368D8, (const uint8_t *)&g_EntityPathingPriorityPairCount},
     {0x00536F08, 0x00536F10, (const uint8_t *)&g_ImageObject_00536F08},
     {0x00536F10, 0x00536F54, (const uint8_t *)&g_GridTerrainClassThresholds},
@@ -19667,8 +19645,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00567110, 0x005671C4, (const uint8_t *)&g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30},
     {0x005671C4, 0x005671D0, (const uint8_t *)&g_ImageObject_005671C4},
     {0x005679AC, 0x005679B0, (const uint8_t *)&g_ImageObject_005679AC},
-    {0x005679B0, 0x00567CA4, (const uint8_t *)&g_InGameCommandDispatchRecords_00_Code00030073_Modifier33},
-    {0x00567CA4, 0x00567CB0, (const uint8_t *)&g_ImageObject_00567CA4},
+    {0x005679B0, 0x00567CB0, (const uint8_t *)&g_InGameCommandDispatchRecords},
     {0x0056A604, 0x0056A605, (const uint8_t *)&g_InGameSessionStartedNetworked},
     {0x0056D33C, 0x0056D340, (const uint8_t *)&g_ImageObject_0056D33C},
     {0x0056D340, 0x0056D380, (const uint8_t *)&g_ImageObject_0056D340},

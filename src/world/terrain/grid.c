@@ -3124,14 +3124,15 @@ void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
   /* packed as azimuth (low word) | elevation (high word) */
   normalDirection = FixedMath_DirectionFromAnglesQ28
                     ((int)cell->triangle0NormalAngles >> 16,cell->triangle0NormalAngles & FIXED_ANGLE16_MASK);
-  /* the signed Q8 dot product indexes -256..256: g_TerrainLightingColorRampArgb256 lies directly
-     before this table and holds the shaded half */
+  /* the signed Q8 dot product (-256..256) indexes the table from its middle entry; the shaded ramp is the
+     lower half */
   directionalLightColor =
-       ((PackedArgb32 *)g_TerrainDirectionalLightColorLut)
-       [(int)((uint64_t)((int64_t)(int)normalDirection.x * (int64_t)g_TerrainLightDirection.x) >> 32) +
-        (int)((uint64_t)((int64_t)(int)normalDirection.y * (int64_t)g_TerrainLightDirection.y) >> 32) +
-        (int)((uint64_t)((int64_t)(int)normalDirection.z * (int64_t)g_TerrainLightDirection.z) >> 32) >>
-        16];
+       g_TerrainDirectionalLightColorLut
+       [TERRAIN_DIRECTIONAL_LIGHT_LUT_ZERO_INDEX +
+        (((int)((uint64_t)((int64_t)(int)normalDirection.x * (int64_t)g_TerrainLightDirection.x) >> 32) +
+          (int)((uint64_t)((int64_t)(int)normalDirection.y * (int64_t)g_TerrainLightDirection.y) >> 32) +
+          (int)((uint64_t)((int64_t)(int)normalDirection.z * (int64_t)g_TerrainLightDirection.z) >> 32)) >>
+         16)];
   cell->secondarySurfaceDirectionalLightColor = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor = directionalLightColor;
 }
