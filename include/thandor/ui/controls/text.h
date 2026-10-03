@@ -372,4 +372,31 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
 void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiTextButtonControl *control);
 
+extern UiNodeVtable g_UiGraphicsAdapterTextButtonVtable; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
+extern UiNodeVtable g_UiFramedTextButtonControlVtable; /* 004B1D80 g_UiFramedTextButtonControlVtable (framed text button) */
+extern UiNodeVtable g_UiWindowControlVtable; /* 004B2740 g_UiWindowControlVtable */
+extern UiNodeVtable g_UiTextButtonControlVtable; /* 004B2CE0 g_UiTextButtonControlVtable (text button) */
+extern UiNodeVtable g_UiImagePanelControlVtable; /* 004B3770 g_UiImagePanelControlVtable */
+extern UiNodeVtable g_UiNumericTextEditControlVtable; /* 004B58A0 g_UiNumericTextEditControlVtable */
+extern UiNodeVtable g_UiPathTextEditControlVtable; /* 004B6800 g_UiPathTextEditControlVtable */
+extern UiNodeVtable g_UiRequiredTextEditControlVtable; /* 004B7050 g_UiRequiredTextEditControlVtable */
+extern UiNodeVtable g_UiTextListControlVtable; /* 004B9E40 g_UiTextListControlVtable */
+extern UiNodeVtable g_UiNineSlicePanelControlVtable; /* 004BCC30 g_UiNineSlicePanelControlVtable */
+extern UiNodeVtable g_UiNumericPairTextButtonVtable; /* 00515610 g_UiNumericPairTextButtonVtable */
+extern UiNodeVtable g_UiPayloadPairTextButtonVtable; /* 00515730 g_UiPayloadPairTextButtonVtable */
+extern UiNodeVtable g_UiFormattedContainerVtable; /* 005157E0 g_UiFormattedContainerVtable */
+extern UiNodeVtable g_UiArmyMetricsPanelVtable; /* 00516CC0 g_UiArmyMetricsPanelVtable */
+extern UiNodeVtable g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable; followed by 0x90 code alignment fill */
+
+extern UiTooltipState g_UiTooltipState; /* 004AF1E0 g_UiTooltipState */
+extern AudioMixerGainQ15 g_UiSoundGainQ15; /* 004B0E44 g_UiSoundGainQ15 */
+extern const UiFrameDelayFrames g_UiListActivationPulseFrames; /* 004B0E60 g_UiListActivationPulseFrames: UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+extern const uint32_t g_UiTextStyleNormal; /* 004B0E78 g_UiTextStyleNormal */
+extern const int32_t g_UiWindowFrameInset; /* 004B0E8C g_UiWindowFrameInset */
+extern const uint32_t g_UiListTextStyle; /* 004B0E90 g_UiListTextStyle */
+
+/* Read live by the blend overread emulation (graphics/backend/software_raster.h). */
+extern uint16_t g_GraphicsAdapterFormatScratch0Utf16[16];
+extern uint16_t g_GraphicsAdapterFormatScratch1Utf16[16];
+
 #endif /* THANDOR_UI_CONTROLS_TEXT_H */

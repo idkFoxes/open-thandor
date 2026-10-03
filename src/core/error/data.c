@@ -62,9 +62,9 @@ __declspec(align(4)) FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000015},
-        { /* +00B4 okButton g_UiNodeVtable_004B1D80 */
+        { /* +00B4 okButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .leftOffset = -108, .topOffset = -32, .rightOffset = -12, .bottomOffset = -6,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},

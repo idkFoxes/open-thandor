@@ -35,17 +35,17 @@ __declspec(align(8)) FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x21},
         {
             0x00000003},
-        { /* +0058 revertButton g_UiNodeVtable_004B1D80 */
+        { /* +0058 revertButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .leftOffset = 16, .topOffset = -32, .rightOffset = 112, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
         {
             0x00000008, 0x0000020D, 0x00000101},
-        { /* +00B4 keepModeButton g_UiNodeVtable_004B1D80 */
+        { /* +00B4 keepModeButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x110), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .leftOffset = 128, .topOffset = -32, .rightOffset = 240, .bottomOffset = -8,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},

@@ -93,4 +93,6 @@ void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSou
 /* 0x004175F0 */
 void SoundBackendDisabled_StopAllVoices(void);
 
+extern SoundPlayVoiceProc *g_SoundPlayOneShot; /* 00417348 g_SoundPlayOneShot */
+
 #endif /* THANDOR_AUDIO_BACKEND_RUNTIME_H */

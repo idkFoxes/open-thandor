@@ -10,6 +10,29 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004A8E70 g_FramebufferAccess */
+SoftwareFramebufferAccess *g_FramebufferAccess = 0;
+
+/* 004A8E84 g_FramebufferRowStrideBytes */
+uint32_t g_FramebufferRowStrideBytes = 0;
+
+/* 004A8E8C g_FramebufferHeight */
+uint32_t g_FramebufferHeight = 0;
+
+/* 004A8EE0 g_GraphicsFramebufferPresent */
+GraphicsFramebufferPresentProc *g_GraphicsFramebufferPresent = 0;
+
+/* 004A8EEC g_GraphicsFramebufferBeginAccess */
+GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess = (void *)GraphicsFramebuffer_BeginAccessStub;
+
+/* 004A8EF0 g_GraphicsFramebufferEndAccess */
+GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess = (void *)GraphicsFramebuffer_EndAccessStub;
+
+/* 004A8F30 g_GraphicsFramebufferFillRectArgb */
+GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb = 0;
+
 /* Implementation ownership: graphics/resources/framebuffer. */
 
 /* Address: 0x004A9250.

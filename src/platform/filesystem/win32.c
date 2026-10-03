@@ -9,6 +9,14 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntries */
+FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries = 0;
+
+/* 0040B218 g_FileSystemValidateDos83Path */
+FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path = 0;
+
 /* Implementation ownership: platform/filesystem/win32. */
 
 /* Copies the zero-terminated name at the start of each of the entryCount enumeration records into the

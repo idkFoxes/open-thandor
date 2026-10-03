@@ -8,6 +8,237 @@
 #include <thandor/ui/controls/misc.h>
 #include <thandor/thandor.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004229B4 g_UiDisplaySettingsRootTemplate: the display settings dialog, copied and linked by
+   UiDisplaySettings_OpenAndPopulateModeSelection. */
+DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
+    .displaySettingsWindow = { /* g_UiResizableWindowControlVtable */
+        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = DISPLAY_SETTINGS_LINK(cancelButton), .parent = UI_TEMPLATE_NO_LINK,
+        .vtable = (void *)&g_UiResizableWindowControlVtable,
+        .leftOffset = -216, .topOffset = -144, .rightOffset = 216, .bottomOffset = 144,
+        .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET | 0x1},
+    .displaySettingsWindow_fields = {.rootFlags = UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME | UI_ROOT_TITLE_BAR, .titleTextResourceId = TEXT_ID_DISPLAY_SETTINGS_TITLE},
+    .cancelButton = { /* g_UiFramedTextButtonControlVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(applyButton), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFramedTextButtonControlVtable,
+        .leftOffset = 16, .topOffset = 232, .rightOffset = 112, .bottomOffset = 256,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_PREFERRED_FOCUS_TARGET},
+    .cancelButton_fields = {.stateFlags = 0x8, .actionId = UI_DISPLAY_MODE_ACTION_CANCEL, .textResourceId = TEXT_ID_CANCEL},
+    .applyButton = { /* g_UiFramedTextButtonControlVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFramedTextButtonControlVtable,
+        .leftOffset = 128, .topOffset = 232, .rightOffset = 240, .bottomOffset = 256,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .applyButton_fields = {.button = {.stateFlags = UI_BUTTON_FRAME_INSET, .actionId = UI_DISPLAY_MODE_ACTION_APPLY, .textResourceId = TEXT_ID_OK}},
+    .resolutionHeading = { /* g_UiFocusProxyControlVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFocusProxyControlVtable,
+        .leftOffset = 160, .topOffset = 8, .rightOffset = 248, .bottomOffset = 28,
+        .layoutWidth = -1, .layoutHeight = -1},
+    .resolutionHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_RESOLUTION_HEADING},
+    .colorDepthHeading = { /* g_UiFocusProxyControlVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(adapterHeading), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFocusProxyControlVtable,
+        .leftOffset = 24, .topOffset = 8, .rightOffset = 120, .bottomOffset = 28,
+        .layoutWidth = -1, .layoutHeight = -1},
+    .colorDepthHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING},
+    .adapterHeading = { /* g_UiFocusProxyControlVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFocusProxyControlVtable,
+        .leftOffset = 24, .topOffset = 112, .rightOffset = 120, .bottomOffset = 132,
+        .layoutWidth = -1, .layoutHeight = -1},
+    .adapterHeading_fields = {.textResourceId = TEXT_ID_DISPLAY_ADAPTER_HEADING},
+    .colorDepthOption1_prefix = {0},
+    .colorDepthOption1 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption2), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 28, .rightOffset = 120, .bottomOffset = 48,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .colorDepthOption1_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
+    .colorDepthOption2_prefix = {0},
+    .colorDepthOption2 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption3), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 48, .rightOffset = 120, .bottomOffset = 68,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .colorDepthOption2_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + 1, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
+    .colorDepthOption3_prefix = {0},
+    .colorDepthOption3 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorDepthOption4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 68, .rightOffset = 120, .bottomOffset = 88,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .colorDepthOption3_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + 2, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
+    .colorDepthOption4_prefix = {0},
+    .colorDepthOption4 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 88, .rightOffset = 120, .bottomOffset = 108,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .colorDepthOption4_fields = {.stateFlags = UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER | UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + 3, .textResourceId = TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION},
+    .resolutionOption1_prefix = {0},
+    .resolutionOption1 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption2), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 152, .topOffset = 28, .rightOffset = 248, .bottomOffset = 48,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .resolutionOption1_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
+    .resolutionOption2_prefix = {0},
+    .resolutionOption2 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption3), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 152, .topOffset = 48, .rightOffset = 248, .bottomOffset = 68,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .resolutionOption2_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 1, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
+    .resolutionOption3_prefix = {0},
+    .resolutionOption3 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 152, .topOffset = 68, .rightOffset = 248, .bottomOffset = 88,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .resolutionOption3_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 2, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
+    .resolutionOption4_prefix = {0},
+    .resolutionOption4 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption5), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 152, .topOffset = 88, .rightOffset = 248, .bottomOffset = 108,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .resolutionOption4_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 3, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
+    .resolutionOption5_prefix = {0},
+    .resolutionOption5 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption6), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 152, .topOffset = 108, .rightOffset = 248, .bottomOffset = 128,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .resolutionOption5_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 4, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
+    .resolutionOption6_prefix = {0},
+    .resolutionOption6 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption7), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 152, .topOffset = 128, .rightOffset = 248, .bottomOffset = 148,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .resolutionOption6_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 5, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
+    .resolutionOption7_prefix = {0},
+    .resolutionOption7 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(resolutionOption8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 152, .topOffset = 148, .rightOffset = 248, .bottomOffset = 168,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .resolutionOption7_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 6, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
+    .resolutionOption8_prefix = {0},
+    .resolutionOption8 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption1), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 152, .topOffset = 168, .rightOffset = 248, .bottomOffset = 188,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .resolutionOption8_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + 7, .textResourceId = TEXT_ID_DISPLAY_RESOLUTION_OPTION},
+    .adapterOption1_prefix = {0},
+    .adapterOption1 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption2), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 132, .rightOffset = 144, .bottomOffset = 152,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+    .adapterOption1_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
+    .adapterOption2_prefix = {0},
+    .adapterOption2 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption3), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 152, .rightOffset = 144, .bottomOffset = 172,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+    .adapterOption2_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + 1, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
+    .adapterOption3_prefix = {0},
+    .adapterOption3 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 172, .rightOffset = 144, .bottomOffset = 192,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .adapterOption3_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + 2, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
+    .adapterOption4_prefix = {0},
+    .adapterOption4 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(adapterOption5), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 192, .rightOffset = 144, .bottomOffset = 212,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .adapterOption4_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + 3, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
+    .adapterOption5_prefix = {0},
+    .adapterOption5 = { /* g_UiGraphicsAdapterTextButtonVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorScaleSliderFrame), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
+        .leftOffset = 16, .topOffset = 212, .rightOffset = 144, .bottomOffset = 232,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_SUPPRESSED | UI_NODE_FALLBACK_FOCUS_TARGET},
+    .adapterOption5_fields = {.stateFlags = UI_BUTTON_HIDDEN_WHILE_SUPPRESSED | UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME, .actionId = UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + 4, .textResourceId = TEXT_ID_DISPLAY_ADAPTER_OPTION},
+    .colorScaleSliderFrame = { /* g_UiFocusProxyControlVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorBiasSliderFrame), .firstChild = DISPLAY_SETTINGS_LINK(colorScaleSlider), .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFocusProxyControlVtable,
+        .leftOffset = 256, .topOffset = 8, .rightOffset = 336, .bottomOffset = 208,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+    .colorScaleSliderFrame_fields = {.labelFlags = UI_LABEL_CENTER_X, .focusChild = DISPLAY_SETTINGS_LINK(colorScaleSlider), .textResourceId = TEXT_ID_DISPLAY_COLOR_SCALE},
+    .colorScaleSlider = { /* g_UiRangeSliderControlVtable */
+        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(colorScaleSliderFrame),
+        .vtable = (void *)&g_UiRangeSliderControlVtable,
+        .leftOffset = -8, .topOffset = 24, .rightOffset = 8,
+        .leftAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x80000000,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+    .colorScaleSlider_fields = {.sliderFlags = UI_RANGE_SLIDER_VERTICAL, .minimumValue = 32768, .maximumValue = 0x20000, .value = 0, .stepValue = 2048, .actionId = UI_ACTION_NONE},
+    .colorBiasSliderFrame = { /* g_UiFocusProxyControlVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorScaleValueText), .firstChild = DISPLAY_SETTINGS_LINK(colorBiasSlider), .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFocusProxyControlVtable,
+        .leftOffset = 336, .topOffset = 8, .rightOffset = 416, .bottomOffset = 208,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+    .colorBiasSliderFrame_fields = {.labelFlags = UI_LABEL_CENTER_X, .focusChild = DISPLAY_SETTINGS_LINK(colorBiasSlider), .textResourceId = TEXT_ID_DISPLAY_COLOR_BIAS},
+    .colorBiasSlider = { /* g_UiRangeSliderControlVtable */
+        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(colorBiasSliderFrame),
+        .vtable = (void *)&g_UiRangeSliderControlVtable,
+        .leftOffset = -8, .topOffset = 24, .rightOffset = 8,
+        .leftAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x80000000,
+        .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = UI_NODE_FALLBACK_FOCUS_TARGET},
+    .colorBiasSlider_fields = {.sliderFlags = UI_RANGE_SLIDER_VERTICAL, .minimumValue = -4194304, .maximumValue = 0x400000, .value = 0, .stepValue = 0x20000, .actionId = UI_ACTION_NONE},
+    .colorScaleValueText = { /* g_UiFocusProxyControlVtable */
+        .nextSibling = DISPLAY_SETTINGS_LINK(colorBiasValueText), .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFocusProxyControlVtable,
+        .leftOffset = 256, .topOffset = 208, .rightOffset = 336, .bottomOffset = 228,
+        .layoutWidth = -1, .layoutHeight = -1},
+    .colorScaleValueText_fields = {.labelFlags = UI_LABEL_CENTER_X | UI_LABEL_TEXT_IS_STREAM},
+    .colorBiasValueText = { /* g_UiFocusProxyControlVtable */
+        .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = DISPLAY_SETTINGS_LINK(displaySettingsWindow),
+        .vtable = (void *)&g_UiFocusProxyControlVtable,
+        .leftOffset = 336, .topOffset = 208, .rightOffset = 416, .bottomOffset = 228,
+        .layoutWidth = -1, .layoutHeight = -1},
+    .colorBiasValueText_fields = {.label = {.labelFlags = UI_LABEL_CENTER_X | UI_LABEL_TEXT_IS_STREAM}}
+};
+_Static_assert(sizeof(DisplaySettingsUiImage) == 0xBD4, "DisplaySettingsUiImage size");
+
+/* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
+static UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20 = {
+    .handlers = {
+        /*  0 */ (void *)UiDisplayModeAction_ApplyPendingMode,
+        /*  1 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
+        /*  2 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
+        /*  3 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
+        /*  4 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
+        /*  5 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
+        /*  6 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
+        /*  7 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
+        /*  8 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
+        /*  9 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
+        /* 10 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
+        /* 11 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
+        /* 12 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
+        /* 13 */ (void *)UiDisplayModeAction_RevertAndReopenSettings,
+        /* 14 */ (void *)UiDisplayModeAction_CancelAndRebuildPixelPacking,
+        /* 15 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+        /* 16 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+        /* 17 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+        /* 18 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+        /* 19 */ (void *)UiDisplayModeAction_UpdateAdapterSelection
+    }};
+
+/* 004235D8 g_UiDisplayModeDistinctValueScratch: the ascending list of distinct values (bit depths,
+   resolutions, adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
+static DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8] = {0};
+
 /* Implementation ownership: ui/controls/misc. */
 
 /* Address: 0x00422910.
@@ -167,7 +398,7 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
 
 
 /* Address: 0x004BC8B0.
-   nonRightDrag of the image control (g_UiNodeVtable_004BC570): only for an image in persistent activation
+   nonRightDrag of the image control (g_UiImageControlVtable): only for an image in persistent activation
    mode, whose children act like a menu. Moving onto another child hands the pointer over: the new child
    gets a synthetic press and the drag, becomes activeChild, and the previous one gets a synthetic drag and
    release far outside (UI_POINTER_FAR_OUTSIDE). A drag over the current child is simply forwarded.
@@ -220,7 +451,7 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
 
 
 /* Address: 0x004BCB50.
-   tick of the image control (g_UiNodeVtable_004BC570): when the right mouse button goes down (latched in
+   tick of the image control (g_UiImageControlVtable): when the right mouse button goes down (latched in
    UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED until it is released), an opaque child under the cursor gets a
    release, press and drag at the current cursor position, so that it re-evaluates the pointer;
    UI_IMAGE_CONTROL_PRESS_STARTED is cleared then.
@@ -591,7 +822,7 @@ void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSlider
 
 
 /* Address: 0x004BC5C0.
-   drawClipped of the image control (g_UiNodeVtable_004BC570): in persistent activation mode the children
+   drawClipped of the image control (g_UiImageControlVtable): in persistent activation mode the children
    are drawn first, then the image itself: alternateSubresource while selected, else normalSubresource. An
    image with UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE is only drawn while selected.
 */
@@ -629,7 +860,7 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate c
 
 
 /* Address: 0x004BC6E0.
-   nonRightPress of the image control (g_UiNodeVtable_004BC570): plays the pointer sound
+   nonRightPress of the image control (g_UiImageControlVtable): plays the pointer sound
    (UI_IMAGE_CONTROL_POINTER_SOUND, unless the image is already OPEN), drops the active child and the hover
    target, then toggles: a press on an opaque pixel of an already selected image clears
    UI_IMAGE_CONTROL_PRESS_STATE_BITS, any other press sets them.
@@ -684,7 +915,7 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
 
 
 /* Address: 0x004BC7E0.
-   nonRightRelease of the image control (g_UiNodeVtable_004BC570). A release while
+   nonRightRelease of the image control (g_UiImageControlVtable). A release while
    UI_IMAGE_CONTROL_PRESSED_ON_IMAGE is set keeps it open: UI_IMAGE_CONTROL_OPEN, and the image becomes
    g_UiImageControlHoverTarget. Otherwise an active child gets the release first, and the image stays open
    only if it had one and OPEN was not yet set or PRESS_STARTED is set; else it closes: hover target
@@ -1172,3 +1403,69 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   return;
 }
 
+
+/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004B3EF0 g_UiRangeSliderControlVtable */
+UiNodeVtable g_UiRangeSliderControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiRangeSliderControl_DrawTrackAndThumb,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiRangeSliderControl_BeginThumbDrag,
+        .nonRightRelease = (void *)UiRangeSliderControl_EndThumbDrag,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiRangeSliderControl_UpdateValueFromPointer,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiRangeSliderControl_HandleKeyboard,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiRangeSliderControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiRangeSliderControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiRangeSliderControl_HandlePointerWheel};
+
+/* 004BC570 g_UiImageControlVtable */
+UiNodeVtable g_UiImageControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiImageControl_DrawClipped,
+        .layout = (void *)UiImageControl_LayoutChildrenToParent,
+        .nonRightPress = (void *)UiImageControl_NonRightPress,
+        .nonRightRelease = (void *)UiImageControl_NonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiImageControl_NonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiImageControl_PointerMove,
+        .hitTest = (void *)UiImageControl_HitTestOpaque,
+        .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiImageControl_TickHover,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 00517DE0 g_UiTransferProgressGaugeVtable */
+UiNodeVtable g_UiTransferProgressGaugeVtable = {
+    .relocate = (void *)UiContainer_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiContainer_HitTestChildren,
+    .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiContainer_SuppressActionId,
+    .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+    .tick = (void *)UiNode_DefaultTick,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};

@@ -133,4 +133,7 @@ void Keyboard_OnChar(KeyboardCharacterCode character);
 /* 0x004172B0 */
 uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit);
 
+extern uint32_t g_CursorUseOverridePosition; /* 00416818 g_CursorUseOverridePosition */
+extern UiPointerWheelDelta g_CursorWheelDelta; /* 00416830 g_CursorWheelDelta */
+
 #endif /* THANDOR_PLATFORM_INPUT_DEVICES_H */

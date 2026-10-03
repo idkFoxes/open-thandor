@@ -266,63 +266,63 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             0x00000000, (uint32_t)FrontendResultsGraph_DrawFactionWeightLane1Column,
             0x00000008, 0x00000000, 0x00000062, 0x00000055, 0x00000002, 0x0000000C, 0x0000000D, 0x0000000E,
             0x0000000F, 0x00000010, 0x00000011, 0x00000004},
-        { /* +0584 resultsTabMilitary g_UiNodeVtable_004B1D80 */
+        { /* +0584 resultsTabMilitary g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5E4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x350),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -304, .topOffset = 136, .rightOffset = -192, .bottomOffset = 160,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000081, 0x0000101C, 0x000021B1},
-        { /* +05E4 resultsTabEconomy g_UiNodeVtable_004B1D80 */
+        { /* +05E4 resultsTabEconomy g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x644), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x350),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -160, .topOffset = 136, .rightOffset = -48, .bottomOffset = 160,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000081, 0x0000101C, 0x000021B0},
-        { /* +0644 resultsTabThird g_UiNodeVtable_004B1D80 */
+        { /* +0644 resultsTabThird g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6A4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x350),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -16, .topOffset = 136, .rightOffset = 96, .bottomOffset = 160,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000083, 0x0000101C, 0x000021AF},
-        { /* +06A4 resultsContinueButton g_UiNodeVtable_004B1D80 */
+        { /* +06A4 resultsContinueButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x704), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x350),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 192, .topOffset = 136, .rightOffset = 304, .bottomOffset = 160,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x0000008C, 0x0000101B, 0x000021AE},
-        { /* +0704 resultsSecondaryExitButton g_UiNodeVtable_004B1D80 */
+        { /* +0704 resultsSecondaryExitButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x764), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x350),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 192, .topOffset = 104, .rightOffset = 304, .bottomOffset = 128,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000080, 0x00001025, 0x000021C5},
-        { /* +0764 resultsChartModeButtonA g_UiNodeVtable_004B1D80 */
+        { /* +0764 resultsChartModeButtonA g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7C4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x350),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -304, .topOffset = 104, .rightOffset = -192, .bottomOffset = 128,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000083, 0x00001026, 0x000021C6},
-        { /* +07C4 resultsChartModeButtonB g_UiNodeVtable_004B1D80 */
+        { /* +07C4 resultsChartModeButtonB g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x824), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x350),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -160, .topOffset = 104, .rightOffset = -48, .bottomOffset = 128,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -467,36 +467,36 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000001, 0x00000000, 0x000021CC},
-        { /* +0F24 missionHelpCloseButton g_UiNodeVtable_004B1D80 */
+        { /* +0F24 missionHelpCloseButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0xF84), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xE10),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 96, .topOffset = 128, .rightOffset = 208, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000088, 0x00001020, 0x000021CD},
-        { /* +0F84 missionHelpBriefingTab g_UiNodeVtable_004B1D80 */
+        { /* +0F84 missionHelpBriefingTab g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0xFE4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xE10),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 96, .rightOffset = 208, .bottomOffset = 24,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000083, 0x00001021, 0x000021CE},
-        { /* +0FE4 missionHelpKeyboardTab g_UiNodeVtable_004B1D80 */
+        { /* +0FE4 missionHelpKeyboardTab g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1044), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xE10),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 96, .topOffset = 32, .rightOffset = 208, .bottomOffset = 56,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000081, 0x00001022, 0x000021CF},
-        { /* +1044 missionHelpMouseTab g_UiNodeVtable_004B1D80 */
+        { /* +1044 missionHelpMouseTab g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x10A4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xE10),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 96, .topOffset = 64, .rightOffset = 208, .bottomOffset = 88,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -584,18 +584,18 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00000000, 0x0000217C},
-        { /* +147C technologyCloseButton g_UiNodeVtable_004B1D80 */
+        { /* +147C technologyCloseButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x14DC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 20, .topOffset = -36, .rightOffset = 132, .bottomOffset = -12,
             .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000088, 0x00001011, 0x0000217D},
-        { /* +14DC technologyResearchButton g_UiNodeVtable_004B1D80 */
+        { /* +14DC technologyResearchButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1544), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -132, .topOffset = -36, .rightOffset = -20, .bottomOffset = -12,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
@@ -603,9 +603,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00000084, 0x00001013, 0x0000217E},
         {.tooltipText = (void *)0x00300000},
-        { /* +1544 technologyAreaTab1 g_UiNodeVtable_004B1D80 */
+        { /* +1544 technologyAreaTab1 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x15AC), .firstChild = UI_TEMPLATE_LINK(0x1814), .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 11, .topOffset = -44, .rightOffset = 2, .bottomOffset = -44,
             .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x12492492, .bottomAnchorQ31 = 0x80000000,
@@ -613,9 +613,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00001491, 0x00001014, 0x0000217F},
         {.tooltipText = (void *)0x00300000},
-        { /* +15AC technologyAreaTab2 g_UiNodeVtable_004B1D80 */
+        { /* +15AC technologyAreaTab2 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1614), .firstChild = UI_TEMPLATE_LINK(0x1870), .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 9, .topOffset = -44, .bottomOffset = -44,
             .leftAnchorQ31 = 0x12492492, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x24924925, .bottomAnchorQ31 = 0x80000000,
@@ -623,9 +623,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00001491, 0x00001015, 0x0000217F},
         {.tooltipText = (void *)0x00300000},
-        { /* +1614 technologyAreaTab3 g_UiNodeVtable_004B1D80 */
+        { /* +1614 technologyAreaTab3 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x167C), .firstChild = UI_TEMPLATE_LINK(0x18CC), .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 7, .topOffset = -44, .rightOffset = -2, .bottomOffset = -44,
             .leftAnchorQ31 = 0x24924925, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x36D36D37, .bottomAnchorQ31 = 0x80000000,
@@ -633,9 +633,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00001491, 0x00001016, 0x0000217F},
         {.tooltipText = (void *)0x00300000},
-        { /* +167C technologyAreaTab4 g_UiNodeVtable_004B1D80 */
+        { /* +167C technologyAreaTab4 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x16E4), .firstChild = UI_TEMPLATE_LINK(0x1928), .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 5, .topOffset = -44, .rightOffset = -5, .bottomOffset = -44,
             .leftAnchorQ31 = 0x36D36D37, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x49249249, .bottomAnchorQ31 = 0x80000000,
@@ -643,9 +643,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00001491, 0x00001017, 0x0000217F},
         {.tooltipText = (void *)0x00300000},
-        { /* +16E4 technologyAreaTab5 g_UiNodeVtable_004B1D80 */
+        { /* +16E4 technologyAreaTab5 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x174C), .firstChild = UI_TEMPLATE_LINK(0x1984), .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 2, .topOffset = -44, .rightOffset = -7, .bottomOffset = -44,
             .leftAnchorQ31 = 0x49249249, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x5B6DB6DB, .bottomAnchorQ31 = 0x80000000,
@@ -653,9 +653,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00001491, 0x00001018, 0x0000217F},
         {.tooltipText = (void *)0x00300000},
-        { /* +174C technologyAreaTab6 g_UiNodeVtable_004B1D80 */
+        { /* +174C technologyAreaTab6 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x17B4), .firstChild = UI_TEMPLATE_LINK(0x19E0), .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .topOffset = -44, .rightOffset = -9, .bottomOffset = -44,
             .leftAnchorQ31 = 0x5B6DB6DB, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x6DB6DB6E, .bottomAnchorQ31 = 0x80000000,
@@ -663,9 +663,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00001491, 0x00001019, 0x0000217F},
         {.tooltipText = (void *)0x00300000},
-        { /* +17B4 technologyAreaTab7 g_UiNodeVtable_004B1D80 */
+        { /* +17B4 technologyAreaTab7 g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1A98), .firstChild = UI_TEMPLATE_LINK(0x1A3C), .parent = UI_TEMPLATE_LINK(0xE6C),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -2, .topOffset = -44, .rightOffset = -11, .bottomOffset = -44,
             .leftAnchorQ31 = 0x6DB6DB6E, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
@@ -782,52 +782,52 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000408, 0xFFFFFFFF, 0x00000000, 0x00000030},
-        { /* +1D64 messageCancelButton g_UiNodeVtable_004B1D80 */
+        { /* +1D64 messageCancelButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1DC4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1BE0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -132, .topOffset = -36, .rightOffset = -20, .bottomOffset = -12,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000088, 0x00001002, 0x00002168},
-        { /* +1DC4 messageSendAndCloseButton g_UiNodeVtable_004B1D80 */
+        { /* +1DC4 messageSendAndCloseButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1E24), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1BE0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -132, .topOffset = -68, .rightOffset = -20, .bottomOffset = -44,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000084, 0x00001005, 0x00002169},
-        { /* +1E24 messageSendButton g_UiNodeVtable_004B1D80 */
+        { /* +1E24 messageSendButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1E84), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1BE0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -132, .topOffset = -100, .rightOffset = -20, .bottomOffset = -76,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000080, 0x00001004, 0x00002167},
-        { /* +1E84 messageRecipientPlayersTab g_UiNodeVtable_004B2CE0 */
+        { /* +1E84 messageRecipientPlayersTab g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1EE4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1BE0),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 20, .topOffset = 60, .rightOffset = 132, .bottomOffset = 84,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000080, 0x00001006, 0x0000216B},
-        { /* +1EE4 messageRecipientGroupsTab g_UiNodeVtable_004B2CE0 */
+        { /* +1EE4 messageRecipientGroupsTab g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1F44), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1BE0),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 20, .topOffset = 84, .rightOffset = 132, .bottomOffset = 108,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000080, 0x00001007, 0x0000216C},
-        { /* +1F44 messageRecipientAllTab g_UiNodeVtable_004B2CE0 */
+        { /* +1F44 messageRecipientAllTab g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x1FA4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x1BE0),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 20, .topOffset = 108, .rightOffset = 132, .bottomOffset = 132,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
@@ -859,63 +859,63 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .rightOffset = 136, .bottomOffset = 168,
             .layoutWidth = -1, .layoutHeight = -1},
         {0},
-        { /* +20E4 messageRecipientCheckbox1 g_UiNodeVtable_004B2CE0 */
+        { /* +20E4 messageRecipientCheckbox1 g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2144), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x208C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 4, .topOffset = 4, .rightOffset = -4, .bottomOffset = 28,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000491, 0xFFFFFFFF, 0x0000216D},
-        { /* +2144 messageRecipientCheckbox2 g_UiNodeVtable_004B2CE0 */
+        { /* +2144 messageRecipientCheckbox2 g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x21A4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x208C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 4, .topOffset = 28, .rightOffset = -4, .bottomOffset = 52,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000490, 0xFFFFFFFF, 0x0000216E},
-        { /* +21A4 messageRecipientCheckbox3 g_UiNodeVtable_004B2CE0 */
+        { /* +21A4 messageRecipientCheckbox3 g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2204), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x208C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 4, .topOffset = 52, .rightOffset = -4, .bottomOffset = 76,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000490, 0xFFFFFFFF, 0x0000216F},
-        { /* +2204 messageRecipientCheckbox4 g_UiNodeVtable_004B2CE0 */
+        { /* +2204 messageRecipientCheckbox4 g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2264), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x208C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 4, .topOffset = 76, .rightOffset = -4, .bottomOffset = 100,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000490, 0xFFFFFFFF, 0x00002170},
-        { /* +2264 messageRecipientCheckbox5 g_UiNodeVtable_004B2CE0 */
+        { /* +2264 messageRecipientCheckbox5 g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x22C4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x208C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 4, .topOffset = 100, .rightOffset = -4, .bottomOffset = 124,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000490, 0xFFFFFFFF, 0x00002171},
-        { /* +22C4 messageRecipientCheckbox6 g_UiNodeVtable_004B2CE0 */
+        { /* +22C4 messageRecipientCheckbox6 g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2324), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x208C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 4, .topOffset = 124, .rightOffset = -4, .bottomOffset = 148,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000490, 0xFFFFFFFF, 0x00002172},
-        { /* +2324 messageRecipientCheckbox7 g_UiNodeVtable_004B2CE0 */
+        { /* +2324 messageRecipientCheckbox7 g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x208C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 4, .topOffset = 148, .rightOffset = -4, .bottomOffset = 172,
             .rightAnchorQ31 = 0x80000000,
@@ -966,45 +966,45 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000001, 0x00000000, 0x00002123},
-        { /* +2550 gameMenuSaveButton g_UiNodeVtable_004B1D80 */
+        { /* +2550 gameMenuSaveButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x25B0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC44),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = -80, .rightOffset = -96, .bottomOffset = -56,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000080, 0x0000120E, 0x0000214D},
-        { /* +25B0 gameMenuQuitButton g_UiNodeVtable_004B1D80 */
+        { /* +25B0 gameMenuQuitButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2610), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC44),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = -48, .rightOffset = -96, .bottomOffset = -24,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000080, 0x00001200, 0x00002148},
-        { /* +2610 gameMenuGraphicsButton g_UiNodeVtable_004B1D80 */
+        { /* +2610 gameMenuGraphicsButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2670), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC44),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = -16, .rightOffset = -96, .bottomOffset = 8,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000080, 0x00001202, 0x00002121},
-        { /* +2670 gameMenuAudioButton g_UiNodeVtable_004B1D80 */
+        { /* +2670 gameMenuAudioButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x26D0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC44),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = 16, .rightOffset = -96, .bottomOffset = 40,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000080, 0x00001203, 0x00002122},
-        { /* +26D0 rightButtonNoScrollCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +26D0 rightButtonNoScrollCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2730), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC44),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -19, .topOffset = 60, .rightOffset = 208, .bottomOffset = 84,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -1056,18 +1056,18 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x0000215F},
-        { /* +2900 autoZoomOffCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +2900 autoZoomOffCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2960), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x28AC),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000091, 0x00001212, 0x00002160},
-        { /* +2960 autoRotationOffCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +2960 autoRotationOffCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x28AC),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
             .rightAnchorQ31 = 0x80000000,
@@ -1083,45 +1083,45 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00002162},
-        { /* +2A14 linkRotationZoomCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +2A14 linkRotationZoomCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2A74), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x29C0),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000091, 0x00001214, 0x00002163},
-        { /* +2A74 linkRotationTiltCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +2A74 linkRotationTiltCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2AD4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x29C0),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000091, 0x00001215, 0x00002164},
-        { /* +2AD4 hidePanelCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +2AD4 hidePanelCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x29C0),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000091, 0x0000121B, 0x00002165},
-        { /* +2B34 gameMenuCloseButton g_UiNodeVtable_004B1D80 */
+        { /* +2B34 gameMenuCloseButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xC44),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x0000008C, 0x00001201, 0x0000211F},
-        { /* +2B94 saveGameBackButton g_UiNodeVtable_004B1D80 */
+        { /* +2B94 saveGameBackButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2BF4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xCFC),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -1137,18 +1137,18 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000001, 0x00000000, 0x0000214E},
-        { /* +2C50 saveGameSaveButton g_UiNodeVtable_004B1D80 */
+        { /* +2C50 saveGameSaveButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2CB0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xCFC),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 96, .topOffset = 128, .rightOffset = 208, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000084, 0x00001210, 0x0000214D},
-        { /* +2CB0 saveGameDeleteButton g_UiNodeVtable_004B1D80 */
+        { /* +2CB0 saveGameDeleteButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2D10), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xCFC),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -32, .topOffset = 128, .rightOffset = 80, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -1218,9 +1218,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000004, 0x00000000, 0x00002152},
-        { /* +3034 quitMenuBackButton g_UiNodeVtable_004B1D80 */
+        { /* +3034 quitMenuBackButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3094), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xCA0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -1236,36 +1236,36 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000001, 0x00000000, 0x00002144},
-        { /* +30F0 quitMenuAbortMissionButton g_UiNodeVtable_004B1D80 */
+        { /* +30F0 quitMenuAbortMissionButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3150), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xCA0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 96, .topOffset = 128, .rightOffset = 208, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000084, 0x0000101D, 0x0000214A},
-        { /* +3150 quitMenuSurrenderButton g_UiNodeVtable_004B1D80 */
+        { /* +3150 quitMenuSurrenderButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x31B0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xCA0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 96, .topOffset = 96, .rightOffset = 208, .bottomOffset = 120,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000080, 0x0000101E, 0x0000214B},
-        { /* +31B0 quitMenuRestartMissionButton g_UiNodeVtable_004B1D80 */
+        { /* +31B0 quitMenuRestartMissionButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xCA0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 96, .topOffset = 64, .rightOffset = 208, .bottomOffset = 88,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000080, 0x00001027, 0x0000214C},
-        { /* +3210 graphicsOptionsBackButton g_UiNodeVtable_004B1D80 */
+        { /* +3210 graphicsOptionsBackButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3270), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xD58),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -1281,9 +1281,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000001, 0x00000000, 0x0000212E},
-        { /* +32CC shadingEnabledCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +32CC shadingEnabledCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x332C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xD58),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -204, .topOffset = -112, .rightOffset = -12, .bottomOffset = -88,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -1398,36 +1398,36 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00002132},
-        { /* +37C0 textureQualityLowButton g_UiNodeVtable_004B2CE0 */
+        { /* +37C0 textureQualityLowButton g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3820), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x376C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 3, .rightOffset = -3, .bottomOffset = 27,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000081, 0x00001207, 0x00002136},
-        { /* +3820 textureQualityMediumButton g_UiNodeVtable_004B2CE0 */
+        { /* +3820 textureQualityMediumButton g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3880), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x376C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 27, .rightOffset = -3, .bottomOffset = 51,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000081, 0x00001207, 0x00002137},
-        { /* +3880 textureQualityHighButton g_UiNodeVtable_004B2CE0 */
+        { /* +3880 textureQualityHighButton g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x376C),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = 3, .topOffset = 51, .rightOffset = -3, .bottomOffset = 75,
             .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000081, 0x00001207, 0x00002138},
-        { /* +38E0 soundOptionsBackButton g_UiNodeVtable_004B1D80 */
+        { /* +38E0 soundOptionsBackButton g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3940), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xDB4),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -208, .topOffset = 128, .rightOffset = -96, .bottomOffset = 152,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -1443,27 +1443,27 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000001, 0x00000000, 0x0000213A},
-        { /* +399C musicEnabledCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +399C musicEnabledCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x39FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xDB4),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -204, .topOffset = -112, .rightOffset = -12, .bottomOffset = -88,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000091, 0x00001209, 0x0000213B},
-        { /* +39FC effectsEnabledCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +39FC effectsEnabledCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3A5C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xDB4),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -204, .topOffset = -80, .rightOffset = -12, .bottomOffset = -56,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000091, 0x00001208, 0x0000213C},
-        { /* +3A5C reverseStereoCheckbox g_UiNodeVtable_004B2CE0 */
+        { /* +3A5C reverseStereoCheckbox g_UiTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3ABC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xDB4),
-            .vtable = (void *)&g_UiNodeVtable_004B2CE0,
+            .vtable = (void *)&g_UiTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftOffset = -204, .topOffset = -16, .rightOffset = -12, .bottomOffset = 8,
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
@@ -1760,9 +1760,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00000000, 0x00000000, 0x00000027},
-        { /* +4758 resourcePanelImageToggle8 g_UiNodeVtable_004BC570 */
+        { /* +4758 resourcePanelImageToggle8 g_UiImageControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x4820), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x458C),
-            .vtable = (void *)&g_UiNodeVtable_004BC570,
+            .vtable = (void *)&g_UiImageControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
@@ -1776,9 +1776,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00000000, 0x00000010, 0x00000020},
-        { /* +4820 resourcePanelImageToggle9 g_UiNodeVtable_004BC570 */
+        { /* +4820 resourcePanelImageToggle9 g_UiImageControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x48EC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x458C),
-            .vtable = (void *)&g_UiNodeVtable_004BC570,
+            .vtable = (void *)&g_UiImageControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
@@ -1863,9 +1863,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00000601, 0x00001102, 0x00000000, 0x00000000, 0x00000000, 0x0000002A, 0x00000000, 0x00000000,
             0x00000000, 0x00000000, 0x00180001},
-        { /* +4D0C diplomacyPanel g_UiNodeVtable_004BC570 */
+        { /* +4D0C diplomacyPanel g_UiImageControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5DB4), .firstChild = UI_TEMPLATE_LINK(0x4D78), .parent = UI_TEMPLATE_LINK(0x46A0),
-            .vtable = (void *)&g_UiNodeVtable_004BC570,
+            .vtable = (void *)&g_UiImageControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x140},
@@ -2244,9 +2244,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         {
             0x00000A60, 0x00001012, 0x00000000, 0x000000A9, 0x00000000, 0x00000021, 0x00000000, 0x00000000,
             0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00180002},
-        { /* +5DB4 buildCatalogPanel g_UiNodeVtable_004BC570 */
+        { /* +5DB4 buildCatalogPanel g_UiImageControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7680), .firstChild = UI_TEMPLATE_LINK(0x5E20), .parent = UI_TEMPLATE_LINK(0x46A0),
-            .vtable = (void *)&g_UiNodeVtable_004BC570,
+            .vtable = (void *)&g_UiImageControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x140},
@@ -2260,394 +2260,394 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00000000, 0x00000018, 0x00000022},
-        { /* +5E7C buildCatalogEntry00 g_UiNodeVtable_00516530 */
+        { /* +5E7C buildCatalogEntry00 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5EFC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +5EFC buildCatalogEntry01 g_UiNodeVtable_00516530 */
+        { /* +5EFC buildCatalogEntry01 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5F7C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +5F7C buildCatalogEntry02 g_UiNodeVtable_00516530 */
+        { /* +5F7C buildCatalogEntry02 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5FFC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +5FFC buildCatalogEntry03 g_UiNodeVtable_00516530 */
+        { /* +5FFC buildCatalogEntry03 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x607C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +607C buildCatalogEntry04 g_UiNodeVtable_00516530 */
+        { /* +607C buildCatalogEntry04 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x60FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +60FC buildCatalogEntry05 g_UiNodeVtable_00516530 */
+        { /* +60FC buildCatalogEntry05 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x617C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +617C buildCatalogEntry06 g_UiNodeVtable_00516530 */
+        { /* +617C buildCatalogEntry06 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x61FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +61FC buildCatalogEntry07 g_UiNodeVtable_00516530 */
+        { /* +61FC buildCatalogEntry07 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x627C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +627C buildCatalogEntry08 g_UiNodeVtable_00516530 */
+        { /* +627C buildCatalogEntry08 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x62FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +62FC buildCatalogEntry09 g_UiNodeVtable_00516530 */
+        { /* +62FC buildCatalogEntry09 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x637C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +637C buildCatalogEntry10 g_UiNodeVtable_00516530 */
+        { /* +637C buildCatalogEntry10 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x63FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +63FC buildCatalogEntry11 g_UiNodeVtable_00516530 */
+        { /* +63FC buildCatalogEntry11 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x647C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +647C buildCatalogEntry12 g_UiNodeVtable_00516530 */
+        { /* +647C buildCatalogEntry12 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x64FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +64FC buildCatalogEntry13 g_UiNodeVtable_00516530 */
+        { /* +64FC buildCatalogEntry13 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x657C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +657C buildCatalogEntry14 g_UiNodeVtable_00516530 */
+        { /* +657C buildCatalogEntry14 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x65FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +65FC buildCatalogEntry15 g_UiNodeVtable_00516530 */
+        { /* +65FC buildCatalogEntry15 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x667C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +667C buildCatalogEntry16 g_UiNodeVtable_00516530 */
+        { /* +667C buildCatalogEntry16 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x66FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +66FC buildCatalogEntry17 g_UiNodeVtable_00516530 */
+        { /* +66FC buildCatalogEntry17 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x677C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +677C buildCatalogEntry18 g_UiNodeVtable_00516530 */
+        { /* +677C buildCatalogEntry18 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x67FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +67FC buildCatalogEntry19 g_UiNodeVtable_00516530 */
+        { /* +67FC buildCatalogEntry19 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x687C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +687C buildCatalogEntry20 g_UiNodeVtable_00516530 */
+        { /* +687C buildCatalogEntry20 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x68FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +68FC buildCatalogEntry21 g_UiNodeVtable_00516530 */
+        { /* +68FC buildCatalogEntry21 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x697C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +697C buildCatalogEntry22 g_UiNodeVtable_00516530 */
+        { /* +697C buildCatalogEntry22 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x69FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +69FC buildCatalogEntry23 g_UiNodeVtable_00516530 */
+        { /* +69FC buildCatalogEntry23 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6A7C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6A7C buildCatalogEntry24 g_UiNodeVtable_00516530 */
+        { /* +6A7C buildCatalogEntry24 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6AFC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6AFC buildCatalogEntry25 g_UiNodeVtable_00516530 */
+        { /* +6AFC buildCatalogEntry25 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6B7C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6B7C buildCatalogEntry26 g_UiNodeVtable_00516530 */
+        { /* +6B7C buildCatalogEntry26 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6BFC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6BFC buildCatalogEntry27 g_UiNodeVtable_00516530 */
+        { /* +6BFC buildCatalogEntry27 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6C7C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6C7C buildCatalogEntry28 g_UiNodeVtable_00516530 */
+        { /* +6C7C buildCatalogEntry28 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6CFC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6CFC buildCatalogEntry29 g_UiNodeVtable_00516530 */
+        { /* +6CFC buildCatalogEntry29 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6D7C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6D7C buildCatalogEntry30 g_UiNodeVtable_00516530 */
+        { /* +6D7C buildCatalogEntry30 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6DFC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6DFC buildCatalogEntry31 g_UiNodeVtable_00516530 */
+        { /* +6DFC buildCatalogEntry31 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6E7C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6E7C buildCatalogEntry32 g_UiNodeVtable_00516530 */
+        { /* +6E7C buildCatalogEntry32 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6EFC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6EFC buildCatalogEntry33 g_UiNodeVtable_00516530 */
+        { /* +6EFC buildCatalogEntry33 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6F7C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6F7C buildCatalogEntry34 g_UiNodeVtable_00516530 */
+        { /* +6F7C buildCatalogEntry34 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6FFC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +6FFC buildCatalogEntry35 g_UiNodeVtable_00516530 */
+        { /* +6FFC buildCatalogEntry35 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x707C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +707C buildCatalogEntry36 g_UiNodeVtable_00516530 */
+        { /* +707C buildCatalogEntry36 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x70FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +70FC buildCatalogEntry37 g_UiNodeVtable_00516530 */
+        { /* +70FC buildCatalogEntry37 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x717C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +717C buildCatalogEntry38 g_UiNodeVtable_00516530 */
+        { /* +717C buildCatalogEntry38 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x71FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +71FC buildCatalogEntry39 g_UiNodeVtable_00516530 */
+        { /* +71FC buildCatalogEntry39 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x727C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +727C buildCatalogEntry40 g_UiNodeVtable_00516530 */
+        { /* +727C buildCatalogEntry40 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x72FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +72FC buildCatalogEntry41 g_UiNodeVtable_00516530 */
+        { /* +72FC buildCatalogEntry41 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x737C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +737C buildCatalogEntry42 g_UiNodeVtable_00516530 */
+        { /* +737C buildCatalogEntry42 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x73FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +73FC buildCatalogEntry43 g_UiNodeVtable_00516530 */
+        { /* +73FC buildCatalogEntry43 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x747C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +747C buildCatalogEntry44 g_UiNodeVtable_00516530 */
+        { /* +747C buildCatalogEntry44 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x74FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +74FC buildCatalogEntry45 g_UiNodeVtable_00516530 */
+        { /* +74FC buildCatalogEntry45 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x757C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +757C buildCatalogEntry46 g_UiNodeVtable_00516530 */
+        { /* +757C buildCatalogEntry46 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x75FC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +75FC buildCatalogEntry47 g_UiNodeVtable_00516530 */
+        { /* +75FC buildCatalogEntry47 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x5E20),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100B, 0x00000000, 0x00000000, 0x00000000, 0x00000023, 0x00000000, 0x00000000,
             0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00180003},
-        { /* +7680 specialBuildCatalogPanel g_UiNodeVtable_004BC570 */
+        { /* +7680 specialBuildCatalogPanel g_UiImageControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8C4C), .firstChild = UI_TEMPLATE_LINK(0x76EC), .parent = UI_TEMPLATE_LINK(0x46A0),
-            .vtable = (void *)&g_UiNodeVtable_004BC570,
+            .vtable = (void *)&g_UiImageControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x140},
@@ -2661,346 +2661,346 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00000000, 0x00000018, 0x00000022},
-        { /* +7748 specialBuildCatalogEntry00 g_UiNodeVtable_00516530 */
+        { /* +7748 specialBuildCatalogEntry00 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x77C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +77C8 specialBuildCatalogEntry01 g_UiNodeVtable_00516530 */
+        { /* +77C8 specialBuildCatalogEntry01 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7848), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7848 specialBuildCatalogEntry02 g_UiNodeVtable_00516530 */
+        { /* +7848 specialBuildCatalogEntry02 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x78C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +78C8 specialBuildCatalogEntry03 g_UiNodeVtable_00516530 */
+        { /* +78C8 specialBuildCatalogEntry03 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7948), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7948 specialBuildCatalogEntry04 g_UiNodeVtable_00516530 */
+        { /* +7948 specialBuildCatalogEntry04 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x79C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +79C8 specialBuildCatalogEntry05 g_UiNodeVtable_00516530 */
+        { /* +79C8 specialBuildCatalogEntry05 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7A48), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7A48 specialBuildCatalogEntry06 g_UiNodeVtable_00516530 */
+        { /* +7A48 specialBuildCatalogEntry06 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7AC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7AC8 specialBuildCatalogEntry07 g_UiNodeVtable_00516530 */
+        { /* +7AC8 specialBuildCatalogEntry07 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7B48), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7B48 specialBuildCatalogEntry08 g_UiNodeVtable_00516530 */
+        { /* +7B48 specialBuildCatalogEntry08 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7BC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7BC8 specialBuildCatalogEntry09 g_UiNodeVtable_00516530 */
+        { /* +7BC8 specialBuildCatalogEntry09 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7C48), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7C48 specialBuildCatalogEntry10 g_UiNodeVtable_00516530 */
+        { /* +7C48 specialBuildCatalogEntry10 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7CC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7CC8 specialBuildCatalogEntry11 g_UiNodeVtable_00516530 */
+        { /* +7CC8 specialBuildCatalogEntry11 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7D48), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7D48 specialBuildCatalogEntry12 g_UiNodeVtable_00516530 */
+        { /* +7D48 specialBuildCatalogEntry12 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7DC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7DC8 specialBuildCatalogEntry13 g_UiNodeVtable_00516530 */
+        { /* +7DC8 specialBuildCatalogEntry13 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7E48), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7E48 specialBuildCatalogEntry14 g_UiNodeVtable_00516530 */
+        { /* +7E48 specialBuildCatalogEntry14 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7EC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7EC8 specialBuildCatalogEntry15 g_UiNodeVtable_00516530 */
+        { /* +7EC8 specialBuildCatalogEntry15 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7F48), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7F48 specialBuildCatalogEntry16 g_UiNodeVtable_00516530 */
+        { /* +7F48 specialBuildCatalogEntry16 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7FC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +7FC8 specialBuildCatalogEntry17 g_UiNodeVtable_00516530 */
+        { /* +7FC8 specialBuildCatalogEntry17 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8048), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8048 specialBuildCatalogEntry18 g_UiNodeVtable_00516530 */
+        { /* +8048 specialBuildCatalogEntry18 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x80C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +80C8 specialBuildCatalogEntry19 g_UiNodeVtable_00516530 */
+        { /* +80C8 specialBuildCatalogEntry19 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8148), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8148 specialBuildCatalogEntry20 g_UiNodeVtable_00516530 */
+        { /* +8148 specialBuildCatalogEntry20 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x81C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +81C8 specialBuildCatalogEntry21 g_UiNodeVtable_00516530 */
+        { /* +81C8 specialBuildCatalogEntry21 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8248), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8248 specialBuildCatalogEntry22 g_UiNodeVtable_00516530 */
+        { /* +8248 specialBuildCatalogEntry22 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x82C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +82C8 specialBuildCatalogEntry23 g_UiNodeVtable_00516530 */
+        { /* +82C8 specialBuildCatalogEntry23 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8348), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8348 specialBuildCatalogEntry24 g_UiNodeVtable_00516530 */
+        { /* +8348 specialBuildCatalogEntry24 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x83C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +83C8 specialBuildCatalogEntry25 g_UiNodeVtable_00516530 */
+        { /* +83C8 specialBuildCatalogEntry25 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8448), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8448 specialBuildCatalogEntry26 g_UiNodeVtable_00516530 */
+        { /* +8448 specialBuildCatalogEntry26 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x84C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +84C8 specialBuildCatalogEntry27 g_UiNodeVtable_00516530 */
+        { /* +84C8 specialBuildCatalogEntry27 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8548), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8548 specialBuildCatalogEntry28 g_UiNodeVtable_00516530 */
+        { /* +8548 specialBuildCatalogEntry28 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x85C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +85C8 specialBuildCatalogEntry29 g_UiNodeVtable_00516530 */
+        { /* +85C8 specialBuildCatalogEntry29 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8648), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8648 specialBuildCatalogEntry30 g_UiNodeVtable_00516530 */
+        { /* +8648 specialBuildCatalogEntry30 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x86C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +86C8 specialBuildCatalogEntry31 g_UiNodeVtable_00516530 */
+        { /* +86C8 specialBuildCatalogEntry31 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8748), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8748 specialBuildCatalogEntry32 g_UiNodeVtable_00516530 */
+        { /* +8748 specialBuildCatalogEntry32 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x87C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +87C8 specialBuildCatalogEntry33 g_UiNodeVtable_00516530 */
+        { /* +87C8 specialBuildCatalogEntry33 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8848), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8848 specialBuildCatalogEntry34 g_UiNodeVtable_00516530 */
+        { /* +8848 specialBuildCatalogEntry34 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x88C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +88C8 specialBuildCatalogEntry35 g_UiNodeVtable_00516530 */
+        { /* +88C8 specialBuildCatalogEntry35 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8948), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8948 specialBuildCatalogEntry36 g_UiNodeVtable_00516530 */
+        { /* +8948 specialBuildCatalogEntry36 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x89C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +89C8 specialBuildCatalogEntry37 g_UiNodeVtable_00516530 */
+        { /* +89C8 specialBuildCatalogEntry37 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8A48), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8A48 specialBuildCatalogEntry38 g_UiNodeVtable_00516530 */
+        { /* +8A48 specialBuildCatalogEntry38 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8AC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8AC8 specialBuildCatalogEntry39 g_UiNodeVtable_00516530 */
+        { /* +8AC8 specialBuildCatalogEntry39 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8B48), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8B48 specialBuildCatalogEntry40 g_UiNodeVtable_00516530 */
+        { /* +8B48 specialBuildCatalogEntry40 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x8BC8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +8BC8 specialBuildCatalogEntry41 g_UiNodeVtable_00516530 */
+        { /* +8BC8 specialBuildCatalogEntry41 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x76EC),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x0000100C, 0x00000000, 0x00000000, 0x00000000, 0x00000023, 0x00000000, 0x00000000,
             0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00180004},
-        { /* +8C4C armyStockPanel g_UiNodeVtable_004BC570 */
+        { /* +8C4C armyStockPanel g_UiImageControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x8CB8), .parent = UI_TEMPLATE_LINK(0x46A0),
-            .vtable = (void *)&g_UiNodeVtable_004BC570,
+            .vtable = (void *)&g_UiImageControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x140},
@@ -3198,9 +3198,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000A60, 0x00001001, 0x00000000, 0x00000000, 0x00000000, 0x00000023},
-        { /* +9838 armyStockSlot23 g_UiNodeVtable_00516530 */
+        { /* +9838 armyStockSlot23 g_UiCatalogEntryControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x8CB8),
-            .vtable = (void *)&g_UiNodeVtable_00516530,
+            .vtable = (void *)&g_UiCatalogEntryControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3479,9 +3479,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +A78C materialSwatch00Selector g_UiNodeVtable_004B1D80 */
+        { /* +A78C materialSwatch00Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xA730),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3495,9 +3495,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +A844 materialSwatch01Selector g_UiNodeVtable_004B1D80 */
+        { /* +A844 materialSwatch01Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xA7E8),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3511,9 +3511,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +A8FC materialSwatch02Selector g_UiNodeVtable_004B1D80 */
+        { /* +A8FC materialSwatch02Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xA8A0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3527,9 +3527,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +A9B4 materialSwatch03Selector g_UiNodeVtable_004B1D80 */
+        { /* +A9B4 materialSwatch03Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xA958),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3543,9 +3543,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +AA6C materialSwatch04Selector g_UiNodeVtable_004B1D80 */
+        { /* +AA6C materialSwatch04Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xAA10),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3559,9 +3559,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +AB24 materialSwatch05Selector g_UiNodeVtable_004B1D80 */
+        { /* +AB24 materialSwatch05Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xAAC8),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3575,9 +3575,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +ABDC materialSwatch06Selector g_UiNodeVtable_004B1D80 */
+        { /* +ABDC materialSwatch06Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xAB80),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3591,9 +3591,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +AC94 materialSwatch07Selector g_UiNodeVtable_004B1D80 */
+        { /* +AC94 materialSwatch07Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xAC38),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3607,9 +3607,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +AD4C materialSwatch08Selector g_UiNodeVtable_004B1D80 */
+        { /* +AD4C materialSwatch08Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xACF0),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3623,9 +3623,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +AE04 materialSwatch09Selector g_UiNodeVtable_004B1D80 */
+        { /* +AE04 materialSwatch09Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xADA8),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3639,9 +3639,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +AEBC materialSwatch10Selector g_UiNodeVtable_004B1D80 */
+        { /* +AEBC materialSwatch10Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xAE60),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
@@ -3655,9 +3655,9 @@ __declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000009},
-        { /* +AF74 materialSwatch11Selector g_UiNodeVtable_004B1D80 */
+        { /* +AF74 materialSwatch11Selector g_UiFramedTextButtonControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0xAF18),
-            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .vtable = (void *)&g_UiFramedTextButtonControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},

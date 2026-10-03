@@ -8,6 +8,23 @@
 #include <thandor/graphics/resources/texture.h>
 #include <thandor/thandor.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004A8EF4 g_GraphicsTextureSourceGetLogicalSize */
+GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize = (void *)GraphicsTextureSource_GetLogicalSize;
+
+/* 004A8EF8 g_GraphicsTextureSourceTestOpaquePixel */
+GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel = (void *)GraphicsTextureSource_TestOpaquePixel;
+
+/* 004A8EFC g_GraphicsTextureSourceBlitSourceAlpha */
+GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha = 0;
+
+/* 004A8F00 g_GraphicsTextureSourceBlitTiledSourceAlpha */
+GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha = (void *)GraphicsTextureSource_BlitTiledSourceAlpha;
+
+/* 004A8F18 g_GraphicsTextureSourceBlitModulatedSourceAlpha */
+GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha = 0;
+
 /* Implementation ownership: graphics/resources/texture. */
 
 /* Address: 0x0057E970.

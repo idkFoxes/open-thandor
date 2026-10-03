@@ -131,4 +131,9 @@ void UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
 /* 0x004B1C80 */
 void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control);
 
+extern UiNodeVtable g_UiSpriteButtonControlVtable; /* 004B15D0 g_UiSpriteButtonControlVtable */
+extern UiNodeVtable g_UiImageActionControlVtable; /* 00514FC0 g_UiImageActionControlVtable */
+extern UiNodeVtable g_UiConditionalActionControlVtable; /* 00515290 g_UiConditionalActionControlVtable */
+extern UiNodeVtable g_UiCatalogEntryControlVtable; /* 00516530 g_UiCatalogEntryControlVtable */
+
 #endif /* THANDOR_UI_CONTROLS_BUTTONS_H */

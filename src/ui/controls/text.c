@@ -8,6 +8,74 @@
 #include <thandor/ui/controls/text.h>
 #include <thandor/thandor.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004AF1E0 g_UiTooltipState */
+UiTooltipState g_UiTooltipState = {.countdownFrames = 8};
+
+/* 004B0E44 g_UiSoundGainQ15 */
+AudioMixerGainQ15 g_UiSoundGainQ15 = 32768;
+
+/* 004B0E60 g_UiListActivationPulseFrames: UiFrameDelayFrames, 8: frames of the activation pulse after Enter on a list/text list before its action is queued (src/ui/controls/lists.c, text.c). */
+const UiFrameDelayFrames g_UiListActivationPulseFrames = 8;
+
+/* 004B0E78 g_UiTextStyleNormal */
+const uint32_t g_UiTextStyleNormal = 0;
+
+/* 004B0E8C g_UiWindowFrameInset */
+const int32_t g_UiWindowFrameInset = 2;
+
+/* 004B0E90 g_UiListTextStyle */
+const uint32_t g_UiListTextStyle = 0;
+
+/* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlags */
+static const pointer g_Utf16StringCompareAsciiCaseInsensitiveFlags = (void *)Utf16String_CompareAsciiCaseInsensitiveFlags;
+
+/* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
+uint16_t g_GraphicsAdapterFormatScratch0Utf16[16] = {0};
+
+/* 00422788 g_GraphicsAdapterFormatScratch1Utf16 (followed by 8 bytes of 0x90 alignment padding, dropped) */
+uint16_t g_GraphicsAdapterFormatScratch1Utf16[16] = {0};
+
+/* 004B0E48 g_UiTooltipDelayFrames */
+static const UiFrameDelayFrames g_UiTooltipDelayFrames = 12;
+
+/* 004B0E4C g_UiTooltipTextStyle */
+static const uint32_t g_UiTooltipTextStyle = 0;
+
+/* 004B0E74 g_UiTextStyleSelected: UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/text.c). */
+static const UiPackedTextStyle g_UiTextStyleSelected = 0x10000;
+
+/* 004B0E7C g_UiTextStyleDisabled: UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.c). */
+static const UiPackedTextStyle g_UiTextStyleDisabled = 0x20000;
+
+/* 004B0E80 g_UiTextStyleAlternate */
+static const uint32_t g_UiTextStyleAlternate = 0;
+
+/* 004B0E98 g_UiTextEditActiveTextStyle */
+static const uint32_t g_UiTextEditActiveTextStyle = 0;
+
+/* 004B0E9C g_UiTextEditInactiveTextStyle */
+static const uint32_t g_UiTextEditInactiveTextStyle = 0;
+
+/* 004B0EA0 g_UiTextEditDisabledTextStyle */
+static const uint32_t g_UiTextEditDisabledTextStyle = 0;
+
+/* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep: UiFrameDelayFrames, 8: frames per caret blink phase of a focused text edit, reloaded into the counter byte of editStateFlags (src/ui/controls/text.c). */
+static const UiFrameDelayFrames g_UiTextEditCaretBlinkPhaseStep = 8;
+
+/* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16: 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
+static uint16_t g_UiPointerListExpandedLeftTextUtf16[512] = {0};
+
+/* 004BA9D8 g_UiPointerListExpandedRightTextUtf16: 1 KiB expansion scratch of UiPointerList_CompareExpandedText */
+static uint16_t g_UiPointerListExpandedRightTextUtf16[512] = {0};
+
+/* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
+static uint16_t g_UiNumericPairFirstValueScratchUtf16[16] = {0};
+
+/* 00515678 g_UiNumericPairSecondValueScratchUtf16 (followed by 0x90 code filler up to 005156A0) */
+static uint16_t g_UiNumericPairSecondValueScratchUtf16[16] = {0};
+
 /* Implementation ownership: ui/controls/text. */
 
 /* Address: 0x004B0200.
@@ -1660,7 +1728,7 @@ bool UiRootStack_PopUntilWindowTextureBoundary(void)
 
 
 /* Address: 0x004B1DD0.
-   Relocation of a loaded framed text button (relocate slot of g_UiNodeVtable_004B1D80): an inset-framed
+   Relocation of a loaded framed text button (relocate slot of g_UiFramedTextButtonControlVtable): an inset-framed
    button (UI_BUTTON_FRAME_INSET) grows its layout offsets by g_UiWindowFrameInset on every side, so the frame
    lies outside the authored box; then the children are relocated.
 */
@@ -1690,7 +1758,7 @@ void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDe
 
 
 /* Address: 0x004B1E10.
-   Draws a framed text button (drawClipped slot of g_UiNodeVtable_004B1D80): the normal, selected or disabled
+   Draws a framed text button (drawClipped slot of g_UiFramedTextButtonControlVtable): the normal, selected or disabled
    win.gfx frame (plain or inset), its text centred in the state's style, with the focus mark and its shadow
    behind the text while it has keyboard focus, then the children unless the button is suppressed.
 */
@@ -1892,7 +1960,7 @@ void UiFramedTextButtonControl_DrawClipped
 
 
 /* Address: 0x004B22A0.
-   Primary button press on a framed button (nonRightPress slot of g_UiNodeVtable_004B1D80 and
+   Primary button press on a framed button (nonRightPress slot of g_UiFramedTextButtonControlVtable and
    g_UiWindowControlVtable). A momentary button only shows itself pressed (the action follows on release); a
    persistent toggle button flips its selected state, a persistent radio-style button becomes selected unless
    it already is. Both of those play the activation sound when enabled and queue the action.
@@ -1944,7 +2012,7 @@ void UiFramedTextButtonControl_NonRightPress
 
 
 /* Address: 0x004B2380.
-   Primary button release on a framed button (nonRightRelease slot of g_UiNodeVtable_004B1D80 and
+   Primary button release on a framed button (nonRightRelease slot of g_UiFramedTextButtonControlVtable and
    g_UiWindowControlVtable): a momentary button that is still pressed (the pointer stayed on it) plays the
    activation sound when enabled, pops back up and queues its action.
 */
@@ -1998,7 +2066,7 @@ static bool UiFramedTextButtonControl_ContainsPoint
 
 
 /* Address: 0x004B23F0.
-   Primary-button drag with a framed button captured (nonRightDrag slot of g_UiNodeVtable_004B1D80 and
+   Primary-button drag with a framed button captured (nonRightDrag slot of g_UiFramedTextButtonControlVtable and
    g_UiWindowControlVtable): a momentary button shows itself pressed while the pointer is inside its box
    (inside the frame for UI_BUTTON_FRAME_INSET) and released while it is outside.
 */
@@ -2024,7 +2092,7 @@ void UiFramedTextButtonControl_NonRightDrag
 
 
 /* Address: 0x004B24C0.
-   Hit test of a framed button (hitTest slot of g_UiNodeVtable_004B1D80 and g_UiWindowControlVtable): the
+   Hit test of a framed button (hitTest slot of g_UiFramedTextButtonControlVtable and g_UiWindowControlVtable): the
    control itself when the point lies inside its box (for UI_BUTTON_FRAME_INSET: inside the frame), else
    UI_NODE_NONE. Suppressed buttons are never hit; children are not tested.
 */
@@ -2270,7 +2338,7 @@ void UiWindowControl_DrawFramedTextAndChrome
 
 
 /* Address: 0x004B2E40.
-   Relocation of a loaded text button (relocate slot of g_UiNodeVtable_004B2CE0,
+   Relocation of a loaded text button (relocate slot of g_UiTextButtonControlVtable,
    g_UiGraphicsAdapterTextButtonVtable, g_UiNumericPairTextButtonVtable and g_UiPayloadPairTextButtonVtable):
    only the children need relocating; the text resource id and style are plain values.
 */
@@ -2283,7 +2351,7 @@ void UiTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,Ui
 
 
 /* Address: 0x004B31B0.
-   Primary button press on a text button (nonRightPress slot of g_UiNodeVtable_004B2CE0,
+   Primary button press on a text button (nonRightPress slot of g_UiTextButtonControlVtable,
    g_UiGraphicsAdapterTextButtonVtable, g_UiNumericPairTextButtonVtable and g_UiPayloadPairTextButtonVtable).
    Only opaque pixels of the button graphic count. A checkbox (toggle) flips its checked state and leaves the
    alternate state; a radio-style button becomes selected unless it already is. Either way the activation
@@ -2345,7 +2413,7 @@ void UiTextButtonControl_NonRightPress
 
 
 /* Address: 0x004B32C0.
-   Keyboard handler of a text button (keyboardEvent slot of g_UiNodeVtable_004B2CE0,
+   Keyboard handler of a text button (keyboardEvent slot of g_UiTextButtonControlVtable,
    g_UiGraphicsAdapterTextButtonVtable, g_UiNumericPairTextButtonVtable and g_UiPayloadPairTextButtonVtable):
    Space on the focused button activates it like a pointer press (checkbox toggles, radio-style button gets
    selected) unless UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION is set. Everything else, including Space on
@@ -4254,7 +4322,7 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
 
 
 /* Address: 0x004B2E60.
-   Draws a text button (drawClipped slot of g_UiNodeVtable_004B2CE0; also called by the adapter, numeric-pair
+   Draws a text button (drawClipped slot of g_UiTextButtonControlVtable; also called by the adapter, numeric-pair
    and payload-pair buttons after patching their text): the push-button or checkbox graphic for its state
    (pressed/checked, alternate, disabled), then its text 6 pixels right of the graphic, vertically centred,
    with the focus mark and its shadow while it has keyboard focus. Children are not drawn.
@@ -4396,3 +4464,326 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordin
   g_GraphicsFramebufferEndAccess();
 }
 
+
+/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 00422720 g_UiGraphicsAdapterTextButtonVtable */
+UiNodeVtable g_UiGraphicsAdapterTextButtonVtable = {
+        .relocate = (void *)UiTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiGraphicsAdapterTextButton_DrawFormattedAdapterText,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiTextButtonControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+/* 004B1D80 g_UiFramedTextButtonControlVtable */
+UiNodeVtable g_UiFramedTextButtonControlVtable = {
+        .relocate = (void *)UiFramedTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiFramedTextButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiFramedTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiFramedTextButtonControl_NonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiFramedTextButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiFramedTextButtonControl_HitTestRect,
+        .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B2740 g_UiWindowControlVtable */
+UiNodeVtable g_UiWindowControlVtable = {
+        .relocate = (void *)UiWindowControl_RelocateWithFrameInset,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiWindowControl_DrawFramedTextAndChrome,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiFramedTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiFramedTextButtonControl_NonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiFramedTextButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiFramedTextButtonControl_HitTestRect,
+        .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B2CE0 g_UiTextButtonControlVtable */
+UiNodeVtable g_UiTextButtonControlVtable = {
+        .relocate = (void *)UiTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiTextButtonControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B3770 g_UiImagePanelControlVtable */
+UiNodeVtable g_UiImagePanelControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiImagePanelControl_DrawAlignedTextureAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiImagePanelControl_HitTestAlignedTextureAndChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B58A0 g_UiNumericTextEditControlVtable */
+UiNodeVtable g_UiNumericTextEditControlVtable = {
+        .relocate = (void *)UiNumericTextEditControl_RelocateAndRebuildText,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextEditControl_DrawTextSelectionAndCaret,
+        .layout = (void *)UiTextEditControl_RecomputeLayoutAndClampScroll,
+        .nonRightPress = (void *)UiTextEditControl_BeginSelectionAtPointer,
+        .nonRightRelease = (void *)UiTextEditControl_EndSelection,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiTextEditControl_UpdateSelectionFromPointer,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNumericTextEditControl_HandleKeyboardAndCommit,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
+        .tick = (void *)UiTextEditControl_TickCaretBlink,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B6800 g_UiPathTextEditControlVtable */
+UiNodeVtable g_UiPathTextEditControlVtable = {
+        .relocate = (void *)UiPathTextEditControl_RelocateAndValidateDos83,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextEditControl_DrawTextSelectionAndCaret,
+        .layout = (void *)UiTextEditControl_RecomputeLayoutAndClampScroll,
+        .nonRightPress = (void *)UiTextEditControl_BeginSelectionAtPointer,
+        .nonRightRelease = (void *)UiTextEditControl_EndSelection,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiTextEditControl_UpdateSelectionFromPointer,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiPathTextEditControl_HandleKeyboardAndValidate,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
+        .tick = (void *)UiTextEditControl_TickCaretBlink,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B7050 g_UiRequiredTextEditControlVtable */
+UiNodeVtable g_UiRequiredTextEditControlVtable = {
+        .relocate = (void *)UiRequiredTextEditControl_RelocateAndValidateNonEmpty,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextEditControl_DrawTextSelectionAndCaret,
+        .layout = (void *)UiTextEditControl_RecomputeLayoutAndClampScroll,
+        .nonRightPress = (void *)UiTextEditControl_BeginSelectionAtPointer,
+        .nonRightRelease = (void *)UiTextEditControl_EndSelection,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiTextEditControl_UpdateSelectionFromPointer,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiRequiredTextEditControl_HandleKeyboardAndValidate,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
+        .tick = (void *)UiTextEditControl_TickCaretBlink,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B9E40 g_UiTextListControlVtable */
+UiNodeVtable g_UiTextListControlVtable = {
+    .relocate = (void *)UiContainer_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiTextListControl_DrawRowsAndSelection,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiTextListControl_SelectRowFromPointer,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiContainer_HitTestChildren,
+    .keyboardEvent = (void *)UiTextListControl_HandleKeyboardNavigationAndSearch,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiTextListControl_SuppressIfActionId,
+    .unsuppressActionId = (void *)UiTextListControl_UnsuppressIfActionId,
+    .tick = (void *)UiTextListControl_TickActivationPulse,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004BCC30 g_UiNineSlicePanelControlVtable */
+UiNodeVtable g_UiNineSlicePanelControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiNineSlicePanelControl_DrawTextureFrameAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 00515610 g_UiNumericPairTextButtonVtable */
+UiNodeVtable g_UiNumericPairTextButtonVtable = {
+        .relocate = (void *)UiTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiNumericPairTextButton_DrawFormattedValues,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiTextButtonControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+/* 00515730 g_UiPayloadPairTextButtonVtable (followed by 0x90 code filler) */
+UiNodeVtable g_UiPayloadPairTextButtonVtable = {
+        .relocate = (void *)UiTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiPayloadPairTextButton_DrawFormattedPayloads,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiTextButtonControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+/* 005157E0 g_UiFormattedContainerVtable (followed by 0x90 code filler) */
+UiNodeVtable g_UiFormattedContainerVtable = {
+        .relocate = (void *)UiFormattedContainer_RelocateWithPatchedTextPayloads,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiFormattedContainer_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+/* 00516CC0 g_UiArmyMetricsPanelVtable (followed by 0x90 code filler) */
+UiNodeVtable g_UiArmyMetricsPanelVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiArmyMetricsPanel_DrawTextureMetricsAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiImagePanelControl_HitTestAlignedTextureAndChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+/* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
+UiNodeVtable g_UiSoftwareTexturePreviewControlVtable = {
+    .relocate = (void *)UiContainer_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiContainer_HitTestChildren,
+    .keyboardEvent = (void *)UiSoftwareTexturePreviewControl_HandleKeyboardActivation,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiContainer_SuppressActionId,
+    .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+    .tick = (void *)UiNode_DefaultTick,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};

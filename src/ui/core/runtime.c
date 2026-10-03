@@ -8,6 +8,14 @@
 #include <thandor/ui/core/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004AE984 g_UiRuntimeFrameLock */
+RuntimeSpinLockValue *g_UiRuntimeFrameLock = 0;
+
+/* 004AE988 g_UiRuntimePostUnlockCallback */
+UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback = 0;
+
 /* Implementation ownership: ui/core/runtime. */
 
 /* Address: 0x004228F0.

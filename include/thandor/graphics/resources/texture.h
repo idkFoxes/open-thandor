@@ -146,4 +146,10 @@ bool GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset,
           GraphicsTextureSourceAsset **outAsset,uint32_t *outError);
 
+extern GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize; /* 004A8EF4 g_GraphicsTextureSourceGetLogicalSize */
+extern GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel; /* 004A8EF8 g_GraphicsTextureSourceTestOpaquePixel */
+extern GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitSourceAlpha; /* 004A8EFC g_GraphicsTextureSourceBlitSourceAlpha */
+extern GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledSourceAlpha; /* 004A8F00 g_GraphicsTextureSourceBlitTiledSourceAlpha */
+extern GraphicsTextureSourceBlitModulatedSourceAlphaProc *g_GraphicsTextureSourceBlitModulatedSourceAlpha; /* 004A8F18 g_GraphicsTextureSourceBlitModulatedSourceAlpha */
+
 #endif /* THANDOR_GRAPHICS_RESOURCES_TEXTURE_H */

@@ -738,3 +738,92 @@ void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
   return;
 }
 
+
+/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004B15D0 g_UiSpriteButtonControlVtable */
+UiNodeVtable g_UiSpriteButtonControlVtable = {
+    .relocate = (void *)UiSpriteButtonControl_Relocate,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiSpriteButtonControl_NonRightPress,
+    .nonRightRelease = (void *)UiSpriteButtonControl_NonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+    .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+    .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+    .tick = (void *)UiNode_DefaultTick,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 00514FC0 g_UiImageActionControlVtable (followed by 0x90 code filler) */
+UiNodeVtable g_UiImageActionControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiImageActionControl_DrawImageAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiImageActionControl_EnqueuePrimaryAction,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiImageActionControl_EnqueueSecondaryAction,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiImageActionControl_QueryPointerCode,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiImageActionControl_HandleKeyboardActivation,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+/* 00515290 g_UiConditionalActionControlVtable (followed by 0x90 code filler) */
+UiNodeVtable g_UiConditionalActionControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiConditionalActionControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiConditionalActionControl_EnqueuePrimaryActionIfEnabled,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiConditionalActionControl_QueryPointerCode,
+        .hitTest = (void *)UiConditionalActionControl_HitTestWhenEnabled,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+/* 00516530 g_UiCatalogEntryControlVtable (followed by 0x90 code filler) */
+UiNodeVtable g_UiCatalogEntryControlVtable = {
+        .relocate = (void *)UiSpriteButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiCatalogEntryControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .nonRightRelease = (void *)UiCatalogEntryControl_NonRightRelease,
+        .rightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .rightRelease = (void *)UiCommandSpriteButtonControl_RightRelease,
+        .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .pointerMove = (void *)UiCatalogEntryControl_PointerMove,
+        .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+        .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};

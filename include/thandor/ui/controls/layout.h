@@ -286,4 +286,17 @@ void UiWindow_BlitTiledHorizontalEdge
 /* 0x004B14D0 */
 void UiRootStack_InvalidateAll(void);
 
+extern UiNodeVtable g_UiTitledWindowControlVtable; /* 004B33D0 g_UiTitledWindowControlVtable */
+extern UiNodeVtable g_UiFillPanelControlVtable; /* 004B3A50 g_UiFillPanelControlVtable */
+extern UiNodeVtable g_UiHorizontalGaugeControlVtable; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
+extern UiNodeVtable g_UiLayoutContainerControlVtable; /* 004B4650 g_UiLayoutContainerControlVtable */
+extern UiNodeVtable g_UiPanelControlVtable; /* 004B4950 g_UiPanelControlVtable */
+extern UiNodeVtable g_UiResizableWindowControlVtable; /* 004B4CC0 g_UiResizableWindowControlVtable */
+
+extern uint32_t g_UiPendingFrameTicks; /* 004AF1F0 g_UiPendingFrameTicks */
+extern uint32_t g_UiInvalidationSuppressed; /* 004AF208 g_UiInvalidationSuppressed */
+extern UiRootNode *g_UiRootNode; /* 004B0E30 g_UiRootNode */
+extern GraphicsTextureSourceAsset *g_UiWindowTextureSource; /* 004B0E34 g_UiWindowTextureSource */
+extern GraphicsTextureSourceAsset *g_UiWindowClassTextureSource; /* 004B0E38 g_UiWindowClassTextureSource */
+
 #endif /* THANDOR_UI_CONTROLS_LAYOUT_H */

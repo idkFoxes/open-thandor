@@ -195,4 +195,16 @@ bool UiNode_DefaultKeyboardEventMoveFocusNext
 /* 0x004AFF60 */
 void UiKeyboardFocus_Set(UiNodeBase *node);
 
+/* Not in the original: builds the bilinear scaler weight tables (called once at startup). */
+void UiScaler_BuildPixelWeightTables(void);
+
+extern UiNodeVtable g_UiFocusProxyControlVtable; /* 004B9530 g_UiFocusProxyControlVtable */
+extern UiNodeVtable g_UiSelectionGeometryControlVtable; /* 00515C70 g_UiSelectionGeometryControlVtable */
+extern UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable; followed by 0x90 code alignment fill */
+
+extern UiNodeBase *g_UiPointerCaptureTarget; /* 004B0E3C g_UiPointerCaptureTarget */
+extern UiNodeBase *g_UiKeyboardFocusNode; /* 004B0E40 g_UiKeyboardFocusNode */
+extern UiPointerCaptureButton g_UiPointerCaptureButton; /* 004B0F24 g_UiPointerCaptureButton */
+extern UiImageControl * g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
+
 #endif /* THANDOR_UI_CONTROLS_INPUT_H */

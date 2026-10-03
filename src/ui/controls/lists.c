@@ -8,6 +8,144 @@
 #include <thandor/ui/controls/lists.h>
 #include <thandor/thandor.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 00562648 g_UiCatalogGroup48ColumnCount */
+uint32_t g_UiCatalogGroup48ColumnCount = 0;
+
+/* 0056264C g_UiCatalogGroup42ColumnCount */
+uint32_t g_UiCatalogGroup42ColumnCount = 0;
+
+/* 00562654 g_UiCatalogGroup48OffsetTables */
+int32_t *g_UiCatalogGroup48OffsetTables[9] = {
+    /* 0 */ (void *)&g_UiCatalogGroup48OffsetsDefault,
+    /* 1 */ (void *)&g_UiCatalogGroup48OffsetsDefault,
+    /* 2 */ (void *)&g_UiCatalogGroup48OffsetsDefault,
+    /* 3 */ (void *)&g_UiCatalogGroup48OffsetsDefault,
+    /* 4 */ (void *)&g_UiCatalogGroup48OffsetsDefault,
+    /* 5 */ (void *)&g_UiCatalogGroup48Offsets5Columns,
+    /* 6 */ (void *)&g_UiCatalogGroup48Offsets6Columns,
+    /* 7 */ (void *)&g_UiCatalogGroup48Offsets7Columns,
+    /* 8 */ (void *)&g_UiCatalogGroup48Offsets8Columns};
+
+/* 00562678 g_UiCatalogGroup42OffsetTables */
+int32_t *g_UiCatalogGroup42OffsetTables[7] = {
+    /* 0 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
+    /* 1 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
+    /* 2 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
+    /* 3 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
+    /* 4 */ (void *)&g_UiCatalogGroup42OffsetsDefault,
+    /* 5 */ (void *)&g_UiCatalogGroup42Offsets5Columns,
+    /* 6 */ (void *)&g_UiCatalogGroup42Offsets6Columns};
+
+/* 005626A8 g_UiCatalogGroup48OffsetsDefault */
+int32_t g_UiCatalogGroup48OffsetsDefault[48] = {
+    /*  0 */ 24188, 24316, 24444, 24572, 24700, 24828, 24956, 25084,
+    /*  8 */ 25212, 25340, 25468, 25596, 25724, 25852, 25980, 26108,
+    /* 16 */ 26236, 26364, 26492, 26620, 26748, 26876, 27004, 27132,
+    /* 24 */ 27260, 27388, 27516, 27644, 27772, 27900, 28028, 28156,
+    /* 32 */ 28284, 28412, 28540, 28668, 28796, 28924, 29052, 29180,
+    /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204};
+
+/* 00562768 g_UiCatalogGroup48Offsets5Columns */
+int32_t g_UiCatalogGroup48Offsets5Columns[48] = {
+    /*  0 */ 24188, 24316, 24444, 24572, 27260, 24700, 24828, 24956,
+    /*  8 */ 25084, 27388, 25212, 25340, 25468, 25596, 27516, 25724,
+    /* 16 */ 25852, 25980, 26108, 27644, 26236, 26364, 26492, 26620,
+    /* 24 */ 27772, 26748, 26876, 27004, 27132, 27900, 28028, 28156,
+    /* 32 */ 28284, 28412, 28540, 28668, 28796, 28924, 29052, 29180,
+    /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204};
+
+/* 00562828 g_UiCatalogGroup48Offsets6Columns */
+int32_t g_UiCatalogGroup48Offsets6Columns[48] = {
+    /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 24700, 24828,
+    /*  8 */ 24956, 25084, 27388, 28156, 25212, 25340, 25468, 25596,
+    /* 16 */ 27516, 28284, 25724, 25852, 25980, 26108, 27644, 28412,
+    /* 24 */ 26236, 26364, 26492, 26620, 27772, 28540, 26748, 26876,
+    /* 32 */ 27004, 27132, 27900, 28668, 28796, 28924, 29052, 29180,
+    /* 40 */ 29308, 29436, 29564, 29692, 29820, 29948, 30076, 30204};
+
+/* 005628E8 g_UiCatalogGroup48Offsets7Columns */
+int32_t g_UiCatalogGroup48Offsets7Columns[48] = {
+    /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 28796, 24700,
+    /*  8 */ 24828, 24956, 25084, 27388, 28156, 28924, 25212, 25340,
+    /* 16 */ 25468, 25596, 27516, 28284, 29052, 25724, 25852, 25980,
+    /* 24 */ 26108, 27644, 28412, 29180, 26236, 26364, 26492, 26620,
+    /* 32 */ 27772, 28540, 29308, 26748, 26876, 27004, 27132, 27900,
+    /* 40 */ 28668, 29436, 29564, 29692, 29820, 29948, 30076, 30204};
+
+/* 005629A8 g_UiCatalogGroup48Offsets8Columns */
+int32_t g_UiCatalogGroup48Offsets8Columns[48] = {
+    /*  0 */ 24188, 24316, 24444, 24572, 27260, 28028, 28796, 29564,
+    /*  8 */ 24700, 24828, 24956, 25084, 27388, 28156, 28924, 29692,
+    /* 16 */ 25212, 25340, 25468, 25596, 27516, 28284, 29052, 29820,
+    /* 24 */ 25724, 25852, 25980, 26108, 27644, 28412, 29180, 29948,
+    /* 32 */ 26236, 26364, 26492, 26620, 27772, 28540, 29308, 30076,
+    /* 40 */ 26748, 26876, 27004, 27132, 27900, 28668, 29436, 30204};
+
+/* 00562A68 g_UiCatalogGroup42OffsetsDefault */
+int32_t g_UiCatalogGroup42OffsetsDefault[42] = {
+    /*  0 */ 30536, 30664, 30792, 30920, 31048, 31176, 31304, 31432,
+    /*  8 */ 31560, 31688, 31816, 31944, 32072, 32200, 32328, 32456,
+    /* 16 */ 32584, 32712, 32840, 32968, 33096, 33224, 33352, 33480,
+    /* 24 */ 33608, 33736, 33864, 33992, 34120, 34248, 34376, 34504,
+    /* 32 */ 34632, 34760, 34888, 35016, 35144, 35272, 35400, 35528,
+    /* 40 */ 35656, 35784};
+
+/* 00562B10 g_UiCatalogGroup42Offsets5Columns */
+int32_t g_UiCatalogGroup42Offsets5Columns[42] = {
+    /*  0 */ 30536, 30664, 30792, 30920, 34120, 31048, 31176, 31304,
+    /*  8 */ 31432, 34248, 31560, 31688, 31816, 31944, 34376, 32072,
+    /* 16 */ 32200, 32328, 32456, 34504, 32584, 32712, 32840, 32968,
+    /* 24 */ 34632, 33096, 33224, 33352, 33480, 34760, 33608, 33736,
+    /* 32 */ 33864, 33992, 34888, 35016, 35144, 35272, 35400, 35528,
+    /* 40 */ 35656, 35784};
+
+/* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
+int32_t g_UiCatalogGroup42Offsets6Columns[42] = {
+    /*  0 */ 30536, 30664, 30792, 30920, 34120, 35016, 31048, 31176,
+    /*  8 */ 31304, 31432, 34248, 35144, 31560, 31688, 31816, 31944,
+    /* 16 */ 34376, 35272, 32072, 32200, 32328, 32456, 34504, 35400,
+    /* 24 */ 32584, 32712, 32840, 32968, 34632, 35528, 33096, 33224,
+    /* 32 */ 33352, 33480, 34760, 35656, 33608, 33736, 33864, 33992,
+    /* 40 */ 34888, 35784};
+
+/* 0040F530 g_UiTimedListDriveLetters */
+static uint8_t g_UiTimedListDriveLetters[32] = {0};
+
+/* 0040F550 g_UiTimedListRecordPathScratch */
+static WidePathBuffer256 g_UiTimedListRecordPathScratch = {0};
+
+/* 0040F750 g_UiTimedListCombinedPathScratch */
+static WidePathBuffer256 g_UiTimedListCombinedPathScratch = {0};
+
+/* 0040F950 g_UiTimedListSecondaryPathScratch */
+static WidePathBuffer256 g_UiTimedListSecondaryPathScratch = {0};
+
+/* 0040FB50 g_UiTimedListHierarchyPathScratch */
+static WidePathBuffer256 g_UiTimedListHierarchyPathScratch = {0};
+
+/* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
+static WidePathBuffer256 g_UiTimedListHierarchyParentPathScratch = {0};
+
+/* 0040FF50 g_WildcardAllFilesUtf16 */
+static uint16_t g_WildcardAllFilesUtf16[4] = L"*.*";
+
+/* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
+static uint16_t g_UiTimedListDriveWildcardUtf16[7] = L"?:\\*.*";
+
+/* 004B0E50 g_UiScrollWheelDefaultStep: int32_t, 14: pixels scrolled per mouse-wheel step in a scrollable control whose child is not a list (UiScrollableControl wheel handler, src/ui/controls/lists.c). */
+static const int32_t g_UiScrollWheelDefaultStep = 14;
+
+/* 004B0E54 g_UiScrollWheelListStep: int32_t, 15: pixels per mouse-wheel step when the scrollable control's child is a list/text list/timed list control (src/ui/controls/lists.c). */
+static const int32_t g_UiScrollWheelListStep = 15;
+
+/* 004B0E5C g_UiTimedListActionDelayFrames */
+static const UiFrameDelayFrames g_UiTimedListActionDelayFrames = 8;
+
+/* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
+static uint16_t g_UiCatalogEntryRichTextScratchUtf16[16] = {0};
+
 /* Implementation ownership: ui/controls/lists. */
 
 /* Address: 0x004BBE60.
@@ -1688,7 +1826,7 @@ void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 /* Address: 0x004B2550.
    Keyboard handler shared by the buttons, check boxes and similar selectable controls (keyboardEvent of
-   g_UiSpriteButtonControlVtable, g_UiWindowControlVtable, g_UiNodeVtable_004B1D80, _004BC570, _005162C0,
+   g_UiSpriteButtonControlVtable, g_UiWindowControlVtable, g_UiFramedTextButtonControlVtable, _004BC570, _005162C0,
    _00516310 and _00516530). Space on the focused control, or Enter / Escape when the control binds them,
    activates it: a push button queues its action, a toggle flips its selected state, a radio-style control
    gets selected; optionally with the activation sound. Other keys go to the default focus handling.
@@ -1762,7 +1900,7 @@ bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
    Disables (greys out) a selectable control bound to actionId: sets UI_NODE_SUPPRESSED and gives up the
    keyboard focus if it had it. suppressActionId of g_UiGraphicsAdapterTextButtonVtable,
    g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
-   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiNodeVtable_004B1D80, _004B2CE0,
+   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiFramedTextButtonControlVtable, _004B2CE0,
    _004BC570, _005162C0, _00516310, _00516530.
 */
 void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
@@ -1783,7 +1921,7 @@ void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableCont
    Re-enables a selectable control bound to actionId: clears UI_NODE_SUPPRESSED and takes the keyboard focus
    when no node has it. unsuppressActionId of g_UiGraphicsAdapterTextButtonVtable,
    g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
-   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiNodeVtable_004B1D80, _004B2CE0,
+   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiFramedTextButtonControlVtable, _004B2CE0,
    _004BC570, _005162C0, _00516310, _00516530.
 */
 void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
@@ -3244,7 +3382,7 @@ static void UiCatalogEntryControl_DrawBuildPercent
 }
 
 /* Address: 0x00516580.
-   Draws a build catalog entry of the in-game command panel (g_UiNodeVtable_00516530 drawClipped): the
+   Draws a build catalog entry of the in-game command panel (g_UiCatalogEntryControlVtable drawClipped): the
    sprite button, its price (runtimeDisplayValueQ4 in whole units, in the alert colour when the active
    faction's xenite does not cover it), how many of this army asset the faction already owns (top left) and
    the highest build progress (elapsed / required ticks at model runtime +0x64 / +0x68) among the faction's
@@ -3361,7 +3499,7 @@ void UiCatalogEntryControl_DrawClipped
 
 
 /* Address: 0x00516B90.
-   Pointer over a build catalog entry (g_UiNodeVtable_00516530 pointerMove): finds the entry in the group-42
+   Pointer over a build catalog entry (g_UiCatalogEntryControlVtable pointerMove): finds the entry in the group-42
    or group-48 catalog tables, makes its record the hover selection and rebuilds the selection detail panel,
    so the panel describes the hovered asset. Returns cursor frame 10, or 12 while Ctrl is held.
 */
@@ -3406,7 +3544,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
 
 
 /* Address: 0x00516C50.
-   Left-button release on a pressed build catalog entry (g_UiNodeVtable_00516530 nonRightRelease): releases
+   Left-button release on a pressed build catalog entry (g_UiCatalogEntryControlVtable nonRightRelease): releases
    the button, records the modifier keys held (g_KeyboardStateMask into activationInputState) for the action
    handler, plays the activation sound and queues the entry's action.
 */
@@ -3843,3 +3981,111 @@ void UiScrollableControl_ClampOffsetsToViewport
   return;
 }
 
+
+/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004B7920 g_UiScrollableControlVtable */
+UiNodeVtable g_UiScrollableControlVtable = {
+    .relocate = (void *)UiScrollableControl_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiScrollableControl_DrawFrameContentAndScrollbars,
+    .layout = (void *)UiScrollableControl_RebuildViewportAndScrollbars,
+    .nonRightPress = (void *)UiScrollableControl_BeginPrimaryScrollInteraction,
+    .nonRightRelease = (void *)UiScrollableControl_EndPrimaryScrollInteraction,
+    .rightPress = (void *)UiScrollableControl_BeginSecondaryScrollInteraction,
+    .rightRelease = (void *)UiScrollableControl_EndSecondaryScrollInteraction,
+    .nonRightDrag = (void *)UiScrollableControl_UpdatePrimaryScrollDrag,
+    .rightDrag = (void *)UiScrollableControl_UpdateSecondaryScrollDrag,
+    .pointerMove = (void *)UiScrollableControl_QueryPointerRegion,
+    .hitTest = (void *)UiScrollableControl_HitTestContentAndScrollbars,
+    .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiContainer_SuppressActionId,
+    .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+    .tick = (void *)UiScrollableControl_TickAutoScroll,
+    .pointerWheel = (void *)UiScrollableControl_HandlePointerWheel};
+
+/* 004BA590 g_UiListControlVtable */
+UiNodeVtable g_UiListControlVtable = {
+    .relocate = (void *)UiContainer_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiListControl_DrawRowsAndSelection,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiListControl_SelectRowFromPointer,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiContainer_HitTestChildren,
+    .keyboardEvent = (void *)UiListControl_HandleKeyboardNavigation,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiListControl_SuppressIfActionId,
+    .unsuppressActionId = (void *)UiListControl_UnsuppressIfActionId,
+    .tick = (void *)UiListControl_TickActivationPulse,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004BB990 g_UiTimedListControlVtable */
+UiNodeVtable g_UiTimedListControlVtable = {
+    .relocate = (void *)UiTimedListControl_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiTimedListControl_DrawRowsAndSelection,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiTimedListControl_SelectRowFromPointer,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiContainer_HitTestChildren,
+    .keyboardEvent = (void *)UiTimedListControl_HandleKeyboardNavigation,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiContainer_SuppressActionId,
+    .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+    .tick = (void *)UiTimedListControl_TickActionDelay,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004BC410 g_UiListOffsetControlVtable */
+UiNodeVtable g_UiListOffsetControlVtable = {
+        .relocate = (void *)UiWrappedTextControl_RelocateAndApplyDeferredOffset,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiWrappedTextControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
+UiNodeVtable g_UiCommandVisibilityWrappedTextVtable = {
+    .relocate = (void *)UiWrappedTextControl_RelocateAndApplyDeferredOffset,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiCommandVisibilityWrappedText_DrawWhenAllowed,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)FrontendResultsTable_HitTestAlwaysNone,
+    .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiContainer_SuppressActionId,
+    .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+    .tick = (void *)UiNode_DefaultTick,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};

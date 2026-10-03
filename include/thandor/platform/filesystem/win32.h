@@ -116,4 +116,7 @@ bool FileSystem_BuildEnumerationStringTable
           (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText,
           uint16_t ***outTable,uint32_t *outEntryCount);
 
+extern FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries; /* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntries */
+extern FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path; /* 0040B218 g_FileSystemValidateDos83Path */
+
 #endif /* THANDOR_PLATFORM_FILESYSTEM_WIN32_H */

@@ -140,7 +140,6 @@ add_library(thandor_curated STATIC
     src/platform/system/time_locale.c
     src/platform/system/win32.c
     src/ui/controls/buttons.c
-    src/ui/controls/data.c
     src/ui/controls/input.c
     src/ui/controls/layout.c
     src/ui/controls/lists.c

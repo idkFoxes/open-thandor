@@ -10,6 +10,14 @@
 #include <thandor/platform/debug/hooks.h>
 #include <intrin.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 00416818 g_CursorUseOverridePosition */
+uint32_t g_CursorUseOverridePosition = 0;
+
+/* 00416830 g_CursorWheelDelta */
+UiPointerWheelDelta g_CursorWheelDelta = 0;
+
 /* Implementation ownership: platform/input/devices. */
 
 /* Address: 0x00417280.

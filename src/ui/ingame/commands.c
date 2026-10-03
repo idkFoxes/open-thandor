@@ -275,7 +275,7 @@ void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
 
 /* Address: 0x00516360.
    Pointer press of the command sprite buttons (nonRightPress and rightPress of g_UiNodeVtable_005162C0,
-   g_UiNodeVtable_00516310 and g_UiNodeVtable_00516530): shows the button pressed and starts a new
+   g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable): shows the button pressed and starts a new
    activationInputState, marking a double click when the node reports one.
 */
 void UiCommandSpriteButtonControl_BeginPress
@@ -335,7 +335,7 @@ void UiCommandSpriteButtonControl_NonRightRelease
 
 /* Address: 0x00516410.
    Right button release of the command sprite buttons (rightRelease of g_UiNodeVtable_005162C0,
-   g_UiNodeVtable_00516310 and g_UiNodeVtable_00516530): like the left release, but replaces activationInputState
+   g_UiNodeVtable_00516310 and g_UiCatalogEntryControlVtable): like the left release, but replaces activationInputState
    with the modifier keys plus UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON (which also drops the double-click marker).
 */
 void UiCommandSpriteButtonControl_RightRelease

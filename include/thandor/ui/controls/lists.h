@@ -324,4 +324,23 @@ UiTimedListTreeRecord * UiTimedListControl_GetRecordTree(UiTimedListControl *con
 UiTimedListTreeRecord *
 UiTimedListControl_GetSelectedRecord(UiTimedListTreeControl *control);
 
+extern UiNodeVtable g_UiScrollableControlVtable; /* 004B7920 g_UiScrollableControlVtable */
+extern UiNodeVtable g_UiListControlVtable; /* 004BA590 g_UiListControlVtable */
+extern UiNodeVtable g_UiTimedListControlVtable; /* 004BB990 g_UiTimedListControlVtable */
+extern UiNodeVtable g_UiListOffsetControlVtable; /* 004BC410 g_UiListOffsetControlVtable */
+extern UiNodeVtable g_UiCommandVisibilityWrappedTextVtable; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable; followed by 0x90 code alignment fill */
+
+extern uint32_t g_UiCatalogGroup48ColumnCount; /* 00562648 g_UiCatalogGroup48ColumnCount */
+extern uint32_t g_UiCatalogGroup42ColumnCount; /* 0056264C g_UiCatalogGroup42ColumnCount */
+extern int32_t *g_UiCatalogGroup48OffsetTables[9]; /* 00562654 g_UiCatalogGroup48OffsetTables */
+extern int32_t *g_UiCatalogGroup42OffsetTables[7]; /* 00562678 g_UiCatalogGroup42OffsetTables */
+extern int32_t g_UiCatalogGroup48OffsetsDefault[48]; /* 005626A8 g_UiCatalogGroup48OffsetsDefault */
+extern int32_t g_UiCatalogGroup48Offsets5Columns[48]; /* 00562768 g_UiCatalogGroup48Offsets5Columns */
+extern int32_t g_UiCatalogGroup48Offsets6Columns[48]; /* 00562828 g_UiCatalogGroup48Offsets6Columns */
+extern int32_t g_UiCatalogGroup48Offsets7Columns[48]; /* 005628E8 g_UiCatalogGroup48Offsets7Columns */
+extern int32_t g_UiCatalogGroup48Offsets8Columns[48]; /* 005629A8 g_UiCatalogGroup48Offsets8Columns */
+extern int32_t g_UiCatalogGroup42OffsetsDefault[42]; /* 00562A68 g_UiCatalogGroup42OffsetsDefault */
+extern int32_t g_UiCatalogGroup42Offsets5Columns[42]; /* 00562B10 g_UiCatalogGroup42Offsets5Columns */
+extern int32_t g_UiCatalogGroup42Offsets6Columns[42]; /* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
+
 #endif /* THANDOR_UI_CONTROLS_LISTS_H */

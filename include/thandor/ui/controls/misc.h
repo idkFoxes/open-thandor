@@ -24,12 +24,24 @@
 #define UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER 0x20F /* 5 adapter buttons */
 /* g_UiActionHandlerPages page of these action ids (0x200 >> 8), installed by the dialog when it opens. */
 #define UI_DISPLAY_MODE_ACTION_HANDLER_PAGE 2
+/* Texts of the display settings dialog (text resource ids). */
+#define TEXT_ID_OK 0x100
+#define TEXT_ID_CANCEL 0x101
+#define TEXT_ID_DISPLAY_COLOR_DEPTH_OPTION 0x106 /* colour depth button, formats the bit depth */
+#define TEXT_ID_DISPLAY_RESOLUTION_OPTION 0x107 /* resolution button, formats width and height */
+#define TEXT_ID_DISPLAY_SETTINGS_TITLE 0x108
+#define TEXT_ID_DISPLAY_COLOR_SCALE 0x10A /* colour scale slider column (likely contrast) */
+#define TEXT_ID_DISPLAY_COLOR_BIAS 0x10B /* colour bias slider column (likely brightness) */
+#define TEXT_ID_DISPLAY_RESOLUTION_HEADING 0x10C
+#define TEXT_ID_DISPLAY_COLOR_DEPTH_HEADING 0x10D
+#define TEXT_ID_DISPLAY_ADAPTER_HEADING 0x10F
+#define TEXT_ID_DISPLAY_ADAPTER_OPTION 0x110 /* adapter button, formats the adapter number */
 /* Display settings pages: distinct display modes are sorted as width * UI_DISPLAY_MODE_WIDTH_SCALE + height
    (the height is the low word); unused candidate slots hold UI_DISPLAY_MODE_NONE */
 #define UI_DISPLAY_MODE_WIDTH_SCALE 0x10000
 #define UI_DISPLAY_MODE_HEIGHT_MASK 0xffff
 #define UI_DISPLAY_MODE_NONE 0xffffffffu
-/* The display settings dialog's applyButton (a framed text button, g_UiNodeVtable_004B1D80) with extra fields in
+/* The display settings dialog's applyButton (a framed text button, g_UiFramedTextButtonControlVtable) with extra fields in
    its tail: the selected mode tuple and colour bias/scale, then the same six values as they were when the
    dialog opened. 0x8C bytes. */
 typedef struct UiDisplaySettingsApplyButton {
@@ -167,5 +179,11 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
           (FrontendDisplayAdapterIndex adapterIndex,UiNodeBase *selectedModeValue,
           FrontendDisplayDimensionPixels modeHeight,FrontendDisplayDimensionPixels modeWidth,
           UiNodeBase *displaySettingsRoot);
+
+extern UiNodeVtable g_UiRangeSliderControlVtable; /* 004B3EF0 g_UiRangeSliderControlVtable */
+extern UiNodeVtable g_UiImageControlVtable; /* 004BC570 g_UiImageControlVtable */
+extern UiNodeVtable g_UiTransferProgressGaugeVtable; /* 00517DE0 g_UiTransferProgressGaugeVtable: UiHorizontalGaugeControl subclass of the transfer progress gauge; followed by 0x90 code alignment fill */
+
+extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
 
 #endif /* THANDOR_UI_CONTROLS_MISC_H */

@@ -8,6 +8,59 @@
 #include <thandor/ui/controls/layout.h>
 #include <thandor/thandor.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004AF1F0 g_UiPendingFrameTicks */
+uint32_t g_UiPendingFrameTicks = 0;
+
+/* 004AF208 g_UiInvalidationSuppressed */
+uint32_t g_UiInvalidationSuppressed = 0;
+
+/* 004B0E30 g_UiRootNode */
+UiRootNode *g_UiRootNode = UI_ROOT_STACK_END;
+
+/* 004B0E34 g_UiWindowTextureSource */
+GraphicsTextureSourceAsset *g_UiWindowTextureSource = (void *)(intptr_t)-1; /* 0xFFFFFFFF in the original */
+
+/* 004B0E38 g_UiWindowClassTextureSource */
+GraphicsTextureSourceAsset *g_UiWindowClassTextureSource = 0;
+
+/* 004B0E64 g_UiResizableWindowTitleTextTopOffset: int32_t, 5: pixels from the window top to the title text line of a resizable window (src/ui/controls/layout.c). */
+static const int32_t g_UiResizableWindowTitleTextTopOffset = 5;
+
+/* 004B0E68 g_UiResizableWindowTitleTextStyle: UiPackedTextStyle, 2: packed rich-text style of the resizable window title (src/ui/controls/layout.c). */
+static const UiPackedTextStyle g_UiResizableWindowTitleTextStyle = 2;
+
+/* 004B0E6C g_UiWindowMoveHandleWidth: int32_t, 19 (0x13): height in pixels of the top strip that drags a movable root window (src/ui/controls/layout.c). */
+static const int32_t g_UiWindowMoveHandleWidth = 19;
+
+/* 004B0E70 g_UiWindowResizeBorderThickness */
+static const int32_t g_UiWindowResizeBorderThickness = 19;
+
+/* 004B0E88 g_UiWindowTitleTextStyle */
+static const uint32_t g_UiWindowTitleTextStyle = 0;
+
+/* 004B0EA8 g_UiHorizontalGaugeLabelTopInset: int32_t, 4: pixels from the gauge top to its label line (src/ui/controls/layout.c). */
+static const int32_t g_UiHorizontalGaugeLabelTopInset = 4;
+
+/* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
+static const uint32_t g_UiHorizontalGaugeLabelTextStyle = 0;
+
+/* 004B0EB8 g_UiWindowClassTexturePathUtf16 */
+static uint16_t g_UiWindowClassTexturePathUtf16[20] = L"engine\\winclass.gfx";
+
+/* 004B0EE0 g_UiWindowClassTextPathUtf16 */
+static uint16_t g_UiWindowClassTextPathUtf16[19] = L"texte\\winclass.str";
+
+/* 004B0F06 g_UiWindowTexturePathUtf16 */
+static uint16_t g_UiWindowTexturePathUtf16[15] = L"engine\\win.gfx";
+
+/* 004B3C68 g_UiWindowPercentTextUtf16 */
+static uint16_t g_UiWindowPercentTextUtf16[5] = {0};
+
+/* 00576C24 g_DirectInputMouseRefreshCountdown */
+static UiFrameRefreshCountdownFrames g_DirectInputMouseRefreshCountdown = 16;
+
 /* Implementation ownership: ui/controls/layout. */
 
 /* Address: 0x004B49A0.
@@ -1152,7 +1205,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
 
 
 /* Address: 0x004BC660.
-   layout of g_UiNodeVtable_004BC570 (image toggles of the in-game resource panel): lays out the children
+   layout of g_UiImageControlVtable (image toggles of the in-game resource panel): lays out the children
    relative to the parent's rectangle instead of the control's own by swapping the parent's edges in for
    the call; afterwards the own rectangle is restored and its size stored as layoutWidth/layoutHeight.
 */
@@ -2024,3 +2077,131 @@ void UiRootStack_InvalidateAll(void)
   return;
 }
 
+
+/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004B33D0 g_UiTitledWindowControlVtable */
+UiNodeVtable g_UiTitledWindowControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTitledWindowControl_DrawFrameTitleAndChildren,
+        .layout = (void *)UiTitledWindowControl_LayoutFrameTitleAndChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B3A50 g_UiFillPanelControlVtable */
+UiNodeVtable g_UiFillPanelControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiFillPanelControl_DrawColorOrTiledTextureAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiFillPanelControl_HitTestChildrenOnly,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B3C20 g_UiHorizontalGaugeControlVtable */
+UiNodeVtable g_UiHorizontalGaugeControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiHorizontalGaugeControl_DrawFrameFillAndLabel,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiHorizontalGaugeControl_PointerMoveBusyCursor,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B4650 g_UiLayoutContainerControlVtable */
+UiNodeVtable g_UiLayoutContainerControlVtable = {
+        .relocate = (void *)UiLayoutContainerControl_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiContainer_DrawIntersectingChildren,
+        .layout = (void *)UiLayoutContainerControl_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiLayoutContainerControl_HitTestChildrenOnly,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiLayoutContainerControl_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiLayoutContainerControl_SuppressActionIdRecursive,
+        .unsuppressActionId = (void *)UiLayoutContainerControl_UnsuppressActionIdRecursive,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B4950 g_UiPanelControlVtable */
+UiNodeVtable g_UiPanelControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+/* 004B4CC0 g_UiResizableWindowControlVtable */
+UiNodeVtable g_UiResizableWindowControlVtable = {
+        .relocate = (void *)UiResizableWindowControl_RelocateAndRefreshInteractionState,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiResizableWindowControl_DrawFrameTitleAndChildren,
+        .layout = (void *)UiContainer_LayoutWithOptionalWindowHeaderOffset,
+        .nonRightPress = (void *)UiResizableWindowControl_BeginMoveResizeOrWindowAction,
+        .nonRightRelease = (void *)UiResizableWindowControl_EndMoveResizeAndHandleWindowActions,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiResizableWindowControl_UpdateMoveOrResize,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiResizableWindowControl_QueryResizeCursorCode,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiResizableWindowControl_HandleWindowHotkeys,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};

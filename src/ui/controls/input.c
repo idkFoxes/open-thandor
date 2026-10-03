@@ -9,6 +9,23 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004B0E3C g_UiPointerCaptureTarget */
+UiNodeBase *g_UiPointerCaptureTarget = UI_NODE_NONE;
+
+/* 004B0E40 g_UiKeyboardFocusNode */
+UiNodeBase *g_UiKeyboardFocusNode = UI_NODE_NONE;
+
+/* 004B0F24 g_UiPointerCaptureButton */
+UiPointerCaptureButton g_UiPointerCaptureButton = 255;
+
+/* 004B0F28 g_UiImageControlHoverTarget */
+UiImageControl * g_UiImageControlHoverTarget = 0;
+
+/* 004B0E58 g_UiRangeSliderDragScale: int32_t, 1: multiplier of wheelDelta * stepValue when the mouse wheel moves a range slider (src/ui/controls/input.c). */
+static const int32_t g_UiRangeSliderDragScale = 1;
+
 /* Diagnostics (open-thandor only): a UI link that is neither UI_NODE_NONE nor a readable node ends the
    walk as UI_NODE_NONE instead of crashing the focus traversal; the first 20 such links are logged. */
 static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,UiNodeBase *link) {
@@ -898,6 +915,49 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
 }
 
 
+/* Weights of the bilinear scaler below, indexed by the 8-bit fraction between two source pixels: the first
+   pixel's weight is g_UiScalerFirstPixelWeights, the second's g_UiScalerSecondPixelWeights, all four lanes
+   equal. Originally precomputed tables at 0x00420720 and 0x0041F720. */
+static SoftwareBgraWordLanes g_UiScalerFirstPixelWeights[256];
+static SoftwareBgraWordLanes g_UiScalerSecondPixelWeights[256];
+
+/* Not in the original (it carried the tables precomputed): builds the scaler weights. Fractions 0..63 take
+   only the first pixel (0x4000), 64..191 blend in steps t = 2 * (fraction - 64) of 0x4040 / 256 (the pair
+   sums to 0x4040 or 0x403F, not 0x4000), 192..255 take only the second pixel (0x4000). This reproduces every
+   entry of the original tables. Called once at startup. */
+void UiScaler_BuildPixelWeightTables(void)
+{
+  int fraction;
+  int blendStep;
+  uint16_t firstWeight;
+  uint16_t secondWeight;
+
+  for (fraction = 0; fraction < 256; fraction++) {
+    if (fraction < 64) {
+      firstWeight = 0x4000;
+      secondWeight = 0;
+    }
+    else if (fraction < 192) {
+      blendStep = (fraction - 64) * 2;
+      firstWeight = (uint16_t)(((256 - blendStep) * 0x4040) >> 8);
+      secondWeight = (uint16_t)((blendStep * 0x4040) >> 8);
+    }
+    else {
+      firstWeight = 0;
+      secondWeight = 0x4000;
+    }
+    g_UiScalerFirstPixelWeights[fraction].blue = firstWeight;
+    g_UiScalerFirstPixelWeights[fraction].green = firstWeight;
+    g_UiScalerFirstPixelWeights[fraction].red = firstWeight;
+    g_UiScalerFirstPixelWeights[fraction].alpha = firstWeight;
+    g_UiScalerSecondPixelWeights[fraction].blue = secondWeight;
+    g_UiScalerSecondPixelWeights[fraction].green = secondWeight;
+    g_UiScalerSecondPixelWeights[fraction].red = secondWeight;
+    g_UiScalerSecondPixelWeights[fraction].alpha = secondWeight;
+  }
+}
+
+
 /* MMX lane helpers for the bilinear scaler below (lanes are little-endian 16-bit words). */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: byte i of pixel becomes word lane i = (byte * 0x101) >> shift. */
@@ -1598,3 +1658,70 @@ void UiKeyboardFocus_Set(UiNodeBase *node)
   return;
 }
 
+
+/* Class vtables (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 004B9530 g_UiFocusProxyControlVtable */
+UiNodeVtable g_UiFocusProxyControlVtable = {
+        .relocate = (void *)UiSingleLineTextControl_RelocateChild,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSingleLineTextControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiSingleLineTextControl_ForwardNonRightPressToChild,
+        .nonRightRelease = (void *)UiSingleLineTextControl_ForwardNonRightReleaseToChild,
+        .rightPress = (void *)UiSingleLineTextControl_ForwardRightPressToChild,
+        .rightRelease = (void *)UiSingleLineTextControl_ForwardRightReleaseToChild,
+        .nonRightDrag = (void *)UiSingleLineTextControl_ForwardNonRightDragToChild,
+        .rightDrag = (void *)UiSingleLineTextControl_ForwardRightDragToChild,
+        .pointerMove = (void *)UiSingleLineTextControl_ForwardPointerMoveToChild,
+        .hitTest = (void *)UiSingleLineTextControl_HitTestChildProxy,
+        .keyboardEvent = (void *)UiSingleLineTextControl_ForwardKeyboardEventToChild,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiSingleLineTextControl_ForwardTickToChild,
+        .pointerWheel = (void *)UiSingleLineTextControl_ForwardPointerWheelToChildOrParent};
+
+/* 00515C70 g_UiSelectionGeometryControlVtable (followed by 0x90 code filler) */
+UiNodeVtable g_UiSelectionGeometryControlVtable = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSelectionGeometryControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiSelectionGeometryControl_ConvertPointerAndEnqueueAction,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+/* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
+UiNodeVtable g_UiCommandVisibilitySingleLineTextVtable = {
+    .relocate = (void *)UiSingleLineTextControl_RelocateChild,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiCommandVisibilitySingleLineText_DrawWhenAllowed,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)FrontendResultsTable_HitTestAlwaysNone,
+    .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiContainer_SuppressActionId,
+    .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+    .tick = (void *)UiNode_DefaultTick,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};

@@ -137,4 +137,7 @@ PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node);
 /* 0x00422990 */
 int UiModalDialogRoot_BlockMissedPointerMotion(UiRootNode *root);
 
+extern RuntimeSpinLockValue *g_UiRuntimeFrameLock; /* 004AE984 g_UiRuntimeFrameLock */
+extern UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback; /* 004AE988 g_UiRuntimePostUnlockCallback */
+
 #endif /* THANDOR_UI_CORE_RUNTIME_H */

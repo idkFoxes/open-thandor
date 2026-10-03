@@ -9,6 +9,11 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data (moved from the module data.c in step 5d; addresses are the original locations). */
+
+/* 00417348 g_SoundPlayOneShot */
+SoundPlayVoiceProc *g_SoundPlayOneShot = (void *)SoundBackendDisabled_PlayOneShot;
+
 /* Implementation ownership: audio/backend/runtime. */
 
 /* Address: 0x00583410.

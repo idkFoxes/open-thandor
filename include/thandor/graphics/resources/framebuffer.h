@@ -48,4 +48,12 @@ bool GraphicsFramebuffer_BeginAccess(void);
 /* 0x00579E60 */
 void GraphicsFramebuffer_EndAccess(void);
 
+extern SoftwareFramebufferAccess *g_FramebufferAccess; /* 004A8E70 g_FramebufferAccess */
+extern uint32_t g_FramebufferRowStrideBytes; /* 004A8E84 g_FramebufferRowStrideBytes */
+extern uint32_t g_FramebufferHeight; /* 004A8E8C g_FramebufferHeight */
+extern GraphicsFramebufferPresentProc *g_GraphicsFramebufferPresent; /* 004A8EE0 g_GraphicsFramebufferPresent */
+extern GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess; /* 004A8EEC g_GraphicsFramebufferBeginAccess */
+extern GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess; /* 004A8EF0 g_GraphicsFramebufferEndAccess */
+extern GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb; /* 004A8F30 g_GraphicsFramebufferFillRectArgb */
+
 #endif /* THANDOR_GRAPHICS_RESOURCES_FRAMEBUFFER_H */
