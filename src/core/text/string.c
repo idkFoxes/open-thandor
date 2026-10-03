@@ -8,6 +8,25 @@
 #include <thandor/core/text/string.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(8)) WideNumberFormatUtf16Proc *g_WideNumberFormatUtf16 = (void *)WideNumber_FormatUtf16;
+
+static WideNumberFormatState g_WideNumberFormatState = {
+    .decimalSeparatorLength = 1,
+    .groupSeparatorLength = 1,
+    .positiveSignLength = 1,
+    .negativeSignLength = 1,
+    .hexPrefixLength = 2,
+    .decimalSeparator = {44},
+    .groupSeparator = {46},
+    .positiveSign = {43},
+    .negativeSign = {45},
+    .hexPrefix = L"0x",
+    .spacePadding = {32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32},
+    .zeroPadding = {48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48},
+    .digitAlphabet = {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70}};
+
 /* Implementation ownership: core/text/string. */
 
 /* Formats a 32-bit number as UTF-16 text with the locale strings of g_WideNumberFormatState and returns the

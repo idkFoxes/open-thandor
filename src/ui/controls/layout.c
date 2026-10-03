@@ -2136,3 +2136,5 @@ UiNodeVtable g_UiResizableWindowControlVtable = {
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
         .tick = (void *)UiNode_DefaultTick,
         .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
+
+__declspec(align(16)) UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage = {.handlers = {(void *)UiRootStack_Pop, (void *)FatalErrorDialog_DismissAndPopRoot}};

@@ -8,6 +8,10 @@
 #include <thandor/assets/sprite/catalog.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static SpriteAssetHeader *g_SpriteAssetRegistryHead = 0;
+
 /* Implementation ownership: assets/sprite/catalog. */
 
 /* Empties the registry of already relocated sprite assets (the list SpriteAssetRegistry_FindById walks),

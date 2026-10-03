@@ -71,4 +71,6 @@ PckEntryHeader *Package_FindEntryAcrossMounts(uint16_t *path,EngineFileHandle *o
 
 bool Package_ReadDirectory(EngineFileHandle fileHandle,uint32_t *outErrorCode);
 
+extern uint8_t *g_PackageScratchBuffer;
+
 #endif /* THANDOR_ASSETS_PACKAGE_RUNTIME_H */

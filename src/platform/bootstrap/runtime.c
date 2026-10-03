@@ -13,6 +13,185 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+__declspec(align(4)) CommandLineFindOptionProc *g_CommandLineFindOption = 0;
+
+static CommandLineWideArguments g_CommandLineWideArguments = {0};
+
+static uint32_t g_CpuFeatureFlags = 0;
+
+static uint16_t u_texte_techno_str_0050dec4[17] = L"texte\\techno.str";
+
+static uint16_t u_texte_neterror_str_0050f104[19] = L"texte\\neterror.str";
+
+static uint16_t u_texte_hilfe_str_00545b34[16] = L"texte\\hilfe.str";
+
+static uint16_t u_texte_menue_str_00545ba0[16] = L"texte\\menue.str";
+
+static uint16_t u_texte_level_str_00545bc0[16] = L"texte\\level.str";
+
+static uint16_t u_texte_inhalt_str_00545be0[17] = L"texte\\inhalt.str";
+
+static uint16_t u_texte_help_str_00563170[15] = L"texte\\help.str";
+
+static uint16_t u_texte_tastatur_str_005631b8[19] = L"texte\\tastatur.str";
+
+static uint32_t g_DataPackageHandle = 0;
+
+static uint32_t g_ModelPackageHandle = 0;
+
+static uint32_t g_GraphicsPackageHandle = 0;
+
+static uint32_t g_MoviePackageHandle = 0;
+
+static uint32_t g_LevelPackageHandle = 0;
+
+static uint32_t g_InstallRegistryKeyHandle = 0;
+
+/* uint32_t: RegQueryValueExA lpcbData for the install "CD" value, initially 256 (size of g_InstallRegistryValueDataA); platform/bootstrap/runtime.c */
+static uint32_t g_InstallRegistryValueDataCapacityBytes = 256;
+
+static uint32_t g_InstallRegistryValueType = 0;
+
+/* RegQueryValueExA data buffer for the install "CD" value (capacity g_InstallRegistryValueDataCapacityBytes) */
+static uint8_t g_InstallRegistryValueDataA[256] = {0};
+
+static uint16_t g_InstallDirectoryScratchUtf16[256] = {0};
+
+static uint16_t u_Thandor_00572e10[8] = L"Thandor";
+
+static char s_Software_Planet4_Thandor_00572e20[25] = "Software\\Planet4\\Thandor";
+
+/* registry value "CD" */
+static char g_InstallRegistryValueNameCD[3] = "CD";
+
+static uint16_t u_daten_pck_00572e56[10] = L"daten.pck";
+
+static uint16_t u_modelle_pck_00572e6a[12] = L"modelle.pck";
+
+static uint16_t u_graphik_pck_00572e82[12] = L"graphik.pck";
+
+static uint16_t u_sound_pck_00572e9a[10] = L"sound.pck";
+
+static uint16_t u_filme_pck_00572eae[10] = L"filme.pck";
+
+static uint16_t u_level_pck_00572ec2[10] = L"level.pck";
+
+static PatchArchivePathTemplate18 g_PatchArchivePathTemplateUtf16 = {
+    .prefixCodeUnits = {0x70, 0x61, 0x74, 0x63, 0x68},
+    .decimalDigits = {.codeUnits = {0x30, 0x30}},
+    .suffixCodeUnits = L".pck"};
+
+static LevelArchivePathTemplate18 g_LevelArchivePathTemplateUtf16 = {
+    .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C},
+    .decimalDigits = {.codeUnits = {0x30, 0x30}},
+    .suffixCodeUnits = L".pck"};
+
+static uint16_t u_sound_button0_sam_00572f06[18] = L"sound\\button0.sam";
+
+static uint16_t u_sound_button1_sam_00572f2a[18] = L"sound\\button1.sam";
+
+static uint16_t u_sound_button2_sam_00572f4e[18] = L"sound\\button2.sam";
+
+static uint16_t u_sound_button3_sam_00572f72[18] = L"sound\\button3.sam";
+
+static uint16_t u_sound_button4_sam_00572f96[18] = L"sound\\button4.sam";
+
+static uint16_t u_sound_button5_sam_00572fba[18] = L"sound\\button5.sam";
+
+static uint16_t u_sound_button6_sam_00572fde[18] = L"sound\\button6.sam";
+
+static uint16_t u_gfx_panel_stat_gfx_00573002[19] = L"gfx\\panel\\stat.gfx";
+
+static uint16_t u_flm_intro0_flm_00573046[15] = L"flm\\intro0.flm";
+
+static char g_CommandLineOptionNoIntro[8] = "NOINTRO";
+
+static DynamicModuleEntry g_DynamicModules[16] = {0};
+
+static uint32_t g_DynamicModuleCount = 0;
+
+static char g_Kernel32ModuleName[9] = "KERNEL32";
+
+static char g_WinmmModuleName[6] = "WINMM";
+
+static char g_Advapi32ModuleName[9] = "ADVAPI32";
+
+static char dynapi_9[13] = "LoadLibraryA";
+
+static char g_BootstrapApiName_FreeLibrary[12] = "FreeLibrary";
+
+static char g_BootstrapApiName_RegOpenKeyExA[14] = "RegOpenKeyExA";
+
+static char g_BootstrapApiName_RegQueryValueExA[17] = "RegQueryValueExA";
+
+static char g_BootstrapApiName_RegCloseKey[12] = "RegCloseKey";
+
+static char g_BootstrapApiName_timeSetEvent[13] = "timeSetEvent";
+
+static char g_BootstrapApiName_timeKillEvent[14] = "timeKillEvent";
+
+static char g_BootstrapApiName_mciSendCommandA[16] = "mciSendCommandA";
+
+static char g_CommandLineOptionSound[6] = "SOUND";
+
+/* uint32_t: WM_ACTIVATEAPP wParam (application active flag), initially 1; platform/bootstrap/runtime.c */
+static uint32_t g_AppActive = 1;
+
+static CommandLineArgumentMirrorState500 g_CommandLine = {0};
+
+static char sz_MainWindowTitle[15] = " thandor  (TG)";
+
+static char sz_MainWindowClass[17] = "thandorCLASS(TG)";
+
+WidePathBuffer256 g_LooseMoviePathPrefix = {0};
+
+uint16_t u_daten_hex_0050e054[10] = L"daten.hex";
+
+uint16_t u_stat_hex_0050e082[9] = L"stat.hex";
+
+void *g_GameStatTableImage = 0;
+
+GameDataAuxState g_GameDataAuxState = {0};
+
+uint32_t g_FrontendPlayerListRows[8] = {
+    0, /* row 0 */
+    0, /* row 1 */
+    0, /* row 2 */
+    0, /* row 3 */
+    0, /* row 4 */
+    0, /* row 5 */
+    0, /* row 6 */
+    0, /* row 7 */
+};
+
+uint32_t g_IntroMoviePendingTicks = 0;
+
+/* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
+uint16_t g_ScreenshotFileNameUtf16[13] = L"screen00.pcx";
+
+/* 8 bindings, then the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
+DynamicApiBinding g_BootstrapApiBindings[9] = {
+        /* 0 */ {.destination = (void *)&dynapi_9, .moduleName = (void *)g_Kernel32ModuleName},
+        /* 1 */ {.destination = (void *)g_BootstrapApiName_FreeLibrary, .moduleName = (void *)g_Kernel32ModuleName},
+        /* 2 */ {.destination = (void *)g_BootstrapApiName_timeSetEvent, .moduleName = (void *)g_WinmmModuleName},
+        /* 3 */ {.destination = (void *)g_BootstrapApiName_timeKillEvent, .moduleName = (void *)g_WinmmModuleName},
+        /* 4 */ {.destination = (void *)g_BootstrapApiName_mciSendCommandA, .moduleName = (void *)g_WinmmModuleName},
+        /* 5 */ {.destination = (void *)g_BootstrapApiName_RegOpenKeyExA, .moduleName = (void *)g_Advapi32ModuleName},
+        /* 6 */ {
+        .destination = (void *)g_BootstrapApiName_RegQueryValueExA,
+        .moduleName = (void *)g_Advapi32ModuleName},
+        /* 7 */ {.destination = (void *)g_BootstrapApiName_RegCloseKey, .moduleName = (void *)g_Advapi32ModuleName},
+        /* 8: terminator */ {0}};
+
+HINSTANCE g_hInstance = 0;
+
+HWND g_MainWindow = 0;
+
+Win32MainMessageStorage g_MainMessageStorage = {
+    .overlay = {.windowClass = {.style = 3, .windowProc = (void *)MainWindowProc, .className = (void *)&sz_MainWindowClass}}};
+
 /* Implementation ownership: platform/bootstrap/runtime. */
 
 /* Process entry: raises the process to real-time priority, creates the full-screen main window (only
@@ -1215,9 +1394,9 @@ uint8_t *CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option
     if (comparedBytesEqual) {
       return (uint8_t *)storedOption;
     }
-    /* skip to the byte after the NUL; sz_MainWindowTitle directly follows optionBuffer and so
-       marks the end of the buffer */
-    bytesToBufferEnd = sz_MainWindowTitle - storedOption;
+    /* skip to the byte after the NUL, at most to the end of optionBuffer (the original used the address of
+       sz_MainWindowTitle, which directly followed optionBuffer in its image) */
+    bytesToBufferEnd = (int)(g_CommandLine.optionBuffer + sizeof g_CommandLine.optionBuffer - storedOption);
     scanCursor = storedOption;
     while (bytesToBufferEnd != 0) {
       bytesToBufferEnd--;

@@ -12,6 +12,17 @@
 
 /* Module data. */
 
+__declspec(align(8)) uint32_t g_FramebufferWidth = 0;
+
+GraphicsFramebufferCaptureRegionProc *g_GraphicsFramebufferCaptureRegion = 0;
+
+SoftwareFramebufferAccess g_DisplayFramebufferAccess = {0};
+
+/* the source rectangle of the present blit (GraphicsFramebuffer_Present) */
+static TH_LEGACY_RECT g_CurrentClearRect = {0};
+
+IDirectDrawSurface3 *g_BackSurface3 = 0;
+
 SoftwareFramebufferAccess *g_FramebufferAccess = 0;
 
 uint32_t g_FramebufferRowStrideBytes = 0;

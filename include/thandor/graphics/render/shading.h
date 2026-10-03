@@ -108,7 +108,38 @@ void GraphicsShadingGeneratedTexture_ComposeTransform
 void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
           (GraphicsFixedVec2 *vertexA,GraphicsFixedVec2 *vertexB,GraphicsFixedVec2 *vertexC);
 
+/* Not in the original: fills g_ShadingIntensityScaleMmx (the original shipped it precomputed). */
+void GraphicsShading_BuildIntensityScaleTable(void);
+
 /* Not in the original: fills g_PackedLightingLookupTable (the original shipped it precomputed). */
 void GraphicsLighting_BuildPackedLookupTable(void);
+
+extern uint32_t g_TextureDownsampleShift;
+
+extern uint32_t g_GraphicsIntensityClampTableBase;
+extern GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount;
+extern uint32_t g_GraphicsShadingTextureDimension;
+extern uint32_t g_GraphicsShadingGridHalfSize;
+extern uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor;
+extern uint32_t g_GraphicsShadingGeneratedTextureTileX;
+extern uint32_t g_GraphicsShadingGeneratedTextureTileY;
+extern GraphicsSubresourceIndex g_GraphicsShadingGeneratedTextureSubresourceIndex;
+extern uint32_t g_GraphicsShadingSubresourceCount;
+extern uint32_t g_GraphicsShadingGeneratedTextureTileXQ20;
+extern uint32_t g_GraphicsShadingGeneratedTextureTileYQ20;
+extern uint32_t g_GraphicsShadingGridStepQ20;
+extern int32_t g_GraphicsShadingGridStepQ20Current;
+extern GraphicsTextureSourceAsset *g_GraphicsShadingGeneratedAsset;
+extern void *g_GraphicsShadingGridScratch;
+extern pointer g_GraphicsShadingGridScratchInterior;
+extern GraphicsTextureSet *g_GraphicsShadingTextureSet;
+extern uint32_t g_GraphicsShadingGeneratedTextureCompletedTraversalCount;
+extern int32_t g_GraphicsShadingPositiveGridOriginQ12;
+extern int32_t g_GraphicsShadingNegativeGridOriginQ12;
+extern GeneratedTextureScratchRuntime g_GeneratedTextureScratchRuntime;
+
+extern GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256];
+
+extern uint64_t g_PackedLightingLookupTable[512];
 
 #endif /* THANDOR_GRAPHICS_RENDER_SHADING_H */

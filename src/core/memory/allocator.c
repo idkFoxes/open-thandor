@@ -8,6 +8,21 @@
 #include <thandor/core/memory/allocator.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(16)) MemoryApiTable g_MemoryApi = {0};
+
+/* its address doubles as the error code */
+static uint16_t g_ErrorTextHeapAllocationFailed[71] = L"error: HEAP: cannot allocate heap memory! Please check your swap-file.";
+
+/* linear (bump) region of g_Arena (g_Arena.linearCursor starts at [0], g_Arena.linearLimit is [0x4000]);
+   the 0xC00 bytes past the limit run to the end of the original image and are never handed out. One array
+   so cursor and limit stay in the same object. The alignment is kept on purpose: ArenaHeap_ReserveLinear
+   hands out base + offset without rounding, so the blocks inherit the 16-byte alignment of the original region. */
+static __declspec(align(16)) uint8_t g_ArenaLinearStorage[0x4C00] = {0};
+
+static ArenaState g_Arena = {.linearCursor = &g_ArenaLinearStorage[0], .linearLimit = &g_ArenaLinearStorage[0x4000]};
+
 /* Implementation ownership: core/memory/allocator. */
 
 /* Heap-building step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): the newly

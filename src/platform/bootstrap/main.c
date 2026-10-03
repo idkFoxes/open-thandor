@@ -29,6 +29,8 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
     Movie_BuildChromaLumaTable();
     GraphicsLighting_BuildPackedLookupTable();
     UiScaler_BuildPixelWeightTables();
+    SoftwareRenderer_BuildFactorTables();
+    GraphicsShading_BuildIntensityScaleTable();
     if (DebugHook_RunSelfTest()) { /* platform/selftest/selftests.c */
         return 0;
     }

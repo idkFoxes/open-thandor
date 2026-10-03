@@ -53,4 +53,6 @@ bool AiTechnologyCompatibility_AcceptRuntimeClassCandidate
 
 UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8 (ModelDefinitionRecordPrefix *candidateDefinition);
 
+extern AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6];
+
 #endif /* THANDOR_GAMEPLAY_AI_TECHNOLOGY_H */

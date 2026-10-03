@@ -37,4 +37,10 @@ void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameE
 
 void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void);
 
+extern TechnologyAsset *g_TechnologyAsset;
+
+extern int32_t g_TechnologyCategoryMaximums[8];
+extern int32_t g_AiArmyCandidateFlaggedDefinitionValueMaximum;
+extern TechnologyCategoryMasks g_TechnologyCategoryMasks;
+
 #endif /* THANDOR_GAMEPLAY_TECHNOLOGY_RUNTIME_H */

@@ -8,6 +8,26 @@
 #include <thandor/world/motion/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static const Q12 g_WorldMotionPositionMagnitudeInputScaleQ12 = 16 /* 0.003906 */;
+
+static const uint32_t k_CameraScreenDeltaDistanceScaleQ16 = 32;
+
+static const Q12 g_WorldMotionDistanceInputScaleQ12 = 64 /* 0.015625 */;
+
+static const AngleTurn32 g_WorldMotionHeadingInputScale = 16;
+
+static const AngleTurn32 g_WorldMotionPitchInputScale = 16;
+
+static const AngleTurn32 g_WorldMotionAlternateMinimumPitchAngle = 0xFFFFC400;
+
+static const AngleTurn32 g_WorldMotionAlternateMaximumPitchAngle = 0xFFFFF600;
+
+static const UQ12 g_WorldMotionAlternateMinimumDistanceQ12 = 32768;
+
+static const UQ12 g_WorldMotionAlternateMaximumDistanceQ12 = 131072;
+
 /* Implementation ownership: world/motion/runtime. */
 
 /* Edge scrolling: while the cursor presses against a screen edge (g_CursorOverflow*), moves the camera by the

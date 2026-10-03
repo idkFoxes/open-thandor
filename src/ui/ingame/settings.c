@@ -991,3 +991,37 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
   return;
 }
 
+
+/* Class vtables. */
+
+InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12 = {
+        .handlers = {
+            /*  0 */ (void *)InGameQuitMenu_OpenAndRefreshButtons,
+            /*  1 */ (void *)InGameSettingsPage_CloseViaSharedToggle,
+            /*  2 */ (void *)InGameGraphicsSettings_OpenAndSynchronize,
+            /*  3 */ (void *)InGameAudioSettings_OpenAndSynchronize,
+            /*  4 */ (void *)InGameShadingSettings_SetEnabled,
+            /*  5 */ (void *)InGameShadingSettings_ApplyLevel,
+            /*  6 */ (void *)InGameModelSettings_SetLodDepthThresholdQ8,
+            /*  7 */ (void *)InGameTextureSettings_SetQuality,
+            /*  8 */ (void *)InGameAudioSettings_SetEffectsEnabled,
+            /*  9 */ (void *)InGameAudioSettings_SetMusicEnabled,
+            /* 10 */ (void *)InGameAudioSettings_SetReverseStereo,
+            /* 11 */ (void *)InGameAudioSettings_SetEffectsGain,
+            /* 12 */ (void *)InGameAudioSettings_SetMovieDefaultGain,
+            /* 13 */ (void *)InGameAudioSettings_SetMusicGain,
+            /* 14 */ (void *)InGameSaveGamePage_RebuildCatalog,
+            /* 15 */ (void *)InGameSaveGameList_SelectAndRefreshDetail,
+            /* 16 */ (void *)InGameSaveGame_SaveSelectedOrTypedName,
+            /* 17 */ (void *)InGameSaveName_UpdateSaveActionValidity,
+            /* 18 */ (void *)InGameGameplaySettings_SetAutomaticZoomOff,
+            /* 19 */ (void *)InGameGameplaySettings_SetAutomaticRotationOff,
+            /* 20 */ (void *)InGameGameplaySettings_SetLinkRotationZoom,
+            /* 21 */ (void *)InGameGameplaySettings_SetLinkRotationTilt,
+            /* 22 */ (void *)InGameGameplaySettings_SetRightButtonDoesNotScroll,
+            /* 23 */ (void *)InGameGameplaySettings_SetCameraScrollStep,
+            /* 24 */ (void *)InGameSettingsPage_OpenViaSharedToggle,
+            /* 25 */ (void *)InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog,
+            /* 26 */ (void *)InGameAudioSettings_SetMovieAlternateGain,
+            /* 27 */ (void *)InGameGameplaySettings_SetHidePanel
+        }};

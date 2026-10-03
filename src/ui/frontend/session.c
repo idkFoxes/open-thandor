@@ -8,6 +8,12 @@
 #include <thandor/ui/frontend/session.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords = 0;
+
+FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007 = {0};
+
 /* Implementation ownership: ui/frontend/session. */
 
 /* Handler of frontend command FRONTEND_COMMAND_RELEASE_CAMPAIGN (0x320): releases the loaded campaign asset,

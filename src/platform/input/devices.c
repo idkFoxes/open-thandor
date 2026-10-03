@@ -12,6 +12,107 @@
 
 /* Module data. */
 
+__declspec(align(8)) UiPixelCoordinate g_CursorOverrideX = 0;
+
+__declspec(align(4)) UiPixelCoordinate g_CursorOverrideY = 0;
+
+__declspec(align(4)) int32_t g_CursorVisibilityToken = -1;
+
+__declspec(align(8)) uint32_t g_CursorButtonState = 0;
+
+__declspec(align(16)) uint8_t g_KeyboardSpecialKeyDown[32] = {0};
+
+__declspec(align(16)) KeyboardFlushEventsProc *g_KeyboardFlushEvents = (void *)Keyboard_FlushEvents;
+
+__declspec(align(8)) uint32_t g_KeyboardStateMask = 0;
+
+static TH_LEGACY_GUID GUID_SysMouse_Local = {.Data1 = 0x6F1D2B60, .Data2 = 54688, .Data3 = 4559, .Data4 = "\277\307DEST"};
+
+static TH_LEGACY_GUID GUID_XAxis_Local = {.Data1 = 0xA36D02E0, .Data2 = 51699, .Data3 = 4559, .Data4 = "\277\307DEST"};
+
+static TH_LEGACY_GUID GUID_YAxis_Local = {.Data1 = 0xA36D02E1, .Data2 = 51699, .Data3 = 4559, .Data4 = "\277\307DEST"};
+
+static TH_LEGACY_GUID GUID_ZAxis_Local = {.Data1 = 0xA36D02E2, .Data2 = 51699, .Data3 = 4559, .Data4 = "\277\307DEST"};
+
+static DIOBJECTDATAFORMAT MouseObjectFormats[7] = {
+    /* 0 */ {.pguid = (void *)&GUID_XAxis_Local, .dwType = 0xFFFF03},
+    /* 1 */ {.pguid = (void *)&GUID_YAxis_Local, .dwOfs = 4, .dwType = 0xFFFF03},
+    /* 2 */ {.pguid = (void *)&GUID_ZAxis_Local, .dwOfs = 8, .dwType = 0x80FFFF03},
+    /* 3 */ {.dwOfs = 12, .dwType = 0xFFFF0C},
+    /* 4 */ {.dwOfs = 13, .dwType = 0xFFFF0C},
+    /* 5 */ {.dwOfs = 14, .dwType = 0x80FFFF0C},
+    /* 6 */ {.dwOfs = 15, .dwType = 0x80FFFF0C}};
+
+static uint32_t g_CursorMaxWidth = 0;
+
+static uint32_t g_CursorMaxHeight = 0;
+
+static uint16_t u_engine_mouse_gfx_00416864[17] = L"engine\\mouse.gfx";
+
+static uint16_t u_engine_mouse_dat_00416886[17] = L"engine\\mouse.dat";
+
+/* g_KeyboardEvents. Original quirk: the original reserves 256 events (0x800 bytes) for the ring, but
+   the read and write indices wrap at KEYBOARD_EVENT_RING_SIZE (64), so entries 64-255 are never used. */
+static KeyboardInputEvent g_KeyboardEvents[256] = {0};
+
+static KeyboardEventRingIndex g_KeyboardWriteIndex = 0;
+
+static KeyboardEventRingIndex g_KeyboardReadIndex = 0;
+
+static uint32_t g_KeyboardToggleLatchMask = 0;
+
+static DirectInputCreateA *pDirectInputCreateA = 0;
+
+static char dynapi_3[7] = "DINPUT";
+
+static char dynapi_19[19] = "DirectInputCreateA";
+
+static IDirectInputA *g_DirectInput = 0;
+
+static DIDATAFORMAT MouseDataFormat = {
+    .dwSize = 24,
+    .dwObjSize = 16,
+    .dwFlags = 0x2,
+    .dwDataSize = 16,
+    .dwNumObjs = 7,
+    .rgodf = (void *)&MouseObjectFormats};
+
+static DIPROPDWORD MouseBufferProperty = {.diph = {.dwSize = 20, .dwHeaderSize = 16}, .dwData = 256};
+
+static uint32_t g_MouseDeviceDataCount = 0;
+
+static uint32_t g_MousePollBusy = 0;
+
+static DIDEVICEOBJECTDATA_DX3 g_MouseDeviceEvent = {0};
+
+static UiPointerWheelDelta g_MouseWheelDelta = 0;
+
+static SoftwareDisplayModeHookProc *g_DirectInputMouseChainedSetDisplayMode = 0;
+
+uint32_t g_CursorInputWriteIndex = 0;
+
+PointerFlushEventsProc *g_PointerFlushEvents = 0;
+
+PointerSetPositionProc *g_PointerSetPosition = 0;
+
+uint32_t g_CursorOverflowLeft = 0;
+
+uint32_t g_CursorOverflowRight = 0;
+
+uint32_t g_CursorOverflowTop = 0;
+
+uint32_t g_CursorOverflowBottom = 0;
+
+IDirectInputDeviceA *g_MouseDevice = 0;
+
+UiPixelCoordinate g_MouseX = 0;
+
+UiPixelCoordinate g_MouseY = 0;
+
+GraphicsCursorButtonState g_MouseButtonMask = 0;
+
+KeyboardReadEventProc *g_KeyboardReadEvent = (void *)Keyboard_ReadNextEvent;
+
 uint32_t g_CursorUseOverridePosition = 0;
 
 UiPointerWheelDelta g_CursorWheelDelta = 0;
@@ -815,3 +916,10 @@ uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
   return asciiCodeUnit;
 }
 
+
+/* Class vtables. */
+
+KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3 = {
+    .compareCaseInsensitiveFlags = (void *)Keyboard_CompareAsciiCaseInsensitiveFlags,
+    .toUpper = (void *)Keyboard_ToUpperAscii,
+    .toLower = (void *)Keyboard_ToLowerAscii};

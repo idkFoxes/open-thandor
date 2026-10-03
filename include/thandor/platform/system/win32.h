@@ -18,4 +18,7 @@ void Win32_PumpMessages(void);
 
 bool Win32_ShouldTranslateMessageFlags(Win32Message32 *message);
 
+extern Win32PumpMessagesProc *g_Win32PumpMessages;
+extern uint32_t g_WindowDestroyDepth;
+
 #endif /* THANDOR_PLATFORM_SYSTEM_WIN32_H */

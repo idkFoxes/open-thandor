@@ -82,4 +82,6 @@ void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,u
 
 void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
 
+extern uint32_t g_LocaleCountryCodeOverride;
+
 #endif /* THANDOR_CORE_SETTINGS_PERSISTENT_H */

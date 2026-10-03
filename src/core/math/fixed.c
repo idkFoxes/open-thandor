@@ -9,6 +9,25 @@
 #include <thandor/core/math/fixed.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* the two cosine matrices of the .sam codec, set by CosineDerivedLookupTables_Init */
+short *g_CosineDerivedLookupAllocation = 0;
+
+short *g_CosineDerivedLookupSecondTable = 0;
+
+static GraphicsFixedMatrix3x4 g_FixedTransformInputRotationScratch = {0};
+
+static GraphicsFixedMatrix3x4 g_FixedTransformComposedRotationScratch = {0};
+
+static GraphicsFixedVec3 g_ModelTransformInput = {0};
+
+/* one sine over 1.5 turns in Q28 (layout in <thandor/core/math/fixed.h>); filled at startup by
+   FixedMath_BuildSinCosTables */
+int32_t g_FixedSineQ28[98304] = {0};
+
+GraphicsFixedVec3 g_ModelTransformOutput = {0};
+
 /* Implementation ownership: core/math/fixed. */
 
 /* Composes two orientations given as angle triples: builds the rotation basis of each (basis angles into

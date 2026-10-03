@@ -9,6 +9,19 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+static PckMountSlot g_PackageMountSlots[1024] = {0};
+
+/* LevelPackage_ValidateAndMount's one-entry Package_FindEntry output buffer (PCK_ENTRY_HEADER_BYTES) */
+static PckEntryHeader g_LevelPackageFoundEntry = {0};
+
+static uint16_t u_level___lev_005460a6[12] = L"level\\*.lev";
+
+static uint16_t u_level___str_005460be[12] = L"level\\*.str";
+
+uint8_t *g_PackageScratchBuffer = 0;
+
 /* Implementation ownership: assets/package/runtime. */
 
 /* Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a

@@ -8,6 +8,18 @@
 #include <thandor/core/math/interpolation.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static float g_WorldMotionSplineCachedDerivatives[6] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+
+static int32_t g_WorldMotionSplineEquationCounts[6] = {0};
+
+static const float g_Q12FloatScale4096 = 4096.0f;
+
+float *g_WorldMotionSplineMatrixWorkspaces[6] = {0};
+
+float *g_WorldMotionSplineCoefficientTables[6] = {0};
+
 /* Implementation ownership: core/math/interpolation. */
 
 /* Plays a six-channel keyframe spline at timeQ12: finds the first keyframe later than the time, evaluates

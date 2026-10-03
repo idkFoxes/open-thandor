@@ -8,6 +8,36 @@
 #include <thandor/world/model/hierarchy.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+int32_t g_ModelBoundsMinimumX = 0;
+
+int32_t g_ModelBoundsMaximumX = 0;
+
+int32_t g_ModelBoundsMinimumY = 0;
+
+int32_t g_ModelBoundsMaximumY = 0;
+
+int32_t g_ModelBoundsMinimumZ = 0;
+
+int32_t g_ModelBoundsMaximumZ = 0;
+
+static GraphicsFixedVec3 g_ModelBoundsTransformedPoint = {0};
+
+static GraphicsProjectedPoint2i g_ModelProjectedBoundsCornerScratch8[8] = {0};
+
+GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix = {0};
+
+GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4 = {0};
+
+int32_t g_ModelRaycastMaximumDistance = 0;
+
+/* Q12 world-space ray origin */
+GraphicsFixedVec3 g_ModelRaycastOrigin = {0};
+
+/* Q28 world-space ray direction */
+GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28 = {0};
+
 static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node);
 
 /* Implementation ownership: world/model/hierarchy. */

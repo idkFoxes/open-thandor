@@ -121,4 +121,30 @@ uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit);
 extern uint32_t g_CursorUseOverridePosition;
 extern UiPointerWheelDelta g_CursorWheelDelta;
 
+extern KeyboardReadEventProc *g_KeyboardReadEvent;
+
+extern uint32_t g_CursorInputWriteIndex;
+extern PointerFlushEventsProc *g_PointerFlushEvents;
+extern PointerSetPositionProc *g_PointerSetPosition;
+extern uint32_t g_CursorOverflowLeft;
+extern uint32_t g_CursorOverflowRight;
+extern uint32_t g_CursorOverflowTop;
+extern uint32_t g_CursorOverflowBottom;
+extern IDirectInputDeviceA *g_MouseDevice;
+extern UiPixelCoordinate g_MouseX;
+extern UiPixelCoordinate g_MouseY;
+extern GraphicsCursorButtonState g_MouseButtonMask;
+
+extern KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3;
+
+extern uint32_t g_KeyboardStateMask;
+
+extern uint8_t g_KeyboardSpecialKeyDown[32];
+extern KeyboardFlushEventsProc *g_KeyboardFlushEvents;
+
+extern UiPixelCoordinate g_CursorOverrideX;
+extern UiPixelCoordinate g_CursorOverrideY;
+extern int32_t g_CursorVisibilityToken;
+extern uint32_t g_CursorButtonState;
+
 #endif /* THANDOR_PLATFORM_INPUT_DEVICES_H */

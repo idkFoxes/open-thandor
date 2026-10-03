@@ -97,4 +97,10 @@ bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSett
 
 void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot);
 
+extern FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets;
+extern FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* followed by 4 bytes 0x90 fill (dropped) */
+extern uint32_t g_FrontendMusicActiveBuffer;
+
+extern FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20;
+
 #endif /* THANDOR_UI_FRONTEND_SETTINGS_H */

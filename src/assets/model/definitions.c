@@ -8,6 +8,16 @@
 #include <thandor/assets/model/definitions.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* Q12 ray origin in the tested node's frame */
+GraphicsFixedVec3 g_ModelRaycastLocalOrigin = {0};
+
+/* Q28 ray direction in the tested node's frame */
+GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28 = {0};
+
+ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768] = {0};
+
 /* Implementation ownership: assets/model/definitions. */
 
 /* Picks the upgrade stage a faction can build: of the eight linked model-definition ids (linkedDefinitionIds) the last

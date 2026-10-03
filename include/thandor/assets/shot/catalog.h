@@ -44,4 +44,6 @@ uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition);
 
 uint32_t ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition);
 
+extern ShotDefinition *g_ShotDefinitionRegistry[256];
+
 #endif /* THANDOR_ASSETS_SHOT_CATALOG_H */

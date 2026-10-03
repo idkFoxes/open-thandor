@@ -164,4 +164,18 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
 void ScenarioCatalog_SelectLevelAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
+extern ScenarioCatalogHeader *g_ScenarioCatalog;
+extern uint32_t g_ScenarioCatalogUsedBytes;
+extern uint16_t u_save___sve_0050d9c8[11];
+extern uint16_t u_level_0050daac[6];
+extern uint16_t g_LevelResourcePathScratchUtf16[256];
+extern FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset;
+extern uint32_t g_FrontendScenarioTransferState;
+extern uint16_t g_FrontendScenarioPathScratchUtf16[256]; /* level/campaign/save path (level\<name>.lev etc.) built for Package_LoadEntry */
+
+extern uint32_t g_FrontendLoadedCampaignAsset;
+
+extern uint16_t g_UnreferencedLevelPatternUtf16[12]; /* UTF-16 L"level\\*.lev" after the save pattern; no code reference found */
+extern uint16_t g_UnreferencedCampaignPatternUtf16[12]; /* UTF-16 L"level\\*.cgn"; no code reference found */
+
 #endif /* THANDOR_ASSETS_SCENARIO_CATALOG_H */

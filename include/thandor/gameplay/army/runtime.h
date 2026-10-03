@@ -262,4 +262,14 @@ void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,M
 void ArmyRuntime_UpdateTimedShotAndEffectEmitters
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
+extern ArmyRuntimeSlot *g_ArmyRuntimeSlots;
+extern ArmyGraphicsBinding g_ArmyGraphicsBindings[8];
+extern const uint32_t g_ArmyRuntimeDepthBinClassByModelClass[24]; /* uint32_t[24] depth-bin/occupancy class per model runtime class (0x88/0x90/0xA0/0xC0; 0x90 = structure), copied to ArmyRuntimeSlot.depthBinClass; gameplay/army runtime and placement */
+extern const uint32_t g_InGamePointerModePreviewArmyIds[8]; /* uint32_t[8]: preview army asset id per pointer mode (0 = none); gameplay/input/world.c */
+
+extern ArmyRuntimeOrderHandlerMatrix11x24 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes;
+extern RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases;
+
+extern void *g_ArmyRuntimeRebaseBaseMinusOne;
+
 #endif /* THANDOR_GAMEPLAY_ARMY_RUNTIME_H */

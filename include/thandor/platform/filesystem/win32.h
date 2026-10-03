@@ -107,4 +107,23 @@ bool FileSystem_BuildEnumerationStringTable
 extern FileSystemEnumerateDirectoryOrVolumeEntriesProc *g_FileSystemEnumerateDirectoryOrVolumeEntries;
 extern FileSystemValidateDos83Proc *g_FileSystemValidateDos83Path;
 
+extern FileSystemDeleteProc *g_FileSystemDelete;
+extern FileSystemCreateDirectoryRecursiveProc *g_FileSystemCreateDirectoryRecursive;
+extern FileSystemEnumerateDriveLettersProc *g_FileSystemEnumerateDriveLetters;
+extern FileSystemGetDriveTypeCodeProc *g_FileSystemGetDriveTypeCode;
+extern FileSystemDriveReadyProc *g_FileSystemCheckDriveMediaReady;
+extern uint16_t g_DefaultComputerLabelUtf16[32];
+
+extern FileSystemGetPositionProc *g_FileSystemGetPosition;
+
+extern uint16_t g_FileSystemCombinedPathScratchUtf16[256];
+extern FileSystemOpenProc *g_FileSystemOpen;
+extern FileSystemCloseProc *g_FileSystemClose;
+extern FileSystemReadExactProc *g_FileSystemReadExact;
+extern FileSystemWriteExactOrFlushProc *g_FileSystemWriteExactOrFlush;
+extern FileSystemGetSizeProc *g_FileSystemGetSize;
+extern FileSystemSeekProc *g_FileSystemSeek;
+
+extern uint16_t g_ExecutableDirectoryUtf16[256];
+
 #endif /* THANDOR_PLATFORM_FILESYSTEM_WIN32_H */

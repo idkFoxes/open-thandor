@@ -155,4 +155,11 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
           (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,ArmyRuntimeSavedOffset modelOffset);
 
+extern FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks;
+extern FrontendPlayerRuntimeBlockCount g_FrontendPlayerRuntimeBlockCount;
+extern UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText;
+extern uint16_t g_FrontendNetworkSpeedLabelUtf16[32]; /* network speed caption, written with a capacity of 64 bytes */
+
+extern uint32_t g_FrontendPlayerMessageBuffers;
+
 #endif /* THANDOR_UI_FRONTEND_PLAYER_H */

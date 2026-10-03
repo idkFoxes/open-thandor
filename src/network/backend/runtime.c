@@ -8,6 +8,111 @@
 #include <thandor/network/backend/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(4)) uint32_t g_NetworkBackendInstanceCount = 0;
+
+__declspec(align(4)) NetworkBackendSetSessionCallback *g_NetworkBackendSlot0 = (void *)NetworkBackendFallback_SetSessionContext;
+
+__declspec(align(16)) NetworkBackendCleanupCallback *g_NetworkBackendSlot1 = (void *)NetworkBackendFallback_Cleanup;
+
+__declspec(align(4)) NetworkBackendOpenBindCallback *g_NetworkBackendSlot2 = (void *)NetworkBackendFallback_OpenAndBindUdpSocket;
+
+__declspec(align(8)) NetworkBackendCloseCallback *g_NetworkBackendSlot3 = (void *)NetworkBackendFallback_CloseActiveSocket;
+
+__declspec(align(4)) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 = (void *)NetworkBackendFallback_ParsePeerEndpoint;
+
+__declspec(align(8)) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = (void *)NetworkBackendFallback_FormatPeerAddress;
+
+__declspec(align(16)) FrontendPacket10023StateAck g_FrontendPacket10023Buffer = {0};
+
+NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable = 0;
+
+NetworkBackendReceiveCallback *g_NetworkBackendSlot4 = (void *)NetworkBackendFallback_ReceiveDatagram;
+
+NetworkBackendSendCallback *g_NetworkBackendSlot5 = (void *)NetworkBackendFallback_SendDatagram;
+
+/* uint32_t sender context of the last executed network batch (0xFFFFFFFF = none); network/backend and protocol/transfer */
+uint32_t g_FrontendSelectedPlayerToken = 1;
+
+uint32_t g_FrontendHostSnapshotTransferCountdown = 0;
+
+FrontendCommandPacketRecord g_FrontendPlayerCommandRecords[8] = {0};
+
+FrontendCommandPacketRecord g_FrontendCommandBatchPacketBuffer[8] = {0};
+
+WinSock_bindProc *g_WinSock_bind = 0;
+
+WinSock_closesocketProc *g_WinSock_closesocket = 0;
+
+WinSock_htonsProc *g_WinSock_htons = 0;
+
+WinSock_inet_addrProc *g_WinSock_inet_addr = 0;
+
+WinSock_inet_ntoaProc *g_WinSock_inet_ntoa = 0;
+
+WinSock_ioctlsocketProc *g_WinSock_ioctlsocket = 0;
+
+WinSock_recvfromProc *g_WinSock_recvfrom = 0;
+
+WinSock_sendtoProc *g_WinSock_sendto = 0;
+
+WinSock_setsockoptProc *g_WinSock_setsockopt = 0;
+
+WinSock_socketProc *g_WinSock_socket = 0;
+
+WinSock_gethostbynameProc *g_WinSock_gethostbyname = 0;
+
+WinSock_WSAGetLastErrorProc *g_WinSock_WSAGetLastError = 0;
+
+static NetworkSessionContext *g_NetworkBackendSessionContext = 0;
+
+static FrontendPacket30005PlayerSnapshot g_FrontendPacket30005Buffer = {0};
+
+static FrontendPacket10009SnapshotChunkRequest g_FrontendPacket10009Buffer = {0};
+
+static FrontendPacket10012SyncPending g_FrontendPacket10012Buffer = {0};
+
+static WinSock_WSACleanupProc *g_WinSock_WSACleanup = 0;
+
+static WinSock_WSAStartupProc *g_WinSock_WSAStartup = 0;
+
+static char s_Wsock32ModuleName[8] = "WSOCK32";
+
+static char s_Wsock32Export_bind[5] = "bind";
+
+static char s_Wsock32Export_closesocket[12] = "closesocket";
+
+static char s_Wsock32Export_htons[6] = "htons";
+
+static char s_Wsock32Export_inet_addr[10] = "inet_addr";
+
+static char s_Wsock32Export_inet_ntoa[10] = "inet_ntoa";
+
+static char s_Wsock32Export_ioctlsocket[12] = "ioctlsocket";
+
+static char s_Wsock32Export_recvfrom[9] = "recvfrom";
+
+static char s_Wsock32Export_sendto[7] = "sendto";
+
+static char s_Wsock32Export_setsockopt[11] = "setsockopt";
+
+static char s_Wsock32Export_socket[7] = "socket";
+
+static char s_Wsock32Export_gethostbyname[14] = "gethostbyname";
+
+static char s_Wsock32Export_WSACleanup[11] = "WSACleanup";
+
+static char s_Wsock32Export_WSAGetLastError[16] = "WSAGetLastError";
+
+static char s_Wsock32Export_WSAStartup[11] = "WSAStartup";
+
+static uint32_t g_NetworkBackendMode = 0;
+
+static WinSockData11 g_WinSockStartupData = {0};
+
+static NetworkBackendInstanceDescriptorPrefix NetworkBackendInstanceDescriptorPrefix_00584040 = {.displayNameUtf16 = L"WinSock32 1.1 - UDP"};
+
 /* Implementation ownership: network/backend/runtime. */
 
 /* Returns the player record whose peer sequence token and IPv4 address match the sender, or NULL. Record 0 is

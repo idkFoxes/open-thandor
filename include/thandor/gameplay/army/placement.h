@@ -137,4 +137,8 @@ bool ArmyPlacementCandidate_TestModelAnchorDistance
 bool ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeSlot *modelRuntime);
 
+extern ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable;
+
+extern ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount;
+
 #endif /* THANDOR_GAMEPLAY_ARMY_PLACEMENT_H */

@@ -8,6 +8,12 @@
 #include <thandor/gameplay/session/savegame.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+uint16_t u_save_0050daa2[5] = L"save";
+
+uint16_t g_ScenarioCatalogPathScratchUtf16[256] = {0};
+
 /* Implementation ownership: gameplay/session/savegame. */
 
 /* Shows an existing save's description: its level title text alone, or, while a campaign is loaded, the level and

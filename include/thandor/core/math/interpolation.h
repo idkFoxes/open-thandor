@@ -61,4 +61,7 @@ int32_t CubicSpline_EvaluateValueQ12 (WorldMotionSplineTimeQ12 timeQ12,CubicSpli
 
 float CubicSpline_EvaluateDerivativeQ12 (WorldMotionSplineTimeQ12 timeQ12,CubicSplineSegmentIndex segmentIndex, float *coefficients);
 
+extern float *g_WorldMotionSplineMatrixWorkspaces[6];
+extern float *g_WorldMotionSplineCoefficientTables[6];
+
 #endif /* THANDOR_CORE_MATH_INTERPOLATION_H */

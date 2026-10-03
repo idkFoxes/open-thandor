@@ -24,4 +24,9 @@ void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpin
 
 void Runtime_Shutdown(void);
 
+extern SpinLockAcquireProc *g_SpinLockAcquire;
+extern SpinLockTryAcquireFlagsProc *g_SpinLockTryAcquire;
+extern SpinLockReleaseProc *g_SpinLockRelease;
+extern SpinLockReleaseAndInvokeProc *g_SpinLockReleaseAndInvoke;
+
 #endif /* THANDOR_CORE_MEMORY_SYNCHRONIZATION_H */

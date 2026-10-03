@@ -60,4 +60,8 @@ uint32_t GraphicsPaletteTextureSource_CountCombinedUsedColors
 void GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
           (GraphicsPaletteIndex paletteIndex,GraphicsTextureSourceHeaderView *textureSource);
 
+extern GraphicsPaletteAssetLifecycleCallbackTable g_GraphicsPaletteAssetLifecycleCallbacks3;
+
+extern GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage;
+
 #endif /* THANDOR_GRAPHICS_RESOURCES_PALETTE_H */

@@ -36,4 +36,6 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
 
 void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex);
 
+extern RecentTextHistorySlot *g_RecentTextSlotStorage;
+
 #endif /* THANDOR_UI_SUPPORT_RUNTIME_H */

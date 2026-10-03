@@ -9,6 +9,317 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+__declspec(align(4)) uint16_t *g_InGameFactionStatusTextScratchUtf16 = 0;
+
+__declspec(align(4)) uint32_t g_InGameDiagramTextureSource = 0;
+
+__declspec(align(8)) uint32_t g_InGameTechnologyTextureSource = 0;
+
+__declspec(align(4)) uint32_t g_InGameWindowTextureSource = 0;
+
+__declspec(align(16)) UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37] = {
+    /*  0 */ {.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56F1C0},
+    /*  1 */ {.commandCode = 0x30069, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E670},
+    /*  2 */ {.commandCode = 0x20002, .continuationEntryAddress = 0x56E6A0},
+    /*  3 */ {.commandCode = 0x30070, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56F160},
+    /*  4 */ {.commandCode = 0x30069, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E5E0},
+    /*  5 */ {.commandCode = 0x30065, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E6E0},
+    /*  6 */ {.commandCode = 0x30075, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E720},
+    /*  7 */ {.commandCode = 0x30075, .continuationEntryAddress = 0x56E720},
+    /*  8 */ {.commandCode = 0x10012, .continuationEntryAddress = 0x56ED80},
+    /*  9 */ {.commandCode = 0x1001A, .continuationEntryAddress = 0x56EDC0},
+    /* 10 */ {.commandCode = 0x10014, .continuationEntryAddress = 0x56E7C0},
+    /* 11 */ {.commandCode = 0x10016, .continuationEntryAddress = 0x56E930},
+    /* 12 */ {.commandCode = 0x10011, .continuationEntryAddress = 0x56EAA0},
+    /* 13 */ {.commandCode = 0x10019, .continuationEntryAddress = 0x56EC10},
+    /* 14 */ {.commandCode = 0x10014, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E7C0},
+    /* 15 */ {.commandCode = 0x10016, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E930},
+    /* 16 */ {.commandCode = 0x10011, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56EAA0},
+    /* 17 */ {.commandCode = 0x10019, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56EC10},
+    /* 18 */ {.commandCode = 0x30061, .continuationEntryAddress = 0x56EE00},
+    /* 19 */ {.commandCode = 0x30068, .continuationEntryAddress = 0x56EE20},
+    /* 20 */ {.commandCode = 0x30067, .continuationEntryAddress = 0x56EE40},
+    /* 21 */ {.commandCode = 0x30073, .continuationEntryAddress = 0x56EE60},
+    /* 22 */ {.commandCode = 0x30070, .continuationEntryAddress = 0x56EEB0},
+    /* 23 */ {.commandCode = 0x30066, .continuationEntryAddress = 0x56EED0},
+    /* 24 */ {.commandCode = 0x30074, .continuationEntryAddress = 0x56EEF0},
+    /* 25 */ {.commandCode = 0x3006C, .continuationEntryAddress = 0x56F020},
+    /* 26 */ {.commandCode = 0x3006E, .continuationEntryAddress = 0x56EFB0},
+    /* 27 */ {.commandCode = 0x30076, .continuationEntryAddress = 0x56F090},
+    /* 28 */ {.commandCode = 0x30065, .continuationEntryAddress = 0x56F100},
+    /* 29 */ {.commandCode = 0x30062, .continuationEntryAddress = 0x56F120},
+    /* 30 */ {.commandCode = 0x30063, .continuationEntryAddress = 0x56EF70},
+    /* 31 */ {.commandCode = 0x30064, .continuationEntryAddress = 0x56EF90},
+    /* 32 */ {.commandCode = 0x30077, .continuationEntryAddress = 0x56EF10},
+    /* 33 */ {.commandCode = 0x30071, .continuationEntryAddress = 0x56EF30},
+    /* 34 */ {.commandCode = 0x30079, .continuationEntryAddress = 0x56EF50},
+    /* 35 */ {.commandCode = 0x30072, .continuationEntryAddress = 0x56F140},
+    /* 36: terminator (key code 0 ends the scan; the other two dwords are 0x90 fill) */
+    {.commandCode = 0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}};
+
+__declspec(align(16)) GraphicsTextureSourceAsset *g_InGamePanelTextureSource = 0;
+
+static uint16_t g_ResourceRegistrationDirectoryUtf16[256] = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailNameTextUtf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailArmourTextUtf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName0TextUtf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName1TextUtf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName2TextUtf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot05Utf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildXeniteCostTextUtf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildTimeTextUtf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16 = {0};
+
+static UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16 = {0};
+
+static uint16_t g_InGameHudNumberTextUtf16[16] = {0};
+
+static int32_t g_UiAction1012PlayerIndexTextOffsets[7] = {20540, 20632, 20724, 20816, 20908, 21000, 21092};
+
+static int32_t g_UiAction1012PlayerLabelTextOffsets[7] = {21184, 21276, 21368, 21460, 21552, 21644, 21736};
+
+static int32_t g_UiAction1012IconImageOffsets[7] = {22472, 22564, 22656, 22748, 22840, 22932, 23024};
+
+static int32_t g_UiAction1012StateTextOffsets[7] = {0x5544, 0x55A0, 0x55FC, 0x5658, 0x56B4, 0x5710, 0x576C};
+
+static int32_t g_UiAction1012ControlOffsets[7] = {23116, 23240, 23364, 23488, 23612, 23736, 23860};
+
+static int32_t g_UiAction1012SlotPageOffsets[7] = {19924, 20012, 20100, 20188, 20276, 20364, 20452};
+
+static int g_InGameSelectionDetailGridCellOffsets[12] = {41464, 41560, 41656, 41752, 41848, 41944, 42040, 42136, 42232, 42328, 42424, 42520};
+
+static int32_t g_UiSevenSlotSelectionControlOffsets[7] = {8420, 8516, 8612, 8708, 8804, 8900, 8996};
+
+/* uint32_t[11]: sprite subresource index (0xA9..0xAB) of the diplomacy row's relation icon per relation state; ui/ingame/runtime.c */
+static const uint32_t g_UiAction1012SubresourceByState[11] = {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB};
+
+static uint16_t u_gfx_panel_panel0_gfx_005630d0[21] = L"gfx\\panel\\panel0.gfx";
+
+static uint16_t u_gfx_panel_tech_gfx_005630fa[19] = L"gfx\\panel\\tech.gfx";
+
+static uint16_t u_gfx_panel_diagram0_gfx_00563120[23] = L"gfx\\panel\\diagram0.gfx";
+
+static uint16_t u_gfx_panel_window_gfx_0056318e[21] = L"gfx\\panel\\window.gfx";
+
+static uint16_t g_DeveloperChatPhraseUtf16[32] = L"Oh grosser Thomas, erl\366se mich!";
+
+static uint16_t u_Hmmm__na_gut________0056321e[20] = L"Hmmm, na gut... ;-)";
+
+static int32_t g_InGamePanelTextureSubresource00Width = 0;
+
+static int32_t g_InGamePanelTextureSubresource01Width = 0;
+
+static int32_t g_InGamePanelTextureSubresource06Width = 0;
+
+static int32_t g_InGamePanelTextureSubresource07Width = 0;
+
+static int32_t g_InGamePanelTextureSubresource19Width = 0;
+
+static int32_t g_InGamePanelTextureSubresource20Width = 0;
+
+static int32_t g_InGamePanelTextureSubresource32Width = 0;
+
+static int32_t g_InGamePanelTextureSubresource33Width = 0;
+
+static int32_t g_InGamePanelTextureSubresource02Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource03Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource04Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource05Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource36Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource37Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource06Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource00Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource07Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource18Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource23Height = 0;
+
+static int32_t g_InGamePanelTextureSubresource32Height = 0;
+
+static uint32_t g_UiAction1012TargetPlayerIndices[7] = {0};
+
+/* 63 key command records and the terminator record (commandCode 0) that ends the dispatcher's scan */
+static UiCommandDispatchRecord g_InGameCommandDispatchRecords[64] = {
+    /*  0 */ {.commandCode = 0x30073, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567F60},
+    /*  1 */ {.commandCode = 0x30073, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567FC0},
+    /*  2 */ {.commandCode = 0x30073, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568020},
+    /*  3 */ {.commandCode = 0x30073, .continuationEntryAddress = 0x567F60},
+    /*  4 */ {.commandCode = 0x30062, .continuationEntryAddress = 0x567ED0},
+    /*  5 */ {.commandCode = 0x30061, .continuationEntryAddress = 0x5680F0},
+    /*  6 */ {.commandCode = 0x30031, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0},
+    /*  7 */ {.commandCode = 0x30032, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0},
+    /*  8 */ {.commandCode = 0x30033, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0},
+    /*  9 */ {.commandCode = 0x30034, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0},
+    /* 10 */ {.commandCode = 0x30035, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0},
+    /* 11 */ {.commandCode = 0x30036, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0},
+    /* 12 */ {.commandCode = 0x30037, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0},
+    /* 13 */ {.commandCode = 0x30038, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0},
+    /* 14 */ {.commandCode = 0x30031, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0},
+    /* 15 */ {.commandCode = 0x30032, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0},
+    /* 16 */ {.commandCode = 0x30033, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0},
+    /* 17 */ {.commandCode = 0x30034, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0},
+    /* 18 */ {.commandCode = 0x30035, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0},
+    /* 19 */ {.commandCode = 0x30036, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0},
+    /* 20 */ {.commandCode = 0x30037, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0},
+    /* 21 */ {.commandCode = 0x30038, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0},
+    /* 22 */ {.commandCode = 0x30031, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60},
+    /* 23 */ {.commandCode = 0x30032, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60},
+    /* 24 */ {.commandCode = 0x30033, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60},
+    /* 25 */ {.commandCode = 0x30034, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60},
+    /* 26 */ {.commandCode = 0x30035, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60},
+    /* 27 */ {.commandCode = 0x30036, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60},
+    /* 28 */ {.commandCode = 0x30037, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60},
+    /* 29 */ {.commandCode = 0x30038, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60},
+    /* 30 */ {.commandCode = 0x30031, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60},
+    /* 31 */ {.commandCode = 0x30032, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60},
+    /* 32 */ {.commandCode = 0x30033, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60},
+    /* 33 */ {.commandCode = 0x30034, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60},
+    /* 34 */ {.commandCode = 0x30035, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60},
+    /* 35 */ {.commandCode = 0x30036, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60},
+    /* 36 */ {.commandCode = 0x30037, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60},
+    /* 37 */ {.commandCode = 0x30038, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60},
+    /* 38 */ {.commandCode = 0x30031, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10},
+    /* 39 */ {.commandCode = 0x30032, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10},
+    /* 40 */ {.commandCode = 0x30033, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10},
+    /* 41 */ {.commandCode = 0x30034, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10},
+    /* 42 */ {.commandCode = 0x30035, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10},
+    /* 43 */ {.commandCode = 0x30036, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10},
+    /* 44 */ {.commandCode = 0x30037, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10},
+    /* 45 */ {.commandCode = 0x30038, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10},
+    /* 46 */ {.commandCode = 0x30031, .continuationEntryAddress = 0x567CC0},
+    /* 47 */ {.commandCode = 0x30032, .continuationEntryAddress = 0x567CC0},
+    /* 48 */ {.commandCode = 0x30033, .continuationEntryAddress = 0x567CC0},
+    /* 49 */ {.commandCode = 0x30034, .continuationEntryAddress = 0x567CC0},
+    /* 50 */ {.commandCode = 0x30035, .continuationEntryAddress = 0x567CC0},
+    /* 51 */ {.commandCode = 0x30036, .continuationEntryAddress = 0x567CC0},
+    /* 52 */ {.commandCode = 0x30037, .continuationEntryAddress = 0x567CC0},
+    /* 53 */ {.commandCode = 0x30038, .continuationEntryAddress = 0x567CC0},
+    /* 54 */ {.commandCode = 0x20, .continuationEntryAddress = 0x567E00},
+    /* 55 */ {.commandCode = 0x20, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567E40},
+    /* 56 */ {.commandCode = 0x10003, .continuationEntryAddress = 0x567E20},
+    /* 57 */ {.commandCode = 0x30066, .continuationEntryAddress = 0x568080},
+    /* 58 */ {.commandCode = 0x3006F, .continuationEntryAddress = 0x5681A0},
+    /* 59 */ {.commandCode = 0x30076, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x5681B0},
+    /* 60 */ {.commandCode = 0x30063, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568190},
+    /* 61 */ {.commandCode = 0x10015, .continuationEntryAddress = 0x567EA0},
+    /* 62 */ {.commandCode = 0x30064, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568130},
+    /* 63 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090, .continuationEntryAddress = 0x90909090}}; /* commandCode 0, the rest is the original's NOP fill */
+
+static int32_t g_UiCommandDragReferenceX = 0;
+
+static int32_t g_UiCommandDragReferenceY = 0;
+
+static int32_t g_UiCommandModeGControlOffsets[6] = {19364, 19484, 19604, 39216, 39336, 39096};
+
+static int32_t g_UiCommandSelectionAnchorWorldXQ12 = 0;
+
+static int32_t g_UiCommandSelectionAnchorWorldYQ12 = 0;
+
+static int32_t g_UiCommandSelectionCurrentWorldXQ12 = 0;
+
+static int32_t g_UiCommandSelectionCurrentWorldYQ12 = 0;
+
+static uint32_t g_UiCommandDragAnchorWorldXQ12 = 0;
+
+static uint32_t g_UiCommandDragAnchorWorldYQ12 = 0;
+
+static uint32_t g_UiCommandDragStartScreenX = 0;
+
+static uint32_t g_UiCommandDragStartScreenY = 0;
+
+uint32_t g_RenderedFrameCountSinceDebugRefresh = 0;
+
+uint16_t u_campagne_hex_0050e068[13] = L"campagne.hex";
+
+uint16_t u_oldunit_hex_0050e094[12] = L"oldunit.hex";
+
+uint8_t g_InGameResourceRegistrationBusyCount = 0;
+
+uint32_t g_LocalPlayerRuntimeId = 0;
+
+uint16_t *g_InGamePlayerListTextScratchUtf16 = 0;
+
+InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {0};
+
+uint16_t g_EmptyFrontendPlayerNameUtf16[1] = {0};
+
+int32_t g_InGameSelectionInsertTripletDwordCount = 0;
+
+int32_t g_InGameSelectionRemoveTripletDwordCount = 0;
+
+uint32_t g_UiCommandRuntimeFlags = 0;
+
+int32_t g_InGamePanelTextureSubresource02Width = 0;
+
+int32_t g_InGamePanelTextureSubresource27Width = 0;
+
+int32_t g_InGamePanelTextureSubresource28Width = 0;
+
+int32_t g_InGamePanelTextureSubresource34Width = 0;
+
+int32_t g_InGamePanelTextureSubresource26Height = 0;
+
+int32_t g_InGamePanelTextureSubresource31Height = 0;
+
+int32_t g_InGamePanelTextureSubresource34Height = 0;
+
+UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord = 0;
+
+uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16] = {0};
+
+uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16] = {0};
+
+uint32_t g_InGameReadyStateToggleFlags = 0;
+
+uint32_t g_UiCommandModeG = 0;
+
+uint32_t g_UiCommandModeC = 0;
+
+uint32_t g_UiCommandModeD = 0;
+
+uint32_t g_UiCommandAbsoluteSelectionIndex = 0;
+
+uint32_t g_UiCommandTerrainMaskToggleValue = 0;
+
+FactionRuntimeIndex g_UiCommandModeGOwnerFactionIndex = 1;
+
+uint32_t g_UiCommandModeGArmyAssetId = 0;
+
+PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId = ARM_0500_LBAUM_MDL0500;
+
+uint32_t g_UiCommandCallerMaskHighBit = 0;
+
+/* uint32_t[6]: active page of the mode preview page stack per command mode G; ui/ingame commands/runtime */
+const uint32_t g_UiCommandModeGPrimaryPageIndices[6] = {1, 2, 3, 4, 5, 7};
+
+/* uint32_t[6]: active page of the mode detail page stack per command mode G; ui/ingame commands/runtime */
+const uint32_t g_UiCommandModeGSecondaryPageIndices[6] = {1, 2, 3, 4, 5, 7};
+
+/* uint32_t[6]: active page of the mode command page stack per command mode G; ui/ingame commands/runtime */
+const uint32_t g_UiCommandModeGTertiaryPageIndices[6] = {1, 2, 3, 4, 5, 7};
+
+DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7] = {0};
+
 /* Implementation ownership: ui/ingame/runtime. */
 
 /* True when a g_InGameKeyboardDispatchRecords record {key code, required modifier mask, handler} matches the
@@ -5021,3 +5332,49 @@ void InGameSelectionDetailPanel_Rebuild(void)
   UiPageStack_SetActiveIndex(0,stack);
 }
 
+
+/* Class vtables. */
+
+InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10 = {
+        .handlers = {
+            /*  0 */ (void *)InGameMapAction_RecenterViewFromGridCoordinates,
+            /*  1 */ (void *)InGameArmyStock_TakeOrSellSlotArmy,
+            /*  2 */ (void *)InGameSevenSlotCommand_ClosePage,
+            /*  3 */ (void *)InGameSettingsPage_ToggleAndSynchronizeControls,
+            /*  4 */ (void *)InGameSevenSlotCommand_SubmitTextAndSelectionMask,
+            /*  5 */ (void *)InGameSevenSlotCommand_SubmitAndClosePage,
+            /*  6 */ (void *)InGameSelectionPage_RebuildActivePlayerEntries,
+            /*  7 */ (void *)InGameSelectionPage_RebuildRuntimeRecordEntries,
+            /*  8 */ (void *)InGameSelectionPage_ShowSubpage1,
+            /*  9 */ (void *)InGameEndMovie_Skip,
+            /* 10 */ (void *)InGameSelectionGroupButton_RecallOrStoreGroup,
+            /* 11 */ (void *)InGameBuildCatalog_QueueOrCancelEntry,
+            /* 12 */ (void *)InGameSpecialBuildCatalog_QueueOrCancelEntry,
+            /* 13 */ (void *)InGameTargetingContext_AdvanceOrResolveTarget,
+            /* 14 */ (void *)InGameTargetingContext_CancelAndRestoreState,
+            /* 15 */ (void *)InGameRecentText_TrimHistoryToThree,
+            /* 16 */ (void *)InGameTechnologyPanel_ToggleForSelection,
+            /* 17 */ (void *)InGameCommandAction_ClearSelectedArmyTokenAndClosePage,
+            /* 18 */ (void *)InGameOtherPlayerCommand_DispatchSelectedTarget,
+            /* 19 */ (void *)InGameTechnologyResearch_StartSelected,
+            /* 20 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
+            /* 21 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
+            /* 22 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
+            /* 23 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
+            /* 24 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
+            /* 25 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
+            /* 26 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
+            /* 27 */ (void *)InGameResultsScreen_ContinueOrMarkReady,
+            /* 28 */ (void *)InGameResultsScreen_SelectChartTab,
+            /* 29 */ (void *)InGameQuitMenu_AbortMission,
+            /* 30 */ (void *)InGameQuitMenu_Surrender,
+            /* 31 */ (void *)InGameMissionHelpPage_Toggle,
+            /* 32 */ (void *)InGameSettingsAction_CloseAlternatePanel,
+            /* 33 */ (void *)InGameMissionHelpPage_SelectBriefingTab,
+            /* 34 */ (void *)InGameMissionHelpPage_SelectKeyboardTab,
+            /* 35 */ (void *)InGameMissionHelpPage_SelectMouseTab,
+            /* 36 */ (void *)InGameChatInput_SendLineOrCheckCheatPhrase,
+            /* 37 */ (void *)InGameResultsScreen_CloseLocally,
+            /* 38 */ (void *)InGameCommandState_SelectAndPropagateBinaryMode,
+            /* 39 */ (void *)InGameQuitMenu_RestartMission
+        }};

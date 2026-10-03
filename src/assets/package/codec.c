@@ -8,6 +8,14 @@
 #include <thandor/assets/package/codec.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256] = {0};
+
+/* Huffman node workspace (original layout): [0..255] leaf nodes (index = byte symbol), [256..511] internal
+   nodes; the tree-building scans run over both halves as one array. */
+static PckHuffmanNode g_PckHuffmanNodeWorkspace[512] = {0};
+
 /* Implementation ownership: assets/package/codec. */
 
 /* Success exit of a codec (PckCodecProc): stores byteCount in *outByteCount when it is not NULL. */
@@ -704,3 +712,16 @@ bool PckCodec_DecodeHuffmanRle
   return PckCodec_Succeed(outByteCount,lastTokenLeftover);
 }
 
+
+/* Class vtables. */
+
+/* PCK codecs by compression method (PckEntryHeader.compressionMethod): 0 Huffman/RLE, 1 stored, 2 field grid. */
+PckCodecProc *const g_PckEncoderTable[3] = {
+    /* 0 */ (void *)PckCodec_EncodeHuffmanRle,
+    /* 1 */ (void *)PckCodec_EncodeStored,
+    /* 2 */ (void *)PckCodec_EncodeFieldGrid};
+
+PckCodecProc *const g_PckDecoderTable[3] = {
+    /* 0 */ (void *)PckCodec_DecodeHuffmanRle,
+    /* 1 */ (void *)PckCodec_DecodeStored,
+    /* 2 */ (void *)PckCodec_DecodeFieldGrid};

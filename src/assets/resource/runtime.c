@@ -8,6 +8,12 @@
 #include <thandor/assets/resource/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+uint8_t *g_EffectRuntimeRebaseBaseMinusOne = 0;
+
+uint8_t *g_RuntimeObjectRebaseBaseMinusOne = 0;
+
 /* Implementation ownership: assets/resource/runtime. */
 
 /* Creates a new, empty PCK package at packagePath and mounts it: builds a fresh 0x200-byte archive header

@@ -9,6 +9,41 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+/* per-row visible column spans of the terrain projection; entries 0..258 start zeroed, entry 259 keeps the
+   0x90 fill bytes the original image held there */
+static TerrainProjectedRowSpan g_TerrainProjectedRowSpans[260] = {
+    [259] = {.firstColumn = (int)0x90909090, .endColumnExclusive = (int)0x90909090}};
+
+/* Q12 height-delta scale per scan step: entry n = 4 / (n + 4) in Q12, rounded to nearest
+   ((16384 + (n + 4) / 2) / (n + 4); checked against every entry) */
+static const int32_t g_TerrainHeightDeltaScaleByStepQ12[256] = {
+    /*   0 */ 4096, 3277, 2731, 2341, 2048, 1820, 1638, 1489, 1365, 1260, 1170, 1092, 1024, 964, 910, 862,
+    /*  16 */ 819, 780, 745, 712, 683, 655, 630, 607, 585, 565, 546, 529, 512, 496, 482, 468,
+    /*  32 */ 455, 443, 431, 420, 410, 400, 390, 381, 372, 364, 356, 349, 341, 334, 328, 321,
+    /*  48 */ 315, 309, 303, 298, 293, 287, 282, 278, 273, 269, 264, 260, 256, 252, 248, 245,
+    /*  64 */ 241, 237, 234, 231, 228, 224, 221, 218, 216, 213, 210, 207, 205, 202, 200, 197,
+    /*  80 */ 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 171, 169, 167, 165,
+    /*  96 */ 164, 162, 161, 159, 158, 156, 155, 153, 152, 150, 149, 148, 146, 145, 144, 142,
+    /* 112 */ 141, 140, 139, 138, 137, 135, 134, 133, 132, 131, 130, 129, 128, 127, 126, 125,
+    /* 128 */ 124, 123, 122, 121, 120, 120, 119, 118, 117, 116, 115, 115, 114, 113, 112, 111,
+    /* 144 */ 111, 110, 109, 109, 108, 107, 106, 106, 105, 104, 104, 103, 102, 102, 101, 101,
+    /* 160 */ 100, 99, 99, 98, 98, 97, 96, 96, 95, 95, 94, 94, 93, 93, 92, 92,
+    /* 176 */ 91, 91, 90, 90, 89, 89, 88, 88, 87, 87, 86, 86, 85, 85, 84, 84,
+    /* 192 */ 84, 83, 83, 82, 82, 82, 81, 81, 80, 80, 80, 79, 79, 78, 78, 78,
+    /* 208 */ 77, 77, 77, 76, 76, 76, 75, 75, 74, 74, 74, 73, 73, 73, 72, 72,
+    /* 224 */ 72, 72, 71, 71, 71, 70, 70, 70, 69, 69, 69, 69, 68, 68, 68, 67,
+    /* 240 */ 67, 67, 67, 66, 66, 66, 66, 65, 65, 65, 65, 64, 64, 64, 64, 63};
+
+uint32_t g_TerrainScanRowStrideBytes = 0;
+
+uint32_t g_TerrainScanStepLimit = 0;
+
+TerrainScanSelectorUnion g_TerrainScanSharedSelectorValue = {0};
+
+uint32_t g_TerrainScanReferenceHeight = 0;
+
 /* Implementation ownership: world/terrain/projection. */
 
 /* Not a function of its own in the original: PUNPCKLBW mm,mm then PSRLW mm,shift, i.e. the four bytes b of value

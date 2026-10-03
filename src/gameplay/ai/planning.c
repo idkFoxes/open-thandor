@@ -8,6 +8,48 @@
 #include <thandor/gameplay/ai/planning.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+uint32_t g_AiActiveGridMaskClasses[4] = {0, 0, 0, 0};
+
+ModelRuntimeSlot *g_AiWorkspaceOwnedAsset300Runtime = 0;
+
+const AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantC15 = {
+    .pressureCategoryWeights = {0, 384, 384, 384, 384, 448, 384, 512},
+    .definitionValue60Weight = 384,
+    .definitionValue0CWeight = 192,
+    .armyRecord74Weight = 256,
+    .armyRecord78Weight = 512,
+    .nonzeroDefinition18Bonus = 4096,
+    .baseScore = -4096};
+
+static uint32_t g_AiPurchaseAppliedArmyClassMask = 0;
+
+static uint32_t g_AiConstructionPendingAssetConsumedCount = 0;
+
+static const int32_t g_AiStrategicClassTerrainWeights[5][3] = {
+    {256, 0, 0},
+    {240, 16, 0},
+    {0, 176, 80},
+    {0, 0, 256},
+    {0, 0, 0}};
+
+static const AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantB15 = {
+    .pressureCategoryWeights = {0, 128, 128, 128, 128, 128, 128, 128},
+    .definitionValue0CWeight = 512,
+    .armyRecord74Weight = 128,
+    .armyRecord70Weight = 512,
+    .nonzeroDefinition18Bonus = 4096,
+    .baseScore = -4096};
+
+static const AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantA15 = {
+    .pressureCategoryWeights = {0, 512, 512, 512, 512, 640, 512},
+    .definitionValue60Weight = 512,
+    .definitionValue0CWeight = -64,
+    .armyRecord74Weight = 512,
+    .armyRecord78Weight = 256,
+    .nonzeroDefinition18Bonus = -256};
+
 /* Implementation ownership: gameplay/ai/planning. */
 
 /* Runs the planning phase for every active AI faction (1..7, a faction without a player block) and scales its
@@ -118,7 +160,7 @@ void AiFactionRuntime_RebuildPlanningCapacityState(void)
 */
 AiCandidateScore32
 AiArmyCandidate_ComputeAverageCompatibleAssetScore
-          (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
+          (const AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
           ModelRuntimeClassId runtimeClassId)
 
 {
@@ -1588,7 +1630,7 @@ bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDema
    as << 10 / the class maximum (g_TechnologyCategoryMaximums[0..7]). reloadTicks and the maximum pressure must be
    nonzero. */
 static int AiArmyCandidate_ScoreWeaponPressureDamage
-          (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,ShotDefinition *shotDefinition,
+          (const AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,ShotDefinition *shotDefinition,
           int reloadTicks)
 {
   int targetClass;
@@ -1621,7 +1663,7 @@ static int AiArmyCandidate_ScoreWeaponPressureDamage
    0 when a definition is not available to the faction.
 */
 AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
-          (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
+          (const AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
           ArmyAssetRecord *armyAssetRecord)
 
 {

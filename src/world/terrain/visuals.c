@@ -9,6 +9,35 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+/* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the remaining 12 entries are NULL. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
+__declspec(align(4)) GraphicsTextureSet *g_TerrainMaterialTextureSets[38] = {0};
+
+/* path suffix letters "a".."z" (with terminator) of the 26 terrain material texture sets */
+static const TerrainMaterialSuffixEntry g_TerrainMaterialTextureSuffixLettersUtf16AtoZ[26] = {
+    {'a'}, {'b'}, {'c'}, {'d'}, {'e'}, {'f'}, {'g'}, {'h'}, {'i'}, {'j'}, {'k'}, {'l'}, {'m'},
+    {'n'}, {'o'}, {'p'}, {'q'}, {'r'}, {'s'}, {'t'}, {'u'}, {'v'}, {'w'}, {'x'}, {'y'}, {'z'}};
+
+static TerrainCompositeTextureRuntime *g_TerrainCompositeTexture = 0;
+
+/* entries 0..255 the shaded colour ramp (originally
+   g_TerrainLightingColorRampArgb256), entries 256..512 the lit half; indexed by the signed dot
+   product -256..256 from entry 256 */
+PackedArgb32 g_TerrainDirectionalLightColorLut[513] = {0};
+
+uint32_t g_TerrainDirectionalLightSecondaryColor = 0;
+
+uint8_t *g_TerrainByteClampLookup = 0;
+
+GraphicsTextureSet *g_TerrainPrimaryTextureSet = 0;
+
+void *g_TerrainSoilPacketTablePayload = 0;
+
+void *g_TerrainSurfacePacketTablePayload = 0;
+
+GraphicsPaletteAsset *g_TerrainPrimaryPalette = 0;
+
 /* Implementation ownership: world/terrain/visuals. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift.

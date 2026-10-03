@@ -9,6 +9,10 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount = 0;
+
 /* Implementation ownership: gameplay/army/placement. */
 
 /* Placement test for models with a second footprint: runs the common candidate test
@@ -1247,3 +1251,14 @@ bool ArmyCollision_TestPointWithinExpandedRuntimeRadius
   return (int64_t)((uint64_t)radiusSquared - (uint64_t)distanceSquared) >= 0;
 }
 
+
+/* Class vtables. */
+
+ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable = {
+    .callbacks = {
+        /* 0 */ (void *)ArmyPlacementContact_ApplyTerrainHeight,
+        /* 1 */ (void *)ArmyPlacementContact_ApplyWaterSurfaceHeight,
+        /* 2 */ (void *)ArmyPlacementContact_ApplyTerrainHeightAndNormal,
+        /* 3 */ (void *)ArmyPlacementContact_InitializeArticulatedSuspension,
+        /* 4 */ (void *)ArmyPlacementContact_ApplyTopSurfaceHeight
+    }};

@@ -10,6 +10,16 @@
 #include <thandor/graphics/resources/pcx.h>
 #include <string.h>
 
+/* Module data. */
+
+RecentTextHistorySlot *g_RecentTextSlotStorage = 0;
+
+static RecentTextSerialCounter g_RecentTextSerialCounter = 1;
+
+static uint32_t g_RecentTextEntrySerials[8] = {0};
+
+static uint16_t g_CreditsTexturePathUtf16[22] = L"gfx\\panel\\credits.gfx";
+
 /* Implementation ownership: ui/support/runtime. */
 
 /* Builds the list of chat messages to show (output, newest first, at most maxEntries) and ages the history:

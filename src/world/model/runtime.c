@@ -9,6 +9,18 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+static GraphicsFixedVec3 g_GraphicsDirectionWorld = {0};
+
+int32_t g_ModelLodDepthThresholdQ8 = 65536;
+
+GraphicsFixedVec3 g_ModelCullViewRelative = {0};
+
+ModelRuntimeSlot *g_ModelRuntimeSlots = 0;
+
+int g_ModelRuntimeRebaseDelta = 0;
+
 /* Diagnostics: set by the offscreen preview renderer while it submits models. */
 
 /* Implementation ownership: world/model/runtime. */

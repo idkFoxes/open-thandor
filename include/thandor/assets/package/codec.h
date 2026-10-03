@@ -66,4 +66,7 @@ bool PckCodec_DecodeHuffmanRle
           uint8_t *source,
           uint32_t *outByteCount,uint32_t *outErrorCode);
 
+extern PckCodecProc *const g_PckEncoderTable[3];
+extern PckCodecProc *const g_PckDecoderTable[3];
+
 #endif /* THANDOR_ASSETS_PACKAGE_CODEC_H */

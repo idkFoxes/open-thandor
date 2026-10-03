@@ -8,6 +8,28 @@
 #include <thandor/assets/rom/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+uint32_t g_FrontendRomTransitionPageAction = 0;
+
+uint32_t g_FrontendActiveRomRecord = 0;
+
+uint32_t g_FrontendRomTransitionElapsedTicks = 0;
+
+uint32_t g_FrontendRomTransitionSplineKeyframes = 0;
+
+uint32_t g_FrontendRomTransitionSplineKeyframeCount = 0;
+
+uint32_t g_FrontendRomTransitionTargetRecordId = 0;
+
+RomRegistrySlot *g_RomRegistrySlots = 0;
+
+/* the 100 frontend menu sound slots (slot 0 unused, Frontend_Init
+   loads sound\menueNN.sam into slots 1..99; ROM action records select one by activationSoundIndex) */
+DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100] = {0};
+
+uint16_t u_engine_zentrale_rom_00545aa4[20] = L"engine\\zentrale.rom";
+
 /* Implementation ownership: assets/rom/runtime. */
 
 /* Executes entry recordIndex of the active frontend ROM action table (a menu-room hotspot or a scripted entry

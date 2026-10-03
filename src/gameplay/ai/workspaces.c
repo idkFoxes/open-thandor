@@ -8,6 +8,68 @@
 #include <thandor/gameplay/ai/workspaces.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+AiCandidateWorkspaceEntry *g_AiWorkspace13Candidates = 0;
+
+uint32_t g_AiCandidateWorkspaceEntryCount = 0;
+
+AiStructureWorkspaceEntry *g_AiWorkspace00Structures = 0;
+
+uint32_t g_AiWorkspace00Count = 0;
+
+AiRuntimeWorkspaceEntry *g_AiWorkspace01Units = 0;
+
+uint32_t g_AiWorkspace01Count = 0;
+
+AiRuntimeWorkspaceEntry *g_AiWorkspace03UnseenHostiles = 0;
+
+uint32_t g_AiWorkspace03Count = 0;
+
+AiRuntimeWorkspaceEntry *g_AiWorkspace04RequestedAssets = 0;
+
+uint32_t g_AiWorkspace04Count = 0;
+
+AiScoredSiteWorkspaceEntry *g_AiWorkspace05GeneralSites = 0;
+
+uint32_t g_AiWorkspace05Count = 0;
+
+uint8_t *g_AiWorkspace06FlaggedSites = 0;
+
+uint32_t g_AiWorkspace06Count = 0;
+
+AiTargetWorkspaceEntry *g_AiWorkspace07Targets = 0;
+
+uint32_t g_AiWorkspace07Count = 0;
+
+AiTerrainFeatureWorkspaceEntry *g_AiWorkspace08TerrainFeatureSites = 0;
+
+uint32_t g_AiWorkspace08Count = 0;
+
+FieldGridCell **g_AiWorkspace09Cells = 0;
+
+uint32_t g_AiWorkspace09Count = 0;
+
+FieldGridCell **g_AiWorkspace10Cells = 0;
+
+uint32_t g_AiWorkspace10Count = 0;
+
+ArmyAssetRecordPrefix **g_AiWorkspace11ProducibleAssets = 0;
+
+uint32_t g_AiWorkspace11Count = 0;
+
+AiTechnologyPlanningCandidate *g_AiWorkspace12TechnologyCandidates = 0;
+
+AiTechnologyPlanningCandidateCount g_AiWorkspace12Count = 0;
+
+ArmyRuntimeSlot **g_AiWorkspace14CollectedArmies = 0;
+
+static AiRuntimeWorkspaceEntry *g_AiWorkspace02VisibleHostiles = 0;
+
+static uint32_t g_AiWorkspace02Count = 0;
+
+static uint16_t u_engine_ki_dat_0053c5e4[14] = L"engine\\ki.dat";
+
 /* Implementation ownership: gameplay/ai/workspaces. */
 
 /* Candidate cache of the faction runtime record at factionImageByteOffset (faction * 0x740) */

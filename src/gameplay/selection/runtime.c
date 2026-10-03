@@ -8,6 +8,34 @@
 #include <thandor/gameplay/selection/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* UiPackedTextStyle 0x01000000 (font 1, palette 0, left aligned) used to measure and draw the numbers in the selection panel (gameplay/selection/runtime.c) */
+static const UiPackedTextStyle g_SelectionPanelNumberTextStyle = 16777216;
+
+static uint16_t u_gfx_panel_select_gfx_0052ce18[21] = L"gfx\\panel\\select.gfx";
+
+static uint16_t u_gfx_panel_info_gfx_0052ce42[19] = L"gfx\\panel\\info.gfx";
+
+static uint16_t u_gfx_panel_select_dat_0052ce68[21] = L"gfx\\panel\\select.dat";
+
+static uint16_t u_gfx_panel_info_dat_0052ce92[19] = L"gfx\\panel\\info.dat";
+
+static uint16_t g_SelectionPanelNumberScratchUtf16[16] = {0};
+
+/* indexed by player runtime id (0..254) */
+SelectionPlayerRuntimeBlock *g_SelectionPlayerRuntimeBlockPointers[256] = {0};
+
+GraphicsTextureSourceAsset *g_SelectionPanelTextureSource = 0;
+
+GraphicsTextureSourceAsset *g_InfoPanelTextureSource = 0;
+
+void *g_SelectionPanelData = 0;
+
+void *g_InfoPanelData = 0;
+
+SelectionInfoEntitySlots *g_SelectionInfoEntitySlots = 0;
+
 /* Implementation ownership: gameplay/selection/runtime. */
 
 /* Clip rectangle and screen bounds of one metric frame plus the advances of its four corner cells. */

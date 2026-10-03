@@ -57,4 +57,34 @@ void Network_Shutdown(void);
 
 uint32_t NetworkBackend_SetSessionContext(uint32_t backendIndex);
 
+extern NetworkBackendInstanceDescriptorPrefix *g_NetworkBackendInstanceTable;
+extern NetworkBackendReceiveCallback *g_NetworkBackendSlot4;
+extern NetworkBackendSendCallback *g_NetworkBackendSlot5;
+extern uint32_t g_FrontendSelectedPlayerToken; /* uint32_t sender context of the last executed network batch (0xFFFFFFFF = none); network/backend and protocol/transfer */
+extern uint32_t g_FrontendHostSnapshotTransferCountdown;
+extern FrontendCommandPacketRecord g_FrontendPlayerCommandRecords[8];
+extern FrontendCommandPacketRecord g_FrontendCommandBatchPacketBuffer[8];
+extern WinSock_bindProc *g_WinSock_bind;
+extern WinSock_closesocketProc *g_WinSock_closesocket;
+extern WinSock_htonsProc *g_WinSock_htons;
+extern WinSock_inet_addrProc *g_WinSock_inet_addr;
+extern WinSock_inet_ntoaProc *g_WinSock_inet_ntoa;
+extern WinSock_ioctlsocketProc *g_WinSock_ioctlsocket;
+extern WinSock_recvfromProc *g_WinSock_recvfrom;
+extern WinSock_sendtoProc *g_WinSock_sendto;
+extern WinSock_setsockoptProc *g_WinSock_setsockopt;
+extern WinSock_socketProc *g_WinSock_socket;
+extern WinSock_gethostbynameProc *g_WinSock_gethostbyname;
+extern WinSock_WSAGetLastErrorProc *g_WinSock_WSAGetLastError;
+
+extern FrontendPacket10023StateAck g_FrontendPacket10023Buffer;
+
+extern uint32_t g_NetworkBackendInstanceCount;
+extern NetworkBackendSetSessionCallback *g_NetworkBackendSlot0;
+extern NetworkBackendCleanupCallback *g_NetworkBackendSlot1;
+extern NetworkBackendOpenBindCallback *g_NetworkBackendSlot2;
+extern NetworkBackendCloseCallback *g_NetworkBackendSlot3;
+extern NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6;
+extern NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7;
+
 #endif /* THANDOR_NETWORK_BACKEND_RUNTIME_H */

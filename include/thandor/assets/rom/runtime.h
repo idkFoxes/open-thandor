@@ -115,4 +115,14 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
 
 RomAssetRecordPrefix * RomRegistry_FindRecordById(RomRecordId recordId);
 
+extern uint32_t g_FrontendRomTransitionPageAction;
+extern uint32_t g_FrontendActiveRomRecord;
+extern uint32_t g_FrontendRomTransitionElapsedTicks;
+extern uint32_t g_FrontendRomTransitionSplineKeyframes;
+extern uint32_t g_FrontendRomTransitionSplineKeyframeCount;
+extern uint32_t g_FrontendRomTransitionTargetRecordId;
+extern RomRegistrySlot *g_RomRegistrySlots;
+extern DirectSoundVoiceSet *g_FrontendMenuSoundVoiceSets[100]; /* 100 menu sound slots, slot 0 unused, 1..99 = sound\menueNN.sam */
+extern uint16_t u_engine_zentrale_rom_00545aa4[20];
+
 #endif /* THANDOR_ASSETS_ROM_RUNTIME_H */

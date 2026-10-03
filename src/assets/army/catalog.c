@@ -8,6 +8,16 @@
 #include <thandor/assets/army/catalog.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* UTF-16 L"army0000.gfx" after g_AiCommandGenerationRetainedTarget; no code reference found */
+__declspec(align(4)) uint16_t g_UnreferencedArmyTexturePathUtf16[13] = L"army0000.gfx";
+
+/* char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
+__declspec(align(4)) char g_UnreferencedArmyTag[5] = "ARMY";
+
+ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768] = {0};
+
 /* Implementation ownership: assets/army/catalog. */
 
 /* Keeps the editor's unit-placement army id when it names a placeable unit (flag 0x0100 set, 0x0200 clear),

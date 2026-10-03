@@ -116,4 +116,19 @@ typedef long (__stdcall *BootstrapRegQueryValueExAProc)(uint32_t key, void *valu
                                                         void *type, void *data, void *size); /* [6] */
 typedef long (__stdcall *BootstrapRegCloseKeyProc)(uint32_t key);                               /* [7] */
 
+extern WidePathBuffer256 g_LooseMoviePathPrefix;
+extern uint16_t u_daten_hex_0050e054[10];
+extern uint16_t u_stat_hex_0050e082[9];
+extern void *g_GameStatTableImage;
+extern GameDataAuxState g_GameDataAuxState;
+extern uint32_t g_FrontendPlayerListRows[8]; /* pointers (as uint32_t) to the eight 0x80-byte lobby player list rows */
+extern uint32_t g_IntroMoviePendingTicks;
+extern uint16_t g_ScreenshotFileNameUtf16[13]; /* "screen00.pcx" with its two-digit counter at code units 6 and 7 */
+extern DynamicApiBinding g_BootstrapApiBindings[9]; /* 8 bindings + the all-zero terminator [8] that ends the DynAPI_Bootstrap scan */
+extern HINSTANCE g_hInstance;
+extern HWND g_MainWindow;
+extern Win32MainMessageStorage g_MainMessageStorage;
+
+extern CommandLineFindOptionProc *g_CommandLineFindOption;
+
 #endif /* THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H */

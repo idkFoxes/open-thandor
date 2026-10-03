@@ -80,4 +80,7 @@ int GridInfluence_ClearHighDistanceBandsDiagonalPositive
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
+extern const uint32_t g_GridInfluenceRadiusOffset[8]; /* uint32_t[8] grid influence ring radius offsets 1000..4100, indexed by ring / footprint radius class (world/pathing/influence.c, assets/model/definitions.c) */
+extern uint32_t g_GridInfluenceSquaredThreshold[8]; /* uint32_t[8] squared influence ring radii, ring n = (g_GridInfluenceRadiusOffset[n] + radius + margin)^2; [6] is also reused as the footprint clearance disc (world/pathing/influence.c, world/pathing/grid.c) */
+
 #endif /* THANDOR_WORLD_PATHING_INFLUENCE_H */

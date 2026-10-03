@@ -99,4 +99,32 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
 
 bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
 
+extern AiCandidateWorkspaceEntry *g_AiWorkspace13Candidates;
+extern uint32_t g_AiCandidateWorkspaceEntryCount;
+extern AiStructureWorkspaceEntry *g_AiWorkspace00Structures;
+extern uint32_t g_AiWorkspace00Count;
+extern AiRuntimeWorkspaceEntry *g_AiWorkspace01Units;
+extern uint32_t g_AiWorkspace01Count;
+extern AiRuntimeWorkspaceEntry *g_AiWorkspace03UnseenHostiles;
+extern uint32_t g_AiWorkspace03Count;
+extern AiRuntimeWorkspaceEntry *g_AiWorkspace04RequestedAssets;
+extern uint32_t g_AiWorkspace04Count;
+extern AiScoredSiteWorkspaceEntry *g_AiWorkspace05GeneralSites;
+extern uint32_t g_AiWorkspace05Count;
+extern uint8_t *g_AiWorkspace06FlaggedSites;
+extern uint32_t g_AiWorkspace06Count;
+extern AiTargetWorkspaceEntry *g_AiWorkspace07Targets;
+extern uint32_t g_AiWorkspace07Count;
+extern AiTerrainFeatureWorkspaceEntry *g_AiWorkspace08TerrainFeatureSites;
+extern uint32_t g_AiWorkspace08Count;
+extern FieldGridCell **g_AiWorkspace09Cells;
+extern uint32_t g_AiWorkspace09Count;
+extern FieldGridCell **g_AiWorkspace10Cells;
+extern uint32_t g_AiWorkspace10Count;
+extern ArmyAssetRecordPrefix **g_AiWorkspace11ProducibleAssets;
+extern uint32_t g_AiWorkspace11Count;
+extern AiTechnologyPlanningCandidate *g_AiWorkspace12TechnologyCandidates;
+extern AiTechnologyPlanningCandidateCount g_AiWorkspace12Count;
+extern ArmyRuntimeSlot **g_AiWorkspace14CollectedArmies;
+
 #endif /* THANDOR_GAMEPLAY_AI_WORKSPACES_H */

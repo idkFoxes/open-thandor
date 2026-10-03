@@ -10,7 +10,131 @@
 #include <thandor/platform/bootstrap/image.h>
 #include "software_raster.h"
 
+/* Module data. */
+
+__declspec(align(8)) SoftwareFramebufferCreateProc *g_SoftwareFramebufferCreate = (void *)SoftwareFramebuffer_Create;
+
+__declspec(align(16)) SoftwareRasterScanState g_SoftwareRasterScanState = {0};
+
+int32_t *g_SoftwareDepthBuffer = 0;
+
+static const uint64_t g_SoftwareBilinearPackedByteClampMask = 0xFFFFFFFFull;
+
+/* SoftwareFramebufferDestroyProc * hook slot, statically SoftwareFramebuffer_Destroy (graphics/backend/software.c). */
+static SoftwareFramebufferDestroyProc *g_SoftwareFramebufferDestroy = (void *)SoftwareFramebuffer_Destroy;
+
+/* GraphicsFramebufferCopyRegionToOriginProc * hook slot, statically SoftwareFramebuffer_CopyRegionToOrigin (software.c). */
+static GraphicsFramebufferCopyRegionToOriginProc *g_GraphicsFramebufferCopyRegionToOrigin = (void *)SoftwareFramebuffer_CopyRegionToOrigin;
+
+/* GraphicsFramebufferCopyOriginToRegionProc * hook slot, statically SoftwareFramebuffer_CopyOriginToRegion (software.c). */
+static GraphicsFramebufferCopyOriginToRegionProc *g_GraphicsFramebufferCopyOriginToRegion = (void *)SoftwareFramebuffer_CopyOriginToRegion;
+
+static SoftwareDisplayModeHookProc *g_SoftwareChainedSetDisplayMode = 0;
+
+static SoftwareDrawQueueProc *g_SoftwareDrawQueue = 0;
+
+/* int16_t[256][4] MMX word lanes per 8-bit fraction f: lane0 = 0x4040 - 0x40*f, lane1 = 0x40*f (sum 0x4040), lanes 2/3 zero; PMADDWD horizontal weights of SoftwareTexture_SampleIntensity (graphics/backend/software.c); built by SoftwareRenderer_BuildFactorTables */
+static int16_t g_SoftwareBilinearPackedInterpolationWeights256[256][4];
+
+static uint32_t g_SoftwarePixelIntensityToNativeColorLut256[256] = {0};
+
+static const uint64_t g_SoftwareBlendUnityWordLanesQ14 = 0x4000400040004000ull;
+
+SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants = {0};
+
+/* Bilinear weights per 8-bit fraction f, all four lanes equal: forward (f * 0x4040) >> 8, inverse
+   ((256 - f) * 0x4040) >> 8 (built by SoftwareRenderer_BuildFactorTables). Entry 256 is an original quirk:
+   WorldLightingRuntime_UpdateInterpolatedTerrainLighting reads index 256 when the lighting cycle phase is 0
+   (cosine exactly 1.0); in the original that read the first entry of the table that followed each one
+   (g_UiScalerFirstPixelWeights: 0x4000, g_SoftwareBlendAlphaFactors: 0), so those values are kept there. */
+SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257];
+
+SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257];
+
+/* Alpha blend factors per alpha a, B/G/R lanes (fourth lane zero): alpha (a * 0x4040) >> 8, inverse
+   ((256 - a) * 0x4040) >> 8 (built by SoftwareRenderer_BuildFactorTables). Read past their 256 rows through
+   the original-address emulation of software_raster.h (g_SoftwareBlendOverreadRanges), so they keep their size. */
+SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256];
+
+SoftwareRgbWordLanes g_SoftwareBlendInverseAlphaFactors[256];
+
+GraphicsEndSceneProc *g_GraphicsEndScene = (void *)SoftwareGraphicsDispatch_NoOp;
+
+GraphicsDiagnosticCounter g_PrimitiveDrawCallCount = 0;
+
+GraphicsDiagnosticCounter g_TextureBindStateChangeCount = 0;
+
+GraphicsDiagnosticCounter g_TextureDeviceReloadCount = 0;
+
+SoftwarePixelPackTables *g_SoftwarePixelPackTables = 0;
+
+int32_t g_SoftwareColorScaleQ16 = 0x10000;
+
+int32_t g_SoftwareColorBiasQ16 = 0;
+
+SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig = {0};
+
+SoftwareDisplayModeHookProc *g_GraphicsSetDisplayMode = (void *)SoftwarePixelFormat_BaseDisplayModeHook;
+
+SoftwareBuildPixelPackTablesProc *g_SoftwareBuildPixelPackTables = (void *)SoftwarePixelFormat_BuildChannelPackTables;
+
+uint32_t g_SoftwareDepthRowStrideBytes = 0;
+
+void *g_SoftwareAuxiliaryTargetBase = 0;
+
+int32_t g_SoftwareDepthEpoch = 0;
+
+GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth = (void *)SoftwareRenderer_ClearViewport;
+
+GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue = (void *)SoftwareRenderer_DrawPrimitiveQueueBridge;
+
+GraphicsBeginSceneProc *g_GraphicsBeginScene = (void *)SoftwareGraphicsDispatch_SuccessNoOp;
+
 /* Implementation ownership: graphics/backend/software. */
+
+/* Not in the original (it carried the tables precomputed): builds the bilinear and alpha blend factor tables.
+   Per 8-bit fraction or alpha f the forward factor is (f * 0x4040) >> 8 and the inverse ((256 - f) * 0x4040) >> 8
+   (the pair sums to 0x4040 or 0x403F): g_SoftwareBilinearForwardFactors / g_SoftwareBilinearInverseFactors in all
+   four lanes, g_SoftwareBlendAlphaFactors / g_SoftwareBlendInverseAlphaFactors in the B/G/R lanes (fourth lane
+   zero), g_SoftwareBilinearPackedInterpolationWeights256 as {inverse, forward, 0, 0}. Entry 256 of the bilinear
+   tables keeps the original quirk values (forward 0x4000, inverse 0, see there). This reproduces every entry of
+   the original tables. Called once at startup. */
+void SoftwareRenderer_BuildFactorTables(void)
+{
+  int fraction;
+  uint16_t forward;
+  uint16_t inverse;
+
+  for (fraction = 0; fraction <= 256; fraction++) {
+    forward = (uint16_t)((fraction * 0x4040) >> 8);
+    inverse = (uint16_t)(((256 - fraction) * 0x4040) >> 8);
+    if (fraction == 256) {
+      forward = 0x4000; /* the original read the first entry of g_UiScalerFirstPixelWeights here */
+    }
+    g_SoftwareBilinearForwardFactors[fraction].blue = forward;
+    g_SoftwareBilinearForwardFactors[fraction].green = forward;
+    g_SoftwareBilinearForwardFactors[fraction].red = forward;
+    g_SoftwareBilinearForwardFactors[fraction].alpha = forward;
+    g_SoftwareBilinearInverseFactors[fraction].blue = inverse;
+    g_SoftwareBilinearInverseFactors[fraction].green = inverse;
+    g_SoftwareBilinearInverseFactors[fraction].red = inverse;
+    g_SoftwareBilinearInverseFactors[fraction].alpha = inverse;
+    if (fraction < 256) {
+      g_SoftwareBlendAlphaFactors[fraction].blue = forward;
+      g_SoftwareBlendAlphaFactors[fraction].green = forward;
+      g_SoftwareBlendAlphaFactors[fraction].red = forward;
+      g_SoftwareBlendAlphaFactors[fraction].zero = 0;
+      g_SoftwareBlendInverseAlphaFactors[fraction].blue = inverse;
+      g_SoftwareBlendInverseAlphaFactors[fraction].green = inverse;
+      g_SoftwareBlendInverseAlphaFactors[fraction].red = inverse;
+      g_SoftwareBlendInverseAlphaFactors[fraction].zero = 0;
+      g_SoftwareBilinearPackedInterpolationWeights256[fraction][0] = (int16_t)inverse;
+      g_SoftwareBilinearPackedInterpolationWeights256[fraction][1] = (int16_t)forward;
+      g_SoftwareBilinearPackedInterpolationWeights256[fraction][2] = 0;
+      g_SoftwareBilinearPackedInterpolationWeights256[fraction][3] = 0;
+    }
+  }
+}
 
 /* One tick of the credits screen's reveal mask (called from the frontend tick in ui/frontend/scenario.c while
    the credits page is open): pixels already revealed brighten by 0x1F, and the tick's position in a 100-tick
@@ -3366,3 +3490,200 @@ void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
   }
 }
 
+
+/* Class vtables. */
+
+SoftwareRasterHandler *g_SoftwareRasterHandlers16Bit[64] = {
+    /*  0 */ (void *)SoftwareRaster16_Mode00,
+    /*  1 */ (void *)SoftwareRaster16_Mode01,
+    /*  2 */ (void *)SoftwareRaster16_Mode02,
+    /*  3 */ 0,
+    /*  4 */ (void *)SoftwareRaster16_Mode04,
+    /*  5 */ 0,
+    /*  6 */ (void *)SoftwareRaster16_Mode06,
+    /*  7 */ 0,
+    /*  8 */ (void *)SoftwareRaster16_Mode08,
+    /*  9 */ (void *)SoftwareRaster16_Mode09,
+    /* 10 */ (void *)SoftwareRaster16_Mode10,
+    /* 11 */ 0,
+    /* 12 */ (void *)SoftwareRaster16_Mode12,
+    /* 13 */ 0,
+    /* 14 */ (void *)SoftwareRaster16_Mode14,
+    /* 15 */ 0,
+    /* 16 */ (void *)SoftwareRaster16_Mode16,
+    /* 17 */ (void *)SoftwareRaster16_Mode17,
+    /* 18 */ (void *)SoftwareRaster16_Mode18,
+    /* 19 */ 0,
+    /* 20 */ (void *)SoftwareRaster16_Mode20,
+    /* 21 */ 0,
+    /* 22 */ (void *)SoftwareRaster16_Mode22,
+    /* 23 */ 0,
+    /* 24 */ (void *)SoftwareRaster16_Mode24,
+    /* 25 */ (void *)SoftwareRaster16_Mode25,
+    /* 26 */ (void *)SoftwareRaster16_Mode26,
+    /* 27 */ 0,
+    /* 28 */ (void *)SoftwareRaster16_Mode28,
+    /* 29 */ 0,
+    /* 30 */ (void *)SoftwareRaster16_Mode30,
+    /* 31 */ 0,
+    /* 32 */ (void *)SoftwareRaster16_Mode01,
+    /* 33 */ (void *)SoftwareRaster16_Mode01,
+    /* 34 */ (void *)SoftwareRaster16_Mode02,
+    /* 35 */ 0,
+    /* 36 */ (void *)SoftwareRaster16_Mode01,
+    /* 37 */ 0,
+    /* 38 */ (void *)SoftwareRaster16_Mode01,
+    /* 39 */ 0,
+    /* 40 */ (void *)SoftwareRaster16_Mode09,
+    /* 41 */ (void *)SoftwareRaster16_Mode09,
+    /* 42 */ (void *)SoftwareRaster16_Mode10,
+    /* 43 */ 0,
+    /* 44 */ (void *)SoftwareRaster16_Mode09,
+    /* 45 */ 0,
+    /* 46 */ (void *)SoftwareRaster16_Mode09,
+    /* 47 */ 0,
+    /* 48 */ (void *)SoftwareRaster16_Mode17,
+    /* 49 */ (void *)SoftwareRaster16_Mode17,
+    /* 50 */ (void *)SoftwareRaster16_Mode18,
+    /* 51 */ 0,
+    /* 52 */ (void *)SoftwareRaster16_Mode17,
+    /* 53 */ 0,
+    /* 54 */ (void *)SoftwareRaster16_Mode17,
+    /* 55 */ 0,
+    /* 56 */ (void *)SoftwareRaster16_Mode25,
+    /* 57 */ (void *)SoftwareRaster16_Mode25,
+    /* 58 */ (void *)SoftwareRaster16_Mode26,
+    /* 59 */ 0,
+    /* 60 */ (void *)SoftwareRaster16_Mode25,
+    /* 61 */ 0,
+    /* 62 */ (void *)SoftwareRaster16_Mode25};
+
+SoftwareRasterHandler *g_SoftwareRasterHandlersNon16Bit[64] = {
+    /*  0 */ (void *)SoftwareRasterNon16_Mode00,
+    /*  1 */ (void *)SoftwareRasterNon16_Mode01,
+    /*  2 */ (void *)SoftwareRasterNon16_Mode02,
+    /*  3 */ 0,
+    /*  4 */ (void *)SoftwareRasterNon16_Mode04,
+    /*  5 */ 0,
+    /*  6 */ (void *)SoftwareRasterNon16_Mode06,
+    /*  7 */ 0,
+    /*  8 */ (void *)SoftwareRasterNon16_Mode08,
+    /*  9 */ (void *)SoftwareRasterNon16_Mode09,
+    /* 10 */ (void *)SoftwareRasterNon16_Mode10,
+    /* 11 */ 0,
+    /* 12 */ (void *)SoftwareRasterNon16_Mode12,
+    /* 13 */ 0,
+    /* 14 */ (void *)SoftwareRasterNon16_Mode14,
+    /* 15 */ 0,
+    /* 16 */ (void *)SoftwareRasterNon16_Mode16,
+    /* 17 */ (void *)SoftwareRasterNon16_Mode17,
+    /* 18 */ (void *)SoftwareRasterNon16_Mode18,
+    /* 19 */ 0,
+    /* 20 */ (void *)SoftwareRasterNon16_Mode20,
+    /* 21 */ 0,
+    /* 22 */ (void *)SoftwareRasterNon16_Mode22,
+    /* 23 */ 0,
+    /* 24 */ (void *)SoftwareRasterNon16_Mode24,
+    /* 25 */ (void *)SoftwareRasterNon16_Mode25,
+    /* 26 */ (void *)SoftwareRasterNon16_Mode26,
+    /* 27 */ 0,
+    /* 28 */ (void *)SoftwareRasterNon16_Mode28,
+    /* 29 */ 0,
+    /* 30 */ (void *)SoftwareRasterNon16_Mode30,
+    /* 31 */ 0,
+    /* 32 */ (void *)SoftwareRasterNon16_Mode01,
+    /* 33 */ (void *)SoftwareRasterNon16_Mode01,
+    /* 34 */ (void *)SoftwareRasterNon16_Mode02,
+    /* 35 */ 0,
+    /* 36 */ (void *)SoftwareRasterNon16_Mode01,
+    /* 37 */ 0,
+    /* 38 */ (void *)SoftwareRasterNon16_Mode01,
+    /* 39 */ 0,
+    /* 40 */ (void *)SoftwareRasterNon16_Mode09,
+    /* 41 */ (void *)SoftwareRasterNon16_Mode09,
+    /* 42 */ (void *)SoftwareRasterNon16_Mode10,
+    /* 43 */ 0,
+    /* 44 */ (void *)SoftwareRasterNon16_Mode09,
+    /* 45 */ 0,
+    /* 46 */ (void *)SoftwareRasterNon16_Mode09,
+    /* 47 */ 0,
+    /* 48 */ (void *)SoftwareRasterNon16_Mode17,
+    /* 49 */ (void *)SoftwareRasterNon16_Mode17,
+    /* 50 */ (void *)SoftwareRasterNon16_Mode18,
+    /* 51 */ 0,
+    /* 52 */ (void *)SoftwareRasterNon16_Mode17,
+    /* 53 */ 0,
+    /* 54 */ (void *)SoftwareRasterNon16_Mode17,
+    /* 55 */ 0,
+    /* 56 */ (void *)SoftwareRasterNon16_Mode25,
+    /* 57 */ (void *)SoftwareRasterNon16_Mode25,
+    /* 58 */ (void *)SoftwareRasterNon16_Mode26,
+    /* 59 */ 0,
+    /* 60 */ (void *)SoftwareRasterNon16_Mode25,
+    /* 61 */ 0,
+    /* 62 */ (void *)SoftwareRasterNon16_Mode25};
+
+SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[64] = {
+    /*  0 */ (void *)SoftwareRasterAux_Mode00,
+    /*  1 */ (void *)SoftwareRasterAux_Mode01,
+    /*  2 */ (void *)SoftwareRasterAux_Mode02,
+    /*  3 */ 0,
+    /*  4 */ (void *)SoftwareRasterAux_Mode04,
+    /*  5 */ 0,
+    /*  6 */ (void *)SoftwareRasterAux_Mode06,
+    /*  7 */ 0,
+    /*  8 */ (void *)SoftwareRasterAux_Mode08,
+    /*  9 */ (void *)SoftwareRasterAux_Mode09,
+    /* 10 */ (void *)SoftwareRasterAux_Mode10,
+    /* 11 */ 0,
+    /* 12 */ (void *)SoftwareRasterAux_Mode12,
+    /* 13 */ 0,
+    /* 14 */ (void *)SoftwareRasterAux_Mode14,
+    /* 15 */ 0,
+    /* 16 */ (void *)SoftwareRasterAux_Mode16,
+    /* 17 */ (void *)SoftwareRasterAux_Mode17,
+    /* 18 */ (void *)SoftwareRasterAux_Mode18,
+    /* 19 */ 0,
+    /* 20 */ (void *)SoftwareRasterAux_Mode20,
+    /* 21 */ 0,
+    /* 22 */ (void *)SoftwareRasterAux_Mode22,
+    /* 23 */ 0,
+    /* 24 */ (void *)SoftwareRasterAux_Mode24,
+    /* 25 */ (void *)SoftwareRasterAux_Mode25,
+    /* 26 */ (void *)SoftwareRasterAux_Mode26,
+    /* 27 */ 0,
+    /* 28 */ (void *)SoftwareRasterAux_Mode28,
+    /* 29 */ 0,
+    /* 30 */ (void *)SoftwareRasterAux_Mode30,
+    /* 31 */ 0,
+    /* 32 */ (void *)SoftwareRasterAux_Mode01,
+    /* 33 */ (void *)SoftwareRasterAux_Mode01,
+    /* 34 */ (void *)SoftwareRasterAux_Mode02,
+    /* 35 */ 0,
+    /* 36 */ (void *)SoftwareRasterAux_Mode01,
+    /* 37 */ 0,
+    /* 38 */ (void *)SoftwareRasterAux_Mode01,
+    /* 39 */ 0,
+    /* 40 */ (void *)SoftwareRasterAux_Mode09,
+    /* 41 */ (void *)SoftwareRasterAux_Mode09,
+    /* 42 */ (void *)SoftwareRasterAux_Mode10,
+    /* 43 */ 0,
+    /* 44 */ (void *)SoftwareRasterAux_Mode09,
+    /* 45 */ 0,
+    /* 46 */ (void *)SoftwareRasterAux_Mode09,
+    /* 47 */ 0,
+    /* 48 */ (void *)SoftwareRasterAux_Mode17,
+    /* 49 */ (void *)SoftwareRasterAux_Mode17,
+    /* 50 */ (void *)SoftwareRasterAux_Mode18,
+    /* 51 */ 0,
+    /* 52 */ (void *)SoftwareRasterAux_Mode17,
+    /* 53 */ 0,
+    /* 54 */ (void *)SoftwareRasterAux_Mode17,
+    /* 55 */ 0,
+    /* 56 */ (void *)SoftwareRasterAux_Mode25,
+    /* 57 */ (void *)SoftwareRasterAux_Mode25,
+    /* 58 */ (void *)SoftwareRasterAux_Mode26,
+    /* 59 */ 0,
+    /* 60 */ (void *)SoftwareRasterAux_Mode25,
+    /* 61 */ 0,
+    /* 62 */ (void *)SoftwareRasterAux_Mode25};

@@ -113,4 +113,11 @@ int UiModalDialogRoot_BlockMissedPointerMotion(UiRootNode *root);
 extern RuntimeSpinLockValue *g_UiRuntimeFrameLock;
 extern UiRuntimePostUnlockCallbackProc *g_UiRuntimePostUnlockCallback;
 
+extern UiRuntimeRecord *g_UiRuntimeRecordRing;
+extern uint32_t g_UiRuntimeRecordEndpointSlots;
+extern uint8_t *g_UiTransferDataBuffer;
+extern UiTransferEndpointDescriptor *g_UiTransferEndpointBuffer;
+extern RuntimeSpinLockValue g_UiRuntimeRecordRingLock;
+extern UiDirtyRectCount g_UiDirtyRectCount;
+
 #endif /* THANDOR_UI_CORE_RUNTIME_H */

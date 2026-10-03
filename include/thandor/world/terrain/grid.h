@@ -245,4 +245,8 @@ void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStri
 
 void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell);
 
+extern TerrainDirectionRecord g_TerrainDirectionRecordTable256[256];
+
+extern const FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5;
+
 #endif /* THANDOR_WORLD_TERRAIN_GRID_H */

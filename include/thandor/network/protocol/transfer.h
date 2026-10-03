@@ -137,11 +137,11 @@ void FrontendTransfer_DispatchStagedCommandRecords(void);
 
 bool FrontendTransfer_ConsumeProcessedFlag(void);
 
-void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
+void UiTransfer_EncryptPacketBlocks(const uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
           uint32_t *inputBlocks);
 
 void UiTransfer_DecryptPacketBlocks
-          (uint32_t *roundKeys16,void *destination,UiTransferPayloadByteCount byteCount,void *source);
+          (const uint32_t *roundKeys16,void *destination,UiTransferPayloadByteCount byteCount,void *source);
 
 void UiTransferMailbox_MarkUnavailable(void);
 
@@ -150,5 +150,25 @@ void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,vo
 void FrontendTransfer_SendLobbyCommandAndSnapshotRequest(void);
 
 bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet);
+
+extern uint32_t g_UiRuntimeRecordWriteIndex;
+extern uint32_t g_UiTransferUnitCursor;
+extern uint32_t g_UiTransferSequenceToken; /* uint32_t sequence token stamped into outgoing network packets (initial 0x12340000, low 16 bits XORed with a random value in transfer.c; network/protocol/transfer.c, ui/frontend/network.c). */
+extern uint32_t g_UiTransferSenderContext;
+extern UiTransferMailboxState g_UiTransferMailbox;
+extern UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint;
+extern uint32_t g_FrontendSessionToken;
+extern SessionTransferTimeoutTicks g_SessionTransferTimeoutTicks;
+extern uint32_t g_FrontendTransferResponsePending;
+extern uint32_t g_FrontendLocalPlayerPcxPreview;
+extern uint32_t g_FrontendPendingSessionPlayerCount; /* followed by an all-zero dword no code reaches (dropped) */
+extern uint32_t g_FrontendExpectedPlayerRuntimeBlockCount;
+extern FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8];
+extern FrontendCommandPacketRecord g_FrontendClientCommandBatchPacketBuffer[8];
+extern FrontendCommandPacketRecord g_FrontendPacket10021Buffer;
+
+extern FrontendPacket10022StatePending g_FrontendPacket10022Buffer;
+
+extern int32_t g_FrontendPlayerRuntimeCount;
 
 #endif /* THANDOR_NETWORK_PROTOCOL_TRANSFER_H */

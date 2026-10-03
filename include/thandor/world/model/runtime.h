@@ -95,4 +95,9 @@ uint32_t ModelRuntimePool_CreateInstanceByDefinitionId
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
           WorldRuntimeContext *worldRuntime,ModelRuntimeSlot **outModelRuntime);
 
+extern int32_t g_ModelLodDepthThresholdQ8;
+extern GraphicsFixedVec3 g_ModelCullViewRelative;
+extern ModelRuntimeSlot *g_ModelRuntimeSlots;
+extern int g_ModelRuntimeRebaseDelta;
+
 #endif /* THANDOR_WORLD_MODEL_RUNTIME_H */

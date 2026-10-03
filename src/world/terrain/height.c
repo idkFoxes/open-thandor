@@ -8,6 +8,15 @@
 #include <thandor/world/terrain/height.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static const int32_t g_TerrainHeightBandMaximumDelta = 1024;
+
+static const int32_t g_TerrainHeightBandMinimumDelta = -1024;
+
+/* int32_t minimum (triangle1NormalAngles >> 16) for the auxiliary height/placement scans in world/terrain/height.c (0x3000) */
+static const int32_t g_TerrainAuxHeightMinimum = 12288;
+
 /* Implementation ownership: world/terrain/height. */
 
 /* Shared set-up of the two hexagon placement tests below: sets g_TerrainScanStepLimit (radius /
@@ -1769,3 +1778,21 @@ void TerrainHeightDelta_ApplyDirection5(TerrainDirectionalScanStep scanStep,Fiel
   return;
 }
 
+
+/* Class vtables. */
+
+const TerrainClassPlacementAndOverlayCallbackTable10 g_TerrainClassPlacementAndOverlayCallbacks10 = {
+    .placementTests = {
+        /* 0 */ (void *)TerrainHeightBand_TestAroundWorldPoint,
+        /* 1 */ (void *)TerrainAuxHeightThreshold_TestAroundWorldPoint,
+        /* 2 */ (void *)TerrainHeightBand_TestAroundWorldPoint,
+        /* 3 */ (void *)TerrainHeightBand_TestAroundWorldPoint,
+        /* 4 */ (void *)TerrainHeightBand_TestAroundWorldPoint
+    },
+    .overlayCallbacks = {
+        /* 0 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint,
+        /* 1 */ (void *)FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint,
+        /* 2 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint,
+        /* 3 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint,
+        /* 4 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
+    }};

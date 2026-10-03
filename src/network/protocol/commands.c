@@ -9,6 +9,17 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+static UiCommandQueueRecord g_FrontendCommandQueueRecords[16] = {0};
+
+/* followed by 12 bytes 0x90 fill (dropped) */
+static UiCommandQueueRecord *g_FrontendCommandQueueEnd = g_FrontendCommandQueueRecords;
+
+static UiCommandQueueRecord g_InGameCommandQueueRecords[16] = {0};
+
+static UiCommandQueueRecord *g_InGameCommandQueueEnd = (void *)&g_InGameCommandQueueRecords;
+
 /* Implementation ownership: network/protocol/commands. */
 
 /* Queues a lobby (frontend) command of the local player for the next network command batch: one 16-byte

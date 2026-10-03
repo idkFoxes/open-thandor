@@ -49,12 +49,10 @@ layout-compatible structs, which C only allows through a union.
 
 #include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
 #include <thandor/core/ghidra.h>
-/* The function pointer types the data uses, the UI template layouts, and the data of the original image: C
-   variables in the modules (src/<area>/<module>/data.c, declared in <thandor/<area>/<module>/data.h>), all
-   included through generated/image_data.h. */
+/* The function pointer types and the UI template layouts. The data of the original image are ordinary C
+   variables of the modules, declared in the module headers. */
 #include <thandor/generated/proc_types.h>
 #include <thandor/generated/ui_templates.h>
-#include <thandor/generated/image_data.h>
 
 /* Address of `offset` bytes into an object, as an integer: for code that steps through a table or record by
    byte offsets like the original. */

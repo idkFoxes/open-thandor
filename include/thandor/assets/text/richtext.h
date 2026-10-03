@@ -115,4 +115,10 @@ bool RichTextCommandStream_DrawNextWrappedLine
 
 void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream);
 
+extern PackedArgb32 g_RichTextColorPaletteArgb[6];
+extern uint32_t g_ActiveFontIndex;
+extern uint32_t g_RichTextCurrentColorArgb;
+extern uint32_t g_RichTextCurrentShadowOffset;
+extern uint8_t *g_FontRuntimeBuffer;
+
 #endif /* THANDOR_ASSETS_TEXT_RICHTEXT_H */

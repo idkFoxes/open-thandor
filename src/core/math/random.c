@@ -9,6 +9,10 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+RandomGeneratorState g_RandomGeneratorState = {.next = (void *)Random_NextPrimary, .primarySeed = 0x198F};
+
 /* Implementation ownership: core/math/random. */
 
 /* Primary random stream (the default g_RandomGeneratorState.next): steps the linear congruential seed

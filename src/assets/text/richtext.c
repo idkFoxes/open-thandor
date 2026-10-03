@@ -8,6 +8,46 @@
 #include <thandor/assets/text/richtext.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* rich-text colour palette, indexed by the 3-bit palette field of the packed text style and set by
+   RICHTEXT_OP_COLOR_PALETTE_0..3. The original's palette field has 3 bits; entries 6 and 7 would read on into
+   the shadow offsets (the original's next object), so the two tables stay defined back to back. */
+PackedArgb32 g_RichTextColorPaletteArgb[6] = {
+    0xFFB0B0B0, /* [0] grey; also the normal cost colour of the technology panel */
+    0xFFE0E0E0, /* [1] light grey, RICHTEXT_OP_COLOR_PALETTE_1 */
+    0xFF707070, /* [2] dark grey, RICHTEXT_OP_COLOR_PALETTE_2 */
+    0xFFE0E0E0, /* [3] light grey, RICHTEXT_OP_COLOR_PALETTE_3 */
+    0xFF209020, /* [4] green; only reachable through the packed text style's palette index */
+    0xFFF02020, /* [5] red; also technology costs the player cannot afford (ui/ingame/technology.c) */
+};
+
+/* text shadow offset in pixels per colour palette entry, indexed like g_RichTextColorPaletteArgb. */
+static uint32_t g_RichTextShadowOffsetPalette[6] = {
+    2, /* [0] */
+    2, /* [1] */
+    1, /* [2] */
+    2, /* [3] */
+    0, /* [4] */
+    0, /* [5] */
+};
+
+static uint32_t g_RichTextSavedColorArgb = 0;
+
+static uint32_t g_RichTextSavedShadowOffset = 0;
+
+static uint32_t g_RichTextRuntimeBufferUsedWords = 0;
+
+static uint16_t u_error__TXT2STR__unknown_characte_0041afac[62] = L"error: TXT2STR: unknown character at:                        ";
+
+uint32_t g_ActiveFontIndex = 0;
+
+uint32_t g_RichTextCurrentColorArgb = 0;
+
+uint32_t g_RichTextCurrentShadowOffset = 0;
+
+uint8_t *g_FontRuntimeBuffer = 0;
+
 /* Depth of the machine-stack return chains the original keeps for nested (0x18) streams. */
 #define RICHTEXT_NESTING_LIMIT 64
 

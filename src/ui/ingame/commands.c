@@ -8,6 +8,44 @@
 #include <thandor/ui/ingame/commands.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* uint32_t ARGB mask applied to terrain vertex diffuse colours (0x00FFFFFF raw, other value in masked command mode); its alpha byte also switches overlay/projection paths */
+__declspec(align(4)) uint32_t g_UiCommandModeGColorVariantLimit = 16777215;
+
+static int32_t g_UiCommandSpriteVariantAOffsets[24] = {
+    /*  0 */ 36116, 36240, 36364, 36488, 36612, 36736, 36860, 36984,
+    /*  8 */ 37108, 37232, 37356, 37480, 37604, 37728, 37852, 37976,
+    /* 16 */ 38100, 38224, 38348, 38472, 38596, 38720, 38844, 38968};
+
+static int32_t g_UiAction100AControlOffsets[8] = {45584, 45712, 45840, 45968, 46096, 46224, 46352, 46480};
+
+static uint32_t g_UiCommandSpriteVariantAColumnCount = 0;
+
+static int32_t *g_UiCommandSpriteVariantAOffsetTables[5] = {
+    /* 0 */ (void *)&g_UiCommandSpriteVariantAOffsets,
+    /* 1 */ (void *)&g_UiCommandSpriteVariantAOffsets,
+    /* 2 */ (void *)&g_UiCommandSpriteVariantAOffsets,
+    /* 3 */ (void *)&g_UiCommandSpriteVariantAOffsets,
+    /* 4 */ (void *)&g_UiCommandSpriteVariantAOffsets};
+
+static UiCommandRuntimeRecordPrefix *g_UiCommandSpriteVariantARecords[24] = {0};
+
+static uint32_t g_UiCommandSelectionPageBaseIndex = 0;
+
+static int32_t g_UiMappedCommandControlOffsets[12] = {42892, 43076, 43260, 43444, 43628, 43812, 43996, 44180, 44364, 44548, 44732, 44916};
+
+/* uint32_t render-state flag word copied into terrain packets (primitives.c); ui/ingame/commands.c sets/clears the masked G-colour variant bit */
+uint32_t g_UiCommandModeGColorVariantFlags = 0x10000;
+
+uint32_t g_UiCommandModeE = 0;
+
+uint32_t g_UiCommandModeA = 0;
+
+uint32_t g_UiCommandModeB = 0;
+
+uint32_t g_UiCommandModeF = 0;
+
 /* Implementation ownership: ui/ingame/commands. */
 
 /* Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiActionHandlersPage11[0],
@@ -1739,3 +1777,89 @@ InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeInd
   return root;
 }
 
+
+/* Class vtables. */
+
+UiNodeVtable g_UiNodeVtable_005162C0 = {
+        .relocate = (void *)UiSpriteButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .nonRightRelease = (void *)UiCommandSpriteButtonControl_NonRightRelease,
+        .rightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .rightRelease = (void *)UiCommandSpriteButtonControl_RightRelease,
+        .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .pointerMove = (void *)InGameArmyStock_PointerMoveShowSlotDetails,
+        .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+        .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+UiNodeVtable g_UiNodeVtable_00516310 = {
+        .relocate = (void *)UiSpriteButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .nonRightRelease = (void *)UiCommandSpriteButtonControl_NonRightRelease,
+        .rightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .rightRelease = (void *)UiCommandSpriteButtonControl_RightRelease,
+        .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+        .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};
+
+InGameUiCommandModeActionHandlerPage11 g_InGameUiActionHandlersPage11 = {
+        .handlers = {
+            /*  0 */ (void *)InGameCommandModeG_Select0,
+            /*  1 */ (void *)InGameCommandModeG_Select1,
+            /*  2 */ (void *)InGameCommandModeG_Select2,
+            /*  3 */ 0,
+            /*  4 */ (void *)InGameCommandModeG_Select5,
+            /*  5 */ (void *)InGameCommandModeG_Select3,
+            /*  6 */ (void *)InGameCommandModeG_Select4,
+            /*  7 */ 0,
+            /*  8 */ (void *)InGameCommandModeC_Select0,
+            /*  9 */ (void *)InGameCommandModeC_Select1,
+            /* 10 */ (void *)InGameCommandModeC_Select2,
+            /* 11 */ (void *)InGameCommandModeC_Select3,
+            /* 12 */ (void *)InGameCommandModeD_Select0,
+            /* 13 */ (void *)InGameCommandModeD_Select1,
+            /* 14 */ (void *)InGameCommandModeD_Select2,
+            /* 15 */ (void *)InGameCommandModeD_Select3,
+            /* 16 */ (void *)InGameCommandMatrix_SelectMappedControl,
+            /* 17 */ (void *)InGameCommandModeA_Select0,
+            /* 18 */ (void *)InGameCommandModeA_Select1,
+            /* 19 */ (void *)InGameCommandModeA_Select2,
+            /* 20 */ (void *)InGameCommandModeB_Select0,
+            /* 21 */ (void *)InGameCommandModeB_Select1,
+            /* 22 */ (void *)InGameCommandModeB_Select2,
+            /* 23 */ (void *)InGameCommandModeE_Select0,
+            /* 24 */ (void *)InGameCommandModeE_Select1,
+            /* 25 */ (void *)InGameCommandModeE_Select2,
+            /* 26 */ (void *)InGameCommandRange_DispatchState0,
+            /* 27 */ (void *)InGameCommandRange_DispatchState1,
+            /* 28 */ (void *)InGameCommandModeF_Select0,
+            /* 29 */ (void *)InGameCommandModeF_Select1
+        }};
+
+void *g_UiCommandModeGHandlers[6] = {
+    /* 0 */ (void *)InGameCommandModeG_Select0,
+    /* 1 */ (void *)InGameCommandModeG_Select1,
+    /* 2 */ (void *)InGameCommandModeG_Select2,
+    /* 3 */ (void *)InGameCommandModeG_Select3,
+    /* 4 */ (void *)InGameCommandModeG_Select4,
+    /* 5 */ (void *)InGameCommandModeG_Select5};

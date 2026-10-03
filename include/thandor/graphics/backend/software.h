@@ -19,6 +19,9 @@
 #define SOFTWARE_MASK_BRIGHTEN_STEP 0x1f
 /* Functions are grouped by semantic ownership. */
 
+/* Builds the bilinear and alpha blend factor tables (the original carried them precomputed); once at startup. */
+void SoftwareRenderer_BuildFactorTables(void);
+
 void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime);
 
 void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -335,5 +338,38 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
           SoftwareMaskRuntimeView *maskRuntime);
 
 void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet);
+
+extern GraphicsSetViewportProc *g_GraphicsSetViewportAndClearDepth;
+extern GraphicsDrawPrimitiveQueueProc *g_GraphicsDrawPrimitiveQueue;
+extern GraphicsBeginSceneProc *g_GraphicsBeginScene;
+
+extern SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants;
+extern SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[257];
+extern SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[257];
+extern SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256];
+extern SoftwareRgbWordLanes g_SoftwareBlendInverseAlphaFactors[256];
+extern GraphicsEndSceneProc *g_GraphicsEndScene;
+extern GraphicsDiagnosticCounter g_PrimitiveDrawCallCount;
+extern GraphicsDiagnosticCounter g_TextureBindStateChangeCount;
+extern GraphicsDiagnosticCounter g_TextureDeviceReloadCount;
+extern SoftwarePixelPackTables *g_SoftwarePixelPackTables;
+extern int32_t g_SoftwareColorScaleQ16;
+extern int32_t g_SoftwareColorBiasQ16;
+extern SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig;
+extern SoftwareDisplayModeHookProc *g_GraphicsSetDisplayMode;
+extern SoftwareBuildPixelPackTablesProc *g_SoftwareBuildPixelPackTables;
+extern uint32_t g_SoftwareDepthRowStrideBytes;
+extern void *g_SoftwareAuxiliaryTargetBase;
+extern int32_t g_SoftwareDepthEpoch;
+
+extern SoftwareRasterHandler *g_SoftwareRasterHandlers16Bit[64];
+extern SoftwareRasterHandler *g_SoftwareRasterHandlersNon16Bit[64];
+extern SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[64];
+
+extern int32_t *g_SoftwareDepthBuffer;
+
+extern SoftwareRasterScanState g_SoftwareRasterScanState;
+
+extern SoftwareFramebufferCreateProc *g_SoftwareFramebufferCreate;
 
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_H */

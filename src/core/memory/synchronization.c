@@ -8,6 +8,16 @@
 #include <thandor/core/memory/synchronization.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(4)) SpinLockAcquireProc *g_SpinLockAcquire = (void *)SpinLock_Acquire;
+
+__declspec(align(8)) SpinLockTryAcquireFlagsProc *g_SpinLockTryAcquire = (void *)SpinLock_TryAcquireFlags;
+
+__declspec(align(4)) SpinLockReleaseProc *g_SpinLockRelease = (void *)SpinLock_Release;
+
+__declspec(align(16)) SpinLockReleaseAndInvokeProc *g_SpinLockReleaseAndInvoke = (void *)SpinLock_ReleaseAndInvoke;
+
 /* Implementation ownership: core/memory/synchronization. */
 
 /* Busy-waits until the lock is taken: atomically swaps -1 into it until the previous value was zero. A

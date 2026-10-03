@@ -9,6 +9,26 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+int32_t g_InGamePendingPlacementArmyAsset = 0;
+
+uint32_t g_InGameCommandPreviewArmyAssetId = 0;
+
+static ModelProjectedBoundsPixels g_ModelProjectedBoundsPixels = {0};
+
+static EffectRuntimeSlot *g_InGameOwnedEntityTransientEffectMarkers[32] = {0};
+
+static uint32_t g_InGameOwnedEntityTransientEffectMarkerCount = 0;
+
+static EffectRuntimeSlot *g_InGameCommandTargetTransientEffectMarkers[128] = {0};
+
+static uint32_t g_InGameCommandTargetTransientEffectMarkerCount = 0;
+
+static GameEntityRuntime *g_InGamePlacementPreviewArmyRuntime = 0;
+
+static GameEntityRuntime *g_InGameCommandPreviewArmyRuntime = 0;
+
 /* Implementation ownership: gameplay/selection/overlay. */
 
 /* Command mode: builds (releaseMode == GRAPHICS_STATE_DISABLED) or releases the ghost of the army the previewed
@@ -1052,3 +1072,15 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
   }
 }
 
+
+/* Class vtables. */
+
+code *g_InGamePointerModeHandlers[8] = {
+    /* 0 */ 0,
+    /* 1 */ (void *)InGameSelection_SetAircraftPadTargetLane1,
+    /* 2 */ (void *)InGameSelection_SetAircraftPadTargetLane2,
+    /* 3 */ (void *)SelectionMarkerCoordinates_ApplyType3,
+    /* 4 */ (void *)SelectionMarkerCoordinates_ApplyType4,
+    /* 5 */ (void *)SelectionMarkerCoordinates_ApplyType5,
+    /* 6 */ (void *)SelectionMarkerCoordinates_ApplyType6,
+    /* 7 */ (void *)SelectionMarkerCoordinates_ApplyType7};

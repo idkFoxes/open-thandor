@@ -8,6 +8,56 @@
 #include <thandor/gameplay/session/level.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(4)) uint16_t u_army_hex_0050dfb4[9] = L"army.hex";
+
+uint16_t u_effect_hex_0050dfc6[11] = L"effect.hex";
+
+uint16_t u_shot_hex_0050dfdc[9] = L"shot.hex";
+
+uint16_t u_modul_hex_0050dfee[10] = L"modul.hex";
+
+uint16_t u_field_hex_0050e002[10] = L"field.hex";
+
+uint16_t u_light_hex_0050e016[10] = L"light.hex";
+
+uint16_t u_widget_hex_0050e02a[11] = L"widget.hex";
+
+uint16_t u_level_hex_0050e040[10] = L"level.hex";
+
+uint16_t g_LevelEndingMovieSourcePath[256] = {0};
+
+uint32_t g_InGameLevelTitleTextResourceIndex = 0;
+
+uint32_t g_InGameLevelCampaignAssociationIndex = 0;
+
+DirectSoundVoiceSet *g_InGameLevelEffectVoiceSets[4] = {0, 0, 0, 0};
+
+DirectSoundVoiceSet *g_InGameLevelMusicVoiceSets[4] = {0, 0, 0, 0};
+
+InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock = {.playerSlotByteOffsets = {0, 32, 64, 96, 128, 160, 192}};
+
+uint32_t g_MoviePlaybackBaseFrameGroup = 0;
+
+uint32_t g_MoviePlaybackScheduleCounter = 0;
+
+uint32_t g_MoviePlaybackScheduleSpan = 0;
+
+uint32_t g_SoundPackageHandle = 0;
+
+static uint16_t u_sound_level00_sam_0050df6c[18] = L"sound\\level00.sam";
+
+static uint16_t u_sound_music00_sam_0050df90[18] = L"sound\\music00.sam";
+
+static void **g_InGameLoadedResourcePointers = 0;
+
+static InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount = 0;
+
+static uint16_t g_InGameLevelSoundLeafOrCombinedPathScratchUtf16[256] = {0};
+
+static uint16_t g_InGameLevelSoundParentDirectoryScratchUtf16[256] = {0};
+
 /* Implementation ownership: gameplay/session/level. */
 
 /* Prepares the movies of a level before it is loaded: stores the level's loading movie (the path at

@@ -91,4 +91,8 @@ DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthI
 bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1);
 
+extern GraphicsPrimitiveQueueRadixSortProc *PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844;
+extern GraphicsPrimitiveQueue *g_PrimitiveQueueStorage;
+extern GraphicsPaletteAsset *g_TerrainSecondaryPalette;
+
 #endif /* THANDOR_GRAPHICS_RENDER_PRIMITIVES_H */

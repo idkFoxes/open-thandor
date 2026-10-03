@@ -8,6 +8,18 @@
 #include <thandor/gameplay/technology/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+int32_t g_TechnologyCategoryMaximums[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+int32_t g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
+
+TechnologyCategoryMasks g_TechnologyCategoryMasks = {0};
+
+static uint32_t g_TechnologyCategoryMaximumReciprocalQ24Table8[8] = {0};
+
+TechnologyAsset *g_TechnologyAsset = 0;
+
 /* Implementation ownership: gameplay/technology/runtime. */
 
 /* Unlocks a technology for a faction (once): sets its bit in the faction's 256-bit technology mask, announces it

@@ -9,6 +9,23 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+static TextResourcePageBinding g_TextResourcePageBindings[256] = {0};
+
+static TextResourceOverrideTable *g_TextResourceOverrides = 0;
+
+static uint16_t g_EmptyTextResourceUtf16[2] = {0};
+
+/* UTF-16 rich-text stream L"-" (code unit '-' plus terminator) that unresolved nested-stream records point to */
+static uint16_t g_MissingTextResourceFallbackStream[2] = {0x002D, 0x0000};
+
+/* the two font texture paths L"engine\\font.gfx" and L"engine\\fontk.gfx", back to back:
+   FontRuntime_Init scans past the first terminator to reach the second */
+static uint16_t g_FontTexturePathsUtf16[33] = L"engine\\font.gfx\0engine\\fontk.gfx";
+
+GraphicsTextureSourceAsset *g_FontTextureSources[2] = {0};
+
 /* Implementation ownership: assets/text/resources. */
 
 /* Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
@@ -63,7 +80,7 @@ void FontRuntime_Init(void)
   int scanUnitsLeft;
   int sourceIndex;
   int dwordsLeft;
-  wchar_t *pathUtf16;
+  const wchar_t *pathUtf16;
   uint32_t *overrideDword;
   GraphicsTextureSourceAsset *loadedTexture;
   uint32_t textureLoadError;

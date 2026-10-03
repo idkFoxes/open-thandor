@@ -117,4 +117,14 @@ void ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixe
 
 void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime);
 
+extern GraphicsPrimitiveQueue *g_ActivePrimitiveQueue;
+extern GraphicsFixedRect g_ProjectionClipRect;
+extern GraphicsShadingRuntimeRecord g_GraphicsShadingNearbyRecords[256];
+extern GraphicsShadingRecordCount g_GraphicsShadingNearbyRecordCount; /* GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelLightingMmxMultiplierRows. */
+extern SoftwareBgraWordLanes g_ModelLightingMmxMultiplierRows[819]; /* PMULHW multipliers (alpha lane 0x4000) of the model vertex lighting; rows 0..135 = distance attenuation rows -136..-1 (B/G/R 0x007F at -1 rising by 0x80 to 0x3F7F, then 0x3FFF), rows 136..681 = distance attenuation from MODEL_DISTANCE_ATTENUATION_ROW0 (ModelRender_ComputeVertexIntensityDefaultPath, signed dot >> 21), rows 682..818 = scaled-lighting multipliers from MODEL_LIGHTING_SCALE_ROW0 (ModelRender_ComputeVertexIntensityScaledPath, signed (dot / lightingScaleQ12) >> 9; B/G/R 0x1FFF falling by 0x80 to 0x007F, then 0). See graphics/render/model.h. */
+extern GraphicsFixedVec3 g_ModelLightingVertexToLightVectorScratch;
+extern GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch;
+extern GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3;
+extern GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3;
+
 #endif /* THANDOR_GRAPHICS_RENDER_MODEL_H */

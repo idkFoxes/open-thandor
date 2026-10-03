@@ -13,6 +13,12 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+Win32PumpMessagesProc *g_Win32PumpMessages = 0;
+
+uint32_t g_WindowDestroyDepth = 0;
+
 /* Implementation ownership: platform/system/win32. */
 
 /* Shuts the game down, destroys the main window and ends the process (does not return). */

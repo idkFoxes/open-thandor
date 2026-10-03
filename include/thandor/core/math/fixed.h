@@ -181,4 +181,14 @@ uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue);
 /* Not in the original: fills g_FixedSineQ28 (the original shipped it precomputed). */
 void FixedMath_BuildSinCosTables(void);
 
+/* one sine over 1.5 turns in Q28, from a quarter turn before angle 0: sin(-16384..-1), then
+   sin(0..16383) (FIXED_SINE_TABLE_SIN), then cos(0..65535) (FIXED_SINE_TABLE_COS); signed and full-turn lookups run on from one part into the next */
+extern int32_t g_FixedSineQ28[98304];
+
+extern GraphicsFixedVec3 g_ModelTransformOutput;
+
+/* the two cosine matrices of the .sam codec (CosineDerivedLookupTables_Init) */
+extern short *g_CosineDerivedLookupAllocation;
+extern short *g_CosineDerivedLookupSecondTable;
+
 #endif /* THANDOR_CORE_MATH_FIXED_H */

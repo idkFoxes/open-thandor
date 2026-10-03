@@ -10,6 +10,15 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+static const uint64_t g_FieldGridOccupancyMmxHighBitMask = 0x8080808080808080ull;
+
+/* Q28 unit vector */
+static GraphicsFixedVec3 g_TerrainLightDirection = {0};
+
+TerrainDirectionRecord g_TerrainDirectionRecordTable256[256] = {0};
+
 /* Implementation ownership: world/terrain/grid. */
 
 /* Deforms the terrain around a world point (crater/mound of an effect): clips the cell rectangle around the
@@ -2969,3 +2978,15 @@ void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
   cell->groundDirectionalLightColor = directionalLightColor;
 }
 
+
+/* Class vtables. */
+
+const FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5 = {
+    .callbacks = {
+        /* 0 */ (void *)FieldGrid_InterpolateTerrainHeight,
+        /* 1 */ (void *)FieldGrid_InterpolateWaterSurfaceHeight,
+        /* 2 */ (void *)FieldGrid_InterpolateTerrainHeight,
+        /* 3 */ (void *)FieldGrid_InterpolateTerrainHeight,
+        /* 4 */ (void *)FieldGrid_InterpolateTopSurfaceHeight
+    }
+};

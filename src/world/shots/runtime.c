@@ -8,6 +8,16 @@
 #include <thandor/world/shots/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+GraphicsTextureSet *g_ShotTextureSet = 0;
+
+GraphicsPaletteAsset *g_ShotPalette = 0;
+
+ShotRuntimeSlot *g_ShotRuntimeSlots = 0;
+
+uint8_t *g_ShotRuntimeRebaseBaseMinusOne = 0;
+
 /* Implementation ownership: world/shots/runtime. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */

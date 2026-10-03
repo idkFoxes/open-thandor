@@ -56,4 +56,6 @@ bool TextResource_TryResolve(TextResourceId resourceId,uint16_t **outText);
 /* TextResource_TryResolve without the found flag (a missing text gives TEXT_RESOURCE_MISSING_SENTINEL_0x33) */
 uint16_t *TextResource_Resolve(TextResourceId resourceId);
 
+extern GraphicsTextureSourceAsset *g_FontTextureSources[2];
+
 #endif /* THANDOR_ASSETS_TEXT_RESOURCES_H */

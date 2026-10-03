@@ -207,4 +207,52 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source);
 
 void InGameSelectionDetailPanel_Rebuild(void);
 
+extern uint32_t g_RenderedFrameCountSinceDebugRefresh;
+extern uint16_t u_campagne_hex_0050e068[13];
+extern uint16_t u_oldunit_hex_0050e094[12];
+extern uint8_t g_InGameResourceRegistrationBusyCount;
+extern uint32_t g_LocalPlayerRuntimeId;
+extern uint16_t *g_InGamePlayerListTextScratchUtf16;
+extern InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8];
+extern uint16_t g_EmptyFrontendPlayerNameUtf16[1];
+extern int32_t g_InGameSelectionInsertTripletDwordCount;
+extern int32_t g_InGameSelectionRemoveTripletDwordCount; /* followed by 4 bytes 0x90 fill (dropped) */
+extern uint32_t g_UiCommandRuntimeFlags;
+extern int32_t g_InGamePanelTextureSubresource02Width;
+extern int32_t g_InGamePanelTextureSubresource27Width;
+extern int32_t g_InGamePanelTextureSubresource28Width;
+extern int32_t g_InGamePanelTextureSubresource34Width;
+extern int32_t g_InGamePanelTextureSubresource26Height;
+extern int32_t g_InGamePanelTextureSubresource31Height;
+extern int32_t g_InGamePanelTextureSubresource34Height;
+extern UiCommandRuntimeRecordPrefix *g_UiHoverSelectionRecord;
+extern uint16_t g_FrontendDebugOverlayTextSlot10Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot11Utf16[16];
+extern uint32_t g_InGameReadyStateToggleFlags;
+extern uint32_t g_UiCommandModeG;
+extern uint32_t g_UiCommandModeC;
+extern uint32_t g_UiCommandModeD;
+extern uint32_t g_UiCommandAbsoluteSelectionIndex;
+extern uint32_t g_UiCommandTerrainMaskToggleValue;
+extern FactionRuntimeIndex g_UiCommandModeGOwnerFactionIndex;
+extern uint32_t g_UiCommandModeGArmyAssetId;
+extern PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId;
+extern uint32_t g_UiCommandCallerMaskHighBit;
+extern const uint32_t g_UiCommandModeGPrimaryPageIndices[6]; /* uint32_t[6]: active page of the mode preview page stack per command mode G; ui/ingame commands/runtime */
+extern const uint32_t g_UiCommandModeGSecondaryPageIndices[6]; /* uint32_t[6]: active page of the mode detail page stack per command mode G; ui/ingame commands/runtime */
+extern const uint32_t g_UiCommandModeGTertiaryPageIndices[6]; /* uint32_t[6]: active page of the mode command page stack per command mode G; ui/ingame commands/runtime */
+extern DirectSoundVoiceSet *g_UiButtonSoundVoiceSets7[7];
+
+extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10;
+
+extern GraphicsTextureSourceAsset *g_InGamePanelTextureSource;
+
+extern UiCommandDispatchRecord g_InGameKeyboardDispatchRecords[37]; /* 36 records + the terminator record [36] (key code 0, which ends the dispatch scan; its other two dwords are 0x90 fill); followed by 4 bytes 0x90 fill (dropped) */
+
+extern uint32_t g_InGameDiagramTextureSource;
+extern uint32_t g_InGameTechnologyTextureSource;
+extern uint32_t g_InGameWindowTextureSource;
+
+extern uint16_t *g_InGameFactionStatusTextScratchUtf16;
+
 #endif /* THANDOR_UI_INGAME_RUNTIME_H */

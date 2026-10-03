@@ -347,3 +347,13 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
   return averageScaleQ8;
 }
 
+
+/* Class vtables. */
+
+AiTechnologyCandidateScoreCallback *g_AiTechnologyCandidateScoreCallbackTable[6] = {
+    /* 0 */ (void *)AiTechnologyScore_AlwaysZero,
+    /* 1 */ (void *)AiTechnologyScore_ComputeFactionScaledCandidateValue,
+    /* 2 */ (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind2,
+    /* 3 */ (void *)AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue,
+    /* 4 */ (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind4,
+    /* 5 */ (void *)AiTechnologyScore_ComputeCategoryCompatibleCandidateValue};

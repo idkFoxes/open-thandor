@@ -107,4 +107,10 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
           FactionRelationStateNibble stateSecondTowardFirst,FactionRuntimeIndex firstFactionIndex,
           FactionRuntimeIndex secondFactionIndex);
 
+extern GameFactionRuntimeImage g_GameFactionRuntimeImage;
+
+extern uint32_t *g_OldUnitSecondaryTable;
+extern uint32_t *g_OldUnitPrimaryTable;
+extern OldUnitRecordCount g_OldUnitRecordCount; /* followed by 8 bytes 0x90 fill (dropped) */
+
 #endif /* THANDOR_GAMEPLAY_FACTION_RUNTIME_H */

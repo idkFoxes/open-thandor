@@ -8,6 +8,65 @@
 #include <thandor/world/pathing/grid.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static GridScratchCell *g_GridScratchSecondary = 0;
+
+static GridScratchCell **g_GridPathCostQueueBegin = 0;
+
+static GridScratchCell **g_GridPathCostQueueEnd = 0;
+
+static GridScratchCell **g_GridPathCostQueuePassBoundary = 0;
+
+static uint32_t g_GridPathEntityClassMask = 0;
+
+static uint32_t g_GridPathBlockingMask = 0;
+
+static uint32_t g_GridPathHighCostMask = 0;
+
+static uint32_t g_GridPathUnreachableRegionReferenceColumn = 0;
+
+static uint32_t g_GridPathUnreachableRegionReferenceRow = 0;
+
+/* The 32 pairs g_EntityPathingPriorityPairs points at (EntityPathing_RebuildOverlappingGroupRoutes
+   fills at most ENTITY_PATHING_PRIORITY_PAIR_CAPACITY of them and heap-sorts them in place) */
+#define ENTITY_PATHING_PRIORITY_PAIR_CAPACITY 32
+static EntityPathingPriorityPair g_EntityPathingPriorityPairStorage[ENTITY_PATHING_PRIORITY_PAIR_CAPACITY] = {0};
+
+static uint32_t g_EntityPathingPriorityPairCount = 0;
+
+GridScratchCell *g_GridScratchPrimary = 0;
+
+uint32_t g_GridScratchWidth = 0;
+
+int32_t g_GridScratchHeight = 0;
+
+EntityPathingPriorityPair *g_EntityPathingPriorityPairs = g_EntityPathingPriorityPairStorage;
+
+/* int32_t[17] terrain-class thresholds, one table in the original
+   (indexed by GRID_TERRAIN_THRESHOLD_*). GridScratch classification reads each entry by name;
+   ModelDefinition_CopyTerrainClassValues indexes from several entries into their neighbours by the model's
+   terrainTraversalClass (assets/model/definitions.c). Followed by 12 bytes of 0x90 padding in the original. */
+const int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT] = {
+    0, /* [0] bit 24 max water surface delta (Q12) */
+    11500, /* [1] bit 24 max triangle 1 normal angle (high 16) */
+    10500, /* [2] bit 25 max selected normal angle (high 16) */
+    10500, /* [3] bit 26 max selected normal angle (high 16) */
+    10500, /* [4] bit 27 max selected normal angle (high 16) */
+    14000, /* [5] contact kind 4 traversal secondary threshold, class 1 */
+    15000, /* [6] contact kind 4 traversal secondary threshold, class 2 */
+    15500, /* [7] contact kind 4 traversal secondary threshold, class 3 */
+    500 /* 0.12207 */, /* [8] bit 28 min water surface delta (Q12) */
+    500 /* 0.12207 */, /* [9] bit 29 min water surface delta (Q12) */
+    500 /* 0.12207 */, /* [10] bit 30 min water surface delta (Q12) */
+    10500, /* [11] bit 28 max triangle 0 normal angle (high 16) */
+    10500, /* [12] bit 29 max triangle 0 normal angle (high 16) */
+    10500, /* [13] bit 30 max triangle 0 normal angle (high 16) */
+    12500, /* [14] fallback traversal secondary threshold, class 4 */
+    13500, /* [15] fallback traversal secondary threshold, class 5 */
+    14500, /* [16] fallback traversal secondary threshold, class 6 */
+};
+
 /* Implementation ownership: world/pathing/grid. */
 
 /* World position of the centre of scratch cell (row, column). */

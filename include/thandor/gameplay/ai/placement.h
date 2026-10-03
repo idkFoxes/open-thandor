@@ -49,4 +49,6 @@ bool AiPlacement_FindNearestPlaceableBaseSite
 bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
+extern AiKnowledgeDataImage *g_AiKnowledgeData;
+
 #endif /* THANDOR_GAMEPLAY_AI_PLACEMENT_H */

@@ -63,4 +63,8 @@ void InGameTechnologyResearch_StartSelected(void *source);
 
 void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot);
 
+extern PckTechnologyIdCatalog g_InGameSelectedTechnologyId; /* followed by 28 bytes 0x90 fill (dropped) */
+extern UiCommandRuntimeRecordPrefix *g_UiCatalogGroup48Records[48];
+extern UiCommandRuntimeRecordPrefix *g_UiCatalogGroup42Records[42];
+
 #endif /* THANDOR_UI_INGAME_TECHNOLOGY_H */

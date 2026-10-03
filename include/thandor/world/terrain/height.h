@@ -117,4 +117,6 @@ void TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,Fiel
 
 void TerrainHeightDelta_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
+extern const TerrainClassPlacementAndOverlayCallbackTable10 g_TerrainClassPlacementAndOverlayCallbacks10;
+
 #endif /* THANDOR_WORLD_TERRAIN_HEIGHT_H */

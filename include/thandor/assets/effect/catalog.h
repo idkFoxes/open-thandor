@@ -25,4 +25,6 @@ bool EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition,uint32_
 
 uint32_t EffectDefinitionRegistry_FindById(PckEffectDefinitionIdCatalog definitionId,EffectDefinition **outDefinition);
 
+extern EffectDefinition *g_EffectDefinitionRegistry[256];
+
 #endif /* THANDOR_ASSETS_EFFECT_CATALOG_H */

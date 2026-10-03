@@ -8,6 +8,23 @@
 #include <thandor/audio/spatial/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(16)) int32_t g_ReverseStereoMask = 0;
+
+static GraphicsFixedMatrix3x4 g_SpatialSoundListenerTransform = {0};
+
+static GraphicsFixedMatrix3x4 g_SpatialSoundListenerRotation = {0};
+
+static GraphicsFixedMatrix3x4 g_SpatialSoundListenerWorldToLocal = {0};
+
+/* sound position in the listener's frame */
+static GraphicsFixedVec3 g_SpatialSoundRelative = {0};
+
+static SpatialSoundSlot *g_SpatialSoundSlots = 0;
+
+AudioMixerGainQ15 g_SoundEffectsGainQ15 = 32768;
+
 /* Implementation ownership: audio/spatial/runtime. */
 
 /* Allocates the pool of SPATIAL_SOUND_SLOT_COUNT 0x10-byte spatial sound slots (0x1000 bytes) and zeroes it,

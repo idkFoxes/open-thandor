@@ -135,4 +135,29 @@ bool GridPathCost_RelocateFromBlockedCell
 bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell);
 
+/* Indices into g_GridTerrainClassThresholds (one table in the original). Water surface
+   deltas are Q12, normal angles are the high 16 bits of the cell's packed normal angles. */
+enum {
+    GRID_TERRAIN_THRESHOLD_BIT24_MAX_WATER_SURFACE_DELTA = 0,
+    GRID_TERRAIN_THRESHOLD_BIT24_MAX_TRIANGLE1_NORMAL_ANGLE = 1,
+    GRID_TERRAIN_THRESHOLD_BIT25_MAX_SELECTED_NORMAL_ANGLE = 2,
+    GRID_TERRAIN_THRESHOLD_BIT26_MAX_SELECTED_NORMAL_ANGLE = 3,
+    GRID_TERRAIN_THRESHOLD_BIT27_MAX_SELECTED_NORMAL_ANGLE = 4,
+    GRID_TERRAIN_THRESHOLD_CLASS4_SECONDARY = 5, /* [3] 14000/15000/15500, contact kind 4, class 1..3 */
+    GRID_TERRAIN_THRESHOLD_BIT28_MIN_WATER_SURFACE_DELTA = 8,
+    GRID_TERRAIN_THRESHOLD_BIT29_MIN_WATER_SURFACE_DELTA = 9,
+    GRID_TERRAIN_THRESHOLD_BIT30_MIN_WATER_SURFACE_DELTA = 10,
+    GRID_TERRAIN_THRESHOLD_BIT28_MAX_TRIANGLE0_NORMAL_ANGLE = 11,
+    GRID_TERRAIN_THRESHOLD_BIT29_MAX_TRIANGLE0_NORMAL_ANGLE = 12,
+    GRID_TERRAIN_THRESHOLD_BIT30_MAX_TRIANGLE0_NORMAL_ANGLE = 13,
+    GRID_TERRAIN_THRESHOLD_FALLBACK_SECONDARY = 14, /* [3] 12500/13500/14500, other contact kinds, class 4..6 */
+    GRID_TERRAIN_THRESHOLD_COUNT = 17
+};
+
+extern GridScratchCell *g_GridScratchPrimary;
+extern uint32_t g_GridScratchWidth;
+extern int32_t g_GridScratchHeight;
+extern EntityPathingPriorityPair *g_EntityPathingPriorityPairs;
+extern const int32_t g_GridTerrainClassThresholds[GRID_TERRAIN_THRESHOLD_COUNT]; /* int32_t[17] terrain-class thresholds of the grid classification and the model definition terrain-class values, one table (ModelDefinition_CopyTerrainClassValues indexes across entries); followed by 12 bytes of 0x90 padding */
+
 #endif /* THANDOR_WORLD_PATHING_GRID_H */

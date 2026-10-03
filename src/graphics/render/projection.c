@@ -9,6 +9,10 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Module data. */
+
+GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderModelListToTextureSource = (void *)GraphicsOffscreen_RenderModelListToTextureSource;
+
 /* Dword index of a field (GFX_SUBRESOURCE_*) of the first subresource record of a gfx asset */
 #define GFX_SUBRESOURCE_DWORD(field) ((GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_##field) / 4)
 

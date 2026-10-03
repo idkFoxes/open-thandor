@@ -64,4 +64,8 @@ bool ModelDefinition_IsFactionTechnologyLocked
 
 ModelDefinitionRecordPrefix *ModelDefinitionRegistry_FindById(PckModelDefinitionIdCatalog definitionId);
 
+extern GraphicsFixedVec3 g_ModelRaycastLocalOrigin; /* Q12 ray origin in the tested node's frame */
+extern GraphicsFixedVec3 g_ModelRaycastLocalDirectionQ28; /* Q28 ray direction in the tested node's frame */
+extern ModelDefinitionRecordPrefix *g_ModelDefinitionRegistry[768];
+
 #endif /* THANDOR_ASSETS_MODEL_DEFINITIONS_H */

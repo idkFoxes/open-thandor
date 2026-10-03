@@ -111,4 +111,33 @@ void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destination
 void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface);
 
+extern GraphicsCursorInputEvent18 g_CursorInputEvents[256];
+extern uint32_t g_CursorInputReadIndex;
+extern uint32_t g_CursorInputClockValue;
+extern GraphicsTextureSourceAsset *g_CursorSourceAsset;
+extern GraphicsCursorFrameRecord *g_CursorFrameRecords;
+extern GraphicsCursorFrameCount g_CursorFrameCount;
+extern GraphicsCursorConsumeEventProc *g_GraphicsCursorConsumeEvent;
+extern GraphicsFixedVec3 g_AuxiliaryForwardDirectionFixed;
+extern GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4];
+extern GraphicsSceneBounds8 g_SceneBoundsFixed;
+extern SoftwareFramebufferAccess *g_CursorSavedBackground;
+extern SoftwareFramebufferAccess *g_CursorCompositeBuffer;
+extern DirectDrawCreate *pDirectDrawCreate;
+extern uint32_t g_MouseEventsProcessed;
+
+extern SoftwareFramebufferAccess *g_CursorAlternateSavedBackground;
+
+extern SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize;
+extern int32_t g_CursorCurrentVisibilityToken;
+extern int32_t g_GraphicsBackendAccessState;
+
+extern int32_t g_ProjectionScaleFixed;
+extern GraphicsFixedMatrix3x4 g_ViewProjectionMatrixFixed;
+extern GraphicsFixedMatrix3x4 g_AuxiliaryRotationMatrixFixed;
+
+extern GraphicsFixedVec3 g_ViewOriginFixed;
+
+extern GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame;
+
 #endif /* THANDOR_GRAPHICS_CORE_RUNTIME_H */

@@ -33,4 +33,8 @@ EffectRuntimeSlot *EffectRuntimePool_CreateInstanceFromDefinition
           Q12 worldZQ12,Q12 worldXQ12,Q12 worldYQ12,EffectDefinition *effectDefinition,
           WorldRuntimeContext *worldRuntime);
 
+extern GraphicsTextureSet *g_EffectTextureSet;
+extern GraphicsPaletteAsset *g_EffectPalette;
+extern EffectRuntimeSlot *g_EffectRuntimeSlots;
+
 #endif /* THANDOR_WORLD_EFFECTS_RUNTIME_H */

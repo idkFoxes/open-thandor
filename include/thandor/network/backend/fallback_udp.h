@@ -46,4 +46,6 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
 
 void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress);
 
+extern UiTransferEndpointDescriptor g_NetworkLocalEndpoint;
+
 #endif /* THANDOR_NETWORK_BACKEND_FALLBACK_UDP_H */

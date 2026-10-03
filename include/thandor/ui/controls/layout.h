@@ -251,4 +251,6 @@ extern UiRootNode *g_UiRootNode;
 extern GraphicsTextureSourceAsset *g_UiWindowTextureSource;
 extern GraphicsTextureSourceAsset *g_UiWindowClassTextureSource;
 
+extern UiRootStackActionHandlerPage2 g_UiRootStackActionHandlerPage;
+
 #endif /* THANDOR_UI_CONTROLS_LAYOUT_H */

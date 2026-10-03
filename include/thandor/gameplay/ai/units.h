@@ -50,4 +50,6 @@ void AiUnitBehavior_UpdatePioneerVehicle
           (MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntime,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
+extern uint32_t g_AiCollectedEntityCount;
+
 #endif /* THANDOR_GAMEPLAY_AI_UNITS_H */

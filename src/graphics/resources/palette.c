@@ -8,6 +8,23 @@
 #include <thandor/graphics/resources/palette.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(4)) GraphicsPaletteAssetLoadPackageProc *g_GraphicsPaletteAssetLoadPackage = (void *)GraphicsPaletteAsset_LoadPackage;
+
+static GraphicsPaletteAssetValidateProc *g_GraphicsPaletteAssetValidate = (void *)GraphicsPaletteAsset_Validate;
+
+static GraphicsPaletteAssetResolveAllocationBaseProc *g_GraphicsPaletteAssetResolveAllocationBase = (void *)GraphicsPaletteAsset_ResolveAllocationBase;
+
+static uint32_t g_GraphicsPaletteBankSlots[512] = {0};
+
+static uint8_t g_GraphicsPaletteRemapBytes[256] = {0};
+
+GraphicsPaletteAssetLifecycleCallbackTable g_GraphicsPaletteAssetLifecycleCallbacks3 = {
+    .releasePackage = (void *)GraphicsPaletteAsset_ReleasePackage,
+    .clone = (void *)GraphicsPaletteAsset_Clone,
+    .releaseClone = (void *)GraphicsPaletteAsset_ReleaseClone};
+
 /* Implementation ownership: graphics/resources/palette. */
 
 /* Returns the first entry (colour dword, second dword) of palette bank bankIndex. */

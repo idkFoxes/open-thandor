@@ -10,6 +10,12 @@
 
 /* Module data. */
 
+static UiRootCallbacks g_UiDisplaySettingsRootCallbacks = {
+    .vetoClose = (void *)UiRootCallbacks_Free,
+    .frameUpdate = (void *)UiDisplaySettingsRoot_RefreshModeSelection,
+    .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
+    .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion};
+
 /* the display settings dialog, copied and linked by
    UiDisplaySettings_OpenAndPopulateModeSelection. */
 DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {

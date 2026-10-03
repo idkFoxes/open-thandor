@@ -9,6 +9,14 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+GraphicsTextureSet *g_EffectTextureSet = 0;
+
+GraphicsPaletteAsset *g_EffectPalette = 0;
+
+EffectRuntimeSlot *g_EffectRuntimeSlots = 0;
+
 /* Implementation ownership: world/effects/runtime. */
 
 /* Looks up an effect definition by its id in the 256-slot effect-definition registry (used by the effect

@@ -103,4 +103,9 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
           (Q12 scaleQ12,void *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,void *effectDefinition,
           void *inGameRuntime);
 
+extern int32_t g_InGamePendingPlacementArmyAsset;
+extern uint32_t g_InGameCommandPreviewArmyAssetId;
+
+extern code *g_InGamePointerModeHandlers[8];
+
 #endif /* THANDOR_GAMEPLAY_SELECTION_OVERLAY_H */

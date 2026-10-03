@@ -77,4 +77,14 @@ void SoundBackendDisabled_StopAllVoices(void);
 
 extern SoundPlayVoiceProc *g_SoundPlayOneShot;
 
+extern SoundPlayVoiceProc *g_SoundPlayLooping;
+extern SoundStopVoiceProc *g_SoundStopVoice;
+extern SoundIsVoicePlayingProc *g_SoundIsVoicePlaying;
+extern SoundSetVoiceGainsProc *g_SoundSetVoiceGains;
+
+extern SoundReleaseSampleVoiceSetProc *g_SoundReleaseSampleVoiceSet;
+extern SoundStopAllVoicesProc *g_SoundStopAllVoices;
+
+extern SoundCreateSampleVoiceSetProc *g_SoundCreateSampleVoiceSet;
+
 #endif /* THANDOR_AUDIO_BACKEND_RUNTIME_H */

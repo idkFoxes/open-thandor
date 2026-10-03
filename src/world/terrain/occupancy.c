@@ -8,6 +8,20 @@
 #include <thandor/world/terrain/occupancy.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static const uint64_t g_TerrainOccupancyMmxSignBiasBytes = 0x8080808080808080ull;
+
+static const uint64_t g_TerrainOccupancyMmxClearBits1And2Mask = 0xF9F9F9F9F9F9F9F9ull;
+
+static const uint64_t g_TerrainOccupancyMmxAllBitsMask = 0xFFFFFFFFFFFFFFFFull;
+
+static const uint64_t g_TerrainOccupancyMmxPackedScale0280 = 0x280028002800280ull;
+
+static const uint64_t g_TerrainOccupancyMmxPersistentWeights = 0x20000200200002ull;
+
+static const uint64_t g_TerrainOccupancyMmxCurrentWeights = 0x40000400400004ull;
+
 /* Implementation ownership: world/terrain/occupancy. */
 
 /* Sets occupancy bit 1 (FIELD_CELL_OCCUPANCY_BIT1) in one faction slot's byte for every cell within the given

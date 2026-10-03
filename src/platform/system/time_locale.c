@@ -8,6 +8,36 @@
 #include <thandor/platform/system/time_locale.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(4)) LocaleGetPackedCurrentDateProc *g_LocaleGetPackedCurrentDate = 0;
+
+__declspec(align(8)) LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTime = 0;
+
+__declspec(align(8)) TimerRegisterPeriodicProc *g_TimerRegisterPeriodic = 0;
+
+__declspec(align(4)) TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic = 0;
+
+__declspec(align(4)) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16 = 0;
+
+static LocaleFormatDateFieldsUtf16Proc *g_LocaleFormatDateFieldsUtf16 = 0;
+
+static CpuDetectFeaturesProc *g_CPUDetectFeatures = 0;
+
+static TimerSystemState g_TimerSystemState = {0};
+
+static uint8_t g_LocaleInfoScratch[16] = {0};
+
+static LocaleSystemState g_LocaleSystemState = {0};
+
+LocaleFormatCurrentDateUtf16Proc *g_LocaleFormatCurrentDateUtf16 = 0;
+
+LocaleFormatTimeFieldsUtf16Proc *g_LocaleFormatTimeFieldsUtf16 = 0;
+
+LocaleFormatCurrentTimeUtf16Proc *g_LocaleFormatCurrentTimeUtf16 = 0;
+
+LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = 0;
+
 /* Implementation ownership: platform/system/time_locale. */
 
 /* Stops every periodic timer: unregisters each callback still present in the 32 slots (which also

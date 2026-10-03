@@ -123,7 +123,7 @@ restart at 0. Results go to `<game dir>/chain/`; worker k uses UDP port `--port-
 | File | Produced by | Notes |
 |---|---|---|
 | `include/thandor/generated/types.h` | Ghidra export, ordered by `tools/sort_types.py` | Re-run the script after pasting a new export. |
-| `src/<area>/<module>/data.c`, `include/thandor/<area>/<module>/data.h` | hand-written | The data of the original image (globals, tables, UI templates, strings) as ordinary C variables, original addresses in the comments. `include/thandor/generated/image_data.h` includes all module data headers. |
+| `src/<area>/<module>/*.c` | hand-written | The data of the original image (globals, tables, UI templates, strings) are ordinary C variables in the file that owns them ("Module data" section after the includes, vtables in a "Class vtables" section at the end), declared in that file's header. The original addresses are listed in `docs/original_addresses.txt`. |
 | `include/thandor/generated/ui_templates.h`, `proc_types.h` | hand-written (once generated) | UI template layouts; function pointer types of the data and callbacks. |
 | `include/thandor/generated/imports.h` | `python tools/gen_imports.py` | KERNEL32/USER32 import prototypes from `ghidra/export/imports.jsonl`. |
 | `ghidra/export/*.jsonl` | `tools/ghidra/ExportBuildData.java` (headless, see below) | Function-signature types, string values, labels, imports and struct layouts that Ghidra's C export omits (read by `gen_imports.py`, `check_layouts.py` and `tools/data`). Committed, so the tools do not need Ghidra. |

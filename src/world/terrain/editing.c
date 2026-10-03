@@ -8,6 +8,16 @@
 #include <thandor/world/terrain/editing.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static uint32_t g_TerrainMaterialEditFieldGrid = 0;
+
+static uint32_t g_TerrainMaterialEditDeltaBuffer = 0;
+
+static uint32_t g_TerrainMaterialEditReferenceMaterialByte = 0;
+
+static uint32_t g_TerrainMaterialEditReplacementMaterialByte = 0;
+
 /* Implementation ownership: world/terrain/editing. */
 
 /* Scanline flood fill over the field grid: records (TerrainRegionCollection_RecordConnectedCell, which also marks

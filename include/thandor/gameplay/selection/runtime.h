@@ -223,4 +223,11 @@ void SelectionPointerArray_SetAircraftPadTargets
 
 void SelectionPointerArray_Clear32(SelectionPointerArray32 *array);
 
+extern SelectionPlayerRuntimeBlock *g_SelectionPlayerRuntimeBlockPointers[256]; /* indexed by player runtime id (0..254, FrontendTransfer_FindLowestFreePlayerRuntimeId), 0x400 bytes in the original */
+extern GraphicsTextureSourceAsset *g_SelectionPanelTextureSource;
+extern GraphicsTextureSourceAsset *g_InfoPanelTextureSource;
+extern void *g_SelectionPanelData;
+extern void *g_InfoPanelData;
+extern SelectionInfoEntitySlots *g_SelectionInfoEntitySlots;
+
 #endif /* THANDOR_GAMEPLAY_SELECTION_RUNTIME_H */

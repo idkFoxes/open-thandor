@@ -106,4 +106,14 @@ void TerrainCompositeTexture_FillPlane2(void);
 
 void TerrainCompositeTexture_RebuildPlane0(void);
 
+extern PackedArgb32 g_TerrainDirectionalLightColorLut[513]; /* shaded ramp (256) + lit half (257), indexed from the middle entry */
+extern uint32_t g_TerrainDirectionalLightSecondaryColor;
+extern uint8_t *g_TerrainByteClampLookup;
+extern GraphicsTextureSet *g_TerrainPrimaryTextureSet;
+extern void *g_TerrainSoilPacketTablePayload;
+extern void *g_TerrainSurfacePacketTablePayload;
+extern GraphicsPaletteAsset *g_TerrainPrimaryPalette;
+
+extern GraphicsTextureSet *g_TerrainMaterialTextureSets[38]; /* one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the remaining 12 entries are NULL. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
+
 #endif /* THANDOR_WORLD_TERRAIN_VISUALS_H */

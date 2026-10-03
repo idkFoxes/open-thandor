@@ -8,6 +8,10 @@
 #include <thandor/assets/effect/catalog.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+EffectDefinition *g_EffectDefinitionRegistry[256] = {0};
+
 /* Implementation ownership: assets/effect/catalog. */
 
 /* Registers every effect definition of a loaded EFF asset: checks the 'eff' magic and converter version

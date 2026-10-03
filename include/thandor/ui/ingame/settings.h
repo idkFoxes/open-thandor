@@ -94,4 +94,6 @@ void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control);
 
 void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle);
 
+extern InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12;
+
 #endif /* THANDOR_UI_INGAME_SETTINGS_H */

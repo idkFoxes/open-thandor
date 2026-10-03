@@ -24,7 +24,7 @@
 
 void AiFactionRuntime_RebuildPlanningCapacityState(void);
 
-AiCandidateScore32 AiArmyCandidate_ComputeAverageCompatibleAssetScore (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex, ModelRuntimeClassId runtimeClassId);
+AiCandidateScore32 AiArmyCandidate_ComputeAverageCompatibleAssetScore (const AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex, ModelRuntimeClassId runtimeClassId);
 
 void AiPlanning_CollectActiveGridMaskClasses(void);
 
@@ -81,7 +81,11 @@ void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
 bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex);
 
 AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
-          (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
+          (const AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
           ArmyAssetRecord *armyAssetRecord);
+
+extern uint32_t g_AiActiveGridMaskClasses[4];
+extern ModelRuntimeSlot *g_AiWorkspaceOwnedAsset300Runtime;
+extern const AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantC15;
 
 #endif /* THANDOR_GAMEPLAY_AI_PLANNING_H */

@@ -13,6 +13,30 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+__declspec(align(4)) MovieAudioGainQ15 g_MovieDefaultAudioGainQ15 = 32768;
+
+__declspec(align(16)) MovieAudioGainQ15 g_MovieAlternateAudioGainQ15 = 32768;
+
+/* filled at startup by Movie_BuildChromaLumaTable */
+static uint32_t g_MovieChromaLumaToArgb[1024][32] = {0};
+
+static const uint64_t g_MovieDeltaRgbHighNibbleMask2Pixels = 0xF0F0F000F0F0F0ull;
+
+/* 2 command records and the terminator record (commandCode 0) that ends the dispatcher's scan. The scan
+   also reads the terminator's modifierClassFlags (0x90909090, NOP fill). Original quirk: the original's
+   terminator was only 8 bytes long and code followed it, so the terminator's continuationEntryAddress is not
+   original data (never read). */
+static const UiCommandDispatchRecord g_EndMovieCommandDispatchRecords[3] = {
+    /* 0 */ {.commandCode = 0x71, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x565990},
+    /* 1 */ {.commandCode = 0x70, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x5658F0},
+    /* 2 */ {.commandCode = 0x0, .modifierClassFlags = 0x90909090}};
+
+MovieRuntime *g_ActiveMovie = 0;
+
+uint32_t g_MoviePlaybackCurrentFrame = 0;
+
 /* Implementation ownership: movie/runtime/playback. */
 
 /* MMX lane helpers for the 4x4 block encoders (not in the original, which does this inline with MMX
@@ -634,7 +658,7 @@ void EndMovieUiRuntime_DispatchCommandByFlags
 {
   /* The matching record's continuationEntryAddress selects the action below. endMovieRuntime is the in-game
      root. */
-  UiCommandDispatchRecord *record = g_EndMovieCommandDispatchRecords;
+  const UiCommandDispatchRecord *record = g_EndMovieCommandDispatchRecords;
   uint32_t target = 0;
 
   for (;; record++) {

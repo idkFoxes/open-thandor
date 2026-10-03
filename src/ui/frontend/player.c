@@ -8,6 +8,22 @@
 #include <thandor/ui/frontend/player.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+__declspec(align(4)) uint32_t g_FrontendPlayerMessageBuffers = 0;
+
+FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeBlocks = 0;
+
+FrontendPlayerRuntimeBlockCount g_FrontendPlayerRuntimeBlockCount = 0;
+
+UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText = {0};
+
+uint16_t g_FrontendNetworkSpeedLabelUtf16[32] = {0};
+
+static uint16_t g_FrontendPlayerMessageScratchUtf16[48] = {0};
+
+static FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007 = {0};
+
 /* Implementation ownership: ui/frontend/player. */
 
 /* Handler of UI action 0x204C (slot 76 of g_UiActionPage20InitializedHandlers), the lobby's chatInputEdit:

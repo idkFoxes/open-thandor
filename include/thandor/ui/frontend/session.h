@@ -52,4 +52,7 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
 void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendStatusCode romActionIndex);
 
+extern FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords;
+extern FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007;
+
 #endif /* THANDOR_UI_FRONTEND_SESSION_H */

@@ -175,4 +175,6 @@ bool ArmyRuntime_UpdateMovementAndWaypoints
           (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime,Q12 *outWorldXQ12,
           Q12 *outWorldYQ12);
 
+extern const ArmyCommandGeneration g_ArmyCommandGenerationStandard;
+
 #endif /* THANDOR_GAMEPLAY_ARMY_MOVEMENT_H */

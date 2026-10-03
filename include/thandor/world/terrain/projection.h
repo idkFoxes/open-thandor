@@ -195,4 +195,9 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection4(TerrainDirectionalScanStep 
 
 void FieldGridTerrainOverlayVariantB_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell);
 
+extern uint32_t g_TerrainScanRowStrideBytes;
+extern uint32_t g_TerrainScanStepLimit;
+extern TerrainScanSelectorUnion g_TerrainScanSharedSelectorValue;
+extern uint32_t g_TerrainScanReferenceHeight;
+
 #endif /* THANDOR_WORLD_TERRAIN_PROJECTION_H */

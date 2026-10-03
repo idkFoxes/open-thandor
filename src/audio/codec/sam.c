@@ -8,6 +8,16 @@
 #include <thandor/audio/codec/sam.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static const uint64_t g_SoundDecodeMmxWordLaneMask0 = 0xFFFFull;
+
+static const uint64_t g_SoundDecodeMmxWordLaneMask1 = 0xFFFF0000ull;
+
+static const uint64_t g_SoundDecodeMmxWordLaneMask2 = 0xFFFF00000000ull;
+
+static const uint64_t g_SoundDecodeMmxWordLaneMask3 = 0xFFFF000000000000ull;
+
 /* Two 32-bit MMX lanes as one qword (high lane in the upper half), as PUNPCKLDQ builds them. */
 #define SAM_PACK_LANE_PAIR(highLane, lowLane) ((uint64_t)(uint32_t)(highLane) << 32 | (uint32_t)(lowLane))
 

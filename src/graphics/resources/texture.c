@@ -10,6 +10,52 @@
 
 /* Module data. */
 
+__declspec(align(16)) GraphicsTextureSourceLifecycleCallbackTable g_GraphicsTextureSourceLifecycleCallbacks3 = {
+    .releasePackage = (void *)GraphicsTextureSource_ReleasePackageAsset,
+    .clone = (void *)GraphicsTextureSource_CloneAsset,
+    .releaseClone = (void *)GraphicsTextureSource_ReleaseClonedAsset};
+
+__declspec(align(4)) GraphicsTextureSourceLoadPackageAssetProc *g_GraphicsTextureSourceLoadPackageAsset = (void *)GraphicsTextureSource_LoadPackageAsset;
+
+__declspec(align(4)) GraphicsTextureSetLoadPackageProc *g_GraphicsTextureSetLoadPackage = (void *)GraphicsTextureSet_LoadPackage;
+
+__declspec(align(16)) GraphicsTextureSetReleasePackageProc *g_GraphicsTextureSetReleasePackage = (void *)GraphicsTextureSet_ReleasePackage;
+
+GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureAlpha = (void *)GraphicsTextureSet_RefreshNoOp;
+
+GraphicsTextureSourceBlitProc *g_GraphicsTextureSourceBlitHalfSourceRgb = 0;
+
+GraphicsTextureSourceStretchDirectColorBilinearProc *g_GraphicsTextureSourceStretchDirectColorBilinear = 0;
+
+GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitSaturatedAddRgb = 0;
+
+GraphicsTextureSourceSaturatedAddRgbProc *g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd = 0;
+
+GraphicsTextureResource **g_GraphicsTextureSlots = 0;
+
+static GraphicsTextureSetRefreshProc *g_GraphicsRefreshTextureColor = (void *)GraphicsTextureSet_RefreshNoOp;
+
+/* GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledSaturatedAddRgb (texture.c). */
+static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledSaturatedAddRgb = (void *)GraphicsTextureSource_BlitTiledSaturatedAddRgb;
+
+/* GraphicsTextureSourceTiledSaturatedAddRgbProc * hook slot, statically GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd (texture.c). */
+static GraphicsTextureSourceTiledSaturatedAddRgbProc *g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd = (void *)GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd;
+
+/* GraphicsTextureSourceDecomposeSubresourceProc * hook slot, statically GraphicsTextureSource_DecomposeSubresourceRegions (texture.c). */
+static GraphicsTextureSourceDecomposeSubresourceProc *g_GraphicsTextureSourceDecomposeSubresourceRegionsCf = (void *)GraphicsTextureSource_DecomposeSubresourceRegions;
+
+GraphicsTextureSetCreateProc *g_GraphicsCreateTextureSet = (void *)GraphicsTextureSet_AllocateMetadata;
+
+GraphicsTextureSetDestroyProc *g_GraphicsDestroyTextureSet = (void *)GraphicsTextureSet_FreeMetadata;
+
+GraphicsTextureSourceTiledBlitProc *g_GraphicsTextureSourceBlitTiledHalfSourceRgb = (void *)GraphicsTextureSource_BlitTiledHalfSourceRgb;
+
+GraphicsTextureSourceConvertPaletteEntriesProc *g_GraphicsTextureSourceConvertPaletteEntries = (void *)GraphicsTextureSource_ConvertPaletteEntries;
+
+GraphicsTextureSourceResolveAllocationBaseProc *g_GraphicsTextureSourceResolveAllocationBase = (void *)GraphicsTextureSource_ResolveAllocationBase;
+
+GraphicsTextureRebuildAllProc *g_GraphicsRebuildAllStagingTextures = (void *)GraphicsTexture_RebuildNoOp;
+
 GraphicsTextureSourceGetLogicalSizeProc *g_GraphicsTextureSourceGetLogicalSize = (void *)GraphicsTextureSource_GetLogicalSize;
 
 GraphicsTextureSourceTestOpaquePixelProc *g_GraphicsTextureSourceTestOpaquePixel = (void *)GraphicsTextureSource_TestOpaquePixel;

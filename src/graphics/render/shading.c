@@ -8,6 +8,67 @@
 #include <thandor/graphics/render/shading.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* filled at startup by GraphicsLighting_BuildPackedLookupTable */
+__declspec(align(16)) uint64_t g_PackedLightingLookupTable[512] = {0};
+
+__declspec(align(16)) GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256] = {0};
+
+uint32_t g_GraphicsIntensityClampTableBase = 0;
+
+GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount = 0;
+
+uint32_t g_GraphicsShadingTextureDimension = 0;
+
+uint32_t g_GraphicsShadingGridHalfSize = 0;
+
+uint8_t *g_GraphicsShadingGeneratedTexturePixelCursor = 0;
+
+uint32_t g_GraphicsShadingGeneratedTextureTileX = 0;
+
+uint32_t g_GraphicsShadingGeneratedTextureTileY = 0;
+
+GraphicsSubresourceIndex g_GraphicsShadingGeneratedTextureSubresourceIndex = 0;
+
+uint32_t g_GraphicsShadingSubresourceCount = 0;
+
+uint32_t g_GraphicsShadingGeneratedTextureTileXQ20 = 0;
+
+uint32_t g_GraphicsShadingGeneratedTextureTileYQ20 = 0;
+
+uint32_t g_GraphicsShadingGridStepQ20 = 0;
+
+int32_t g_GraphicsShadingGridStepQ20Current = 0;
+
+GraphicsTextureSourceAsset *g_GraphicsShadingGeneratedAsset = 0;
+
+void *g_GraphicsShadingGridScratch = 0;
+
+pointer g_GraphicsShadingGridScratchInterior = 0;
+
+GraphicsTextureSet *g_GraphicsShadingTextureSet = 0;
+
+uint32_t g_GraphicsShadingGeneratedTextureCompletedTraversalCount = 0;
+
+int32_t g_GraphicsShadingPositiveGridOriginQ12 = 0;
+
+int32_t g_GraphicsShadingNegativeGridOriginQ12 = 0;
+
+GeneratedTextureScratchRuntime g_GeneratedTextureScratchRuntime = {.reserved14 = 0x90909090, .reserved1A4 = 0x90909090};
+
+/* PMULHW multipliers per light level 0..255: zero B/G/R lanes and (level * 0x1010) >> 8 (0..0x0FFF) in the alpha
+   lane; built by GraphicsShading_BuildIntensityScaleTable. */
+static SoftwareBgraWordLanes g_ShadingIntensityScaleMmx[256];
+
+static const uint64_t g_GraphicsShadingRasterizeMmxPackedDwordOneZero = 0x1ull;
+
+static const uint64_t g_GraphicsShadingMmxPacked3BitPerByteMask = 0x707070707070707ull;
+
+static GraphicsShadingRuntimeRecord g_GraphicsShadingCompactRecords[256] = {0};
+
+uint32_t g_TextureDownsampleShift = 0;
+
 /* Implementation ownership: graphics/render/shading. */
 
 /* Not in the original: C stand-in for MOVD mm,packed; PUNPCKLBW mm,mm; PSRLW mm,shift. Every byte b of
@@ -1809,6 +1870,22 @@ void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
     }
   }
   return;
+}
+
+
+/* Not in the original (it carried the table precomputed): builds g_ShadingIntensityScaleMmx. Light level l gets
+   (l * 0x1010) >> 8 = l * 16 + l / 16 (0..0x0FFF) in the alpha lane and zero in the B/G/R lanes. This reproduces
+   every entry of the original table. Called once at startup. */
+void GraphicsShading_BuildIntensityScaleTable(void)
+{
+  int level;
+
+  for (level = 0; level < 256; level++) {
+    g_ShadingIntensityScaleMmx[level].blue = 0;
+    g_ShadingIntensityScaleMmx[level].green = 0;
+    g_ShadingIntensityScaleMmx[level].red = 0;
+    g_ShadingIntensityScaleMmx[level].alpha = (uint16_t)((level * 0x1010) >> 8);
+  }
 }
 
 

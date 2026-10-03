@@ -98,4 +98,17 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
 void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,ModelRuntimeNode *node);
 
+extern GraphicsFixedMatrix3x4 g_ModelTransformScratchMatrix;
+extern GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4;
+extern int32_t g_ModelRaycastMaximumDistance;
+extern GraphicsFixedVec3 g_ModelRaycastOrigin; /* Q12 world-space ray origin */
+extern GraphicsFixedVec3 g_ModelRaycastWorldDirectionQ28; /* Q28 world-space ray direction */
+
+extern int32_t g_ModelBoundsMinimumX;
+extern int32_t g_ModelBoundsMaximumX;
+extern int32_t g_ModelBoundsMinimumY;
+extern int32_t g_ModelBoundsMaximumY;
+extern int32_t g_ModelBoundsMinimumZ;
+extern int32_t g_ModelBoundsMaximumZ;
+
 #endif /* THANDOR_WORLD_MODEL_HIERARCHY_H */

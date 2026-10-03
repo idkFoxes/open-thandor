@@ -154,4 +154,11 @@ uint32_t FatalError_Exit(uint32_t valueOrError,bool failed);
 
 int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
+extern FatalErrorPassThroughProc *g_FatalErrorExitHandler;
+extern FatalErrorPassThroughProc *g_FatalErrorReportHandler;
+extern uint16_t g_ErrorTextIoInitializationFailed[34];
+
+extern uint16_t g_PackageLastErrorPath[256];
+extern uint16_t g_FatalErrorDetail1Utf16[256];
+
 #endif /* THANDOR_CORE_ERROR_RUNTIME_H */

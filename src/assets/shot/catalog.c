@@ -8,6 +8,10 @@
 #include <thandor/assets/shot/catalog.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+ShotDefinition *g_ShotDefinitionRegistry[256] = {0};
+
 /* Implementation ownership: assets/shot/catalog. */
 
 /* Registers every shot definition of a loaded SHT asset: checks the 'sht' magic and converter version

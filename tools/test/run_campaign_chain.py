@@ -10,6 +10,7 @@ script (clickuntilnextlevel).
 usage:
   run_campaign_chain.py GAME_DIR pairs     [--jobs 10] [--win-after 30] [--minutes 1] [--port-base 940]
   run_campaign_chain.py GAME_DIR campaigns [--jobs 4]  [--win-after 40] [--only tutorial,luke]
+  run_campaign_chain.py GAME_DIR segments  [--jobs 12] [--win-after 120] [--only hansolo]
 
 Worker k plays in its own linked copy GAME_DIR_w<k> with UDP port --port-base + k.
 
@@ -20,6 +21,12 @@ campaigns: each campaign from its first level to the end, every level won after 
            one too (campaign end). The path follows the end triggers and may skip levels (hansolo: 7, 15-17, 20).
            OK when the campaign end was fired without crash or hang; the run stops 40 s after it. Reports
            every level change (from, to, units carried over, of them the local faction's).
+segments:  every level of every campaign's winning path, split into parallel runs (SEGMENTS): tutorial whole,
+           nimm2 and luke in two parts each, hansolo in seven (2-4, 5-8, 8-10, 11-13, 14-19, 21-23, 24-26).
+           No part starts at a level that needs the previous level's units
+           (those are reached through a real level change inside a part). Every level is won after
+           --win-after seconds; a part ending a campaign must fire the campaign end, the others must win their
+           last level. Levels off the winning path (hansolo 7, 15-17, 20) are started by run_all_maps.py.
 Results in GAME_DIR/chain/results.txt, screenshots and log per run in GAME_DIR/chain/<run>/.
 """
 import argparse
@@ -35,11 +42,17 @@ import time
 PAIRS = [('tutorial', 1, 2), ('tutorial', 1, 3), ('hansolo', 8, 2), ('hansolo', 12, 2), ('hansolo', 22, 2)]
 # first playable level and level count of each campaign (hansolo level 1 is listed but its file is missing)
 CAMPAIGNS = [('tutorial', 1, 3), ('hansolo', 2, 26), ('nimm2', 1, 5), ('luke', 1, 4)]
+# (campaign, first level, levels played on the winning path, ends the campaign). Hansolo's winning path:
+# 2 3 4 5 6 8 9 10 11 12 13 14 18 19 21 22 23 24 25 26; carried units are needed in 9, 13 and 23.
+SEGMENTS = [('hansolo', 2, 3, False), ('hansolo', 5, 3, False), ('hansolo', 8, 3, False), ('hansolo', 11, 3, False),
+            ('hansolo', 14, 3, False), ('hansolo', 21, 3, False), ('hansolo', 24, 3, True),
+            ('nimm2', 1, 3, False), ('nimm2', 4, 2, True), ('luke', 1, 2, False), ('luke', 3, 2, True),
+            ('tutorial', 1, 3, True)]
 PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.log', 'crash_raw.log', 'hang.log')
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('game_dir')
-parser.add_argument('mode', choices=('pairs', 'campaigns'))
+parser.add_argument('mode', choices=('pairs', 'campaigns', 'segments'))
 parser.add_argument('--jobs', type=int, default=10)
 parser.add_argument('--win-after', type=int, default=30)
 parser.add_argument('--minutes', type=float, default=1)
@@ -92,6 +105,9 @@ def mtime(path):
 if args.mode == 'pairs':
     # win the level before, then run the target level --minutes (no auto-win there)
     runs = [('%s %d->%d' % (c, l, l + n - 1), c, l, n, args.minutes * 60) for c, l, n in PAIRS]
+elif args.mode == 'segments':
+    # every level won after --win-after seconds; label: first level and number of levels
+    runs = [('%s %d+%d%s' % (c, l, n, ' end' if end else ''), c, l, n, 0) for c, l, n, end in SEGMENTS]
 else:
     # every level won after --win-after seconds; the last level too, so the campaign end is reached
     runs = [('%s %d-%d' % (c, first, last), c, first, last - first + 1, 0) for c, first, last in CAMPAIGNS]
@@ -137,16 +153,25 @@ def run_one(k, folder, number, label, campaign, level, levels, final_seconds):
             status = 'TIMEOUT'
         elif campaign_end is None and not final_seconds and os.path.exists(log):
             # the path through a campaign may skip levels: stop 40 s after the campaign end was fired
-            with open(log, errors='replace') as f:
-                if any('firing the campaign end' in line for line in list(f)[skip:]):
-                    campaign_end = time.time()
+            try:
+                with open(log, errors='replace') as f:
+                    if any('firing the campaign end' in line for line in list(f)[skip:]):
+                        campaign_end = time.time()
+            except OSError:
+                pass  # the game holds the log open for a moment: read it on the next round
         elif campaign_end is not None and time.time() - campaign_end > 40:
             status = 'ended'
     if process.poll() is None:
         process.kill()
         process.wait()
     time.sleep(1)
-    lines = list(open(log, errors='replace'))[skip:] if os.path.exists(log) else []
+    lines = []
+    for _ in range(10):  # the killed game may still hold the log for a moment
+        try:
+            lines = list(open(log, errors='replace'))[skip:] if os.path.exists(log) else []
+            break
+        except OSError:
+            time.sleep(1)
     target = os.path.join(out, '%02d_%s' % (number, re.sub(r'[^\w-]+', '_', label)))
     shutil.rmtree(target, ignore_errors=True)
     if os.path.isdir(os.path.join(folder, 'shots')):
@@ -178,7 +203,16 @@ def run_one(k, folder, number, label, campaign, level, levels, final_seconds):
             sessions[-1]['end'] = 'SCRIPT END'
     # every level start of a campaign logs its carry-over (also 0 units)
     started = len(sessions)
-    if args.mode == 'pairs':
+    if args.mode == 'segments':
+        ends_campaign = label.endswith(' end')
+        won = sum(1 for s in sessions if s['end'] and s['end'].startswith('won'))
+        lost = [s['level'] or '?' for s in sessions if s['end'] == 'SCRIPT END']
+        if ends_campaign:
+            ok = status in ('exited', 'ended') and bool(sessions) and bool(sessions[-1].get('final')) and not lost
+        else:
+            ok = status in ('exited', 'ended') and won >= levels and not lost
+        verdict = ('ok' if ok else 'FAIL(%s)' % status) + ' %d levels' % min(started, levels)
+    elif args.mode == 'pairs':
         ok = (status == 'exited' and len(sessions) >= levels and sessions[-1]['carried'] > 0 and
               sessions[-1]['end'] is None)
         verdict = 'ok' if ok else 'FAIL(%s)' % status

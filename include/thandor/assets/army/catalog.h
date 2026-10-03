@@ -93,4 +93,9 @@ uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId);
 
 uint8_t ArmyAssetRegistry_HasNoPlaceableObjectWithId(ArmyAssetId recordId);
 
+extern ArmyAssetRecordPrefix *g_ArmyAssetRecordRegistry[768];
+
+extern uint16_t g_UnreferencedArmyTexturePathUtf16[13]; /* UTF-16 L"army0000.gfx" after g_AiCommandGenerationRetainedTarget; no code reference found */
+extern char g_UnreferencedArmyTag[5]; /* char "ARMY" after the army0000.gfx string; no code reference found; followed by 0x90 fill */
+
 #endif /* THANDOR_ASSETS_ARMY_CATALOG_H */

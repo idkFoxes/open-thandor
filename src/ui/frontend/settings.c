@@ -8,6 +8,19 @@
 #include <thandor/ui/frontend/settings.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+FrontendTaskAssignmentControlOffsetTables g_FrontendTaskAssignmentControlOffsets = {
+    .assignmentControls = {.offsets = {3264, 3356, 3448, 3540, 3632, 3724, 3816}},
+    .playerControls = {.offsets = {4580, 4676, 4772, 4868, 4964, 5060, 5156}},
+    .factionControls = {.offsets = {3908, 4004, 4100, 4196, 4292, 4388, 4484}},
+    .selectionRows = {.offsets = {5252, 5348, 5444, 5540, 5636, 5732, 5828}},
+    .statusRows = {.offsets = {5924, 6016, 6108, 6200, 6292, 6384, 6476}}};
+
+FrontendUiScratch g_FrontendUiDisplayModeAndTaskAssignmentScratch = {0};
+
+uint32_t g_FrontendMusicActiveBuffer = 0;
+
 /* Implementation ownership: ui/frontend/settings. */
 
 /* Opens the "Choose faction" page (FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE) for the loaded level. The seven
@@ -1945,3 +1958,99 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   return;
 }
 
+
+/* Class vtables. */
+
+FrontendUiActionHandlerPage20Prefix g_FrontendUiActionHandlersPage20 = {
+    .handlers00_54 = {
+        /*  0 */ (void *)FrontendSessionAction_ResetNetworkAndReturnToMainPage,
+        /*  1 */ (void *)FrontendNetworkSetupPage_InitializeFromCommandLine,
+        /*  2 */ (void *)FrontendNetworkSettings_PublishSelectedPlayerDescriptor,
+        /*  3 */ (void *)FrontendTransferPage_OpenAndRequestMailbox,
+        /*  4 */ (void *)FrontendNetworkSetupPage_InitializeSingleLocalPlayer,
+        /*  5 */ (void *)FrontendPlayerSetup_OpenLocalPageAndResetRoster,
+        /*  6 */ (void *)FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag,
+        /*  7 */ (void *)FrontendNetworkSettings_SetPlayerCount,
+        /*  8 */ (void *)FrontendNetworkSettings_SetGameName,
+        /*  9 */ (void *)FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick,
+        /* 10 */ (void *)FrontendTransferPage_ResetSessionOpenAndRequestMailbox,
+        /* 11 */ (void *)FrontendPlayerSetup_ExpireSelectedRuntimeBlock,
+        /* 12 */ (void *)FrontendHostLobby_UpdateKickButtonForSelection,
+        /* 13 */ (void *)FrontendTransferPage_ValidateInputAndRequestMailbox,
+        /* 14 */ (void *)FrontendRecentText_TrimAndSortTopFive,
+        /* 15 */ (void *)FrontendNetworkSetup_OpenSelectedBackend,
+        /* 16 */ (void *)FrontendOptionsAction_ReturnToMainOrOptionsPage,
+        /* 17 */ (void *)FrontendDisplaySettingsAction_OpenPageAndListModes,
+        /* 18 */ (void *)FrontendGraphicsSettings_OpenAndSynchronize,
+        /* 19 */ (void *)FrontendAudioSettings_OpenAndSynchronize,
+        /* 20 */ (void *)FrontendShadingSettings_SetEnabled,
+        /* 21 */ (void *)FrontendShadingSettings_ApplyLevel,
+        /* 22 */ (void *)FrontendModelSettings_SetLodDepthThresholdQ8,
+        /* 23 */ (void *)FrontendTextureSettings_SetQuality,
+        /* 24 */ (void *)FrontendAudioSettings_SetEffectsEnabled,
+        /* 25 */ (void *)FrontendAudioSettings_SetMusicEnabled,
+        /* 26 */ (void *)FrontendAudioSettings_SetReverseStereo,
+        /* 27 */ (void *)FrontendAudioSettings_SetEffectsGain,
+        /* 28 */ (void *)FrontendAudioSettings_SetMovieDefaultGain,
+        /* 29 */ (void *)FrontendAudioSettings_SetMusicGain,
+        /* 30 */ (void *)FrontendDisplaySettingsAction_ApplyPendingColorDepth,
+        /* 31 */ (void *)FrontendDisplaySettingsAction_ApplyPendingColorDepth,
+        /* 32 */ (void *)FrontendDisplaySettingsAction_ApplyPendingColorDepth,
+        /* 33 */ (void *)FrontendDisplaySettingsAction_ApplyPendingColorDepth,
+        /* 34 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 35 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 36 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 37 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 38 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 39 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 40 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 41 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 42 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 43 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
+        /* 44 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+        /* 45 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+        /* 46 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+        /* 47 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+        /* 48 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+        /* 49 */ (void *)FrontendDisplaySettings_ApplyMode,
+        /* 50 */ (void *)FrontendNetworkSettings_SetPlayerName,
+        /* 51 */ (void *)FrontendQuitDialogAction_ReturnToMainPage,
+        /* 52 */ (void *)FrontendCallback_ReturnToMainPageOrDispatchState4,
+        /* 53 */ (void *)FrontendScenarioPage_OpenSaveRecordsAndRefresh,
+        /* 54 */ (void *)FrontendScenarioPage_OpenLevelRecordsAndRefresh,
+        /* 55 */ (void *)FrontendScenarioPage_OpenCampaignRecordsAndRefresh,
+        /* 56 */ (void *)FrontendScenarioSelection_ActivateSelectedRecord,
+        /* 57 */ (void *)FrontendScenarioSelection_SelectOrStartSavedGame,
+        /* 58 */ (void *)FrontendScenarioSelection_SelectOrStartLevel,
+        /* 59 */ (void *)FrontendScenarioSelection_SelectOrStartCampaign,
+        /* 60 */ (void *)FrontendGameplaySettings_SetAutomaticZoomOff,
+        /* 61 */ (void *)FrontendGameplaySettings_SetAutomaticRotationOff,
+        /* 62 */ (void *)FrontendGameplaySettings_SetLinkRotationZoom,
+        /* 63 */ (void *)FrontendGameplaySettings_SetLinkRotationTilt,
+        /* 64 */ (void *)FrontendFactionSetupAction_ReturnToMainPage,
+        /* 65 */ (void *)FrontendScenarioAction_StartFieldGridLoad,
+        /* 66 */ (void *)FrontendPlayerConsensus_SubmitSelectedValue,
+        /* 67 */ (void *)FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage,
+        /* 68 */ (void *)FrontendFactionSetupAction_CycleFactionColour,
+        /* 69 */ (void *)FrontendFactionSetupAction_ToggleFactionActive,
+        /* 70 */ (void *)FrontendFactionSetupAction_ChooseFaction,
+        /* 71 */ (void *)FrontendSessionAction_ApplySpeedOrToggleReady,
+        /* 72 */ (void *)FrontendSessionAction_CloseMovieAndReturnToMainPage,
+        /* 73 */ (void *)FrontendGameplaySettings_SetRightButtonDoesNotScroll,
+        /* 74 */ (void *)FrontendGameplaySettings_SetGameSpeedPercent,
+        /* 75 */ (void *)FrontendGameplaySettings_SetCameraScrollStep,
+        /* 76 */ (void *)FrontendPlayerMessage_SubmitSevenSlotText,
+        /* 77 */ (void *)FrontendNetworkSettings_SetNetworkSpeed,
+        /* 78 */ (void *)FrontendAudioSettings_SetMovieAlternateGain,
+        /* 79 */ (void *)FrontendSessionAction_ReleaseCampaignAndReturnToMainPage,
+        /* 80 */ (void *)FrontendCallback_NoOpArg1,
+        /* 81 */ (void *)FrontendGameplaySettings_SetHidePanel,
+        /* 82 */ (void *)FrontendScenarioPage_OpenSaveRecordsAndRefresh,
+        /* 83 */ (void *)FrontendScenarioPage_OpenLevelRecordsAndRefresh,
+        /* 84 */ (void *)FrontendScenarioPage_OpenCampaignRecordsAndRefresh
+    },
+    .scenarioCatalogRebuildCallbacks = {
+        /* 0 */ (void *)ScenarioCatalog_RebuildSaveRecordListPage,
+        /* 1 */ (void *)ScenarioCatalog_RebuildLevelRecordListPage,
+        /* 2 */ (void *)ScenarioCatalog_RebuildCampaignRecordListPage
+    }};

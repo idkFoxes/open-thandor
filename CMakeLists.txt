@@ -37,50 +37,31 @@ endif()
 
 add_library(thandor_curated STATIC
     src/assets/army/catalog.c
-    src/assets/army/data.c
     src/assets/effect/catalog.c
-    src/assets/effect/data.c
-    src/assets/model/data.c
     src/assets/model/definitions.c
     src/assets/package/codec.c
-    src/assets/package/data.c
     src/assets/package/runtime.c
-    src/assets/resource/data.c
     src/assets/resource/runtime.c
-    src/assets/rom/data.c
     src/assets/rom/runtime.c
     src/assets/scenario/catalog.c
-    src/assets/scenario/data.c
     src/assets/shot/catalog.c
-    src/assets/shot/data.c
     src/assets/sprite/catalog.c
-    src/assets/sprite/data.c
-    src/assets/text/data.c
     src/assets/text/resources.c
     src/assets/text/richtext.c
-    src/audio/backend/data.c
     src/audio/backend/runtime.c
-    src/audio/codec/data.c
     src/audio/codec/sam.c
-    src/audio/spatial/data.c
     src/audio/spatial/runtime.c
-    src/core/error/data.c
     src/core/error/runtime.c
-    src/core/math/data.c
     src/core/math/fixed.c
     src/core/math/geometry.c
     src/core/math/interpolation.c
     src/core/math/random.c
     src/core/memory/allocator.c
-    src/core/memory/data.c
     src/core/memory/synchronization.c
-    src/core/settings/data.c
     src/core/settings/persistent.c
-    src/core/text/data.c
     src/core/text/path.c
     src/core/text/string.c
     src/gameplay/ai/combat.c
-    src/gameplay/ai/data.c
     src/gameplay/ai/placement.c
     src/gameplay/ai/planning.c
     src/gameplay/ai/technology.c
@@ -88,55 +69,38 @@ add_library(thandor_curated STATIC
     src/gameplay/ai/workspaces.c
     src/gameplay/army/audio.c
     src/gameplay/army/combat.c
-    src/gameplay/army/data.c
     src/gameplay/army/movement.c
     src/gameplay/army/placement.c
     src/gameplay/army/runtime.c
-    src/gameplay/faction/data.c
     src/gameplay/faction/relations.c
     src/gameplay/faction/runtime.c
-    src/gameplay/input/data.c
     src/gameplay/input/world.c
-    src/gameplay/selection/data.c
     src/gameplay/selection/overlay.c
     src/gameplay/selection/runtime.c
-    src/gameplay/session/data.c
     src/gameplay/session/level.c
     src/gameplay/session/runtime.c
     src/gameplay/session/savegame.c
-    src/gameplay/technology/data.c
     src/gameplay/technology/runtime.c
-    src/graphics/backend/data.c
     src/graphics/backend/directdraw.c
     src/graphics/backend/software.c
-    src/graphics/core/data.c
     src/graphics/core/runtime.c
-    src/graphics/render/data.c
     src/graphics/render/model.c
     src/graphics/render/primitives.c
     src/graphics/render/projection.c
     src/graphics/render/shading.c
-    src/graphics/resources/data.c
     src/graphics/resources/framebuffer.c
     src/graphics/resources/palette.c
     src/graphics/resources/pcx_read.c
     src/graphics/resources/pcx_write.c
     src/graphics/resources/texture.c
-    src/movie/runtime/data.c
     src/movie/runtime/playback.c
-    src/network/backend/data.c
     src/network/backend/fallback_udp.c
     src/network/backend/runtime.c
     src/network/protocol/commands.c
-    src/network/protocol/data.c
     src/network/protocol/transfer.c
-    src/platform/bootstrap/data.c
     src/platform/bootstrap/runtime.c
-    src/platform/filesystem/data.c
     src/platform/filesystem/win32.c
-    src/platform/input/data.c
     src/platform/input/devices.c
-    src/platform/system/data.c
     src/platform/system/time_locale.c
     src/platform/system/win32.c
     src/ui/controls/buttons.c
@@ -145,9 +109,7 @@ add_library(thandor_curated STATIC
     src/ui/controls/lists.c
     src/ui/controls/misc.c
     src/ui/controls/text.c
-    src/ui/core/data.c
     src/ui/core/runtime.c
-    src/ui/frontend/data.c
     src/ui/frontend/network.c
     src/ui/frontend/player.c
     src/ui/frontend/results.c
@@ -156,30 +118,21 @@ add_library(thandor_curated STATIC
     src/ui/frontend/session.c
     src/ui/frontend/settings.c
     src/ui/ingame/commands.c
-    src/ui/ingame/data.c
     src/ui/ingame/runtime.c
     src/ui/ingame/settings.c
     src/ui/ingame/technology.c
-    src/ui/support/data.c
     src/ui/support/runtime.c
-    src/world/effects/data.c
     src/world/effects/maintenance.c
     src/world/effects/runtime.c
-    src/world/model/data.c
     src/world/model/hierarchy.c
     src/world/model/runtime.c
     src/world/model/slots.c
-    src/world/motion/data.c
     src/world/motion/runtime.c
-    src/world/pathing/data.c
     src/world/pathing/grid.c
     src/world/pathing/influence.c
     src/world/runtime/core.c
-    src/world/runtime/data.c
-    src/world/shots/data.c
     src/world/shots/maintenance.c
     src/world/shots/runtime.c
-    src/world/terrain/data.c
     src/world/terrain/editing.c
     src/world/terrain/grid.c
     src/world/terrain/height.c

@@ -8,6 +8,10 @@
 #include <thandor/gameplay/ai/placement.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+AiKnowledgeDataImage *g_AiKnowledgeData = 0;
+
 /* Implementation ownership: gameplay/ai/placement. */
 
 /* Tests whether one more special site of this asset fits at a workspace-08 cell: the mode-7 placement query must

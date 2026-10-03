@@ -30,4 +30,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void);
 
 void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *runtimeImage);
 
+extern uint8_t *g_EffectRuntimeRebaseBaseMinusOne;
+extern uint8_t *g_RuntimeObjectRebaseBaseMinusOne;
+
 #endif /* THANDOR_ASSETS_RESOURCE_RUNTIME_H */

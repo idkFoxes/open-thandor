@@ -29,4 +29,6 @@ uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source);
 
 void WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,uint16_t *source,uint16_t *destination);
 
+extern WideNumberFormatUtf16Proc *g_WideNumberFormatUtf16;
+
 #endif /* THANDOR_CORE_TEXT_STRING_H */

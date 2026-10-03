@@ -8,6 +8,12 @@
 #include <thandor/core/settings/persistent.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static PersistentSettingsRuntime g_PersistentSettings = {.path = L"thandor.dat"};
+
+uint32_t g_LocaleCountryCodeOverride = 0;
+
 /* Implementation ownership: core/settings/persistent. */
 
 /* Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the

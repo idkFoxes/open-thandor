@@ -41,4 +41,8 @@ void SpatialSoundPool_ClearDesiredGains(void);
 
 void SpatialSoundPool_ApplyDesiredGains(void);
 
+extern AudioMixerGainQ15 g_SoundEffectsGainQ15;
+
+extern int32_t g_ReverseStereoMask;
+
 #endif /* THANDOR_AUDIO_SPATIAL_RUNTIME_H */

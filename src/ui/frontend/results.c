@@ -8,6 +8,52 @@
 #include <thandor/ui/frontend/results.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static uint16_t g_FrontendResultsValueTextUtf16[32] = {0};
+
+static const int g_FrontendResultsColumnAdvance00Pixels = 0;
+
+static const int g_FrontendResultsColumnAdvance01Pixels = 0;
+
+static const int g_FrontendResultsColumnAdvanceColourPixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceEconomyPixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceMilitaryPixels = 26;
+
+static const int g_FrontendResultsColumnAdvancePointsPixels = 26;
+
+static const int g_FrontendResultsColumnAdvancePlayerPixels = 78;
+
+static const int g_FrontendResultsColumnAdvanceFactionPixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionField98Pixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionField9CPixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionFieldA0Pixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionFieldA4Pixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionFieldA8Pixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionFieldACPixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionFieldB0Pixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionFieldB4Pixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionFieldB8Pixels = 26;
+
+static const int g_FrontendResultsColumnAdvanceFactionFieldBCPixels = 26;
+
+static uint32_t g_FrontendResultsFramebufferBytesPerPixel = 0;
+
+static uint32_t g_FrontendResultsFramebufferScanlineStrideBytes = 0;
+
+static uint32_t g_FrontendResultsFactionPackedPixelColors[7] = {0};
+
 /* Implementation ownership: ui/frontend/results. */
 
 /* drawClipped of g_UiNodeVtable_00516F60, the three results charts (resultsChart1..3) of the end-of-game
@@ -667,3 +713,26 @@ void FrontendResultsTable_DrawPlayerColumn
   }
 }
 
+
+/* Class vtables. */
+
+UiNodeVtable g_UiNodeVtable_00516F60 = {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)FrontendResultsTable_DrawColumnSequenceByType,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent,
+};

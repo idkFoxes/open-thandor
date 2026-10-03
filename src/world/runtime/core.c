@@ -8,6 +8,10 @@
 #include <thandor/world/runtime/core.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+static GraphicsFixedVec3 g_GraphicsProjectionScratchVec3 = {0};
+
 /* Implementation ownership: world/runtime/core. */
 
 /* Not a function of its own in the original: PUNPCKLBW mm,mm then PSRLW mm,shift, i.e. the four bytes b

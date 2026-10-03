@@ -34,4 +34,9 @@ void ShotRuntimePool_CreateProjectileFromDefinition
 
 void ShotRuntime_PostImpactRelationNotificationNoOp(ShotRuntimeSlot *shotRuntime,WorldRuntimeContext *worldRuntime);
 
+extern GraphicsTextureSet *g_ShotTextureSet;
+extern GraphicsPaletteAsset *g_ShotPalette;
+extern ShotRuntimeSlot *g_ShotRuntimeSlots;
+extern uint8_t *g_ShotRuntimeRebaseBaseMinusOne;
+
 #endif /* THANDOR_WORLD_SHOTS_RUNTIME_H */

@@ -8,6 +8,22 @@
 #include <thandor/graphics/render/primitives.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+GraphicsPrimitiveQueueRadixSortProc *PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 = (void *)GraphicsPrimitiveQueue_RadixSortForRendering;
+
+GraphicsPrimitiveQueue *g_PrimitiveQueueStorage = 0;
+
+GraphicsPaletteAsset *g_TerrainSecondaryPalette = 0;
+
+static const uint64_t g_VertexColorAlphaPreserveMaskMMX = 0xFF000000ull;
+
+static const uint64_t g_VertexColorRgbHalveMaskMMX = 0xFEFEFEull;
+
+static uint32_t g_PrimitiveRadixBucketWords[256] = {0};
+
+static uint32_t g_PrimitiveQueuePoolCapacity = 0;
+
 /* Implementation ownership: graphics/render/primitives. */
 
 /* Sort key of one queued packet for GraphicsPrimitiveQueue_RadixSortForRendering. */

@@ -8,6 +8,28 @@
 #include <thandor/ui/ingame/technology.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+PckTechnologyIdCatalog g_InGameSelectedTechnologyId = 0;
+
+UiCommandRuntimeRecordPrefix *g_UiCatalogGroup48Records[48] = {0};
+
+UiCommandRuntimeRecordPrefix *g_UiCatalogGroup42Records[42] = {0};
+
+/* one rich-text stream, patched in as payload 0 of the technology label
+   (ui/ingame/technology.c): [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
+   [9..24] the xenite cost text (RICHTEXT_RECORD_UNITS_LITERAL_COLOR units in); the interpreter reads on from the
+   colour command into the text */
+static uint16_t g_InGameTechnologyCostRichText[25] = {32774};
+
+static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 = {0};
+
+static UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {0};
+
+static int g_TechnologyPanelRowFlagOffsets[7] = {5444, 5548, 5652, 5756, 5860, 5964, 6068};
+
+static int g_TechnologyPanelRowValueOffsets[7] = {6164, 6256, 6348, 6440, 6532, 6624, 6716};
+
 /* Implementation ownership: ui/ingame/technology. */
 
 /* Parts of the cost rich-text stream g_InGameTechnologyCostRichText: the literal-colour command, its eight colour

@@ -10,6 +10,105 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+__declspec(align(8)) GraphicsCursorSetFrameProc *g_GraphicsCursorSetFrame = (void *)GraphicsCursor_SetFrameIndex;
+
+__declspec(align(4)) GraphicsFixedVec3 g_ViewOriginFixed = {0};
+
+int32_t g_ProjectionScaleFixed = 0;
+
+GraphicsFixedMatrix3x4 g_ViewProjectionMatrixFixed = {0};
+
+GraphicsFixedMatrix3x4 g_AuxiliaryRotationMatrixFixed = {0};
+
+SoftwareDisplayModeHookProc *g_GraphicsDisplayModeFinalize = 0;
+
+int32_t g_CursorCurrentVisibilityToken = 0;
+
+int32_t g_GraphicsBackendAccessState = -0x1;
+
+/* allocated by Graphics_Init but no longer read (see there) */
+static DirectDrawPaletteEntry *g_TexturePaletteEntries = 0;
+
+SoftwareFramebufferAccess *g_CursorAlternateSavedBackground = 0;
+
+/* uint32_t ticks until the next cursor animation frame (initial 2, reloaded with 2 when it reaches 0 in graphics/core/runtime.c). */
+static uint32_t g_GraphicsCursorAnimationCountdown = 2;
+
+static uint32_t g_CursorButtonReleaseClock[3] = {0};
+
+static GraphicsCursorFrameIndex g_CursorFrameIndex = 0;
+
+static UiPixelCoordinate g_CursorLastClickX = 0;
+
+static UiPixelCoordinate g_CursorLastClickY = 0;
+
+static GraphicsViewAngle16 g_ViewAngle0 = 0;
+
+static GraphicsViewAngle16 g_ViewAngle1 = 0;
+
+static uint32_t g_ProjectionShift = 0;
+
+static uint32_t g_ProjectionScaleProduct = 0;
+
+static GraphicsWideFixed g_ProjectionNumerator = {0};
+
+static GraphicsFixedVec2 g_ProjectionCenterFixed = {0};
+
+static GraphicsFixedMatrix3x4 g_ViewRotationMatrixFixed = {0};
+
+static GraphicsFixedMatrix3x4 g_CameraTransformMatrixFixed = {0};
+
+static GraphicsWideFixed g_ProjectionAngleFactors[2] = {0};
+
+static GraphicsFixedVec2 g_AuxiliaryOrientation = {0};
+
+static GraphicsFixedVec3 g_FrustumCornerRayFixed_0[4] = {0};
+
+static DirectDrawEnumerateA *pDirectDrawEnumerateA = 0;
+
+static char sz_DDRAW[6] = "DDRAW";
+
+static char sz_DirectDrawCreate[17] = "DirectDrawCreate";
+
+static char sz_DirectDrawEnumerateA[21] = "DirectDrawEnumerateA";
+
+/* scratch descriptor the cursor save/restore Lock fills (lPitch, lpSurface) */
+static DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc = {0};
+
+static int32_t g_CursorCurrentDrawX = 0;
+
+static int32_t g_CursorCurrentDrawY = 0;
+
+GraphicsCursorInputEvent18 g_CursorInputEvents[256] = {0};
+
+uint32_t g_CursorInputReadIndex = 0;
+
+uint32_t g_CursorInputClockValue = 0;
+
+GraphicsTextureSourceAsset *g_CursorSourceAsset = 0;
+
+GraphicsCursorFrameRecord *g_CursorFrameRecords = 0;
+
+GraphicsCursorFrameCount g_CursorFrameCount = 0;
+
+GraphicsCursorConsumeEventProc *g_GraphicsCursorConsumeEvent = (void *)GraphicsCursor_ConsumeNextInputEvent;
+
+GraphicsFixedVec3 g_AuxiliaryForwardDirectionFixed = {0};
+
+GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4] = {0};
+
+GraphicsSceneBounds8 g_SceneBoundsFixed = {0};
+
+SoftwareFramebufferAccess *g_CursorSavedBackground = 0;
+
+SoftwareFramebufferAccess *g_CursorCompositeBuffer = 0;
+
+DirectDrawCreate *pDirectDrawCreate = 0;
+
+uint32_t g_MouseEventsProcessed = 0;
+
 /* Implementation ownership: graphics/core/runtime. */
 
 /* Periodic cursor timer callback: keeps the software mouse cursor animated and in place independently of the

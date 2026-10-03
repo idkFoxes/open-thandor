@@ -9,6 +9,54 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+/* UTF-16 L"level\\*.lev" after the save pattern; no code reference found */
+__declspec(align(4)) uint16_t g_UnreferencedLevelPatternUtf16[12] = L"level\\*.lev";
+
+/* UTF-16 L"level\\*.cgn"; no code reference found */
+__declspec(align(4)) uint16_t g_UnreferencedCampaignPatternUtf16[12] = L"level\\*.cgn";
+
+__declspec(align(4)) uint32_t g_FrontendLoadedCampaignAsset = 0;
+
+static uint16_t u_level_level_dat_0050da0e[16] = L"level\\level.dat";
+
+static ScenarioLevelDataPathTemplate24 g_ScenarioLevelDataPathTemplateUtf16 = {
+    .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x6C, 0x65, 0x76, 0x65, 0x6C},
+    .decimalDigits = {.codeUnits = {0x30, 0x30}},
+    .suffixCodeUnits = L".dat"};
+
+static uint16_t u_level_campagne_dat_0050da52[19] = L"level\\campagne.dat";
+
+static ScenarioCampaignDataPathTemplate2A g_ScenarioCampaignDataPathTemplateUtf16 = {
+    .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x63, 0x61, 0x6D, 0x70, 0x61, 0x67, 0x6E, 0x65},
+    .decimalDigits = {.codeUnits = {0x30, 0x30}},
+    .suffixCodeUnits = L".dat"};
+
+static uint16_t u_level_0050dab8[6] = L"level";
+
+/* list refresh handler per scenario selection tab (SCENARIO_SELECTION_TAB_*) */
+static ScenarioCatalogRefreshSelectedRecordCallback *const g_FrontendScenarioMapOptionHandlerTable[3] = {
+    /* 0 */ ScenarioCatalog_SelectSavedGameAndShowDescription,
+    /* 1 */ ScenarioCatalog_SelectLevelAndShowDescription,
+    /* 2 */ ScenarioCatalog_SelectCampaignAndShowDescription};
+
+ScenarioCatalogHeader *g_ScenarioCatalog = 0;
+
+uint32_t g_ScenarioCatalogUsedBytes = 0;
+
+uint16_t u_save___sve_0050d9c8[11] = L"save\\*.sve";
+
+uint16_t u_level_0050daac[6] = L"level";
+
+uint16_t g_LevelResourcePathScratchUtf16[256] = {0};
+
+FrontendLoadedLevelAsset *g_FrontendLoadedLevelAsset = 0;
+
+uint32_t g_FrontendScenarioTransferState = 0;
+
+uint16_t g_FrontendScenarioPathScratchUtf16[256] = {0};
+
 /* Implementation ownership: assets/scenario/catalog. */
 
 /* Handler of action 0x2039, the saved-games list (slot 57 of g_FrontendUiActionHandlersPage20.handlers00_54):

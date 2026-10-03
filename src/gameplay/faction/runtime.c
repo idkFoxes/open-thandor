@@ -8,6 +8,16 @@
 #include <thandor/gameplay/faction/runtime.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+uint32_t *g_OldUnitSecondaryTable = 0;
+
+uint32_t *g_OldUnitPrimaryTable = 0;
+
+OldUnitRecordCount g_OldUnitRecordCount = 0;
+
+GameFactionRuntimeImage g_GameFactionRuntimeImage = {.tail = {.factionLifecycleStates = {0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1}}};
+
 /* Implementation ownership: gameplay/faction/runtime. */
 
 /* Moves the diplomatic relation of a faction pair one step closer, chosen by the state of targetFactionIndex

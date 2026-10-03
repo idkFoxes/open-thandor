@@ -290,4 +290,39 @@ void FrontendRuntime_ShutdownAndReleaseResources(void);
 
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
 
+extern FrontendUiImage g_FrontendRootInitializationTemplate;
+extern uint32_t g_FrontendRootNode;
+extern uint32_t g_FrontendPendingPageAction;
+extern uint32_t g_FrontendRuntimeFlags;
+extern uint32_t g_FrontendCentralTextureSet;
+extern uint32_t g_FrontendCentralPaletteAsset;
+extern GraphicsTextureSourceAsset *g_FrontendMenuTextureSource;
+extern uint32_t g_FrontendNetworkTickCounter;
+extern uint32_t g_FrontendStateTickSpinLock;
+extern uint32_t g_FrontendScenarioInitializationCount;
+extern uint32_t g_FrontendMusicVoiceSet;
+extern uint16_t u_sound_music00_sam_00545c4e[18];
+extern uint16_t g_FrontendCurrentFactionPrimaryResourceTextUtf16[16]; /* decimal xenite amount, bound to a template text control */
+extern uint32_t g_DebugOverlayCounterRefreshCountdown; /* uint32_t: frames until the debug overlay counters refresh (reloaded with 20); ui/ingame and ui/frontend runtime */
+extern uint32_t g_EndMovieSelectionIndex;
+extern uint32_t g_EndMoviePendingTicks;
+
+extern UiNodeVtable g_FrontendModelPointerContextVtable;
+
+extern GraphicsTextureSourceBlitProc *g_SelectionPanelBlitOpaque;
+extern GraphicsTextureSourceTiledBlitProc *g_SelectionPanelBlitClipped;
+
+extern uint16_t g_FrontendDebugOverlayTextSlot00Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot01Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot02Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot03Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot04Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot05Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot06Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot07Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot08Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot09Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot12Utf16[16];
+extern uint16_t g_FrontendDebugOverlayTextSlot13Utf16[32]; /* owns the unnamed 0x20 bytes after its first 16 units in the original (elapsed time can exceed 16 units) */
+
 #endif /* THANDOR_UI_FRONTEND_RUNTIME_H */

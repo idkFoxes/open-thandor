@@ -33,4 +33,6 @@ void Random_SelectSecondaryStream(void);
 
 void __cdecl Random_SelectPrimaryStream(void);
 
+extern RandomGeneratorState g_RandomGeneratorState;
+
 #endif /* THANDOR_CORE_MATH_RANDOM_H */

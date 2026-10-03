@@ -49,4 +49,11 @@ extern GraphicsFramebufferBeginAccessProc *g_GraphicsFramebufferBeginAccess;
 extern GraphicsFramebufferEndAccessProc *g_GraphicsFramebufferEndAccess;
 extern GraphicsFramebufferFillRectArgbProc *g_GraphicsFramebufferFillRectArgb;
 
+extern IDirectDrawSurface3 *g_BackSurface3;
+
+extern GraphicsFramebufferCaptureRegionProc *g_GraphicsFramebufferCaptureRegion;
+extern SoftwareFramebufferAccess g_DisplayFramebufferAccess;
+
+extern uint32_t g_FramebufferWidth;
+
 #endif /* THANDOR_GRAPHICS_RESOURCES_FRAMEBUFFER_H */

@@ -9,6 +9,39 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+static GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc *g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha = 0;
+
+static GraphicsTextureSourceBlitSourceAlphaPaletteBankProc *g_GraphicsTextureSourceBlitSourceAlphaPaletteBank = 0;
+
+static TH_LEGACY_GUID IID_IDirectDraw2_Local = {.Data1 = 0xB3A6F3E0, .Data2 = 11075, .Data3 = 4559, .Data4 = {162, 222, 0, 170, 0, 185, 51, 86}};
+
+static TH_LEGACY_GUID IID_IDirectDrawSurface3_Local = {.Data1 = 0xDA044E00, .Data2 = 27058, .Data3 = 4560, .Data4 = {161, 213, 0, 170, 0, 184, 223, 187}};
+
+static IDirectDraw *g_DirectDraw = 0;
+
+/* uint32_t index into g_GraphicsAdapters of the active graphics adapter; 0xFFFFFFFF (GRAPHICS_ADAPTER_INDEX_NONE) before a display mode is set. */
+uint32_t g_ActiveGraphicsAdapterIndex = 4294967295u;
+
+GraphicsDisplayMode *g_GraphicsDisplayModes = 0;
+
+GraphicsDisplayModeCount g_GraphicsDisplayModeCount = 0;
+
+GraphicsAdapterRecord *g_GraphicsAdapters = 0;
+
+uint32_t g_GraphicsAdapterCount = 0;
+
+IDirectDraw2 *g_DirectDraw2 = 0;
+
+IDirectDrawSurface *g_PrimarySurfaceBase = 0;
+
+IDirectDrawSurface *g_BackSurfaceBase = 0;
+
+IDirectDrawSurface3 *g_PrimarySurface3 = 0;
+
+DDSURFACEDESC_DX6 g_SurfaceDesc = {0};
+
 /* Implementation ownership: graphics/backend/directdraw. */
 
 /* Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated

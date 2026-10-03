@@ -104,4 +104,10 @@ uint32_t MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888);
 /* Not in the original: fills g_MovieChromaLumaToArgb (the original shipped it precomputed). */
 void Movie_BuildChromaLumaTable(void);
 
+extern MovieRuntime *g_ActiveMovie;
+extern uint32_t g_MoviePlaybackCurrentFrame;
+
+extern MovieAudioGainQ15 g_MovieDefaultAudioGainQ15;
+extern MovieAudioGainQ15 g_MovieAlternateAudioGainQ15;
+
 #endif /* THANDOR_MOVIE_RUNTIME_PLAYBACK_H */

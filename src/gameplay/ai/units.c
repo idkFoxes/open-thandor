@@ -8,6 +8,10 @@
 #include <thandor/gameplay/ai/units.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+uint32_t g_AiCollectedEntityCount = 0;
+
 /* Implementation ownership: gameplay/ai/units. */
 
 /* Per AI tick for the faction's own units (workspace 01): clears the collected-army list, lets busy units

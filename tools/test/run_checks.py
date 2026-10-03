@@ -21,12 +21,15 @@ further copies next to it), windowed, with its own UDP ports:
                not; no crash or hang (port 907)
   multiplayer  run_multiplayer.py 150 s with mp_host_create.txt / mp_client_join.txt: both reach the game, no
                crash, and the client log still has "net recv" lines in its last 20 lines (ports 929/930)
-  maps         run_all_maps.py --only "*[!0-9]" (the single games without a digit at the end); non-ok missions
-               fail, except ENDED (the strong computer opponents can win a single map in time): a warning
-               (ports 940+)
-  campaign     run_campaign_chain.py pairs (tutorial 1->2, 1->3, hansolo 8->9, 12->13, 22->23, one worker each):
-               every target level must receive units from the level before and run to the end of its time
-               without crash or hang (ports 910-914)
+  maps         run_all_maps.py: all 56 missions (every campaign level started directly, every single game);
+               non-ok missions fail, except ENDED: expected for the levels that need the previous level's units
+               (tutorial 2/3, hansolo 9/13/23, tested by the campaign check), a warning elsewhere (the strong
+               computer opponents can win a map in time); hansolo 20 is skipped (its level file is missing
+               from the original data) (ports 940+)
+  campaign     run_campaign_chain.py segments: every level of every campaign's winning path through real level
+               changes in 12 parallel parts of 2-3 levels (the last part of each campaign to the campaign end);
+               every level runs 2 minutes, then the auto-win fires the end trigger; every level must be won
+               and units carried over where the campaign does it, without crash or hang (ports 910-921)
 --new defaults to build-test/thandor.exe of this repository. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
 pixels/). A failed determinism, saveload, multiplayer or maps check is run once more on its own after the others
@@ -67,7 +70,12 @@ GAME_BUDGET = 16  # game instances at once over all checks (the CPU gate may all
 START_ORDER = ['maps', 'campaign', 'aihash', 'determinism', 'multiplayer', 'pixels', 'saveload',
                'textedit']
 INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
-             'campaign': 5}
+             'campaign': 12}
+# missions that end at once when started directly: they need the previous level's units (campaign check)
+EXPECTED_ENDED = ('tutorial 2', 'tutorial 3', 'hansolo 9', 'hansolo 13', 'hansolo 23')
+# missions whose level file is missing from the original game data (hansolo 20 names level\hansolo\s19_forschung.lev)
+EXPECTED_MISSING = ('hansolo 20',)
+CAMPAIGN_SEGMENTS = 12
 
 args = None
 game = None
@@ -318,7 +326,7 @@ def check_maps():
     folder = make_copy('maps', args.new)
     shutil.rmtree(os.path.join(folder, 'soak'), ignore_errors=True)
     code, text = run_tool(os.path.join(out_dir, 'maps.txt'),
-                          [os.path.join(HERE, 'run_all_maps.py'), folder, '--only', '*[!0-9]',
+                          [os.path.join(HERE, 'run_all_maps.py'), folder,
                            '--jobs', str(args.map_jobs), '--max-jobs', str(args.map_max_jobs),
                            '--jobs-file', map_jobs_file(), '--minutes', str(args.map_minutes)],
                           3600)
@@ -327,7 +335,7 @@ def check_maps():
     for row in rows:
         content = row[row.index(']') + 2:]  # '%-22s %-12s %s' % (label, status, load)
         label, status = content[:22].strip(), content[23:35].strip()
-        if status == 'ok':
+        if status == 'ok' or (status == 'ENDED' and label in EXPECTED_ENDED) or label in EXPECTED_MISSING:
             continue
         (ended if status == 'ENDED' else bad).append(label)
     details = '%d missions' % len(rows)
@@ -344,15 +352,18 @@ def check_campaign():
     folder = make_copy('campaign', args.new)
     shutil.rmtree(os.path.join(folder, 'chain'), ignore_errors=True)
     code, text = run_tool(os.path.join(out_dir, 'campaign.txt'),
-                          [os.path.join(HERE, 'run_campaign_chain.py'), folder, 'pairs', '--jobs', '5',
-                           '--port-base', '910'], 1500)
+                          [os.path.join(HERE, 'run_campaign_chain.py'), folder, 'segments', '--jobs',
+                           str(CAMPAIGN_SEGMENTS), '--win-after', '120', '--port-base', '910'], 2400)
     rows = [l for l in text.splitlines() if l.startswith('[') and '/' in l.split()[0]]
-    # '[n/5] <campaign> <a->b> <verdict> <per level: carried units, end>'
-    bad = [' '.join(r.split(']', 1)[1].split()[:3]) for r in rows if r.split(']', 1)[1].split()[2] != 'ok']
-    details = '%d/5 pairs ok' % (len(rows) - len(bad))
+    # '[n/12] <campaign> <first+count[ end]> <verdict> <n> levels <per level: carried units, end>'
+    fields = [r.split(']', 1)[1].split() for r in rows]
+    shift = [3 if f[2] == 'end' else 2 for f in fields]
+    bad = [' '.join(f[:s]) for f, s in zip(fields, shift) if f[s] != 'ok']
+    levels = sum(int(f[s + 1]) for f, s in zip(fields, shift) if f[s + 1].isdigit())
+    details = '%d/%d parts ok, %d levels' % (len(rows) - len(bad), CAMPAIGN_SEGMENTS, levels)
     if bad:
         details += ', FAILED: ' + '; '.join(bad)
-    if code != 0 or len(rows) != 5:
+    if code != 0 or len(rows) != CAMPAIGN_SEGMENTS:
         return 'FAIL', details + ' (%d results, tool exit %s)' % (len(rows), code)
     return ('FAIL' if bad else 'PASS'), details
 

@@ -8,6 +8,30 @@
 #include <thandor/ui/frontend/network.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+uint16_t g_FrontendLocalPlayerNameUtf16[20] = {0};
+
+FrontendSessionDiscoveryRecord **g_FrontendSessionListRows = 0;
+
+FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeRecordPointers32[32] = {0};
+
+uint32_t g_FrontendNetworkState = 0;
+
+char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
+
+/* Original quirk: the string's terminating NUL is the
+   first byte of the Package_FindEntry output buffer g_LevelPackageFoundEntry; the code passes explicit lengths. */
+char s_NAME__CLIENT__KARTE___00545e91[21] = "NAME=\"CLIENT=\"KARTE=\"";
+
+UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch = {0};
+
+uint16_t g_FrontendNetworkRuntimeCountTextUtf16[4] = {0};
+
+uint16_t g_FrontendNetworkPlayerCountTextUtf16[4] = {0};
+
+uint16_t g_FrontendNetworkEndpointTextUtf16[512] = {0};
+
 /* Implementation ownership: ui/frontend/network. */
 
 /* Scans the value of a quoted command-line option (valueText follows the opening quote) for its closing quote:

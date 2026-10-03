@@ -9,6 +9,26 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/debug/hooks.h>
 
+/* Module data. */
+
+UiTransferEndpointDescriptor g_NetworkLocalEndpoint = {0};
+
+static NetworkSocketHandle32 g_NetworkFallbackSocket = 0xFFFFFFFF;
+
+/* uint32_t: nonzero value (0xFFFFFFFF) passed to setsockopt(SO_BROADCAST) and ioctlsocket(FIONBIO); network/backend/fallback_udp.c */
+static uint32_t g_NetworkFallbackSocketOptionOn = 4294967295u;
+
+static uint32_t g_NetworkFallbackAddressLength = 0;
+
+static WinSockAddress g_NetworkFallbackBindEndpoint = {0};
+
+/* narrow endpoint/address text (written with capacity 255) */
+static uint8_t g_NetworkEndpointTextScratchA[256] = {0};
+
+/* Original quirk: "IP=" has no terminator (the next byte is 0x90 filler);
+   g_CommandLineFindOption gets the length 3 and never reads past it */
+static char s_CommandLineOptionIp[3] = {'I', 'P', '='};
+
 /* Implementation ownership: network/backend/fallback_udp. */
 
 /* Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init

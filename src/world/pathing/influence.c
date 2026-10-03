@@ -8,6 +8,32 @@
 #include <thandor/world/pathing/influence.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* uint32_t[8] grid influence ring radius offsets */
+const uint32_t g_GridInfluenceRadiusOffset[8] = {
+    1000, /* [0] */
+    1250, /* [1] */
+    1500, /* [2] */
+    1600, /* [3] */
+    1920, /* [4] */
+    2240, /* [5] */
+    2600, /* [6] */
+    4100, /* [7] */
+};
+
+/* uint32_t[8] squared ring radii (g_GridInfluenceRadiusOffset[n] + radius + margin)^2 */
+uint32_t g_GridInfluenceSquaredThreshold[8] = {
+    0, /* [0] */
+    0, /* [1] */
+    0, /* [2] */
+    0, /* [3] */
+    0, /* [4] */
+    0, /* [5] */
+    0, /* [6] */
+    0, /* [7] */
+};
+
 /* Implementation ownership: world/pathing/influence. */
 
 /* gridInfluenceAdd handler of the runtime classes 4, 10..16, 20 and 22

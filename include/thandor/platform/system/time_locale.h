@@ -55,4 +55,17 @@ void TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback);
 
 uint32_t Locale_ParseUnsignedDecimalAscii(uint8_t *text);
 
+extern LocaleFormatCurrentDateUtf16Proc *g_LocaleFormatCurrentDateUtf16;
+extern LocaleFormatTimeFieldsUtf16Proc *g_LocaleFormatTimeFieldsUtf16;
+extern LocaleFormatCurrentTimeUtf16Proc *g_LocaleFormatCurrentTimeUtf16;
+extern LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode;
+
+extern LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16;
+
+extern TimerRegisterPeriodicProc *g_TimerRegisterPeriodic;
+extern TimerUnregisterPeriodicProc *g_TimerUnregisterPeriodic;
+
+extern LocaleGetPackedCurrentDateProc *g_LocaleGetPackedCurrentDate;
+extern LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTime;
+
 #endif /* THANDOR_PLATFORM_SYSTEM_TIME_LOCALE_H */

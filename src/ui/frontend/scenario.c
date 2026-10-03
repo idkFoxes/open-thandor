@@ -8,6 +8,11 @@
 #include <thandor/ui/frontend/scenario.h>
 #include <thandor/thandor.h>
 
+/* Module data. */
+
+/* the four level digits at index 7 are overwritten with the level number (ui/frontend/scenario.c) */
+static uint16_t g_FrontendMissionBriefingMoviePathUtf16[16] = L"flm\\lev0000.flm";
+
 /* Implementation ownership: ui/frontend/scenario. */
 
 /* Title marker of one level on the game selection page: highlighted when one of the other players (records

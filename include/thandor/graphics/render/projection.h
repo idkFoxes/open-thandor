@@ -23,4 +23,6 @@ GraphicsTextureSourceAsset *GraphicsOffscreen_RenderModelListToTextureSource
 bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2);
 
+extern GraphicsOffscreenRenderModelListToTextureSourceProc *g_GraphicsOffscreenRenderModelListToTextureSource;
+
 #endif /* THANDOR_GRAPHICS_RENDER_PROJECTION_H */
