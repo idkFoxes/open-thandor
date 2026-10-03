@@ -30,7 +30,8 @@ folder; the tools started from here make further copies next to it), windowed, w
                without crash or hang (ports 910-914)
 --new defaults to build-test/thandor.exe, --release to build-rel/thandor.exe of this repository. The output of
 each check goes to GAME_DIR/checks/<check>.txt (screenshots / diffs of the pixel check to GAME_DIR/checks/
-pixels/). Exit status 1 when any check failed. Only game processes started from the copies of this run are
+pixels/). A failed multiplayer or maps check is run once more on its own after the others (start-ups can stall
+under the full load); the table then shows the retry result and the first one. Exit status 1 when any check failed. Only game processes started from the copies of this run are
 stopped at the end.
 
 The input scripts (tools/test/*.txt, format: src/platform/debug/script.c; lines that do not start with a number are
@@ -51,6 +52,7 @@ PRIVATE = ('thandor.exe', 'thandor.pdb', 'thandor.dat', 'thandor.log', 'crash.lo
            'statehash.txt')
 SHARED_DIRS = ('flm', 'setup', 'level')  # read-only data folders: junctions; every other folder is skipped
 CHECKS = ['determinism', 'aihash', 'pixels', 'saveload', 'textedit', 'multiplayer', 'imagecmp', 'campaign', 'maps']
+RETRY_ALONE = ('multiplayer', 'maps')  # start-up timing sensitive: a failure in the parallel run is retried alone
 INSTANCES = {'determinism': 3, 'aihash': 3, 'pixels': 2, 'saveload': 1, 'textedit': 1, 'multiplayer': 2,
              'imagecmp': 0, 'campaign': 5}
 
@@ -430,6 +432,15 @@ def main():
         for pid, path in stray_processes():
             print('stopping leftover %s (pid %d)' % (path, pid))
             subprocess.run('taskkill /F /T /PID %d' % pid, shell=True, capture_output=True)
+    # Under the load of all checks at once a start-up can stall for seconds (hang.log, a client that misses the
+    # session); a failed load-sensitive check is run once more on its own. The table shows both results.
+    retried = [name for name in RETRY_ALONE if name in results and results[name][0] == 'FAIL']
+    for name in retried:
+        first = results[name]
+        print('  %-12s retry alone (first: %s)' % (name, first[1]), flush=True)
+        runner(name)
+        status, details, seconds = results[name]
+        results[name] = (status, '%s [retry alone; in the parallel run: %s]' % (details, first[1]), seconds)
     for name in CHECKS:
         if name not in selected:
             results[name] = ('SKIP', 'no --old' if name == 'pixels' and not args.old else 'skipped', 0)
