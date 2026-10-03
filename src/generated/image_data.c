@@ -87,11 +87,8 @@ __declspec(align(8)) LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTim
 /* 004027AC g_LocaleGetDefaultTelephoneCountryCode */
 __declspec(align(4)) LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode = 0;
 
-__declspec(align(16)) ImageObject_004027B0 g_ImageObject_004027B0 = {
-    /* 004027B0 g_LocaleMapTelephoneCountryCodeToRegionTagPacked: Function-pointer slot at 0x004027B0 statically holding Locale_MapTelephoneCountryCodeToRegionTagPacked (telephone country code -> packed ASCII region tag); sits between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16, no code reference to the slot found. */
-    {
-        (uint32_t)Locale_MapTelephoneCountryCodeToRegionTagPacked},
-};
+/* 004027B0 g_LocaleMapTelephoneCountryCodeToRegionTagPacked: Function-pointer slot at 0x004027B0 statically holding Locale_MapTelephoneCountryCodeToRegionTagPacked (telephone country code -> packed ASCII region tag); sits between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16, no code reference to the slot found. */
+__declspec(align(16)) LocaleRegionTagPacked (*g_LocaleMapTelephoneCountryCodeToRegionTagPacked)(LocaleTelephoneCountryCode countryCode) = Locale_MapTelephoneCountryCodeToRegionTagPacked;
 
 /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
 __declspec(align(4)) LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16 = 0;
@@ -105,11 +102,8 @@ __declspec(align(4)) pointer g_Utf16StringCompareAsciiCaseInsensitiveFlags = (vo
 /* 004027C0 g_LocaleCountryCodeOverride */
 __declspec(align(16)) uint32_t g_LocaleCountryCodeOverride = 0;
 
-__declspec(align(4)) ImageObject_004027C4 g_ImageObject_004027C4 = {
-    0, /* 004027C4 g_CpuFeatureFlags */
-    {
-        0x90909090, 0x90909090},
-};
+/* 004027C4 g_CpuFeatureFlags */
+__declspec(align(4)) uint32_t g_CpuFeatureFlags = 0;
 
 /* 004027D0 g_FileSystemConfigCharacterNormalizationMap: uint8_t[256] byte map applied to every non-separator character of the file-system config text in FileSystem_Init: identity except a-z -> A-Z and the CP437 lowercase accented letters -> their uppercase forms (case folding). */
 __declspec(align(16)) uint8_t g_FileSystemConfigCharacterNormalizationMap[256] = {
@@ -130,22 +124,15 @@ __declspec(align(16)) uint8_t g_FileSystemConfigCharacterNormalizationMap[256] =
     /* 224 */ 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
     /* 240 */ 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255};
 
-__declspec(align(16)) ImageObject_004028D0 g_ImageObject_004028D0 = {
-    {.path = L"thandor.dat"}, /* 004028D0 g_PersistentSettings */
-    {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90900000, 0x90909090, 0x90909090,
-        0x90909090},
-};
+/* 004028D0 g_PersistentSettings */
+__declspec(align(16)) PersistentSettingsRuntime g_PersistentSettings = {.path = L"thandor.dat"};
 
 __declspec(align(16)) ImageObject_00403080 g_ImageObject_00403080 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00403080 gap */
 };
 
-__declspec(align(16)) ImageObject_004030A0 g_ImageObject_004030A0 = {
-    {.next = (void *)Random_NextPrimary, .primarySeed = 0x198F}, /* 004030A0 g_RandomGeneratorState */
-    {
-        0x90909090},
-};
+/* 004030A0 g_RandomGeneratorState */
+__declspec(align(16)) RandomGeneratorState g_RandomGeneratorState = {.next = (void *)Random_NextPrimary, .primarySeed = 0x198F};
 
 __declspec(align(8)) ImageObject_00403158 g_ImageObject_00403158 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00403158 gap */
@@ -469,10 +456,8 @@ __declspec(align(16)) uint16_t u_texte_error_str_00407d20[16] = L"texte\\error.s
 /* 00407D40 g_ErrorTextIoInitializationFailed */
 __declspec(align(16)) uint16_t g_ErrorTextIoInitializationFailed[34] = L"error: IO: initialization failed!";
 
-__declspec(align(4)) ImageObject_00407D84 g_ImageObject_00407D84 = {
-    L"error: HEAP: cannot allocate heap memory! Please check your swap-file.", /* 00407D84 g_ErrorTextHeapAllocationFailed */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 00407D84 g_ErrorTextHeapAllocationFailed (its address doubles as the error code) */
+__declspec(align(4)) uint16_t g_ErrorTextHeapAllocationFailed[71] = L"error: HEAP: cannot allocate heap memory! Please check your swap-file.";
 
 /* 00407E20 g_FatalErrorUiRootTemplate */
 __declspec(align(16)) UiRootNode *g_FatalErrorUiRootTemplate = 0;
@@ -485,9 +470,8 @@ __declspec(align(8)) UiRootCallbacks g_UiRootCallbacks_00407E28 = {
     .method08 = (void *)FatalErrorDialog_BlockMissedPointerPress,
     .pointerMissPolicy = (void *)FatalErrorDialog_BlockMissedPointerMotion};
 
-__declspec(align(4)) ImageObject_00407E3C g_ImageObject_00407E3C = {
-    /* 00407E3C g_FatalErrorUiRootTemplateImage */
-    {
+/* 00407E3C g_FatalErrorUiRootTemplateImage */
+__declspec(align(4)) FatalErrorUiImage g_FatalErrorUiRootTemplateImage = {
         { /* +0000 fatalErrorPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
             .vtable = (void *)&g_UiPanelControlVtable,
@@ -513,8 +497,6 @@ __declspec(align(4)) ImageObject_00407E3C g_ImageObject_00407E3C = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
         {
             0x0000000C, 0x00000001, 0x00000100},
-    },
-    {0x90, 0x90, 0x90, 0x90},
 };
 
 __declspec(align(4)) ImageObject_004080B4 g_ImageObject_004080B4 = {
@@ -627,10 +609,8 @@ __declspec(align(16)) PckCodecProc *g_PckDecoderTable[3] = {(void *)PckCodec_Dec
 /* 0040E23D u_THANDOR_cfg_0040e23d */
 __declspec(align(4)) uint16_t u_THANDOR_cfg_0040e23d[12] = L"THANDOR.cfg";
 
-__declspec(align(4)) ImageObject_0040E255 g_ImageObject_0040E255 = {
-    L"engine.pck", /* 0040E255 u_engine_pck_0040e255 */
-    {0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 0040E255 u_engine_pck_0040e255 */
+__declspec(align(4)) uint16_t u_engine_pck_0040e255[11] = L"engine.pck";
 
 /* 0040E270 g_DefaultComputerLabelUtf16 */
 __declspec(align(16)) uint16_t g_DefaultComputerLabelUtf16[32] = L"Computer";
@@ -660,19 +640,15 @@ __declspec(align(16)) WidePathBuffer256 g_UiTimedListHierarchyParentPathScratch 
 /* 0040FF50 g_WildcardAllFilesUtf16 */
 __declspec(align(16)) uint16_t g_WildcardAllFilesUtf16[4] = L"*.*";
 
-__declspec(align(8)) ImageObject_0040FF58 g_ImageObject_0040FF58 = {
-    L"?:\\*.*", /* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
+__declspec(align(8)) uint16_t g_UiTimedListDriveWildcardUtf16[7] = L"?:\\*.*";
 
 __declspec(align(8)) ImageObject_004107E8 g_ImageObject_004107E8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004107E8 gap */
 };
 
-__declspec(align(16)) ImageObject_004107F0 g_ImageObject_004107F0 = {
-    {0}, /* 004107F0 g_CursorInputEvents */
-    {0},
-};
+/* 004107F0 g_CursorInputEvents */
+__declspec(align(16)) GraphicsCursorInputEvent18 g_CursorInputEvents[256] = {0};
 
 /* 004167F0 g_CursorInputWriteIndex */
 __declspec(align(16)) uint32_t g_CursorInputWriteIndex = 0;
@@ -758,19 +734,16 @@ __declspec(align(16)) uint32_t g_CursorOverflowBottom = 0;
 /* 00416864 u_engine_mouse_gfx_00416864 */
 __declspec(align(4)) uint16_t u_engine_mouse_gfx_00416864[17] = L"engine\\mouse.gfx";
 
-__declspec(align(4)) ImageObject_00416886 g_ImageObject_00416886 = {
-    L"engine\\mouse.dat", /* 00416886 u_engine_mouse_dat_00416886 */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 00416886 u_engine_mouse_dat_00416886 */
+__declspec(align(4)) uint16_t u_engine_mouse_dat_00416886[17] = L"engine\\mouse.dat";
 
 __declspec(align(4)) ImageObject_004169DC g_ImageObject_004169DC = {
     {0x00, 0x90, 0x90, 0x90}, /* 004169DC gap */
 };
 
-__declspec(align(16)) ImageObject_004169E0 g_ImageObject_004169E0 = {
-    {0}, /* 004169E0 g_KeyboardEvents */
-    {0},
-};
+/* 004169E0 g_KeyboardEvents. Original quirk: the original reserves 256 events (0x800 bytes) for the ring, but
+   the read and write indices wrap at KEYBOARD_EVENT_RING_SIZE (64), so entries 64-255 are never used. */
+__declspec(align(16)) KeyboardInputEvent g_KeyboardEvents[256] = {0};
 
 /* 004171E0 g_KeyboardWriteIndex */
 __declspec(align(16)) KeyboardEventRingIndex g_KeyboardWriteIndex = 0;
@@ -793,15 +766,11 @@ __declspec(align(16)) KeyboardFlushEventsProc *g_KeyboardFlushEvents = (void *)K
 /* 00417214 g_KeyboardReadEvent */
 __declspec(align(4)) KeyboardReadEventProc *g_KeyboardReadEvent = (void *)Keyboard_ReadNextEvent;
 
-__declspec(align(8)) ImageObject_00417218 g_ImageObject_00417218 = {
-    /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
-    {
-        .compareCaseInsensitiveFlags = (void *)Keyboard_CompareAsciiCaseInsensitiveFlags,
-        .toUpper = (void *)Keyboard_ToUpperAscii,
-        .toLower = (void *)Keyboard_ToLowerAscii},
-    {
-        0x90909090, 0x90909090, 0x90909090},
-};
+/* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
+__declspec(align(8)) KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3 = {
+    .compareCaseInsensitiveFlags = (void *)Keyboard_CompareAsciiCaseInsensitiveFlags,
+    .toUpper = (void *)Keyboard_ToUpperAscii,
+    .toLower = (void *)Keyboard_ToLowerAscii};
 
 __declspec(align(8)) ImageObject_004172E8 g_ImageObject_004172E8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004172E8 gap */
@@ -863,11 +832,8 @@ __declspec(align(4)) SoundQueryVoiceRegsProc *g_SoundQueryVoice = (void *)SoundB
 /* 00417360 g_SoundSetVoiceGains */
 __declspec(align(16)) SoundSetVoiceGainsProc *g_SoundSetVoiceGains = (void *)SoundBackendDisabled_SetVoiceGains;
 
-__declspec(align(4)) ImageObject_00417364 g_ImageObject_00417364 = {
-    {0}, /* 00417364 g_SoundSampleCoefficientBlock */
-    {
-        0x90909090, 0x90909090, 0x90909090},
-};
+/* 00417364 g_SoundSampleCoefficientBlock */
+__declspec(align(4)) short g_SoundSampleCoefficientBlock[256] = {0};
 
 __declspec(align(4)) ImageObject_0041A53C g_ImageObject_0041A53C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0041A53C gap */
@@ -906,11 +872,8 @@ __declspec(align(4)) NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6 
 /* 0041A568 g_NetworkBackendSlot7 */
 __declspec(align(8)) NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7 = (void *)NetworkBackendFallback_FormatPeerAddress;
 
-__declspec(align(4)) ImageObject_0041A56C g_ImageObject_0041A56C = {
-    {0}, /* 0041A56C g_NetworkLocalEndpoint */
-    {
-        0x90909090},
-};
+/* 0041A56C g_NetworkLocalEndpoint */
+__declspec(align(4)) UiTransferEndpointDescriptor g_NetworkLocalEndpoint = {0};
 
 __declspec(align(16)) ImageObject_0041A740 g_ImageObject_0041A740 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041A740 gap */
@@ -962,10 +925,8 @@ __declspec(align(4)) TextResourceOverrideTable *g_TextResourceOverrides = 0;
 /* 0041AF98 g_FontRuntimeBuffer */
 __declspec(align(8)) uint8_t *g_FontRuntimeBuffer = 0;
 
-__declspec(align(4)) ImageObject_0041AF9C g_ImageObject_0041AF9C = {
-    0, /* 0041AF9C g_RichTextRuntimeBufferUsedWords */
-    {0},
-};
+/* 0041AF9C g_RichTextRuntimeBufferUsedWords */
+__declspec(align(4)) uint32_t g_RichTextRuntimeBufferUsedWords = 0;
 
 /* 0041AFA4 g_EmptyTextResourceUtf16 */
 __declspec(align(4)) uint16_t g_EmptyTextResourceUtf16[2] = {0};
@@ -1431,9 +1392,8 @@ __declspec(align(4)) ImageObject_0041DE7C g_ImageObject_0041DE7C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041DE7C gap */
 };
 
-__declspec(align(16)) ImageObject_0041DE80 g_ImageObject_0041DE80 = {
-    {0}, /* 0041DE80 g_PackedLightingLookupTable: filled at startup by GraphicsLighting_BuildPackedLookupTable */
-};
+/* 0041DE80 g_PackedLightingLookupTable: filled at startup by GraphicsLighting_BuildPackedLookupTable */
+__declspec(align(16)) uint64_t g_PackedLightingLookupTable[512] = {0};
 
 /* 0041EE80 g_ShadingIntensityScaleMmx */
 __declspec(align(16)) SoftwareBgraWordLanes g_ShadingIntensityScaleMmx[256] = {
@@ -1721,11 +1681,8 @@ __declspec(align(8)) uint64_t g_TerrainOccupancyMmxCurrentWeights = 0x4000040040
 /* 0041F6C0 g_FieldGridOccupancyMmxHighBitMask */
 __declspec(align(16)) uint64_t g_FieldGridOccupancyMmxHighBitMask = 0x8080808080808080ull;
 
-__declspec(align(8)) ImageObject_0041F6C8 g_ImageObject_0041F6C8 = {
-    0x707070707070707ull, /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
-    {
-        0x90909090, 0x90909090, 0x90909090, 0x90909090},
-};
+/* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
+__declspec(align(8)) uint64_t g_GraphicsShadingMmxPacked3BitPerByteMask = 0x707070707070707ull;
 
 /* 0041F6E0 g_SoftwarePixelMmxConstants */
 __declspec(align(16)) SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants = {0};
@@ -1733,11 +1690,8 @@ __declspec(align(16)) SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants = {0
 /* 0041F700 g_VertexColorAlphaPreserveMaskMMX */
 __declspec(align(16)) uint64_t g_VertexColorAlphaPreserveMaskMMX = 0xFF000000ull;
 
-__declspec(align(8)) ImageObject_0041F708 g_ImageObject_0041F708 = {
-    0xFEFEFEull, /* 0041F708 g_VertexColorRgbHalveMaskMMX */
-    {
-        0x90909090, 0x90909090, 0x90909090, 0x90909090},
-};
+/* 0041F708 g_VertexColorRgbHalveMaskMMX */
+__declspec(align(8)) uint64_t g_VertexColorRgbHalveMaskMMX = 0xFEFEFEull;
 
 /* 0041F720 g_UiScalerSecondPixelWeights */
 __declspec(align(16)) SoftwareBgraWordLanes g_UiScalerSecondPixelWeights[256] = {
@@ -3269,9 +3223,8 @@ __declspec(align(16)) UiRootCallbacks g_UiDisplaySettingsRootCallbacks = {
     .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
     .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion};
 
-__declspec(align(4)) ImageObject_004229B4 g_ImageObject_004229B4 = {
-    /* 004229B4 g_UiDisplaySettingsRootTemplate */
-    {
+/* 004229B4 g_UiDisplaySettingsRootTemplate */
+__declspec(align(4)) DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate = {
         { /* +0000 displaySettingsWindow g_UiResizableWindowControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x78), .parent = UI_TEMPLATE_NO_LINK,
             .vtable = (void *)&g_UiResizableWindowControlVtable,
@@ -3495,7 +3448,6 @@ __declspec(align(4)) ImageObject_004229B4 g_ImageObject_004229B4 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000011},
-    },
 };
 
 /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
@@ -3533,9 +3485,8 @@ __declspec(align(4)) UiRootCallbacks g_UiFourValueDialogRootCallbacks = {
     .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
     .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion};
 
-__declspec(align(8)) ImageObject_00424338 g_ImageObject_00424338 = {
-    /* 00424338 g_UiFourValueDialogTemplateImage */
-    {
+/* 00424338 g_UiFourValueDialogTemplateImage */
+__declspec(align(8)) FourValueDialogUiImage g_UiFourValueDialogTemplateImage = {
         { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
             .vtable = (void *)&g_UiPanelControlVtable,
@@ -3568,8 +3519,6 @@ __declspec(align(8)) ImageObject_00424338 g_ImageObject_00424338 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000004, 0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014},
-    },
-    {0x90, 0x90, 0x90, 0x90},
 };
 
 __declspec(align(4)) ImageObject_00424684 g_ImageObject_00424684 = {
@@ -3734,9 +3683,8 @@ __declspec(align(4)) ImageObject_00486D8C g_ImageObject_00486D8C = {
     {0x00, 0x00, 0x90, 0x90}, /* 00486D8C gap */
 };
 
-__declspec(align(16)) ImageObject_00486D90 g_ImageObject_00486D90 = {
-    {0}, /* 00486D90 g_MovieChromaLumaToArgb: filled at startup by Movie_BuildChromaLumaTable */
-};
+/* 00486D90 g_MovieChromaLumaToArgb: filled at startup by Movie_BuildChromaLumaTable */
+__declspec(align(16)) uint32_t g_MovieChromaLumaToArgb[1024][32] = {0};
 
 /* 004A6D90 g_MovieDeltaRgbHighNibbleMask2Pixels */
 __declspec(align(16)) uint64_t g_MovieDeltaRgbHighNibbleMask2Pixels = 0xF0F0F000F0F0F0ull;
@@ -3750,11 +3698,8 @@ __declspec(align(4)) MovieAudioGainQ15 g_MovieDefaultAudioGainQ15 = 32768;
 /* 004A6DA0 g_MovieAlternateAudioGainQ15 */
 __declspec(align(16)) MovieAudioGainQ15 g_MovieAlternateAudioGainQ15 = 32768;
 
-__declspec(align(4)) ImageObject_004A6DA4 g_ImageObject_004A6DA4 = {
-    {0}, /* 004A6DA4 g_LooseMoviePathPrefix */
-    {
-        0x90909090, 0x90909090, 0x90909090},
-};
+/* 004A6DA4 g_LooseMoviePathPrefix */
+__declspec(align(4)) WidePathBuffer256 g_LooseMoviePathPrefix = {0};
 
 __declspec(align(16)) ImageObject_004A8E60 g_ImageObject_004A8E60 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004A8E60 gap */
@@ -3928,13 +3873,11 @@ __declspec(align(4)) ImageObject_004AD92C g_ImageObject_004AD92C = {
     {0x90, 0x90, 0x90, 0x90}, /* 004AD92C gap */
 };
 
-__declspec(align(16)) ImageObject_004AD930 g_ImageObject_004AD930 = {
-    {0}, /* 004AD930 g_GraphicsPaletteBankSlots */
-};
+/* 004AD930 g_GraphicsPaletteBankSlots */
+__declspec(align(16)) uint32_t g_GraphicsPaletteBankSlots[512] = {0};
 
-__declspec(align(16)) ImageObject_004AE130 g_ImageObject_004AE130 = {
-    {0}, /* 004AE130 g_GraphicsPaletteRemapBytes */
-};
+/* 004AE130 g_GraphicsPaletteRemapBytes */
+__declspec(align(16)) uint8_t g_GraphicsPaletteRemapBytes[256] = {0};
 
 __declspec(align(4)) ImageObject_004AE95C g_ImageObject_004AE95C = {
     {0x00, 0x90, 0x90, 0x90}, /* 004AE95C gap */
@@ -3991,11 +3934,8 @@ __declspec(align(8)) UiRuntimeRecord g_UiTransferChunkPacket = {0};
 /* 004AEAE8 g_UiTransferPingEchoPacket: ping answer packet 0x10033; echoed tick at 0x004AEAF8. */
 __declspec(align(8)) FrontendPacket10032HostValue g_UiTransferPingEchoPacket = {0};
 
-__declspec(align(8)) ImageObject_004AEB08 g_ImageObject_004AEB08 = {
-    0, /* 004AEB08 g_UiTransferMailboxTickCounter */
-    {
-        0x90909090},
-};
+/* 004AEB08 g_UiTransferMailboxTickCounter */
+__declspec(align(8)) UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter = 0;
 
 __declspec(align(8)) ImageObject_004AF198 g_ImageObject_004AF198 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004AF198 gap */
@@ -4026,11 +3966,8 @@ __declspec(align(16)) UiActionQueueEntry *g_UiActionQueueEntries = 0;
 /* 004AF204 g_UiRuntimeInitializationCount */
 __declspec(align(4)) uint32_t g_UiRuntimeInitializationCount = 0;
 
-__declspec(align(8)) ImageObject_004AF208 g_ImageObject_004AF208 = {
-    0, /* 004AF208 g_UiInvalidationSuppressed */
-    {
-        0x90909090},
-};
+/* 004AF208 g_UiInvalidationSuppressed */
+__declspec(align(8)) uint32_t g_UiInvalidationSuppressed = 0;
 
 __declspec(align(4)) ImageObject_004AF39C g_ImageObject_004AF39C = {
     {0x00, 0x00, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004AF39C gap */
@@ -4103,10 +4040,8 @@ __declspec(align(8)) uint32_t g_UiTextStyleNormal = 0;
 /* 004B0E7C g_UiTextStyleDisabled: UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.c). */
 __declspec(align(4)) UiPackedTextStyle g_UiTextStyleDisabled = 0x20000;
 
-__declspec(align(16)) ImageObject_004B0E80 g_ImageObject_004B0E80 = {
-    0, /* 004B0E80 g_UiTextStyleAlternate */
-    {0},
-};
+/* 004B0E80 g_UiTextStyleAlternate */
+__declspec(align(16)) uint32_t g_UiTextStyleAlternate = 0;
 
 /* 004B0E88 g_UiWindowTitleTextStyle */
 __declspec(align(8)) uint32_t g_UiWindowTitleTextStyle = 0;
@@ -4114,10 +4049,8 @@ __declspec(align(8)) uint32_t g_UiWindowTitleTextStyle = 0;
 /* 004B0E8C g_UiWindowFrameInset */
 __declspec(align(4)) int32_t g_UiWindowFrameInset = 2;
 
-__declspec(align(16)) ImageObject_004B0E90 g_ImageObject_004B0E90 = {
-    0, /* 004B0E90 g_UiListTextStyle */
-    {0},
-};
+/* 004B0E90 g_UiListTextStyle */
+__declspec(align(16)) uint32_t g_UiListTextStyle = 0;
 
 /* 004B0E98 g_UiTextEditActiveTextStyle */
 __declspec(align(8)) uint32_t g_UiTextEditActiveTextStyle = 0;
@@ -4154,11 +4087,8 @@ __declspec(align(4)) ImageObject_004B0F24 g_ImageObject_004B0F24 = {
     {0x90, 0x90, 0x90},
 };
 
-__declspec(align(8)) ImageObject_004B0F28 g_ImageObject_004B0F28 = {
-    0, /* 004B0F28 g_UiImageControlHoverTarget */
-    {
-        0x90909090},
-};
+/* 004B0F28 g_UiImageControlHoverTarget */
+__declspec(align(8)) UiImageControl * g_UiImageControlHoverTarget = 0;
 
 __declspec(align(16)) ImageObject_004B1500 g_ImageObject_004B1500 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B1500 gap */
@@ -4168,30 +4098,26 @@ __declspec(align(8)) ImageObject_004B15C8 g_ImageObject_004B15C8 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B15C8 gap */
 };
 
-__declspec(align(16)) ImageObject_004B15D0 g_ImageObject_004B15D0 = {
-    /* 004B15D0 g_UiSpriteButtonControlVtable */
-    {
-        .relocate = (void *)UiSpriteButtonControl_Relocate,
-        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
-        .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
-        .layout = (void *)UiContainer_LayoutChildren,
-        .nonRightPress = (void *)UiSpriteButtonControl_NonRightPress,
-        .nonRightRelease = (void *)UiSpriteButtonControl_NonRightRelease,
-        .rightPress = (void *)UiNode_ForwardRightPressToParent,
-        .rightRelease = (void *)UiNode_DefaultRightRelease,
-        .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
-        .rightDrag = (void *)UiNode_DefaultRightDrag,
-        .pointerMove = (void *)UiNode_DefaultPointerMove,
-        .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
-        .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
-        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
-        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
-        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
-        .tick = (void *)UiNode_DefaultTick,
-        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
-    {
-        0x90909090, 0x90909090},
-};
+/* 004B15D0 g_UiSpriteButtonControlVtable */
+__declspec(align(16)) UiNodeVtable g_UiSpriteButtonControlVtable = {
+    .relocate = (void *)UiSpriteButtonControl_Relocate,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiSpriteButtonControl_NonRightPress,
+    .nonRightRelease = (void *)UiSpriteButtonControl_NonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+    .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+    .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+    .tick = (void *)UiNode_DefaultTick,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
 __declspec(align(4)) ImageObject_004B1D74 g_ImageObject_004B1D74 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B1D74 gap */
@@ -4604,30 +4530,26 @@ __declspec(align(4)) ImageObject_004B7914 g_ImageObject_004B7914 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B7914 gap */
 };
 
-__declspec(align(16)) ImageObject_004B7920 g_ImageObject_004B7920 = {
-    /* 004B7920 g_UiScrollableControlVtable */
-    {
-        .relocate = (void *)UiScrollableControl_RelocateChildren,
-        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
-        .drawClipped = (void *)UiScrollableControl_DrawFrameContentAndScrollbars,
-        .layout = (void *)UiScrollableControl_RebuildViewportAndScrollbars,
-        .nonRightPress = (void *)UiScrollableControl_BeginPrimaryScrollInteraction,
-        .nonRightRelease = (void *)UiScrollableControl_EndPrimaryScrollInteraction,
-        .rightPress = (void *)UiScrollableControl_BeginSecondaryScrollInteraction,
-        .rightRelease = (void *)UiScrollableControl_EndSecondaryScrollInteraction,
-        .nonRightDrag = (void *)UiScrollableControl_UpdatePrimaryScrollDrag,
-        .rightDrag = (void *)UiScrollableControl_UpdateSecondaryScrollDrag,
-        .pointerMove = (void *)UiScrollableControl_QueryPointerRegion,
-        .hitTest = (void *)UiScrollableControl_HitTestContentAndScrollbars,
-        .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
-        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
-        .suppressActionId = (void *)UiContainer_SuppressActionId,
-        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
-        .tick = (void *)UiScrollableControl_TickAutoScroll,
-        .pointerWheel = (void *)UiScrollableControl_HandlePointerWheel},
-    {
-        0x90909090, 0x90909090},
-};
+/* 004B7920 g_UiScrollableControlVtable */
+__declspec(align(16)) UiNodeVtable g_UiScrollableControlVtable = {
+    .relocate = (void *)UiScrollableControl_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiScrollableControl_DrawFrameContentAndScrollbars,
+    .layout = (void *)UiScrollableControl_RebuildViewportAndScrollbars,
+    .nonRightPress = (void *)UiScrollableControl_BeginPrimaryScrollInteraction,
+    .nonRightRelease = (void *)UiScrollableControl_EndPrimaryScrollInteraction,
+    .rightPress = (void *)UiScrollableControl_BeginSecondaryScrollInteraction,
+    .rightRelease = (void *)UiScrollableControl_EndSecondaryScrollInteraction,
+    .nonRightDrag = (void *)UiScrollableControl_UpdatePrimaryScrollDrag,
+    .rightDrag = (void *)UiScrollableControl_UpdateSecondaryScrollDrag,
+    .pointerMove = (void *)UiScrollableControl_QueryPointerRegion,
+    .hitTest = (void *)UiScrollableControl_HitTestContentAndScrollbars,
+    .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiContainer_SuppressActionId,
+    .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+    .tick = (void *)UiScrollableControl_TickAutoScroll,
+    .pointerWheel = (void *)UiScrollableControl_HandlePointerWheel};
 
 __declspec(align(16)) ImageObject_004B9530 g_ImageObject_004B9530 = {
     /* 004B9530 g_UiFocusProxyControlVtable */
@@ -4658,30 +4580,26 @@ __declspec(align(8)) ImageObject_004B9E38 g_ImageObject_004B9E38 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B9E38 gap */
 };
 
-__declspec(align(16)) ImageObject_004B9E40 g_ImageObject_004B9E40 = {
-    /* 004B9E40 g_UiTextListControlVtable */
-    {
-        .relocate = (void *)UiContainer_RelocateChildren,
-        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
-        .drawClipped = (void *)UiTextListControl_DrawRowsAndSelection,
-        .layout = (void *)UiContainer_LayoutChildren,
-        .nonRightPress = (void *)UiTextListControl_SelectRowFromPointer,
-        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
-        .rightPress = (void *)UiNode_ForwardRightPressToParent,
-        .rightRelease = (void *)UiNode_DefaultRightRelease,
-        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
-        .rightDrag = (void *)UiNode_DefaultRightDrag,
-        .pointerMove = (void *)UiNode_DefaultPointerMove,
-        .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEvent = (void *)UiTextListControl_HandleKeyboardNavigationAndSearch,
-        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
-        .suppressActionId = (void *)UiTextListControl_SuppressIfActionId,
-        .unsuppressActionId = (void *)UiTextListControl_UnsuppressIfActionId,
-        .tick = (void *)UiTextListControl_TickActivationPulse,
-        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
-    {
-        0x90909090, 0x90909090},
-};
+/* 004B9E40 g_UiTextListControlVtable */
+__declspec(align(16)) UiNodeVtable g_UiTextListControlVtable = {
+    .relocate = (void *)UiContainer_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiTextListControl_DrawRowsAndSelection,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiTextListControl_SelectRowFromPointer,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiContainer_HitTestChildren,
+    .keyboardEvent = (void *)UiTextListControl_HandleKeyboardNavigationAndSearch,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiTextListControl_SuppressIfActionId,
+    .unsuppressActionId = (void *)UiTextListControl_UnsuppressIfActionId,
+    .tick = (void *)UiTextListControl_TickActivationPulse,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
 __declspec(align(4)) ImageObject_004BA58C g_ImageObject_004BA58C = {
     {0x00, 0x00, 0x00, 0x90}, /* 004BA58C gap */
@@ -4757,30 +4675,26 @@ __declspec(align(8)) ImageObject_004BB988 g_ImageObject_004BB988 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BB988 gap */
 };
 
-__declspec(align(16)) ImageObject_004BB990 g_ImageObject_004BB990 = {
-    /* 004BB990 g_UiTimedListControlVtable */
-    {
-        .relocate = (void *)UiTimedListControl_RelocateChildren,
-        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
-        .drawClipped = (void *)UiTimedListControl_DrawRowsAndSelection,
-        .layout = (void *)UiContainer_LayoutChildren,
-        .nonRightPress = (void *)UiTimedListControl_SelectRowFromPointer,
-        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
-        .rightPress = (void *)UiNode_ForwardRightPressToParent,
-        .rightRelease = (void *)UiNode_DefaultRightRelease,
-        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
-        .rightDrag = (void *)UiNode_DefaultRightDrag,
-        .pointerMove = (void *)UiNode_DefaultPointerMove,
-        .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEvent = (void *)UiTimedListControl_HandleKeyboardNavigation,
-        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
-        .suppressActionId = (void *)UiContainer_SuppressActionId,
-        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
-        .tick = (void *)UiTimedListControl_TickActionDelay,
-        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
-    {
-        0x90909090, 0x90909090},
-};
+/* 004BB990 g_UiTimedListControlVtable */
+__declspec(align(16)) UiNodeVtable g_UiTimedListControlVtable = {
+    .relocate = (void *)UiTimedListControl_RelocateChildren,
+    .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+    .drawClipped = (void *)UiTimedListControl_DrawRowsAndSelection,
+    .layout = (void *)UiContainer_LayoutChildren,
+    .nonRightPress = (void *)UiTimedListControl_SelectRowFromPointer,
+    .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+    .rightPress = (void *)UiNode_ForwardRightPressToParent,
+    .rightRelease = (void *)UiNode_DefaultRightRelease,
+    .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+    .rightDrag = (void *)UiNode_DefaultRightDrag,
+    .pointerMove = (void *)UiNode_DefaultPointerMove,
+    .hitTest = (void *)UiContainer_HitTestChildren,
+    .keyboardEvent = (void *)UiTimedListControl_HandleKeyboardNavigation,
+    .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+    .suppressActionId = (void *)UiContainer_SuppressActionId,
+    .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+    .tick = (void *)UiTimedListControl_TickActionDelay,
+    .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent};
 
 __declspec(align(4)) ImageObject_004BC404 g_ImageObject_004BC404 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BC404 gap */
@@ -4882,11 +4796,8 @@ __declspec(align(16)) GraphicsFixedVec3 g_GraphicsDirectionWorld = {0};
 /* 004BCF5C g_GraphicsDirectionLocal */
 __declspec(align(4)) GraphicsFixedVec3 g_GraphicsDirectionLocal = {0};
 
-__declspec(align(8)) ImageObject_004BCF68 g_ImageObject_004BCF68 = {
-    0, /* 004BCF68 g_GraphicsIntensityClampTableBase */
-    {
-        0x90909090},
-};
+/* 004BCF68 g_GraphicsIntensityClampTableBase */
+__declspec(align(8)) uint32_t g_GraphicsIntensityClampTableBase = 0;
 
 __declspec(align(4)) ImageObject_004BD2C4 g_ImageObject_004BD2C4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BD2C4 gap */
@@ -4946,28 +4857,21 @@ __declspec(align(16)) ImageObject_004BD880 g_ImageObject_004BD880 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BD880 gap */
 };
 
-__declspec(align(16)) ImageObject_004BD890 g_ImageObject_004BD890 = {
-    /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
-    {
-        .callbacks = {
-            /* 0 */ (void *)ArmyPlacementContact_ApplyTerrainHeight,
-            /* 1 */ (void *)ArmyPlacementContact_ApplyWaterSurfaceHeight,
-            /* 2 */ (void *)ArmyPlacementContact_ApplyTerrainHeightAndNormal,
-            /* 3 */ (void *)ArmyPlacementContact_InitializeArticulatedSuspension,
-            /* 4 */ (void *)ArmyPlacementContact_ApplyTopSurfaceHeight
-        }},
-    {
-        0x90909090, 0x90909090, 0x90909090},
-};
+/* 004BD890 g_ArmyPlacementContactKindDispatchTable */
+__declspec(align(16)) ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable = {
+    .callbacks = {
+        /* 0 */ (void *)ArmyPlacementContact_ApplyTerrainHeight,
+        /* 1 */ (void *)ArmyPlacementContact_ApplyWaterSurfaceHeight,
+        /* 2 */ (void *)ArmyPlacementContact_ApplyTerrainHeightAndNormal,
+        /* 3 */ (void *)ArmyPlacementContact_InitializeArticulatedSuspension,
+        /* 4 */ (void *)ArmyPlacementContact_ApplyTopSurfaceHeight
+    }};
 
 /* 004BD8B0 g_ModelCullViewRelative */
 __declspec(align(16)) GraphicsFixedVec3 g_ModelCullViewRelative = {0};
 
-__declspec(align(8)) ImageObject_004BD8C8 g_ImageObject_004BD8C8 = {
-    0, /* 004BD8C8 g_SpriteAssetRegistryHead */
-    {
-        0x90909090},
-};
+/* 004BD8C8 g_SpriteAssetRegistryHead */
+__declspec(align(8)) SpriteAssetHeader * g_SpriteAssetRegistryHead = 0;
 
 __declspec(align(4)) ImageObject_004BEA6C g_ImageObject_004BEA6C = {
     {0x00, 0x00, 0x00, 0x90}, /* 004BEA6C gap */
@@ -5008,14 +4912,18 @@ __declspec(align(16)) GraphicsShadingRecordCount g_GraphicsShadingCompactRecordC
 /* 004C6D54 g_GraphicsShadingNearbyRecords */
 __declspec(align(4)) GraphicsShadingRuntimeRecord g_GraphicsShadingNearbyRecords[256] = {0};
 
-__declspec(align(4)) ImageObject_004CAD54 g_ImageObject_004CAD54 = {
-    0, /* 004CAD54 g_GraphicsShadingNearbyRecordCount: GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelDistanceAttenuationMmxNegativeRows. */
-    {
-        0x90909090, 0x90909090},
-};
+/* 004CAD54 g_GraphicsShadingNearbyRecordCount: GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelLightingMmxMultiplierRows. */
+__declspec(align(4)) GraphicsShadingRecordCount g_GraphicsShadingNearbyRecordCount = 0;
 
-/* 004CAD60 g_ModelDistanceAttenuationMmxNegativeRows: SoftwareBgraWordLanes[136]: rows -136..-1 of g_ModelDistanceAttenuationMmx, which ModelRender_ComputeVertexIntensityDefaultPath indexes with the signed light-facing dot >> 21; B/G/R lanes 0x007F (row -1) rising by 0x80 to 0x3F7F, then 0x3FFF, alpha lane 0x4000; PMULHW multipliers. */
-__declspec(align(16)) SoftwareBgraWordLanes g_ModelDistanceAttenuationMmxNegativeRows[136] = {
+/* 004CAD60 g_ModelLightingMmxMultiplierRows: SoftwareBgraWordLanes[819] (MODEL_LIGHTING_MMX_ROW_COUNT), PMULHW
+   multipliers (alpha lane 0x4000) of the model vertex lighting. One table in the original, reached from two base rows:
+   ModelRender_ComputeVertexIntensityDefaultPath indexes from row MODEL_DISTANCE_ATTENUATION_ROW0 (136, 0x004CB1A0)
+   with the signed light-facing dot >> 21, ModelRender_ComputeVertexIntensityScaledPath from row
+   MODEL_LIGHTING_SCALE_ROW0 (682, 0x004CC2B0) with (dot / lightingScaleQ12) >> 9; negative indices of either run
+   into the rows before. Row numbers in the comments below restart at each former start. */
+__declspec(align(16)) SoftwareBgraWordLanes g_ModelLightingMmxMultiplierRows[819] = {
+    /* rows 0..135 (0x004CAD60, former g_ModelDistanceAttenuationMmxNegativeRows): attenuation rows -136..-1; B/G/R
+       lanes 0x007F (row -1) rising by 0x80 to 0x3F7F, then 0x3FFF */
     /*   0 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16384},
     /*   1 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16384},
     /*   2 */ {.blue = 16383, .green = 16383, .red = 16383, .alpha = 16384},
@@ -5151,11 +5059,9 @@ __declspec(align(16)) SoftwareBgraWordLanes g_ModelDistanceAttenuationMmxNegativ
     /* 132 */ {.blue = 511, .green = 511, .red = 511, .alpha = 16384},
     /* 133 */ {.blue = 383, .green = 383, .red = 383, .alpha = 16384},
     /* 134 */ {.blue = 255, .green = 255, .red = 255, .alpha = 16384},
-    /* 135 */ {.blue = 127, .green = 127, .red = 127, .alpha = 16384}};
-
-__declspec(align(16)) ImageObject_004CB1A0 g_ImageObject_004CB1A0 = {
-    /* 004CB1A0 g_ModelDistanceAttenuationMmx */
-    {
+    /* 135 */ {.blue = 127, .green = 127, .red = 127, .alpha = 16384},
+    /* rows 136..681 (0x004CB1A0, MODEL_DISTANCE_ATTENUATION_ROW0, former g_ModelDistanceAttenuationMmx): MMX
+       distance attenuation per (light-facing dot >> 21), rows 0..545 */
         /*   0 */ {.alpha = 16384},
         /*   1 */ {.alpha = 16384},
         /*   2 */ {.alpha = 16384},
@@ -5701,11 +5607,10 @@ __declspec(align(16)) ImageObject_004CB1A0 g_ImageObject_004CB1A0 = {
         /* 542 */ {.blue = 8703, .green = 8703, .red = 8703, .alpha = 16384},
         /* 543 */ {.blue = 8575, .green = 8575, .red = 8575, .alpha = 16384},
         /* 544 */ {.blue = 8447, .green = 8447, .red = 8447, .alpha = 16384},
-        /* 545 */ {.blue = 8319, .green = 8319, .red = 8319, .alpha = 16384}},
-};
-
-/* 004CC2B0 g_ModelLightingScaleMmxMultiplierTable: SoftwareBgraWordLanes[137]: PMULHW multipliers for ModelRender_ComputeVertexIntensityScaledPath, indexed by (dot / lightingScaleQ12) >> 9 (signed; negative rows fall into g_ModelDistanceAttenuationMmx before it); B/G/R lanes 0x1FFF at row 0 falling by 0x80 to 0x007F, then 0, alpha lane 0x4000. */
-__declspec(align(16)) SoftwareBgraWordLanes g_ModelLightingScaleMmxMultiplierTable[137] = {
+        /* 545 */ {.blue = 8319, .green = 8319, .red = 8319, .alpha = 16384},
+    /* rows 682..818 (0x004CC2B0, MODEL_LIGHTING_SCALE_ROW0, former g_ModelLightingScaleMmxMultiplierTable):
+       multipliers for ModelRender_ComputeVertexIntensityScaledPath, rows 0..136; B/G/R lanes 0x1FFF at row 0
+       falling by 0x80 to 0x007F, then 0 */
     /*   0 */ {.blue = 8191, .green = 8191, .red = 8191, .alpha = 16384},
     /*   1 */ {.blue = 8063, .green = 8063, .red = 8063, .alpha = 16384},
     /*   2 */ {.blue = 7935, .green = 7935, .red = 7935, .alpha = 16384},
@@ -5922,11 +5827,8 @@ __declspec(align(4)) ImageObject_004D09F4 g_ImageObject_004D09F4 = {
 /* 004D0A00 g_PrimitiveQueueStorage */
 __declspec(align(16)) GraphicsPrimitiveQueue *g_PrimitiveQueueStorage = 0;
 
-__declspec(align(4)) ImageObject_004D0A04 g_ImageObject_004D0A04 = {
-    0, /* 004D0A04 g_PrimitiveQueuePoolCapacity */
-    {
-        0x90909090, 0x90909090},
-};
+/* 004D0A04 g_PrimitiveQueuePoolCapacity */
+__declspec(align(4)) uint32_t g_PrimitiveQueuePoolCapacity = 0;
 
 __declspec(align(8)) ImageObject_004D11B8 g_ImageObject_004D11B8 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004D11B8 gap */
@@ -5950,11 +5852,8 @@ __declspec(align(16)) int32_t g_SoftwareDepthEpoch = 0;
 /* 004D1244 g_SoftwareChainedSetDisplayMode */
 __declspec(align(4)) SoftwareDisplayModeHookProc *g_SoftwareChainedSetDisplayMode = 0;
 
-__declspec(align(8)) ImageObject_004D1248 g_ImageObject_004D1248 = {
-    0, /* 004D1248 g_SoftwareDrawQueue */
-    {
-        0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
-};
+/* 004D1248 g_SoftwareDrawQueue */
+__declspec(align(8)) SoftwareDrawQueueProc *g_SoftwareDrawQueue = 0;
 
 /* 004D1260 g_SoftwareRasterHandlers16Bit */
 __declspec(align(16)) SoftwareRasterHandler *g_SoftwareRasterHandlers16Bit[64] = {
@@ -6158,18 +6057,15 @@ __declspec(align(4)) ImageObject_004FEA24 g_ImageObject_004FEA24 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004FEA24 gap */
 };
 
-__declspec(align(16)) ImageObject_004FEA30 g_ImageObject_004FEA30 = {
-    /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
-    {
-        .callbacks = {
-            /* 0 */ (void *)FieldGrid_InterpolateTerrainHeight,
-            /* 1 */ (void *)FieldGrid_InterpolateWaterSurfaceHeight,
-            /* 2 */ (void *)FieldGrid_InterpolateTerrainHeight,
-            /* 3 */ (void *)FieldGrid_InterpolateTerrainHeight,
-            /* 4 */ (void *)FieldGrid_InterpolateTopSurfaceHeight
-        }},
-    {
-        0x90909090, 0x90909090, 0x90909090},
+/* 004FEA30 g_FieldGridInterpolationCallbacks5 */
+__declspec(align(16)) FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5 = {
+    .callbacks = {
+        /* 0 */ (void *)FieldGrid_InterpolateTerrainHeight,
+        /* 1 */ (void *)FieldGrid_InterpolateWaterSurfaceHeight,
+        /* 2 */ (void *)FieldGrid_InterpolateTerrainHeight,
+        /* 3 */ (void *)FieldGrid_InterpolateTerrainHeight,
+        /* 4 */ (void *)FieldGrid_InterpolateTopSurfaceHeight
+    }
 };
 
 __declspec(align(8)) ImageObject_004FFC78 g_ImageObject_004FFC78 = {
@@ -6458,15 +6354,11 @@ __declspec(align(8)) GraphicsFixedVec3 g_TerrainLightDirection = {0};
 /* 005019A4 g_TerrainByteClampLookup */
 __declspec(align(4)) uint8_t *g_TerrainByteClampLookup = 0;
 
-__declspec(align(8)) ImageObject_005019A8 g_ImageObject_005019A8 = {
-    {0}, /* 005019A8 g_TerrainDirectionRecordTable256 */
-    {0},
-};
+/* 005019A8 g_TerrainDirectionRecordTable256 */
+__declspec(align(8)) TerrainDirectionRecord g_TerrainDirectionRecordTable256[256] = {0};
 
-__declspec(align(4)) ImageObject_005039DC g_ImageObject_005039DC = {
-    {0}, /* 005039DC g_TerrainMaterialTextureSets */
-    {0},
-};
+/* 005039DC g_TerrainMaterialTextureSets: one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the original's object runs on to 0x00503A74 with 12 more NULL entries. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
+__declspec(align(4)) GraphicsTextureSet *g_TerrainMaterialTextureSets[38] = {0};
 
 /* 00503A74 g_TerrainPrimaryTextureSet */
 __declspec(align(4)) GraphicsTextureSet *g_TerrainPrimaryTextureSet = 0;
@@ -6527,11 +6419,8 @@ __declspec(align(4)) int32_t g_TerrainHeightBandMinimumDelta = -1024;
 /* 00503B00 g_TerrainAuxHeightMinimum: int32_t minimum (triangle1NormalAngles >> 16) for the auxiliary height/placement scans in world/terrain/height.c (0x3000) */
 __declspec(align(16)) int32_t g_TerrainAuxHeightMinimum = 12288;
 
-__declspec(align(4)) ImageObject_00503B04 g_ImageObject_00503B04 = {
-    8192, /* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
-    {
-        0x90909090, 0x90909090},
-};
+/* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
+__declspec(align(4)) int32_t g_TerrainUnreferencedValue00503B04 = 8192;
 
 __declspec(align(8)) ImageObject_00505F98 g_ImageObject_00505F98 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00505F98 gap */
@@ -6575,20 +6464,14 @@ __declspec(align(16)) ImageObject_0050A340 g_ImageObject_0050A340 = {
 /* 0050A350 g_GraphicsTransformScratchMatrix3x4 */
 __declspec(align(16)) GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4 = {0};
 
-__declspec(align(16)) ImageObject_0050A380 g_ImageObject_0050A380 = {
-    {0}, /* 0050A380 g_GraphicsTransformInputScratchVec3 */
-    {0},
-};
+/* 0050A380 g_GraphicsTransformInputScratchVec3 */
+__declspec(align(16)) GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3 = {0};
 
-__declspec(align(16)) ImageObject_0050A3B0 g_ImageObject_0050A3B0 = {
-    {0}, /* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
-    {0},
-};
+/* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
+__declspec(align(16)) GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3 = {0};
 
-__declspec(align(16)) ImageObject_0050A3E0 g_ImageObject_0050A3E0 = {
-    {0}, /* 0050A3E0 g_GraphicsProjectionScratchVec3 */
-    {0},
-};
+/* 0050A3E0 g_GraphicsProjectionScratchVec3 */
+__declspec(align(16)) GraphicsFixedVec3 g_GraphicsProjectionScratchVec3 = {0};
 
 /* 0050A3F0 g_ModelProjectedBoundsCornerScratch8 */
 __declspec(align(16)) GraphicsProjectedPoint2i g_ModelProjectedBoundsCornerScratch8[8] = {0};
@@ -6874,9 +6757,8 @@ __declspec(align(4)) ImageObject_0050DAC4 g_ImageObject_0050DAC4 = {
     {0},
 };
 
-__declspec(align(4)) ImageObject_0050DCC4 g_ImageObject_0050DCC4 = {
-    {0}, /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
-};
+/* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
+__declspec(align(4)) uint16_t g_ResourceRegistrationDirectoryUtf16[256] = {0};
 
 /* 0050DEC4 u_texte_techno_str_0050dec4 */
 __declspec(align(4)) uint16_t u_texte_techno_str_0050dec4[17] = L"texte\\techno.str";
@@ -7035,10 +6917,8 @@ __declspec(align(16)) RecentTextHistorySlot *g_RecentTextSlotStorage = 0;
 /* 0050F0E4 g_RecentTextEntrySerials */
 __declspec(align(4)) uint32_t g_RecentTextEntrySerials[8] = {0};
 
-__declspec(align(4)) ImageObject_0050F104 g_ImageObject_0050F104 = {
-    L"texte\\neterror.str", /* 0050F104 u_texte_neterror_str_0050f104 */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 0050F104 u_texte_neterror_str_0050f104 */
+__declspec(align(4)) uint16_t u_texte_neterror_str_0050f104[19] = L"texte\\neterror.str";
 
 /* 0050F340 g_GameFactionRuntimeImage */
 __declspec(align(16)) GameFactionRuntimeImage g_GameFactionRuntimeImage = {.tail = {.factionLifecycleStates = {0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1}}};
@@ -9068,9 +8948,8 @@ __declspec(align(4)) FrontendSessionDiscoveryRecord **g_FrontendSessionListRows 
 /* 0053DA88 g_FrontendSessionDiscoveryRecords */
 __declspec(align(8)) FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords = 0;
 
-__declspec(align(4)) ImageObject_0053DA8C g_ImageObject_0053DA8C = {
-    /* 0053DA8C g_FrontendRootInitializationTemplate */
-    {
+/* 0053DA8C g_FrontendRootInitializationTemplate */
+__declspec(align(4)) FrontendUiImage g_FrontendRootInitializationTemplate = {
         { /* +0000 frontendRoot g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
             .vtable = (void *)&g_UiPanelControlVtable,
@@ -11086,7 +10965,6 @@ __declspec(align(4)) ImageObject_0053DA8C g_ImageObject_0053DA8C = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000008, 0x00000000, 0x00002117},
-    },
 };
 
 /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
@@ -11368,17 +11246,18 @@ __declspec(align(4)) ImageObject_00545C72 g_ImageObject_00545C72 = {
 /* 00545E72 s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 */
 __declspec(align(4)) char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
 
-__declspec(align(4)) ImageObject_00545E91 g_ImageObject_00545E91 = {
-    "NAME=\"CLIENT=\"KARTE=\"", /* 00545E91 s_NAME__CLIENT__KARTE___00545e91 */
-};
+/* 00545E91 s_NAME__CLIENT__KARTE___00545e91: Original quirk: the string's terminating NUL (0x00545EA6) is the
+   first byte of the Package_FindEntry output buffer g_LevelPackageFoundEntry; the code passes explicit lengths. */
+__declspec(align(4)) char s_NAME__CLIENT__KARTE___00545e91[21] = "NAME=\"CLIENT=\"KARTE=\"";
+
+/* 00545EA6 g_LevelPackageFoundEntry: LevelPackage_ValidateAndMount's one-entry Package_FindEntry output buffer */
+__declspec(align(4)) PckEntryHeader g_LevelPackageFoundEntry = {0};
 
 /* 005460A6 u_level___lev_005460a6 */
 __declspec(align(4)) uint16_t u_level___lev_005460a6[12] = L"level\\*.lev";
 
-__declspec(align(4)) ImageObject_005460BE g_ImageObject_005460BE = {
-    L"level\\*.str", /* 005460BE u_level___str_005460be */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 005460BE u_level___str_005460be */
+__declspec(align(4)) uint16_t u_level___str_005460be[12] = L"level\\*.str";
 
 __declspec(align(4)) ImageObject_00546BB4 g_ImageObject_00546BB4 = {
     {0x00, 0x00, 0x50, 0x52, 0xE8, 0x13, 0x86, 0xEC, 0xFF, 0x58}, /* 00546BB4 gap */
@@ -11543,45 +11422,35 @@ __declspec(align(8)) uint16_t *g_InGamePlayerListTextScratchUtf16 = 0;
 /* 0054FBDC g_InGamePlayerStatusTextSlots */
 __declspec(align(4)) InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8] = {0};
 
-__declspec(align(4)) ImageObject_0054FFDC g_ImageObject_0054FFDC = {
-    {0}, /* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
-};
+/* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailNameTextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_0055005C g_ImageObject_0055005C = {
-    {0}, /* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
-};
+/* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailArmourTextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_005500DC g_ImageObject_005500DC = {
-    {0}, /* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
-};
+/* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName0TextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_0055015C g_ImageObject_0055015C = {
-    {0}, /* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
-};
+/* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName1TextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_005501DC g_ImageObject_005501DC = {
-    {0}, /* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
-};
+/* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName2TextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_0055025C g_ImageObject_0055025C = {
-    {0}, /* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
-};
+/* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot05Utf16 = {0};
 
-__declspec(align(4)) ImageObject_005502DC g_ImageObject_005502DC = {
-    {0}, /* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
-};
+/* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildXeniteCostTextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_0055035C g_ImageObject_0055035C = {
-    {0}, /* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
-};
+/* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildTimeTextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_005503DC g_ImageObject_005503DC = {
-    {0}, /* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
-};
+/* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_0055045C g_ImageObject_0055045C = {
-    {0}, /* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
-};
+/* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
+__declspec(align(4)) UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16 = {0};
 
 __declspec(align(4)) ImageObject_005504DC g_ImageObject_005504DC = {
     0, /* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16 */
@@ -11589,23 +11458,17 @@ __declspec(align(4)) ImageObject_005504DC g_ImageObject_005504DC = {
     {0},
 };
 
-/* 005504FC g_InGameTechnologyCostRichTextScratch: uint16_t rich-text command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR) that heads the technology cost stream; its 8 payload units are g_InGameTechnologyCostColorWords8, then the xenite cost text follows; patched in as payload 0 of the technology label (ui/ingame/technology.c) */
-__declspec(align(4)) uint16_t g_InGameTechnologyCostRichTextScratch = 32774;
+/* 005504FC g_InGameTechnologyCostRichText: one rich-text stream, patched in as payload 0 of the technology label
+   (ui/ingame/technology.c): [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
+   (005504FE), [9..24] the xenite cost text (0055050E); the interpreter reads on from the colour command into the
+   text */
+__declspec(align(4)) uint16_t g_InGameTechnologyCostRichText[25] = {32774};
 
-/* 005504FE g_InGameTechnologyCostColorWords8 */
-__declspec(align(4)) uint16_t g_InGameTechnologyCostColorWords8[8] = {0};
+/* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
+__declspec(align(4)) UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16 = {0};
 
-__declspec(align(4)) ImageObject_0055050E g_ImageObject_0055050E = {
-    {0}, /* 0055050E g_InGameTechnologyXeniteCostTextUtf16 */
-};
-
-__declspec(align(4)) ImageObject_0055052E g_ImageObject_0055052E = {
-    {0}, /* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
-};
-
-__declspec(align(4)) ImageObject_0055054E g_ImageObject_0055054E = {
-    {0}, /* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
-};
+/* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
+__declspec(align(4)) UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16 = {0};
 
 /* 0055056E g_InGameHudNumberTextUtf16 */
 __declspec(align(4)) uint16_t g_InGameHudNumberTextUtf16[16] = {0};
@@ -11618,9 +11481,8 @@ __declspec(align(4)) ImageObject_0055058E g_ImageObject_0055058E = {
 /* 00550590 g_InGameCountdownTextUtf16 */
 __declspec(align(16)) uint16_t g_InGameCountdownTextUtf16[8] = {0};
 
-__declspec(align(16)) ImageObject_005505A0 g_ImageObject_005505A0 = {
-    /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
-    {
+/* 005505A0 g_InGameRuntimeDefaultImageTemplate */
+__declspec(align(16)) InGameUiImage g_InGameRuntimeDefaultImageTemplate = {
         { /* +0000 inGameRootPanel g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x17C), .parent = UI_TEMPLATE_NO_LINK,
             .vtable = (void *)&g_UiPanelControlVtable,
@@ -15440,8 +15302,6 @@ __declspec(align(16)) ImageObject_005505A0 g_ImageObject_005505A0 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x120},
         {
             0x00000201, 0x0000111D, 0x00000000, 0x0000008C, 0x00000000, 0x0000008D},
-    },
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
 __declspec(align(16)) ImageObject_0055EFB0 g_ImageObject_0055EFB0 = {
@@ -15802,9 +15662,9 @@ __declspec(align(4)) uint16_t u_gfx_panel_tech_gfx_005630fa[19] = L"gfx\\panel\\
 /* 00563120 u_gfx_panel_diagram0_gfx_00563120 */
 __declspec(align(16)) uint16_t u_gfx_panel_diagram0_gfx_00563120[23] = L"gfx\\panel\\diagram0.gfx";
 
-__declspec(align(4)) ImageObject_0056314E g_ImageObject_0056314E = {
-    L"flm\\movie000.flm", /* 0056314E u_flm_movie000_flm_0056314e */
-};
+/* 0056314E u_flm_movie000_flm_0056314e: the notification movie path; the three digits at [9] are overwritten with
+   the movie number before it is opened (gameplay/session/runtime.c) */
+__declspec(align(4)) uint16_t u_flm_movie000_flm_0056314e[17] = L"flm\\movie000.flm";
 
 /* 00563170 u_texte_help_str_00563170 */
 __declspec(align(16)) uint16_t u_texte_help_str_00563170[15] = L"texte\\help.str";
@@ -15818,10 +15678,8 @@ __declspec(align(8)) uint16_t u_texte_tastatur_str_005631b8[19] = L"texte\\tasta
 /* 005631DE g_DeveloperChatPhraseUtf16 */
 __declspec(align(4)) uint16_t g_DeveloperChatPhraseUtf16[32] = L"Oh grosser Thomas, erl\366se mich!";
 
-__declspec(align(4)) ImageObject_0056321E g_ImageObject_0056321E = {
-    L"Hmmm, na gut... ;-)", /* 0056321E u_Hmmm__na_gut________0056321e */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 0056321E u_Hmmm__na_gut________0056321e */
+__declspec(align(4)) uint16_t u_Hmmm__na_gut________0056321e[20] = L"Hmmm, na gut... ;-)";
 
 /* 00563260 g_UiCommandRuntimeFlags */
 __declspec(align(16)) uint32_t g_UiCommandRuntimeFlags = 0;
@@ -16688,10 +16546,8 @@ __declspec(align(8)) uint16_t u_engine_pcx_fnc_00573028[15] = L"engine\\pcx.fnc"
 /* 00573046 u_flm_intro0_flm_00573046 */
 __declspec(align(4)) uint16_t u_flm_intro0_flm_00573046[15] = L"flm\\intro0.flm";
 
-__declspec(align(4)) ImageObject_00573064 g_ImageObject_00573064 = {
-    "NOINTRO", /* 00573064 g_CommandLineOptionNoIntro */
-    {0x90, 0x90, 0x90, 0x90},
-};
+/* 00573064 g_CommandLineOptionNoIntro */
+__declspec(align(4)) char g_CommandLineOptionNoIntro[8] = "NOINTRO";
 
 __declspec(align(8)) ImageObject_00573EE8 g_ImageObject_00573EE8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00573EE8 gap */
@@ -17181,15 +17037,11 @@ __declspec(align(4)) ImageObject_005744AE g_ImageObject_005744AE = {
 /* 005744B4 sz_DDRAW */
 __declspec(align(4)) char sz_DDRAW[6] = "DDRAW";
 
-__declspec(align(4)) ImageObject_005744BA g_ImageObject_005744BA = {
-    "DINPUT", /* 005744BA dynapi_3 */
-    {0x90},
-};
+/* 005744BA dynapi_3 */
+__declspec(align(4)) char dynapi_3[7] = "DINPUT";
 
-__declspec(align(4)) ImageObject_005744C2 g_ImageObject_005744C2 = {
-    "DSOUND", /* 005744C2 dynapi_4 */
-    {0x90},
-};
+/* 005744C2 dynapi_4 */
+__declspec(align(4)) char dynapi_4[7] = "DSOUND";
 
 /* 005744CA sz_GLIDE3X */
 __declspec(align(4)) char sz_GLIDE3X[8] = "GLIDE3X";
@@ -17207,10 +17059,8 @@ __declspec(align(4)) ImageObject_005744E4 g_ImageObject_005744E4 = {
     {0x90},
 };
 
-__declspec(align(4)) ImageObject_005744EC g_ImageObject_005744EC = {
-    "LoadLibraryA", /* 005744EC dynapi_9 */
-    {0x90},
-};
+/* 005744EC dynapi_9 */
+__declspec(align(4)) char dynapi_9[13] = "LoadLibraryA";
 
 __declspec(align(4)) ImageObject_005744FA g_ImageObject_005744FA = {
     "FreeLibrary", /* 005744FA dynapi_10 */
@@ -17242,20 +17092,14 @@ __declspec(align(4)) ImageObject_0057454E g_ImageObject_0057454E = {
     "mciSendCommandA", /* 0057454E dynapi_16 */
 };
 
-__declspec(align(4)) ImageObject_0057455E g_ImageObject_0057455E = {
-    "DirectDrawCreate", /* 0057455E sz_DirectDrawCreate */
-    {0x90},
-};
+/* 0057455E sz_DirectDrawCreate */
+__declspec(align(4)) char sz_DirectDrawCreate[17] = "DirectDrawCreate";
 
-__declspec(align(16)) ImageObject_00574570 g_ImageObject_00574570 = {
-    "DirectDrawEnumerateA", /* 00574570 sz_DirectDrawEnumerateA */
-    {0x90},
-};
+/* 00574570 sz_DirectDrawEnumerateA */
+__declspec(align(16)) char sz_DirectDrawEnumerateA[21] = "DirectDrawEnumerateA";
 
-__declspec(align(4)) ImageObject_00574586 g_ImageObject_00574586 = {
-    "DirectInputCreateA", /* 00574586 dynapi_19 */
-    {0x90},
-};
+/* 00574586 dynapi_19 */
+__declspec(align(4)) char dynapi_19[19] = "DirectInputCreateA";
 
 /* 0057459A dynapi_20 */
 __declspec(align(4)) char dynapi_20[18] = "DirectSoundCreate";
@@ -17263,15 +17107,11 @@ __declspec(align(4)) char dynapi_20[18] = "DirectSoundCreate";
 /* 005745AC dynapi_21 */
 __declspec(align(4)) char dynapi_21[22] = "DirectSoundEnumerateA";
 
-__declspec(align(4)) ImageObject_005745C2 g_ImageObject_005745C2 = {
-    "DirectSoundCaptureCreate", /* 005745C2 dynapi_22 */
-    {0x90},
-};
+/* 005745C2 dynapi_22 */
+__declspec(align(4)) char dynapi_22[25] = "DirectSoundCaptureCreate";
 
-__declspec(align(4)) ImageObject_005745DC g_ImageObject_005745DC = {
-    "DirectSoundCaptureEnumerateA", /* 005745DC dynapi_23 */
-    {0x90},
-};
+/* 005745DC dynapi_23 */
+__declspec(align(4)) char dynapi_23[29] = "DirectSoundCaptureEnumerateA";
 
 __declspec(align(4)) ImageObject_005745FA g_ImageObject_005745FA = {
     "_grAADrawTriangle@24", /* 005745FA dynapi_24 */
@@ -17692,15 +17532,11 @@ __declspec(align(4)) ImageObject_00574D26 g_ImageObject_00574D26 = {
     {0x90},
 };
 
-__declspec(align(16)) ImageObject_00574D40 g_ImageObject_00574D40 = {
-    "accept", /* 00574D40 s_Wsock32Export_accept */
-    {0x90},
-};
+/* 00574D40 s_Wsock32Export_accept */
+__declspec(align(16)) char s_Wsock32Export_accept[7] = "accept";
 
-__declspec(align(8)) ImageObject_00574D48 g_ImageObject_00574D48 = {
-    "bind", /* 00574D48 s_Wsock32Export_bind */
-    {0x90},
-};
+/* 00574D48 s_Wsock32Export_bind */
+__declspec(align(8)) char s_Wsock32Export_bind[5] = "bind";
 
 /* 00574D4E s_Wsock32Export_closesocket */
 __declspec(align(4)) char s_Wsock32Export_closesocket[12] = "closesocket";
@@ -17714,10 +17550,8 @@ __declspec(align(4)) char s_Wsock32Export_getpeername[12] = "getpeername";
 /* 00574D6E s_Wsock32Export_getsockname */
 __declspec(align(4)) char s_Wsock32Export_getsockname[12] = "getsockname";
 
-__declspec(align(4)) ImageObject_00574D7A g_ImageObject_00574D7A = {
-    "getsockopt", /* 00574D7A s_Wsock32Export_getsockopt */
-    {0x90},
-};
+/* 00574D7A s_Wsock32Export_getsockopt */
+__declspec(align(4)) char s_Wsock32Export_getsockopt[11] = "getsockopt";
 
 /* 00574D86 s_Wsock32Export_htonl */
 __declspec(align(4)) char s_Wsock32Export_htonl[6] = "htonl";
@@ -17734,10 +17568,8 @@ __declspec(align(4)) char s_Wsock32Export_inet_ntoa[10] = "inet_ntoa";
 /* 00574DA6 s_Wsock32Export_ioctlsocket */
 __declspec(align(4)) char s_Wsock32Export_ioctlsocket[12] = "ioctlsocket";
 
-__declspec(align(4)) ImageObject_00574DB2 g_ImageObject_00574DB2 = {
-    "listen", /* 00574DB2 s_Wsock32Export_listen */
-    {0x90},
-};
+/* 00574DB2 s_Wsock32Export_listen */
+__declspec(align(4)) char s_Wsock32Export_listen[7] = "listen";
 
 /* 00574DBA s_Wsock32Export_ntohl */
 __declspec(align(4)) char s_Wsock32Export_ntohl[6] = "ntohl";
@@ -17745,45 +17577,29 @@ __declspec(align(4)) char s_Wsock32Export_ntohl[6] = "ntohl";
 /* 00574DC0 s_Wsock32Export_ntohs */
 __declspec(align(16)) char s_Wsock32Export_ntohs[6] = "ntohs";
 
-__declspec(align(4)) ImageObject_00574DC6 g_ImageObject_00574DC6 = {
-    "recv", /* 00574DC6 s_Wsock32Export_recv */
-    {0x90},
-};
+/* 00574DC6 s_Wsock32Export_recv */
+__declspec(align(4)) char s_Wsock32Export_recv[5] = "recv";
 
-__declspec(align(4)) ImageObject_00574DCC g_ImageObject_00574DCC = {
-    "recvfrom", /* 00574DCC s_Wsock32Export_recvfrom */
-    {0x90},
-};
+/* 00574DCC s_Wsock32Export_recvfrom */
+__declspec(align(4)) char s_Wsock32Export_recvfrom[9] = "recvfrom";
 
-__declspec(align(4)) ImageObject_00574DD6 g_ImageObject_00574DD6 = {
-    "select", /* 00574DD6 s_Wsock32Export_select */
-    {0x90},
-};
+/* 00574DD6 s_Wsock32Export_select */
+__declspec(align(4)) char s_Wsock32Export_select[7] = "select";
 
-__declspec(align(4)) ImageObject_00574DDE g_ImageObject_00574DDE = {
-    "send", /* 00574DDE s_Wsock32Export_send */
-    {0x90},
-};
+/* 00574DDE s_Wsock32Export_send */
+__declspec(align(4)) char s_Wsock32Export_send[5] = "send";
 
-__declspec(align(4)) ImageObject_00574DE4 g_ImageObject_00574DE4 = {
-    "sendto", /* 00574DE4 s_Wsock32Export_sendto */
-    {0x90},
-};
+/* 00574DE4 s_Wsock32Export_sendto */
+__declspec(align(4)) char s_Wsock32Export_sendto[7] = "sendto";
 
-__declspec(align(4)) ImageObject_00574DEC g_ImageObject_00574DEC = {
-    "setsockopt", /* 00574DEC s_Wsock32Export_setsockopt */
-    {0x90},
-};
+/* 00574DEC s_Wsock32Export_setsockopt */
+__declspec(align(4)) char s_Wsock32Export_setsockopt[11] = "setsockopt";
 
-__declspec(align(8)) ImageObject_00574DF8 g_ImageObject_00574DF8 = {
-    "shutdown", /* 00574DF8 s_Wsock32Export_shutdown */
-    {0x90},
-};
+/* 00574DF8 s_Wsock32Export_shutdown */
+__declspec(align(8)) char s_Wsock32Export_shutdown[9] = "shutdown";
 
-__declspec(align(4)) ImageObject_00574E02 g_ImageObject_00574E02 = {
-    "socket", /* 00574E02 s_Wsock32Export_socket */
-    {0x90},
-};
+/* 00574E02 s_Wsock32Export_socket */
+__declspec(align(4)) char s_Wsock32Export_socket[7] = "socket";
 
 /* 00574E0A s_Wsock32Export_gethostbyaddr */
 __declspec(align(4)) char s_Wsock32Export_gethostbyaddr[14] = "gethostbyaddr";
@@ -17794,15 +17610,11 @@ __declspec(align(8)) char s_Wsock32Export_gethostbyname[14] = "gethostbyname";
 /* 00574E26 s_Wsock32Export_gethostname */
 __declspec(align(4)) char s_Wsock32Export_gethostname[12] = "gethostname";
 
-__declspec(align(4)) ImageObject_00574E32 g_ImageObject_00574E32 = {
-    "getprotobyname", /* 00574E32 s_Wsock32Export_getprotobyname */
-    {0x90},
-};
+/* 00574E32 s_Wsock32Export_getprotobyname */
+__declspec(align(4)) char s_Wsock32Export_getprotobyname[15] = "getprotobyname";
 
-__declspec(align(4)) ImageObject_00574E42 g_ImageObject_00574E42 = {
-    "getprotobynumber", /* 00574E42 s_Wsock32Export_getprotobynumber */
-    {0x90},
-};
+/* 00574E42 s_Wsock32Export_getprotobynumber */
+__declspec(align(4)) char s_Wsock32Export_getprotobynumber[17] = "getprotobynumber";
 
 /* 00574E54 s_Wsock32Export_getservbyname */
 __declspec(align(4)) char s_Wsock32Export_getservbyname[14] = "getservbyname";
@@ -17816,15 +17628,11 @@ __declspec(align(16)) char s_Wsock32Export_WSAAsyncGetHostByAddr[22] = "WSAAsync
 /* 00574E86 s_Wsock32Export_WSAAsyncGetHostByName */
 __declspec(align(4)) char s_Wsock32Export_WSAAsyncGetHostByName[22] = "WSAAsyncGetHostByName";
 
-__declspec(align(4)) ImageObject_00574E9C g_ImageObject_00574E9C = {
-    "WSAAsyncGetProtoByName", /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
-    {0x90},
-};
+/* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
+__declspec(align(4)) char s_Wsock32Export_WSAAsyncGetProtoByName[23] = "WSAAsyncGetProtoByName";
 
-__declspec(align(4)) ImageObject_00574EB4 g_ImageObject_00574EB4 = {
-    "WSAAsyncGetProtoByNumber", /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
-    {0x90},
-};
+/* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
+__declspec(align(4)) char s_Wsock32Export_WSAAsyncGetProtoByNumber[25] = "WSAAsyncGetProtoByNumber";
 
 /* 00574ECE s_Wsock32Export_WSAAsyncGetServByName */
 __declspec(align(4)) char s_Wsock32Export_WSAAsyncGetServByName[22] = "WSAAsyncGetServByName";
@@ -17832,10 +17640,8 @@ __declspec(align(4)) char s_Wsock32Export_WSAAsyncGetServByName[22] = "WSAAsyncG
 /* 00574EE4 s_Wsock32Export_WSAAsyncGetServByPort */
 __declspec(align(4)) char s_Wsock32Export_WSAAsyncGetServByPort[22] = "WSAAsyncGetServByPort";
 
-__declspec(align(4)) ImageObject_00574EFA g_ImageObject_00574EFA = {
-    "WSAAsyncSelect", /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
-    {0x90},
-};
+/* 00574EFA s_Wsock32Export_WSAAsyncSelect */
+__declspec(align(4)) char s_Wsock32Export_WSAAsyncSelect[15] = "WSAAsyncSelect";
 
 /* 00574F0A s_Wsock32Export_WSACancelAsyncRequest */
 __declspec(align(4)) char s_Wsock32Export_WSACancelAsyncRequest[22] = "WSACancelAsyncRequest";
@@ -17843,10 +17649,8 @@ __declspec(align(4)) char s_Wsock32Export_WSACancelAsyncRequest[22] = "WSACancel
 /* 00574F20 s_Wsock32Export_WSACancelBlockingCall */
 __declspec(align(16)) char s_Wsock32Export_WSACancelBlockingCall[22] = "WSACancelBlockingCall";
 
-__declspec(align(4)) ImageObject_00574F36 g_ImageObject_00574F36 = {
-    "WSACleanup", /* 00574F36 s_Wsock32Export_WSACleanup */
-    {0x90},
-};
+/* 00574F36 s_Wsock32Export_WSACleanup */
+__declspec(align(4)) char s_Wsock32Export_WSACleanup[11] = "WSACleanup";
 
 /* 00574F42 s_Wsock32Export_WSAGetLastError */
 __declspec(align(4)) char s_Wsock32Export_WSAGetLastError[16] = "WSAGetLastError";
@@ -17854,19 +17658,15 @@ __declspec(align(4)) char s_Wsock32Export_WSAGetLastError[16] = "WSAGetLastError
 /* 00574F52 s_Wsock32Export_WSAIsBlocking */
 __declspec(align(4)) char s_Wsock32Export_WSAIsBlocking[14] = "WSAIsBlocking";
 
-__declspec(align(16)) ImageObject_00574F60 g_ImageObject_00574F60 = {
-    "WSASetBlockingHook", /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
-    {0x90},
-};
+/* 00574F60 s_Wsock32Export_WSASetBlockingHook */
+__declspec(align(16)) char s_Wsock32Export_WSASetBlockingHook[19] = "WSASetBlockingHook";
 
 __declspec(align(4)) ImageObject_00574F74 g_ImageObject_00574F74 = {
     "WSASetLastError", /* 00574F74 dynapi_159 */
 };
 
-__declspec(align(4)) ImageObject_00574F84 g_ImageObject_00574F84 = {
-    "WSAStartup", /* 00574F84 s_Wsock32Export_WSAStartup */
-    {0x90},
-};
+/* 00574F84 s_Wsock32Export_WSAStartup */
+__declspec(align(4)) char s_Wsock32Export_WSAStartup[11] = "WSAStartup";
 
 /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
 __declspec(align(16)) char s_Wsock32Export_WSAUnhookBlockingHook[22] = "WSAUnhookBlockingHook";
@@ -18667,10 +18467,8 @@ __declspec(align(16)) uint32_t g_ActiveTextureUploads = 0;
 /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
 __declspec(align(4)) uint32_t g_GraphicsEnumerateAllDevicesFlag = 0;
 
-__declspec(align(8)) ImageObject_00578078 g_ImageObject_00578078 = {
-    "D3DALL", /* 00578078 g_CommandLineOptionD3dAll */
-    {0x90},
-};
+/* 00578078 g_CommandLineOptionD3dAll */
+__declspec(align(8)) char g_CommandLineOptionD3dAll[7] = "D3DALL";
 
 __declspec(align(8)) ImageObject_0057ECC8 g_ImageObject_0057ECC8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0057ECC8 gap */
@@ -18748,10 +18546,8 @@ __declspec(align(4)) int32_t g_GlideSecondBufferOffset = 0;
 /* 0057EE80 g_GlideSecondBufferBase */
 __declspec(align(16)) uint8_t *g_GlideSecondBufferBase = 0;
 
-__declspec(align(4)) ImageObject_0057EE84 g_ImageObject_0057EE84 = {
-    "GLIDE", /* 0057EE84 g_CommandLineOptionGlide */
-    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
-};
+/* 0057EE84 g_CommandLineOptionGlide */
+__declspec(align(4)) char g_CommandLineOptionGlide[6] = "GLIDE";
 
 __declspec(align(8)) ImageObject_00582ED8 g_ImageObject_00582ED8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00582ED8 gap */
@@ -18907,10 +18703,8 @@ __declspec(align(4)) CommandLineArgumentMirrorState500 g_CommandLine = {0};
 /* 00585D1C sz_MainWindowTitle */
 __declspec(align(4)) char sz_MainWindowTitle[15] = " thandor  (TG)";
 
-__declspec(align(4)) ImageObject_00585D2B g_ImageObject_00585D2B = {
-    "thandorCLASS(TG)", /* 00585D2B sz_MainWindowClass */
-    {0x90, 0x90, 0x90, 0x90},
-};
+/* 00585D2B sz_MainWindowClass */
+__declspec(align(4)) char sz_MainWindowClass[17] = "thandorCLASS(TG)";
 
 __declspec(align(16)) ImageObject_00586950 g_ImageObject_00586950 = {
     {0}, /* 00586950 g_LocaleInfoScratch */
@@ -18953,16 +18747,16 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004027A4, 0x004027A8, (const uint8_t *)&g_LocaleFormatCurrentTimeUtf16},
     {0x004027A8, 0x004027AC, (const uint8_t *)&g_LocaleGetPackedCurrentTime},
     {0x004027AC, 0x004027B0, (const uint8_t *)&g_LocaleGetDefaultTelephoneCountryCode},
-    {0x004027B0, 0x004027B4, (const uint8_t *)&g_ImageObject_004027B0},
+    {0x004027B0, 0x004027B4, (const uint8_t *)&g_LocaleMapTelephoneCountryCodeToRegionTagPacked},
     {0x004027B4, 0x004027B8, (const uint8_t *)&g_LocaleCopyDefaultComputerLabelUtf16},
     {0x004027B8, 0x004027BC, (const uint8_t *)&g_CPUDetectFeatures},
     {0x004027BC, 0x004027C0, (const uint8_t *)&g_Utf16StringCompareAsciiCaseInsensitiveFlags},
     {0x004027C0, 0x004027C4, (const uint8_t *)&g_LocaleCountryCodeOverride},
-    {0x004027C4, 0x004027D0, (const uint8_t *)&g_ImageObject_004027C4},
+    {0x004027C4, 0x004027C8, (const uint8_t *)&g_CpuFeatureFlags},
     {0x004027D0, 0x004028D0, (const uint8_t *)&g_FileSystemConfigCharacterNormalizationMap},
-    {0x004028D0, 0x00402B00, (const uint8_t *)&g_ImageObject_004028D0},
+    {0x004028D0, 0x00402ADC, (const uint8_t *)&g_PersistentSettings},
     {0x00403080, 0x004030A0, (const uint8_t *)&g_ImageObject_00403080},
-    {0x004030A0, 0x004030B0, (const uint8_t *)&g_ImageObject_004030A0},
+    {0x004030A0, 0x004030AC, (const uint8_t *)&g_RandomGeneratorState},
     {0x00403158, 0x00403160, (const uint8_t *)&g_ImageObject_00403158},
     {0x00403160, 0x00405160, (const uint8_t *)&g_UiTransferEncryptSboxes},
     {0x00405160, 0x00407160, (const uint8_t *)&g_UiTransferDecryptSboxes},
@@ -18976,11 +18770,11 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00407D1C, 0x00407D20, (const uint8_t *)&g_FatalErrorFallbackHandler},
     {0x00407D20, 0x00407D40, (const uint8_t *)&u_texte_error_str_00407d20},
     {0x00407D40, 0x00407D84, (const uint8_t *)&g_ErrorTextIoInitializationFailed},
-    {0x00407D84, 0x00407E20, (const uint8_t *)&g_ImageObject_00407D84},
+    {0x00407D84, 0x00407E12, (const uint8_t *)&g_ErrorTextHeapAllocationFailed},
     {0x00407E20, 0x00407E24, (const uint8_t *)&g_FatalErrorUiRootTemplate},
     {0x00407E24, 0x00407E28, (const uint8_t *)&g_FatalErrorDialogDismissed},
     {0x00407E28, 0x00407E3C, (const uint8_t *)&g_UiRootCallbacks_00407E28},
-    {0x00407E3C, 0x00407F50, (const uint8_t *)&g_ImageObject_00407E3C},
+    {0x00407E3C, 0x00407F4C, (const uint8_t *)&g_FatalErrorUiRootTemplateImage},
     {0x004080B4, 0x004080C0, (const uint8_t *)&g_ImageObject_004080B4},
     {0x004080C0, 0x004084C0, (const uint8_t *)&g_PckHuffmanSymbolWorkspace256},
     {0x004084C0, 0x0040A4C0, (const uint8_t *)&g_PckHuffmanNodeWorkspace},
@@ -19017,7 +18811,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0040E224, 0x0040E230, (const uint8_t *)&g_PckEncoderTable},
     {0x0040E230, 0x0040E23C, (const uint8_t *)&g_PckDecoderTable},
     {0x0040E23D, 0x0040E255, (const uint8_t *)&u_THANDOR_cfg_0040e23d},
-    {0x0040E255, 0x0040E270, (const uint8_t *)&g_ImageObject_0040E255},
+    {0x0040E255, 0x0040E26B, (const uint8_t *)&u_engine_pck_0040e255},
     {0x0040E270, 0x0040E2B0, (const uint8_t *)&g_DefaultComputerLabelUtf16},
     {0x0040F524, 0x0040F530, (const uint8_t *)&g_ImageObject_0040F524},
     {0x0040F530, 0x0040F550, (const uint8_t *)&g_UiTimedListDriveLetters},
@@ -19027,9 +18821,9 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0040FB50, 0x0040FD50, (const uint8_t *)&g_UiTimedListHierarchyPathScratch},
     {0x0040FD50, 0x0040FF50, (const uint8_t *)&g_UiTimedListHierarchyParentPathScratch},
     {0x0040FF50, 0x0040FF58, (const uint8_t *)&g_WildcardAllFilesUtf16},
-    {0x0040FF58, 0x0040FF70, (const uint8_t *)&g_ImageObject_0040FF58},
+    {0x0040FF58, 0x0040FF66, (const uint8_t *)&g_UiTimedListDriveWildcardUtf16},
     {0x004107E8, 0x004107F0, (const uint8_t *)&g_ImageObject_004107E8},
-    {0x004107F0, 0x004167F0, (const uint8_t *)&g_ImageObject_004107F0},
+    {0x004107F0, 0x00411FF0, (const uint8_t *)&g_CursorInputEvents},
     {0x004167F0, 0x004167F4, (const uint8_t *)&g_CursorInputWriteIndex},
     {0x004167F4, 0x004167F8, (const uint8_t *)&g_CursorInputReadIndex},
     {0x004167F8, 0x004167FC, (const uint8_t *)&g_CursorInputClockValue},
@@ -19058,9 +18852,9 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0041685C, 0x00416860, (const uint8_t *)&g_CursorOverflowTop},
     {0x00416860, 0x00416864, (const uint8_t *)&g_CursorOverflowBottom},
     {0x00416864, 0x00416886, (const uint8_t *)&u_engine_mouse_gfx_00416864},
-    {0x00416886, 0x004168B0, (const uint8_t *)&g_ImageObject_00416886},
+    {0x00416886, 0x004168A8, (const uint8_t *)&u_engine_mouse_dat_00416886},
     {0x004169DC, 0x004169E0, (const uint8_t *)&g_ImageObject_004169DC},
-    {0x004169E0, 0x004171E0, (const uint8_t *)&g_ImageObject_004169E0},
+    {0x004169E0, 0x004171E0, (const uint8_t *)&g_KeyboardEvents},
     {0x004171E0, 0x004171E4, (const uint8_t *)&g_KeyboardWriteIndex},
     {0x004171E4, 0x004171E8, (const uint8_t *)&g_KeyboardReadIndex},
     {0x004171E8, 0x004171EC, (const uint8_t *)&g_KeyboardStateMask},
@@ -19068,7 +18862,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004171F0, 0x00417210, (const uint8_t *)&g_KeyboardSpecialKeyDown},
     {0x00417210, 0x00417214, (const uint8_t *)&g_KeyboardFlushEvents},
     {0x00417214, 0x00417218, (const uint8_t *)&g_KeyboardReadEvent},
-    {0x00417218, 0x00417230, (const uint8_t *)&g_ImageObject_00417218},
+    {0x00417218, 0x00417224, (const uint8_t *)&g_KeyboardAsciiCaseTransformCallbacks3},
     {0x004172E8, 0x00417300, (const uint8_t *)&g_ImageObject_004172E8},
     {0x00417300, 0x00417308, (const uint8_t *)&g_SoundDecodeMmxWordLaneMask0},
     {0x00417308, 0x00417310, (const uint8_t *)&g_SoundDecodeMmxWordLaneMask1},
@@ -19088,7 +18882,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00417358, 0x0041735C, (const uint8_t *)&g_SoundIsVoicePlaying},
     {0x0041735C, 0x00417360, (const uint8_t *)&g_SoundQueryVoice},
     {0x00417360, 0x00417364, (const uint8_t *)&g_SoundSetVoiceGains},
-    {0x00417364, 0x00417570, (const uint8_t *)&g_ImageObject_00417364},
+    {0x00417364, 0x00417564, (const uint8_t *)&g_SoundSampleCoefficientBlock},
     {0x0041A53C, 0x0041A540, (const uint8_t *)&g_ImageObject_0041A53C},
     {0x0041A540, 0x0041A544, (const uint8_t *)&g_NetworkBackendInstanceTable},
     {0x0041A544, 0x0041A548, (const uint8_t *)&g_NetworkBackendInstanceCount},
@@ -19101,7 +18895,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0041A560, 0x0041A564, (const uint8_t *)&g_NetworkBackendSlot5},
     {0x0041A564, 0x0041A568, (const uint8_t *)&g_NetworkBackendSlot6},
     {0x0041A568, 0x0041A56C, (const uint8_t *)&g_NetworkBackendSlot7},
-    {0x0041A56C, 0x0041A580, (const uint8_t *)&g_ImageObject_0041A56C},
+    {0x0041A56C, 0x0041A57C, (const uint8_t *)&g_NetworkLocalEndpoint},
     {0x0041A740, 0x0041A750, (const uint8_t *)&g_ImageObject_0041A740},
     {0x0041A750, 0x0041A768, (const uint8_t *)&g_RichTextColorPaletteArgb},
     {0x0041A768, 0x0041A780, (const uint8_t *)&g_RichTextShadowOffsetPalette},
@@ -19113,7 +18907,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0041A794, 0x0041AF94, (const uint8_t *)&g_TextResourcePageBindings},
     {0x0041AF94, 0x0041AF98, (const uint8_t *)&g_TextResourceOverrides},
     {0x0041AF98, 0x0041AF9C, (const uint8_t *)&g_FontRuntimeBuffer},
-    {0x0041AF9C, 0x0041AFA4, (const uint8_t *)&g_ImageObject_0041AF9C},
+    {0x0041AF9C, 0x0041AFA0, (const uint8_t *)&g_RichTextRuntimeBufferUsedWords},
     {0x0041AFA4, 0x0041AFA8, (const uint8_t *)&g_EmptyTextResourceUtf16},
     {0x0041AFA8, 0x0041AFAC, (const uint8_t *)&g_ImageObject_0041AFA8},
     {0x0041AFAC, 0x0041B028, (const uint8_t *)&u_error__TXT2STR__unknown_characte_0041afac},
@@ -19184,7 +18978,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0041DBE0, 0x0041DC60, (const uint8_t *)&g_ImageObject_0041DBE0},
     {0x0041DDFC, 0x0041DE10, (const uint8_t *)&g_ImageObject_0041DDFC},
     {0x0041DE7C, 0x0041DE80, (const uint8_t *)&g_ImageObject_0041DE7C},
-    {0x0041DE80, 0x0041EE80, (const uint8_t *)&g_ImageObject_0041DE80},
+    {0x0041DE80, 0x0041EE80, (const uint8_t *)&g_PackedLightingLookupTable},
     {0x0041EE80, 0x0041F680, (const uint8_t *)&g_ShadingIntensityScaleMmx},
     {0x0041F680, 0x0041F688, (const uint8_t *)&g_GraphicsShadingRasterizeMmxPackedDwordOneZero},
     {0x0041F688, 0x0041F690, (const uint8_t *)&g_SoftwareBilinearPackedByteClampMask},
@@ -19195,10 +18989,10 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0041F6B0, 0x0041F6B8, (const uint8_t *)&g_TerrainOccupancyMmxPersistentWeights},
     {0x0041F6B8, 0x0041F6C0, (const uint8_t *)&g_TerrainOccupancyMmxCurrentWeights},
     {0x0041F6C0, 0x0041F6C8, (const uint8_t *)&g_FieldGridOccupancyMmxHighBitMask},
-    {0x0041F6C8, 0x0041F6E0, (const uint8_t *)&g_ImageObject_0041F6C8},
+    {0x0041F6C8, 0x0041F6D0, (const uint8_t *)&g_GraphicsShadingMmxPacked3BitPerByteMask},
     {0x0041F6E0, 0x0041F700, (const uint8_t *)&g_SoftwarePixelMmxConstants},
     {0x0041F700, 0x0041F708, (const uint8_t *)&g_VertexColorAlphaPreserveMaskMMX},
-    {0x0041F708, 0x0041F720, (const uint8_t *)&g_ImageObject_0041F708},
+    {0x0041F708, 0x0041F710, (const uint8_t *)&g_VertexColorRgbHalveMaskMMX},
     {0x0041F720, 0x0041FF20, (const uint8_t *)&g_UiScalerSecondPixelWeights},
     {0x0041FF20, 0x00420720, (const uint8_t *)&g_SoftwareBilinearForwardFactors},
     {0x00420720, 0x00420F20, (const uint8_t *)&g_UiScalerFirstPixelWeights},
@@ -19210,11 +19004,11 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00422788, 0x004227A8, (const uint8_t *)&g_GraphicsAdapterFormatScratch1Utf16},
     {0x00422978, 0x004229A0, (const uint8_t *)&g_ImageObject_00422978},
     {0x004229A0, 0x004229B4, (const uint8_t *)&g_UiDisplaySettingsRootCallbacks},
-    {0x004229B4, 0x00423588, (const uint8_t *)&g_ImageObject_004229B4},
+    {0x004229B4, 0x00423588, (const uint8_t *)&g_UiDisplaySettingsRootTemplate},
     {0x00423588, 0x004235D8, (const uint8_t *)&g_UiDisplayModeSelectionActionHandlers20},
     {0x004235D8, 0x004235F8, (const uint8_t *)&g_UiDisplayModeDistinctValueScratch},
     {0x00424324, 0x00424338, (const uint8_t *)&g_UiFourValueDialogRootCallbacks},
-    {0x00424338, 0x004244E0, (const uint8_t *)&g_ImageObject_00424338},
+    {0x00424338, 0x004244DC, (const uint8_t *)&g_UiFourValueDialogTemplateImage},
     {0x00424684, 0x004246A0, (const uint8_t *)&g_ImageObject_00424684},
     {0x004246A0, 0x004846A0, (const uint8_t *)&g_FixedSineQ28},
     {0x00485808, 0x00485814, (const uint8_t *)&g_ImageObject_00485808},
@@ -19263,12 +19057,12 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00485A34, 0x00485A38, (const uint8_t *)&g_ArmyPreviewModelNode},
     {0x00485A40, 0x00485E40, (const uint8_t *)&g_PrimitiveRadixBucketWords},
     {0x00486D8C, 0x00486D90, (const uint8_t *)&g_ImageObject_00486D8C},
-    {0x00486D90, 0x004A6D90, (const uint8_t *)&g_ImageObject_00486D90},
+    {0x00486D90, 0x004A6D90, (const uint8_t *)&g_MovieChromaLumaToArgb},
     {0x004A6D90, 0x004A6D98, (const uint8_t *)&g_MovieDeltaRgbHighNibbleMask2Pixels},
     {0x004A6D98, 0x004A6D9C, (const uint8_t *)&g_ActiveMovie},
     {0x004A6D9C, 0x004A6DA0, (const uint8_t *)&g_MovieDefaultAudioGainQ15},
     {0x004A6DA0, 0x004A6DA4, (const uint8_t *)&g_MovieAlternateAudioGainQ15},
-    {0x004A6DA4, 0x004A6FB0, (const uint8_t *)&g_ImageObject_004A6DA4},
+    {0x004A6DA4, 0x004A6FA4, (const uint8_t *)&g_LooseMoviePathPrefix},
     {0x004A8E60, 0x004A8E70, (const uint8_t *)&g_ImageObject_004A8E60},
     {0x004A8E70, 0x004A8E74, (const uint8_t *)&g_FramebufferAccess},
     {0x004A8E74, 0x004A8E78, (const uint8_t *)&g_CursorSavedBackground},
@@ -19323,8 +19117,8 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004A8F68, 0x004A8F6C, (const uint8_t *)&g_GraphicsPaletteAssetResolveAllocationBase},
     {0x004A8F6C, 0x004A8F80, (const uint8_t *)&g_ImageObject_004A8F6C},
     {0x004AD92C, 0x004AD930, (const uint8_t *)&g_ImageObject_004AD92C},
-    {0x004AD930, 0x004AE130, (const uint8_t *)&g_ImageObject_004AD930},
-    {0x004AE130, 0x004AE230, (const uint8_t *)&g_ImageObject_004AE130},
+    {0x004AD930, 0x004AE130, (const uint8_t *)&g_GraphicsPaletteBankSlots},
+    {0x004AE130, 0x004AE230, (const uint8_t *)&g_GraphicsPaletteRemapBytes},
     {0x004AE95C, 0x004AE960, (const uint8_t *)&g_ImageObject_004AE95C},
     {0x004AE960, 0x004AE964, (const uint8_t *)&g_UiRuntimeRecordRing},
     {0x004AE964, 0x004AE968, (const uint8_t *)&g_UiRuntimeRecordEndpointSlots},
@@ -19342,7 +19136,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004AE9A8, 0x004AE9E8, (const uint8_t *)&g_UiTransferRoundKeys},
     {0x004AE9E8, 0x004AEAE8, (const uint8_t *)&g_UiTransferChunkPacket},
     {0x004AEAE8, 0x004AEB08, (const uint8_t *)&g_UiTransferPingEchoPacket},
-    {0x004AEB08, 0x004AEB10, (const uint8_t *)&g_ImageObject_004AEB08},
+    {0x004AEB08, 0x004AEB0C, (const uint8_t *)&g_UiTransferMailboxTickCounter},
     {0x004AF198, 0x004AF1A0, (const uint8_t *)&g_ImageObject_004AF198},
     {0x004AF1D4, 0x004AF1E0, (const uint8_t *)&g_ImageObject_004AF1D4},
     {0x004AF1E0, 0x004AF1F0, (const uint8_t *)&g_UiTooltipState},
@@ -19352,7 +19146,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004AF1FC, 0x004AF200, (const uint8_t *)&g_UiActionQueueUsedBytes},
     {0x004AF200, 0x004AF204, (const uint8_t *)&g_UiActionQueueEntries},
     {0x004AF204, 0x004AF208, (const uint8_t *)&g_UiRuntimeInitializationCount},
-    {0x004AF208, 0x004AF210, (const uint8_t *)&g_ImageObject_004AF208},
+    {0x004AF208, 0x004AF20C, (const uint8_t *)&g_UiInvalidationSuppressed},
     {0x004AF39C, 0x004AF3B0, (const uint8_t *)&g_ImageObject_004AF39C},
     {0x004B0A20, 0x004B0A30, (const uint8_t *)&g_ImageObject_004B0A20},
     {0x004B0A30, 0x004B0E30, (const uint8_t *)&g_UiActionHandlerPages},
@@ -19376,10 +19170,10 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004B0E74, 0x004B0E78, (const uint8_t *)&g_UiTextStyleSelected},
     {0x004B0E78, 0x004B0E7C, (const uint8_t *)&g_UiTextStyleNormal},
     {0x004B0E7C, 0x004B0E80, (const uint8_t *)&g_UiTextStyleDisabled},
-    {0x004B0E80, 0x004B0E88, (const uint8_t *)&g_ImageObject_004B0E80},
+    {0x004B0E80, 0x004B0E84, (const uint8_t *)&g_UiTextStyleAlternate},
     {0x004B0E88, 0x004B0E8C, (const uint8_t *)&g_UiWindowTitleTextStyle},
     {0x004B0E8C, 0x004B0E90, (const uint8_t *)&g_UiWindowFrameInset},
-    {0x004B0E90, 0x004B0E98, (const uint8_t *)&g_ImageObject_004B0E90},
+    {0x004B0E90, 0x004B0E94, (const uint8_t *)&g_UiListTextStyle},
     {0x004B0E98, 0x004B0E9C, (const uint8_t *)&g_UiTextEditActiveTextStyle},
     {0x004B0E9C, 0x004B0EA0, (const uint8_t *)&g_UiTextEditInactiveTextStyle},
     {0x004B0EA0, 0x004B0EA4, (const uint8_t *)&g_UiTextEditDisabledTextStyle},
@@ -19391,10 +19185,10 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004B0EE0, 0x004B0F06, (const uint8_t *)&g_UiWindowClassTextPathUtf16},
     {0x004B0F06, 0x004B0F24, (const uint8_t *)&g_UiWindowTexturePathUtf16},
     {0x004B0F24, 0x004B0F28, (const uint8_t *)&g_ImageObject_004B0F24},
-    {0x004B0F28, 0x004B0F30, (const uint8_t *)&g_ImageObject_004B0F28},
+    {0x004B0F28, 0x004B0F2C, (const uint8_t *)&g_UiImageControlHoverTarget},
     {0x004B1500, 0x004B1510, (const uint8_t *)&g_ImageObject_004B1500},
     {0x004B15C8, 0x004B15D0, (const uint8_t *)&g_ImageObject_004B15C8},
-    {0x004B15D0, 0x004B1620, (const uint8_t *)&g_ImageObject_004B15D0},
+    {0x004B15D0, 0x004B1618, (const uint8_t *)&g_UiSpriteButtonControlVtable},
     {0x004B1D74, 0x004B1D80, (const uint8_t *)&g_ImageObject_004B1D74},
     {0x004B1D80, 0x004B1DD0, (const uint8_t *)&g_ImageObject_004B1D80},
     {0x004B2734, 0x004B2740, (const uint8_t *)&g_ImageObject_004B2734},
@@ -19424,16 +19218,16 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004B7048, 0x004B7050, (const uint8_t *)&g_ImageObject_004B7048},
     {0x004B7050, 0x004B70A0, (const uint8_t *)&g_ImageObject_004B7050},
     {0x004B7914, 0x004B7920, (const uint8_t *)&g_ImageObject_004B7914},
-    {0x004B7920, 0x004B7970, (const uint8_t *)&g_ImageObject_004B7920},
+    {0x004B7920, 0x004B7968, (const uint8_t *)&g_UiScrollableControlVtable},
     {0x004B9530, 0x004B9580, (const uint8_t *)&g_ImageObject_004B9530},
     {0x004B9E38, 0x004B9E40, (const uint8_t *)&g_ImageObject_004B9E38},
-    {0x004B9E40, 0x004B9E90, (const uint8_t *)&g_ImageObject_004B9E40},
+    {0x004B9E40, 0x004B9E88, (const uint8_t *)&g_UiTextListControlVtable},
     {0x004BA58C, 0x004BA590, (const uint8_t *)&g_ImageObject_004BA58C},
     {0x004BA590, 0x004BA5D8, (const uint8_t *)&g_UiListControlVtable},
     {0x004BA5D8, 0x004BA9D8, (const uint8_t *)&g_ImageObject_004BA5D8},
     {0x004BA9D8, 0x004BADE0, (const uint8_t *)&g_ImageObject_004BA9D8},
     {0x004BB988, 0x004BB990, (const uint8_t *)&g_ImageObject_004BB988},
-    {0x004BB990, 0x004BB9E0, (const uint8_t *)&g_ImageObject_004BB990},
+    {0x004BB990, 0x004BB9D8, (const uint8_t *)&g_UiTimedListControlVtable},
     {0x004BC404, 0x004BC410, (const uint8_t *)&g_ImageObject_004BC404},
     {0x004BC410, 0x004BC460, (const uint8_t *)&g_ImageObject_004BC410},
     {0x004BC564, 0x004BC570, (const uint8_t *)&g_ImageObject_004BC564},
@@ -19444,7 +19238,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004BCF20, 0x004BCF50, (const uint8_t *)&g_GraphicsDirectionInverseTransform},
     {0x004BCF50, 0x004BCF5C, (const uint8_t *)&g_GraphicsDirectionWorld},
     {0x004BCF5C, 0x004BCF68, (const uint8_t *)&g_GraphicsDirectionLocal},
-    {0x004BCF68, 0x004BCF70, (const uint8_t *)&g_ImageObject_004BCF68},
+    {0x004BCF68, 0x004BCF6C, (const uint8_t *)&g_GraphicsIntensityClampTableBase},
     {0x004BD2C4, 0x004BD2E0, (const uint8_t *)&g_ImageObject_004BD2C4},
     {0x004BD2E0, 0x004BD2E4, (const uint8_t *)&g_ModelBoundsMinimumX},
     {0x004BD2E4, 0x004BD2E8, (const uint8_t *)&g_ModelBoundsMaximumX},
@@ -19459,9 +19253,9 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004BD48C, 0x004BD498, (const uint8_t *)&g_ImageObject_004BD48C},
     {0x004BD498, 0x004BD4B0, (const uint8_t *)&g_ImageObject_004BD498},
     {0x004BD880, 0x004BD890, (const uint8_t *)&g_ImageObject_004BD880},
-    {0x004BD890, 0x004BD8B0, (const uint8_t *)&g_ImageObject_004BD890},
+    {0x004BD890, 0x004BD8A4, (const uint8_t *)&g_ArmyPlacementContactKindDispatchTable},
     {0x004BD8B0, 0x004BD8BC, (const uint8_t *)&g_ModelCullViewRelative},
-    {0x004BD8C8, 0x004BD8D0, (const uint8_t *)&g_ImageObject_004BD8C8},
+    {0x004BD8C8, 0x004BD8CC, (const uint8_t *)&g_SpriteAssetRegistryHead},
     {0x004BEA6C, 0x004BEA70, (const uint8_t *)&g_ImageObject_004BEA6C},
     {0x004BEA70, 0x004BEAA0, (const uint8_t *)&g_ModelTransformScratchMatrix},
     {0x004BEAA0, 0x004BEAD0, (const uint8_t *)&g_FixedTransformInputRotationScratch},
@@ -19474,10 +19268,8 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004C2D50, 0x004C6D50, (const uint8_t *)&g_GraphicsShadingCompactRecords},
     {0x004C6D50, 0x004C6D54, (const uint8_t *)&g_GraphicsShadingCompactRecordCount},
     {0x004C6D54, 0x004CAD54, (const uint8_t *)&g_GraphicsShadingNearbyRecords},
-    {0x004CAD54, 0x004CAD60, (const uint8_t *)&g_ImageObject_004CAD54},
-    {0x004CAD60, 0x004CB1A0, (const uint8_t *)&g_ModelDistanceAttenuationMmxNegativeRows},
-    {0x004CB1A0, 0x004CC2B0, (const uint8_t *)&g_ImageObject_004CB1A0},
-    {0x004CC2B0, 0x004CC6F8, (const uint8_t *)&g_ModelLightingScaleMmxMultiplierTable},
+    {0x004CAD54, 0x004CAD58, (const uint8_t *)&g_GraphicsShadingNearbyRecordCount},
+    {0x004CAD60, 0x004CC6F8, (const uint8_t *)&g_ModelLightingMmxMultiplierRows},
     {0x004CC6F8, 0x004CC704, (const uint8_t *)&g_ModelLightingVertexToLightVectorScratch},
     {0x004CC704, 0x004CC710, (const uint8_t *)&g_ModelLightingTransformedSurfaceNormalScratch},
     {0x004CCDE8, 0x004CCE00, (const uint8_t *)&g_ImageObject_004CCDE8},
@@ -19503,7 +19295,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004CD3C0, 0x004CD3D0, (const uint8_t *)&g_ImageObject_004CD3C0},
     {0x004D09F4, 0x004D0A00, (const uint8_t *)&g_ImageObject_004D09F4},
     {0x004D0A00, 0x004D0A04, (const uint8_t *)&g_PrimitiveQueueStorage},
-    {0x004D0A04, 0x004D0A10, (const uint8_t *)&g_ImageObject_004D0A04},
+    {0x004D0A04, 0x004D0A08, (const uint8_t *)&g_PrimitiveQueuePoolCapacity},
     {0x004D11B8, 0x004D11C0, (const uint8_t *)&g_ImageObject_004D11B8},
     {0x004D11C0, 0x004D1234, (const uint8_t *)&g_SoftwareRasterScanState},
     {0x004D1234, 0x004D1238, (const uint8_t *)&g_SoftwareDepthRowStrideBytes},
@@ -19511,12 +19303,12 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x004D123C, 0x004D1240, (const uint8_t *)&g_SoftwareAuxiliaryTargetBase},
     {0x004D1240, 0x004D1244, (const uint8_t *)&g_SoftwareDepthEpoch},
     {0x004D1244, 0x004D1248, (const uint8_t *)&g_SoftwareChainedSetDisplayMode},
-    {0x004D1248, 0x004D1260, (const uint8_t *)&g_ImageObject_004D1248},
+    {0x004D1248, 0x004D124C, (const uint8_t *)&g_SoftwareDrawQueue},
     {0x004D1260, 0x004D1360, (const uint8_t *)&g_SoftwareRasterHandlers16Bit},
     {0x004D1360, 0x004D1460, (const uint8_t *)&g_SoftwareRasterHandlersNon16Bit},
     {0x004D1460, 0x004D1560, (const uint8_t *)&g_SoftwareRasterHandlersAuxiliary},
     {0x004FEA24, 0x004FEA30, (const uint8_t *)&g_ImageObject_004FEA24},
-    {0x004FEA30, 0x004FEA50, (const uint8_t *)&g_ImageObject_004FEA30},
+    {0x004FEA30, 0x004FEA44, (const uint8_t *)&g_FieldGridInterpolationCallbacks5},
     {0x004FFC78, 0x004FFC80, (const uint8_t *)&g_ImageObject_004FFC78},
     {0x004FFC80, 0x005004A0, (const uint8_t *)&g_TerrainProjectedRowSpans},
     {0x00501184, 0x00501190, (const uint8_t *)&g_ImageObject_00501184},
@@ -19525,8 +19317,8 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00501994, 0x00501998, (const uint8_t *)&g_TerrainDirectionalLightSecondaryColor},
     {0x00501998, 0x005019A4, (const uint8_t *)&g_TerrainLightDirection},
     {0x005019A4, 0x005019A8, (const uint8_t *)&g_TerrainByteClampLookup},
-    {0x005019A8, 0x005039DC, (const uint8_t *)&g_ImageObject_005019A8},
-    {0x005039DC, 0x00503A74, (const uint8_t *)&g_ImageObject_005039DC},
+    {0x005019A8, 0x005039A8, (const uint8_t *)&g_TerrainDirectionRecordTable256},
+    {0x005039DC, 0x00503A74, (const uint8_t *)&g_TerrainMaterialTextureSets},
     {0x00503A74, 0x00503A78, (const uint8_t *)&g_TerrainPrimaryTextureSet},
     {0x00503A78, 0x00503A7C, (const uint8_t *)&g_TerrainSoilPacketTablePayload},
     {0x00503A7C, 0x00503A80, (const uint8_t *)&g_TerrainSurfacePacketTablePayload},
@@ -19538,7 +19330,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00503AF8, 0x00503AFC, (const uint8_t *)&g_TerrainHeightBandMaximumDelta},
     {0x00503AFC, 0x00503B00, (const uint8_t *)&g_TerrainHeightBandMinimumDelta},
     {0x00503B00, 0x00503B04, (const uint8_t *)&g_TerrainAuxHeightMinimum},
-    {0x00503B04, 0x00503B10, (const uint8_t *)&g_ImageObject_00503B04},
+    {0x00503B04, 0x00503B08, (const uint8_t *)&g_TerrainUnreferencedValue00503B04},
     {0x00505F98, 0x00505FA0, (const uint8_t *)&g_ImageObject_00505F98},
     {0x00505FA0, 0x005063A0, (const uint8_t *)&g_TerrainHeightDeltaScaleByStepQ12},
     {0x005063A0, 0x005063A4, (const uint8_t *)&g_TerrainScanRowStrideBytes},
@@ -19547,9 +19339,9 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x005063AC, 0x005063B0, (const uint8_t *)&g_TerrainScanReferenceHeight},
     {0x0050A340, 0x0050A350, (const uint8_t *)&g_ImageObject_0050A340},
     {0x0050A350, 0x0050A380, (const uint8_t *)&g_GraphicsTransformScratchMatrix3x4},
-    {0x0050A380, 0x0050A3B0, (const uint8_t *)&g_ImageObject_0050A380},
-    {0x0050A3B0, 0x0050A3E0, (const uint8_t *)&g_ImageObject_0050A3B0},
-    {0x0050A3E0, 0x0050A3F0, (const uint8_t *)&g_ImageObject_0050A3E0},
+    {0x0050A380, 0x0050A38C, (const uint8_t *)&g_GraphicsTransformInputScratchVec3},
+    {0x0050A3B0, 0x0050A3BC, (const uint8_t *)&g_GraphicsTransformOutputScratchVec3},
+    {0x0050A3E0, 0x0050A3EC, (const uint8_t *)&g_GraphicsProjectionScratchVec3},
     {0x0050A3F0, 0x0050A430, (const uint8_t *)&g_ModelProjectedBoundsCornerScratch8},
     {0x0050AE54, 0x0050AE60, (const uint8_t *)&g_ImageObject_0050AE54},
     {0x0050AE60, 0x0050AE64, (const uint8_t *)&g_ModelRaycastMaximumDistance},
@@ -19629,7 +19421,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0050DAAC, 0x0050DAB8, (const uint8_t *)&u_level_0050daac},
     {0x0050DAB8, 0x0050DAC4, (const uint8_t *)&u_level_0050dab8},
     {0x0050DAC4, 0x0050DCC4, (const uint8_t *)&g_ImageObject_0050DAC4},
-    {0x0050DCC4, 0x0050DEC4, (const uint8_t *)&g_ImageObject_0050DCC4},
+    {0x0050DCC4, 0x0050DEC4, (const uint8_t *)&g_ResourceRegistrationDirectoryUtf16},
     {0x0050DEC4, 0x0050DEE6, (const uint8_t *)&u_texte_techno_str_0050dec4},
     {0x0050DEE6, 0x0050DF06, (const uint8_t *)&g_ImageObject_0050DEE6},
     {0x0050DF06, 0x0050DF28, (const uint8_t *)&u_flm_ende0000_flm_0050df06},
@@ -19676,7 +19468,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0050F0DC, 0x0050F0E0, (const uint8_t *)&g_HostCommandBatchSyncSentThisInterval},
     {0x0050F0E0, 0x0050F0E4, (const uint8_t *)&g_RecentTextSlotStorage},
     {0x0050F0E4, 0x0050F104, (const uint8_t *)&g_RecentTextEntrySerials},
-    {0x0050F104, 0x0050F130, (const uint8_t *)&g_ImageObject_0050F104},
+    {0x0050F104, 0x0050F12A, (const uint8_t *)&u_texte_neterror_str_0050f104},
     {0x0050F340, 0x00512D60, (const uint8_t *)&g_GameFactionRuntimeImage},
     {0x00512D60, 0x00512D64, (const uint8_t *)&g_TerrainRegionCollectionStoredCount},
     {0x00512D64, 0x00512D68, (const uint8_t *)&g_TerrainRegionCollectionVisitedCount},
@@ -19945,7 +19737,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0053DA70, 0x0053DA84, (const uint8_t *)&g_UiRootCallbacks_0053DA70},
     {0x0053DA84, 0x0053DA88, (const uint8_t *)&g_FrontendSessionListRows},
     {0x0053DA88, 0x0053DA8C, (const uint8_t *)&g_FrontendSessionDiscoveryRecords},
-    {0x0053DA8C, 0x005433E0, (const uint8_t *)&g_ImageObject_0053DA8C},
+    {0x0053DA8C, 0x005433E0, (const uint8_t *)&g_FrontendRootInitializationTemplate},
     {0x005433E0, 0x00543460, (const uint8_t *)&g_FrontendPlayerRuntimeRecordPointers32},
     {0x00543460, 0x005438EC, (const uint8_t *)&g_ImageObject_00543460},
     {0x005438EC, 0x00543B70, (const uint8_t *)&g_ImageObject_005438EC},
@@ -20000,9 +19792,10 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00545C4E, 0x00545C72, (const uint8_t *)&u_sound_music00_sam_00545c4e},
     {0x00545C72, 0x00545E72, (const uint8_t *)&g_ImageObject_00545C72},
     {0x00545E72, 0x00545E91, (const uint8_t *)&s_SPIELER__SPIEL__NETZWERK__HOST_00545e72},
-    {0x00545E91, 0x005460A6, (const uint8_t *)&g_ImageObject_00545E91},
+    {0x00545E91, 0x00545EA6, (const uint8_t *)&s_NAME__CLIENT__KARTE___00545e91},
+    {0x00545EA6, 0x005460A6, (const uint8_t *)&g_LevelPackageFoundEntry},
     {0x005460A6, 0x005460BE, (const uint8_t *)&u_level___lev_005460a6},
-    {0x005460BE, 0x005460E0, (const uint8_t *)&g_ImageObject_005460BE},
+    {0x005460BE, 0x005460D6, (const uint8_t *)&u_level___str_005460be},
     {0x00546BB4, 0x00546BC0, (const uint8_t *)&g_ImageObject_00546BB4},
     {0x00547660, 0x00547680, (const uint8_t *)&g_ImageObject_00547660},
     {0x00547D88, 0x00547D90, (const uint8_t *)&g_ImageObject_00547D88},
@@ -20043,26 +19836,24 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0054FBD4, 0x0054FBD8, (const uint8_t *)&g_InGameFactionStatusTextScratchUtf16},
     {0x0054FBD8, 0x0054FBDC, (const uint8_t *)&g_InGamePlayerListTextScratchUtf16},
     {0x0054FBDC, 0x0054FFDC, (const uint8_t *)&g_InGamePlayerStatusTextSlots},
-    {0x0054FFDC, 0x0055005C, (const uint8_t *)&g_ImageObject_0054FFDC},
-    {0x0055005C, 0x005500DC, (const uint8_t *)&g_ImageObject_0055005C},
-    {0x005500DC, 0x0055015C, (const uint8_t *)&g_ImageObject_005500DC},
-    {0x0055015C, 0x005501DC, (const uint8_t *)&g_ImageObject_0055015C},
-    {0x005501DC, 0x0055025C, (const uint8_t *)&g_ImageObject_005501DC},
-    {0x0055025C, 0x005502DC, (const uint8_t *)&g_ImageObject_0055025C},
-    {0x005502DC, 0x0055035C, (const uint8_t *)&g_ImageObject_005502DC},
-    {0x0055035C, 0x005503DC, (const uint8_t *)&g_ImageObject_0055035C},
-    {0x005503DC, 0x0055045C, (const uint8_t *)&g_ImageObject_005503DC},
-    {0x0055045C, 0x005504DC, (const uint8_t *)&g_ImageObject_0055045C},
+    {0x0054FFDC, 0x0055005C, (const uint8_t *)&g_InGameSelectionDetailNameTextUtf16},
+    {0x0055005C, 0x005500DC, (const uint8_t *)&g_InGameSelectionDetailArmourTextUtf16},
+    {0x005500DC, 0x0055015C, (const uint8_t *)&g_InGameSelectionDetailWeaponName0TextUtf16},
+    {0x0055015C, 0x005501DC, (const uint8_t *)&g_InGameSelectionDetailWeaponName1TextUtf16},
+    {0x005501DC, 0x0055025C, (const uint8_t *)&g_InGameSelectionDetailWeaponName2TextUtf16},
+    {0x0055025C, 0x005502DC, (const uint8_t *)&g_InGameSelectionDetailTextSlot05Utf16},
+    {0x005502DC, 0x0055035C, (const uint8_t *)&g_InGameSelectionDetailBuildXeniteCostTextUtf16},
+    {0x0055035C, 0x005503DC, (const uint8_t *)&g_InGameSelectionDetailBuildTimeTextUtf16},
+    {0x005503DC, 0x0055045C, (const uint8_t *)&g_InGameSelectionDetailEnergyTextUtf16},
+    {0x0055045C, 0x005504DC, (const uint8_t *)&g_InGameSelectionDetailTextSlot09Utf16},
     {0x005504DC, 0x005504FC, (const uint8_t *)&g_ImageObject_005504DC},
-    {0x005504FC, 0x005504FE, (const uint8_t *)&g_InGameTechnologyCostRichTextScratch},
-    {0x005504FE, 0x0055050E, (const uint8_t *)&g_InGameTechnologyCostColorWords8},
-    {0x0055050E, 0x0055052E, (const uint8_t *)&g_ImageObject_0055050E},
-    {0x0055052E, 0x0055054E, (const uint8_t *)&g_ImageObject_0055052E},
-    {0x0055054E, 0x0055056E, (const uint8_t *)&g_ImageObject_0055054E},
+    {0x005504FC, 0x0055052E, (const uint8_t *)&g_InGameTechnologyCostRichText},
+    {0x0055052E, 0x0055054E, (const uint8_t *)&g_InGameTechnologyEnergyCostTextUtf16},
+    {0x0055054E, 0x0055056E, (const uint8_t *)&g_InGameTechnologyResearchTimeTextUtf16},
     {0x0055056E, 0x0055058E, (const uint8_t *)&g_InGameHudNumberTextUtf16},
     {0x0055058E, 0x00550590, (const uint8_t *)&g_ImageObject_0055058E},
     {0x00550590, 0x005505A0, (const uint8_t *)&g_InGameCountdownTextUtf16},
-    {0x005505A0, 0x0055C990, (const uint8_t *)&g_ImageObject_005505A0},
+    {0x005505A0, 0x0055C984, (const uint8_t *)&g_InGameRuntimeDefaultImageTemplate},
     {0x0055EFB0, 0x0055EFC0, (const uint8_t *)&g_ImageObject_0055EFB0},
     {0x0055EFC0, 0x0055F0C0, (const uint8_t *)&g_InGameCommandQueueRecords},
     {0x0055F0C0, 0x0055F0C4, (const uint8_t *)&g_InGameCommandQueueEnd},
@@ -20114,12 +19905,12 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x005630D0, 0x005630FA, (const uint8_t *)&u_gfx_panel_panel0_gfx_005630d0},
     {0x005630FA, 0x00563120, (const uint8_t *)&u_gfx_panel_tech_gfx_005630fa},
     {0x00563120, 0x0056314E, (const uint8_t *)&u_gfx_panel_diagram0_gfx_00563120},
-    {0x0056314E, 0x00563170, (const uint8_t *)&g_ImageObject_0056314E},
+    {0x0056314E, 0x00563170, (const uint8_t *)&u_flm_movie000_flm_0056314e},
     {0x00563170, 0x0056318E, (const uint8_t *)&u_texte_help_str_00563170},
     {0x0056318E, 0x005631B8, (const uint8_t *)&u_gfx_panel_window_gfx_0056318e},
     {0x005631B8, 0x005631DE, (const uint8_t *)&u_texte_tastatur_str_005631b8},
     {0x005631DE, 0x0056321E, (const uint8_t *)&g_DeveloperChatPhraseUtf16},
-    {0x0056321E, 0x00563260, (const uint8_t *)&g_ImageObject_0056321E},
+    {0x0056321E, 0x00563246, (const uint8_t *)&u_Hmmm__na_gut________0056321e},
     {0x00563260, 0x00563264, (const uint8_t *)&g_UiCommandRuntimeFlags},
     {0x00563264, 0x00563268, (const uint8_t *)&g_InGameSimulationStepTicks},
     {0x00563268, 0x0056326C, (const uint8_t *)&g_InGamePendingSimulationTicks},
@@ -20331,7 +20122,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00573002, 0x00573028, (const uint8_t *)&u_gfx_panel_stat_gfx_00573002},
     {0x00573028, 0x00573046, (const uint8_t *)&u_engine_pcx_fnc_00573028},
     {0x00573046, 0x00573064, (const uint8_t *)&u_flm_intro0_flm_00573046},
-    {0x00573064, 0x00573070, (const uint8_t *)&g_ImageObject_00573064},
+    {0x00573064, 0x0057306C, (const uint8_t *)&g_CommandLineOptionNoIntro},
     {0x00573EE8, 0x00573EF0, (const uint8_t *)&g_ImageObject_00573EE8},
     {0x00573EF0, 0x00573F70, (const uint8_t *)&g_DynamicModules},
     {0x00573F70, 0x00573F74, (const uint8_t *)&g_DynamicModuleCount},
@@ -20441,13 +20232,13 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x005744A4, 0x005744AE, (const uint8_t *)&g_ImageObject_005744A4},
     {0x005744AE, 0x005744B4, (const uint8_t *)&g_ImageObject_005744AE},
     {0x005744B4, 0x005744BA, (const uint8_t *)&sz_DDRAW},
-    {0x005744BA, 0x005744C2, (const uint8_t *)&g_ImageObject_005744BA},
-    {0x005744C2, 0x005744CA, (const uint8_t *)&g_ImageObject_005744C2},
+    {0x005744BA, 0x005744C1, (const uint8_t *)&dynapi_3},
+    {0x005744C2, 0x005744C9, (const uint8_t *)&dynapi_4},
     {0x005744CA, 0x005744D2, (const uint8_t *)&sz_GLIDE3X},
     {0x005744D2, 0x005744DC, (const uint8_t *)&g_ImageObject_005744D2},
     {0x005744DC, 0x005744E4, (const uint8_t *)&s_Wsock32ModuleName},
     {0x005744E4, 0x005744EC, (const uint8_t *)&g_ImageObject_005744E4},
-    {0x005744EC, 0x005744FA, (const uint8_t *)&g_ImageObject_005744EC},
+    {0x005744EC, 0x005744F9, (const uint8_t *)&dynapi_9},
     {0x005744FA, 0x00574506, (const uint8_t *)&g_ImageObject_005744FA},
     {0x00574506, 0x00574514, (const uint8_t *)&g_ImageObject_00574506},
     {0x00574514, 0x00574526, (const uint8_t *)&g_ImageObject_00574514},
@@ -20455,13 +20246,13 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00574532, 0x00574540, (const uint8_t *)&g_ImageObject_00574532},
     {0x00574540, 0x0057454E, (const uint8_t *)&g_ImageObject_00574540},
     {0x0057454E, 0x0057455E, (const uint8_t *)&g_ImageObject_0057454E},
-    {0x0057455E, 0x00574570, (const uint8_t *)&g_ImageObject_0057455E},
-    {0x00574570, 0x00574586, (const uint8_t *)&g_ImageObject_00574570},
-    {0x00574586, 0x0057459A, (const uint8_t *)&g_ImageObject_00574586},
+    {0x0057455E, 0x0057456F, (const uint8_t *)&sz_DirectDrawCreate},
+    {0x00574570, 0x00574585, (const uint8_t *)&sz_DirectDrawEnumerateA},
+    {0x00574586, 0x00574599, (const uint8_t *)&dynapi_19},
     {0x0057459A, 0x005745AC, (const uint8_t *)&dynapi_20},
     {0x005745AC, 0x005745C2, (const uint8_t *)&dynapi_21},
-    {0x005745C2, 0x005745DC, (const uint8_t *)&g_ImageObject_005745C2},
-    {0x005745DC, 0x005745FA, (const uint8_t *)&g_ImageObject_005745DC},
+    {0x005745C2, 0x005745DB, (const uint8_t *)&dynapi_22},
+    {0x005745DC, 0x005745F9, (const uint8_t *)&dynapi_23},
     {0x005745FA, 0x00574610, (const uint8_t *)&g_ImageObject_005745FA},
     {0x00574610, 0x0057462A, (const uint8_t *)&g_ImageObject_00574610},
     {0x0057462A, 0x0057463E, (const uint8_t *)&g_ImageObject_0057462A},
@@ -20554,51 +20345,51 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00574CF8, 0x00574D10, (const uint8_t *)&g_ImageObject_00574CF8},
     {0x00574D10, 0x00574D26, (const uint8_t *)&g_ImageObject_00574D10},
     {0x00574D26, 0x00574D40, (const uint8_t *)&g_ImageObject_00574D26},
-    {0x00574D40, 0x00574D48, (const uint8_t *)&g_ImageObject_00574D40},
-    {0x00574D48, 0x00574D4E, (const uint8_t *)&g_ImageObject_00574D48},
+    {0x00574D40, 0x00574D47, (const uint8_t *)&s_Wsock32Export_accept},
+    {0x00574D48, 0x00574D4D, (const uint8_t *)&s_Wsock32Export_bind},
     {0x00574D4E, 0x00574D5A, (const uint8_t *)&s_Wsock32Export_closesocket},
     {0x00574D5A, 0x00574D62, (const uint8_t *)&s_Wsock32Export_connect},
     {0x00574D62, 0x00574D6E, (const uint8_t *)&s_Wsock32Export_getpeername},
     {0x00574D6E, 0x00574D7A, (const uint8_t *)&s_Wsock32Export_getsockname},
-    {0x00574D7A, 0x00574D86, (const uint8_t *)&g_ImageObject_00574D7A},
+    {0x00574D7A, 0x00574D85, (const uint8_t *)&s_Wsock32Export_getsockopt},
     {0x00574D86, 0x00574D8C, (const uint8_t *)&s_Wsock32Export_htonl},
     {0x00574D8C, 0x00574D92, (const uint8_t *)&s_Wsock32Export_htons},
     {0x00574D92, 0x00574D9C, (const uint8_t *)&s_Wsock32Export_inet_addr},
     {0x00574D9C, 0x00574DA6, (const uint8_t *)&s_Wsock32Export_inet_ntoa},
     {0x00574DA6, 0x00574DB2, (const uint8_t *)&s_Wsock32Export_ioctlsocket},
-    {0x00574DB2, 0x00574DBA, (const uint8_t *)&g_ImageObject_00574DB2},
+    {0x00574DB2, 0x00574DB9, (const uint8_t *)&s_Wsock32Export_listen},
     {0x00574DBA, 0x00574DC0, (const uint8_t *)&s_Wsock32Export_ntohl},
     {0x00574DC0, 0x00574DC6, (const uint8_t *)&s_Wsock32Export_ntohs},
-    {0x00574DC6, 0x00574DCC, (const uint8_t *)&g_ImageObject_00574DC6},
-    {0x00574DCC, 0x00574DD6, (const uint8_t *)&g_ImageObject_00574DCC},
-    {0x00574DD6, 0x00574DDE, (const uint8_t *)&g_ImageObject_00574DD6},
-    {0x00574DDE, 0x00574DE4, (const uint8_t *)&g_ImageObject_00574DDE},
-    {0x00574DE4, 0x00574DEC, (const uint8_t *)&g_ImageObject_00574DE4},
-    {0x00574DEC, 0x00574DF8, (const uint8_t *)&g_ImageObject_00574DEC},
-    {0x00574DF8, 0x00574E02, (const uint8_t *)&g_ImageObject_00574DF8},
-    {0x00574E02, 0x00574E0A, (const uint8_t *)&g_ImageObject_00574E02},
+    {0x00574DC6, 0x00574DCB, (const uint8_t *)&s_Wsock32Export_recv},
+    {0x00574DCC, 0x00574DD5, (const uint8_t *)&s_Wsock32Export_recvfrom},
+    {0x00574DD6, 0x00574DDD, (const uint8_t *)&s_Wsock32Export_select},
+    {0x00574DDE, 0x00574DE3, (const uint8_t *)&s_Wsock32Export_send},
+    {0x00574DE4, 0x00574DEB, (const uint8_t *)&s_Wsock32Export_sendto},
+    {0x00574DEC, 0x00574DF7, (const uint8_t *)&s_Wsock32Export_setsockopt},
+    {0x00574DF8, 0x00574E01, (const uint8_t *)&s_Wsock32Export_shutdown},
+    {0x00574E02, 0x00574E09, (const uint8_t *)&s_Wsock32Export_socket},
     {0x00574E0A, 0x00574E18, (const uint8_t *)&s_Wsock32Export_gethostbyaddr},
     {0x00574E18, 0x00574E26, (const uint8_t *)&s_Wsock32Export_gethostbyname},
     {0x00574E26, 0x00574E32, (const uint8_t *)&s_Wsock32Export_gethostname},
-    {0x00574E32, 0x00574E42, (const uint8_t *)&g_ImageObject_00574E32},
-    {0x00574E42, 0x00574E54, (const uint8_t *)&g_ImageObject_00574E42},
+    {0x00574E32, 0x00574E41, (const uint8_t *)&s_Wsock32Export_getprotobyname},
+    {0x00574E42, 0x00574E53, (const uint8_t *)&s_Wsock32Export_getprotobynumber},
     {0x00574E54, 0x00574E62, (const uint8_t *)&s_Wsock32Export_getservbyname},
     {0x00574E62, 0x00574E70, (const uint8_t *)&s_Wsock32Export_getservbyport},
     {0x00574E70, 0x00574E86, (const uint8_t *)&s_Wsock32Export_WSAAsyncGetHostByAddr},
     {0x00574E86, 0x00574E9C, (const uint8_t *)&s_Wsock32Export_WSAAsyncGetHostByName},
-    {0x00574E9C, 0x00574EB4, (const uint8_t *)&g_ImageObject_00574E9C},
-    {0x00574EB4, 0x00574ECE, (const uint8_t *)&g_ImageObject_00574EB4},
+    {0x00574E9C, 0x00574EB3, (const uint8_t *)&s_Wsock32Export_WSAAsyncGetProtoByName},
+    {0x00574EB4, 0x00574ECD, (const uint8_t *)&s_Wsock32Export_WSAAsyncGetProtoByNumber},
     {0x00574ECE, 0x00574EE4, (const uint8_t *)&s_Wsock32Export_WSAAsyncGetServByName},
     {0x00574EE4, 0x00574EFA, (const uint8_t *)&s_Wsock32Export_WSAAsyncGetServByPort},
-    {0x00574EFA, 0x00574F0A, (const uint8_t *)&g_ImageObject_00574EFA},
+    {0x00574EFA, 0x00574F09, (const uint8_t *)&s_Wsock32Export_WSAAsyncSelect},
     {0x00574F0A, 0x00574F20, (const uint8_t *)&s_Wsock32Export_WSACancelAsyncRequest},
     {0x00574F20, 0x00574F36, (const uint8_t *)&s_Wsock32Export_WSACancelBlockingCall},
-    {0x00574F36, 0x00574F42, (const uint8_t *)&g_ImageObject_00574F36},
+    {0x00574F36, 0x00574F41, (const uint8_t *)&s_Wsock32Export_WSACleanup},
     {0x00574F42, 0x00574F52, (const uint8_t *)&s_Wsock32Export_WSAGetLastError},
     {0x00574F52, 0x00574F60, (const uint8_t *)&s_Wsock32Export_WSAIsBlocking},
-    {0x00574F60, 0x00574F74, (const uint8_t *)&g_ImageObject_00574F60},
+    {0x00574F60, 0x00574F73, (const uint8_t *)&s_Wsock32Export_WSASetBlockingHook},
     {0x00574F74, 0x00574F84, (const uint8_t *)&g_ImageObject_00574F74},
-    {0x00574F84, 0x00574F90, (const uint8_t *)&g_ImageObject_00574F84},
+    {0x00574F84, 0x00574F8F, (const uint8_t *)&s_Wsock32Export_WSAStartup},
     {0x00574F90, 0x00574FA6, (const uint8_t *)&s_Wsock32Export_WSAUnhookBlockingHook},
     {0x00574FA6, 0x00574FAE, (const uint8_t *)&g_ImageObject_00574FA6},
     {0x00574FAE, 0x00574FB4, (const uint8_t *)&g_ImageObject_00574FAE},
@@ -20771,7 +20562,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x00578060, 0x00578070, (const uint8_t *)&g_DisplayFramebufferAccess},
     {0x00578070, 0x00578074, (const uint8_t *)&g_ActiveTextureUploads},
     {0x00578074, 0x00578078, (const uint8_t *)&g_GraphicsEnumerateAllDevicesFlag},
-    {0x00578078, 0x00578080, (const uint8_t *)&g_ImageObject_00578078},
+    {0x00578078, 0x0057807F, (const uint8_t *)&g_CommandLineOptionD3dAll},
     {0x0057ECC8, 0x0057ECD0, (const uint8_t *)&g_ImageObject_0057ECC8},
     {0x0057ECD0, 0x0057ECE0, (const uint8_t *)&g_GlideEnumerationResolutionQuery},
     {0x0057ECE0, 0x0057ECF0, (const uint8_t *)&g_GlideSelectedResolutionQuery},
@@ -20796,7 +20587,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0057EE78, 0x0057EE7C, (const uint8_t *)&g_GlideResidentTextureHead},
     {0x0057EE7C, 0x0057EE80, (const uint8_t *)&g_GlideSecondBufferOffset},
     {0x0057EE80, 0x0057EE84, (const uint8_t *)&g_GlideSecondBufferBase},
-    {0x0057EE84, 0x0057EE90, (const uint8_t *)&g_ImageObject_0057EE84},
+    {0x0057EE84, 0x0057EE8A, (const uint8_t *)&g_CommandLineOptionGlide},
     {0x00582ED8, 0x00582EE0, (const uint8_t *)&g_ImageObject_00582ED8},
     {0x00582EE0, 0x00582EE4, (const uint8_t *)&g_DirectSound},
     {0x00582EE4, 0x00582EE8, (const uint8_t *)&g_PrimarySoundBuffer},
@@ -20834,7 +20625,7 @@ const ThandorImageBlock g_ThandorImageBlocks[] = {
     {0x0058571C, 0x0058581C, (const uint8_t *)&g_TimerSystemState},
     {0x0058581C, 0x00585D1C, (const uint8_t *)&g_CommandLine},
     {0x00585D1C, 0x00585D2B, (const uint8_t *)&sz_MainWindowTitle},
-    {0x00585D2B, 0x00585D40, (const uint8_t *)&g_ImageObject_00585D2B},
+    {0x00585D2B, 0x00585D3C, (const uint8_t *)&sz_MainWindowClass},
     {0x00586950, 0x00586A70, (const uint8_t *)&g_ImageObject_00586950},
     {0x00586A70, 0x00586B70, (const uint8_t *)&g_LocaleSystemState},
     {0x005873BC, 0x00587400, (const uint8_t *)&g_ImageObject_005873BC},

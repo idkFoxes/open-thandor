@@ -13,6 +13,16 @@
 
 /* Submodule: graphics/render/model. */
 
+/* Rows of g_ModelLightingMmxMultiplierRows (one table in the original, 0x004CAD60..0x004CC6F8). Both vertex
+   lighting paths index it with a signed row relative to a base row, so negative indices read the rows before it. */
+#define MODEL_LIGHTING_MMX_ROW_COUNT 819
+/* 0x004CAD60: row 0 = distance attenuation row -136 (former g_ModelDistanceAttenuationMmxNegativeRows) */
+#define MODEL_DISTANCE_ATTENUATION_NEGATIVE_ROW0 0
+/* 0x004CB1A0: ModelRender_ComputeVertexIntensityDefaultPath's base, indexed by the light-facing dot >> 21 */
+#define MODEL_DISTANCE_ATTENUATION_ROW0 136
+/* 0x004CC2B0: ModelRender_ComputeVertexIntensityScaledPath's base, indexed by (dot / lightingScaleQ12) >> 9 */
+#define MODEL_LIGHTING_SCALE_ROW0 682
+
 /* ModelRuntimeNode.runtimeFlags bits */
 #ifndef MODEL_RUNTIME_FLAG_APPLY_SCALE
 #define MODEL_RUNTIME_FLAG_APPLY_SCALE 0x800 /* ModelRender_PrepareProjectedVertex scales every vertex by

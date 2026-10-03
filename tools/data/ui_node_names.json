@@ -137,11 +137,11 @@
  "FatalErrorUiImage": {
   "0x0000": {
    "name": "FatalErrorPanel",
-   "note": "Panel root of the fatal error dialog; g_FatalErrorRichTextLeft/Right lie in its rect/offset fields."
+   "note": "Panel root of the fatal error dialog; its leftOffset/rightOffset give the text wrap width."
   },
   "0x0058": {
    "name": "ErrorMessageText",
-   "note": "Rich text area showing the error; g_FatalErrorRichTextTop/Bottom and g_FatalErrorRichTextStream lie inside this node."
+   "note": "Rich text area showing the error (a UiWrappedTextControl); its leftOffset/rightOffset narrow the wrap width, its text is set in the template image."
   },
   "0x00B4": {
    "name": "OkButton",

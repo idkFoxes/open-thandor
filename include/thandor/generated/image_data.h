@@ -38,36 +38,21 @@ extern LocaleFormatTimeFieldsUtf16Proc *g_LocaleFormatTimeFieldsUtf16; /* 004027
 extern LocaleFormatCurrentTimeUtf16Proc *g_LocaleFormatCurrentTimeUtf16; /* 004027A4 g_LocaleFormatCurrentTimeUtf16 */
 extern LocaleGetPackedCurrentTimeProc *g_LocaleGetPackedCurrentTime; /* 004027A8 g_LocaleGetPackedCurrentTime */
 extern LocaleGetTelephoneCountryCodeProc *g_LocaleGetDefaultTelephoneCountryCode; /* 004027AC g_LocaleGetDefaultTelephoneCountryCode */
-typedef struct ImageObject_004027B0 {
-    uint32_t at_g_LocaleMapTelephoneCountryCodeToRegionTagPacked[1]; /* 004027B0 g_LocaleMapTelephoneCountryCodeToRegionTagPacked: Function-pointer slot at 0x004027B0 statically holding Locale_MapTelephoneCountryCodeToRegionTagPacked (telephone country code -> packed ASCII region tag); sits between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16, no code reference to the slot found. */
-} ImageObject_004027B0;
-extern ImageObject_004027B0 g_ImageObject_004027B0;
+extern LocaleRegionTagPacked (*g_LocaleMapTelephoneCountryCodeToRegionTagPacked)(LocaleTelephoneCountryCode countryCode); /* 004027B0 g_LocaleMapTelephoneCountryCodeToRegionTagPacked: Function-pointer slot at 0x004027B0 statically holding Locale_MapTelephoneCountryCodeToRegionTagPacked (telephone country code -> packed ASCII region tag); sits between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16, no code reference to the slot found. */
 extern LocaleCopyDefaultComputerLabelUtf16Proc *g_LocaleCopyDefaultComputerLabelUtf16; /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
 extern CpuDetectFeaturesProc *g_CPUDetectFeatures; /* 004027B8 g_CPUDetectFeatures */
 extern pointer g_Utf16StringCompareAsciiCaseInsensitiveFlags; /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlags */
 extern uint32_t g_LocaleCountryCodeOverride; /* 004027C0 g_LocaleCountryCodeOverride */
-typedef struct ImageObject_004027C4 {
-    uint32_t at_g_CpuFeatureFlags; /* 004027C4 g_CpuFeatureFlags */
-    uint32_t at_g_CpuFeatureFlags_rest[2]; /* beyond the declared type */
-} ImageObject_004027C4;
-extern ImageObject_004027C4 g_ImageObject_004027C4;
+extern uint32_t g_CpuFeatureFlags; /* 004027C4 g_CpuFeatureFlags */
 extern uint8_t g_FileSystemConfigCharacterNormalizationMap[256]; /* 004027D0 g_FileSystemConfigCharacterNormalizationMap: uint8_t[256] byte map applied to every non-separator character of the file-system config text in FileSystem_Init: identity except a-z -> A-Z and the CP437 lowercase accented letters -> their uppercase forms (case folding). */
-typedef struct ImageObject_004028D0 {
-    PersistentSettingsRuntime at_g_PersistentSettings; /* 004028D0 g_PersistentSettings */
-    uint32_t at_g_PersistentSettings_rest[9]; /* beyond the declared type */
-} ImageObject_004028D0;
-extern ImageObject_004028D0 g_ImageObject_004028D0;
+extern PersistentSettingsRuntime g_PersistentSettings; /* 004028D0 g_PersistentSettings */
 
 /* original 0x00403080-0x004030B0 */
 typedef struct ImageObject_00403080 {
     uint8_t at_gap_00403080[32]; /* 00403080 gap */
 } ImageObject_00403080;
 extern ImageObject_00403080 g_ImageObject_00403080;
-typedef struct ImageObject_004030A0 {
-    RandomGeneratorState at_g_RandomGeneratorState; /* 004030A0 g_RandomGeneratorState */
-    uint32_t at_g_RandomGeneratorState_rest[1]; /* beyond the declared type */
-} ImageObject_004030A0;
-extern ImageObject_004030A0 g_ImageObject_004030A0;
+extern RandomGeneratorState g_RandomGeneratorState; /* 004030A0 g_RandomGeneratorState */
 
 /* original 0x00403158-0x00407160 */
 typedef struct ImageObject_00403158 {
@@ -91,19 +76,11 @@ extern FatalErrorPassThroughProc *g_FatalErrorReportHandler; /* 00407D18 g_Fatal
 extern FatalErrorPassThroughProc *g_FatalErrorFallbackHandler; /* 00407D1C g_FatalErrorFallbackHandler */
 extern uint16_t u_texte_error_str_00407d20[16]; /* 00407D20 u_texte_error_str_00407d20 */
 extern uint16_t g_ErrorTextIoInitializationFailed[34]; /* 00407D40 g_ErrorTextIoInitializationFailed */
-typedef struct ImageObject_00407D84 {
-    uint16_t at_g_ErrorTextHeapAllocationFailed[71]; /* 00407D84 g_ErrorTextHeapAllocationFailed */
-    uint8_t at_g_ErrorTextHeapAllocationFailed_padding[14];
-} ImageObject_00407D84;
-extern ImageObject_00407D84 g_ImageObject_00407D84;
+extern uint16_t g_ErrorTextHeapAllocationFailed[71]; /* 00407D84 g_ErrorTextHeapAllocationFailed */
 extern UiRootNode *g_FatalErrorUiRootTemplate; /* 00407E20 g_FatalErrorUiRootTemplate */
 extern uint32_t g_FatalErrorDialogDismissed; /* 00407E24 g_FatalErrorDialogDismissed */
 extern UiRootCallbacks g_UiRootCallbacks_00407E28; /* 00407E28 g_UiRootCallbacks_00407E28 */
-typedef struct ImageObject_00407E3C {
-    FatalErrorUiImage at_g_FatalErrorUiRootTemplateImage; /* 00407E3C g_FatalErrorUiRootTemplateImage */
-    uint8_t at_g_FatalErrorUiRootTemplateImage_padding[4]; /* alignment padding after the template */
-} ImageObject_00407E3C;
-extern ImageObject_00407E3C g_ImageObject_00407E3C;
+extern FatalErrorUiImage g_FatalErrorUiRootTemplateImage; /* 00407E3C g_FatalErrorUiRootTemplateImage */
 
 /* original 0x004080B4-0x0040A4C0 */
 typedef struct ImageObject_004080B4 {
@@ -152,11 +129,7 @@ extern PckMountSlot g_PackageMountSlots[1024]; /* 0040B224 g_PackageMountSlots *
 extern PckCodecProc *g_PckEncoderTable[3]; /* 0040E224 g_PckEncoderTable */
 extern PckCodecProc *g_PckDecoderTable[3]; /* 0040E230 g_PckDecoderTable */
 extern uint16_t u_THANDOR_cfg_0040e23d[12]; /* 0040E23D u_THANDOR_cfg_0040e23d */
-typedef struct ImageObject_0040E255 {
-    uint16_t at_u_engine_pck_0040e255[11]; /* 0040E255 u_engine_pck_0040e255 */
-    uint8_t at_u_engine_pck_0040e255_padding[5];
-} ImageObject_0040E255;
-extern ImageObject_0040E255 g_ImageObject_0040E255;
+extern uint16_t u_engine_pck_0040e255[11]; /* 0040E255 u_engine_pck_0040e255 */
 extern uint16_t g_DefaultComputerLabelUtf16[32]; /* 0040E270 g_DefaultComputerLabelUtf16 */
 
 /* original 0x0040F524-0x0040FF70 */
@@ -171,22 +144,14 @@ extern WidePathBuffer256 g_UiTimedListSecondaryPathScratch; /* 0040F950 g_UiTime
 extern WidePathBuffer256 g_UiTimedListHierarchyPathScratch; /* 0040FB50 g_UiTimedListHierarchyPathScratch */
 extern WidePathBuffer256 g_UiTimedListHierarchyParentPathScratch; /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
 extern uint16_t g_WildcardAllFilesUtf16[4]; /* 0040FF50 g_WildcardAllFilesUtf16 */
-typedef struct ImageObject_0040FF58 {
-    uint16_t at_g_UiTimedListDriveWildcardUtf16[7]; /* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
-    uint8_t at_g_UiTimedListDriveWildcardUtf16_padding[10];
-} ImageObject_0040FF58;
-extern ImageObject_0040FF58 g_ImageObject_0040FF58;
+extern uint16_t g_UiTimedListDriveWildcardUtf16[7]; /* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
 
 /* original 0x004107E8-0x004168B0 */
 typedef struct ImageObject_004107E8 {
     uint8_t at_gap_004107E8[8]; /* 004107E8 gap */
 } ImageObject_004107E8;
 extern ImageObject_004107E8 g_ImageObject_004107E8;
-typedef struct ImageObject_004107F0 {
-    GraphicsCursorInputEvent18 at_g_CursorInputEvents[256]; /* 004107F0 g_CursorInputEvents */
-    uint32_t at_g_CursorInputEvents_rest[4608]; /* beyond the declared type */
-} ImageObject_004107F0;
-extern ImageObject_004107F0 g_ImageObject_004107F0;
+extern GraphicsCursorInputEvent18 g_CursorInputEvents[256]; /* 004107F0 g_CursorInputEvents */
 extern uint32_t g_CursorInputWriteIndex; /* 004167F0 g_CursorInputWriteIndex */
 extern uint32_t g_CursorInputReadIndex; /* 004167F4 g_CursorInputReadIndex */
 extern uint32_t g_CursorInputClockValue; /* 004167F8 g_CursorInputClockValue */
@@ -215,22 +180,14 @@ extern uint32_t g_CursorOverflowRight; /* 00416858 g_CursorOverflowRight */
 extern uint32_t g_CursorOverflowTop; /* 0041685C g_CursorOverflowTop */
 extern uint32_t g_CursorOverflowBottom; /* 00416860 g_CursorOverflowBottom */
 extern uint16_t u_engine_mouse_gfx_00416864[17]; /* 00416864 u_engine_mouse_gfx_00416864 */
-typedef struct ImageObject_00416886 {
-    uint16_t at_u_engine_mouse_dat_00416886[17]; /* 00416886 u_engine_mouse_dat_00416886 */
-    uint8_t at_u_engine_mouse_dat_00416886_padding[8];
-} ImageObject_00416886;
-extern ImageObject_00416886 g_ImageObject_00416886;
+extern uint16_t u_engine_mouse_dat_00416886[17]; /* 00416886 u_engine_mouse_dat_00416886 */
 
 /* original 0x004169DC-0x00417230 */
 typedef struct ImageObject_004169DC {
     uint8_t at_gap_004169DC[4]; /* 004169DC gap */
 } ImageObject_004169DC;
 extern ImageObject_004169DC g_ImageObject_004169DC;
-typedef struct ImageObject_004169E0 {
-    KeyboardInputEvent at_g_KeyboardEvents[64]; /* 004169E0 g_KeyboardEvents */
-    uint32_t at_g_KeyboardEvents_rest[384]; /* beyond the declared type */
-} ImageObject_004169E0;
-extern ImageObject_004169E0 g_ImageObject_004169E0;
+extern KeyboardInputEvent g_KeyboardEvents[256]; /* 004169E0 g_KeyboardEvents; the ring uses only the first 64 */
 extern KeyboardEventRingIndex g_KeyboardWriteIndex; /* 004171E0 g_KeyboardWriteIndex */
 extern KeyboardEventRingIndex g_KeyboardReadIndex; /* 004171E4 g_KeyboardReadIndex */
 extern uint32_t g_KeyboardStateMask; /* 004171E8 g_KeyboardStateMask */
@@ -238,11 +195,7 @@ extern uint32_t g_KeyboardToggleLatchMask; /* 004171EC g_KeyboardToggleLatchMask
 extern uint8_t g_KeyboardSpecialKeyDown[32]; /* 004171F0 g_KeyboardSpecialKeyDown */
 extern KeyboardFlushEventsProc *g_KeyboardFlushEvents; /* 00417210 g_KeyboardFlushEvents */
 extern KeyboardReadEventProc *g_KeyboardReadEvent; /* 00417214 g_KeyboardReadEvent */
-typedef struct ImageObject_00417218 {
-    KeyboardAsciiCaseTransformCallbackTable3 at_g_KeyboardAsciiCaseTransformCallbacks3; /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
-    uint32_t at_g_KeyboardAsciiCaseTransformCallbacks3_rest[3]; /* beyond the declared type */
-} ImageObject_00417218;
-extern ImageObject_00417218 g_ImageObject_00417218;
+extern KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3; /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
 
 /* original 0x004172E8-0x00417570 */
 typedef struct ImageObject_004172E8 {
@@ -267,11 +220,7 @@ extern SoundStopAllVoicesProc *g_SoundStopAllVoices; /* 00417354 g_SoundStopAllV
 extern SoundIsVoicePlayingProc *g_SoundIsVoicePlaying; /* 00417358 g_SoundIsVoicePlaying */
 extern SoundQueryVoiceRegsProc *g_SoundQueryVoice; /* 0041735C g_SoundQueryVoice */
 extern SoundSetVoiceGainsProc *g_SoundSetVoiceGains; /* 00417360 g_SoundSetVoiceGains */
-typedef struct ImageObject_00417364 {
-    short at_g_SoundSampleCoefficientBlock[256]; /* 00417364 g_SoundSampleCoefficientBlock */
-    uint32_t at_g_SoundSampleCoefficientBlock_rest[3]; /* beyond the declared type */
-} ImageObject_00417364;
-extern ImageObject_00417364 g_ImageObject_00417364;
+extern short g_SoundSampleCoefficientBlock[256]; /* 00417364 g_SoundSampleCoefficientBlock */
 
 /* original 0x0041A53C-0x0041A580 */
 typedef struct ImageObject_0041A53C {
@@ -289,11 +238,7 @@ extern NetworkBackendReceiveCallback *g_NetworkBackendSlot4; /* 0041A55C g_Netwo
 extern NetworkBackendSendCallback *g_NetworkBackendSlot5; /* 0041A560 g_NetworkBackendSlot5 */
 extern NetworkBackendParseEndpointCallback *g_NetworkBackendSlot6; /* 0041A564 g_NetworkBackendSlot6 */
 extern NetworkBackendFormatAddressCallback *g_NetworkBackendSlot7; /* 0041A568 g_NetworkBackendSlot7 */
-typedef struct ImageObject_0041A56C {
-    UiTransferEndpointDescriptor at_g_NetworkLocalEndpoint; /* 0041A56C g_NetworkLocalEndpoint */
-    uint32_t at_g_NetworkLocalEndpoint_rest[1]; /* beyond the declared type */
-} ImageObject_0041A56C;
-extern ImageObject_0041A56C g_ImageObject_0041A56C;
+extern UiTransferEndpointDescriptor g_NetworkLocalEndpoint; /* 0041A56C g_NetworkLocalEndpoint */
 
 /* original 0x0041A740-0x0041B080 */
 typedef struct ImageObject_0041A740 {
@@ -319,11 +264,7 @@ extern uint32_t g_RichTextSavedShadowOffset; /* 0041A790 g_RichTextSavedShadowOf
 extern TextResourcePageBinding g_TextResourcePageBindings[256]; /* 0041A794 g_TextResourcePageBindings */
 extern TextResourceOverrideTable *g_TextResourceOverrides; /* 0041AF94 g_TextResourceOverrides */
 extern uint8_t *g_FontRuntimeBuffer; /* 0041AF98 g_FontRuntimeBuffer */
-typedef struct ImageObject_0041AF9C {
-    uint32_t at_g_RichTextRuntimeBufferUsedWords; /* 0041AF9C g_RichTextRuntimeBufferUsedWords */
-    uint32_t at_g_RichTextRuntimeBufferUsedWords_rest[1]; /* beyond the declared type */
-} ImageObject_0041AF9C;
-extern ImageObject_0041AF9C g_ImageObject_0041AF9C;
+extern uint32_t g_RichTextRuntimeBufferUsedWords; /* 0041AF9C g_RichTextRuntimeBufferUsedWords */
 extern uint16_t g_EmptyTextResourceUtf16[2]; /* 0041AFA4 g_EmptyTextResourceUtf16 */
 typedef struct ImageObject_0041AFA8 {
     uint8_t at_g_MissingTextResourceFallbackStream; /* 0041AFA8 g_MissingTextResourceFallbackStream */
@@ -645,10 +586,7 @@ typedef struct ImageObject_0041DE7C {
     uint8_t at_gap_0041DE7C[4]; /* 0041DE7C gap */
 } ImageObject_0041DE7C;
 extern ImageObject_0041DE7C g_ImageObject_0041DE7C;
-typedef struct ImageObject_0041DE80 {
-    uint32_t at_g_PackedLightingLookupTable[1024]; /* 0041DE80 g_PackedLightingLookupTable */
-} ImageObject_0041DE80;
-extern ImageObject_0041DE80 g_ImageObject_0041DE80;
+extern uint64_t g_PackedLightingLookupTable[512]; /* 0041DE80 g_PackedLightingLookupTable */
 extern SoftwareBgraWordLanes g_ShadingIntensityScaleMmx[256]; /* 0041EE80 g_ShadingIntensityScaleMmx */
 extern uint64_t g_GraphicsShadingRasterizeMmxPackedDwordOneZero; /* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
 extern uint64_t g_SoftwareBilinearPackedByteClampMask; /* 0041F688 g_SoftwareBilinearPackedByteClampMask */
@@ -659,18 +597,10 @@ extern uint64_t g_TerrainOccupancyMmxPackedScale0280; /* 0041F6A8 g_TerrainOccup
 extern uint64_t g_TerrainOccupancyMmxPersistentWeights; /* 0041F6B0 g_TerrainOccupancyMmxPersistentWeights */
 extern uint64_t g_TerrainOccupancyMmxCurrentWeights; /* 0041F6B8 g_TerrainOccupancyMmxCurrentWeights */
 extern uint64_t g_FieldGridOccupancyMmxHighBitMask; /* 0041F6C0 g_FieldGridOccupancyMmxHighBitMask */
-typedef struct ImageObject_0041F6C8 {
-    uint64_t at_g_GraphicsShadingMmxPacked3BitPerByteMask; /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
-    uint32_t at_g_GraphicsShadingMmxPacked3BitPerByteMask_rest[4]; /* beyond the declared type */
-} ImageObject_0041F6C8;
-extern ImageObject_0041F6C8 g_ImageObject_0041F6C8;
+extern uint64_t g_GraphicsShadingMmxPacked3BitPerByteMask; /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
 extern SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants; /* 0041F6E0 g_SoftwarePixelMmxConstants */
 extern uint64_t g_VertexColorAlphaPreserveMaskMMX; /* 0041F700 g_VertexColorAlphaPreserveMaskMMX */
-typedef struct ImageObject_0041F708 {
-    uint64_t at_g_VertexColorRgbHalveMaskMMX; /* 0041F708 g_VertexColorRgbHalveMaskMMX */
-    uint32_t at_g_VertexColorRgbHalveMaskMMX_rest[4]; /* beyond the declared type */
-} ImageObject_0041F708;
-extern ImageObject_0041F708 g_ImageObject_0041F708;
+extern uint64_t g_VertexColorRgbHalveMaskMMX; /* 0041F708 g_VertexColorRgbHalveMaskMMX */
 extern SoftwareBgraWordLanes g_UiScalerSecondPixelWeights[256]; /* 0041F720 g_UiScalerSecondPixelWeights */
 extern SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[256]; /* 0041FF20 g_SoftwareBilinearForwardFactors */
 extern SoftwareBgraWordLanes g_UiScalerFirstPixelWeights[256]; /* 00420720 g_UiScalerFirstPixelWeights */
@@ -690,10 +620,7 @@ typedef struct ImageObject_00422978 {
 } ImageObject_00422978;
 extern ImageObject_00422978 g_ImageObject_00422978;
 extern UiRootCallbacks g_UiDisplaySettingsRootCallbacks; /* 004229A0 g_UiDisplaySettingsRootCallbacks */
-typedef struct ImageObject_004229B4 {
-    DisplaySettingsUiImage at_g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
-} ImageObject_004229B4;
-extern ImageObject_004229B4 g_ImageObject_004229B4;
+extern DisplaySettingsUiImage g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
 extern UiDisplayModeSelectionActionHandlerTable g_UiDisplayModeSelectionActionHandlers20; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
 /* 004235D8 g_UiDisplayModeDistinctValueScratch: the ascending list of distinct values (bit depths,
    resolutions, adapters) that UiDisplaySettings_OpenAndPopulateModeSelection sorts in, 0xFFFFFFFF = empty */
@@ -701,11 +628,7 @@ extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch[8];
 
 /* original 0x00424324-0x004244E0 */
 extern UiRootCallbacks g_UiFourValueDialogRootCallbacks; /* 00424324 g_UiFourValueDialogRootCallbacks */
-typedef struct ImageObject_00424338 {
-    FourValueDialogUiImage at_g_UiFourValueDialogTemplateImage; /* 00424338 g_UiFourValueDialogTemplateImage */
-    uint8_t at_g_UiFourValueDialogTemplateImage_padding[4]; /* alignment padding after the template */
-} ImageObject_00424338;
-extern ImageObject_00424338 g_ImageObject_00424338;
+extern FourValueDialogUiImage g_UiFourValueDialogTemplateImage; /* 00424338 g_UiFourValueDialogTemplateImage */
 
 /* original 0x00424684-0x004846A0 */
 typedef struct ImageObject_00424684 {
@@ -777,19 +700,12 @@ typedef struct ImageObject_00486D8C {
     uint8_t at_gap_00486D8C[4]; /* 00486D8C gap */
 } ImageObject_00486D8C;
 extern ImageObject_00486D8C g_ImageObject_00486D8C;
-typedef struct ImageObject_00486D90 {
-    uint32_t at_g_MovieChromaLumaToArgb[32768]; /* 00486D90 g_MovieChromaLumaToArgb */
-} ImageObject_00486D90;
-extern ImageObject_00486D90 g_ImageObject_00486D90;
+extern uint32_t g_MovieChromaLumaToArgb[1024][32]; /* 00486D90 g_MovieChromaLumaToArgb */
 extern uint64_t g_MovieDeltaRgbHighNibbleMask2Pixels; /* 004A6D90 g_MovieDeltaRgbHighNibbleMask2Pixels */
 extern MovieRuntime *g_ActiveMovie; /* 004A6D98 g_ActiveMovie */
 extern MovieAudioGainQ15 g_MovieDefaultAudioGainQ15; /* 004A6D9C g_MovieDefaultAudioGainQ15 */
 extern MovieAudioGainQ15 g_MovieAlternateAudioGainQ15; /* 004A6DA0 g_MovieAlternateAudioGainQ15 */
-typedef struct ImageObject_004A6DA4 {
-    WidePathBuffer256 at_g_LooseMoviePathPrefix; /* 004A6DA4 g_LooseMoviePathPrefix */
-    uint32_t at_g_LooseMoviePathPrefix_rest[3]; /* beyond the declared type */
-} ImageObject_004A6DA4;
-extern ImageObject_004A6DA4 g_ImageObject_004A6DA4;
+extern WidePathBuffer256 g_LooseMoviePathPrefix; /* 004A6DA4 g_LooseMoviePathPrefix */
 
 /* original 0x004A8E60-0x004A8F80 */
 typedef struct ImageObject_004A8E60 {
@@ -858,14 +774,8 @@ typedef struct ImageObject_004AD92C {
     uint8_t at_gap_004AD92C[4]; /* 004AD92C gap */
 } ImageObject_004AD92C;
 extern ImageObject_004AD92C g_ImageObject_004AD92C;
-typedef struct ImageObject_004AD930 {
-    uint32_t at_g_GraphicsPaletteBankSlots[512]; /* 004AD930 g_GraphicsPaletteBankSlots */
-} ImageObject_004AD930;
-extern ImageObject_004AD930 g_ImageObject_004AD930;
-typedef struct ImageObject_004AE130 {
-    uint8_t at_g_GraphicsPaletteRemapBytes[256]; /* 004AE130 g_GraphicsPaletteRemapBytes */
-} ImageObject_004AE130;
-extern ImageObject_004AE130 g_ImageObject_004AE130;
+extern uint32_t g_GraphicsPaletteBankSlots[512]; /* 004AD930 g_GraphicsPaletteBankSlots */
+extern uint8_t g_GraphicsPaletteRemapBytes[256]; /* 004AE130 g_GraphicsPaletteRemapBytes */
 
 /* original 0x004AE95C-0x004AEB10 */
 typedef struct ImageObject_004AE95C {
@@ -888,11 +798,7 @@ extern UiTransferMailboxState g_UiTransferMailbox; /* 004AE990 g_UiTransferMailb
 extern uint32_t g_UiTransferRoundKeys[16]; /* 004AE9A8 g_UiTransferRoundKeys: uint32_t[16] packet cipher round keys (UiTransfer_EncryptPacketBlocks/DecryptPacketBlocks take this as the 16-key table; keys 12..15 at 0x004AE9D8 were read by Ghidra as the text "mohTG sakere!!!e"). */
 extern UiRuntimeRecord g_UiTransferChunkPacket; /* 004AE9E8 g_UiTransferChunkPacket: mailbox chunk packet (0x10031 request / 0x80030 chunk, 0x100 bytes): header (sequence token at 0x004AE9EC), payload = chunk offset (0x004AE9F8), transfer byte count (0x004AE9FC), chunk data (0x004AEA00, 58 dwords). */
 extern FrontendPacket10032HostValue g_UiTransferPingEchoPacket; /* 004AEAE8 g_UiTransferPingEchoPacket: ping answer packet 0x10033 (same layout as the 0x10032 ping): header (sequence token at 0x004AEAEC), echoed tick (0x004AEAF8). */
-typedef struct ImageObject_004AEB08 {
-    UiTransferMailboxTickCounter at_g_UiTransferMailboxTickCounter; /* 004AEB08 g_UiTransferMailboxTickCounter */
-    uint32_t at_g_UiTransferMailboxTickCounter_rest[1]; /* beyond the declared type */
-} ImageObject_004AEB08;
-extern ImageObject_004AEB08 g_ImageObject_004AEB08;
+extern UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter; /* 004AEB08 g_UiTransferMailboxTickCounter */
 
 /* original 0x004AF198-0x004AF1A0 */
 typedef struct ImageObject_004AF198 {
@@ -912,11 +818,7 @@ extern UiDirtyRectEntry *g_UiDirtyRectEntries; /* 004AF1F8 g_UiDirtyRectEntries 
 extern UiActionQueueUsedBytes g_UiActionQueueUsedBytes; /* 004AF1FC g_UiActionQueueUsedBytes */
 extern UiActionQueueEntry *g_UiActionQueueEntries; /* 004AF200 g_UiActionQueueEntries */
 extern uint32_t g_UiRuntimeInitializationCount; /* 004AF204 g_UiRuntimeInitializationCount */
-typedef struct ImageObject_004AF208 {
-    uint32_t at_g_UiInvalidationSuppressed; /* 004AF208 g_UiInvalidationSuppressed */
-    uint32_t at_g_UiInvalidationSuppressed_rest[1]; /* beyond the declared type */
-} ImageObject_004AF208;
-extern ImageObject_004AF208 g_ImageObject_004AF208;
+extern uint32_t g_UiInvalidationSuppressed; /* 004AF208 g_UiInvalidationSuppressed */
 
 /* original 0x004AF39C-0x004AF3B0 */
 typedef struct ImageObject_004AF39C {
@@ -950,18 +852,10 @@ extern int32_t g_UiWindowResizeBorderThickness; /* 004B0E70 g_UiWindowResizeBord
 extern UiPackedTextStyle g_UiTextStyleSelected; /* 004B0E74 g_UiTextStyleSelected: UiPackedTextStyle, 0x10000 (palette byte 1): text style of the selected/highlighted row or item (src/ui/controls/text.c). */
 extern uint32_t g_UiTextStyleNormal; /* 004B0E78 g_UiTextStyleNormal */
 extern UiPackedTextStyle g_UiTextStyleDisabled; /* 004B0E7C g_UiTextStyleDisabled: UiPackedTextStyle, 0x20000 (palette byte 2): text style of disabled items (src/ui/controls/text.c). */
-typedef struct ImageObject_004B0E80 {
-    uint32_t at_g_UiTextStyleAlternate; /* 004B0E80 g_UiTextStyleAlternate */
-    uint32_t at_g_UiTextStyleAlternate_rest[1]; /* beyond the declared type */
-} ImageObject_004B0E80;
-extern ImageObject_004B0E80 g_ImageObject_004B0E80;
+extern uint32_t g_UiTextStyleAlternate; /* 004B0E80 g_UiTextStyleAlternate */
 extern uint32_t g_UiWindowTitleTextStyle; /* 004B0E88 g_UiWindowTitleTextStyle */
 extern int32_t g_UiWindowFrameInset; /* 004B0E8C g_UiWindowFrameInset */
-typedef struct ImageObject_004B0E90 {
-    uint32_t at_g_UiListTextStyle; /* 004B0E90 g_UiListTextStyle */
-    uint32_t at_g_UiListTextStyle_rest[1]; /* beyond the declared type */
-} ImageObject_004B0E90;
-extern ImageObject_004B0E90 g_ImageObject_004B0E90;
+extern uint32_t g_UiListTextStyle; /* 004B0E90 g_UiListTextStyle */
 extern uint32_t g_UiTextEditActiveTextStyle; /* 004B0E98 g_UiTextEditActiveTextStyle */
 extern uint32_t g_UiTextEditInactiveTextStyle; /* 004B0E9C g_UiTextEditInactiveTextStyle */
 extern uint32_t g_UiTextEditDisabledTextStyle; /* 004B0EA0 g_UiTextEditDisabledTextStyle */
@@ -977,11 +871,7 @@ typedef struct ImageObject_004B0F24 {
     uint8_t at_g_UiPointerCaptureButton_rest_tail[3];
 } ImageObject_004B0F24;
 extern ImageObject_004B0F24 g_ImageObject_004B0F24;
-typedef struct ImageObject_004B0F28 {
-    UiImageControl * at_g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
-    uint32_t at_g_UiImageControlHoverTarget_rest[1]; /* beyond the declared type */
-} ImageObject_004B0F28;
-extern ImageObject_004B0F28 g_ImageObject_004B0F28;
+extern UiImageControl * g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
 
 /* original 0x004B1500-0x004B1510 */
 typedef struct ImageObject_004B1500 {
@@ -994,11 +884,7 @@ typedef struct ImageObject_004B15C8 {
     uint8_t at_gap_004B15C8[8]; /* 004B15C8 gap */
 } ImageObject_004B15C8;
 extern ImageObject_004B15C8 g_ImageObject_004B15C8;
-typedef struct ImageObject_004B15D0 {
-    UiNodeVtable at_g_UiSpriteButtonControlVtable; /* 004B15D0 g_UiSpriteButtonControlVtable */
-    uint32_t at_g_UiSpriteButtonControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B15D0;
-extern ImageObject_004B15D0 g_ImageObject_004B15D0;
+extern UiNodeVtable g_UiSpriteButtonControlVtable; /* 004B15D0 g_UiSpriteButtonControlVtable */
 
 /* original 0x004B1D74-0x004B1DD0 */
 typedef struct ImageObject_004B1D74 {
@@ -1160,11 +1046,7 @@ typedef struct ImageObject_004B7914 {
     uint8_t at_gap_004B7914[12]; /* 004B7914 gap */
 } ImageObject_004B7914;
 extern ImageObject_004B7914 g_ImageObject_004B7914;
-typedef struct ImageObject_004B7920 {
-    UiNodeVtable at_g_UiScrollableControlVtable; /* 004B7920 g_UiScrollableControlVtable */
-    uint32_t at_g_UiScrollableControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B7920;
-extern ImageObject_004B7920 g_ImageObject_004B7920;
+extern UiNodeVtable g_UiScrollableControlVtable; /* 004B7920 g_UiScrollableControlVtable */
 
 /* original 0x004B9530-0x004B9580 */
 typedef struct ImageObject_004B9530 {
@@ -1178,11 +1060,7 @@ typedef struct ImageObject_004B9E38 {
     uint8_t at_gap_004B9E38[8]; /* 004B9E38 gap */
 } ImageObject_004B9E38;
 extern ImageObject_004B9E38 g_ImageObject_004B9E38;
-typedef struct ImageObject_004B9E40 {
-    UiNodeVtable at_g_UiTextListControlVtable; /* 004B9E40 g_UiTextListControlVtable */
-    uint32_t at_g_UiTextListControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004B9E40;
-extern ImageObject_004B9E40 g_ImageObject_004B9E40;
+extern UiNodeVtable g_UiTextListControlVtable; /* 004B9E40 g_UiTextListControlVtable */
 
 /* original 0x004BA58C-0x004BADE0 */
 typedef struct ImageObject_004BA58C {
@@ -1208,11 +1086,7 @@ typedef struct ImageObject_004BB988 {
     uint8_t at_gap_004BB988[8]; /* 004BB988 gap */
 } ImageObject_004BB988;
 extern ImageObject_004BB988 g_ImageObject_004BB988;
-typedef struct ImageObject_004BB990 {
-    UiNodeVtable at_g_UiTimedListControlVtable; /* 004BB990 g_UiTimedListControlVtable */
-    uint32_t at_g_UiTimedListControlVtable_rest[2]; /* beyond the declared type */
-} ImageObject_004BB990;
-extern ImageObject_004BB990 g_ImageObject_004BB990;
+extern UiNodeVtable g_UiTimedListControlVtable; /* 004BB990 g_UiTimedListControlVtable */
 
 /* original 0x004BC404-0x004BC460 */
 typedef struct ImageObject_004BC404 {
@@ -1255,11 +1129,7 @@ extern ImageObject_004BCF14 g_ImageObject_004BCF14;
 extern GraphicsFixedMatrix3x4 g_GraphicsDirectionInverseTransform; /* 004BCF20 g_GraphicsDirectionInverseTransform */
 extern GraphicsFixedVec3 g_GraphicsDirectionWorld; /* 004BCF50 g_GraphicsDirectionWorld */
 extern GraphicsFixedVec3 g_GraphicsDirectionLocal; /* 004BCF5C g_GraphicsDirectionLocal */
-typedef struct ImageObject_004BCF68 {
-    uint32_t at_g_GraphicsIntensityClampTableBase; /* 004BCF68 g_GraphicsIntensityClampTableBase */
-    uint32_t at_g_GraphicsIntensityClampTableBase_rest[1]; /* beyond the declared type */
-} ImageObject_004BCF68;
-extern ImageObject_004BCF68 g_ImageObject_004BCF68;
+extern uint32_t g_GraphicsIntensityClampTableBase; /* 004BCF68 g_GraphicsIntensityClampTableBase */
 
 /* original 0x004BD2C4-0x004BD310 */
 typedef struct ImageObject_004BD2C4 {
@@ -1309,17 +1179,9 @@ typedef struct ImageObject_004BD880 {
     uint8_t at_gap_004BD880[16]; /* 004BD880 gap */
 } ImageObject_004BD880;
 extern ImageObject_004BD880 g_ImageObject_004BD880;
-typedef struct ImageObject_004BD890 {
-    ArmyPlacementContactCallbackTable5 at_g_ArmyPlacementContactKindDispatchTable; /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
-    uint32_t at_g_ArmyPlacementContactKindDispatchTable_rest[3]; /* beyond the declared type */
-} ImageObject_004BD890;
-extern ImageObject_004BD890 g_ImageObject_004BD890;
+extern ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable; /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
 extern GraphicsFixedVec3 g_ModelCullViewRelative; /* 004BD8B0 g_ModelCullViewRelative */
-typedef struct ImageObject_004BD8C8 {
-    SpriteAssetHeader * at_g_SpriteAssetRegistryHead; /* 004BD8C8 g_SpriteAssetRegistryHead */
-    uint32_t at_g_SpriteAssetRegistryHead_rest[1]; /* beyond the declared type */
-} ImageObject_004BD8C8;
-extern ImageObject_004BD8C8 g_ImageObject_004BD8C8;
+extern SpriteAssetHeader * g_SpriteAssetRegistryHead; /* 004BD8C8 g_SpriteAssetRegistryHead */
 
 /* original 0x004BEA6C-0x004BEB20 */
 typedef struct ImageObject_004BEA6C {
@@ -1345,17 +1207,8 @@ extern GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256]; /* 004
 extern GraphicsShadingRuntimeRecord g_GraphicsShadingCompactRecords[256]; /* 004C2D50 g_GraphicsShadingCompactRecords */
 extern GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount; /* 004C6D50 g_GraphicsShadingCompactRecordCount */
 extern GraphicsShadingRuntimeRecord g_GraphicsShadingNearbyRecords[256]; /* 004C6D54 g_GraphicsShadingNearbyRecords */
-typedef struct ImageObject_004CAD54 {
-    GraphicsShadingRecordCount at_g_GraphicsShadingNearbyRecordCount; /* 004CAD54 g_GraphicsShadingNearbyRecordCount: GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelDistanceAttenuationMmxNegativeRows. */
-    uint32_t at_g_GraphicsShadingNearbyRecordCount_rest[2]; /* beyond the declared type */
-} ImageObject_004CAD54;
-extern ImageObject_004CAD54 g_ImageObject_004CAD54;
-extern SoftwareBgraWordLanes g_ModelDistanceAttenuationMmxNegativeRows[136]; /* 004CAD60 g_ModelDistanceAttenuationMmxNegativeRows: SoftwareBgraWordLanes[136]: rows -136..-1 of g_ModelDistanceAttenuationMmx, which ModelRender_ComputeVertexIntensityDefaultPath indexes with the signed light-facing dot >> 21; B/G/R lanes 0x007F (row -1) rising by 0x80 to 0x3F7F, then 0x3FFF, alpha lane 0x4000; PMULHW multipliers. */
-typedef struct ImageObject_004CB1A0 {
-    SoftwareBgraWordLanes at_g_ModelDistanceAttenuationMmx[546]; /* 004CB1A0 g_ModelDistanceAttenuationMmx */
-} ImageObject_004CB1A0;
-extern ImageObject_004CB1A0 g_ImageObject_004CB1A0;
-extern SoftwareBgraWordLanes g_ModelLightingScaleMmxMultiplierTable[137]; /* 004CC2B0 g_ModelLightingScaleMmxMultiplierTable: SoftwareBgraWordLanes[137]: PMULHW multipliers for ModelRender_ComputeVertexIntensityScaledPath, indexed by (dot / lightingScaleQ12) >> 9 (signed; negative rows fall into g_ModelDistanceAttenuationMmx before it); B/G/R lanes 0x1FFF at row 0 falling by 0x80 to 0x007F, then 0, alpha lane 0x4000. */
+extern GraphicsShadingRecordCount g_GraphicsShadingNearbyRecordCount; /* 004CAD54 g_GraphicsShadingNearbyRecordCount: GraphicsShadingRecordCount (4 bytes, 0 in the image): number of valid g_GraphicsShadingNearbyRecords, set by GraphicsShadingRuntime_CollectNearbyRecords, read by the model vertex lighting. Followed by 8 bytes of 0x90 filler and g_ModelLightingMmxMultiplierRows. */
+extern SoftwareBgraWordLanes g_ModelLightingMmxMultiplierRows[819]; /* 004CAD60 g_ModelLightingMmxMultiplierRows: PMULHW multipliers (alpha lane 0x4000) of the model vertex lighting; rows 0..135 = distance attenuation rows -136..-1 (B/G/R 0x007F at -1 rising by 0x80 to 0x3F7F, then 0x3FFF), rows 136..681 = distance attenuation from MODEL_DISTANCE_ATTENUATION_ROW0 (0x004CB1A0; ModelRender_ComputeVertexIntensityDefaultPath, signed dot >> 21), rows 682..818 = scaled-lighting multipliers from MODEL_LIGHTING_SCALE_ROW0 (0x004CC2B0; ModelRender_ComputeVertexIntensityScaledPath, signed (dot / lightingScaleQ12) >> 9; B/G/R 0x1FFF falling by 0x80 to 0x007F, then 0). See graphics/render/model.h. */
 extern GraphicsFixedVec3 g_ModelLightingVertexToLightVectorScratch; /* 004CC6F8 g_ModelLightingVertexToLightVectorScratch */
 extern GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch; /* 004CC704 g_ModelLightingTransformedSurfaceNormalScratch */
 
@@ -1396,11 +1249,7 @@ typedef struct ImageObject_004D09F4 {
 } ImageObject_004D09F4;
 extern ImageObject_004D09F4 g_ImageObject_004D09F4;
 extern GraphicsPrimitiveQueue *g_PrimitiveQueueStorage; /* 004D0A00 g_PrimitiveQueueStorage */
-typedef struct ImageObject_004D0A04 {
-    uint32_t at_g_PrimitiveQueuePoolCapacity; /* 004D0A04 g_PrimitiveQueuePoolCapacity */
-    uint32_t at_g_PrimitiveQueuePoolCapacity_rest[2]; /* beyond the declared type */
-} ImageObject_004D0A04;
-extern ImageObject_004D0A04 g_ImageObject_004D0A04;
+extern uint32_t g_PrimitiveQueuePoolCapacity; /* 004D0A04 g_PrimitiveQueuePoolCapacity */
 
 /* original 0x004D11B8-0x004D1560 */
 typedef struct ImageObject_004D11B8 {
@@ -1413,11 +1262,7 @@ extern int32_t *g_SoftwareDepthBuffer; /* 004D1238 g_SoftwareDepthBuffer */
 extern void *g_SoftwareAuxiliaryTargetBase; /* 004D123C g_SoftwareAuxiliaryTargetBase */
 extern int32_t g_SoftwareDepthEpoch; /* 004D1240 g_SoftwareDepthEpoch */
 extern SoftwareDisplayModeHookProc *g_SoftwareChainedSetDisplayMode; /* 004D1244 g_SoftwareChainedSetDisplayMode */
-typedef struct ImageObject_004D1248 {
-    SoftwareDrawQueueProc * at_g_SoftwareDrawQueue; /* 004D1248 g_SoftwareDrawQueue */
-    uint32_t at_g_SoftwareDrawQueue_rest[5]; /* beyond the declared type */
-} ImageObject_004D1248;
-extern ImageObject_004D1248 g_ImageObject_004D1248;
+extern SoftwareDrawQueueProc *g_SoftwareDrawQueue; /* 004D1248 g_SoftwareDrawQueue */
 extern SoftwareRasterHandler *g_SoftwareRasterHandlers16Bit[64]; /* 004D1260 g_SoftwareRasterHandlers16Bit */
 extern SoftwareRasterHandler *g_SoftwareRasterHandlersNon16Bit[64]; /* 004D1360 g_SoftwareRasterHandlersNon16Bit */
 extern SoftwareRasterHandler *g_SoftwareRasterHandlersAuxiliary[64]; /* 004D1460 g_SoftwareRasterHandlersAuxiliary */
@@ -1427,11 +1272,7 @@ typedef struct ImageObject_004FEA24 {
     uint8_t at_gap_004FEA24[12]; /* 004FEA24 gap */
 } ImageObject_004FEA24;
 extern ImageObject_004FEA24 g_ImageObject_004FEA24;
-typedef struct ImageObject_004FEA30 {
-    FieldGridInterpolationCallbackTable5 at_g_FieldGridInterpolationCallbacks5; /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
-    uint32_t at_g_FieldGridInterpolationCallbacks5_rest[3]; /* beyond the declared type */
-} ImageObject_004FEA30;
-extern ImageObject_004FEA30 g_ImageObject_004FEA30;
+extern FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5; /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
 
 /* original 0x004FFC78-0x005004A0 */
 typedef struct ImageObject_004FFC78 {
@@ -1450,16 +1291,8 @@ extern PackedArgb32 g_TerrainDirectionalLightColorLut[257]; /* 00501590 g_Terrai
 extern uint32_t g_TerrainDirectionalLightSecondaryColor; /* 00501994 g_TerrainDirectionalLightSecondaryColor */
 extern GraphicsFixedVec3 g_TerrainLightDirection; /* 00501998 g_TerrainLightDirection: Q28 unit vector */
 extern uint8_t *g_TerrainByteClampLookup; /* 005019A4 g_TerrainByteClampLookup */
-typedef struct ImageObject_005019A8 {
-    TerrainDirectionRecord at_g_TerrainDirectionRecordTable256[256]; /* 005019A8 g_TerrainDirectionRecordTable256 */
-    uint32_t at_g_TerrainDirectionRecordTable256_rest[13]; /* beyond the declared type */
-} ImageObject_005019A8;
-extern ImageObject_005019A8 g_ImageObject_005019A8;
-typedef struct ImageObject_005039DC {
-    GraphicsTextureSet * at_g_TerrainMaterialTextureSets[26]; /* 005039DC g_TerrainMaterialTextureSets */
-    uint32_t at_g_TerrainMaterialTextureSets_rest[12]; /* beyond the declared type */
-} ImageObject_005039DC;
-extern ImageObject_005039DC g_ImageObject_005039DC;
+extern TerrainDirectionRecord g_TerrainDirectionRecordTable256[256]; /* 005019A8 g_TerrainDirectionRecordTable256 */
+extern GraphicsTextureSet *g_TerrainMaterialTextureSets[38]; /* 005039DC g_TerrainMaterialTextureSets: one texture set per terrain material (26 used, TERRAIN_MATERIAL_COUNT); the original's object runs on to 0x00503A74 with 12 more NULL entries. Original quirk: UiCommandMatrix_SelectIndex fills twelve swatches from a page base that can reach 15, so it reads entry 26 (always NULL, an empty swatch). */
 extern GraphicsTextureSet *g_TerrainPrimaryTextureSet; /* 00503A74 g_TerrainPrimaryTextureSet */
 extern void *g_TerrainSoilPacketTablePayload; /* 00503A78 g_TerrainSoilPacketTablePayload */
 extern void *g_TerrainSurfacePacketTablePayload; /* 00503A7C g_TerrainSurfacePacketTablePayload */
@@ -1471,11 +1304,7 @@ extern TerrainMaterialSuffixEntry g_TerrainMaterialTextureSuffixLettersUtf16AtoZ
 extern int32_t g_TerrainHeightBandMaximumDelta; /* 00503AF8 g_TerrainHeightBandMaximumDelta */
 extern int32_t g_TerrainHeightBandMinimumDelta; /* 00503AFC g_TerrainHeightBandMinimumDelta */
 extern int32_t g_TerrainAuxHeightMinimum; /* 00503B00 g_TerrainAuxHeightMinimum: int32_t minimum (triangle1NormalAngles >> 16) for the auxiliary height/placement scans in world/terrain/height.c (0x3000) */
-typedef struct ImageObject_00503B04 {
-    int32_t at_g_TerrainUnreferencedValue00503B04; /* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
-    uint32_t at_g_TerrainUnreferencedValue00503B04_rest[2]; /* beyond the declared type */
-} ImageObject_00503B04;
-extern ImageObject_00503B04 g_ImageObject_00503B04;
+extern int32_t g_TerrainUnreferencedValue00503B04; /* 00503B04 g_TerrainUnreferencedValue00503B04: int32_t 0x2000 directly after g_TerrainAuxHeightMinimum; no code reference found; followed by 0x90 fill */
 
 /* original 0x00505F98-0x005063B0 */
 typedef struct ImageObject_00505F98 {
@@ -1494,21 +1323,9 @@ typedef struct ImageObject_0050A340 {
 } ImageObject_0050A340;
 extern ImageObject_0050A340 g_ImageObject_0050A340;
 extern GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4; /* 0050A350 g_GraphicsTransformScratchMatrix3x4 */
-typedef struct ImageObject_0050A380 {
-    GraphicsFixedVec3 at_g_GraphicsTransformInputScratchVec3; /* 0050A380 g_GraphicsTransformInputScratchVec3 */
-    uint32_t at_g_GraphicsTransformInputScratchVec3_rest[9]; /* beyond the declared type */
-} ImageObject_0050A380;
-extern ImageObject_0050A380 g_ImageObject_0050A380;
-typedef struct ImageObject_0050A3B0 {
-    GraphicsFixedVec3 at_g_GraphicsTransformOutputScratchVec3; /* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
-    uint32_t at_g_GraphicsTransformOutputScratchVec3_rest[9]; /* beyond the declared type */
-} ImageObject_0050A3B0;
-extern ImageObject_0050A3B0 g_ImageObject_0050A3B0;
-typedef struct ImageObject_0050A3E0 {
-    GraphicsFixedVec3 at_g_GraphicsProjectionScratchVec3; /* 0050A3E0 g_GraphicsProjectionScratchVec3 */
-    uint32_t at_g_GraphicsProjectionScratchVec3_rest[1]; /* beyond the declared type */
-} ImageObject_0050A3E0;
-extern ImageObject_0050A3E0 g_ImageObject_0050A3E0;
+extern GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3; /* 0050A380 g_GraphicsTransformInputScratchVec3 */
+extern GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3; /* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
+extern GraphicsFixedVec3 g_GraphicsProjectionScratchVec3; /* 0050A3E0 g_GraphicsProjectionScratchVec3 */
 extern GraphicsProjectedPoint2i g_ModelProjectedBoundsCornerScratch8[8]; /* 0050A3F0 g_ModelProjectedBoundsCornerScratch8 */
 
 /* original 0x0050AE54-0x0050AEA0 */
@@ -1640,10 +1457,7 @@ typedef struct ImageObject_0050DAC4 {
     uint8_t at_g_ScenarioCatalogPathScratchUtf16_rest_tail[3];
 } ImageObject_0050DAC4;
 extern ImageObject_0050DAC4 g_ImageObject_0050DAC4;
-typedef struct ImageObject_0050DCC4 {
-    uint16_t at_g_ResourceRegistrationDirectoryUtf16[256]; /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
-} ImageObject_0050DCC4;
-extern ImageObject_0050DCC4 g_ImageObject_0050DCC4;
+extern uint16_t g_ResourceRegistrationDirectoryUtf16[256]; /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
 extern uint16_t u_texte_techno_str_0050dec4[17]; /* 0050DEC4 u_texte_techno_str_0050dec4 */
 typedef struct ImageObject_0050DEE6 {
     uint16_t at_str_0050DEE6[16]; /* 0050DEE6 str_0050DEE6 */
@@ -1734,11 +1548,7 @@ extern uint32_t g_SessionNetworkTickCounter; /* 0050F0D8 g_SessionNetworkTickCou
 extern uint32_t g_HostCommandBatchSyncSentThisInterval; /* 0050F0DC g_HostCommandBatchSyncSentThisInterval */
 extern RecentTextHistorySlot *g_RecentTextSlotStorage; /* 0050F0E0 g_RecentTextSlotStorage */
 extern uint32_t g_RecentTextEntrySerials[8]; /* 0050F0E4 g_RecentTextEntrySerials */
-typedef struct ImageObject_0050F104 {
-    uint16_t at_u_texte_neterror_str_0050f104[19]; /* 0050F104 u_texte_neterror_str_0050f104 */
-    uint8_t at_u_texte_neterror_str_0050f104_padding[6];
-} ImageObject_0050F104;
-extern ImageObject_0050F104 g_ImageObject_0050F104;
+extern uint16_t u_texte_neterror_str_0050f104[19]; /* 0050F104 u_texte_neterror_str_0050f104 */
 
 /* original 0x0050F328-0x00512E70 */
 extern GameFactionRuntimeImage g_GameFactionRuntimeImage; /* 0050F340 g_GameFactionRuntimeImage */
@@ -2535,10 +2345,7 @@ extern ImageObject_0053DA68 g_ImageObject_0053DA68;
 extern UiRootCallbacks g_UiRootCallbacks_0053DA70; /* 0053DA70 g_UiRootCallbacks_0053DA70 */
 extern FrontendSessionDiscoveryRecord **g_FrontendSessionListRows; /* 0053DA84 g_FrontendSessionListRows */
 extern FrontendSessionDiscoveryRecord *g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
-typedef struct ImageObject_0053DA8C {
-    FrontendUiImage at_g_FrontendRootInitializationTemplate; /* 0053DA8C g_FrontendRootInitializationTemplate */
-} ImageObject_0053DA8C;
-extern ImageObject_0053DA8C g_ImageObject_0053DA8C;
+extern FrontendUiImage g_FrontendRootInitializationTemplate; /* 0053DA8C g_FrontendRootInitializationTemplate */
 extern FrontendPlayerRuntimeRecord *g_FrontendPlayerRuntimeRecordPointers32[32]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
 typedef struct ImageObject_00543460 {
     FrontendTaskAssignmentControlOffsetTables at_g_FrontendTaskAssignmentControlOffsets; /* 00543460 g_FrontendTaskAssignmentControlOffsets */
@@ -2617,16 +2424,10 @@ typedef struct ImageObject_00545C72 {
 } ImageObject_00545C72;
 extern ImageObject_00545C72 g_ImageObject_00545C72;
 extern char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31]; /* 00545E72 s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 */
-typedef struct ImageObject_00545E91 {
-    char at_s_NAME__CLIENT__KARTE___00545e91[533]; /* 00545E91 s_NAME__CLIENT__KARTE___00545e91 */
-} ImageObject_00545E91;
-extern ImageObject_00545E91 g_ImageObject_00545E91;
+extern char s_NAME__CLIENT__KARTE___00545e91[21]; /* 00545E91 s_NAME__CLIENT__KARTE___00545e91: the option names NAME=" CLIENT=" KARTE=" (used with explicit lengths); Original quirk: its terminating NUL is the first byte of g_LevelPackageFoundEntry */
+extern PckEntryHeader g_LevelPackageFoundEntry; /* 00545EA6 g_LevelPackageFoundEntry: one-entry output buffer (PCK_ENTRY_HEADER_BYTES) of Package_FindEntry for LevelPackage_ValidateAndMount (original: s_NAME__CLIENT__KARTE___00545e91 + 0x15) */
 extern uint16_t u_level___lev_005460a6[12]; /* 005460A6 u_level___lev_005460a6 */
-typedef struct ImageObject_005460BE {
-    uint16_t at_u_level___str_005460be[12]; /* 005460BE u_level___str_005460be */
-    uint8_t at_u_level___str_005460be_padding[10];
-} ImageObject_005460BE;
-extern ImageObject_005460BE g_ImageObject_005460BE;
+extern uint16_t u_level___str_005460be[12]; /* 005460BE u_level___str_005460be */
 
 /* original 0x00546BB4-0x00546BC0 */
 typedef struct ImageObject_00546BB4 {
@@ -2732,66 +2533,29 @@ extern UiRootCallbacks g_UiRootCallbacks_0054FBC0; /* 0054FBC0 g_UiRootCallbacks
 extern uint16_t *g_InGameFactionStatusTextScratchUtf16; /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
 extern uint16_t *g_InGamePlayerListTextScratchUtf16; /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
 extern InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8]; /* 0054FBDC g_InGamePlayerStatusTextSlots */
-typedef struct ImageObject_0054FFDC {
-    uint32_t at_g_InGameSelectionDetailNameTextUtf16[32]; /* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
-} ImageObject_0054FFDC;
-extern ImageObject_0054FFDC g_ImageObject_0054FFDC;
-typedef struct ImageObject_0055005C {
-    uint32_t at_g_InGameSelectionDetailArmourTextUtf16[32]; /* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
-} ImageObject_0055005C;
-extern ImageObject_0055005C g_ImageObject_0055005C;
-typedef struct ImageObject_005500DC {
-    uint32_t at_g_InGameSelectionDetailWeaponName0TextUtf16[32]; /* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
-} ImageObject_005500DC;
-extern ImageObject_005500DC g_ImageObject_005500DC;
-typedef struct ImageObject_0055015C {
-    uint32_t at_g_InGameSelectionDetailWeaponName1TextUtf16[32]; /* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
-} ImageObject_0055015C;
-extern ImageObject_0055015C g_ImageObject_0055015C;
-typedef struct ImageObject_005501DC {
-    uint32_t at_g_InGameSelectionDetailWeaponName2TextUtf16[32]; /* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
-} ImageObject_005501DC;
-extern ImageObject_005501DC g_ImageObject_005501DC;
-typedef struct ImageObject_0055025C {
-    uint32_t at_g_InGameSelectionDetailTextSlot05Utf16[32]; /* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
-} ImageObject_0055025C;
-extern ImageObject_0055025C g_ImageObject_0055025C;
-typedef struct ImageObject_005502DC {
-    uint32_t at_g_InGameSelectionDetailBuildXeniteCostTextUtf16[32]; /* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
-} ImageObject_005502DC;
-extern ImageObject_005502DC g_ImageObject_005502DC;
-typedef struct ImageObject_0055035C {
-    uint32_t at_g_InGameSelectionDetailBuildTimeTextUtf16[32]; /* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
-} ImageObject_0055035C;
-extern ImageObject_0055035C g_ImageObject_0055035C;
-typedef struct ImageObject_005503DC {
-    uint32_t at_g_InGameSelectionDetailEnergyTextUtf16[32]; /* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
-} ImageObject_005503DC;
-extern ImageObject_005503DC g_ImageObject_005503DC;
-typedef struct ImageObject_0055045C {
-    uint32_t at_g_InGameSelectionDetailTextSlot09Utf16[32]; /* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
-} ImageObject_0055045C;
-extern ImageObject_0055045C g_ImageObject_0055045C;
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailNameTextUtf16; /* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailArmourTextUtf16; /* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName0TextUtf16; /* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName1TextUtf16; /* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName2TextUtf16; /* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot05Utf16; /* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildXeniteCostTextUtf16; /* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildTimeTextUtf16; /* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16; /* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
+extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16; /* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
 typedef struct ImageObject_005504DC {
     uint8_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16; /* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16 */
     uint32_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest[7]; /* beyond the declared type */
     uint8_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest_tail[3];
 } ImageObject_005504DC;
 extern ImageObject_005504DC g_ImageObject_005504DC;
-extern uint16_t g_InGameTechnologyCostRichTextScratch; /* 005504FC g_InGameTechnologyCostRichTextScratch: uint16_t rich-text command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR) that heads the technology cost stream; its 8 payload units are g_InGameTechnologyCostColorWords8, then the xenite cost text follows; patched in as payload 0 of the technology label (ui/ingame/technology.c) */
-extern uint16_t g_InGameTechnologyCostColorWords8[8]; /* 005504FE g_InGameTechnologyCostColorWords8 */
-typedef struct ImageObject_0055050E {
-    uint32_t at_g_InGameTechnologyXeniteCostTextUtf16[8]; /* 0055050E g_InGameTechnologyXeniteCostTextUtf16 */
-} ImageObject_0055050E;
-extern ImageObject_0055050E g_ImageObject_0055050E;
-typedef struct ImageObject_0055052E {
-    uint32_t at_g_InGameTechnologyEnergyCostTextUtf16[8]; /* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
-} ImageObject_0055052E;
-extern ImageObject_0055052E g_ImageObject_0055052E;
-typedef struct ImageObject_0055054E {
-    uint32_t at_g_InGameTechnologyResearchTimeTextUtf16[8]; /* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
-} ImageObject_0055054E;
-extern ImageObject_0055054E g_ImageObject_0055054E;
+/* 005504FC g_InGameTechnologyCostRichText: one rich-text stream, patched in as payload 0 of the technology label
+   (ui/ingame/technology.c): [0] command unit 0x8006 (RICHTEXT_OP_LITERAL_COLOR), [1..8] its eight colour digits
+   (005504FE), [9..24] the xenite cost text (0055050E, RICHTEXT_RECORD_UNITS_LITERAL_COLOR units in); the
+   interpreter reads on from the colour command into the text */
+extern uint16_t g_InGameTechnologyCostRichText[25];
+extern UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16; /* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
+extern UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16; /* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
 extern uint16_t g_InGameHudNumberTextUtf16[16]; /* 0055056E g_InGameHudNumberTextUtf16 */
 typedef struct ImageObject_0055058E {
     uint8_t at_g_EmptyFrontendPlayerNameUtf16; /* 0055058E g_EmptyFrontendPlayerNameUtf16 */
@@ -2799,11 +2563,7 @@ typedef struct ImageObject_0055058E {
 } ImageObject_0055058E;
 extern ImageObject_0055058E g_ImageObject_0055058E;
 extern uint16_t g_InGameCountdownTextUtf16[8]; /* 00550590 g_InGameCountdownTextUtf16 */
-typedef struct ImageObject_005505A0 {
-    InGameUiImage at_g_InGameRuntimeDefaultImageTemplate; /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
-    uint8_t at_g_InGameRuntimeDefaultImageTemplate_padding[12]; /* alignment padding after the template */
-} ImageObject_005505A0;
-extern ImageObject_005505A0 g_ImageObject_005505A0;
+extern InGameUiImage g_InGameRuntimeDefaultImageTemplate; /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
 
 /* original 0x0055EFB0-0x0055F130 */
 typedef struct ImageObject_0055EFB0 {
@@ -2894,19 +2654,12 @@ extern uint32_t g_InGameCommandTargetTransientEffectMarkerCount; /* 005630CC g_I
 extern uint16_t u_gfx_panel_panel0_gfx_005630d0[21]; /* 005630D0 u_gfx_panel_panel0_gfx_005630d0 */
 extern uint16_t u_gfx_panel_tech_gfx_005630fa[19]; /* 005630FA u_gfx_panel_tech_gfx_005630fa */
 extern uint16_t u_gfx_panel_diagram0_gfx_00563120[23]; /* 00563120 u_gfx_panel_diagram0_gfx_00563120 */
-typedef struct ImageObject_0056314E {
-    uint16_t at_u_flm_movie000_flm_0056314e[17]; /* 0056314E u_flm_movie000_flm_0056314e */
-} ImageObject_0056314E;
-extern ImageObject_0056314E g_ImageObject_0056314E;
+extern uint16_t u_flm_movie000_flm_0056314e[17]; /* 0056314E u_flm_movie000_flm_0056314e: notification movie path, digits at [9] overwritten */
 extern uint16_t u_texte_help_str_00563170[15]; /* 00563170 u_texte_help_str_00563170 */
 extern uint16_t u_gfx_panel_window_gfx_0056318e[21]; /* 0056318E u_gfx_panel_window_gfx_0056318e */
 extern uint16_t u_texte_tastatur_str_005631b8[19]; /* 005631B8 u_texte_tastatur_str_005631b8 */
 extern uint16_t g_DeveloperChatPhraseUtf16[32]; /* 005631DE g_DeveloperChatPhraseUtf16 */
-typedef struct ImageObject_0056321E {
-    uint16_t at_u_Hmmm__na_gut________0056321e[20]; /* 0056321E u_Hmmm__na_gut________0056321e */
-    uint8_t at_u_Hmmm__na_gut________0056321e_padding[26];
-} ImageObject_0056321E;
-extern ImageObject_0056321E g_ImageObject_0056321E;
+extern uint16_t u_Hmmm__na_gut________0056321e[20]; /* 0056321E u_Hmmm__na_gut________0056321e */
 extern uint32_t g_UiCommandRuntimeFlags; /* 00563260 g_UiCommandRuntimeFlags */
 extern InGameSimulationStepBatchTicks g_InGameSimulationStepTicks; /* 00563264 g_InGameSimulationStepTicks */
 extern int32_t g_InGamePendingSimulationTicks; /* 00563268 g_InGamePendingSimulationTicks */
@@ -3286,11 +3039,7 @@ extern uint16_t u_sound_button6_sam_00572fde[18]; /* 00572FDE u_sound_button6_sa
 extern uint16_t u_gfx_panel_stat_gfx_00573002[19]; /* 00573002 u_gfx_panel_stat_gfx_00573002 */
 extern uint16_t u_engine_pcx_fnc_00573028[15]; /* 00573028 u_engine_pcx_fnc_00573028 */
 extern uint16_t u_flm_intro0_flm_00573046[15]; /* 00573046 u_flm_intro0_flm_00573046 */
-typedef struct ImageObject_00573064 {
-    char at_g_CommandLineOptionNoIntro[8]; /* 00573064 g_CommandLineOptionNoIntro */
-    uint8_t at_g_CommandLineOptionNoIntro_padding[4];
-} ImageObject_00573064;
-extern ImageObject_00573064 g_ImageObject_00573064;
+extern char g_CommandLineOptionNoIntro[8]; /* 00573064 g_CommandLineOptionNoIntro */
 
 /* original 0x00573EE8-0x00575890 */
 typedef struct ImageObject_00573EE8 {
@@ -3540,16 +3289,8 @@ typedef struct ImageObject_005744AE {
 } ImageObject_005744AE;
 extern ImageObject_005744AE g_ImageObject_005744AE;
 extern char sz_DDRAW[6]; /* 005744B4 sz_DDRAW */
-typedef struct ImageObject_005744BA {
-    char at_dynapi_3[7]; /* 005744BA dynapi_3 */
-    uint8_t at_dynapi_3_padding[1];
-} ImageObject_005744BA;
-extern ImageObject_005744BA g_ImageObject_005744BA;
-typedef struct ImageObject_005744C2 {
-    char at_dynapi_4[7]; /* 005744C2 dynapi_4 */
-    uint8_t at_dynapi_4_padding[1];
-} ImageObject_005744C2;
-extern ImageObject_005744C2 g_ImageObject_005744C2;
+extern char dynapi_3[7]; /* 005744BA dynapi_3 */
+extern char dynapi_4[7]; /* 005744C2 dynapi_4 */
 extern char sz_GLIDE3X[8]; /* 005744CA sz_GLIDE3X */
 typedef struct ImageObject_005744D2 {
     char at_sz_ADVAPI32[9]; /* 005744D2 sz_ADVAPI32 */
@@ -3562,11 +3303,7 @@ typedef struct ImageObject_005744E4 {
     uint8_t at_sz_WS2_32_padding[1];
 } ImageObject_005744E4;
 extern ImageObject_005744E4 g_ImageObject_005744E4;
-typedef struct ImageObject_005744EC {
-    char at_dynapi_9[13]; /* 005744EC dynapi_9 */
-    uint8_t at_dynapi_9_padding[1];
-} ImageObject_005744EC;
-extern ImageObject_005744EC g_ImageObject_005744EC;
+extern char dynapi_9[13]; /* 005744EC dynapi_9 */
 typedef struct ImageObject_005744FA {
     char at_dynapi_10[12]; /* 005744FA dynapi_10 */
 } ImageObject_005744FA;
@@ -3597,33 +3334,13 @@ typedef struct ImageObject_0057454E {
     char at_dynapi_16[16]; /* 0057454E dynapi_16 */
 } ImageObject_0057454E;
 extern ImageObject_0057454E g_ImageObject_0057454E;
-typedef struct ImageObject_0057455E {
-    char at_sz_DirectDrawCreate[17]; /* 0057455E sz_DirectDrawCreate */
-    uint8_t at_sz_DirectDrawCreate_padding[1];
-} ImageObject_0057455E;
-extern ImageObject_0057455E g_ImageObject_0057455E;
-typedef struct ImageObject_00574570 {
-    char at_sz_DirectDrawEnumerateA[21]; /* 00574570 sz_DirectDrawEnumerateA */
-    uint8_t at_sz_DirectDrawEnumerateA_padding[1];
-} ImageObject_00574570;
-extern ImageObject_00574570 g_ImageObject_00574570;
-typedef struct ImageObject_00574586 {
-    char at_dynapi_19[19]; /* 00574586 dynapi_19 */
-    uint8_t at_dynapi_19_padding[1];
-} ImageObject_00574586;
-extern ImageObject_00574586 g_ImageObject_00574586;
+extern char sz_DirectDrawCreate[17]; /* 0057455E sz_DirectDrawCreate */
+extern char sz_DirectDrawEnumerateA[21]; /* 00574570 sz_DirectDrawEnumerateA */
+extern char dynapi_19[19]; /* 00574586 dynapi_19 */
 extern char dynapi_20[18]; /* 0057459A dynapi_20 */
 extern char dynapi_21[22]; /* 005745AC dynapi_21 */
-typedef struct ImageObject_005745C2 {
-    char at_dynapi_22[25]; /* 005745C2 dynapi_22 */
-    uint8_t at_dynapi_22_padding[1];
-} ImageObject_005745C2;
-extern ImageObject_005745C2 g_ImageObject_005745C2;
-typedef struct ImageObject_005745DC {
-    char at_dynapi_23[29]; /* 005745DC dynapi_23 */
-    uint8_t at_dynapi_23_padding[1];
-} ImageObject_005745DC;
-extern ImageObject_005745DC g_ImageObject_005745DC;
+extern char dynapi_22[25]; /* 005745C2 dynapi_22 */
+extern char dynapi_23[29]; /* 005745DC dynapi_23 */
 typedef struct ImageObject_005745FA {
     char at_dynapi_24[21]; /* 005745FA dynapi_24 */
     uint8_t at_dynapi_24_padding[1];
@@ -4043,134 +3760,54 @@ typedef struct ImageObject_00574D26 {
     uint8_t at_dynapi_115_padding[1];
 } ImageObject_00574D26;
 extern ImageObject_00574D26 g_ImageObject_00574D26;
-typedef struct ImageObject_00574D40 {
-    char at_s_Wsock32Export_accept[7]; /* 00574D40 s_Wsock32Export_accept */
-    uint8_t at_s_Wsock32Export_accept_padding[1];
-} ImageObject_00574D40;
-extern ImageObject_00574D40 g_ImageObject_00574D40;
-typedef struct ImageObject_00574D48 {
-    char at_s_Wsock32Export_bind[5]; /* 00574D48 s_Wsock32Export_bind */
-    uint8_t at_s_Wsock32Export_bind_padding[1];
-} ImageObject_00574D48;
-extern ImageObject_00574D48 g_ImageObject_00574D48;
+extern char s_Wsock32Export_accept[7]; /* 00574D40 s_Wsock32Export_accept */
+extern char s_Wsock32Export_bind[5]; /* 00574D48 s_Wsock32Export_bind */
 extern char s_Wsock32Export_closesocket[12]; /* 00574D4E s_Wsock32Export_closesocket */
 extern char s_Wsock32Export_connect[8]; /* 00574D5A s_Wsock32Export_connect */
 extern char s_Wsock32Export_getpeername[12]; /* 00574D62 s_Wsock32Export_getpeername */
 extern char s_Wsock32Export_getsockname[12]; /* 00574D6E s_Wsock32Export_getsockname */
-typedef struct ImageObject_00574D7A {
-    char at_s_Wsock32Export_getsockopt[11]; /* 00574D7A s_Wsock32Export_getsockopt */
-    uint8_t at_s_Wsock32Export_getsockopt_padding[1];
-} ImageObject_00574D7A;
-extern ImageObject_00574D7A g_ImageObject_00574D7A;
+extern char s_Wsock32Export_getsockopt[11]; /* 00574D7A s_Wsock32Export_getsockopt */
 extern char s_Wsock32Export_htonl[6]; /* 00574D86 s_Wsock32Export_htonl */
 extern char s_Wsock32Export_htons[6]; /* 00574D8C s_Wsock32Export_htons */
 extern char s_Wsock32Export_inet_addr[10]; /* 00574D92 s_Wsock32Export_inet_addr */
 extern char s_Wsock32Export_inet_ntoa[10]; /* 00574D9C s_Wsock32Export_inet_ntoa */
 extern char s_Wsock32Export_ioctlsocket[12]; /* 00574DA6 s_Wsock32Export_ioctlsocket */
-typedef struct ImageObject_00574DB2 {
-    char at_s_Wsock32Export_listen[7]; /* 00574DB2 s_Wsock32Export_listen */
-    uint8_t at_s_Wsock32Export_listen_padding[1];
-} ImageObject_00574DB2;
-extern ImageObject_00574DB2 g_ImageObject_00574DB2;
+extern char s_Wsock32Export_listen[7]; /* 00574DB2 s_Wsock32Export_listen */
 extern char s_Wsock32Export_ntohl[6]; /* 00574DBA s_Wsock32Export_ntohl */
 extern char s_Wsock32Export_ntohs[6]; /* 00574DC0 s_Wsock32Export_ntohs */
-typedef struct ImageObject_00574DC6 {
-    char at_s_Wsock32Export_recv[5]; /* 00574DC6 s_Wsock32Export_recv */
-    uint8_t at_s_Wsock32Export_recv_padding[1];
-} ImageObject_00574DC6;
-extern ImageObject_00574DC6 g_ImageObject_00574DC6;
-typedef struct ImageObject_00574DCC {
-    char at_s_Wsock32Export_recvfrom[9]; /* 00574DCC s_Wsock32Export_recvfrom */
-    uint8_t at_s_Wsock32Export_recvfrom_padding[1];
-} ImageObject_00574DCC;
-extern ImageObject_00574DCC g_ImageObject_00574DCC;
-typedef struct ImageObject_00574DD6 {
-    char at_s_Wsock32Export_select[7]; /* 00574DD6 s_Wsock32Export_select */
-    uint8_t at_s_Wsock32Export_select_padding[1];
-} ImageObject_00574DD6;
-extern ImageObject_00574DD6 g_ImageObject_00574DD6;
-typedef struct ImageObject_00574DDE {
-    char at_s_Wsock32Export_send[5]; /* 00574DDE s_Wsock32Export_send */
-    uint8_t at_s_Wsock32Export_send_padding[1];
-} ImageObject_00574DDE;
-extern ImageObject_00574DDE g_ImageObject_00574DDE;
-typedef struct ImageObject_00574DE4 {
-    char at_s_Wsock32Export_sendto[7]; /* 00574DE4 s_Wsock32Export_sendto */
-    uint8_t at_s_Wsock32Export_sendto_padding[1];
-} ImageObject_00574DE4;
-extern ImageObject_00574DE4 g_ImageObject_00574DE4;
-typedef struct ImageObject_00574DEC {
-    char at_s_Wsock32Export_setsockopt[11]; /* 00574DEC s_Wsock32Export_setsockopt */
-    uint8_t at_s_Wsock32Export_setsockopt_padding[1];
-} ImageObject_00574DEC;
-extern ImageObject_00574DEC g_ImageObject_00574DEC;
-typedef struct ImageObject_00574DF8 {
-    char at_s_Wsock32Export_shutdown[9]; /* 00574DF8 s_Wsock32Export_shutdown */
-    uint8_t at_s_Wsock32Export_shutdown_padding[1];
-} ImageObject_00574DF8;
-extern ImageObject_00574DF8 g_ImageObject_00574DF8;
-typedef struct ImageObject_00574E02 {
-    char at_s_Wsock32Export_socket[7]; /* 00574E02 s_Wsock32Export_socket */
-    uint8_t at_s_Wsock32Export_socket_padding[1];
-} ImageObject_00574E02;
-extern ImageObject_00574E02 g_ImageObject_00574E02;
+extern char s_Wsock32Export_recv[5]; /* 00574DC6 s_Wsock32Export_recv */
+extern char s_Wsock32Export_recvfrom[9]; /* 00574DCC s_Wsock32Export_recvfrom */
+extern char s_Wsock32Export_select[7]; /* 00574DD6 s_Wsock32Export_select */
+extern char s_Wsock32Export_send[5]; /* 00574DDE s_Wsock32Export_send */
+extern char s_Wsock32Export_sendto[7]; /* 00574DE4 s_Wsock32Export_sendto */
+extern char s_Wsock32Export_setsockopt[11]; /* 00574DEC s_Wsock32Export_setsockopt */
+extern char s_Wsock32Export_shutdown[9]; /* 00574DF8 s_Wsock32Export_shutdown */
+extern char s_Wsock32Export_socket[7]; /* 00574E02 s_Wsock32Export_socket */
 extern char s_Wsock32Export_gethostbyaddr[14]; /* 00574E0A s_Wsock32Export_gethostbyaddr */
 extern char s_Wsock32Export_gethostbyname[14]; /* 00574E18 s_Wsock32Export_gethostbyname */
 extern char s_Wsock32Export_gethostname[12]; /* 00574E26 s_Wsock32Export_gethostname */
-typedef struct ImageObject_00574E32 {
-    char at_s_Wsock32Export_getprotobyname[15]; /* 00574E32 s_Wsock32Export_getprotobyname */
-    uint8_t at_s_Wsock32Export_getprotobyname_padding[1];
-} ImageObject_00574E32;
-extern ImageObject_00574E32 g_ImageObject_00574E32;
-typedef struct ImageObject_00574E42 {
-    char at_s_Wsock32Export_getprotobynumber[17]; /* 00574E42 s_Wsock32Export_getprotobynumber */
-    uint8_t at_s_Wsock32Export_getprotobynumber_padding[1];
-} ImageObject_00574E42;
-extern ImageObject_00574E42 g_ImageObject_00574E42;
+extern char s_Wsock32Export_getprotobyname[15]; /* 00574E32 s_Wsock32Export_getprotobyname */
+extern char s_Wsock32Export_getprotobynumber[17]; /* 00574E42 s_Wsock32Export_getprotobynumber */
 extern char s_Wsock32Export_getservbyname[14]; /* 00574E54 s_Wsock32Export_getservbyname */
 extern char s_Wsock32Export_getservbyport[14]; /* 00574E62 s_Wsock32Export_getservbyport */
 extern char s_Wsock32Export_WSAAsyncGetHostByAddr[22]; /* 00574E70 s_Wsock32Export_WSAAsyncGetHostByAddr */
 extern char s_Wsock32Export_WSAAsyncGetHostByName[22]; /* 00574E86 s_Wsock32Export_WSAAsyncGetHostByName */
-typedef struct ImageObject_00574E9C {
-    char at_s_Wsock32Export_WSAAsyncGetProtoByName[23]; /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
-    uint8_t at_s_Wsock32Export_WSAAsyncGetProtoByName_padding[1];
-} ImageObject_00574E9C;
-extern ImageObject_00574E9C g_ImageObject_00574E9C;
-typedef struct ImageObject_00574EB4 {
-    char at_s_Wsock32Export_WSAAsyncGetProtoByNumber[25]; /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
-    uint8_t at_s_Wsock32Export_WSAAsyncGetProtoByNumber_padding[1];
-} ImageObject_00574EB4;
-extern ImageObject_00574EB4 g_ImageObject_00574EB4;
+extern char s_Wsock32Export_WSAAsyncGetProtoByName[23]; /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
+extern char s_Wsock32Export_WSAAsyncGetProtoByNumber[25]; /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
 extern char s_Wsock32Export_WSAAsyncGetServByName[22]; /* 00574ECE s_Wsock32Export_WSAAsyncGetServByName */
 extern char s_Wsock32Export_WSAAsyncGetServByPort[22]; /* 00574EE4 s_Wsock32Export_WSAAsyncGetServByPort */
-typedef struct ImageObject_00574EFA {
-    char at_s_Wsock32Export_WSAAsyncSelect[15]; /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
-    uint8_t at_s_Wsock32Export_WSAAsyncSelect_padding[1];
-} ImageObject_00574EFA;
-extern ImageObject_00574EFA g_ImageObject_00574EFA;
+extern char s_Wsock32Export_WSAAsyncSelect[15]; /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
 extern char s_Wsock32Export_WSACancelAsyncRequest[22]; /* 00574F0A s_Wsock32Export_WSACancelAsyncRequest */
 extern char s_Wsock32Export_WSACancelBlockingCall[22]; /* 00574F20 s_Wsock32Export_WSACancelBlockingCall */
-typedef struct ImageObject_00574F36 {
-    char at_s_Wsock32Export_WSACleanup[11]; /* 00574F36 s_Wsock32Export_WSACleanup */
-    uint8_t at_s_Wsock32Export_WSACleanup_padding[1];
-} ImageObject_00574F36;
-extern ImageObject_00574F36 g_ImageObject_00574F36;
+extern char s_Wsock32Export_WSACleanup[11]; /* 00574F36 s_Wsock32Export_WSACleanup */
 extern char s_Wsock32Export_WSAGetLastError[16]; /* 00574F42 s_Wsock32Export_WSAGetLastError */
 extern char s_Wsock32Export_WSAIsBlocking[14]; /* 00574F52 s_Wsock32Export_WSAIsBlocking */
-typedef struct ImageObject_00574F60 {
-    char at_s_Wsock32Export_WSASetBlockingHook[19]; /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
-    uint8_t at_s_Wsock32Export_WSASetBlockingHook_padding[1];
-} ImageObject_00574F60;
-extern ImageObject_00574F60 g_ImageObject_00574F60;
+extern char s_Wsock32Export_WSASetBlockingHook[19]; /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
 typedef struct ImageObject_00574F74 {
     char at_dynapi_159[16]; /* 00574F74 dynapi_159 */
 } ImageObject_00574F74;
 extern ImageObject_00574F74 g_ImageObject_00574F74;
-typedef struct ImageObject_00574F84 {
-    char at_s_Wsock32Export_WSAStartup[11]; /* 00574F84 s_Wsock32Export_WSAStartup */
-    uint8_t at_s_Wsock32Export_WSAStartup_padding[1];
-} ImageObject_00574F84;
-extern ImageObject_00574F84 g_ImageObject_00574F84;
+extern char s_Wsock32Export_WSAStartup[11]; /* 00574F84 s_Wsock32Export_WSAStartup */
 extern char s_Wsock32Export_WSAUnhookBlockingHook[22]; /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
 typedef struct ImageObject_00574FA6 {
     char at_dynapi_162[7]; /* 00574FA6 dynapi_162 */
@@ -4700,11 +4337,7 @@ extern GraphicsTextureResource **g_GraphicsTextureSlots; /* 0057805C g_GraphicsT
 extern SoftwareFramebufferAccess g_DisplayFramebufferAccess; /* 00578060 g_DisplayFramebufferAccess */
 extern uint32_t g_ActiveTextureUploads; /* 00578070 g_ActiveTextureUploads */
 extern uint32_t g_GraphicsEnumerateAllDevicesFlag; /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
-typedef struct ImageObject_00578078 {
-    char at_g_CommandLineOptionD3dAll[7]; /* 00578078 g_CommandLineOptionD3dAll */
-    uint8_t at_g_CommandLineOptionD3dAll_padding[1];
-} ImageObject_00578078;
-extern ImageObject_00578078 g_ImageObject_00578078;
+extern char g_CommandLineOptionD3dAll[7]; /* 00578078 g_CommandLineOptionD3dAll */
 
 /* original 0x0057ECC8-0x0057EE90 */
 typedef struct ImageObject_0057ECC8 {
@@ -4738,11 +4371,7 @@ extern GraphicsTextureResource *g_GlideResidentTextureTail; /* 0057EE74 g_GlideR
 extern GraphicsTextureResource *g_GlideResidentTextureHead; /* 0057EE78 g_GlideResidentTextureHead */
 extern int32_t g_GlideSecondBufferOffset; /* 0057EE7C g_GlideSecondBufferOffset */
 extern uint8_t *g_GlideSecondBufferBase; /* 0057EE80 g_GlideSecondBufferBase */
-typedef struct ImageObject_0057EE84 {
-    char at_g_CommandLineOptionGlide[6]; /* 0057EE84 g_CommandLineOptionGlide */
-    uint8_t at_g_CommandLineOptionGlide_padding[6];
-} ImageObject_0057EE84;
-extern ImageObject_0057EE84 g_ImageObject_0057EE84;
+extern char g_CommandLineOptionGlide[6]; /* 0057EE84 g_CommandLineOptionGlide */
 
 /* original 0x00582ED8-0x00583140 */
 typedef struct ImageObject_00582ED8 {
@@ -4828,11 +4457,7 @@ extern ArenaState g_Arena; /* 00585708 g_Arena */
 extern TimerSystemState g_TimerSystemState; /* 0058571C g_TimerSystemState */
 extern CommandLineArgumentMirrorState500 g_CommandLine; /* 0058581C g_CommandLine */
 extern char sz_MainWindowTitle[15]; /* 00585D1C sz_MainWindowTitle */
-typedef struct ImageObject_00585D2B {
-    char at_sz_MainWindowClass[17]; /* 00585D2B sz_MainWindowClass */
-    uint8_t at_sz_MainWindowClass_padding[4];
-} ImageObject_00585D2B;
-extern ImageObject_00585D2B g_ImageObject_00585D2B;
+extern char sz_MainWindowClass[17]; /* 00585D2B sz_MainWindowClass */
 
 /* original 0x00586950-0x00586B70 */
 typedef struct ImageObject_00586950 {

@@ -104,9 +104,10 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
     RichTextCommandStream_PatchPayloadBySelector(2,g_FatalErrorDetail2Utf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(3,g_FatalErrorDetail3Utf16,stream);
   }
-  g_FatalErrorRichTextStream = (uint32_t)stream;
+  /* the message text goes into the template image itself, which is then copied */
+  ((UiWrappedTextControl *)&g_FatalErrorUiRootTemplateImage.errorMessageText)->text = stream;
   /* copy the dialog template image into the allocated root node, one dword per step (REP MOVSD) */
-  templateImageCursor = g_FatalErrorUiRootTemplateImage;
+  templateImageCursor = (const uint32_t *)&g_FatalErrorUiRootTemplateImage;
   templateCopyCursor = (uint32_t *)g_FatalErrorUiRootTemplate;
   for (remainingDwords = sizeof g_FatalErrorUiRootTemplateImage / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
@@ -115,11 +116,15 @@ uint32_t FatalErrorRuntime_DispatchPendingError(uint32_t valueOrError,bool faile
     templateCopyCursor++;
   }
   dialogRoot = g_FatalErrorUiRootTemplate;
-  /* the text height is subtracted from the dialog's top offset */
+  /* the text height is subtracted from the dialog's top offset; the wrap width is the panel width (its
+     right - left offset) narrowed by the text's left and right insets, all read from the template image */
   wrappedExtent = RichTextCommandStream_MeasureWrappedBlock
-                    (g_UiTextStyleNormal,(uint16_t *)g_FatalErrorRichTextStream,
-                     ((g_FatalErrorRichTextRight - g_FatalErrorRichTextLeft) +
-                     g_FatalErrorRichTextBottom) - g_FatalErrorRichTextTop);
+                    (g_UiTextStyleNormal,
+                     ((UiWrappedTextControl *)&g_FatalErrorUiRootTemplateImage.errorMessageText)->text,
+                     ((g_FatalErrorUiRootTemplateImage.fatalErrorPanel.rightOffset -
+                       g_FatalErrorUiRootTemplateImage.fatalErrorPanel.leftOffset) +
+                     g_FatalErrorUiRootTemplateImage.errorMessageText.rightOffset) -
+                    g_FatalErrorUiRootTemplateImage.errorMessageText.leftOffset);
   dialogRoot->base.topOffset = dialogRoot->base.topOffset - wrappedExtent.heightPixels;
   UiRootStack_Push(&g_UiRootCallbacks_00407E28,g_FatalErrorUiRootTemplate);
   g_UiPointerCaptureTarget = UI_NODE_NONE;

@@ -869,8 +869,8 @@ static void InGameNotification_StartQueueHeadMovie(InGameRuntimeRoot *inGameRoot
 
   notificationMovieNumber = inGameRoot->notificationQueue[0].movieId;
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,(uint16_t *)(u_flm_movie000_flm_0056314e + 9));
-  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)u_flm_movie000_flm_0056314e,NULL,NULL)) {
+            (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,&u_flm_movie000_flm_0056314e[9]);
+  if (!Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,u_flm_movie000_flm_0056314e,NULL,NULL)) {
     return;
   }
   /* movies 100-299 and 700-899 play at the alternate movie gain */
@@ -1062,9 +1062,9 @@ static bool InGameNewSession_IsSessionNameCharacter(uint16_t titleChar)
 }
 
 
-/* Sets g_InGameSessionNameScratchUtf16 to the level title without the characters dropped by
-   InGameNewSession_IsSessionNameCharacter. The first title character is skipped and at most the next 31 are
-   looked at. */
+/* Sets the text of the in-game template's save-name edit (saveNameEdit, 32 code units) to the level title without
+   the characters dropped by InGameNewSession_IsSessionNameCharacter. The first title character is skipped and at
+   most the next 31 are looked at. */
 static void InGameNewSession_BuildSessionName(UiTextResourceId titleTextIndex)
 
 {
@@ -1073,13 +1073,13 @@ static void InGameNewSession_BuildSessionName(UiTextResourceId titleTextIndex)
   uint16_t titleChar;
   int remainingCount;
 
-  sessionNameCursor = &g_InGameSessionNameScratchUtf16;
+  sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
   for (remainingCount = 32; remainingCount != 0; remainingCount--) {
     *sessionNameCursor = 0;
     sessionNameCursor++;
   }
   titleSource = TextResource_Resolve(titleTextIndex + TEXT_ID_LEVEL_TITLE_BASE);
-  sessionNameCursor = &g_InGameSessionNameScratchUtf16;
+  sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
   for (remainingCount = 31; remainingCount != 0; remainingCount--) {
     titleSource++;
     titleChar = *titleSource;
@@ -1463,9 +1463,10 @@ static bool InGameLoadedSession_Fail(FrontendLoadedLevelAsset *levelAsset,uint32
 }
 
 
-/* Sets g_InGameSessionNameScratchUtf16 to the session name of a mounted save package: the UTF-16 string at offset
-   256 of the package header (scanned for at most 36 characters), without its four-character file extension and
-   cut to 31 characters. Without a terminator the name stays empty.
+/* Sets the text of the in-game template's save-name edit (saveNameEdit, 32 code units) to the session name of a
+   mounted save package: the UTF-16 string at offset 256 of the package header (scanned for at most 36
+   characters), without its four-character file extension and cut to 31 characters. Without a terminator the name
+   stays empty.
 */
 static void InGameLoadedSession_ReadSessionName(uint32_t saveHandle)
 
@@ -1480,7 +1481,7 @@ static void InGameLoadedSession_ReadSessionName(uint32_t saveHandle)
   bool terminatorFound;
 
   headerBuffer = g_PackageScratchBuffer;
-  sessionNameCursor = &g_InGameSessionNameScratchUtf16;
+  sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
   for (remainingCount = 32; remainingCount != 0; remainingCount--) {
     *sessionNameCursor = 0;
     sessionNameCursor++;
@@ -1507,7 +1508,7 @@ static void InGameLoadedSession_ReadSessionName(uint32_t saveHandle)
   if (31 < copyCount) {
     copyCount = 31;
   }
-  sessionNameCursor = &g_InGameSessionNameScratchUtf16;
+  sessionNameCursor = ((UiRequiredTextEditControl *)&g_InGameRuntimeDefaultImageTemplate.saveNameEdit)->textBuffer;
   sourceCursor = nameStart;
   for (; copyCount != 0; copyCount--) {
     *sessionNameCursor = *sourceCursor;
@@ -2761,9 +2762,10 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
 void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 
 {
-  g_InGameTemplateWorldViewInfoTextResourceId =
+  INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
        (TextResourceId)((UiSingleLineTextControl *)INGAME_UI(inGameRoot,worldViewCyclingInfoText))->text;
-  g_FrontendTemplateStatusTextResourceId = g_InGameTemplateWorldViewInfoTextResourceId;
+  FRONTEND_UI_FIELD(&g_FrontendRootInitializationTemplate,bottomBarStatusText,0x54,TextResourceId) =
+       INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId);
   return;
 }
 

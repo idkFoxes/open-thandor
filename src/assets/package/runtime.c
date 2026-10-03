@@ -11,10 +11,6 @@
 
 /* Implementation ownership: assets/package/runtime. */
 
-/* One-entry output buffer (PCK_ENTRY_HEADER_BYTES) for Package_FindEntry, placed behind the string at
-   0x00545E91; the found entry's path is its first field and is passed on as a UTF-16 path. */
-#define LEVEL_PACKAGE_FOUND_ENTRY (s_NAME__CLIENT__KARTE___00545e91 + 21)
-
 /* Address: 0x005460E0.
    Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
    'lev' asset of converter version 0x70001, and the level\*.str text page must load as the level's text
@@ -33,20 +29,19 @@ bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
   if (!Package_Mount(levelPathUtf16,&fileHandle)) {
     return true; /* nothing mounted, nothing to unmount */
   }
-  if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
+  if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
                         (uint16_t *)u_level___lev_005460a6,fileHandle,&matchCount) &&
       matchCount != 0) {
-    levelAsset = Package_LoadEntry((uint16_t *)LEVEL_PACKAGE_FOUND_ENTRY,NULL);
+    levelAsset = Package_LoadEntry(g_LevelPackageFoundEntry.path,NULL);
     if (levelAsset != NULL) {
       /* dword 0: asset magic, dword 3: converter version */
       if (*levelAsset == ASSET_MAGIC_LEV && levelAsset[3] == PCK_CONVERTER_LEV_00070001) {
         levelTitleTextId = levelAsset[92]; /* LEV +0x170 */
         Resource_Release(levelAsset);
-        if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
+        if (Package_FindEntry(PCK_ENTRY_HEADER_BYTES,&g_LevelPackageFoundEntry,
                               (uint16_t *)u_level___str_005460be,fileHandle,&matchCount) &&
             matchCount != 0 &&
-            !TextResourcePage_LoadCompatibilityAliases(levelTitleTextId,
-                                                        (uint16_t *)LEVEL_PACKAGE_FOUND_ENTRY)) {
+            !TextResourcePage_LoadCompatibilityAliases(levelTitleTextId,g_LevelPackageFoundEntry.path)) {
           return false; /* valid level: the package stays mounted */
         }
       }

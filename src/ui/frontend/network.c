@@ -308,11 +308,14 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
   /* root is the frontend template copy; both values are written back into the frontend template
      (bottomBarStatusText's text resource id, mirrored into the in-game template's worldViewCyclingInfoText,
      and the 0x40-code-unit hostAddressEdit text). */
-  g_FrontendTemplateStatusTextResourceId =
+  FRONTEND_UI_FIELD(&g_FrontendRootInitializationTemplate,bottomBarStatusText,0x54,TextResourceId) =
        (TextResourceId)((UiSingleLineTextControl *)FRONTEND_UI(root,bottomBarStatusText))->text;
   sourceCursor = (int32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(root,hostAddressEdit))->textBuffer;
-  destinationCursor = (int32_t *)g_FrontendHostAddressTextTemplate;
-  g_InGameTemplateWorldViewInfoTextResourceId = g_FrontendTemplateStatusTextResourceId;
+  destinationCursor =
+       (int32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(&g_FrontendRootInitializationTemplate,hostAddressEdit))
+       ->textBuffer;
+  INGAME_UI_FIELD(&g_InGameRuntimeDefaultImageTemplate,worldViewCyclingInfoText,0x54,TextResourceId) =
+       FRONTEND_UI_FIELD(&g_FrontendRootInitializationTemplate,bottomBarStatusText,0x54,TextResourceId);
   for (dwordsRemaining = 32; dwordsRemaining != 0; dwordsRemaining--) { /* 0x40 code units */
     *destinationCursor = *sourceCursor;
     sourceCursor++;

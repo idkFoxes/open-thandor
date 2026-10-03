@@ -16,17 +16,11 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 /* ---- network/protocol/transfer: 64-bit block cipher, eight 16x16 nibble substitution tables
    (table n maps round-key nibble n and data nibble to a 4-bit output, stored as dwords). */
 
-/* ---- platform/system/time_locale: function-pointer slot statically holding
-   Locale_MapTelephoneCountryCodeToRegionTagPacked (no code reference to the slot found). */
-#define g_LocaleMapTelephoneCountryCodeToRegionTagPacked (*(LocaleRegionTagPacked (**)(LocaleTelephoneCountryCode))&g_ImageObject_004027B0.at_g_LocaleMapTelephoneCountryCodeToRegionTagPacked)
-
 /* ---- core/error: fatal error texts; their addresses double as the error codes. */
-#define g_ErrorTextHeapAllocationFailed (*(uint16_t (*)[71])&g_ImageObject_00407D84.at_g_ErrorTextHeapAllocationFailed)
 
 /* ---- ui/controls/lists: drive-letter buffer and the "*.*" search pattern. */
 
 /* ---- audio/backend: decoded coefficient block of the current SAM frame. */
-#define g_SoundSampleCoefficientBlock (*(short (*)[256])&g_ImageObject_00417364.at_g_SoundSampleCoefficientBlock)
 
 /* ---- assets/text: empty string returned for missing text resources. */
 
@@ -36,28 +30,10 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
    g_SoftwareBilinearInverseFactors (0x00420F20) these are four 256-entry tables; the UI scaler in
    ui/controls/input uses the pair below (first-pixel weight 0x4000 at index 0). */
 
-/* ---- ui/controls/misc: display-settings dialog tree, copied into a fresh root. */
-#define g_UiDisplaySettingsRootTemplate (*(uint32_t (*)[0x2f5])&g_ImageObject_004229B4.at_g_UiDisplaySettingsRootTemplate)
-
-/* ---- graphics/resources/palette: palette bank slots and the remap byte table. */
-#define g_GraphicsPaletteBankSlots (*(uint32_t (*)[0x200])&g_ImageObject_004AD930.at_g_GraphicsPaletteBankSlots)
-#define g_GraphicsPaletteRemapBytes (*(uint8_t (*)[0x100])&g_ImageObject_004AE130.at_g_GraphicsPaletteRemapBytes)
-
 /* ---- graphics/core: scratch for direction-to-angles in an object's local frame. */
-
-/* ---- graphics/render/model: entries -136..-1 of g_ModelDistanceAttenuationMmx. ModelRender_ComputeVertexIntensity-
-   DefaultPath indexes that table with the signed light-facing dot >> 21, so negative dots read these rows: a ramp
-   rising by 0x80 per step from 0x007F (index -1) to 0x3F7F, then 0x3FFF (-128..-136); alpha lane 0x4000. The
-   8 bytes 0x004cad58..0x004cad5f before it are 0x90 filler. */
-
-/* ---- graphics/render/model: MMX distance attenuation per (distance >> 21), up to the lighting
-   multiplier table that follows it. */
-#define g_ModelDistanceAttenuationMmx (*(SoftwareBgraWordLanes (*)[0x222])&g_ImageObject_004CB1A0.at_g_ModelDistanceAttenuationMmx)
 
 /* ---- audio/spatial: listener rotation basis and the combined world-to-listener transform. */
 
-/* ---- ui/ingame: directory scratch for resource registration. */
-#define g_ResourceRegistrationDirectoryUtf16 (*(uint16_t (*)[0x100])&g_ImageObject_0050DCC4.at_g_ResourceRegistrationDirectoryUtf16)
 
 /* ---- network/protocol/transfer: version string shown to joining players ("1.5.45"). */
 #define g_GameVersionUtf16 (*(uint16_t (*)[7])&g_ImageObject_0050F07C.at_g_GameVersionUtf16)
@@ -123,7 +99,6 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 
 /* ---- unreferenced original data (no code reference found; kept as data). */
 /* value after g_TerrainAuxHeightMinimum (0x2000, Q12 2.0), followed by 0x90 fill up to 0x00503b10 */
-#define g_TerrainUnreferencedValue00503B04 (*(int32_t *)&g_ImageObject_00503B04.at_g_TerrainUnreferencedValue00503B04)
 /* file patterns after u_save___sve_0050d9c8: L"level\\*.lev" and L"level\\*.cgn" */
 /* L"army0000.gfx" and "ARMY" after g_AiCommandGenerationRetainedTarget, followed by 0x90 fill up to
    0x0051b3c0 */

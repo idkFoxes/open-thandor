@@ -10,6 +10,13 @@
 
 /* Implementation ownership: ui/ingame/technology. */
 
+/* Parts of the cost rich-text stream g_InGameTechnologyCostRichText: the literal-colour command, its eight colour
+   digits, then the xenite cost text. */
+enum {
+  TECHNOLOGY_COST_TEXT_COLOR_DIGITS = 1,
+  TECHNOLOGY_COST_TEXT_XENITE = RICHTEXT_RECORD_UNITS_LITERAL_COLOR
+};
+
 /* Address: 0x0056AE70.
    Handler of the seven technology area tabs, actions INGAME_ACTION_TECHNOLOGY_AREA_TAB1..7 (0x1014..0x101A,
    slots 20..26 of g_InGameUiActionHandlersPage10): a tab that is now selected deselects the other six, then the
@@ -530,9 +537,9 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       g_InGameSelectedTechnologyId = selectedTechnologyId;
       writtenBytes = g_WideNumberFormatUtf16
                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int)xeniteCost >> 4,
-                          g_InGameTechnologyXeniteCostTextUtf16);
+                          &g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_XENITE]);
       /* behind the number: palette colour 0 again, then the terminator */
-      *(uint32_t *)((uint8_t *)g_InGameTechnologyXeniteCostTextUtf16 + writtenBytes) =
+      *(uint32_t *)((uint8_t *)&g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_XENITE] + writtenBytes) =
            RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,energyCost,g_InGameTechnologyEnergyCostTextUtf16);
@@ -540,20 +547,20 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
          (WideNumber_FormatUtf16 preserves EDX), so words 4, 6 and 7 get energy-cost bits shifted into their top
          nibbles. Checked against the disassembly at 0x0056B2E4. */
       packedEnergyColor = energyCost << 16 | costColor >> 16;
-      g_InGameTechnologyCostColorWords8[1] = (uint16_t)costColor;
-      g_InGameTechnologyCostColorWords8[5] = (uint16_t)(costColor >> 16);
-      g_InGameTechnologyCostColorWords8[0] = (uint16_t)(costColor >> 4);
-      g_InGameTechnologyCostColorWords8[4] = (uint16_t)(packedEnergyColor >> 4);
-      g_InGameTechnologyCostColorWords8[3] = (uint16_t)(costColor >> 8);
-      g_InGameTechnologyCostColorWords8[7] = (uint16_t)(packedEnergyColor >> 8);
-      g_InGameTechnologyCostColorWords8[2] = (uint16_t)(costColor >> 12);
-      g_InGameTechnologyCostColorWords8[6] = (uint16_t)(packedEnergyColor >> 12);
+      g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 1] = (uint16_t)costColor;
+      g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 5] = (uint16_t)(costColor >> 16);
+      g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 0] = (uint16_t)(costColor >> 4);
+      g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 4] = (uint16_t)(packedEnergyColor >> 4);
+      g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 3] = (uint16_t)(costColor >> 8);
+      g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 7] = (uint16_t)(packedEnergyColor >> 8);
+      g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 2] = (uint16_t)(costColor >> 12);
+      g_InGameTechnologyCostRichText[TECHNOLOGY_COST_TEXT_COLOR_DIGITS + 6] = (uint16_t)(packedEnergyColor >> 12);
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                  (int)technologyAsset->records[selectedTechnologyId].researchDurationQ5 >> 5,
                  g_InGameTechnologyResearchTimeTextUtf16);
       descriptionText = TextResource_Resolve(descriptionTextId);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_InGameTechnologyCostRichTextScratch,descriptionText);
+      RichTextCommandStream_PatchPayloadBySelector(0,g_InGameTechnologyCostRichText,descriptionText);
       RichTextCommandStream_PatchPayloadBySelector(1,g_InGameTechnologyEnergyCostTextUtf16,descriptionText);
       RichTextCommandStream_PatchPayloadBySelector(2,g_InGameTechnologyResearchTimeTextUtf16,descriptionText);
       textExtent = RichTextCommandStream_MeasureWrappedBlock

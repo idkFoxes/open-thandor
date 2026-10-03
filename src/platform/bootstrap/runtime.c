@@ -946,7 +946,8 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
     return allocError;
   }
   g_InGameFactionStatusTextScratchUtf16 = textBuffer;
-  g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
+  /* the in-game template's wrapped world view status text shows the same buffer */
+  ((UiWrappedTextControl *)&g_InGameRuntimeDefaultImageTemplate.worldViewWrappedStatusText)->text = textBuffer;
   allocError = g_MemoryApi.alloc
                    (INGAME_PLAYER_LIST_TEXT_BYTES,(void **)&g_InGamePlayerListTextScratchUtf16);
   if (allocError != 0) {
@@ -1031,13 +1032,20 @@ static uint32_t CoreAssets_AllocateRuntimeBuffers(void)
   if (allocError != 0) {
     return allocError;
   }
-  g_CoreAssetScratchSlice1 = scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-  g_CoreAssetScratchSlice2 = scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-  g_CoreAssetScratchSlice3 = scratchCursor + 3 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-  g_CoreAssetScratchSlice4 = scratchCursor + 4 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-  g_CoreAssetScratchSlice5 = scratchCursor + 5 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-  g_CoreAssetScratchSlice6 = scratchCursor + 6 * CORE_ASSET_SCRATCH_SLICE_BYTES;
-  g_CoreAssetScratchSlice0 = scratchCursor;
+  /* the slices are the tooltip texts of the seven technology area tabs of the in-game template */
+  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab2_prefix.tooltipText =
+       (uint16_t *)(scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab3_prefix.tooltipText =
+       (uint16_t *)(scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab4_prefix.tooltipText =
+       (uint16_t *)(scratchCursor + 3 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab5_prefix.tooltipText =
+       (uint16_t *)(scratchCursor + 4 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab6_prefix.tooltipText =
+       (uint16_t *)(scratchCursor + 5 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab7_prefix.tooltipText =
+       (uint16_t *)(scratchCursor + 6 * CORE_ASSET_SCRATCH_SLICE_BYTES);
+  g_InGameRuntimeDefaultImageTemplate.technologyAreaTab1_prefix.tooltipText = (uint16_t *)scratchCursor;
   for (remainingCount = CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES / 4;
        remainingCount != 0; remainingCount--) {
     scratchCursor[0] = 0;
@@ -1103,7 +1111,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   if (panelTexture == NULL) {
     return panelTextureError;
   }
-  g_InGameStatusPanelTextureSource = panelTexture;
+  ((UiImagePanelControl *)&g_InGameRuntimeDefaultImageTemplate.resultsScreenPanel)->textureSource = panelTexture;
   return CoreAssets_AllocateRuntimeBuffers();
 }
 

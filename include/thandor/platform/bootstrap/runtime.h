@@ -26,7 +26,7 @@
 #define INGAME_PLAYER_LIST_TEXT_BYTES 0x160 /* g_InGamePlayerListTextScratchUtf16 */
 #define SELECTION_PLAYER_BLOCK_COUNT 8 /* g_SelectionPlayerBlocks, see g_SelectionPlayerRuntimeBlockPointers[8] */
 #define FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT 8 /* records in g_FrontendPlayerRuntimeBlocks (0x9D80 bytes) */
-#define CORE_ASSET_SCRATCH_SLICE_COUNT 7 /* g_CoreAssetScratchSlice0..6, one zeroed allocation */
+#define CORE_ASSET_SCRATCH_SLICE_COUNT 7 /* tooltip texts of the in-game template's technologyAreaTab1..7, one zeroed allocation */
 #define CORE_ASSET_SCRATCH_SLICE_BYTES 0x200
 /* CPU_DetectFeatures */
 #define CPUID_LEAF_VERSION_INFO 1

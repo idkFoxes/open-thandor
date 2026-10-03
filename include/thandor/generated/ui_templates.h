@@ -41,9 +41,9 @@ typedef struct UiTechnologyAreaTabPrefix {
 /* g_FatalErrorUiRootTemplateImage: 3 UI nodes. FATAL_ERROR_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
    FATAL_ERROR_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FatalErrorUiImage {
-    UiNodeBase fatalErrorPanel; /* +0000 g_UiPanelControlVtable: Panel root of the fatal error dialog; g_FatalErrorRichTextLeft/Right lie in its rect/offset fields. */
+    UiNodeBase fatalErrorPanel; /* +0000 g_UiPanelControlVtable: Panel root of the fatal error dialog; its leftOffset/rightOffset give the text wrap width. */
     uint32_t fatalErrorPanel_fields[3];
-    UiNodeBase errorMessageText; /* +0058 g_UiListOffsetControlVtable: Rich text area showing the error; g_FatalErrorRichTextTop/Bottom and g_FatalErrorRichTextStream lie inside this node. */
+    UiNodeBase errorMessageText; /* +0058 g_UiListOffsetControlVtable: Rich text area showing the error (a UiWrappedTextControl); its leftOffset/rightOffset narrow the wrap width, its text is set in the template image. */
     uint32_t errorMessageText_fields[4];
     UiNodeBase okButton; /* +00B4 g_UiNodeVtable_004B1D80: Bottom-right button, action 1, text 0x100 (OK), closes the dialog. */
     uint32_t okButton_fields[4];

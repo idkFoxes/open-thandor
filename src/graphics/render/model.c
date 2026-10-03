@@ -298,7 +298,7 @@ void ModelRender_PrepareProjectedVertex
       surfaceNormalQ12 = (GraphicsFixedVec3 *)&((GraphicsTriangleInput *)triangle)->planeNormalXQ12;
     }
     vertexColor = ModelRender_ComputeVertexIntensityDefaultPath
-                      (vertex[2].y,&vertex[2].z,THANDOR_ADDR(g_ModelDistanceAttenuationMmx,0),g_SceneBoundsFixed.bound5,
+                      (vertex[2].y,&vertex[2].z,THANDOR_ADDR(g_ModelLightingMmxMultiplierRows[MODEL_DISTANCE_ATTENUATION_ROW0],0),g_SceneBoundsFixed.bound5,
                        g_SceneBoundsFixed.bound4,
                        (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,vertexColor,
                        surfaceNormalQ12);
@@ -746,8 +746,8 @@ ModelRender_ComputeVertexIntensityDefaultPath
 
 /* Address: 0x004CC820.
    The same vertex lighting as ModelRender_ComputeVertexIntensityDefaultPath for MODEL_TRIANGLE_LIGHTING_SCALED
-   triangles: the directional weight comes from g_ModelLightingScaleMmxMultiplierTable, indexed by the facing dot
-   divided by the model resource's lightingScaleQ12 (>> 9).
+   triangles: the directional weight comes from g_ModelLightingMmxMultiplierRows at MODEL_LIGHTING_SCALE_ROW0 plus
+   the facing dot divided by the model resource's lightingScaleQ12 (>> 9).
 */
 PackedArgb32
 ModelRender_ComputeVertexIntensityScaledPath
@@ -775,7 +775,8 @@ ModelRender_ComputeVertexIntensityScaledPath
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
   directionalLanes =
        pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
-              *(uint64_t *)&g_ModelLightingScaleMmxMultiplierTable[lightFacingDotQ12 / lightingScaleQ12 >> 9]);
+              *(uint64_t *)&g_ModelLightingMmxMultiplierRows
+                             [MODEL_LIGHTING_SCALE_ROW0 + (lightFacingDotQ12 / lightingScaleQ12 >> 9)]);
   shadingRecord = g_GraphicsShadingNearbyRecords;
   accumulatedLanes =
        pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),

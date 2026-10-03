@@ -867,7 +867,7 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
     return;
   }
   /* copy the template, one dword per step */
-  templateCursor = (const uint32_t *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
+  templateCursor = (const uint32_t *)&g_UiDisplaySettingsRootTemplate;
   copyCursor = (uint32_t *)root;
   for (copyCount = sizeof(DisplaySettingsUiImage) / 4; copyCount != 0; copyCount--) {
     *copyCursor = *templateCursor;

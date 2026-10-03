@@ -627,9 +627,9 @@ static bool InGameSaveGame_OpenNewPackage(void *savePath,EngineFileHandle *packa
   if (InGameSaveGame_CreatePackage(savePath,packageHandle)) {
     return true;
   }
-  WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),savePath);
+  WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,g_ResourceRegistrationDirectoryUtf16,savePath);
   if (g_FileSystemCreateDirectoryRecursive
-          (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0)) != 0) {
+          (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,g_ResourceRegistrationDirectoryUtf16) != 0) {
     return false;
   }
   return InGameSaveGame_CreatePackage(savePath,packageHandle);

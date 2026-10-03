@@ -97,7 +97,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
   }
   else {
     /* REP MOVSD of the 0x1A4-byte template, one dword per step */
-    templateCursor = g_UiFourValueDialogTemplateImage;
+    templateCursor = (uint32_t *)&g_UiFourValueDialogTemplateImage;
     copyCursor = (uint32_t *)root;
     countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
     for (remainingDwords = sizeof(g_UiFourValueDialogTemplateImage) / 4; remainingDwords != 0; remainingDwords--) {
