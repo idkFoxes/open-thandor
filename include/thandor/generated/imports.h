@@ -9,6 +9,10 @@
 
 #include <thandor/generated/types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* KERNEL32.DLL */
 __declspec(dllimport) BOOL __stdcall CloseHandle(HANDLE hObject);
 __declspec(dllimport) BOOL __stdcall CopyFileA(LPCSTR lpExistingFileName, LPCSTR lpNewFileName, BOOL bFailIfExists);
@@ -92,5 +96,9 @@ __declspec(dllimport) HCURSOR __stdcall SetCursor(HCURSOR hCursor);
 __declspec(dllimport) BOOL __stdcall ShowWindow(HWND hWnd, int nCmdShow);
 __declspec(dllimport) BOOL __stdcall TranslateMessage(MSG * lpMsg);
 __declspec(dllimport) BOOL __stdcall UpdateWindow(HWND hWnd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* THANDOR_GENERATED_IMPORTS_H */

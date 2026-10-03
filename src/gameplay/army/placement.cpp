@@ -1,0 +1,1264 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/army/placement.cpp
+ * Reverse engineering by idkFoxes 2026
+ */
+
+#include <thandor/gameplay/army/placement.h>
+#include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
+
+/* Module data. */
+
+ArmyPlacementCandidateCount g_ArmyPlacementLateRejectionCount = 0;
+
+/* Implementation ownership: gameplay/army/placement. */
+
+/* Placement test for models with a second footprint: runs the common candidate test
+   (ArmyPlacement_CanPlaceBuilding), then rotates the model's (1,5) anchor point by the
+   placement heading and requires ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of free room there, both from other
+   armies and from the terrain limits of the definition's contact kind. Returns true when the point is
+   accepted and stores the common test's value in *outPlacementValue; returns false (*outPlacementValue
+   untouched) when it is rejected.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[13],
+   called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
+*/
+
+Bool8 ArmyPlacement_CanPlaceAnchoredModel
+              (ArmyPlacementDispatchArg0 placementMode,
+              ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
+              ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12,
+              Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
+              ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime,
+              uint32_t *outPlacementValue)
+
+{
+  int offsetWorldXQ12;
+  int offsetWorldYQ12;
+  Bool8 blocked;
+  FixedLengthAngle offsetLengthAngle;
+  FixedSinCos rotatedOffset;
+  uint32_t clearanceValue;
+  ModelPackedPointRecord *anchorRecord;
+  TerrainPlacementResult terrainTest;
+
+  if (!ArmyPlacement_CanPlaceBuilding
+                    (placementMode,placementClearancePaddingQ12,placementHeading,terrainHeightQ12,
+                     worldXQ12,worldYQ12,modelDefinition,ownerFactionIndex,worldRuntime,
+                     &clearanceValue)) {
+    return false;
+  }
+  /* the model resource of the definition's root node.
+     Original quirk: the found flag is not checked; without a (1,5) point the record just past the
+     point table is read. */
+  ModelLookupTable_FindPackedPoint
+            (1,5,((MdlSerializedNodeHeader *)modelDefinition->rootNodeOffsetOrPointer)->
+                 spriteAssetReference.modelResource,&anchorRecord);
+  offsetLengthAngle = FixedMath_Vector2AngleAndLength
+                    ((anchorRecord->localPosition).y,(anchorRecord->localPosition).x);
+  rotatedOffset = FixedMath_SinCosScaled(offsetLengthAngle.angle + placementHeading & FIXED_ANGLE16_MASK,offsetLengthAngle.length);
+  offsetWorldXQ12 = worldXQ12 + rotatedOffset.sinValue;
+  offsetWorldYQ12 = worldYQ12 + rotatedOffset.cosValue;
+  blocked = ArmyPlacementCollision_TestPointAgainstRuntimeList
+                    (placementMode,ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,offsetWorldXQ12,offsetWorldYQ12,
+                     worldRuntime);
+  if (!blocked) {
+    terrainTest.rejected = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests
+              [modelDefinition->placementContactKindIndex])
+                      (ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,terrainHeightQ12,offsetWorldXQ12,
+                       offsetWorldYQ12,worldRuntime->fieldGrid);
+    if (!terrainTest.rejected) {
+      *outPlacementValue = clearanceValue;
+      return true;
+    }
+  }
+  /* the counter counts these late rejections; the placement preview
+     (InGameWorldOverlay) tints the ghost by it */
+  g_ArmyPlacementLateRejectionCount++;
+  return false;
+}
+
+
+/* Validates a placed model with a second footprint (the live counterpart of
+   ArmyPlacement_CanPlaceAnchoredModel): the common test ArmyPlacementCollision_TestCurrentRuntime,
+   then ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of room around the model's (1,5) anchor point in world space,
+   free of other armies and within the terrain limits (TerrainAuxHeightThreshold_TestAroundWorldPoint for
+   contact kind 1 = water surface, TerrainHeightBand_TestAroundWorldPoint otherwise). Returns true when rejected
+   (also when the model has no anchor point).
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[13],
+   called by ArmyRuntimeNode_DispatchTypedCallback.
+*/
+
+Bool8 ArmyPlacement_TestModelTerrainAndRuntimeClearance
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
+
+{
+  ModelRuntimeNode *modelNodeRuntime;
+  ModelDefinition *placementDefinition;
+  uint32_t worldYQ12;
+  Q12 worldXQ12;
+  int referenceHeightQ12;
+  Bool8 blocked;
+  ModelPackedPointRecord *anchorRecord;
+  ModelWorldPoint anchorWorldPoint;
+
+  modelNodeRuntime = modelRuntime->rootModelNode;
+  blocked = ArmyPlacementCollision_TestCurrentRuntime(worldRuntime,modelRuntime);
+  if (!blocked) {
+    placementDefinition = modelRuntime->modelDefinition;
+    if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
+      anchorWorldPoint = ModelNodeRuntime_TransformLocalPoint(anchorRecord,modelNodeRuntime);
+      worldXQ12 = anchorWorldPoint.yQ12;
+      worldYQ12 = anchorWorldPoint.xQ12;
+      /* the anchor's height with the definition's and the resource's height offsets taken off */
+      referenceHeightQ12 =
+           (anchorWorldPoint.zQ12 - placementDefinition->placementHeightOffsetQ12) -
+           ((modelNodeRuntime->modelPayload).modelResource)->placementHeightOffsetQ12;
+      blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
+                        ((WorldOwnerListNode *)modelNodeRuntime,worldXQ12,worldYQ12,
+                         (IMAGE_DOS_HEADER *)ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,worldRuntime);
+      if (!blocked) {
+        if (modelRuntime->modelDefinition->placementContactKindIndex == ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
+          blocked = TerrainAuxHeightThreshold_TestAroundWorldPoint
+                            (ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,referenceHeightQ12,worldXQ12,worldYQ12,
+                             worldRuntime->fieldGrid);
+          if (!blocked) {
+            return false;
+          }
+        }
+        else {
+          blocked = TerrainHeightBand_TestAroundWorldPoint
+                            (ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12,referenceHeightQ12,worldXQ12,worldYQ12,
+                             worldRuntime->fieldGrid);
+          if (!blocked) {
+            return false;
+          }
+        }
+      }
+    }
+    g_ArmyPlacementLateRejectionCount++;
+  }
+  return true;
+}
+
+
+Q12 g_ArmyPlacementValidatedWorldXQ12;
+Q12 g_ArmyPlacementValidatedWorldYQ12;
+
+/* Tests whether an army asset can be placed at a point (the placement cursor, a build command): first at
+   the point itself, then at four points around it (the point rounded down to a multiple of 0x100, plus 0 or
+   0x240 on each axis). Returns false when one fits and leaves the accepted point in
+   g_ArmyPlacementValidatedWorldXQ12/YQ12; true when none fits.
+*/
+Bool8 ArmyPlacement_ValidateAssetAtPointAndCellCorners
+          (ArmyPlacementMode placementMode,uint32_t placementHeading,Q12 worldYQ12,
+          Q12 worldXQ12,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionId,
+          void *inGameRuntime)
+
+{
+  /* Besides the result, the function hands back the point it accepted - the input point, or the first free
+     snapped cell corner. Callers read it from g_ArmyPlacementValidatedWorldX/YQ12. */
+  /* corner order as in the original: (0,0), (+0x240,0), (+0x240,+0x240), (0,+0x240) */
+  static const int cornerDx[4] = {0,ARMY_PLACEMENT_CORNER_OFFSET_Q12,ARMY_PLACEMENT_CORNER_OFFSET_Q12,0};
+  static const int cornerDy[4] = {0,0,ARMY_PLACEMENT_CORNER_OFFSET_Q12,ARMY_PLACEMENT_CORNER_OFFSET_Q12};
+  int corner;
+
+  g_ArmyPlacementValidatedWorldXQ12 = worldXQ12;
+  g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
+  if (ArmyPlacement_CanPlaceAssetAtFieldPoint
+                         (placementMode,0,placementHeading,worldYQ12,worldXQ12,armyAssetId,
+                          ownerFactionId,(UiRootNode *)inGameRuntime,NULL)) {
+    return false;
+  }
+  for (corner = 0; corner < 4; corner++) {
+    Q12 x = (Q12)(((uint32_t)worldXQ12 & 0xffffff00) + cornerDx[corner]);
+    Q12 y = (Q12)(((uint32_t)worldYQ12 & 0xffffff00) + cornerDy[corner]);
+    if (ArmyPlacement_CanPlaceAssetAtFieldPoint
+                           (placementMode,0,placementHeading,y,x,armyAssetId,ownerFactionId,
+                            (UiRootNode *)inGameRuntime,NULL)) {
+      g_ArmyPlacementValidatedWorldXQ12 = x;
+      g_ArmyPlacementValidatedWorldYQ12 = y;
+      return false;
+    }
+  }
+  g_ArmyPlacementValidatedWorldXQ12 = worldXQ12;
+  g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
+  return true;
+}
+
+
+/* Placement test for resource extractors: after the common candidate test
+   (ArmyPlacement_CanPlaceBuilding) the field-grid cell under the point must carry the
+   deposit bit the definition asks for (FIELD_CELL_XENITE_SUPPORT << selector classParameterC0: 0 Xenite,
+   1 Tritium).
+   Returns true when the point is accepted and stores the common test's value in *outPlacementValue;
+   returns false (*outPlacementValue untouched) when it is rejected.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[14],
+   called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
+*/
+Bool8 ArmyPlacement_CanPlaceResourceExtractor
+              (ArmyPlacementDispatchArg0 placementMode,
+              ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
+              ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12,
+              Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition,
+              ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime,
+              uint32_t *outPlacementValue)
+
+{
+  uint32_t clearanceValue;
+  int cellColumn;
+  uint32_t projectedRowTerm;
+  int cellRow;
+  FieldGridAsset *activeFieldGrid;
+
+  if (!ArmyPlacement_CanPlaceBuilding
+                    (placementMode,placementClearancePaddingQ12,placementHeading,terrainHeightQ12,
+                     worldYQ12,worldXQ12,(ModelDefinition *)modelDefinition,
+                     ownerFactionIndex,worldRuntime,&clearanceValue)) {
+    return false;
+  }
+  activeFieldGrid = worldRuntime->fieldGrid;
+  /* FieldGrid_WorldToGridQ12 inlined (skewed grid: the column is shifted by half the row), rounded to the
+     nearest cell */
+  projectedRowTerm = FIXED_MUL_SHR(worldYQ12,FIELD_GRID_WORLD_Y_TO_ROW_Q20,Q20_SHIFT + 1);
+  cellColumn = (int)((FIXED_MUL_SHR(worldXQ12,FIELD_GRID_WORLD_X_TO_COLUMN_Q20,Q20_SHIFT) - projectedRowTerm) + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
+  cellRow = (int)(projectedRowTerm * 2 + FIELD_GRID_CELL_Q12 / 2) >> Q12_SHIFT;
+  if ((cellColumn >= 0) && (cellRow >= 0) &&
+      (cellColumn < (int)activeFieldGrid->gridWidth) && (cellRow < (int)activeFieldGrid->gridHeight)) {
+    /* the resource field selector of an extractor is its class parameter classParameterC0 */
+    if ((activeFieldGrid->cells[activeFieldGrid->gridWidth * cellRow + cellColumn].flagsAndMaterial &
+        FIELD_CELL_XENITE_SUPPORT << ((uint8_t)((ModelDefinition *)modelDefinition)->classParameterC0 & 31)) != 0) {
+      *outPlacementValue = clearanceValue;
+      return true;
+    }
+  }
+  g_ArmyPlacementLateRejectionCount++;
+  return false;
+}
+
+
+/* Validates a placed resource extractor (the live counterpart of ArmyPlacement_CanPlaceResourceExtractor):
+   the common test ArmyPlacementCollision_TestCurrentRuntime, then the field-grid cell under the model (not on
+   the grid border) must carry the deposit bit FIELD_CELL_XENITE_SUPPORT << selector
+   (resourceFieldSupportSelector: 0 Xenite, 1 Tritium). Returns true when rejected.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[14],
+   called by ArmyRuntimeNode_DispatchTypedCallback.
+*/
+Bool8 ArmyPlacement_TestGridOccupancyMask
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementClass14View *modelRuntime)
+
+{
+  int cellColumn;
+  int cellRow;
+  Bool8 blocked;
+  FieldGridCoordinates gridCoordinates;
+  FieldGridAsset *activeFieldGrid;
+  ModelRuntimeNode *rootNode;
+  
+  rootNode = modelRuntime->rootModelNode;
+  blocked = ArmyPlacementCollision_TestCurrentRuntime
+                    (worldRuntime,(ModelRuntimePlacementValidationView *)modelRuntime);
+  if (!blocked) {
+    gridCoordinates = FieldGrid_WorldToGridQ12
+                      ((rootNode->worldTransform).translation.y,
+                       (rootNode->worldTransform).translation.x);
+    /* Q12 grid coordinates rounded to the nearest cell */
+    cellColumn = ((gridCoordinates.columnQ12 >> (Q12_SHIFT - 1)) + 1) >> 1;
+    cellRow = ((gridCoordinates.rowQ12 >> (Q12_SHIFT - 1)) + 1) >> 1;
+    activeFieldGrid = worldRuntime->fieldGrid;
+    if ((0 < cellColumn) && (0 < cellRow)) {
+      if ((cellColumn + 1 < (int)activeFieldGrid->gridWidth) &&
+         ((cellRow + 1 < (int)activeFieldGrid->gridHeight &&
+          ((activeFieldGrid->cells[cellRow * activeFieldGrid->gridWidth + cellColumn].flagsAndMaterial &
+           FIELD_CELL_XENITE_SUPPORT <<
+           ((uint8_t)modelRuntime->modelDefinition->resourceFieldSupportSelector & 31)) != 0)))) {
+        return false;
+      }
+    }
+    g_ArmyPlacementLateRejectionCount++;
+  }
+  return true;
+}
+
+
+/* Validates the position of a mobile unit (ground, tracked, walker, glider and water classes): its grid cell
+   must pass the definition's cell-mask bands (footprintRadiusClass/terrainTraversalClass), no other army may
+   overlap it (ArmyCollision_FindBlockingRuntimeForCurrentUnit), and, unless
+   UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set, the field-grid point must not be blocked for
+   the owner's faction. Returns true when blocked.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[1..3, 17..19],
+   called by ArmyRuntimeNode_DispatchTypedCallback.
+*/
+Bool8 ArmyPlacement_TestGridRuntimeAndFieldBlocking
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
+
+{
+  Bool8 blocked;
+  ModelRuntimeNode *modelNode;
+  
+  modelNode = modelRuntime->rootModelNode;
+  blocked = GridScratch_TestProjectedCellMaskBands
+                    ((modelNode->worldTransform).translation.y,
+                     (modelNode->worldTransform).translation.x,
+                     (uint8_t)modelRuntime->modelDefinition->footprintRadiusClass,
+                     (uint8_t)modelRuntime->modelDefinition->terrainTraversalClass);
+  if (blocked) {
+    return true;
+  }
+  if (ArmyCollision_FindBlockingRuntimeForCurrentUnit
+                    ((modelNode->worldTransform).translation.y,
+                     (modelNode->worldTransform).translation.x,
+                     (RuntimeCollisionQueryView *)modelRuntime,worldRuntime) != NULL) {
+    return true;
+  }
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+    return false;
+  }
+  return FieldGrid_TestWorldPointBlocked
+                    (modelRuntime->ownerArmyRuntime->factionIndex,
+                     (modelNode->worldTransform).translation.y,
+                     (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+}
+
+
+/* Placement test for a mobile unit (ground, tracked, walker, glider and water classes): the point must pass the
+   definition's cell-mask bands (footprintRadiusClass/terrainTraversalClass), be free of other armies
+   (ArmyCollision_TestPointAgainstRuntimeList) and, unless UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE
+   is set, not be blocked on the field grid for the owner's faction. Returns true when the point is accepted and
+   stores 0 in *outPlacementValue; returns false (*outPlacementValue untouched) when it is blocked.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[1..3, 17..19],
+   called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
+*/
+Bool8 ArmyPlacement_CanPlaceMobileUnit
+               (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
+               uint32_t terrainHeightQ12,
+               Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
+               ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime,
+               uint32_t *outPlacementValue)
+
+{
+  Bool8 blocked;
+  
+  blocked = GridScratch_TestProjectedCellMaskBands
+                    (worldXQ12,worldYQ12,(uint8_t)modelDefinition->footprintRadiusClass,
+                     (uint8_t)modelDefinition->terrainTraversalClass);
+  if (blocked) {
+    return false;
+  }
+  blocked = ArmyCollision_TestPointAgainstRuntimeList
+                    (worldXQ12,worldYQ12,(uint8_t *)modelDefinition,worldRuntime);
+  if (blocked) {
+    return false;
+  }
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
+    blocked = FieldGrid_TestWorldPointBlocked
+                      (ownerFactionIndex,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
+    if (blocked) {
+      return false;
+    }
+  }
+  *outPlacementValue = 0;
+  return true;
+}
+
+
+/* Contact kind 0 (terrain): sets the model node onto the interpolated terrain height at the point, plus
+   heightOffsetQ12 and the model resource's own height offset, stands it upright (angle 1 = quarter turn)
+   and sets node flag 0x1. Nothing changes without a field grid or when the point is off the grid.
+   Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[0], indexed by the model
+   definition's contact kind (placementContactKindIndex) from the movement, creation and session code.
+*/
+void ArmyPlacementContact_ApplyTerrainHeight
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  Q12 surfaceHeightQ12;
+  
+  if (worldRuntime->fieldGrid != NULL) {
+    if (FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12)) {
+      (modelNode->worldTransform).translation.z =
+           surfaceHeightQ12 + heightOffsetQ12 +
+           ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
+      (modelNode->worldTransform).translation.x = worldXQ12;
+      (modelNode->worldTransform).translation.y = worldYQ12;
+      (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
+      modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+    }
+  }
+  return;
+}
+
+
+/* Contact kind 1 (water surface): sets the model node onto the interpolated water surface at the point
+   plus heightOffsetQ12 (no resource offset), stands it upright (angle 1 = quarter turn) and sets node flag
+   0x1. Nothing changes without a field grid or when the point is off the grid.
+   Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[1], indexed by the model
+   definition's contact kind (placementContactKindIndex).
+*/
+void ArmyPlacementContact_ApplyWaterSurfaceHeight
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  Q12 surfaceHeightQ12;
+  
+  if (worldRuntime->fieldGrid != NULL) {
+    if (FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12)) {
+      (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
+      (modelNode->worldTransform).translation.x = worldXQ12;
+      (modelNode->worldTransform).translation.y = worldYQ12;
+      (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
+      modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+    }
+  }
+  return;
+}
+
+
+/* Contact kind 2 (terrain with slope): like kind 0, but tilts the model node to the terrain normal (the two
+   packed 16-bit normal angles become rotation angles 0 and 1) instead of standing it upright.
+   Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[2], indexed by the model
+   definition's contact kind (placementContactKindIndex).
+*/
+void ArmyPlacementContact_ApplyTerrainHeightAndNormal
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  int resourceHeightOffsetQ12;
+  Q12 surfaceHeightQ12;
+  uint32_t surfaceNormalAngles;
+
+  if (worldRuntime->fieldGrid != NULL) {
+    if (FieldGrid_InterpolateTerrainHeightAndNormal
+          (worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12,&surfaceNormalAngles)) {
+      resourceHeightOffsetQ12 = ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
+      (modelNode->modelPayload).worldRotationAngle0 = surfaceNormalAngles & FIXED_ANGLE16_MASK;
+      (modelNode->modelPayload).worldRotationAngle1 = (int)surfaceNormalAngles >> 16;
+      (modelNode->worldTransform).translation.z =
+           surfaceHeightQ12 + resourceHeightOffsetQ12 + heightOffsetQ12;
+      (modelNode->worldTransform).translation.x = worldXQ12;
+      (modelNode->worldTransform).translation.y = worldYQ12;
+      modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+    }
+  }
+  return;
+}
+
+
+/* Contact kind 4 (top surface): sets the model node onto the top surface - the terrain, or the water above
+   it (FieldGrid_InterpolateTopSurfaceHeight) - plus heightOffsetQ12, stands it upright (angle 1 = quarter turn)
+   and sets node flag 0x1. Nothing changes without a field grid or when the point is off the grid.
+   Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[4], indexed by the model
+   definition's contact kind (placementContactKindIndex).
+*/
+void ArmyPlacementContact_ApplyTopSurfaceHeight
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  Q12 surfaceHeightQ12;
+  
+  if (worldRuntime->fieldGrid != NULL) {
+    if (FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid,&surfaceHeightQ12)) {
+      (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
+      (modelNode->worldTransform).translation.x = worldXQ12;
+      (modelNode->worldTransform).translation.y = worldYQ12;
+      (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
+      modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+    }
+  }
+  return;
+}
+
+
+/* Contact kind 3 (articulated walker): moves the model node to the point, sets node flag 0x1 and lets the
+   articulated code seat its legs/suspension on the terrain (height and tilt come from there, so
+   heightOffsetQ12 is unused).
+   Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[3], indexed by the model
+   definition's contact kind (placementContactKindIndex).
+*/
+void ArmyPlacementContact_InitializeArticulatedSuspension
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  (modelNode->worldTransform).translation.x = worldXQ12;
+  (modelNode->worldTransform).translation.y = worldYQ12;
+  modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
+  ArmyArticulatedRuntime_InitializeTerrainContactGeometry(modelNode,worldRuntime);
+  ArmyArticulatedRuntime_UpdateSuspensionHierarchy(modelNode,worldRuntime);
+  return;
+}
+
+
+/* Release handler of a resource extractor (class 14): gives back the storage it added to its faction (see
+   ArmyPlacement_ReleaseFactionCapacity) and clears the extractor markers (armyRuntimeSavedOffset,
+   resourceExtractionDescriptor) of the field-grid cell it stood on, so the deposit can be built on again.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[14],
+   called by ModelRuntimePool_DestroyHierarchyAndDetach.
+*/
+void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
+
+{
+  uint8_t *storageLimit;
+  int *storageStock;
+  int storageLimitValue;
+  uint32_t storageContribution;
+  InGameRuntimeRoot *inGameRoot;
+  int factionOffset;
+  int limitOffset;
+  int cellColumn;
+  int cellRow;
+  int cellIndex;
+  FieldGridCoordinates gridCoordinates;
+  FieldGridAsset *activeFieldGrid;
+
+  /* classParameterC0: the resource selector (0 Xenite, 1 Tritium), classParameterC4: the storage the model adds */
+  storageContribution = ((ModelDefinition *)modelDefinition)->classParameterC4;
+  factionOffset =
+       ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex *
+       GAME_FACTION_RUNTIME_RECORD_BYTES;
+  limitOffset = factionOffset + 4; /* xeniteStorageLimitQ4 */
+  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
+    limitOffset = factionOffset + 20; /* tritiumStorageLimitQ4 */
+  }
+  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + limitOffset;
+  storageStock = (int *)(storageLimit - 4); /* the stock is the dword before the limit */
+  storageLimitValue = *(int *)storageLimit;
+  /* the stock loses the share this storage held */
+  if ((((int)modelRuntime->health < 2) && (storageLimitValue != 0)) &&
+     (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0)) {
+    *storageStock = *storageStock -
+         (int)(((int64_t)(int)storageContribution * (int64_t)*storageStock) / (int64_t)storageLimitValue);
+  }
+  *(uint32_t *)storageLimit = *(int *)storageLimit - storageContribution;
+  inGameRoot = g_InGameRuntimeRoot;
+  gridCoordinates = FieldGrid_WorldToGridQ12
+                    ((((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
+                     translation.y,
+                     (((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
+                     translation.x);
+  cellColumn = ((gridCoordinates.columnQ12 >> (Q12_SHIFT - 1)) + 1) >> 1;
+  cellRow = ((gridCoordinates.rowQ12 >> (Q12_SHIFT - 1)) + 1) >> 1;
+  activeFieldGrid = (inGameRoot->worldRuntime).fieldGrid;
+  if (((0 < cellColumn) && (0 < cellRow)) && (activeFieldGrid != NULL)) {
+    if ((cellColumn + 1 < (int)activeFieldGrid->gridWidth) &&
+        (cellRow + 1 < (int)activeFieldGrid->gridHeight)) {
+      cellIndex = cellRow * activeFieldGrid->gridWidth + cellColumn;
+      activeFieldGrid->cells[cellIndex].armyRuntimeSavedOffset = 0;
+      activeFieldGrid->cells[cellIndex].resourceExtractionDescriptor = 0;
+    }
+  }
+  return;
+}
+
+
+/* Release handler of a resource storage (class 15): the model's storage (the definition's classParameterC4) is
+   taken off its faction's Xenite or Tritium storage limit (selector classParameterC0), and - unless the model's
+   health is 2 or more, the limit is zero or class-state bit 0x20 is set - the faction's stock of that
+   resource loses the proportional share (stock * storage / limit) that was kept in it.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[15],
+   called by ModelRuntimePool_DestroyHierarchyAndDetach.
+*/
+void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
+
+{
+  uint8_t *storageLimit;
+  int *storageStock;
+  int storageLimitValue;
+  uint32_t storageContribution;
+  int factionOffset;
+  int storageLimitOffset;
+
+  /* classParameterC0: the resource selector (0 Xenite, 1 Tritium), classParameterC4: the storage the model adds */
+  storageContribution = ((ModelDefinition *)modelDefinition)->classParameterC4;
+  factionOffset =
+       ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex *
+       GAME_FACTION_RUNTIME_RECORD_BYTES;
+  storageLimitOffset = factionOffset + 4; /* xeniteStorageLimitQ4 */
+  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
+    storageLimitOffset = factionOffset + 20; /* tritiumStorageLimitQ4 */
+  }
+  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
+  storageStock = (int *)(storageLimit - 4); /* the stock is the dword before the limit */
+  storageLimitValue = *(int *)storageLimit;
+  /* the stock loses the share this storage held */
+  if ((((int)modelRuntime->health < 2) && (storageLimitValue != 0)) &&
+     (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0)) {
+    *storageStock = *storageStock -
+         (int)(((int64_t)(int)storageContribution * (int64_t)*storageStock) / (int64_t)storageLimitValue);
+  }
+  *(uint32_t *)storageLimit = *(int *)storageLimit - storageContribution;
+  return;
+}
+
+
+/* Release handler of class 21 (aircraft): the model linked in classLinkState.modelLinkOrState (presumably its
+   home base) keeps 13 slots of army asset ids (from classLinkState.classState78 on) with a reservation bit each
+   (classState.classStateB4). The first slot holding this army's asset id with its bit set gets the bit cleared
+   and the counter classState70 incremented; unless class-state bit 0x20 of the released model is set, the slot
+   is also emptied and the counters armyLinkOrState and classState70 are decremented.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[21],
+   called by ModelRuntimePool_DestroyHierarchyAndDetach.
+*/
+void ArmyPlacement_ReleaseClassStateReservation
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
+
+{
+  uint32_t *classCounter;
+  int32_t *reservationBits;
+  ModelRuntimeArmyLinkOrState *armyLinkState;
+  uint32_t *slotAssetIds;
+  int slotIndex;
+  uint32_t reservationBit;
+  ModelRuntimeSlot *linkedModelSlot;
+
+  linkedModelSlot = (modelRuntime->classLinkState).modelLinkOrState.modelRuntime;
+  if (linkedModelSlot == NULL) {
+    return;
+  }
+  /* the 13 asset-id dwords start at classState78 and run on past it */
+  slotAssetIds = &(linkedModelSlot->classLinkState).classState78;
+  reservationBit = 1;
+  for (slotIndex = 0; slotIndex < 13; slotIndex++) {
+    if ((((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->armyAssetId ==
+         slotAssetIds[slotIndex]) &&
+       (((linkedModelSlot->classState).classStateB4 & reservationBit) != 0)) {
+      classCounter = &(linkedModelSlot->classLinkState).classState70;
+      *classCounter = *classCounter + 1;
+      reservationBits = &(linkedModelSlot->classState).classStateB4;
+      *reservationBits = *reservationBits & (reservationBit ^ 0xffffffff);
+      if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) != 0) {
+        return;
+      }
+      slotAssetIds[slotIndex] = 0;
+      armyLinkState = &(linkedModelSlot->classLinkState).armyLinkOrState;
+      armyLinkState->armyRuntime = (ArmyRuntimeSlot *)(armyLinkState->classState - 1);
+      classCounter = &(linkedModelSlot->classLinkState).classState70;
+      *classCounter = *classCounter - 1;
+      return;
+    }
+    reservationBit = reservationBit * 2;
+  }
+}
+
+
+/* Placement test of the classes that can be placed anywhere: accepts at once (returns true and stores 0 in
+   *outPlacementValue).
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[0, 5..9,
+   12, 21], called by ArmyPlacement_CanPlaceAssetAtFieldPoint.
+*/
+Bool8 ArmyPlacement_CanPlaceAnywhere
+               (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
+               uint32_t terrainHeightQ12,
+               Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition,
+               uint32_t ownerFactionIndex,WorldRuntimeContext *worldRuntime,
+               uint32_t *outPlacementValue)
+
+{
+  *outPlacementValue = 0;
+  return true;
+}
+
+/* Tests whether a model of this definition, with its placement radius (footprintRadius), would overlap any
+   army in the world's owner list: a cheap depth-bin mask overlap first, then the exact circle test
+   ArmyCollision_TestPointWithinExpandedRuntimeRadius. Returns true when an army is in the way (a
+   definition without radius never collides).
+   Called directly by ArmyPlacement_CanPlaceMobileUnit.
+*/
+
+Bool8 ArmyCollision_TestPointAgainstRuntimeList
+          (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime)
+
+{
+  int placementRadiusQ12;
+  DepthBinMask32 firstMaskHigh;
+  DepthBinMask32 firstMaskLow;
+  WorldOwnerListNode *ownerNode;
+  Bool8 hit;
+
+  placementRadiusQ12 = ((ModelDefinition *)modelDefinition)->footprintRadius;
+  ownerNode = worldRuntime->ownerListHead;
+  if ((placementRadiusQ12 != 0) && (ownerNode != NULL)) {
+    firstMaskHigh = DepthInterval_BuildBinMask(placementRadiusQ12,worldYQ12);
+    firstMaskLow = DepthInterval_BuildBinMask(placementRadiusQ12,worldXQ12);
+    do {
+      if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+        hit = DepthBinMasks_Overlap
+                          (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
+                           ownerNode->modelDepthBinMaskNear);
+        if (hit) {
+          hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
+                            (placementRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+          if (hit) {
+            return true;
+          }
+        }
+      }
+      ownerNode = ownerNode->nextNode;
+    } while (ownerNode != NULL);
+  }
+  return false;
+}
+
+
+/* Finds the first model that a moving unit would run into at the given point: every model in the world's
+   owner list whose depth bins overlap the unit's own, except the unit itself, the model it is linked to
+   (classState.linkedArmyRuntimeOrSavedOffset) and models linked to it, and whose collision circle reaches the
+   point within the unit's placement radius (its definition's footprintRadius). Returns that model runtime
+   (never NULL), or NULL when nothing is in the way.
+   Called directly by the ground-movement code (gameplay/army/movement.c) and by
+   ArmyPlacement_TestGridRuntimeAndFieldBlocking.
+*/
+ModelRuntimeSlot *ArmyCollision_FindBlockingRuntimeForCurrentUnit
+          (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryView *currentRuntime,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  ModelRuntimeNode *currentModelNode;
+  uint32_t clearanceRadiusQ12;
+  ModelRuntimeSlot *candidateModelRuntime;
+  Bool8 hit;
+  ModelRuntimeNode *candidateModelNode;
+  
+  currentModelNode = currentRuntime->modelNodeRuntime;
+  clearanceRadiusQ12 = currentRuntime->modelDefinition->footprintRadius;
+  if (clearanceRadiusQ12 == 0) {
+    return NULL;
+  }
+  for (candidateModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead; candidateModelNode != NULL;
+      candidateModelNode = (ModelRuntimeNode *)(candidateModelNode->common).nextNode) {
+    if (candidateModelNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    hit = DepthBinMasks_Overlap
+                      (currentRuntime->modelNodeRuntime->depthBinMaskFar,
+                       currentRuntime->modelNodeRuntime->depthBinMaskNear,
+                       candidateModelNode->depthBinMaskFar,candidateModelNode->depthBinMaskNear);
+    if (!hit) {
+      continue;
+    }
+    candidateModelRuntime = (candidateModelNode->runtimePayload).modelRuntime;
+    if (currentModelNode == candidateModelNode) {
+      continue;
+    }
+    /* the unit's linked model and models linked to the unit never block it (the original also tests
+       currentRuntime for NULL here, after it was already dereferenced, so that test never fired) */
+    if ((candidateModelRuntime == currentRuntime->linkedRuntime) ||
+        ((ModelRuntimeSlot *)currentRuntime ==
+         (candidateModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.modelRuntime)) {
+      continue;
+    }
+    hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
+                      (clearanceRadiusQ12,worldXQ12,worldYQ12,candidateModelRuntime);
+    if (hit) {
+      /* never NULL here: the radius test and the link test above dereference it */
+      return candidateModelRuntime;
+    }
+  }
+  return NULL;
+}
+
+
+/* Looks up the army asset and its model definition, samples the terrain height at the point with the
+   definition's interpolation callback (index placementContactKindIndex), and hands the placement test to the
+   handler of the definition's class (runtimeClassId) in the placement dispatch table. Returns true when that
+   handler accepts the point and stores the handler's value (a placement count for the counting modes 3 and 7) in
+   *outPlacementValue (may be NULL); returns false (*outPlacementValue untouched) when the handler rejects
+   the point or the asset or its model definition is missing. No caller used the lookup error code the
+   original returned on failure.
+*/
+Bool8 ArmyPlacement_CanPlaceAssetAtFieldPoint(ArmyPlacementMode placementMode,
+          ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
+          uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
+          PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
+          UiRootNode *inGameRoot,uint32_t *outPlacementValue)
+
+{
+  uint32_t assetClassIndex;
+  ModelDefinitionRecordPrefix *modelDefinition;
+  ArmyAssetRecordPrefix *armyAsset;
+  Q12 terrainHeightQ12;
+  uint32_t placementValue;
+
+  if (ArmyAssetRegistry_FindById(armyAssetId,&armyAsset) != 0) {
+    return false;
+  }
+  /* the model definition of the army asset's root node */
+  modelDefinition = ModelDefinitionRegistry_FindById
+                    (((AiLinkedDefinitionListView *)armyAsset->rootNodeOffsetOrPointer)->definitionIds[0]);
+  if (modelDefinition == NULL) {
+    return false;
+  }
+  assetClassIndex = ((ModelDefinition *)modelDefinition)->runtimeClassId;
+  /* placementContactKindIndex selects the height interpolation mode; the field grid is the in-game
+     runtime's worldRuntime.fieldGrid, read here through the UiRootNode view (previousRoot) */
+  (*g_FieldGridInterpolationCallbacks5.callbacks[((ModelDefinition *)modelDefinition)->placementContactKindIndex])
+            (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot,&terrainHeightQ12);
+  if (!(*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex])
+            (placementMode,placementClearancePaddingQ12,placementHeading,terrainHeightQ12,
+             worldYQ12,worldXQ12,modelDefinition,ownerFactionIndex,(WorldRuntimeContext *)inGameRoot,
+             &placementValue)) {
+    return false;
+  }
+  if (outPlacementValue != NULL) {
+    *outPlacementValue = placementValue;
+  }
+  return true;
+}
+
+
+/* Tests whether a circle of queryRadiusQ12 at a candidate point hits any army in the world's owner list:
+   depth-bin overlap first, then the exact circle test; armies of runtime class 0 and 12 never block, class-13
+   armies also block when the point comes near their (1,5) anchor point. With
+   ARMY_PLACEMENT_MODE_STRUCTURES_ONLY in the mode only armies of depth-bin class 0x90 count. Returns true on
+   a hit.
+   Called directly by ArmyPlacement_CanPlaceBuilding and
+   ArmyPlacement_CanPlaceAnchoredModel.
+*/
+
+Bool8 ArmyPlacementCollision_TestPointAgainstRuntimeList
+          (ArmyPlacementCollisionFilterFlags placementFilterFlags,Q12 queryRadiusQ12,Q12 worldXQ12,
+          Q12 worldYQ12,WorldRuntimeContext *worldRuntime)
+
+{
+  int modelClassId;
+  DepthBinMask32 firstMaskHigh;
+  DepthBinMask32 firstMaskLow;
+  WorldOwnerListNode *ownerNode;
+  Bool8 hit;
+
+  ownerNode = worldRuntime->ownerListHead;
+  if ((queryRadiusQ12 == 0) || (ownerNode == NULL)) {
+    return false;
+  }
+  firstMaskHigh = DepthInterval_BuildBinMask(queryRadiusQ12,worldYQ12);
+  firstMaskLow = DepthInterval_BuildBinMask(queryRadiusQ12,worldXQ12);
+  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    modelClassId = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId;
+    hit = DepthBinMasks_Overlap
+                      (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
+                       ownerNode->modelDepthBinMaskNear);
+    if (!hit) {
+      continue;
+    }
+    if (((placementFilterFlags & ARMY_PLACEMENT_MODE_STRUCTURES_ONLY) != 0) &&
+        (g_ArmyRuntimeDepthBinClassByModelClass[modelClassId] != ARMY_DEPTH_BIN_CLASS_STRUCTURE)) {
+      continue;
+    }
+    if ((modelClassId == MODEL_RUNTIME_CLASS_00) || (modelClassId == MODEL_RUNTIME_CLASS_12)) {
+      continue;
+    }
+    hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
+                      (queryRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+    if (hit) {
+      return true;
+    }
+    if (modelClassId == MODEL_RUNTIME_CLASS_13) {
+      hit = ArmyPlacementCandidate_TestModelAnchorDistance
+                        (queryRadiusQ12,worldXQ12,worldYQ12,(ModelRuntimeSlot *)ownerNode->runtimePayload);
+      if (hit) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+
+/* Tests whether a placed model collides with another army at a point. candidateRuntimeOrRadiusQ12 is either
+   the model runtime itself (a value at or above the image base 0x400000: its placement radius footprintRadius is
+   used, the depth bins of its node must overlap, and it, its linked model
+   (classState.linkedArmyRuntimeOrSavedOffset) and models linked to it are skipped) or a bare radius below
+   0x400000 (used as radius + 1, no depth-bin pre-test). excludedWorldObject is skipped as well; armies of
+   class 0 and 12 never block, class-13 armies also block near their (1,5) anchor. Returns true on a collision.
+   Called directly by ArmyPlacementCollision_TestCurrentRuntime and
+   ArmyPlacement_TestModelTerrainAndRuntimeClearance.
+*/
+
+Bool8 ArmyPlacementCollision_TestCandidateAgainstRuntimeList
+          (WorldOwnerListNode *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
+          IMAGE_DOS_HEADER *candidateRuntimeOrRadiusQ12,WorldRuntimeContext *worldRuntime)
+
+{
+  ModelRuntimeSlot *ownerModelRuntime;
+  ModelRuntimeSlot *candidateRuntime;
+  uint32_t modelClassId;
+  WorldOwnerListNode *candidateNode;
+  char *queryRadiusQ12;
+  Bool8 candidateIsRuntime;
+  Bool8 hit;
+  WorldOwnerListNode *ownerNode;
+
+  /* the IMAGE_DOS_HEADER type only serves the compare against the original image base 0x400000: below it
+     the "pointer" is a radius (e_magic + 1 is that value plus one), above it a model runtime whose +4 (e_cp)
+     is the root node and whose first dword is the definition */
+  candidateIsRuntime = candidateRuntimeOrRadiusQ12 >= (IMAGE_DOS_HEADER *)0x400000;
+  candidateRuntime = (ModelRuntimeSlot *)candidateRuntimeOrRadiusQ12;
+  if (!candidateIsRuntime) {
+    queryRadiusQ12 = candidateRuntimeOrRadiusQ12->e_magic + 1;
+    candidateNode = NULL;
+  }
+  else {
+    candidateNode = *(WorldOwnerListNode **)&candidateRuntimeOrRadiusQ12->e_cp;
+    queryRadiusQ12 = (char *)candidateRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius;
+  }
+  if (queryRadiusQ12 == NULL) {
+    return false;
+  }
+  for (ownerNode = worldRuntime->ownerListHead; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    if (candidateIsRuntime) {
+      hit = DepthBinMasks_Overlap
+                      (candidateRuntime->rootModelNodeOrSavedOffset.modelNode->depthBinMaskFar,
+                       candidateRuntime->rootModelNodeOrSavedOffset.modelNode->depthBinMaskNear,
+                       ownerNode->modelDepthBinMaskFar,ownerNode->modelDepthBinMaskNear);
+      if (!hit) {
+        continue;
+      }
+    }
+    ownerModelRuntime = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    if ((candidateNode == ownerNode) || (ownerNode == excludedWorldObject)) {
+      continue;
+    }
+    /* the candidate's linked model and models linked to the candidate never block it */
+    if (candidateIsRuntime &&
+        ((ownerModelRuntime == candidateRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime) ||
+         (candidateRuntime == ownerModelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime))) {
+      continue;
+    }
+    modelClassId = ownerModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId;
+    if ((modelClassId == MODEL_RUNTIME_CLASS_00) || (modelClassId == MODEL_RUNTIME_CLASS_12)) {
+      continue;
+    }
+    hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
+                    ((Q12)queryRadiusQ12,worldXQ12,worldYQ12,ownerModelRuntime);
+    if (hit) {
+      return true;
+    }
+    if (modelClassId == MODEL_RUNTIME_CLASS_13) {
+      hit = ArmyPlacementCandidate_TestModelAnchorDistance
+                      ((Q12)queryRadiusQ12,worldXQ12,worldYQ12,ownerModelRuntime);
+      if (hit) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+
+/* Validates a placed building (the live counterpart of ArmyPlacement_CanPlaceBuilding): no
+   other army may overlap it, the terrain around it must suit its contact kind, and - unless
+   UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set - its field-grid point must not be blocked for
+   its faction and it must stand within the support radius (supportRadius) plus its own margin
+   (placementFlags) of another model of the same faction. Returns true when rejected.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[4, 10, 11, 15, 16,
+   20, 22, 23], called by ArmyRuntimeNode_DispatchTypedCallback; also called directly by
+   ArmyPlacement_TestModelTerrainAndRuntimeClearance and ArmyPlacement_TestGridOccupancyMask.
+*/
+
+Bool8 ArmyPlacementCollision_TestCurrentRuntime
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
+
+{
+  ModelDefinition *placementDefinition;
+  uint32_t ownClearanceQ12;
+  ArmyRuntimeSlot *ownerArmy;
+  uint32_t neighborSupportRadiusQ12;
+  int64_t deltaYSquared;
+  int64_t remainingSquared;
+  int terrainHeightQ12;
+  int reachQ12;
+  int deltaXQ12;
+  int deltaYQ12;
+  ModelRuntimeNode *ownerNode;
+  ModelRuntimeSlot *neighbor;
+  Bool8 blocked;
+  Bool8 (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
+  ModelRuntimeNode *rootNode;
+
+  rootNode = modelRuntime->rootModelNode;
+  placementDefinition = modelRuntime->modelDefinition;
+  ownClearanceQ12 = placementDefinition->placementFlags;
+  /* reference height for the terrain test: the node's height without the definition's and the resource's
+     height offsets */
+  terrainHeightQ12 = ((rootNode->worldTransform).translation.z - placementDefinition->placementHeightOffsetQ12) -
+          ((rootNode->modelPayload).modelResource)->placementHeightOffsetQ12;
+  terrainTest = TerrainHeightBand_TestAroundWorldPoint;
+  if (placementDefinition->placementContactKindIndex == ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
+    terrainTest = TerrainAuxHeightThreshold_TestAroundWorldPoint;
+  }
+  blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
+                    ((WorldOwnerListNode *)rootNode,(rootNode->worldTransform).translation.y,
+                     (rootNode->worldTransform).translation.x,(IMAGE_DOS_HEADER *)modelRuntime,
+                     worldRuntime);
+  if (blocked) {
+    return true;
+  }
+  /* rejected on the terrain test's own result */
+  blocked = terrainTest(placementDefinition->footprintRadius,terrainHeightQ12,
+                        (rootNode->worldTransform).translation.y,
+                        (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+  if (blocked) {
+    return true;
+  }
+  rootNode = modelRuntime->rootModelNode;
+  ownerArmy = modelRuntime->ownerArmyRuntime;
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+    return false;
+  }
+  blocked = FieldGrid_TestWorldPointBlocked
+                    (ownerArmy->factionIndex,(rootNode->worldTransform).translation.y,
+                     (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+  if (blocked) {
+    return true;
+  }
+  ownerNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+  if (ownerNode == NULL) {
+    return false;
+  }
+  /* support check: some same-faction model with a support radius (supportRadius of its definition) must lie
+     within that radius plus our own margin */
+  for (; ownerNode != NULL; ownerNode = (ModelRuntimeNode *)(ownerNode->common).nextNode) {
+    if ((ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) || (ownerNode == rootNode)) {
+      continue;
+    }
+    neighbor = (ownerNode->runtimePayload).modelRuntime;
+    neighborSupportRadiusQ12 = neighbor->definitionOrSavedId.runtimeDefinition->supportRadius;
+    if ((ownerArmy->factionIndex != neighbor->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) ||
+        (neighborSupportRadiusQ12 == 0)) {
+      continue;
+    }
+    reachQ12 = neighborSupportRadiusQ12 + ownClearanceQ12;
+    deltaXQ12 = (rootNode->worldTransform).translation.x - (ownerNode->worldTransform).translation.x;
+    remainingSquared = (int64_t)reachQ12 * (int64_t)reachQ12 - (int64_t)deltaXQ12 * (int64_t)deltaXQ12;
+    if (remainingSquared < 0) {
+      continue;
+    }
+    deltaYQ12 = (rootNode->worldTransform).translation.y - (ownerNode->worldTransform).translation.y;
+    deltaYSquared = (int64_t)deltaYQ12 * (int64_t)deltaYQ12;
+    if (remainingSquared - deltaYSquared >= 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+/* Common placement test for buildings: the candidate point must be free of other armies (placement radius
+   footprintRadius), pass the terrain test of the definition's contact kind against terrainHeightQ12, and -
+   unless UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set - not be blocked on the field grid for the
+   owner's faction and lie within reach of a same-faction model with a support radius (supportRadius of its
+   definition, plus placementClearancePaddingQ12 and our own margin placementFlags; class-18 models only count when
+   ARMY_PLACEMENT_MODE_SKIP_CLASS18_SUPPORT is clear and their army flags 0x18 are clear). Without
+   ARMY_PLACEMENT_MODE_MEASURE_SUPPORT_DISTANCE the first such model accepts; with it the placement value is
+   the free distance to the nearest one. Returns true when the point is accepted and stores the placement
+   value in *outPlacementValue; returns false (*outPlacementValue untouched) when it is rejected.
+   Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[4, 10, 11,
+   15, 16, 20, 22, 23], called by ArmyPlacement_CanPlaceAssetAtFieldPoint; also called directly
+   by ArmyPlacement_CanPlaceAnchoredModel and ArmyPlacement_CanPlaceResourceExtractor.
+*/
+
+Bool8 ArmyPlacement_CanPlaceBuilding
+          (ArmyPlacementDispatchArg0 placementMode,
+          ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t placementHeading,
+          ArmyPlacementDispatchArg3 terrainHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
+          ModelDefinition *modelDefinition,
+          ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime,
+          uint32_t *outPlacementValue)
+
+{
+  ArmyPlacementContactKindIndex32 contactKindIndex;
+  ModelRuntimeSlot *supporter;
+  ModelDefinition *supporterDefinition;
+  int supportReachQ12;
+  int reachQ12;
+  int deltaQ12;
+  int64_t reachSquared;
+  int64_t remainingSquared;
+  int64_t deltaYSquared;
+  int64_t distanceSquared;
+  int64_t nearestDistanceSquared;
+  uint32_t nearestDistanceQ12;
+  int freeDistanceQ12;
+  int placementValue;
+  WorldOwnerListNode *ownerNode;
+  Bool8 blocked;
+  TerrainPlacementResult terrainTest;
+  int nearestClearanceQ12;
+
+  nearestDistanceSquared = INT64_MAX;
+  contactKindIndex = modelDefinition->placementContactKindIndex;
+  blocked = ArmyPlacementCollision_TestPointAgainstRuntimeList
+                    (placementMode,modelDefinition->footprintRadius,worldXQ12,worldYQ12,
+                     worldRuntime);
+  if (blocked) {
+    return false;
+  }
+  terrainTest.value = 0;
+  terrainTest.rejected = g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[contactKindIndex]
+                    (modelDefinition->footprintRadius,terrainHeightQ12,worldXQ12,
+                     worldYQ12,worldRuntime->fieldGrid);
+  if (terrainTest.rejected) {
+    return false;
+  }
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+    *outPlacementValue = (uint32_t)terrainTest.value;
+    return true;
+  }
+  ownerNode = worldRuntime->ownerListHead;
+  blocked = FieldGrid_TestWorldPointBlocked
+                    (ownerFactionIndex,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
+  if (blocked) {
+    return false;
+  }
+  if (ownerNode == NULL) {
+    *outPlacementValue = (uint32_t)terrainTest.value;
+    return true;
+  }
+  for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    /* the model's definition: support radius (supportRadius) and class id; the owner army holds the owner
+       faction */
+    supporter = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    supporterDefinition = supporter->definitionOrSavedId.runtimeDefinition;
+    supportReachQ12 = supporterDefinition->supportRadius;
+    if ((supportReachQ12 == 0) ||
+        (supporter->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != ownerFactionIndex)) {
+      continue;
+    }
+    supportReachQ12 = supportReachQ12 + placementClearancePaddingQ12;
+    if ((supporterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) &&
+        (((placementMode & ARMY_PLACEMENT_MODE_SKIP_CLASS18_SUPPORT) != 0) ||
+         ((supporter->classState.stateFlags &
+           (ARMY_RUNTIME_FLAG_DESTROYED | ARMY_MODEL_STATE_DISMANTLING)) != 0))) {
+      continue;
+    }
+    reachQ12 = supportReachQ12 + modelDefinition->placementFlags;
+    reachSquared = (int64_t)reachQ12 * (int64_t)reachQ12;
+    deltaQ12 = ownerNode->worldXQ12 - worldYQ12;
+    remainingSquared = reachSquared - (int64_t)deltaQ12 * (int64_t)deltaQ12;
+    if (remainingSquared < 0) {
+      continue;
+    }
+    deltaQ12 = ownerNode->worldYQ12 - worldXQ12;
+    deltaYSquared = (int64_t)deltaQ12 * (int64_t)deltaQ12;
+    remainingSquared = remainingSquared - deltaYSquared;
+    if (remainingSquared < 0) {
+      continue;
+    }
+    if ((placementMode & ARMY_PLACEMENT_MODE_MEASURE_SUPPORT_DISTANCE) == 0) {
+      /* Original quirk: the accepted placement value is the low dword of the squared y delta (a left-over
+         intermediate value). */
+      *outPlacementValue = (uint32_t)(int)deltaYSquared;
+      return true;
+    }
+    /* keep the nearest supporting model (smallest squared distance) */
+    distanceSquared = reachSquared - remainingSquared;
+    if (distanceSquared < nearestDistanceSquared) {
+      nearestClearanceQ12 = supporterDefinition->supportRadius;
+      nearestDistanceSquared = distanceSquared;
+    }
+  }
+  /* no supporting model in reach (the distance is still the INT64_MAX start value) */
+  if (((placementMode & ARMY_PLACEMENT_MODE_MEASURE_SUPPORT_DISTANCE) == 0) ||
+      (ARMY_PLACEMENT_NO_SUPPORT_DISTANCE_SQUARED < nearestDistanceSquared)) {
+    return false;
+  }
+  /* placement value: free distance between the candidate's margin and the nearest supporter's radius */
+  nearestDistanceQ12 = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)nearestDistanceSquared >> 32),
+                                            (UInt64Half32)nearestDistanceSquared);
+  freeDistanceQ12 = nearestDistanceQ12 - nearestClearanceQ12;
+  if (freeDistanceQ12 < 0) {
+    freeDistanceQ12 = 0;
+  }
+  placementValue = freeDistanceQ12 - modelDefinition->placementFlags;
+  if (placementValue < 0) {
+    placementValue = 0;
+  }
+  *outPlacementValue = (uint32_t)placementValue;
+  return true;
+}
+
+
+/* Tests whether a point comes within queryRadiusQ12 + ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of the model's
+   (1,5) anchor point in world space - the second footprint of class-13 models. Returns true when too close
+   (and counts it in g_ArmyPlacementLateRejectionCount); false also when the model has no anchor point.
+   Called directly by ArmyPlacementCollision_TestPointAgainstRuntimeList and
+   ArmyPlacementCollision_TestCandidateAgainstRuntimeList.
+*/
+Bool8 ArmyPlacementCandidate_TestModelAnchorDistance
+          (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ModelRuntimeSlot *modelRuntime)
+
+{
+  ModelRuntimeNode *modelNodeRuntime;
+  uint32_t anchorDistanceQ12;
+  ModelPackedPointRecord *anchorRecord;
+  ModelWorldPoint anchorWorldPoint;
+
+  modelNodeRuntime = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  if (ModelLookupTable_FindPackedPoint(1,5,(modelNodeRuntime->modelPayload).modelResource,&anchorRecord)) {
+    anchorWorldPoint = ModelNodeRuntime_TransformLocalPoint(anchorRecord,modelNodeRuntime);
+    anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.yQ12 - targetWorldXQ12,
+                                          anchorWorldPoint.xQ12 - targetWorldYQ12);
+    if ((int)anchorDistanceQ12 <= queryRadiusQ12 + ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12) {
+      g_ArmyPlacementLateRejectionCount++;
+      return true;
+    }
+  }
+  return false;
+}
+
+
+/* Exact circle test between a point and a model: true when the point lies within the model's
+   placement radius (definition footprintRadius) plus queryRadiusQ12 of the model's position, compared
+   on the 64-bit squares. Models without radius and a zero query radius never hit.
+   Called directly by the runtime-list collision scans in this file and by the movement code
+   (gameplay/army/movement.c).
+*/
+Bool8 ArmyCollision_TestPointWithinExpandedRuntimeRadius
+          (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeSlot *modelRuntime)
+
+{
+  int64_t radiusSquared;
+  int64_t distanceSquared;
+  int deltaXQ12;
+  int deltaYQ12;
+  int reachQ12;
+
+  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius == 0) ||
+      (queryRadiusQ12 == 0)) {
+    return false;
+  }
+  deltaXQ12 = (modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.x - worldYQ12;
+  deltaYQ12 = (modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y - worldXQ12;
+  distanceSquared = (int64_t)deltaYQ12 * (int64_t)deltaYQ12 + (int64_t)deltaXQ12 * (int64_t)deltaXQ12;
+  reachQ12 = modelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius + queryRadiusQ12;
+  radiusSquared = (int64_t)reachQ12 * (int64_t)reachQ12;
+  /* hit when the 64-bit difference radius^2 - distance^2 (wrapping) is not negative */
+  return (int64_t)((uint64_t)radiusSquared - (uint64_t)distanceSquared) >= 0;
+}
+
+
+/* Class vtables. */
+
+ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable = {
+    .callbacks = {
+        /* 0 */ THANDOR_FN(ArmyPlacementContact_ApplyTerrainHeight),
+        /* 1 */ THANDOR_FN(ArmyPlacementContact_ApplyWaterSurfaceHeight),
+        /* 2 */ THANDOR_FN(ArmyPlacementContact_ApplyTerrainHeightAndNormal),
+        /* 3 */ THANDOR_FN(ArmyPlacementContact_InitializeArticulatedSuspension),
+        /* 4 */ THANDOR_FN(ArmyPlacementContact_ApplyTopSurfaceHeight)
+    }};

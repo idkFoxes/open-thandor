@@ -1,0 +1,174 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/settings/persistent.cpp
+ * Reverse engineering by idkFoxes 2026
+ */
+
+#include <thandor/core/settings/persistent.h>
+#include <thandor/thandor.h>
+
+/* Module data. */
+
+static PersistentSettingsRuntime g_PersistentSettings = {.path = {'t', 'h', 'a', 'n', 'd', 'o', 'r', '.', 'd', 'a', 't'}};
+
+uint32_t g_LocaleCountryCodeOverride = 0;
+
+/* Implementation ownership: core/settings/persistent. */
+
+/* Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the
+   last load or save, writes the 200-byte image back to the settings file. The save result is not checked.
+*/
+void PersistentSettings_Flush(void)
+
+{
+  if (g_PersistentSettings.image != NULL) {
+    PersistentSettings_Write(g_LocaleCountryCodeOverride,PERSISTENT_SETTING_LOCALE_COUNTRY_CODE);
+    if (g_PersistentSettings.dirtyWriteCount != 0) {
+      FileSystem_WriteBufferToPath(PERSISTENT_SETTINGS_IMAGE_BYTES,g_PersistentSettings.image,
+                                   g_PersistentSettings.path);
+      g_PersistentSettings.dirtyWriteCount = 0;
+    }
+  }
+}
+
+
+/* Loads the settings file into a fresh zeroed 200-byte image; a shorter file leaves the rest zero, so every
+   PersistentSettings_Read beyond the loaded bytes falls back to its default. When the file is not found at
+   its path it is looked up in the executable directory. Any failure leaves the image null (all defaults).
+*/
+void PersistentSettings_Load(void)
+
+{
+  uint32_t *clearCursor;
+  void *fileHandle;
+  int dwordsRemaining;
+  uint32_t byteCount;
+  PersistentSettingsImage *image;
+  uint32_t pathByteCount;
+  uint32_t fileSize;
+
+  Resource_Release(g_PersistentSettings.image);
+  g_PersistentSettings.image = NULL;
+  if (g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES,(void **)&clearCursor) != 0) {
+    return;
+  }
+  for (dwordsRemaining = PERSISTENT_SETTINGS_IMAGE_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
+    *clearCursor = 0;
+    clearCursor++;
+  }
+  image = (PersistentSettingsImage *)(clearCursor - PERSISTENT_SETTINGS_IMAGE_BYTES / 4);
+  if (g_FileSystemOpen(0,g_PersistentSettings.path,&fileHandle) != 0) {
+    WidePath_CombineDirectoryAndLeaf
+              (g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
+               g_ExecutableDirectoryUtf16);
+    if (g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16,&fileHandle) != 0) {
+      g_MemoryApi.free(image);
+      return;
+    }
+    /* Original quirk: the original continues with the return value of the path copy below (the byte
+       count, or FATAL_ERROR_GENERAL_FAILURE on overflow) as the file handle, not the handle from this open.
+       Kept as is. */
+    if (!RichTextCommandStream_CopyExpanded
+           (sizeof g_PersistentSettings.path,g_PersistentSettings.path,
+            g_FileSystemCombinedPathScratchUtf16,&pathByteCount)) {
+      pathByteCount = FATAL_ERROR_GENERAL_FAILURE;
+    }
+    fileHandle = THANDOR_PTR(pathByteCount);
+  }
+  if (g_FileSystemGetSize(fileHandle,&fileSize)) {
+    byteCount = PERSISTENT_SETTINGS_IMAGE_BYTES;
+    if (fileSize < PERSISTENT_SETTINGS_IMAGE_BYTES) {
+      byteCount = fileSize;
+    }
+    if (g_FileSystemReadExact(byteCount,image,fileHandle) == 0) {
+      g_FileSystemClose(fileHandle);
+      if (byteCount < PERSISTENT_SETTING_LOCALE_COUNTRY_CODE + 4) {
+        g_PersistentSettings.image = image;
+        g_PersistentSettings.loadedByteCount = byteCount;
+        g_PersistentSettings.dirtyWriteCount = 0;
+        return;
+      }
+      /* the country code override is only taken over when the file contains it */
+      g_LocaleCountryCodeOverride = image->localeCountryCodeOverride;
+      g_PersistentSettings.image = image;
+      g_PersistentSettings.loadedByteCount = byteCount;
+      g_PersistentSettings.dirtyWriteCount = 0;
+      return;
+    }
+  }
+  g_FileSystemClose(fileHandle);
+  g_MemoryApi.free(image);
+}
+
+
+/* Returns the setting dword at settingsOffsetBytes, or defaultValue when no settings file was loaded or the
+   file was too short to contain it.
+*/
+uint32_t PersistentSettings_Read(PersistentSettingsValue defaultValue,
+          PersistentSettingsByteOffset settingsOffsetBytes)
+
+{
+  if ((g_PersistentSettings.image != NULL) &&
+     (settingsOffsetBytes + 4 <= g_PersistentSettings.loadedByteCount)) {
+    defaultValue = *(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes);
+  }
+  return defaultValue;
+}
+
+
+/* Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when no settings
+   file was loaded or the file was too short to contain the whole region. Used for the stored names.
+*/
+void * PersistentSettings_GetRegionOrFallback(PersistentSettingsByteCount regionByteCount,void *fallback,
+          PersistentSettingsByteOffset settingsOffsetBytes)
+
+{
+  if ((g_PersistentSettings.image != NULL) &&
+     (settingsOffsetBytes + regionByteCount <= g_PersistentSettings.loadedByteCount)) {
+    fallback = (uint8_t *)g_PersistentSettings.image + settingsOffsetBytes;
+  }
+  return fallback;
+}
+
+
+/* Copies a block (whole dwords only; trailing 1-3 bytes are dropped) into the settings image and marks it
+   dirty, even when nothing changed. The bound is the image capacity, not the loaded size, and the loaded
+   size is not extended, so a block past the end of a short file is saved but not read back until reload.
+*/
+void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,uint32_t *source,
+          PersistentSettingsByteOffset settingsOffsetBytes)
+
+{
+  uint32_t dwordsRemaining;
+  uint32_t *destination;
+
+  if ((g_PersistentSettings.image != NULL) &&
+     (settingsOffsetBytes + regionByteCount < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
+    destination = (uint32_t *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes);
+    dwordsRemaining = regionByteCount >> 2;
+    if (dwordsRemaining != 0) {
+      for (; dwordsRemaining != 0; dwordsRemaining--) {
+        *destination = *source;
+        source++;
+        destination++;
+      }
+      g_PersistentSettings.dirtyWriteCount++;
+    }
+  }
+}
+
+
+/* Stores one setting dword in the image and marks it dirty, but only when the value actually changes. Like
+   WriteBlock it checks against the image capacity, not the loaded size.
+*/
+void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)
+
+{
+  if (((g_PersistentSettings.image != NULL) &&
+      (settingsOffsetBytes + 4 < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) &&
+     (*(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes) != value)) {
+    *(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes) = value;
+    g_PersistentSettings.dirtyWriteCount++;
+  }
+}

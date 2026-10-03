@@ -37,6 +37,7 @@ if(NOT _sdk_version)
 endif()
 
 set(CMAKE_C_COMPILER "${_msvc}/bin/HostX86/x86/cl.exe")
+set(CMAKE_CXX_COMPILER "${_msvc}/bin/HostX86/x86/cl.exe")
 set(CMAKE_LINKER "${_msvc}/bin/HostX86/x86/link.exe")
 set(CMAKE_AR "${_msvc}/bin/HostX86/x86/lib.exe")
 set(CMAKE_RC_COMPILER "${_sdk_root}/bin/${_sdk_version}/x86/rc.exe")
@@ -47,6 +48,7 @@ set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES
     "${_sdk_root}/Include/${_sdk_version}/ucrt"
     "${_sdk_root}/Include/${_sdk_version}/um"
     "${_sdk_root}/Include/${_sdk_version}/shared")
+set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_C_STANDARD_INCLUDE_DIRECTORIES})
 set(CMAKE_RC_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_C_STANDARD_INCLUDE_DIRECTORIES})
 
 set(_libpaths

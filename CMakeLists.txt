@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 3.20)
-project(thandor_curated_reference C)
+project(thandor_curated_reference C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # The recovered code stores pointers in 32-bit fields (pointer32, (int)ptr casts).
 # Decompiled code reads Ghidra's placeholders for unknown register halves (extraout_var, ...)
 # before assigning them; the debug runtime checks would stop on each one.
 string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
 # Developer tools (src/platform/debug, src/platform/selftest): self-tests, input scripts, automatic screenshots,
 # the determinism state hash, campaign starts and AUTOWIN, level-script log, movie player/dump/compare, windowed
@@ -36,137 +39,137 @@ if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
 endif()
 
 add_library(thandor_curated STATIC
-    src/assets/army/catalog.c
-    src/assets/effect/catalog.c
-    src/assets/model/definitions.c
-    src/assets/package/codec.c
-    src/assets/package/runtime.c
-    src/assets/resource/runtime.c
-    src/assets/rom/runtime.c
-    src/assets/scenario/catalog.c
-    src/assets/shot/catalog.c
-    src/assets/sprite/catalog.c
-    src/assets/text/resources.c
-    src/assets/text/richtext.c
-    src/audio/backend/runtime.c
-    src/audio/codec/sam.c
-    src/audio/spatial/runtime.c
-    src/core/error/runtime.c
-    src/core/math/fixed.c
-    src/core/math/geometry.c
-    src/core/math/interpolation.c
-    src/core/math/random.c
-    src/core/memory/allocator.c
-    src/core/memory/synchronization.c
-    src/core/settings/persistent.c
-    src/core/text/path.c
-    src/core/text/string.c
-    src/gameplay/ai/combat.c
-    src/gameplay/ai/placement.c
-    src/gameplay/ai/planning.c
-    src/gameplay/ai/technology.c
-    src/gameplay/ai/units.c
-    src/gameplay/ai/workspaces.c
-    src/gameplay/army/audio.c
-    src/gameplay/army/combat.c
-    src/gameplay/army/movement.c
-    src/gameplay/army/placement.c
-    src/gameplay/army/runtime.c
-    src/gameplay/faction/relations.c
-    src/gameplay/faction/runtime.c
-    src/gameplay/input/world.c
-    src/gameplay/selection/overlay.c
-    src/gameplay/selection/runtime.c
-    src/gameplay/session/level.c
-    src/gameplay/session/runtime.c
-    src/gameplay/session/savegame.c
-    src/gameplay/technology/runtime.c
-    src/graphics/backend/directdraw.c
-    src/graphics/backend/software.c
-    src/graphics/core/runtime.c
-    src/graphics/render/model.c
-    src/graphics/render/primitives.c
-    src/graphics/render/projection.c
-    src/graphics/render/shading.c
-    src/graphics/resources/framebuffer.c
-    src/graphics/resources/palette.c
-    src/graphics/resources/pcx_read.c
-    src/graphics/resources/pcx_write.c
-    src/graphics/resources/texture.c
-    src/movie/runtime/playback.c
-    src/network/backend/fallback_udp.c
-    src/network/backend/runtime.c
-    src/network/protocol/commands.c
-    src/network/protocol/transfer.c
-    src/platform/bootstrap/runtime.c
-    src/platform/filesystem/win32.c
-    src/platform/input/devices.c
-    src/platform/system/time_locale.c
-    src/platform/system/win32.c
-    src/ui/controls/buttons.c
-    src/ui/controls/input.c
-    src/ui/controls/layout.c
-    src/ui/controls/lists.c
-    src/ui/controls/misc.c
-    src/ui/controls/text.c
-    src/ui/core/runtime.c
-    src/ui/frontend/network.c
-    src/ui/frontend/player.c
-    src/ui/frontend/results.c
-    src/ui/frontend/runtime.c
-    src/ui/frontend/scenario.c
-    src/ui/frontend/session.c
-    src/ui/frontend/settings.c
-    src/ui/ingame/commands.c
-    src/ui/ingame/runtime.c
-    src/ui/ingame/settings.c
-    src/ui/ingame/technology.c
-    src/ui/support/runtime.c
-    src/world/effects/maintenance.c
-    src/world/effects/runtime.c
-    src/world/model/hierarchy.c
-    src/world/model/runtime.c
-    src/world/model/slots.c
-    src/world/motion/runtime.c
-    src/world/pathing/grid.c
-    src/world/pathing/influence.c
-    src/world/runtime/core.c
-    src/world/shots/maintenance.c
-    src/world/shots/runtime.c
-    src/world/terrain/editing.c
-    src/world/terrain/grid.c
-    src/world/terrain/height.c
-    src/world/terrain/occupancy.c
-    src/world/terrain/projection.c
-    src/world/terrain/visuals.c
+    src/assets/army/catalog.cpp
+    src/assets/effect/catalog.cpp
+    src/assets/model/definitions.cpp
+    src/assets/package/codec.cpp
+    src/assets/package/runtime.cpp
+    src/assets/resource/runtime.cpp
+    src/assets/rom/runtime.cpp
+    src/assets/scenario/catalog.cpp
+    src/assets/shot/catalog.cpp
+    src/assets/sprite/catalog.cpp
+    src/assets/text/resources.cpp
+    src/assets/text/richtext.cpp
+    src/audio/backend/runtime.cpp
+    src/audio/codec/sam.cpp
+    src/audio/spatial/runtime.cpp
+    src/core/error/runtime.cpp
+    src/core/math/fixed.cpp
+    src/core/math/geometry.cpp
+    src/core/math/interpolation.cpp
+    src/core/math/random.cpp
+    src/core/memory/allocator.cpp
+    src/core/memory/synchronization.cpp
+    src/core/settings/persistent.cpp
+    src/core/text/path.cpp
+    src/core/text/string.cpp
+    src/gameplay/ai/combat.cpp
+    src/gameplay/ai/placement.cpp
+    src/gameplay/ai/planning.cpp
+    src/gameplay/ai/technology.cpp
+    src/gameplay/ai/units.cpp
+    src/gameplay/ai/workspaces.cpp
+    src/gameplay/army/audio.cpp
+    src/gameplay/army/combat.cpp
+    src/gameplay/army/movement.cpp
+    src/gameplay/army/placement.cpp
+    src/gameplay/army/runtime.cpp
+    src/gameplay/faction/relations.cpp
+    src/gameplay/faction/runtime.cpp
+    src/gameplay/input/world.cpp
+    src/gameplay/selection/overlay.cpp
+    src/gameplay/selection/runtime.cpp
+    src/gameplay/session/level.cpp
+    src/gameplay/session/runtime.cpp
+    src/gameplay/session/savegame.cpp
+    src/gameplay/technology/runtime.cpp
+    src/graphics/backend/directdraw.cpp
+    src/graphics/backend/software.cpp
+    src/graphics/core/runtime.cpp
+    src/graphics/render/model.cpp
+    src/graphics/render/primitives.cpp
+    src/graphics/render/projection.cpp
+    src/graphics/render/shading.cpp
+    src/graphics/resources/framebuffer.cpp
+    src/graphics/resources/palette.cpp
+    src/graphics/resources/pcx_read.cpp
+    src/graphics/resources/pcx_write.cpp
+    src/graphics/resources/texture.cpp
+    src/movie/runtime/playback.cpp
+    src/network/backend/fallback_udp.cpp
+    src/network/backend/runtime.cpp
+    src/network/protocol/commands.cpp
+    src/network/protocol/transfer.cpp
+    src/platform/bootstrap/runtime.cpp
+    src/platform/filesystem/win32.cpp
+    src/platform/input/devices.cpp
+    src/platform/system/time_locale.cpp
+    src/platform/system/win32.cpp
+    src/ui/controls/buttons.cpp
+    src/ui/controls/input.cpp
+    src/ui/controls/layout.cpp
+    src/ui/controls/lists.cpp
+    src/ui/controls/misc.cpp
+    src/ui/controls/text.cpp
+    src/ui/core/runtime.cpp
+    src/ui/frontend/network.cpp
+    src/ui/frontend/player.cpp
+    src/ui/frontend/results.cpp
+    src/ui/frontend/runtime.cpp
+    src/ui/frontend/scenario.cpp
+    src/ui/frontend/session.cpp
+    src/ui/frontend/settings.cpp
+    src/ui/ingame/commands.cpp
+    src/ui/ingame/runtime.cpp
+    src/ui/ingame/settings.cpp
+    src/ui/ingame/technology.cpp
+    src/ui/support/runtime.cpp
+    src/world/effects/maintenance.cpp
+    src/world/effects/runtime.cpp
+    src/world/model/hierarchy.cpp
+    src/world/model/runtime.cpp
+    src/world/model/slots.cpp
+    src/world/motion/runtime.cpp
+    src/world/pathing/grid.cpp
+    src/world/pathing/influence.cpp
+    src/world/runtime/core.cpp
+    src/world/shots/maintenance.cpp
+    src/world/shots/runtime.cpp
+    src/world/terrain/editing.cpp
+    src/world/terrain/grid.cpp
+    src/world/terrain/height.cpp
+    src/world/terrain/occupancy.cpp
+    src/world/terrain/projection.cpp
+    src/world/terrain/visuals.cpp
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Fixed base (REBUILT_IMAGE_BASE in platform/bootstrap/image.h): crash logs and the self-tests that run
 # copies of original code rely on stable addresses.
 add_executable(thandor WIN32
-    src/platform/bootstrap/main.c
-    src/platform/bootstrap/image.c
+    src/platform/bootstrap/main.cpp
+    src/platform/bootstrap/image.cpp
 )
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
 
 if(THANDOR_DEV_TOOLS)
     target_sources(thandor_curated PRIVATE
-        src/platform/debug/autoshot.c
-        src/platform/debug/campaign.c
-        src/platform/debug/font.c
-        src/platform/debug/hooks.c
-        src/platform/debug/level_script.c
-        src/platform/debug/movie_decoder.c
-        src/platform/debug/movie_player.c
-        src/platform/debug/original_code.c
-        src/platform/debug/script.c
-        src/platform/debug/statehash.c
-        src/platform/debug/test_aids.c
-        src/platform/debug/windowed.c
-        src/platform/selftest/relax.c
-        src/platform/selftest/selftests.c
+        src/platform/debug/autoshot.cpp
+        src/platform/debug/campaign.cpp
+        src/platform/debug/font.cpp
+        src/platform/debug/hooks.cpp
+        src/platform/debug/level_script.cpp
+        src/platform/debug/movie_decoder.cpp
+        src/platform/debug/movie_player.cpp
+        src/platform/debug/original_code.cpp
+        src/platform/debug/script.cpp
+        src/platform/debug/statehash.cpp
+        src/platform/debug/test_aids.cpp
+        src/platform/debug/windowed.cpp
+        src/platform/selftest/relax.cpp
+        src/platform/selftest/selftests.cpp
     )
     target_compile_definitions(thandor_curated PUBLIC THANDOR_DEV_TOOLS=1)
 endif()
