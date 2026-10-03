@@ -95,7 +95,7 @@ void Runtime_Shutdown(void)
   HANDLE process;
 
   PersistentSettings_Flush();
-  /* any nonzero state makes the Glide present/draw paths skip their work from now on */
+  /* any nonzero state makes the present and the cursor timer skip their work from now on */
   g_GraphicsBackendAccessState = -1;
   UiRuntime_Shutdown();
   DirectInputMouse_Shutdown();

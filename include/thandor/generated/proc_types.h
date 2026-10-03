@@ -41,42 +41,6 @@ typedef uint32_t FileSystemSeekProc(FileSystemSeekOrigin moveMethod, FileSystemF
 typedef uint32_t FileSystemSetCurrentDirectoryProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef bool FileSystemValidateDos83Proc(FileSystemDos83ValidationFlags flags, uint8_t * pathAnsi); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef uint32_t FileSystemWriteExactOrFlushProc(FileIoByteCount byteCount, void * source, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef void GlideTextureUploadProc(GraphicsTextureResource * texture); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void __stdcall GrAlphaBlendFunctionImportProc(uint32_t rgbSourceFactor, uint32_t rgbDestinationFactor, uint32_t alphaSourceFactor, uint32_t alphaDestinationFactor); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrAlphaCombineImportProc(uint32_t function, uint32_t factor, uint32_t local, uint32_t other, uint32_t invert); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrBufferClearImportProc(uint32_t color, uint32_t alpha, uint32_t depth); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrBufferSwapImportProc(uint32_t swapInterval); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrClipWindowImportProc(uint32_t minX, uint32_t minY, uint32_t maxX, uint32_t maxY); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrColorCombineImportProc(uint32_t function, uint32_t factor, uint32_t local, uint32_t other, uint32_t invert); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrCoordinateSpaceImportProc(uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrCullModeImportProc(uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrDepthBufferFunctionImportProc(uint32_t function); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrDepthBufferModeImportProc(uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrDepthMaskImportProc(uint32_t enabled); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrDrawTriangleImportProc(uint32_t * vertexA, uint32_t * vertexB, uint32_t * vertexC); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrFinishImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef uint32_t __stdcall GrGetImportProc(uint32_t selector, uint32_t sizeBytes, void * output); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef char * __stdcall GrGetStringImportProc(uint32_t selector); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrGlideInitImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrGlideShutdownImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef uint32_t __stdcall GrLfbLockImportProc(uint32_t lockType, uint32_t buffer, uint32_t writeMode, uint32_t origin, uint32_t pixelPipeline, void * lfbInfo); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef uint32_t __stdcall GrLfbReadRegionImportProc(uint32_t buffer, GraphicsScreenCoordinate sourceX, GraphicsScreenCoordinate sourceY, GraphicsPixelDimension width, GraphicsPixelDimension height, uint32_t destinationStrideBytes, uint16_t * destinationPixels); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrLfbUnlockImportProc(uint32_t lockType, uint32_t buffer); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef uint32_t __stdcall GrQueryResolutionsImportProc(void * query, void * output); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrSstSelectImportProc(uint32_t boardIndex); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrSstWinCloseImportProc(uint32_t context); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef uint32_t __stdcall GrSstWinOpenImportProc(uint32_t windowHandle, uint32_t screenResolution, uint32_t refreshRate, uint32_t colorFormat, uint32_t origin, uint32_t colorBufferCount, uint32_t auxiliaryBufferCount); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexClampModeImportProc(uint32_t tmuIndex, uint32_t sClampMode, uint32_t tClampMode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexCombineImportProc(uint32_t tmuIndex, uint32_t rgbFunction, uint32_t rgbFactor, uint32_t alphaFunction, uint32_t alphaFactor, uint32_t rgbInvert, uint32_t alphaInvert); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexDownloadMipMapImportProc(GraphicsTextureResidentTmuIndex tmuIndex, GraphicsTextureMemoryAddress startAddress, uint32_t evenOddMask, GrTexInfo * textureInfo); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexFilterModeImportProc(uint32_t tmuIndex, uint32_t minifyFilter, uint32_t magnifyFilter); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef GraphicsTextureMemoryAddress __stdcall GrTexMaxAddressImportProc(GraphicsTextureResidentTmuIndex tmuIndex); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef GraphicsTextureMemoryAddress __stdcall GrTexMinAddressImportProc(GraphicsTextureResidentTmuIndex tmuIndex); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexMipMapModeImportProc(uint32_t tmuIndex, uint32_t mode, uint32_t lodBlend); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexSourceImportProc(GraphicsTextureResidentTmuIndex tmuIndex, GraphicsTextureMemoryAddress residentAddress, uint32_t mode, GrTexInfo * textureInfo); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrVertexLayoutImportProc(uint32_t parameter, uint32_t byteOffset, uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrViewportImportProc(uint32_t x, uint32_t y, uint32_t width, uint32_t height); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void GraphicsBackendRefreshActiveAdapterProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsBeginSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef bool GraphicsCursorConsumeEventProc(CursorPointerEvent *outEvent); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsDrawPrimitiveQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
@@ -93,7 +57,6 @@ typedef GraphicsTextureSet * GraphicsTextureSetLoadPackageProc(uint16_t * pathUt
 typedef void GraphicsTextureSetRefreshProc(uint32_t subresourceIndex, GraphicsTextureSet * set); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsTextureSetReleasePackageProc(GraphicsTextureSet * set); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef uint32_t GraphicsTextureSourceConvertPaletteEntriesProc(GraphicsPaletteTextureSourceAsset * sourceAsset); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void __stdcall GuGammaCorrectionRGBImportProc(uint32_t redGamma, uint32_t greenGamma, uint32_t blueGamma); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void InGameWorldTransientStateClearCallbackProc(WorldRuntimeContext * arg0); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void KeyboardFlushEventsProc(void); /* Ghidra FunctionDefinition /Thandor/Input/Methods */
 typedef bool KeyboardReadEventProc(uint32_t *outKeyCode, uint32_t *outStateMask); /* Ghidra FunctionDefinition /Thandor/Input/Methods */

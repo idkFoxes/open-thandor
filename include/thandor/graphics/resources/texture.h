@@ -13,8 +13,8 @@
 
 /* Submodule: graphics/resources/texture. */
 
-/* Number of entries in g_GraphicsTextureSlots, the registry of live DirectDraw texture resources
-   (GraphicsTexture_RegisterSlot, GraphicsTexture_RebuildAllStagingTextures, GraphicsTextureSet_Destroy). */
+/* Number of entries in g_GraphicsTextureSlots, the registry of live texture resources
+   (GraphicsTexture_RegisterSlot, GraphicsTextureSet_Destroy). */
 #define GRAPHICS_TEXTURE_SLOT_CAPACITY 4096
 
 /* repeatEndY/repeatEndX value of the tiled blits (GraphicsTextureSource_BlitTiled*): repeat along that axis
@@ -56,9 +56,6 @@
 
 /* 0x0057E970 */
 GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
-
-/* 0x0057AD30 */
-void GraphicsTexture_RebuildAllStagingTextures(void);
 
 /* 0x0057EAF0 */
 GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
@@ -135,54 +132,14 @@ void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *source
 /* 0x004AD7B0 */
 GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset);
 
-/* 0x0057ADA0 */
-void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture);
-
-/* 0x0057B410 */
-void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture);
-
-/* 0x0057BBE0 */
-void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture);
-
-/* 0x0057C6C0 */
-void GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture);
-
-/* 0x0057C890 */
-void GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture);
-
-/* 0x0057CAA0 */
-void GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture);
-
-/* 0x0057EBB0 */
-void GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
-
-/* 0x0057EC40 */
-void GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
-
-/* 0x0057AAD0 */
-void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture);
-
 /* 0x00485EA0 */
 GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset,uint32_t *outErrorCode);
 
 /* 0x00485F90 */
 GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set);
 
-/* 0x0057A9D0 */
-bool GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude);
-
 /* 0x0057E870 */
 bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
-
-/* 0x0057E8C0 */
-DDPIXELFORMAT * GraphicsTexture_SelectPixelFormat (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
-
-/* 0x0057A740 */
-GraphicsTextureResource * GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture);
-
-/* 0x0057A900 */
-void GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture);
-
 
 /* 0x004AC8E0 */
 bool GraphicsTextureSource_DecomposeSubresourceRegions

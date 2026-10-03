@@ -78,9 +78,6 @@ uint32_t DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 /* 0x00573C50: the loaded module, or NULL (callers report FATAL_ERROR_DLL_LOAD_FAILED) */
 HINSTANCE DynDLL_Load(char *moduleName);
 
-/* 0x00573CD0 */
-uint32_t DynDLL_Unload(char *moduleName);
-
 /* 0x00573EB0 */
 void DynDLL_UnloadAll(void);
 

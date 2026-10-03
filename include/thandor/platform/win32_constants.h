@@ -522,9 +522,8 @@
 #define ERROR_SUCCESS 0L
 #endif
 
-/* DirectDraw (ddraw.h): SetCooperativeLevel flags, DDSURFACEDESC.dwFlags, DDSCAPS.dwCaps, DDPIXELFORMAT.dwFlags
-   and the DDBD_* bit depths of D3DDEVICEDESC (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources and the
-   enumeration callbacks) */
+/* DirectDraw (ddraw.h): SetCooperativeLevel flags, DDSURFACEDESC.dwFlags, DDSCAPS.dwCaps and DDPIXELFORMAT.dwFlags
+   (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources and the enumeration callbacks) */
 #ifndef DDSCL_FULLSCREEN
 #define DDSCL_FULLSCREEN 0x00000001
 #endif
@@ -543,21 +542,6 @@
 #ifndef DDSD_WIDTH
 #define DDSD_WIDTH 0x00000004
 #endif
-#ifndef DDSD_BACKBUFFERCOUNT
-#define DDSD_BACKBUFFERCOUNT 0x00000020
-#endif
-#ifndef DDSD_ZBUFFERBITDEPTH
-#define DDSD_ZBUFFERBITDEPTH 0x00000040
-#endif
-#ifndef DDSCAPS_BACKBUFFER
-#define DDSCAPS_BACKBUFFER 0x00000004
-#endif
-#ifndef DDSCAPS_COMPLEX
-#define DDSCAPS_COMPLEX 0x00000008
-#endif
-#ifndef DDSCAPS_FLIP
-#define DDSCAPS_FLIP 0x00000010
-#endif
 #ifndef DDSCAPS_OFFSCREENPLAIN
 #define DDSCAPS_OFFSCREENPLAIN 0x00000040
 #endif
@@ -567,20 +551,11 @@
 #ifndef DDSCAPS_SYSTEMMEMORY
 #define DDSCAPS_SYSTEMMEMORY 0x00000800
 #endif
-#ifndef DDSCAPS_3DDEVICE
-#define DDSCAPS_3DDEVICE 0x00002000
-#endif
-#ifndef DDSCAPS_VIDEOMEMORY
-#define DDSCAPS_VIDEOMEMORY 0x00004000
-#endif
-#ifndef DDSCAPS_ZBUFFER
-#define DDSCAPS_ZBUFFER 0x00020000
-#endif
 /* IDirectDrawSurface::Lock flag (GraphicsFramebuffer_BeginAccess) */
 #ifndef DDLOCK_WAIT
 #define DDLOCK_WAIT 0x00000001
 #endif
-/* Lock/BltFast/Flip flags of GraphicsFramebuffer_Present and the GraphicsFramebuffer_CaptureRegion* functions */
+/* Lock/BltFast flags of GraphicsFramebuffer_Present and the GraphicsFramebuffer_CaptureRegion* functions */
 #ifndef DDLOCK_READONLY
 #define DDLOCK_READONLY 0x00000010
 #endif
@@ -592,29 +567,6 @@
 #endif
 #ifndef DDBLT_WAIT
 #define DDBLT_WAIT 0x01000000 /* windowed test aid only (IDirectDrawSurface::Blt) */
-#endif
-#ifndef DDFLIP_WAIT
-#define DDFLIP_WAIT 0x00000001
-#endif
-/* Texture surfaces (GraphicsTexture_CreateStagingTexture, GraphicsTexture_CreateDeviceTexture) */
-#ifndef DDSD_PIXELFORMAT
-#define DDSD_PIXELFORMAT 0x00001000
-#endif
-#ifndef DDSCAPS_TEXTURE
-#define DDSCAPS_TEXTURE 0x00001000
-#endif
-#ifndef DDSCAPS_ALLOCONLOAD
-#define DDSCAPS_ALLOCONLOAD 0x04000000
-#endif
-#ifndef DDERR_OUTOFVIDEOMEMORY
-#define DDERR_OUTOFVIDEOMEMORY ((TH_LEGACY_HRESULT)0x8876017CL)
-#endif
-/* IDirectDraw2::CreatePalette flags (the 8-bit paths of GraphicsTexture_UploadColor_*) */
-#ifndef DDPCAPS_8BIT
-#define DDPCAPS_8BIT 0x00000004
-#endif
-#ifndef DDPCAPS_ALLOW256
-#define DDPCAPS_ALLOW256 0x00000040
 #endif
 #ifndef DDPF_ALPHAPIXELS
 #define DDPF_ALPHAPIXELS 0x00000001
@@ -645,258 +597,6 @@
 #endif
 #ifndef DDPF_ZPIXELS
 #define DDPF_ZPIXELS 0x00002000
-#endif
-#ifndef DDBD_32
-#define DDBD_32 0x00000100
-#endif
-#ifndef DDBD_16
-#define DDBD_16 0x00000400
-#endif
-
-/* Direct3D (d3dcaps.h, d3dtypes.h): D3DDEVICEDESC.dwFlags validity bits, device and triangle caps
-   (Direct3D_EnumDeviceCallback) and render-state values
-   (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources) */
-#ifndef D3DDD_COLORMODEL
-#define D3DDD_COLORMODEL 0x00000001
-#endif
-#ifndef D3DDD_DEVCAPS
-#define D3DDD_DEVCAPS 0x00000002
-#endif
-#ifndef D3DDD_TRICAPS
-#define D3DDD_TRICAPS 0x00000040
-#endif
-#ifndef D3DDD_DEVICERENDERBITDEPTH
-#define D3DDD_DEVICERENDERBITDEPTH 0x00000080
-#endif
-#ifndef D3DDD_DEVICEZBUFFERBITDEPTH
-#define D3DDD_DEVICEZBUFFERBITDEPTH 0x00000100
-#endif
-#ifndef D3DDEVCAPS_TLVERTEXSYSTEMMEMORY
-#define D3DDEVCAPS_TLVERTEXSYSTEMMEMORY 0x00000040
-#endif
-#ifndef D3DDEVCAPS_TEXTUREVIDEOMEMORY
-#define D3DDEVCAPS_TEXTUREVIDEOMEMORY 0x00000200
-#endif
-#ifndef D3DPRASTERCAPS_STIPPLE
-#define D3DPRASTERCAPS_STIPPLE 0x00000200
-#endif
-#ifndef D3DPCMPCAPS_LESSEQUAL
-#define D3DPCMPCAPS_LESSEQUAL 0x00000008
-#endif
-#ifndef D3DPBLENDCAPS_ZERO
-#define D3DPBLENDCAPS_ZERO 0x00000001
-#endif
-#ifndef D3DPBLENDCAPS_ONE
-#define D3DPBLENDCAPS_ONE 0x00000002
-#endif
-#ifndef D3DPBLENDCAPS_SRCALPHA
-#define D3DPBLENDCAPS_SRCALPHA 0x00000010
-#endif
-#ifndef D3DPBLENDCAPS_INVSRCALPHA
-#define D3DPBLENDCAPS_INVSRCALPHA 0x00000020
-#endif
-#ifndef D3DPSHADECAPS_COLORGOURAUDRGB
-#define D3DPSHADECAPS_COLORGOURAUDRGB 0x00000008
-#endif
-#ifndef D3DPSHADECAPS_ALPHAGOURAUDBLEND
-#define D3DPSHADECAPS_ALPHAGOURAUDBLEND 0x00004000
-#endif
-#ifndef D3DPSHADECAPS_ALPHAGOURAUDSTIPPLED
-#define D3DPSHADECAPS_ALPHAGOURAUDSTIPPLED 0x00008000
-#endif
-#ifndef D3DPTBLENDCAPS_MODULATE
-#define D3DPTBLENDCAPS_MODULATE 0x00000002
-#endif
-#ifndef D3DPTADDRESSCAPS_WRAP
-#define D3DPTADDRESSCAPS_WRAP 0x00000001
-#endif
-#ifndef D3DSHADE_GOURAUD
-#define D3DSHADE_GOURAUD 2
-#endif
-#ifndef D3DCULL_NONE
-#define D3DCULL_NONE 1
-#endif
-#ifndef D3DZB_TRUE
-#define D3DZB_TRUE 1
-#endif
-#ifndef D3DCMP_LESSEQUAL
-#define D3DCMP_LESSEQUAL 4
-#endif
-#ifndef D3DFILL_SOLID
-#define D3DFILL_SOLID 3
-#endif
-#ifndef D3DTBLEND_MODULATEALPHA
-#define D3DTBLEND_MODULATEALPHA 4
-#endif
-/* IDirect3DDevice2::DrawPrimitive and IDirect3DViewport2::Clear (Graphics_DrawPrimitiveQueue,
-   Graphics_SetViewportAndClearDepth) */
-#ifndef D3DPT_TRIANGLEFAN
-#define D3DPT_TRIANGLEFAN 6
-#endif
-#ifndef D3DVT_TLVERTEX
-#define D3DVT_TLVERTEX 3
-#endif
-#ifndef D3DDP_DONOTUPDATEEXTENTS
-#define D3DDP_DONOTUPDATEEXTENTS 0x00000008
-#endif
-#ifndef D3DCLEAR_ZBUFFER
-#define D3DCLEAR_ZBUFFER 0x00000002
-#endif
-/* D3DCOLORMODEL (d3dtypes.h): D3DDEVICEDESC.dcmColorModel (Direct3D_PrimitiveHandler_*) */
-#ifndef D3DCOLOR_RGB
-#define D3DCOLOR_RGB 2
-#endif
-
-/* 3dfx Glide 3 (glide.h): grGet/grGetString selectors and GrScreenResolution_t values (Glide3_InitAndEnumerate) */
-#ifndef GR_NUM_BOARDS
-#define GR_NUM_BOARDS 0x0f
-#endif
-#ifndef GR_HARDWARE
-#define GR_HARDWARE 0xa1
-#endif
-#ifndef GR_RENDERER
-#define GR_RENDERER 0xa2
-#endif
-#ifndef GR_RESOLUTION_640x480
-#define GR_RESOLUTION_640x480 0x7
-#endif
-#ifndef GR_RESOLUTION_800x600
-#define GR_RESOLUTION_800x600 0x8
-#endif
-#ifndef GR_RESOLUTION_960x720
-#define GR_RESOLUTION_960x720 0x9
-#endif
-#ifndef GR_RESOLUTION_1024x768
-#define GR_RESOLUTION_1024x768 0xC
-#endif
-#ifndef GR_RESOLUTION_1280x1024
-#define GR_RESOLUTION_1280x1024 0xD
-#endif
-#ifndef GR_RESOLUTION_1600x1200
-#define GR_RESOLUTION_1600x1200 0xE
-#endif
-
-/* IDirect3DDevice2::EnumTextureFormats callback result (GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback)
-   and the Glide 3 (glide.h) state values used by GraphicsGlide3_ApplyDisplayModeAndInitializeResources,
-   Glide3_DrawPrimitiveQueue, Glide3_ClearViewport and Glide3_Framebuffer_Begin/EndAccess */
-#ifndef D3DENUMRET_OK
-#define D3DENUMRET_OK 1
-#endif
-#ifndef FXFALSE
-#define FXFALSE 0
-#endif
-#ifndef FXTRUE
-#define FXTRUE 1
-#endif
-#ifndef GR_NUM_TMU
-#define GR_NUM_TMU 0x13
-#endif
-#ifndef GR_COLORFORMAT_ARGB
-#define GR_COLORFORMAT_ARGB 0x0
-#endif
-#ifndef GR_ORIGIN_UPPER_LEFT
-#define GR_ORIGIN_UPPER_LEFT 0x0
-#endif
-#ifndef GR_WINDOW_COORDS
-#define GR_WINDOW_COORDS 0x00
-#endif
-#ifndef GR_PARAM_XY
-#define GR_PARAM_XY 0x01
-#endif
-#ifndef GR_PARAM_Z
-#define GR_PARAM_Z 0x02
-#endif
-#ifndef GR_PARAM_Q
-#define GR_PARAM_Q 0x04
-#endif
-#ifndef GR_PARAM_PARGB
-#define GR_PARAM_PARGB 0x30
-#endif
-#ifndef GR_PARAM_ST0
-#define GR_PARAM_ST0 0x40
-#endif
-#ifndef GR_PARAM_ENABLE
-#define GR_PARAM_ENABLE 0x01
-#endif
-#ifndef GR_CULL_DISABLE
-#define GR_CULL_DISABLE 0x0
-#endif
-#ifndef GR_DEPTHBUFFER_ZBUFFER
-#define GR_DEPTHBUFFER_ZBUFFER 0x1
-#endif
-#ifndef GR_CMP_GEQUAL
-#define GR_CMP_GEQUAL 0x6
-#endif
-#ifndef GR_MIPMAP_DISABLE
-#define GR_MIPMAP_DISABLE 0x0
-#endif
-#ifndef GR_MIPMAPLEVELMASK_BOTH
-#define GR_MIPMAPLEVELMASK_BOTH 0x3
-#endif
-#ifndef GR_TEXTURECLAMP_WRAP
-#define GR_TEXTURECLAMP_WRAP 0x0
-#endif
-#ifndef GR_TEXTUREFILTER_BILINEAR
-#define GR_TEXTUREFILTER_BILINEAR 0x1
-#endif
-#ifndef GR_COMBINE_FUNCTION_LOCAL
-#define GR_COMBINE_FUNCTION_LOCAL 0x1
-#endif
-#ifndef GR_COMBINE_FUNCTION_SCALE_OTHER
-#define GR_COMBINE_FUNCTION_SCALE_OTHER 0x3
-#endif
-#ifndef GR_COMBINE_FACTOR_ZERO
-#define GR_COMBINE_FACTOR_ZERO 0x0
-#endif
-#ifndef GR_COMBINE_FACTOR_LOCAL
-#define GR_COMBINE_FACTOR_LOCAL 0x1
-#endif
-#ifndef GR_COMBINE_LOCAL_ITERATED
-#define GR_COMBINE_LOCAL_ITERATED 0x0
-#endif
-#ifndef GR_COMBINE_OTHER_TEXTURE
-#define GR_COMBINE_OTHER_TEXTURE 0x1
-#endif
-#ifndef GR_COMBINE_OTHER_CONSTANT
-#define GR_COMBINE_OTHER_CONSTANT 0x2
-#endif
-#ifndef GR_BLEND_ZERO
-#define GR_BLEND_ZERO 0x0
-#endif
-#ifndef GR_BLEND_SRC_ALPHA
-#define GR_BLEND_SRC_ALPHA 0x1
-#endif
-#ifndef GR_BLEND_ONE
-#define GR_BLEND_ONE 0x4
-#endif
-#ifndef GR_BLEND_ONE_MINUS_SRC_ALPHA
-#define GR_BLEND_ONE_MINUS_SRC_ALPHA 0x5
-#endif
-#ifndef GR_BLEND_ONE_MINUS_DST_ALPHA
-#define GR_BLEND_ONE_MINUS_DST_ALPHA 0x7
-#endif
-#ifndef GR_BUFFER_BACKBUFFER
-#define GR_BUFFER_BACKBUFFER 0x1
-#endif
-#ifndef GR_LFB_READ_ONLY
-#define GR_LFB_READ_ONLY 0x00
-#endif
-#ifndef GR_LFB_WRITE_ONLY
-#define GR_LFB_WRITE_ONLY 0x01
-#endif
-#ifndef GR_LFB_NOIDLE
-#define GR_LFB_NOIDLE 0x10
-#endif
-#ifndef GR_LFBWRITEMODE_565
-#define GR_LFBWRITEMODE_565 0x0
-#endif
-
-/* Glide 3 (glide.h) GrTextureFormat_t values of the texture uploads (Glide3_TextureResource_Initialize) */
-#ifndef GR_TEXFMT_RGB_565
-#define GR_TEXFMT_RGB_565 0xa
-#endif
-#ifndef GR_TEXFMT_ARGB_4444
-#define GR_TEXFMT_ARGB_4444 0xc
 #endif
 
 /* Window messages handled by MainWindowProc */

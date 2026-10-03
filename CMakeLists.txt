@@ -96,9 +96,7 @@ add_library(thandor_curated STATIC
     src/gameplay/technology/data.c
     src/gameplay/technology/runtime.c
     src/graphics/backend/data.c
-    src/graphics/backend/direct3d.c
     src/graphics/backend/directdraw.c
-    src/graphics/backend/glide.c
     src/graphics/backend/software.c
     src/graphics/core/data.c
     src/graphics/core/runtime.c

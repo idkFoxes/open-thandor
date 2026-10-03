@@ -48,22 +48,14 @@ extern uint32_t g_GraphicsPaletteBankSlots[512]; /* 004AD930 g_GraphicsPaletteBa
 
 extern uint8_t g_GraphicsPaletteRemapBytes[256]; /* 004AE130 g_GraphicsPaletteRemapBytes */
 
-extern TH_LEGACY_GUID IID_IDirect3DTexture2_Local; /* 00577C30 IID_IDirect3DTexture2_Local */
-
 extern IDirectDrawSurface3 *g_PrimarySurface3; /* 00577C4C g_PrimarySurface3 */
 
 extern IDirectDrawSurface3 *g_BackSurface3; /* 00577C54 g_BackSurface3 */
 
-extern D3DRECT_DX6 g_CurrentClearRect; /* 00577C70 g_CurrentClearRect */
+extern TH_LEGACY_RECT g_CurrentClearRect; /* 00577C70 g_CurrentClearRect */
 
 extern DDSURFACEDESC_DX6 g_SurfaceDesc; /* 00577C80 g_SurfaceDesc */
 
-extern int32_t g_CursorAlternateDrawX; /* 00577E44 g_CursorAlternateDrawX */
-
-extern int32_t g_CursorAlternateDrawY; /* 00577E48 g_CursorAlternateDrawY */
-
 extern DirectDrawPaletteEntry *g_TexturePaletteEntries; /* 00578058 g_TexturePaletteEntries */
-
-extern uint32_t g_ActiveTextureUploads; /* 00578070 g_ActiveTextureUploads */
 
 #endif

@@ -107,9 +107,6 @@ __declspec(align(4)) SoftwareFramebufferAccess *g_CursorSavedBackground = 0;
 /* 004A8E78 g_CursorCompositeBuffer */
 __declspec(align(8)) SoftwareFramebufferAccess *g_CursorCompositeBuffer = 0;
 
-/* 004A8ED4 g_GraphicsBackendRefreshActiveAdapter */
-__declspec(align(4)) GraphicsBackendRefreshActiveAdapterProc *g_GraphicsBackendRefreshActiveAdapter = (void *)GraphicsBackend_RefreshActiveAdapterNoOp;
-
 /* 00573FBC pDirectDrawCreate */
 __declspec(align(4)) DirectDrawCreate *pDirectDrawCreate = 0;
 
@@ -128,32 +125,11 @@ __declspec(align(16)) char sz_DirectDrawEnumerateA[21] = "DirectDrawEnumerateA";
 /* 00576C1C g_MouseEventsProcessed */
 __declspec(align(4)) uint32_t g_MouseEventsProcessed = 0;
 
-/* 00577C68 g_Direct3DViewport2 */
-__declspec(align(8)) IDirect3DViewport2 *g_Direct3DViewport2 = 0;
-
 /* 00577CF0 g_GraphicsCursorSurfaceDesc: scratch descriptor the cursor save/restore Lock fills (lPitch at 00577D00, lpSurface at 00577D14) */
 __declspec(align(16)) DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc = {0};
-
-/* 00577D60 g_Direct3DViewportState */
-__declspec(align(16)) D3DVIEWPORT2 g_Direct3DViewportState = {
-    .dvClipX = 0.0f,
-    .dvClipY = 0.0f,
-    .dvClipWidth = 0.0f,
-    .dvClipHeight = 0.0f,
-    .dvMinZ = 0.0f,
-    .dvMaxZ = 0.0f};
 
 /* 00577E3C g_CursorCurrentDrawX */
 __declspec(align(4)) int32_t g_CursorCurrentDrawX = 0;
 
 /* 00577E40 g_CursorCurrentDrawY */
 __declspec(align(16)) int32_t g_CursorCurrentDrawY = 0;
-
-/* 00578040 g_LastViewportRect */
-__declspec(align(16)) D3DRECT_DX6 g_LastViewportRect = {0};
-
-/* 00578078 g_CommandLineOptionD3dAll */
-__declspec(align(8)) char g_CommandLineOptionD3dAll[7] = "D3DALL";
-
-/* 0057EE84 g_CommandLineOptionGlide */
-__declspec(align(4)) char g_CommandLineOptionGlide[6] = "GLIDE";

@@ -74,8 +74,6 @@ extern SoftwareFramebufferAccess *g_CursorSavedBackground; /* 004A8E74 g_CursorS
 
 extern SoftwareFramebufferAccess *g_CursorCompositeBuffer; /* 004A8E78 g_CursorCompositeBuffer */
 
-extern GraphicsBackendRefreshActiveAdapterProc *g_GraphicsBackendRefreshActiveAdapter; /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapter */
-
 extern DirectDrawCreate *pDirectDrawCreate; /* 00573FBC pDirectDrawCreate */
 
 extern DirectDrawEnumerateA *pDirectDrawEnumerateA; /* 00573FC0 pDirectDrawEnumerateA */
@@ -88,20 +86,10 @@ extern char sz_DirectDrawEnumerateA[21]; /* 00574570 sz_DirectDrawEnumerateA */
 
 extern uint32_t g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
 
-extern IDirect3DViewport2 *g_Direct3DViewport2; /* 00577C68 g_Direct3DViewport2 */
-
 extern DDSURFACEDESC_DX6 g_GraphicsCursorSurfaceDesc; /* 00577CF0 g_GraphicsCursorSurfaceDesc: scratch descriptor the cursor save/restore Lock fills (lPitch at 00577D00, lpSurface at 00577D14) */
-
-extern D3DVIEWPORT2 g_Direct3DViewportState; /* 00577D60 g_Direct3DViewportState */
 
 extern int32_t g_CursorCurrentDrawX; /* 00577E3C g_CursorCurrentDrawX */
 
 extern int32_t g_CursorCurrentDrawY; /* 00577E40 g_CursorCurrentDrawY */
-
-extern D3DRECT_DX6 g_LastViewportRect; /* 00578040 g_LastViewportRect */
-
-extern char g_CommandLineOptionD3dAll[7]; /* 00578078 g_CommandLineOptionD3dAll */
-
-extern char g_CommandLineOptionGlide[6]; /* 0057EE84 g_CommandLineOptionGlide */
 
 #endif

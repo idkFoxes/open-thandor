@@ -35,20 +35,13 @@ void GraphicsFramebuffer_EndAccessStub(void)
 
 
 /* Address: 0x005796E0.
-   Shows the finished frame of g_DisplayFramebufferAccess (other framebuffers are ignored): the Glide adapter
-   presents through Glide, the software renderer blits the back surface to the primary surface, a Direct3D
-   device flips. The mouse cursor is drawn into the frame just before and, for the flip chain, its saved
-   state is swapped with the one of the other buffer. Skipped while another thread holds
-   g_GraphicsBackendAccessState.
+   Shows the finished frame of g_DisplayFramebufferAccess (other framebuffers are ignored): the mouse cursor is
+   drawn into the back surface, the whole back surface is blitted to the primary surface and the cursor is
+   removed again. Skipped while another thread holds g_GraphicsBackendAccessState.
 */
 void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
 {
-  uint32_t adapterDeviceKind;
-  SoftwareFramebufferAccess *savedCursorBackground;
-  int32_t savedVisibilityToken;
-  int32_t savedCursorDrawX;
-  int32_t savedCursorDrawY;
   int32_t previousAccessState;
   TH_LEGACY_HRESULT surfaceResult;
   int restoreResult;
@@ -58,86 +51,43 @@ void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (previousAccessState == 0) {
     if (framebuffer == &g_DisplayFramebufferAccess) {
-      adapterDeviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-      if (adapterDeviceKind == GRAPHICS_DEVICE_GUID_GLIDE) {
-        Glide3_Framebuffer_Present(&g_DisplayFramebufferAccess);
+      /* copy the whole back surface to the primary surface */
+      GraphicsCursor_ComposeBeforePresent(g_BackSurface3);
+      g_CurrentClearRect.left = 0;
+      g_CurrentClearRect.top = 0;
+      g_CurrentClearRect.right = g_FramebufferWidth;
+      g_CurrentClearRect.bottom = g_FramebufferHeight;
+      surfaceResult = g_PrimarySurface3->lpVtbl->IsLost(g_PrimarySurface3);
+      restoreResult = 0;
+      if (surfaceResult != 0) {
+        restoreResult = g_PrimarySurface3->lpVtbl->Restore(g_PrimarySurface3);
       }
-      else if (adapterDeviceKind < 2) {
-        /* GRAPHICS_DEVICE_GUID_SOFTWARE: copy the whole back surface to the primary surface */
-        GraphicsCursor_ComposeBeforePresent(g_BackSurface3);
-        g_CurrentClearRect.x1 = 0;
-        g_CurrentClearRect.y1 = 0;
-        g_CurrentClearRect.x2 = g_FramebufferWidth;
-        g_CurrentClearRect.y2 = g_FramebufferHeight;
-        surfaceResult = g_PrimarySurface3->lpVtbl->IsLost(g_PrimarySurface3);
-        restoreResult = 0;
-        if (surfaceResult != 0) {
-          restoreResult = g_PrimarySurface3->lpVtbl->Restore(g_PrimarySurface3);
-        }
-        if (restoreResult == 0) {
+      if (restoreResult == 0) {
 #ifdef THANDOR_TEST_AIDS
-          if (Thandor_TestAidWindowed()) {
-            /* windowed test aid (not in the original): the primary surface is the whole desktop, so blit
-               into the client area; Blt (unlike BltFast) honours the window's clipper */
-            TH_LEGACY_RECT windowRect;
-            int clientX;
-            int clientY;
-            Thandor_TestAidClientOriginOnScreen(g_MainWindow,&clientX,&clientY);
-            windowRect.left = clientX;
-            windowRect.top = clientY;
-            windowRect.right = clientX + (int)g_FramebufferWidth;
-            windowRect.bottom = clientY + (int)g_FramebufferHeight;
-            g_PrimarySurface3->lpVtbl->Blt
-                      (g_PrimarySurface3,&windowRect,g_BackSurface3,(TH_LEGACY_RECT *)&g_CurrentClearRect,
-                       DDBLT_WAIT,NULL);
-          }
-          else {
-            g_PrimarySurface3->lpVtbl->BltFast
-                      (g_PrimarySurface3,0,0,g_BackSurface3,(TH_LEGACY_RECT *)&g_CurrentClearRect,DDBLTFAST_WAIT);
-          }
-#else
+        if (Thandor_TestAidWindowed()) {
+          /* windowed test aid (not in the original): the primary surface is the whole desktop, so blit
+             into the client area; Blt (unlike BltFast) honours the window's clipper */
+          TH_LEGACY_RECT windowRect;
+          int clientX;
+          int clientY;
+          Thandor_TestAidClientOriginOnScreen(g_MainWindow,&clientX,&clientY);
+          windowRect.left = clientX;
+          windowRect.top = clientY;
+          windowRect.right = clientX + (int)g_FramebufferWidth;
+          windowRect.bottom = clientY + (int)g_FramebufferHeight;
+          g_PrimarySurface3->lpVtbl->Blt
+                    (g_PrimarySurface3,&windowRect,g_BackSurface3,&g_CurrentClearRect,DDBLT_WAIT,NULL);
+        }
+        else {
           g_PrimarySurface3->lpVtbl->BltFast
-                    (g_PrimarySurface3,0,0,g_BackSurface3,(TH_LEGACY_RECT *)&g_CurrentClearRect,DDBLTFAST_WAIT);
+                    (g_PrimarySurface3,0,0,g_BackSurface3,&g_CurrentClearRect,DDBLTFAST_WAIT);
+        }
+#else
+        g_PrimarySurface3->lpVtbl->BltFast
+                  (g_PrimarySurface3,0,0,g_BackSurface3,&g_CurrentClearRect,DDBLTFAST_WAIT);
 #endif
-        }
-        GraphicsCursor_RestoreAfterPresent(g_BackSurface3);
       }
-      else {
-        /* Direct3D flip chain: the back buffer becomes visible, so swap in the cursor state saved for it
-           (XCHG in the original, 0x005797C7, which reads the current state only here, under the lock) */
-        savedCursorBackground = (SoftwareFramebufferAccess *)(uintptr_t)
-             THANDOR_ATOMIC_EXCHANGE(&g_CursorSavedBackground,g_CursorAlternateSavedBackground);
-        savedVisibilityToken =
-             (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentVisibilityToken,g_CursorAlternateVisibilityToken);
-        savedCursorDrawX = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawX,g_CursorAlternateDrawX);
-        savedCursorDrawY = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawY,g_CursorAlternateDrawY);
-        g_CursorAlternateSavedBackground = savedCursorBackground;
-        g_CursorAlternateVisibilityToken = savedVisibilityToken;
-        g_CursorAlternateDrawX = savedCursorDrawX;
-        g_CursorAlternateDrawY = savedCursorDrawY;
-        GraphicsCursor_ComposeBeforePresent(g_BackSurface3);
-        surfaceResult = g_PrimarySurface3->lpVtbl->IsLost(g_PrimarySurface3);
-        restoreResult = 0;
-        if (surfaceResult != 0) {
-          restoreResult = g_PrimarySurface3->lpVtbl->Restore(g_PrimarySurface3);
-        }
-        if (restoreResult == 0) {
-          surfaceResult = g_PrimarySurface3->lpVtbl->Flip(g_PrimarySurface3,NULL,DDFLIP_WAIT);
-          if (surfaceResult != 0) {
-            /* the flip failed: swap the cursor state back */
-            savedCursorBackground = (SoftwareFramebufferAccess *)(uintptr_t)
-                 THANDOR_ATOMIC_EXCHANGE(&g_CursorSavedBackground,g_CursorAlternateSavedBackground);
-            savedVisibilityToken =
-                 (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentVisibilityToken,g_CursorAlternateVisibilityToken);
-            savedCursorDrawX = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawX,g_CursorAlternateDrawX);
-            savedCursorDrawY = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawY,g_CursorAlternateDrawY);
-            g_CursorAlternateSavedBackground = savedCursorBackground;
-            g_CursorAlternateVisibilityToken = savedVisibilityToken;
-            g_CursorAlternateDrawX = savedCursorDrawX;
-            g_CursorAlternateDrawY = savedCursorDrawY;
-          }
-        }
-      }
+      GraphicsCursor_RestoreAfterPresent(g_BackSurface3);
     }
     g_GraphicsBackendAccessState--;
   }
@@ -229,8 +179,7 @@ static uint8_t GraphicsFramebuffer_ExpandChannelTo8Bit
 /* Address: 0x005798A0.
    g_GraphicsFramebufferCaptureRegion in 16-bit modes (callers grab the whole screen): copies a rectangle of
    the back surface into a newly allocated one-image 'gfx' asset in opaque ARGB8888, expanding each channel
-   with the masks and shifts of g_SoftwarePixelFormatConfig. The Glide adapter has its own capture. Returns
-   the asset, or NULL when the allocation fails or the back surface cannot be restored or locked (the
+   with the masks and shifts of g_SoftwarePixelFormatConfig. Returns the asset, or NULL when the allocation fails or the back surface cannot be restored or locked (the
    original's error values, the arena error or FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES, were never read).
 */
 GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
@@ -248,9 +197,6 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
   GraphicsPixelDimension remainingColumns;
   uint32_t pixel;
 
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
-    return Glide3_Framebuffer_CaptureRegion(captureHeight,captureWidth,sourceY,sourceX);
-  }
   allocationSize = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
   if (g_MemoryApi.alloc(allocationSize,(void **)&capturedAsset) != 0) {
     return NULL;
@@ -301,8 +247,8 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion16Bit
 
 /* Address: 0x00579B50.
    32-bit counterpart of GraphicsFramebuffer_CaptureRegion16Bit: copies a rectangle of the back surface into a
-   newly allocated one-image 'gfx' asset, keeping RGB and forcing alpha to 0xFF, two pixels per step. There is
-   no Glide branch here. Callers pass the full (even) screen width. Returns the asset, or NULL when the
+   newly allocated one-image 'gfx' asset, keeping RGB and forcing alpha to 0xFF, two pixels per step. Callers
+   pass the full (even) screen width. Returns the asset, or NULL when the
    allocation fails or the back surface cannot be restored or locked.
 */
 GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
@@ -358,10 +304,9 @@ GraphicsCapturedTextureSourceAsset *GraphicsFramebuffer_CaptureRegion32Bit
 
 
 /* Address: 0x00579D90.
-   Gives the CPU direct access to the frame being drawn: on the Glide adapter via
-   Glide3_Framebuffer_BeginAccess, otherwise by restoring (if lost) and locking the DirectDraw back surface
-   and publishing its pixels and width in pixels in g_DisplayFramebufferAccess. Fails (CF set) while
-   texture uploads are active or when the restore or lock fails.
+   Gives the CPU direct access to the frame being drawn: restores (if lost) and locks the DirectDraw back surface
+   and publishes its pixels and width in pixels in g_DisplayFramebufferAccess. Fails (CF set) when the restore or
+   lock fails.
 */
 bool GraphicsFramebuffer_BeginAccess(void)
 
@@ -370,31 +315,26 @@ bool GraphicsFramebuffer_BeginAccess(void)
   int restoreResult;
   TH_LEGACY_HRESULT lockResult;
 
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == GRAPHICS_ADAPTER_GUID_GLIDE) {
-    return Glide3_Framebuffer_BeginAccess();
+  isLostResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
+  restoreResult = 0;
+  if (isLostResult != 0) {
+    restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
   }
-  if (g_ActiveTextureUploads == 0) {
-    isLostResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
-    restoreResult = 0;
-    if (isLostResult != 0) {
-      restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
-    }
-    if (restoreResult == 0) {
-      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
-      lockResult = g_BackSurface3->lpVtbl->Lock
-                        (g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT,NULL);
-      if (lockResult == 0) {
-        g_FramebufferRowStrideBytes = g_SurfaceDesc.lPitch;
-        if (g_DisplayFramebufferAccess.bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-          g_DisplayFramebufferAccess.width = (uint32_t)g_SurfaceDesc.lPitch >> 1;
-        }
-        else {
-          g_DisplayFramebufferAccess.width = (uint32_t)g_SurfaceDesc.lPitch >> 2;
-        }
-        g_DisplayFramebufferAccess.pixels = g_SurfaceDesc.lpSurface;
-        return false;
+  if (restoreResult == 0) {
+    Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
+    g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
+    lockResult = g_BackSurface3->lpVtbl->Lock
+                      (g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT,NULL);
+    if (lockResult == 0) {
+      g_FramebufferRowStrideBytes = g_SurfaceDesc.lPitch;
+      if (g_DisplayFramebufferAccess.bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
+        g_DisplayFramebufferAccess.width = (uint32_t)g_SurfaceDesc.lPitch >> 1;
       }
+      else {
+        g_DisplayFramebufferAccess.width = (uint32_t)g_SurfaceDesc.lPitch >> 2;
+      }
+      g_DisplayFramebufferAccess.pixels = g_SurfaceDesc.lpSurface;
+      return false;
     }
   }
   return true;
@@ -402,16 +342,12 @@ bool GraphicsFramebuffer_BeginAccess(void)
 
 
 /* Address: 0x00579E60.
-   Ends the CPU access begun by GraphicsFramebuffer_BeginAccess: Glide releases its locked buffers,
-   DirectDraw unlocks the back surface and clears the published pixel pointer.
+   Ends the CPU access begun by GraphicsFramebuffer_BeginAccess: unlocks the back surface and clears the
+   published pixel pointer.
 */
 void GraphicsFramebuffer_EndAccess(void)
 
 {
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == GRAPHICS_ADAPTER_GUID_GLIDE) {
-    Glide3_Framebuffer_EndAccess();
-    return;
-  }
   g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,g_DisplayFramebufferAccess.pixels);
   g_DisplayFramebufferAccess.pixels = NULL;
 }

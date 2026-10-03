@@ -2006,20 +2006,14 @@ static void FrontendDisplayModeCandidates_InsertSortedUnique
   }
 }
 
-/* Adapter row adapterIndex of the display settings page: driver description and device name (the software
-   device gets its text resource name). */
+/* Adapter row adapterIndex of the display settings page: driver description and device name (every adapter is
+   a software renderer device, which gets its text resource name). */
 static void FrontendDisplaySettingsPage_FillAdapterRow
           (FrontendDisplaySettingsPageOptionState *source,uint32_t adapterIndex)
 {
   source->adapterRows.rows[adapterIndex].adapterDescriptionUtf16 =
        g_GraphicsAdapters[adapterIndex].driverDescriptionUtf16;
-  if (g_GraphicsAdapters[adapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
-    source->adapterRows.rows[adapterIndex].deviceNameUtf16 =
-         TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
-  }
-  else {
-    source->adapterRows.rows[adapterIndex].deviceNameUtf16 = g_GraphicsAdapters[adapterIndex].deviceNameUtf16;
-  }
+  source->adapterRows.rows[adapterIndex].deviceNameUtf16 = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
 }
 
 /* Address: 0x0054AB70.
@@ -2089,6 +2083,12 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
   }
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
   adapterIndex = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
+  /* Not in the original: a saved index past the adapter list (the default 1 with a single adapter, or a
+     hardware renderer device saved by the original game) selects adapter 0, as ProcessEntry does at startup */
+  if (g_GraphicsAdapterCount <=
+      (uint32_t)g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex) {
+    g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex = 0;
+  }
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
        PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =

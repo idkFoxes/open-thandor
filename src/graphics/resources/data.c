@@ -71,29 +71,17 @@ __declspec(align(16)) uint32_t g_GraphicsPaletteBankSlots[512] = {0};
 /* 004AE130 g_GraphicsPaletteRemapBytes */
 __declspec(align(16)) uint8_t g_GraphicsPaletteRemapBytes[256] = {0};
 
-/* 00577C30 IID_IDirect3DTexture2_Local */
-__declspec(align(16)) TH_LEGACY_GUID IID_IDirect3DTexture2_Local = {.Data1 = 0x93281502, .Data2 = 36088, .Data3 = 4560, .Data4 = {137, 171, 0, 160, 201, 5, 65, 41}};
-
 /* 00577C4C g_PrimarySurface3 */
 __declspec(align(4)) IDirectDrawSurface3 *g_PrimarySurface3 = 0;
 
 /* 00577C54 g_BackSurface3 */
 __declspec(align(4)) IDirectDrawSurface3 *g_BackSurface3 = 0;
 
-/* 00577C70 g_CurrentClearRect */
-__declspec(align(16)) D3DRECT_DX6 g_CurrentClearRect = {0};
+/* 00577C70 g_CurrentClearRect: the source rectangle of the present blit (GraphicsFramebuffer_Present) */
+__declspec(align(16)) TH_LEGACY_RECT g_CurrentClearRect = {0};
 
 /* 00577C80 g_SurfaceDesc */
 __declspec(align(16)) DDSURFACEDESC_DX6 g_SurfaceDesc = {0};
 
-/* 00577E44 g_CursorAlternateDrawX */
-__declspec(align(4)) int32_t g_CursorAlternateDrawX = 0;
-
-/* 00577E48 g_CursorAlternateDrawY */
-__declspec(align(8)) int32_t g_CursorAlternateDrawY = 0;
-
-/* 00578058 g_TexturePaletteEntries */
+/* 00578058 g_TexturePaletteEntries: allocated by Graphics_Init but no longer read (see there) */
 __declspec(align(8)) DirectDrawPaletteEntry *g_TexturePaletteEntries = 0;
-
-/* 00578070 g_ActiveTextureUploads */
-__declspec(align(16)) uint32_t g_ActiveTextureUploads = 0;

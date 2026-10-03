@@ -324,6 +324,12 @@ void FrontendDisplaySettings_ApplyMode(void *control)
     /* note the default adapter 1 here (ProcessEntry uses 0) */
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
     adapterIndex = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
+    /* Not in the original: an index past the adapter list falls back to adapter 0 (see
+       FrontendDisplaySettingsAction_OpenPageAndListModes) */
+    if (g_GraphicsAdapterCount <=
+        (uint32_t)g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex) {
+      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.adapterIndex = 0;
+    }
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
          PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =

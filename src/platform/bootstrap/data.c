@@ -297,12 +297,6 @@ __declspec(align(16)) char g_BootstrapApiName_timeKillEvent[14] = "timeKillEvent
 /* 0057454E dynapi_16 */
 __declspec(align(4)) char g_BootstrapApiName_mciSendCommandA[16] = "mciSendCommandA";
 
-/* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertices[0..2]; no code reads it (name is historical) */
-__declspec(align(8)) void *g_GlideTextureRefreshHandlers[3] = {(void *)g_GlideVertices[0], (void *)g_GlideVertices[1], (void *)g_GlideVertices[2]};
-
-/* 0057EDB4 g_GlideTextureInfo256Argb4444: GlideTextureInfo (GrTexInfo): {LOD 8, LOD 8, aspect 1:1, GR_TEXFMT_ARGB_4444, NULL}; not referenced by address */
-__declspec(align(4)) GlideTextureInfo g_GlideTextureInfo256Argb4444 = {.smallLod = 8, .largeLod = 8, .format = 12};
-
 /* 00582F28 g_CommandLineOptionSound */
 __declspec(align(8)) char g_CommandLineOptionSound[6] = "SOUND";
 

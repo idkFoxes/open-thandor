@@ -183,10 +183,6 @@ extern char g_BootstrapApiName_timeKillEvent[14]; /* 00574540 dynapi_15 */
 
 extern char g_BootstrapApiName_mciSendCommandA[16]; /* 0057454E dynapi_16 */
 
-extern void *g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers: void *[3]: pointers to the GrVertex records g_GlideVertices[0..2]; no code reads it (name is historical) */
-
-extern GlideTextureInfo g_GlideTextureInfo256Argb4444; /* 0057EDB4 g_GlideTextureInfo256Argb4444: GlideTextureInfo (GrTexInfo): {LOD 8, LOD 8, aspect 1:1, GR_TEXFMT_ARGB_4444, NULL}; not referenced by address */
-
 extern char g_CommandLineOptionSound[6]; /* 00582F28 g_CommandLineOptionSound */
 
 extern HINSTANCE g_hInstance; /* 005856B0 g_hInstance */

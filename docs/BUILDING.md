@@ -24,6 +24,10 @@ Next to `thandor.exe` the game currently needs:
 - optionally `flm\` with the full-length movies from the CD (`Ende*.flm`, `Intro2.flm`); the
   packages hold only still-image stand-ins for them.
 
+The game always draws with its software renderer and presents through DirectDraw; the original's 3dfx Glide
+and Direct3D renderers (and their `-GLIDE` and `-D3DALL` options) were removed, and the display settings list
+only DirectDraw adapters. A `THANDOR.cfg` that still names an adapter index past that list starts on adapter 0.
+
 Environment switches for testing:
 
 | Variable | Effect |
@@ -43,7 +47,7 @@ default build leaves them out and compiles to the same code as before they exist
 
 | Variable | Effect |
 |---|---|
-| `OPEN_THANDOR_WINDOWED=1` | normal window instead of full-screen exclusive (desktop colour depth, software renderer only, non-exclusive mouse); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
+| `OPEN_THANDOR_WINDOWED=1` | normal window instead of full-screen exclusive (desktop colour depth, non-exclusive mouse); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |

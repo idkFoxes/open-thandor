@@ -42,15 +42,14 @@ a UI template or as a jump table; the rest are code fragments between data and 1
 | Area | Status |
 |---|---|
 | Single player: menus, campaigns, skirmish, AI, save/load, movies, sound | playable. An automated run starts all 56 missions (on "strong" and the highest game speed): 50 play without problems, 1 level file is missing from the original data, and the 5 levels that need the units carried over from the previous level play when reached through that level. A campaign run wins every level in turn and reaches the campaign end in all four campaigns (tutorial 3 levels, Luke 4, Nimm2 5, Hansolo 20 on the winning path); units are carried over into tutorial 2 and 3 and Hansolo 9, 13 and 23 |
-| Software renderer, DirectDraw, Direct3D | working; software rasterizer and blitters verified bit-exact against the original code ([details](docs/software_raster.md)) |
-| Glide (3dfx) | builds; the vertex output was fixed from the original code, not tested on 3dfx hardware |
+| Software renderer, DirectDraw | working; software rasterizer and blitters verified bit-exact against the original code ([details](docs/software_raster.md)). The original's Glide (3dfx) and Direct3D renderers were removed: the software renderer is the only renderer |
 | Multiplayer (LAN, UDP) | works in a local two-instance test: lobby, map and faction choice, briefing, in-game commands |
 | Map editor | hidden in the original; opened by a hotkey on the `experimental/map-editor` branch |
 
 ### How correctness is kept
 
 - **Behaviour parity with the original.** Where the decompiled C differed from the original machine code, it was
-  fixed from the disassembly (for example the water flow, double clicks, the Direct3D texture binding, spinlocks
+  fixed from the disassembly (for example the water flow, double clicks, spinlocks
   that were not atomic). Bugs and quirks of the original game are kept and marked "Original quirk" in the code.
 - **Differential self-tests** run parts of the C code and the original machine code on the same inputs:
   bilinear stretching, water simulation, movie decoder (they need `thandor_original.exe` next to the exe). The

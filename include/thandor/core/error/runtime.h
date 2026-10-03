@@ -28,8 +28,7 @@
 #define FATAL_ERROR_CPU_WITHOUT_MMX 0x51 /* ProcessEntry: CPUID reports no MMX (see CPU_DetectFeatures) */
 /* DLL binding (DynAPI_Bootstrap, DynAPI_Resolve, DynDLL_Load); the DLL/procedure name is left in
    g_PackageLastErrorPath */
-#define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped; also
-   DynDLL_Unload: the module is not in the table or FreeLibrary failed */
+#define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped */
 #define FATAL_ERROR_DLL_PROCEDURE_MISSING 0x10 /* GetProcAddress failed */
 #define FATAL_ERROR_DLL_LOAD_FAILED 0x11 /* LoadLibraryA failed */
 /* Subsystem startup (Graphics_Init, DirectSound_Init); names follow the failing step */
@@ -119,14 +118,10 @@
 /* Display mode switch (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources); the number of completed setup
    steps is left in g_PackageLastErrorPath. Named after the failing step. */
 #define FATAL_ERROR_DIRECTDRAW_CREATE 0x19 /* DirectDrawCreate, SetCooperativeLevel or the IDirectDraw2 query */
-#define FATAL_ERROR_DIRECTDRAW_SET_DISPLAY_MODE 0x1A /* IDirectDraw2::SetDisplayMode (also the Glide mode error) */
+#define FATAL_ERROR_DIRECTDRAW_SET_DISPLAY_MODE 0x1A /* IDirectDraw2::SetDisplayMode */
 #define FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES 0x1B /* primary or back surface creation/query */
 #define FATAL_ERROR_DIRECTDRAW_PIXEL_FORMAT 0x1C /* GetPixelFormat failed or reported an empty RGB mask */
-#define FATAL_ERROR_DIRECT3D_SETUP 0x1D /* the IDirect3D2 query or a SetRenderState call */
-#define FATAL_ERROR_DIRECT3D_ZBUFFER 0x1E /* Z-buffer surface creation, query or attachment */
-#define FATAL_ERROR_DIRECT3D_CREATE_DEVICE 0x1F /* IDirect3D2::CreateDevice */
-#define FATAL_ERROR_DIRECT3D_VIEWPORT 0x20 /* viewport creation, AddViewport or SetCurrentViewport */
-#define FATAL_ERROR_DIRECT3D_TEXTURE_FORMAT 0x21 /* EnumTextureFormats failed or found no opaque/alpha format */
+/* 0x1D..0x21: unused since the software renderer is the only renderer (they were hardware renderer setup errors) */
 /* GraphicsTextureSet_AllocateMetadata: an image of a texture set is not a power of two wide and high */
 #define FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO 0x2F
 /* GraphicsCursor_SetFrameIndex: the frame index is not below g_CursorFrameCount (it returns false) */

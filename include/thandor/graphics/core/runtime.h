@@ -13,19 +13,12 @@
 
 /* Submodule: graphics/core/runtime. */
 
-/* GraphicsAdapterRecord.adapterGuid.Data1 of the 3dfx Glide adapter (Glide3_InitAndEnumerate); DirectDraw
-   adapters carry their real GUID, the primary display driver an all-zero one (passed as NULL). */
-#define GRAPHICS_ADAPTER_GUID_GLIDE 1
 /* Capacity of g_GraphicsAdapters (Graphics_Init allocates 16 records of 0x80 bytes) and of g_GraphicsDisplayModes
    (the enumeration callbacks stop at 256 modes). */
 #define GRAPHICS_ADAPTER_CAPACITY 16
 #define GRAPHICS_DISPLAY_MODE_CAPACITY 256
 /* g_ActiveGraphicsAdapterIndex before the first display mode is set (and while the backend is being recreated). */
 #define GRAPHICS_ADAPTER_INDEX_NONE (-1)
-/* GraphicsAdapterRecord.deviceGuid.Data1 selects the renderer of the adapter: no Direct3D device (the software
-   rasterizer), the Glide adapter (set by Glide3_InitAndEnumerate), otherwise the GUID of a Direct3D device. */
-#define GRAPHICS_DEVICE_GUID_SOFTWARE 0
-#define GRAPHICS_DEVICE_GUID_GLIDE 1
 
 /* Frames for g_GraphicsCursorSetFrame (GraphicsCursor_SetFrameIndex). */
 #define GRAPHICS_CURSOR_FRAME_ARROW 0
@@ -61,13 +54,6 @@
 #define ARGB8888_ALPHA_ONE 0x1000000 /* alpha 1, the lowest alpha step */
 /* c * 0x101 = c | c << 8: an 8-bit channel widened to a 16-bit lane (PUNPCKLBW of a value with itself) */
 #define COLOR_CHANNEL_TO_WORD_LANE 0x101
-/* 16-bit RGB565 (the Glide and most DirectDraw 16-bit modes) */
-#define RGB565_RED_MASK 0xf800
-#define RGB565_GREEN_MASK 0x7e0
-#define RGB565_BLUE_MASK 0x1f
-/* 16-bit ARGB4444 (Glide textures with alpha) */
-#define ARGB4444_ALPHA_MASK 0xf000
-#define ARGB4444_RGB_MASK 0xfff
 /* x86 shifts use only the low 5 bits of the count. The original masks some counts explicitly; the C keeps the
    mask where dropping it changes the generated code. */
 #ifndef SHIFT_COUNT_MASK
@@ -122,32 +108,11 @@ void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue);
 /* 0x004867B0 */
 void Graphics_RebuildFrustumPlanes(void);
 
-/* 0x004A9100 */
-void GraphicsBackend_RefreshActiveAdapterNoOp(void);
-
 /* 0x00578560 */
 uint32_t __cdecl Graphics_Init(void);
 
-/* 0x005794E0 */
-void GraphicsBackend_ShutdownGlideOnDeactivate(void);
-
 /* 0x00579520 */
 void Graphics_Shutdown(void);
-
-/* 0x0057A5C0 */
-void Graphics_SetViewportAndClearDepth(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX);
-
-/* 0x0057E6D0 */
-void Graphics_BeginScene(void);
-
-/* 0x0057E750 */
-void Graphics_EndScene(void);
-
-/* 0x0057E7A0 */
-void Graphics_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-          GraphicsPrimitiveQueue *queue);
 
 /* 0x0057A330 */
 void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface);

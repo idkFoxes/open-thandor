@@ -121,9 +121,7 @@ typedef struct ModelAttachmentTransformRecord ModelAttachmentTransformRecord, *P
 typedef struct GeneratedAssetBuildMetadata GeneratedAssetBuildMetadata, *PGeneratedAssetBuildMetadata;
 typedef struct IDirectDrawSurface IDirectDrawSurface, *PIDirectDrawSurface;
 typedef struct IDirectDrawSurface3 IDirectDrawSurface3, *PIDirectDrawSurface3;
-typedef struct IDirect3DTexture2 IDirect3DTexture2, *PIDirect3DTexture2;
 typedef struct DDPIXELFORMAT DDPIXELFORMAT, *PDDPIXELFORMAT;
-typedef struct GrTexInfo GrTexInfo, *PGrTexInfo;
 typedef struct AssetBuildTimestampSet AssetBuildTimestampSet, *PAssetBuildTimestampSet;
 typedef struct AssetProducerSourceNames AssetProducerSourceNames, *PAssetProducerSourceNames;
 typedef struct IDirectDrawSurface_Vtbl IDirectDrawSurface_Vtbl, *PIDirectDrawSurface_Vtbl;
@@ -134,21 +132,8 @@ typedef struct DDCOLORKEY DDCOLORKEY, *PDDCOLORKEY;
 typedef struct DDSURFACEDESC_DX6 DDSURFACEDESC_DX6, *PDDSURFACEDESC_DX6;
 typedef struct IDirectDraw IDirectDraw, *PIDirectDraw;
 typedef struct IDirectDrawSurface3_Vtbl IDirectDrawSurface3_Vtbl, *PIDirectDrawSurface3_Vtbl;
-typedef struct IDirect3DTexture2_Vtbl IDirect3DTexture2_Vtbl, *PIDirect3DTexture2_Vtbl;
-typedef struct IDirect3DDevice2 IDirect3DDevice2, *PIDirect3DDevice2;
 typedef struct IDirectDraw_Vtbl IDirectDraw_Vtbl, *PIDirectDraw_Vtbl;
-typedef struct IDirect3DDevice2_Vtbl IDirect3DDevice2_Vtbl, *PIDirect3DDevice2_Vtbl;
-typedef struct IDirect3DViewport2 IDirect3DViewport2, *PIDirect3DViewport2;
-typedef struct IDirect3D2 IDirect3D2, *PIDirect3D2;
-typedef struct D3DTLVERTEX_DX6 D3DTLVERTEX_DX6, *PD3DTLVERTEX_DX6;
-typedef struct IDirect3DViewport2_Vtbl IDirect3DViewport2_Vtbl, *PIDirect3DViewport2_Vtbl;
-typedef struct D3DVIEWPORT2 D3DVIEWPORT2, *PD3DVIEWPORT2;
-typedef struct IDirect3D2_Vtbl IDirect3D2_Vtbl, *PIDirect3D2_Vtbl;
-typedef struct D3DDEVICEDESC_DX6 D3DDEVICEDESC_DX6, *PD3DDEVICEDESC_DX6;
 typedef struct GraphicsAdapterRecord GraphicsAdapterRecord, *PGraphicsAdapterRecord;
-typedef struct D3DTRANSFORMCAPS_DX6 D3DTRANSFORMCAPS_DX6, *PD3DTRANSFORMCAPS_DX6;
-typedef struct D3DLIGHTINGCAPS_DX6 D3DLIGHTINGCAPS_DX6, *PD3DLIGHTINGCAPS_DX6;
-typedef struct D3DPRIMCAPS_DX6 D3DPRIMCAPS_DX6, *PD3DPRIMCAPS_DX6;
 typedef union UiCommandPayloadTextBatch48 UiCommandPayloadTextBatch48, *PUiCommandPayloadTextBatch48;
 typedef struct UiCommandPayloadTriple UiCommandPayloadTriple, *PUiCommandPayloadTriple;
 typedef union NetworkEndpointAddressHeader4 NetworkEndpointAddressHeader4, *PNetworkEndpointAddressHeader4;
@@ -396,22 +381,15 @@ typedef struct GraphicsPrimitiveVertexRaw GraphicsPrimitiveVertexRaw, *PGraphics
 typedef union GraphicsPrimitiveRadixBucket GraphicsPrimitiveRadixBucket, *PGraphicsPrimitiveRadixBucket;
 typedef struct GraphicsPrimitiveQueueNode GraphicsPrimitiveQueueNode, *PGraphicsPrimitiveQueueNode;
 typedef struct GraphicsTriangleInput GraphicsTriangleInput, *PGraphicsTriangleInput;
-typedef struct GlideTextureInfo GlideTextureInfo, *PGlideTextureInfo;
-typedef struct GraphicsDispatchTable GraphicsDispatchTable, *PGraphicsDispatchTable;
 typedef struct SoftwareRgbWordLanes SoftwareRgbWordLanes, *PSoftwareRgbWordLanes;
 typedef struct SoftwareFramebufferAccess SoftwareFramebufferAccess, *PSoftwareFramebufferAccess;
-typedef struct ComReleaseObject_Vtbl ComReleaseObject_Vtbl, *PComReleaseObject_Vtbl;
-typedef struct ComReleaseObject ComReleaseObject, *PComReleaseObject;
 typedef struct GraphicsCursorInputEvent GraphicsCursorInputEvent, *PGraphicsCursorInputEvent;
-typedef struct GraphicsPrimitiveRenderStateCache GraphicsPrimitiveRenderStateCache, *PGraphicsPrimitiveRenderStateCache;
 typedef struct SoftwareMaskRuntimeView SoftwareMaskRuntimeView, *PSoftwareMaskRuntimeView;
 typedef struct SoftwarePixelPackTables SoftwarePixelPackTables, *PSoftwarePixelPackTables;
-typedef struct GraphicsResourceRecord GraphicsResourceRecord, *PGraphicsResourceRecord;
 typedef struct SoftwareRasterTextureAddressState SoftwareRasterTextureAddressState, *PSoftwareRasterTextureAddressState;
 typedef struct GraphicsCursorFrameRecord GraphicsCursorFrameRecord, *PGraphicsCursorFrameRecord;
 typedef struct GraphicsWideFixed GraphicsWideFixed, *PGraphicsWideFixed;
 typedef struct GraphicsFixedRect GraphicsFixedRect, *PGraphicsFixedRect;
-typedef struct GraphicsPrimitiveRenderStatePreset GraphicsPrimitiveRenderStatePreset, *PGraphicsPrimitiveRenderStatePreset;
 typedef struct SoftwarePixelMmxConstants SoftwarePixelMmxConstants, *PSoftwarePixelMmxConstants;
 typedef struct GraphicsPrimitiveQueue GraphicsPrimitiveQueue, *PGraphicsPrimitiveQueue;
 typedef struct GraphicsFixedVec2 GraphicsFixedVec2, *PGraphicsFixedVec2;
@@ -486,7 +464,6 @@ typedef struct PALETTEENTRY_DX6 PALETTEENTRY_DX6, *PPALETTEENTRY_DX6;
 typedef struct DIDATAFORMAT DIDATAFORMAT, *PDIDATAFORMAT;
 typedef struct DIOBJECTDATAFORMAT DIOBJECTDATAFORMAT, *PDIOBJECTDATAFORMAT;
 typedef struct DIMOUSESTATE_4BUTTON DIMOUSESTATE_4BUTTON, *PDIMOUSESTATE_4BUTTON;
-typedef struct D3DRECT_DX6 D3DRECT_DX6, *PD3DRECT_DX6;
 typedef struct DIDEVICEOBJECTDATA_DX6 DIDEVICEOBJECTDATA_DX6, *PDIDEVICEOBJECTDATA_DX6;
 typedef struct DIDEVICEOBJECTDATA_DX3 DIDEVICEOBJECTDATA_DX3, *PDIDEVICEOBJECTDATA_DX3;
 typedef struct DIPROPDWORD DIPROPDWORD, *PDIPROPDWORD;
@@ -744,7 +721,6 @@ typedef long __stdcall DirectSoundCreate();
 
 #define FIELD_GRID_WORLD_Y_Q20_MULTIPLIER 0x1c6e9c
 #define FIELD_GRID_WORLD_X_Q21_MULTIPLIER_NEG 0xffdf3734
-#define GLIDE_QUERY_SELECTOR_0x13 0x13
 #define ARENA_HEAP_CORRUPT 0x13 /* error code: the arena block chain is corrupt (bad stateMagic) */
 #define GRAPHICS_ADAPTER_ENUMERATION_FAILURE_SENTINEL_0x17 0x17
 #define GRAPHICS_CAPTURE_FAILURE_SENTINEL_0x1B 0x1b
@@ -2019,23 +1995,6 @@ typedef uint32_t AssetSubresourceCount;
 
 typedef uint32_t AssetRelativeOffset;
 
-typedef uint32_t GraphicsTextureHandle;
-
-typedef uint32_t GraphicsResourceUsageSerial;
-
-typedef enum GraphicsTextureDownsampleShift {
-    GRAPHICS_TEXTURE_DOWNSAMPLE_1X=0,
-    GRAPHICS_TEXTURE_DOWNSAMPLE_2X=1,
-    GRAPHICS_TEXTURE_DOWNSAMPLE_4X=2
-} GraphicsTextureDownsampleShift;
-
-typedef enum GraphicsTextureResidentTmuIndex {
-    GRAPHICS_TEXTURE_RESIDENT_TMU0=0,
-    GRAPHICS_TEXTURE_NOT_RESIDENT=4294967295
-} GraphicsTextureResidentTmuIndex;
-
-typedef uint32_t GraphicsTextureMemoryAddress;
-
 typedef uint32_t AssetDimension;
 
 typedef int GraphicsPaletteIndex;
@@ -2439,12 +2398,6 @@ typedef void *TH_LEGACY_HANDLE;
 
 typedef int32_t TH_LEGACY_LONG;
 
-typedef int GrLOD_t;
-
-typedef int GrAspectRatio_t;
-
-typedef int GrTextureFormat_t;
-
 typedef uint32_t AssetPackedDate;
 
 typedef uint32_t AssetPackedTime;
@@ -2456,59 +2409,6 @@ typedef uint8_t TH_LEGACY_BYTE;
 typedef int32_t TH_LEGACY_BOOL;
 
 typedef void *TH_LEGACY_HWND;
-
-typedef enum D3DRENDERSTATETYPE_DX6 {
-    D3DRENDERSTATE_TEXTUREHANDLE=1,
-    D3DRENDERSTATE_ANTIALIAS=2,
-    D3DRENDERSTATE_TEXTUREADDRESS=3,
-    D3DRENDERSTATE_TEXTUREPERSPECTIVE=4,
-    D3DRENDERSTATE_WRAPU=5,
-    D3DRENDERSTATE_WRAPV=6,
-    D3DRENDERSTATE_ZENABLE=7,
-    D3DRENDERSTATE_FILLMODE=8,
-    D3DRENDERSTATE_SHADEMODE=9,
-    D3DRENDERSTATE_LINEPATTERN=10,
-    D3DRENDERSTATE_MONOENABLE=11,
-    D3DRENDERSTATE_ROP2=12,
-    D3DRENDERSTATE_PLANEMASK=13,
-    D3DRENDERSTATE_ZWRITEENABLE=14,
-    D3DRENDERSTATE_ALPHATESTENABLE=15,
-    D3DRENDERSTATE_LASTPIXEL=16,
-    D3DRENDERSTATE_TEXTUREMAG=17,
-    D3DRENDERSTATE_TEXTUREMIN=18,
-    D3DRENDERSTATE_SRCBLEND=19,
-    D3DRENDERSTATE_DESTBLEND=20,
-    D3DRENDERSTATE_TEXTUREMAPBLEND=21,
-    D3DRENDERSTATE_CULLMODE=22,
-    D3DRENDERSTATE_ZFUNC=23,
-    D3DRENDERSTATE_ALPHAREF=24,
-    D3DRENDERSTATE_ALPHAFUNC=25,
-    D3DRENDERSTATE_DITHERENABLE=26,
-    D3DRENDERSTATE_ALPHABLENDENABLE=27,
-    D3DRENDERSTATE_FOGENABLE=28,
-    D3DRENDERSTATE_SPECULARENABLE=29,
-    D3DRENDERSTATE_ZVISIBLE=30,
-    D3DRENDERSTATE_SUBPIXEL=31,
-    D3DRENDERSTATE_SUBPIXELX=32,
-    D3DRENDERSTATE_STIPPLEDALPHA=33,
-    D3DRENDERSTATE_FOGCOLOR=34,
-    D3DRENDERSTATE_FOGTABLEMODE=35,
-    D3DRENDERSTATE_FOGSTART=36,
-    D3DRENDERSTATE_FOGEND=37,
-    D3DRENDERSTATE_FOGDENSITY=38,
-    D3DRENDERSTATE_STIPPLEENABLE=39,
-    D3DRENDERSTATE_EDGEANTIALIAS=40,
-    D3DRENDERSTATE_COLORKEYENABLE=41,
-    D3DRENDERSTATE_BORDERCOLOR=43,
-    D3DRENDERSTATE_TEXTUREADDRESSU=44,
-    D3DRENDERSTATE_TEXTUREADDRESSV=45,
-    D3DRENDERSTATE_MIPMAPLODBIAS=46,
-    D3DRENDERSTATE_ZBIAS=47,
-    D3DRENDERSTATE_RANGEFOGENABLE=48,
-    D3DRENDERSTATE_ANISOTROPY=49,
-    D3DRENDERSTATE_FLUSHBATCH=50,
-    D3DRENDERSTATE_TRANSLUCENTSORTINDEPENDENT=51
-} D3DRENDERSTATETYPE_DX6;
 
 struct ModelResource {
     uint8_t reserved00_AF[176]; 
@@ -2544,14 +2444,6 @@ union GameEntityDamageCounterOrTerminalReference4 {
     uint32_t raw; 
 };
 
-struct GrTexInfo {
-    GrLOD_t smallLodLog2; 
-    GrLOD_t largeLodLog2; 
-    GrAspectRatio_t aspectRatioLog2; 
-    GrTextureFormat_t format; 
-    void *data; 
-};
-
 struct GraphicsFixedVec3 {
     GraphicsWorldCoordinateQ12 x; 
     GraphicsWorldCoordinateQ12 y; 
@@ -2563,10 +2455,6 @@ struct GraphicsFixedMatrix3x4 {
     int32_t basisRow1[3]; 
     int32_t basisRow2[3]; 
     struct GraphicsFixedVec3 translation; 
-};
-
-struct IDirect3D2 {
-    struct IDirect3D2_Vtbl *lpVtbl;
 };
 
 struct IDirectDrawSurface3_Vtbl {
@@ -2610,15 +2498,6 @@ struct IDirectDrawSurface3_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *PageLock)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
     TH_LEGACY_HRESULT (__stdcall *PageUnlock)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
     TH_LEGACY_HRESULT (__stdcall *SetSurfaceDesc)(struct IDirectDrawSurface3 *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD);
-};
-
-struct IDirect3DTexture2_Vtbl {
-    int32_t (__stdcall *QueryInterface)(struct IDirect3DTexture2 *, struct TH_LEGACY_GUID *, void **);
-    uint32_t (__stdcall *AddRef)(struct IDirect3DTexture2 *);
-    uint32_t (__stdcall *Release)(struct IDirect3DTexture2 *);
-    int32_t (__stdcall *GetHandle)(struct IDirect3DTexture2 *, struct IDirect3DDevice2 *, uint32_t *);
-    int32_t (__stdcall *PaletteChanged)(struct IDirect3DTexture2 *, uint32_t, uint32_t);
-    int32_t (__stdcall *Load)(struct IDirect3DTexture2 *, struct IDirect3DTexture2 *);
 };
 
 struct ModelDefinitionRecordPrefix {
@@ -2672,59 +2551,6 @@ struct GameEntityOwnershipState10 {
     struct ModelRuntimeNode *modelNode; 
     void *runtimeLink; 
     FactionRuntimeIndex ownerIndex; 
-};
-
-struct D3DLIGHTINGCAPS_DX6 {
-    uint32_t dwSize;
-    uint32_t dwCaps;
-    uint32_t dwLightingModel;
-    uint32_t dwNumLights;
-};
-
-struct D3DPRIMCAPS_DX6 {
-    uint32_t dwSize;
-    uint32_t dwMiscCaps;
-    uint32_t dwRasterCaps;
-    uint32_t dwZCmpCaps;
-    uint32_t dwSrcBlendCaps;
-    uint32_t dwDestBlendCaps;
-    uint32_t dwAlphaCmpCaps;
-    uint32_t dwShadeCaps;
-    uint32_t dwTextureCaps;
-    uint32_t dwTextureFilterCaps;
-    uint32_t dwTextureBlendCaps;
-    uint32_t dwTextureAddressCaps;
-    uint32_t dwStippleWidth;
-    uint32_t dwStippleHeight;
-};
-
-struct D3DTRANSFORMCAPS_DX6 {
-    uint32_t dwSize;
-    uint32_t dwCaps;
-};
-
-struct D3DDEVICEDESC_DX6 {
-    uint32_t dwSize;
-    uint32_t dwFlags;
-    uint32_t dcmColorModel;
-    uint32_t dwDevCaps;
-    struct D3DTRANSFORMCAPS_DX6 dtcTransformCaps;
-    int32_t bClipping;
-    struct D3DLIGHTINGCAPS_DX6 dlcLightingCaps;
-    struct D3DPRIMCAPS_DX6 dpcLineCaps;
-    struct D3DPRIMCAPS_DX6 dpcTriCaps;
-    uint32_t dwDeviceRenderBitDepth;
-    uint32_t dwDeviceZBufferBitDepth;
-    uint32_t dwMaxBufferSize;
-    uint32_t dwMaxVertexCount;
-    uint32_t dwMinTextureWidth;
-    uint32_t dwMinTextureHeight;
-    uint32_t dwMaxTextureWidth;
-    uint32_t dwMaxTextureHeight;
-    uint32_t dwMinStippleWidth;
-    uint32_t dwMaxStippleWidth;
-    uint32_t dwMinStippleHeight;
-    uint32_t dwMaxStippleHeight;
 };
 
 struct ShotDefinition {
@@ -2838,27 +2664,6 @@ struct WorldFieldRegionState {
     WorldFieldDimension auxiliaryElevationAngle; // Clamped to -0x4000..-0x1000 like the light elevation.
 };
 
-struct IDirect3DViewport2_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirect3DViewport2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirect3DViewport2 *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirect3DViewport2 *);
-    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirect3DViewport2 *, struct IDirect3D2 *);
-    TH_LEGACY_HRESULT (__stdcall *GetViewport)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *SetViewport)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *TransformVertices)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *LightElements)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *SetBackground)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetBackground)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID *, TH_LEGACY_BOOL *);
-    TH_LEGACY_HRESULT (__stdcall *SetBackgroundDepth)(struct IDirect3DViewport2 *, struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (__stdcall *GetBackgroundDepth)(struct IDirect3DViewport2 *, struct IDirectDrawSurface **, TH_LEGACY_BOOL *);
-    TH_LEGACY_HRESULT (__stdcall *Clear)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *AddLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *DeleteLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *NextLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetViewport2)(struct IDirect3DViewport2 *, struct D3DVIEWPORT2 *);
-    TH_LEGACY_HRESULT (__stdcall *SetViewport2)(struct IDirect3DViewport2 *, struct D3DVIEWPORT2 *);
-};
-
 union ModelRuntimeArmyLinkOrState {
     struct ArmyRuntimeSlot *armyRuntime; 
     uint32_t classState; 
@@ -2872,18 +2677,13 @@ union ArmyRuntimeCoordinateCommandOrHistoryValue {
     uint32_t raw; 
 };
 
-struct IDirect3DDevice2 {
-    struct IDirect3DDevice2_Vtbl *lpVtbl;
-};
-
+/* One DirectDraw adapter; every adapter is drawn by the software renderer. */
 struct GraphicsAdapterRecord {
-    struct TH_LEGACY_GUID adapterGuid; 
-    struct TH_LEGACY_GUID deviceGuid; 
-    uint16_t driverDescriptionUtf16[21]; 
-    uint16_t deviceNameUtf16[21]; 
-    uint32_t glideTmuCount; /* grGet(GR_NUM_TMU) of a Glide adapter */
-    struct D3DDEVICEDESC_DX6 *hardwareDesc; 
-    struct D3DDEVICEDESC_DX6 *softwareDesc; 
+    struct TH_LEGACY_GUID adapterGuid;
+    uint16_t driverDescriptionUtf16[21];
+    /* where the original kept the device GUID and name and the hardware renderer device data: keeps the record
+       at 0x80 bytes, so the arena allocation of g_GraphicsAdapters (Graphics_Init) keeps its size */
+    uint8_t reserved3A[0x46];
 };
 
 union ResourceRegistrationRuntimePayloadReference4 {
@@ -3090,41 +2890,18 @@ struct GraphicsPaletteAsset {
     struct GraphicsPaletteAssetEntry paletteEntries[1];
 };
 
+/* One per image of a texture set (GraphicsTextureSet_Create). It held the surfaces and texture state of the
+   original's hardware renderers and has no content left; it is still allocated, at the original 0x50 bytes,
+   because the arena layout decides the texture-set addresses GraphicsPrimitiveQueue_RadixSortForRendering
+   sorts opaque packets by. */
 struct GraphicsTextureResource {
-    struct IDirectDrawSurface *deviceSurfaceBase; 
-    struct IDirectDrawSurface3 *deviceSurface3; 
-    struct IDirect3DTexture2 *deviceTexture2; 
-    struct IDirectDrawSurface *stagingSurfaceBase; 
-    struct IDirectDrawSurface3 *stagingSurface3; 
-    struct IDirect3DTexture2 *stagingTexture2; 
-    GraphicsTextureHandle textureHandle; 
-    GraphicsResourceUsageSerial lastUsedCounter; 
-    struct GraphicsTextureSourceAsset *sourceAsset; 
-    GraphicsSubresourceIndex subresourceIndex; 
-    struct DDPIXELFORMAT *pixelFormat; 
-    enum GraphicsTextureDownsampleShift downsampleShift; 
-    struct GrTexInfo glideInfo; 
-    enum GraphicsTextureResidentTmuIndex residentTmuIndex; 
-    GraphicsTextureMemoryAddress residentAddress; 
-    struct GraphicsTextureResource *residentNext; 
+    uint8_t reserved00[0x50];
 };
 
 union ShotDefinitionReferenceOrSavedId {
     struct ShotDefinition *definition; 
     enum PckShotDefinitionIdCatalog savedId; 
     uint32_t raw; 
-};
-
-struct IDirect3D2_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirect3D2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirect3D2 *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirect3D2 *);
-    int32_t (__stdcall *EnumDevices)(struct IDirect3D2 *, int32_t (__stdcall *)(struct TH_LEGACY_GUID *, char *, char *, struct D3DDEVICEDESC_DX6 *, struct D3DDEVICEDESC_DX6 *, struct GraphicsAdapterRecord *), struct GraphicsAdapterRecord *); 
-    TH_LEGACY_HRESULT (__stdcall *CreateLight)(struct IDirect3D2 *, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *CreateMaterial)(struct IDirect3D2 *, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *CreateViewport)(struct IDirect3D2 *, struct IDirect3DViewport2 **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *FindDevice)(struct IDirect3D2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *CreateDevice)(struct IDirect3D2 *, struct TH_LEGACY_GUID *, struct IDirectDrawSurface *, struct IDirect3DDevice2 **);
 };
 
 struct IDirectDrawSurface {
@@ -3253,10 +3030,6 @@ struct ShotRuntimeSlot {
     ShotProjectileAgeTicks projectileAgeTicks; 
     ShotLifetimeRemainingTicks lifetimeTicksRemaining; 
     struct ShotRuntimeOwnerAndTrajectoryState ownerAndTrajectory; 
-};
-
-struct IDirect3DViewport2 {
-    struct IDirect3DViewport2_Vtbl *lpVtbl;
 };
 
 struct WorldRuntimeNodeCommon {
@@ -3531,67 +3304,6 @@ struct IDirectDraw {
     struct IDirectDraw_Vtbl *lpVtbl;
 };
 
-struct IDirect3DDevice2_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirect3DDevice2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirect3DDevice2 *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirect3DDevice2 *);
-    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *SwapTextureHandles)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetStats)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *AddViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
-    TH_LEGACY_HRESULT (__stdcall *DeleteViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
-    TH_LEGACY_HRESULT (__stdcall *NextViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *, struct IDirect3DViewport2 **, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *EnumTextureFormats)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *BeginScene)(struct IDirect3DDevice2 *);
-    TH_LEGACY_HRESULT (__stdcall *EndScene)(struct IDirect3DDevice2 *);
-    TH_LEGACY_HRESULT (__stdcall *GetDirect3D)(struct IDirect3DDevice2 *, struct IDirect3D2 **);
-    TH_LEGACY_HRESULT (__stdcall *SetCurrentViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
-    TH_LEGACY_HRESULT (__stdcall *GetCurrentViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 **);
-    TH_LEGACY_HRESULT (__stdcall *SetRenderTarget)(struct IDirect3DDevice2 *, struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *GetRenderTarget)(struct IDirect3DDevice2 *, struct IDirectDrawSurface **);
-    TH_LEGACY_HRESULT (__stdcall *Begin)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *BeginIndexed)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *Vertex)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *Index)(struct IDirect3DDevice2 *, TH_LEGACY_WORD);
-    TH_LEGACY_HRESULT (__stdcall *End)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD);
-    int32_t (__stdcall *GetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, uint32_t *); 
-    int32_t (__stdcall *SetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, uint32_t); 
-    TH_LEGACY_HRESULT (__stdcall *GetLightState)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (__stdcall *SetLightState)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *MultiplyTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    int32_t (__stdcall *DrawPrimitive)(struct IDirect3DDevice2 *, uint32_t, uint32_t, struct D3DTLVERTEX_DX6 *, uint32_t, uint32_t); 
-    TH_LEGACY_HRESULT (__stdcall *DrawIndexedPrimitive)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_WORD *, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetClipStatus)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (__stdcall *GetClipStatus)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
-};
-
-struct D3DVIEWPORT2 {
-    TH_LEGACY_DWORD dwSize;
-    TH_LEGACY_DWORD dwX;
-    TH_LEGACY_DWORD dwY;
-    TH_LEGACY_DWORD dwWidth;
-    TH_LEGACY_DWORD dwHeight;
-    float dvClipX;
-    float dvClipY;
-    float dvClipWidth;
-    float dvClipHeight;
-    float dvMinZ;
-    float dvMaxZ;
-};
-
-struct D3DTLVERTEX_DX6 {
-    float sx;
-    float sy;
-    float sz;
-    float rhw;
-    uint32_t color;
-    uint32_t specular;
-    float tu;
-    float tv;
-};
-
 struct GraphicsTextureSourceTableDescriptor {
     AssetSubresourceCount subresourceCount;
     AssetPaletteBankCount paletteBankCount;
@@ -3646,10 +3358,6 @@ struct IDirectDrawSurface_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *UpdateOverlay)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *UpdateOverlayDisplay)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
     TH_LEGACY_HRESULT (__stdcall *UpdateOverlayZOrder)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct IDirectDrawSurface *);
-};
-
-struct IDirect3DTexture2 {
-    struct IDirect3DTexture2_Vtbl *lpVtbl;
 };
 
 struct DDSCAPS {
@@ -8154,11 +7862,7 @@ typedef uint32_t LocaleLanguageIdentifierDigits;
 
 typedef uint32_t MdlReloadTicks;
 
-typedef int GraphicsResourceActiveToken;
-
 typedef uint32_t LocaleLongDateOrderCode;
-
-typedef uint32_t GraphicsBackendHandlerIndex;
 
 typedef uint32_t SprMeshGroupSelectorMask;
 
@@ -8719,20 +8423,6 @@ struct GraphicsTriangleInput {
     GraphicsPrimitiveDispatchFlags renderFlags; 
 };
 
-struct GlideTextureInfo {
-    uint32_t smallLod; 
-    uint32_t largeLod; 
-    int32_t aspectRatio; 
-    uint32_t format; 
-    void *data; 
-};
-
-struct GraphicsDispatchTable {
-    void (*colorUpload[3])(struct GraphicsTextureResource *); 
-    void (*alphaUpload[3])(struct GraphicsTextureResource *); 
-    void (*primitive[64])(struct GraphicsPrimitivePacket *); 
-};
-
 struct SoftwareRgbWordLanes {
     SoftwareColorLaneFixed16 blue; 
     SoftwareColorLaneFixed16 green; 
@@ -8747,16 +8437,6 @@ struct SoftwareFramebufferAccess {
     uint8_t *pixels; 
 };
 
-struct ComReleaseObject_Vtbl {
-    int32_t (*QueryInterface)(struct ComReleaseObject *, void *, void **);
-    uint32_t (*AddRef)(struct ComReleaseObject *);
-    uint32_t (*Release)(struct ComReleaseObject *);
-};
-
-struct ComReleaseObject {
-    struct ComReleaseObject_Vtbl *lpVtbl; 
-};
-
 struct GraphicsCursorInputEvent {
     enum GraphicsCursorEventType eventType; 
     uint32_t buttonMask; 
@@ -8764,29 +8444,6 @@ struct GraphicsCursorInputEvent {
     UiPixelCoordinate y; 
     UiPointerWheelDelta wheelDelta; 
     GraphicsCursorClockValue clockValue; 
-};
-
-typedef enum D3DBLEND_DX6 {
-    D3DBLEND_ZERO=1,
-    D3DBLEND_ONE=2,
-    D3DBLEND_SRCCOLOR=3,
-    D3DBLEND_INVSRCCOLOR=4,
-    D3DBLEND_SRCALPHA=5,
-    D3DBLEND_INVSRCALPHA=6,
-    D3DBLEND_DESTALPHA=7,
-    D3DBLEND_INVDESTALPHA=8,
-    D3DBLEND_DESTCOLOR=9,
-    D3DBLEND_INVDESTCOLOR=10,
-    D3DBLEND_SRCALPHASAT=11,
-    D3DBLEND_BOTHSRCALPHA=12,
-    D3DBLEND_BOTHINVSRCALPHA=13
-} D3DBLEND_DX6;
-
-struct GraphicsPrimitiveRenderStateCache {
-    enum GraphicsBooleanState zWriteEnable; 
-    enum GraphicsBooleanState alphaBlendEnable; 
-    enum D3DBLEND_DX6 sourceBlend; 
-    enum D3DBLEND_DX6 destinationBlend; 
 };
 
 struct SoftwareMaskRuntimeView {
@@ -8804,21 +8461,6 @@ struct SoftwarePixelPackTables {
     uint32_t blue[256]; 
     uint32_t green[256]; 
     uint32_t red[256]; 
-};
-
-struct GraphicsResourceRecord {
-    struct ComReleaseObject *object0; 
-    struct ComReleaseObject *object1; 
-    struct ComReleaseObject *object2; 
-    struct IDirectDrawSurface *deviceSurfaceBase; 
-    struct IDirectDrawSurface3 *deviceSurface3; 
-    struct IDirect3DTexture2 *deviceTexture2; 
-    GraphicsResourceActiveToken activeToken; 
-    GraphicsResourceUsageSerial lastUsedCounter; 
-    GraphicsPixelDimension width; 
-    GraphicsPixelDimension height; 
-    void *sourceData; 
-    GraphicsBackendHandlerIndex backendHandlerIndex; 
 };
 
 struct SoftwareRasterTextureAddressState {
@@ -8851,13 +8493,6 @@ struct GraphicsFixedRect {
     GraphicsSceneExtentFixed minY; 
     GraphicsSceneExtentFixed maxX; 
     GraphicsSceneExtentFixed maxY; 
-};
-
-struct GraphicsPrimitiveRenderStatePreset {
-    enum D3DBLEND_DX6 sourceBlend; 
-    enum D3DBLEND_DX6 destinationBlend; 
-    enum GraphicsBooleanState alphaBlendEnable; 
-    enum GraphicsBooleanState zWriteEnable; 
 };
 
 struct SoftwarePixelMmxConstants {
@@ -9513,13 +9148,6 @@ struct DIMOUSESTATE_4BUTTON {
     TH_LEGACY_BYTE rgbButtons[4];
 };
 
-struct D3DRECT_DX6 {
-    GraphicsScreenCoordinate x1; 
-    GraphicsScreenCoordinate y1; 
-    GraphicsScreenCoordinate x2; 
-    GraphicsScreenCoordinate y2; 
-};
-
 struct DIDEVICEOBJECTDATA_DX6 {
     TH_LEGACY_DWORD dwOfs;
     TH_LEGACY_DWORD dwData;
@@ -9569,17 +9197,6 @@ struct IDirectDraw2_Vtbl {
 
 struct IDirectDraw2 {
     struct IDirectDraw2_Vtbl *lpVtbl;
-};
-
-/* IDirectDrawPalette: only the IUnknown slots are used (the 8-bit texture uploads create one and release it). */
-typedef struct IDirectDrawPalette IDirectDrawPalette;
-typedef struct IDirectDrawPalette_Vtbl {
-    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDrawPalette *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDrawPalette *);
-    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDrawPalette *);
-} IDirectDrawPalette_Vtbl;
-struct IDirectDrawPalette {
-    struct IDirectDrawPalette_Vtbl *lpVtbl;
 };
 
 typedef void *TH_LEGACY_HINSTANCE;
@@ -9738,27 +9355,6 @@ typedef union Win32MainMessageStorage Win32MainMessageStorage;
 union Win32MainMessageStorage {
     struct Win32MessageWindowClassOverlay overlay;
     struct Win32Message32 message;
-};
-
-/* Glide 3 GrLfbInfo_t: what grLfbLock reports about a locked frame buffer. */
-typedef struct GlideLfbInfo GlideLfbInfo;
-struct GlideLfbInfo {
-    uint32_t size;
-    uint8_t *pixels;
-    uint32_t strideBytes;
-    uint32_t writeMode;
-    uint32_t origin;
-};
-
-/* glide.h GrResolution: one 16-byte entry of the list grQueryResolutions writes (Glide3_InitAndEnumerate,
-   GraphicsGlide3_ApplyDisplayModeAndInitializeResources); also the query template passed to it, where
-   GR_QUERY_ANY (0xFFFFFFFF) matches any value. */
-typedef struct GrResolution GrResolution;
-struct GrResolution {
-    int32_t resolution; /* GR_RESOLUTION_* */
-    uint32_t refresh; /* GR_REFRESH_*: 0 = 60 Hz .. 8 = 120 Hz (g_GlideRefreshRatesHz) */
-    int32_t numColorBuffers;
-    int32_t numAuxBuffers;
 };
 
 struct PcxRgb24 {
@@ -13838,13 +13434,6 @@ struct UiFormattedContainerWithMarker {
 typedef struct UiRootStackActionHandlerPage2 UiRootStackActionHandlerPage2;
 struct UiRootStackActionHandlerPage2 {
     void (*handlers[2])(void *);
-};
-
-/* Glide 3 import table: each entry point's destination and its exported name; {0,0} ends it. */
-typedef struct GlideImportBinding GlideImportBinding;
-struct GlideImportBinding {
-    void *procedure;
-    char *importName;
 };
 
 #endif /* THANDOR_GENERATED_TYPES_H */

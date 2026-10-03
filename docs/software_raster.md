@@ -228,8 +228,9 @@ here; see [Blits](#blits) below.
 
 `software.c` also holds the 2D paths that draw a texture-source subresource or a coloured
 rectangle straight into the framebuffer. They are installed per framebuffer depth by
-`directdraw.c` (`g_GraphicsTextureSourceBlit*`, `g_GraphicsFramebufferFillRectArgb`) and wrapped by
-the Glide3 versions in `glide.c`. Like the rasterizer they were hand-written MMX, and the
+`directdraw.c` (`g_GraphicsTextureSourceBlit*`, `g_GraphicsFramebufferFillRectArgb`). The software renderer
+is the only renderer: the original's Glide and Direct3D backends were removed. Like the rasterizer they were
+hand-written MMX, and the
 decompiled C was full of `CONCAT`/`pmulhw` emulation.
 
 The `blitcmp` self-test compared each of them with the original machine code (retired with the mapped

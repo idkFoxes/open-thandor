@@ -120,8 +120,8 @@
 #define TEXT_ID_MISSION_BRIEFING_TEMPLATE 0x219B /* combined with the level title */
 /* Host game setup page: networkSpeedLabel's caption id; the text for network speed n (1..7) is this + n. */
 #define TEXT_ID_NETWORK_SPEED_BASE 0x210D
-/* Display settings page: device name shown for an adapter without a 3D device (GRAPHICS_DEVICE_GUID_SOFTWARE,
-   the software rasterizer); FrontendDisplaySettingsAction_OpenPageAndListModes. */
+/* Display settings page: device name shown for every adapter (the software rasterizer);
+   FrontendDisplaySettingsAction_OpenPageAndListModes. */
 #define TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME 0x212D
 /* Menu room hover hints: hint n of a ROM action record is text id this + n (1 while a page action runs). */
 #define TEXT_ID_MENU_HINT_BASE 0x2000

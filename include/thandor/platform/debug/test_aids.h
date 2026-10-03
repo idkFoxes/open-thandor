@@ -42,9 +42,7 @@ void Thandor_TestAidLogDatagram(const char *direction, const void *sockaddrIn, u
    OPEN_THANDOR_WINDOWED=1 runs the game in a normal captioned window at OPEN_THANDOR_WINDOW_X /
    OPEN_THANDOR_WINDOW_Y (default 0,0) instead of full-screen exclusive. DirectDraw stays at DDSCL_NORMAL,
    the display mode is not changed (the desktop colour depth is used), the software renderer blits into the
-   client area through a clipper and DirectInput takes the mouse non-exclusively. Only the software renderer
-   runs windowed: Graphics_Init enumerates no Glide or Direct3D devices then, so every adapter is a plain
-   DirectDraw (software) one. Off by default. */
+   client area through a clipper and DirectInput takes the mouse non-exclusively. Off by default. */
 int Thandor_TestAidWindowed(void);
 /* Creates the windowed main window (client 640x480 until the first display mode sizes it). */
 void *Thandor_TestAidCreateWindowedMainWindow(const char *className, const char *title, void *instance);

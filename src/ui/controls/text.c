@@ -1026,8 +1026,8 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
    rich-text payloads 0 and 1 of its text and draws it as a text button. The values are the two dwords stored
    just before the node (control[-1].packedTextStyle at -8 is the adapter index or first number,
    control[-1].textResourceId at -0xC the second number). State bit 0x80: only the first number; bit 0x800:
-   the adapter's driver description and device name (text 0x111 for the primary adapter, whose GUID is 0);
-   neither: both numbers.
+   the adapter's driver description and as device name text 0x111 (every adapter is a software renderer
+   device; the original showed a hardware renderer device's own name instead); neither: both numbers.
 */
 void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -1035,14 +1035,11 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
 
 {
   UiPackedTextStyle adapterIndex;
-  GraphicsAdapterRecord *adapterRecords;
   uint16_t *stream;
-  uint16_t *replacementPayload;
   uint16_t *resolvedText;
-  
+
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     resolvedText = TextResource_Resolve(control->textResourceId);
-    adapterRecords = g_GraphicsAdapters;
     stream = resolvedText;
     if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER) != 0) {
       g_WideNumberFormatUtf16
@@ -1067,14 +1064,8 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
     adapterIndex = control[-1].packedTextStyle;
     RichTextCommandStream_PatchPayloadBySelector
               (0,g_GraphicsAdapters[adapterIndex].driverDescriptionUtf16,stream);
-    if (adapterRecords[adapterIndex].deviceGuid.Data1 == 0) {
-      resolvedText = TextResource_Resolve(TEXT_ID_PRIMARY_DISPLAY_ADAPTER);
-      replacementPayload = resolvedText;
-    }
-    else {
-      replacementPayload = adapterRecords[adapterIndex].deviceNameUtf16;
-    }
-    RichTextCommandStream_PatchPayloadBySelector(1,replacementPayload,stream);
+    resolvedText = TextResource_Resolve(TEXT_ID_PRIMARY_DISPLAY_ADAPTER);
+    RichTextCommandStream_PatchPayloadBySelector(1,resolvedText,stream);
     UiTextButtonControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,control);
   }
   return;

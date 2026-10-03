@@ -345,39 +345,6 @@ HINSTANCE DynDLL_Load(char *moduleName)
 }
 
 
-/* Address: 0x00573CD0.
-   Frees a DLL loaded by DynDLL_Load; the module is found by its name pointer (not by comparing text), as the
-   Glide backend passes the same name string it loaded with. Returns FreeLibrary's non-zero result, or
-   FATAL_ERROR_LOADER_MODULE_MISSING with the name in g_PackageLastErrorPath. The table entry stays in place.
-   The original also reports success/failure in CF (CLC at 0x00573D2A, STC at 0x00573D12); no caller reads it:
-   Glide3_InitAndEnumerate follows with CLC/STC, GraphicsGlide3_ApplyDisplayModeAndInitializeResources with STC,
-   and Glide3_Shutdown passes it out unchanged, but its callers overwrite the flags first (ADD at 0x00578B5D,
-   TEST at 0x00579582, XOR EAX,EAX at 0x00586102 after GraphicsBackend_ShutdownGlideOnDeactivate). The EAX
-   result is likewise discarded (POP EAX or ignored) by all of them.
-*/
-uint32_t DynDLL_Unload(char *moduleName)
-
-{
-  uint32_t modulesRemaining;
-  uint32_t freeResult;
-  DynamicModuleEntry *moduleEntryCursor;
-
-  moduleEntryCursor = g_DynamicModules;
-  for (modulesRemaining = g_DynamicModuleCount; modulesRemaining != 0; modulesRemaining--) {
-    if (moduleName == moduleEntryCursor->name) {
-      freeResult = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[BOOTSTRAP_API_FREE_LIBRARY].destination)(moduleEntryCursor->module);
-      if (freeResult != 0) {
-        return freeResult;
-      }
-      break;
-    }
-    moduleEntryCursor++;
-  }
-  /* module not loaded, or FreeLibrary failed */
-  Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)moduleName);
-  return FATAL_ERROR_LOADER_MODULE_MISSING;
-}
-
 /* Address: 0x00573EB0.
    Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared
    before the call so a module is never freed twice. The count is left unchanged.
@@ -406,9 +373,9 @@ void DynDLL_UnloadAll(void)
 /* Address: 0x00585F50.
    Window procedure of the main window (g_MainMessageStorage.overlay.windowClass.windowProc, registered by ProcessEntry). Counts
    WM_CLOSE/WM_DESTROY, hides the cursor and forwards keys and characters to the keyboard layer. On
-   WM_ACTIVATEAPP it drops to normal priority, releases the mouse and lets the graphics backend give up the
-   display when deactivated, and on reactivation returns to real-time priority, reacquires the mouse, restores
-   the display mode and reseeds the lock-key state.
+   WM_ACTIVATEAPP it drops to normal priority and releases the mouse when deactivated (the original also let
+   its hardware renderer give up the display then), and on reactivation returns to real-time priority,
+   reacquires the mouse, restores the display mode and reseeds the lock-key state.
 */
 LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam)
 
@@ -428,10 +395,6 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
       SetPriorityClass(currentProcess,NORMAL_PRIORITY_CLASS);
       if (g_MouseDevice != NULL) {
         g_MouseDevice->lpVtbl->Unacquire(g_MouseDevice);
-      }
-      /* not while the window is being closed or destroyed */
-      if (g_WindowDestroyDepth == 0) {
-        g_GraphicsBackendRefreshActiveAdapter();
       }
     }
     else {

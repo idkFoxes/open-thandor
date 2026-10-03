@@ -94,7 +94,7 @@ void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *mas
 
 
 /* Address: 0x00485FD0.
-   Software backend of Graphics_SetViewportAndClearDepth: fills the rectangle with opaque black and starts a
+   g_GraphicsSetViewportAndClearDepth: fills the rectangle with opaque black and starts a
    new depth epoch instead of clearing a depth buffer.
 */
 void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -198,7 +198,7 @@ void SoftwareRenderer_DrawQueueAuxiliary
 
 
 /* Address: 0x00486020.
-   Software backend of Graphics_DrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue
+   g_GraphicsDrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue
    renderer chosen for the current pixel depth (g_SoftwareDrawQueue); draws nothing when the lock fails.
 */
 void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
